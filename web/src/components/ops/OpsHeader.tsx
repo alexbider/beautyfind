@@ -3,9 +3,8 @@ import styles from './OpsHeader.module.css';
 
 type Section = 'admin' | 'moderation' | 'verification';
 
+// Admin (/ops) and Moderation (/ops/moderation) join the nav when those screens are built.
 const NAV: Array<{ key: Section; name: string; href: string }> = [
-  { key: 'admin', name: 'ניהול', href: '/ops' },
-  { key: 'moderation', name: 'ביקורות', href: '/ops/moderation' },
   { key: 'verification', name: 'אימות', href: '/ops/verification' },
 ];
 
@@ -17,7 +16,7 @@ export function OpsHeader({ current, who }: { current: Section; who: string }) {
   return (
     <header className={`${styles.bar} bf-desk-only`}>
       <div className={styles.inner}>
-        <Link href="/ops" dir="ltr" className={styles.mark} aria-label="BeautyFind, ניהול">
+        <Link href="/ops/verification" dir="ltr" className={styles.mark} aria-label="BeautyFind, ניהול">
           beauty<span className={styles.markFind}>find.</span>
         </Link>
         <nav aria-label="צוות BeautyFind" className={styles.nav}>

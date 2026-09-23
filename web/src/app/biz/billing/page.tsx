@@ -104,7 +104,7 @@ export default async function BillingPage() {
             </p>
             {/* TODO(sponsored): list this business's campaigns once the campaigns table exists. */}
             <div className={b.sponsorEmpty}>אין קמפיינים פעילים או מתוכננים.</div>
-            <Link href="/biz/sponsored" className={b.outline}>לרכישה ולקמפיינים</Link>
+            {/* TODO(sponsored): purchase link once /biz/sponsored exists. */}
           </div>
 
           <div className={ui.stack}>

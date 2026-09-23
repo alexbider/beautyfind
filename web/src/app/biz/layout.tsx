@@ -65,13 +65,10 @@ export default async function BizLayout({ children }: { children: React.ReactNod
             <span className={styles.bizName}>{name}</span>
             <span className={styles.bizLine}>{line}</span>
           </div>
-          <Link href="/biz/sponsored" className={styles.chip}>מקום ממומן</Link>
-          <Link href="/biz/branches" aria-label="מעבר סניף" className={`${styles.chip} ${styles.chipTeal}`}>
+          {/* Sponsored placements and branch switching (/biz/sponsored, /biz/branches) arrive in phase 5. */}
+          <span className={`${styles.chip} ${styles.chipTeal}`}>
             {branchCount === 1 ? 'סניף אחד' : branchCount === 2 ? 'שני סניפים' : <><span className="ltr">{branchCount}</span>&nbsp;סניפים</>}
-            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M2 4.2 6 8.2l4-4" />
-            </svg>
-          </Link>
+          </span>
           <Link href={profileHref} className={styles.profileLink}>
             <span>תצוגת הפרופיל</span>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
