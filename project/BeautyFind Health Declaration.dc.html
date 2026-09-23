@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="הצהרת בריאות דיגיטלית לפני טיפול — שאלון רפואי, תרופות קבועות וחתימה, נשמרים אצל הצוות המטפל בלבד.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#F6F8F9}
+  *{box-sizing:border-box}
+  :root{--hd-shell:minmax(0,1fr);--hd-pad:16px}
+  @media (min-width:560px){:root{--hd-pad:22px}}
+  @media (min-width:1000px){:root{--hd-shell:minmax(0,1fr) 320px}}
+  @media (min-width:1000px) and (min-height:720px){[data-hd-side]{position:sticky;top:18px}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes hdFade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  @keyframes hdPop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#F6F8F9;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+
+  <header style="background:#fff;border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1100px;margin:0 auto;padding:12px var(--hd-pad);display:flex;align-items:center;gap:13px;flex-wrap:wrap">
+      <a href="./BeautyFind Homepage.dc.html" dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:21px;letter-spacing:-0.01em;color:#0C243E;text-decoration:none">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6">.</span></a>
+      <span style="flex:1;min-width:0"></span>
+      <a href="./BeautyFind Manage Booking.dc.html" style="flex:none;display:inline-flex;align-items:center;gap:7px;min-height:42px;padding:0 13px;border-radius:11px;background:#F0FAFB;font-size:14px;font-weight:700;color:#0B7A87;text-decoration:none">
+        <svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg>
+        <span>לפרטי התור</span>
+      </a>
+    </div>
+  </header>
+
+  <div style="max-width:1100px;margin:0 auto;padding:clamp(16px,2.4vw,28px) var(--hd-pad) 60px">
+
+    <sc-if value="{{ isForm }}" hint-placeholder-val="{{ true }}">
+      <div style="animation:hdFade .22s ease both">
+        <h1 style="margin:0 0 5px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(25px,3.4vw,34px);font-weight:500;letter-spacing:-0.015em">הצהרת בריאות לפני הטיפול</h1>
+        <p style="margin:0 0 clamp(16px,2vw,22px);max-width:60ch;font-size:15.5px;color:#3E4F62;text-wrap:pretty">כמה דקות של מילוי שחוסכות הפתעות בחדר הטיפול. התשובות מגיעות רק לצוות המטפל, ותשובת ״כן״ לא מבטלת את התור — היא מאפשרת להתכונן נכון.</p>
+
+        <div style="display:grid;grid-template-columns:var(--hd-shell);gap:clamp(14px,1.8vw,20px);align-items:start">
+          <main style="min-width:0;display:flex;flex-direction:column;gap:13px">
+
+            <section aria-labelledby="hd-h1" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px)">
+              <h2 id="hd-h1" style="margin:0 0 12px;font-size:16.5px;font-weight:700">הפרטים שלך</h2>
+              <dl style="margin:0;display:grid;grid-template-columns:96px minmax(0,1fr);gap:9px 12px;font-size:14.5px">
+                <dt style="color:#8A96A3">שם מלא</dt><dd style="margin:0;font-weight:700">שירה כהן</dd>
+                <dt style="color:#8A96A3">תעודת זהות</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums">•••••4821</dd>
+                <dt style="color:#8A96A3">תאריך לידה</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums">14/03/1991</dd>
+                <dt style="color:#8A96A3">טלפון</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums">054-771-2290</dd>
+              </dl>
+              <p style="margin:12px 0 0;font-size:12.5px;color:#8A96A3">משהו לא נכון? <a href="./BeautyFind Account.dc.html">עדכון בחשבון</a></p>
+            </section>
+
+            <section aria-labelledby="hd-h2" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px)">
+              <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px">
+                <h2 id="hd-h2" style="flex:1;min-width:0;margin:0;font-size:16.5px;font-weight:700">שאלון רפואי</h2>
+                <span dir="ltr" style="flex:none;font-size:12.5px;font-weight:700;color:{{ progColor }};font-variant-numeric:tabular-nums">{{ progText }}</span>
+              </div>
+              <p style="margin:0 0 6px;font-size:13.5px;color:#5B6B7B;text-wrap:pretty">{{ qIntro }}</p>
+              <ul style="list-style:none;margin:0;padding:0">
+                <sc-for list="{{ questions }}" as="q" hint-placeholder-count="8"><li style="padding:13px 0;border-top:1px solid #EDEFF2"><div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap"><span style="flex:1 1 250px;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:14.5px;font-weight:600;text-wrap:pretty">{{ q.label }}</span><span style="font-size:12.5px;color:#8A96A3;text-wrap:pretty">{{ q.note }}</span></span><span role="radiogroup" aria-label="{{ q.label }}" style="flex:none;display:flex;gap:6px"><button type="button" role="radio" aria-checked="{{ q.yesOn }}" onClick="{{ q.yes }}" style="min-width:58px;min-height:40px;padding:0 12px;border:1px solid {{ q.yesBorder }};border-radius:10px;background:{{ q.yesBg }};font:inherit;font-size:14px;font-weight:700;color:{{ q.yesColor }};cursor:pointer">כן</button><button type="button" role="radio" aria-checked="{{ q.noOn }}" onClick="{{ q.no }}" style="min-width:58px;min-height:40px;padding:0 12px;border:1px solid {{ q.noBorder }};border-radius:10px;background:{{ q.noBg }};font:inherit;font-size:14px;font-weight:700;color:{{ q.noColor }};cursor:pointer">לא</button></span></div><sc-if value="{{ q.showDetail }}" hint-placeholder-val="{{ false }}"><textarea value="{{ q.detail }}" onChange="{{ q.onDetail }}" rows="2" placeholder="{{ q.ph }}" style="width:100%;margin-top:9px;padding:10px 12px;border:1px solid #CDEFF3;border-radius:11px;background:#FAFBFB;font:inherit;font-size:14px;line-height:1.55;color:#0C243E;outline:none;resize:vertical"></textarea></sc-if></li></sc-for>
+              </ul>
+            </section>
+
+            <section aria-labelledby="hd-h3" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px)">
+              <h2 id="hd-h3" style="margin:0 0 3px;font-size:16.5px;font-weight:700">תרופות ותוספים קבועים</h2>
+              <p style="margin:0 0 11px;font-size:13.5px;color:#5B6B7B;text-wrap:pretty">כולל גלולות, ויטמינים ותוספי צמחים — חלקם משפיעים על דימום ועל רגישות העור.</p>
+              <textarea value="{{ meds }}" onChange="{{ onMeds }}" rows="3" placeholder="למשל: אלטרוקסין 50 מק״ג בבוקר, אומגה 3" style="width:100%;padding:12px;border:1px solid {{ medsBorder }};border-radius:11px;font:inherit;font-size:15px;line-height:1.6;color:#0C243E;background:#fff;outline:none;resize:vertical"></textarea>
+              <button type="button" aria-pressed="{{ noMedsOn }}" onClick="{{ toggleNoMeds }}" style="margin-top:9px;min-height:38px;padding:0 13px;border:1px solid {{ noMedsBorder }};border-radius:10px;background:{{ noMedsBg }};font:inherit;font-size:13.5px;font-weight:600;color:{{ noMedsColor }};cursor:pointer">אין תרופות קבועות</button>
+            </section>
+
+            <section aria-labelledby="hd-h4" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px)">
+              <h2 id="hd-h4" style="margin:0 0 12px;font-size:16.5px;font-weight:700">חתימה</h2>
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700;margin-bottom:12px">שם מלא כפי שבתעודת הזהות
+                <input value="{{ signName }}" onChange="{{ onSignName }}" placeholder="שירה כהן" style="min-height:46px;padding:0 12px;border:1px solid {{ nameBorder }};border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none">
+              </label>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+                <span style="flex:1;min-width:0;font-size:13px;font-weight:700">חתמי באצבע או בעכבר</span>
+                <button type="button" onClick="{{ clearSig }}" style="flex:none;min-height:36px;padding:0 11px;border:0;border-radius:9px;background:transparent;font:inherit;font-size:13px;font-weight:700;color:#5B6B7B;cursor:pointer" style-hover="background:#F6F8F9">ניקוי</button>
+              </div>
+              <div style="position:relative;height:150px;border:1px dashed {{ sigBorder }};border-radius:12px;background:#FAFBFB;overflow:hidden">
+                <canvas ref="{{ sigRef }}" aria-label="אזור חתימה" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair"></canvas>
+                <sc-if value="{{ sigEmpty }}" hint-placeholder-val="{{ true }}">
+                  <span aria-hidden="true" style="position:absolute;right:16px;left:16px;bottom:28px;border-bottom:1px solid #D4D4D4;pointer-events:none"></span>
+                </sc-if>
+              </div>
+              <button type="button" role="checkbox" aria-checked="{{ attestOn }}" onClick="{{ toggleAttest }}" style="width:100%;margin-top:13px;display:flex;align-items:flex-start;gap:11px;padding:0;border:0;background:transparent;font:inherit;text-align:right;cursor:pointer">
+                <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;margin-top:1px;border:1.5px solid {{ attestBorder }};border-radius:7px;background:{{ attestBg }};color:#fff">
+                  <sc-if value="{{ attestChecked }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg></sc-if>
+                </span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                  <span style="font-size:14px;font-weight:600;text-wrap:pretty">אני מצהירה שהפרטים נכונים ומלאים, ושאעדכן את הקליניקה על כל שינוי במצבי לפני הטיפול</span>
+                  <span style="font-size:12px;color:#8A96A3;text-wrap:pretty">מסירת מידע חלקי עלולה לסכן אותך — אם משהו לא ברור, כתבי בשדה הפירוט</span>
+                </span>
+              </button>
+            </section>
+
+            <sc-if value="{{ errorOn }}" hint-placeholder-val="{{ false }}">
+              <p role="alert" style="margin:0;padding:12px 14px;border:1px solid #F0C9C4;border-radius:12px;background:#FDEDEC;font-size:14px;font-weight:700;color:#A33A31;text-wrap:pretty">{{ errorText }}</p>
+            </sc-if>
+
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <button type="button" onClick="{{ submit }}" style="flex:1;min-width:190px;min-height:50px;padding:0 18px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:16px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#0C243E">חתימה ושליחה לקליניקה</button>
+              <button type="button" onClick="{{ saveDraft }}" style="flex:none;min-height:50px;padding:0 16px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font:inherit;font-size:15px;font-weight:600;color:#3E4F62;cursor:pointer">שמירה והמשך אחר כך</button>
+            </div>
+          </main>
+
+          <aside data-hd-side style="min-width:0;display:flex;flex-direction:column;gap:12px">
+            <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;overflow:hidden">
+              <div style="padding:13px 16px;background:#F6F8F9;border-bottom:1px solid #E6E6E6">
+                <span style="display:block;font-size:12.5px;font-weight:700;color:#5B6B7B">ההצהרה עבור התור</span>
+                <span style="display:block;font-size:15.5px;font-weight:700">{{ appt.name }}</span>
+              </div>
+              <dl style="margin:0;padding:14px 16px;display:grid;grid-template-columns:70px minmax(0,1fr);gap:9px 11px;font-size:14px">
+                <dt style="color:#8A96A3">קליניקה</dt><dd style="margin:0;font-weight:700">קליניקת נועה · רעננה</dd>
+                <dt style="color:#8A96A3">{{ appt.whoRole }}</dt><dd style="margin:0;font-weight:600">{{ appt.who }}</dd>
+                <dt style="color:#8A96A3">מועד</dt><dd style="margin:0;font-weight:600">יום ב׳ · <span dir="ltr" style="unicode-bidi:isolate;font-variant-numeric:tabular-nums">28/09/2026 10:30</span></dd>
+                <dt style="color:#8A96A3">אסמכתא</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums">BF-5102</dd>
+              </dl>
+              <p style="margin:0;padding:11px 16px;border-top:1px solid #EDEFF2;font-size:12.5px;color:#5B6B7B;text-wrap:pretty">{{ appt.resp }}</p>
+            </div>
+
+            <sc-if value="{{ flagOn }}" hint-placeholder-val="{{ false }}">
+              <div role="status" style="background:#FFF8EC;border:1px solid #F1DDB5;border-radius:17px;padding:14px 16px;animation:hdFade .2s ease both">
+                <span style="display:block;margin-bottom:4px;font-size:14px;font-weight:700;color:#9A5B15">{{ flagTitle }}</span>
+                <p style="margin:0;font-size:13px;color:#3E4F62;text-wrap:pretty">{{ flagBody }}</p>
+              </div>
+            </sc-if>
+
+            <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:14px 16px">
+              <h2 style="margin:0 0 10px;font-size:15px;font-weight:700">מי רואה את התשובות</h2>
+              <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px">
+                <sc-for list="{{ privacy }}" as="pv" hint-placeholder-count="3"><li style="display:flex;align-items:flex-start;gap:9px;font-size:13px;color:#3E4F62;text-wrap:pretty"><span aria-hidden="true" style="flex:none;width:6px;height:6px;margin-top:8px;border-radius:50%;background:#14B3C6"></span><span style="flex:1;min-width:0">{{ pv }}</span></li></sc-for>
+              </ul>
+              <p style="margin:12px 0 0;padding-top:11px;border-top:1px solid #EDEFF2;font-size:12.5px;color:#8A96A3"><a href="./BeautyFind Legal.dc.html">מדיניות הפרטיות</a></p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+      <div style="max-width:620px;background:#fff;border:1px solid #CDEFF3;border-radius:18px;padding:clamp(20px,2.6vw,30px);animation:hdPop .2s ease both">
+        <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;margin-bottom:13px;border-radius:50%;background:#F0FAFB;color:#0B7A87">
+          <svg width="27" height="27" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg>
+        </span>
+        <h1 style="margin:0 0 5px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(22px,2.8vw,28px);font-weight:500;letter-spacing:-0.014em">ההצהרה נחתמה</h1>
+        <p style="margin:0 0 15px;font-size:15px;color:#3E4F62;text-wrap:pretty">{{ doneBody }}</p>
+        <dl style="margin:0 0 16px;display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px 12px;font-size:14.5px">
+          <dt style="color:#8A96A3">נחתמה</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums">23/09/2026 · 14:12</dd>
+          <dt style="color:#8A96A3">לטיפול</dt><dd style="margin:0;font-weight:600">{{ appt.name }}</dd>
+          <dt style="color:#8A96A3">תשובות ״כן״</dt><dd style="margin:0;font-weight:600">{{ doneYes }}</dd>
+          <dt style="color:#8A96A3">בתוקף</dt><dd style="margin:0;font-weight:600">12 חודשים, או עד שינוי במצבך</dd>
+        </dl>
+        <div style="display:flex;gap:9px;flex-wrap:wrap">
+          <a href="./BeautyFind Manage Booking.dc.html" style="min-height:46px;display:inline-flex;align-items:center;padding:0 16px;border-radius:12px;background:#0B7A87;font-size:15px;font-weight:700;color:#fff;text-decoration:none">לפרטי התור</a>
+          <button type="button" onClick="{{ reopen }}" style="min-height:46px;padding:0 14px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font:inherit;font-size:15px;font-weight:600;color:#3E4F62;cursor:pointer">עדכון התשובות</button>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:fixed;bottom:18px;right:50%;transform:translateX(50%);z-index:40;max-width:min(90vw,440px);padding:12px 17px;border-radius:13px;background:#0C243E;color:#fff;font-size:14px;font-weight:600;box-shadow:0 12px 30px rgba(12,36,62,.28);animation:hdPop .16s ease both;text-wrap:pretty">{{ toastText }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1100,&quot;height&quot;:1000},&quot;treatmentType&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;medical&quot;,&quot;cosmetic&quot;],&quot;default&quot;:&quot;medical&quot;,&quot;tsType&quot;:&quot;'medical'|'cosmetic'&quot;}}">
+const Q_MEDICAL = [
+  ['preg', 'הריון, ניסיון להרות או הנקה', 'בתקופה הזו לא מבצעים הזרקות', 'באיזה שבוע / עד מתי הנקה'],
+  ['blood', 'נוטלת מדללי דם', 'אספירין, קומדין, אליקוויס, קלקסן וכד׳', 'שם התרופה והמינון'],
+  ['neuro', 'מחלה נוירו־שרירית', 'למשל מיאסטניה גרביס', 'איזו ומתי אובחנה'],
+  ['auto', 'מחלה אוטואימונית או הפרעת קרישה', '', 'איזו ואיך מטופלת'],
+  ['allergy', 'אלרגיה ידועה', 'לידוקאין, חומרי הרדמה, חלבון ביצה, אנטיביוטיקה', 'למה ואיך הגיבה'],
+  ['herpes', 'נטייה להרפס (פצעי קור) באזור', 'אפשר לתת טיפול מונע מראש', 'מתי הייתה ההתפרצות האחרונה'],
+  ['recent', 'טיפול אסתטי באזור בשבועיים האחרונים', 'כולל פילינג, לייזר או הזרקה בקליניקה אחרת', 'איזה טיפול ומתי'],
+  ['infect', 'דלקת, פצע או זיהום פעיל באזור', '', 'איפה ומה מצבו']
+];
+const Q_COSMETIC = [
+  ['preg', 'הריון או הנקה', 'חלק מהחומרים מוחלפים בתקופה הזו', 'באיזה שבוע / עד מתי הנקה'],
+  ['roacc', 'נטלת רואקוטן בחצי השנה האחרונה', 'איזוטרטינואין מדלל את העור', 'עד מתי נטלת'],
+  ['skin', 'מצב עור פעיל', 'אקזמה, פסוריאזיס, רוזציאה או אקנה דלקתי', 'מה ואיפה'],
+  ['allergy', 'אלרגיה לחומרים קוסמטיים', 'בשמים, חומצות, לטקס', 'למה ואיך הגיבה'],
+  ['sun', 'שיזוף או חשיפה ממושכת לשמש בשבוע האחרון', '', 'מתי'],
+  ['recent', 'טיפול באזור בשבועיים האחרונים', 'פילינג, לייזר או שעווה', 'איזה טיפול ומתי']
+];
+const APPTS = {
+  medical: { name: 'בוטוקס — מצח וקמטי הבעה', who: 'ד״ר נועה לוי', whoRole: 'רופאה', resp: 'אחריות רפואית: ד״ר נועה לוי, רישיון משרד הבריאות 34-82115. ההצהרה נשמרת בתיק הרפואי.' },
+  cosmetic: { name: 'טיפול פנים — ניקוי עמוק', who: 'שירן אבוטבול', whoRole: 'מטפלת', resp: 'איש מקצוע אחראי: שירן אבוטבול, קוסמטיקאית מוסמכת.' }
+};
+const PRIVACY = [
+  'רק הצוות המטפל בתור הזה — לא הקבלה ולא BeautyFind',
+  'נשמרת מוצפנת בתיק שלך בקליניקה, לא בפרופיל הציבורי',
+  'אפשר לבקש עותק או תיקון בכל עת דרך החשבון'
+];
+const plYes = n => n === 1 ? 'תשובה אחת' : n === 2 ? 'שתי תשובות' : n + ' תשובות';
+
+class Component extends DCLogic {
+  state = { view: 'form', ans: {}, detail: {}, meds: '', noMeds: false, signName: '', sig: false, attest: false, tried: false, toast: '' };
+
+  componentWillUnmount() { clearTimeout(this._t); }
+  flash(t) { clearTimeout(this._t); this.setState({ toast: t }); this._t = setTimeout(() => this.setState({ toast: '' }), 3200); }
+
+  sigRef = el => {
+    if (!el || el === this._sig) return;
+    this._sig = el; this._ink = 0;
+    const ctx = el.getContext('2d');
+    const fit = () => {
+      const r = el.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+      el.width = Math.max(1, r.width * d); el.height = Math.max(1, r.height * d);
+      ctx.setTransform(d, 0, 0, d, 0, 0);
+      ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#0C243E';
+    };
+    requestAnimationFrame(fit);
+    let down = false;
+    const pt = e => { const r = el.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    el.addEventListener('pointerdown', e => { down = true; el.setPointerCapture(e.pointerId); const [x, y] = pt(e); ctx.beginPath(); ctx.moveTo(x, y); });
+    el.addEventListener('pointermove', e => {
+      if (!down) return;
+      const [x, y] = pt(e); ctx.lineTo(x, y); ctx.stroke();
+      if (++this._ink > 10 && !this.state.sig) this.setState({ sig: true });
+    });
+    const end = () => { down = false; };
+    el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+    this._clearSig = () => { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, el.width, el.height); ctx.restore(); this._ink = 0; };
+  };
+
+  renderVals() {
+    const s = this.state;
+    const type = this.props.treatmentType === 'cosmetic' ? 'cosmetic' : 'medical';
+    const QS = type === 'medical' ? Q_MEDICAL : Q_COSMETIC;
+    const appt = APPTS[type];
+    const teal = '#0B7A87', line = '#E6E6E6', bad = '#D98A80';
+    const answered = QS.filter(q => s.ans[q[0]] != null).length;
+    const yes = QS.filter(q => s.ans[q[0]] === true);
+    const allAns = answered === QS.length;
+    const medsOk = s.noMeds || s.meds.trim().length > 1;
+    const nameOk = s.signName.trim().split(/\s+/).length >= 2;
+    const ok = allAns && medsOk && nameOk && s.sig && s.attest;
+    const err = !s.tried ? '' :
+      !allAns ? 'יש לענות על כל שאלות השאלון — חסרות ' + (QS.length - answered) :
+      !medsOk ? 'רשמי תרופות קבועות, או סמני ״אין תרופות קבועות״' :
+      !nameOk ? 'כתבי שם פרטי ושם משפחה' :
+      !s.sig ? 'חסרה חתימה' :
+      !s.attest ? 'יש לאשר את ההצהרה בתחתית הטופס' : '';
+
+    const pregYes = s.ans.preg === true;
+    const flagOn = yes.length > 0;
+    const flagTitle = pregYes && type === 'medical' ? 'לא מבצעים הזרקה בהריון או בהנקה' : plYes(yes.length) + ' לבדיקה לפני הטיפול';
+    const flagBody = pregYes && type === 'medical'
+      ? 'ד״ר נועה לוי תיצור קשר לתיאום מועד אחר. אין חיוב על הזזה מסיבה רפואית.'
+      : appt.who + ' תעבור על הפירוט לפני הטיפול ותיצור קשר רק אם צריך להתאים משהו. התור נשאר במקומו.';
+
+    const setAns = (k, v) => this.setState(st => ({ ans: Object.assign({}, st.ans, { [k]: v }) }));
+    const box = on => ({ bg: on ? teal : '#fff', border: on ? teal : '#C9CFD6' });
+
+    return {
+      isForm: s.view === 'form', isDone: s.view === 'done',
+      appt,
+      qIntro: type === 'medical'
+        ? 'לטיפול בהזרקה. תשובות חיוביות עוברות לרופאה המטפלת לפני הטיפול.'
+        : 'לטיפול קוסמטי. תשובות חיוביות עוברות למטפלת לפני הטיפול.',
+      progText: answered + ' / ' + QS.length,
+      progColor: allAns ? '#3B6B3F' : s.tried ? '#A33A31' : '#8A96A3',
+      questions: QS.map(q => {
+        const v = s.ans[q[0]];
+        const miss = s.tried && v == null;
+        return {
+          label: q[1], note: q[2], ph: q[3],
+          yesOn: v === true ? 'true' : 'false', noOn: v === false ? 'true' : 'false',
+          yesBg: v === true ? '#FFF8EC' : '#fff', yesBorder: v === true ? '#E8C98F' : miss ? bad : line, yesColor: v === true ? '#9A5B15' : '#3E4F62',
+          noBg: v === false ? teal : '#fff', noBorder: v === false ? teal : miss ? bad : line, noColor: v === false ? '#fff' : '#3E4F62',
+          yes: () => setAns(q[0], true), no: () => setAns(q[0], false),
+          showDetail: v === true,
+          detail: s.detail[q[0]] || '',
+          onDetail: e => { const t = e.target.value; this.setState(st => ({ detail: Object.assign({}, st.detail, { [q[0]]: t }) })); }
+        };
+      }),
+      meds: s.meds,
+      onMeds: e => this.setState({ meds: e.target.value, noMeds: false }),
+      medsBorder: s.tried && !medsOk ? bad : '#D4D4D4',
+      noMedsOn: s.noMeds ? 'true' : 'false',
+      noMedsBg: s.noMeds ? teal : '#fff', noMedsColor: s.noMeds ? '#fff' : '#3E4F62', noMedsBorder: s.noMeds ? teal : line,
+      toggleNoMeds: () => this.setState(st => ({ noMeds: !st.noMeds, meds: !st.noMeds ? '' : st.meds })),
+      signName: s.signName,
+      onSignName: e => this.setState({ signName: e.target.value }),
+      nameBorder: s.tried && !nameOk ? bad : '#D4D4D4',
+      sigRef: this.sigRef,
+      sigEmpty: !s.sig,
+      sigBorder: s.tried && !s.sig ? bad : s.sig ? '#7ED7E1' : '#D4D4D4',
+      clearSig: () => { this._clearSig && this._clearSig(); this.setState({ sig: false }); },
+      attestOn: s.attest ? 'true' : 'false', attestChecked: s.attest,
+      attestBg: box(s.attest).bg, attestBorder: s.tried && !s.attest ? bad : box(s.attest).border,
+      toggleAttest: () => this.setState(st => ({ attest: !st.attest })),
+      flagOn, flagTitle, flagBody,
+      privacy: PRIVACY,
+      errorOn: !!err, errorText: err,
+      submit: () => {
+        if (!ok) { this.setState({ tried: true }); return; }
+        this.setState({ view: 'done' }, () => this.flash('ההצהרה נשלחה לקליניקה'));
+      },
+      saveDraft: () => this.flash('נשמר. הקישור בהודעת התזכורת יחזיר אותך לכאן'),
+      reopen: () => { this._sig = null; this.setState({ view: 'form', sig: false, attest: false, tried: false }); },
+      doneBody: 'עותק PDF נשלח לכתובת המייל שלך. ' + appt.who + ' תראה את ההצהרה לפני הטיפול' + (flagOn ? ' ותיצור קשר אם צריך להתאים משהו.' : '.'),
+      doneYes: yes.length ? plYes(yes.length) + ' · עם פירוט' : 'אין',
+      toastOn: !!s.toast, toastText: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

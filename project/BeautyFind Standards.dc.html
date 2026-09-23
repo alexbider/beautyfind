@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="תקן הרישום של BeautyFind: מה נדרש מעסק כדי להופיע באינדקס, כללי מחירים ותמונות, מה מוביל להסרה ואיך מערערים — וכן מידע מלא על פרסום ממומן, מחירים בשקלים וכללי הסימון.">
+<link rel="canonical" href="https://beautyfind.co.il/listing-standards">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Assistant:wght@400;500;600;700&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0;background:#ffffff}
+body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:#0C243E;text-decoration:none}
+a:hover{color:#0B7A87}
+:focus-visible{outline:2px solid #14B3C6;outline-offset:2px;border-radius:6px}
+@keyframes bfRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes bfDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes bfFade{from{opacity:0}to{opacity:1}}
+::selection{background:rgba(20,179,198,.25)}
+*{-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{overscroll-behavior-y:contain}
+button,a[href],[role="button"],summary,label{touch-action:manipulation}
+button:not(:disabled):active,a[href]:active,[role="button"]:active{transform:scale(.985)}
+img,svg,video{max-width:100%}
+@media (max-width:760px){input,select,textarea{font-size:16px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+[data-desktop-only]{display:none}
+@media (min-width:1000px){[data-desktop-only]{display:flex}[data-mobile-only]{display:none!important}}
+:root{--intro-cols:minmax(0,1fr);--two-cols:minmax(0,1fr);--three-cols:minmax(0,1fr);--rail-cols:minmax(0,1fr);--rail-pos:static;--step-cols:minmax(0,1fr);--cta-cols:minmax(0,1fr);--price-cols:minmax(0,1fr)}
+@media (min-width:620px){:root{--two-cols:repeat(2,minmax(0,1fr));--step-cols:56px minmax(0,1fr);--price-cols:repeat(2,minmax(0,1fr))}}
+@media (min-width:1000px){:root{--three-cols:repeat(3,minmax(0,1fr));--rail-cols:minmax(220px,260px) minmax(0,1fr);--cta-cols:minmax(0,1fr) auto;--price-cols:repeat(3,minmax(0,1fr))}}
+@media (min-width:1000px) and (min-height:760px){:root{--rail-pos:sticky}}
+@media (min-width:1180px){:root{--intro-cols:minmax(0,1fr) minmax(300px,380px)}}
+</style>
+</helmet>
+<div dir="rtl" onKeyDown="{{ onKey }}" style="font-family:'Assistant',system-ui,sans-serif;font-size:16px;line-height:1.55;color:#0C243E;background:#ffffff;min-height:100dvh;overflow-x:clip">
+
+  <header style="position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:saturate(1.2) blur(8px);border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1320px;margin:0 auto;padding:0 clamp(20px,4vw,32px);height:72px;display:flex;align-items:center;gap:26px">
+      <a href="/" onClick="{{ go }}" aria-label="BeautyFind — לדף הבית" style="flex:none;display:flex;align-items:center"><span dir="ltr" style="font-family:'Jost',sans-serif;font-weight:300;font-size:28px;line-height:1;color:#0C243E;white-space:nowrap">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6;font-weight:400">.</span></span></a>
+      <nav aria-label="ראשי" data-desktop-only style="align-items:center;gap:2px;flex:1">
+        <button type="button" onClick="{{ toggleLocations }}" aria-expanded="{{ locOpen }}" style="display:flex;align-items:center;gap:7px;height:44px;padding:0 14px;border:0;border-radius:10px;background:{{ locBg }};font:inherit;font-size:16px;font-weight:600;color:{{ locColor }};cursor:pointer;transition:background .18s" style-hover="background:#F6F8F9">איתור עסק<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"></path></svg></button>
+        <a href="/treatments" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 14px;border-radius:10px;font-size:16px;font-weight:500;transition:background .18s" style-hover="background:#F6F8F9">תחומי טיפול</a>
+        <a href="/magazine" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 14px;border-radius:10px;font-size:16px;font-weight:500;transition:background .18s" style-hover="background:#F6F8F9">מדריכים</a>
+        <a href="/about" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 14px;border-radius:10px;font-size:16px;font-weight:500;transition:background .18s" style-hover="background:#F6F8F9">אודות</a>
+      </nav>
+      <a href="/for-business" onClick="{{ go }}" data-desktop-only style="flex:none;align-items:center;height:44px;padding:0 18px;border-radius:11px;background:#0C243E;color:#ffffff;font-size:15px;font-weight:700;transition:background .18s,color .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateY(-1px)">רישום עסק</a>
+      <button type="button" data-mobile-only onClick="{{ toggleMobile }}" aria-label="תפריט" aria-expanded="{{ mobileOpen }}" style="margin-right:auto;width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px solid #E6E6E6;border-radius:10px;background:#ffffff;cursor:pointer">
+        <span style="display:block;width:18px;height:1.5px;background:#0C243E"></span>
+        <span style="display:block;width:18px;height:1.5px;background:#0C243E"></span>
+      </button>
+    </div>
+
+    <sc-if value="{{ showMega }}" hint-placeholder-val="{{ false }}">
+      <div style="border-top:1px solid #E6E6E6;background:#ffffff;box-shadow:0 24px 48px rgba(12,36,62,.10);animation:bfDrop .2s ease both">
+        <div style="max-width:1320px;margin:0 auto;padding:26px clamp(20px,4vw,32px) 30px;display:grid;grid-template-columns:minmax(220px,32%) minmax(0,1fr);gap:34px">
+          <div style="border-left:1px solid #E6E6E6;padding-left:24px;max-height:340px;overflow:auto">
+            <div style="font-size:13px;font-weight:700;color:#8A96A3;margin-bottom:12px">אזורים</div>
+            <sc-for list="{{ leftItems }}" as="item" hint-placeholder-count="7">
+              <button type="button" onClick="{{ item.select }}" onMouseEnter="{{ item.select }}" style="display:block;width:100%;min-height:44px;text-align:right;padding:10px 12px;margin-bottom:2px;border:0;border-right:2px solid {{ item.bar }};border-radius:8px 0 0 8px;background:{{ item.bg }};font:inherit;font-size:15px;font-weight:{{ item.weight }};color:#0C243E;cursor:pointer;transition:background .18s">{{ item.name }}</button>
+            </sc-for>
+          </div>
+          <div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:14px">
+              <div style="font-size:17px;font-weight:700">{{ megaTitle }}</div>
+              <a href="{{ megaAllHref }}" onClick="{{ go }}" style="font-size:14px;font-weight:700;color:#0B7A87">כל האזור</a>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:2px">
+              <sc-for list="{{ megaLinks }}" as="link" hint-placeholder-count="9">
+                <a href="{{ link.href }}" onClick="{{ go }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;padding:8px 12px;border-radius:9px;transition:background .18s" style-hover="background:#F6F8F9;color:#0B7A87">
+                  <span style="font-size:15px;font-weight:500">{{ link.name }}</span>
+                  <span style="font-size:12.5px;color:#8A96A3">{{ link.count }}</span>
+                </a>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </header>
+
+  <sc-if value="{{ mobileOpen }}" hint-placeholder-val="{{ false }}">
+    <div role="dialog" aria-label="תפריט" style="position:fixed;inset:72px 0 0;z-index:45;background:#ffffff;overflow:auto;padding:20px clamp(20px,4vw,32px) 48px;animation:bfDrop .2s ease both">
+      <div style="font-size:13px;font-weight:700;color:#8A96A3;margin-bottom:10px">לעסקים</div>
+      <div style="display:flex;flex-direction:column;border-top:1px solid #E6E6E6;margin-bottom:22px">
+        <sc-for list="{{ views }}" as="v" hint-placeholder-count="2">
+          <button type="button" onClick="{{ v.pickClose }}" style="display:flex;align-items:center;min-height:54px;padding:12px 2px;border:0;border-bottom:1px solid #E6E6E6;background:transparent;font:inherit;font-size:16px;font-weight:{{ v.weight }};color:{{ v.color }};text-align:right;cursor:pointer">{{ v.name }}</button>
+        </sc-for>
+        <a href="/for-business" onClick="{{ go }}" style="display:flex;align-items:center;min-height:54px;padding:12px 2px;border-bottom:1px solid #E6E6E6;font-size:16px;font-weight:500">רישום עסק</a>
+        <a href="/for-business/claim" onClick="{{ go }}" style="display:flex;align-items:center;min-height:54px;padding:12px 2px;border-bottom:1px solid #E6E6E6;font-size:16px;font-weight:500">אישור בעלות</a>
+      </div>
+      <a href="/contact" onClick="{{ go }}" style="min-height:52px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:#0C243E;color:#ffffff;font-size:16px;font-weight:700">יצירת קשר</a>
+    </div>
+  </sc-if>
+
+  <nav aria-label="נתיב ניווט" style="background:#FAFBFB;border-bottom:1px solid #E6E6E6">
+    <ol style="list-style:none;max-width:1320px;margin:0 auto;padding:14px clamp(20px,4vw,32px);display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13.5px;color:#8A96A3">
+      <li><a href="/" onClick="{{ go }}" style="color:#5B6B7B">ראשי</a></li>
+      <li aria-hidden="true" style="color:#C6CDD4">/</li>
+      <li><a href="/for-business" onClick="{{ go }}" style="color:#5B6B7B">לעסקים</a></li>
+      <li aria-hidden="true" style="color:#C6CDD4">/</li>
+      <li aria-current="page" style="color:#0C243E;font-weight:600">{{ viewName }}</li>
+    </ol>
+  </nav>
+
+  <section aria-labelledby="h-title" style="border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1320px;margin:0 auto;padding:clamp(24px,3.2vw,48px) clamp(20px,4vw,32px) clamp(20px,2.4vw,32px);display:grid;grid-template-columns:var(--intro-cols);gap:clamp(22px,3vw,48px);align-items:end">
+      <div style="min-width:0;display:flex;flex-direction:column;gap:14px">
+        <span style="display:flex;align-items:center;gap:12px;font-size:13px;font-weight:700;color:#5B6B7B"><span aria-hidden="true" style="width:24px;height:1px;background:#14B3C6;display:inline-block"></span>{{ kicker }}</span>
+        <h1 id="h-title" style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(32px,3.7vw,54px);line-height:1.07;letter-spacing:-0.016em;text-wrap:balance;animation:bfRise .55s cubic-bezier(.2,.7,.2,1) both">{{ title }}<span style="color:#14B3C6">.</span></h1>
+        <p style="margin:0;font-size:clamp(16.5px,1.15vw,19px);line-height:1.62;color:#3E4F62;text-wrap:pretty;max-width:60ch">{{ dek }}</p>
+        <p style="margin:0;font-size:13.5px;color:#8A96A3">בתוקף מ־<time datetime="2026-07-01">1 ביולי 2026</time> · גרסה 3.1</p>
+      </div>
+      <dl style="margin:0;display:grid;grid-template-columns:var(--two-cols);gap:1px;background:#E6E6E6;border:1px solid #E6E6E6;border-radius:16px;overflow:hidden">
+        <sc-for list="{{ heroStats }}" as="st" hint-placeholder-count="4">
+          <div style="display:flex;flex-direction:column;gap:3px;padding:14px 16px;background:#ffffff">
+            <dt style="font-size:12px;font-weight:700;color:#8A96A3">{{ st.label }}</dt>
+            <dd dir="{{ st.dir }}" style="margin:0;font-family:'Frank Ruhl Libre',serif;font-size:25px;line-height:1.1;color:#0C243E;text-align:right;font-variant-numeric:tabular-nums">{{ st.value }}</dd>
+          </div>
+        </sc-for>
+      </dl>
+    </div>
+    <div style="max-width:1320px;margin:0 auto;padding:0 clamp(20px,4vw,32px)">
+      <div role="tablist" aria-label="עמודים לעסקים" style="display:flex;gap:4px;overflow-x:auto;scrollbar-width:none">
+        <sc-for list="{{ views }}" as="v" hint-placeholder-count="2">
+          <button type="button" role="tab" aria-selected="{{ v.on }}" onClick="{{ v.pick }}" style="flex:none;min-height:52px;padding:0 16px;border:0;border-bottom:2px solid {{ v.line }};background:transparent;font:inherit;font-size:16px;font-weight:{{ v.weight }};color:{{ v.color }};cursor:pointer;transition:color .18s,border-color .18s;white-space:nowrap">{{ v.name }}</button>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <main style="max-width:1320px;margin:0 auto;padding:clamp(26px,3.2vw,46px) clamp(20px,4vw,32px) clamp(56px,6vw,96px)">
+    <div style="display:grid;grid-template-columns:var(--rail-cols);gap:clamp(22px,2.8vw,52px);align-items:start">
+
+      <aside data-desktop-only aria-label="בעמוד הזה" style="min-width:0;position:var(--rail-pos);top:88px;flex-direction:column;gap:14px">
+        <nav aria-label="בעמוד הזה" style="display:flex;flex-direction:column;gap:2px">
+          <div style="font-size:12px;font-weight:700;color:#8A96A3;padding-bottom:8px;border-bottom:1px solid #E6E6E6;margin-bottom:6px">בעמוד הזה</div>
+          <sc-for list="{{ toc }}" as="t" hint-placeholder-count="5">
+            <a href="{{ t.anchor }}" style="display:flex;align-items:flex-start;gap:10px;min-height:44px;padding:8px 10px;border-radius:9px;font-size:14.5px;font-weight:500;line-height:1.45;color:#3E4F62;transition:background .2s,color .2s" style-hover="background:#F6F8F9;color:#0B7A87">
+              <span dir="ltr" style="flex:none;width:15px;font-size:11.5px;color:#8A96A3;text-align:right;padding-top:2px">{{ t.num }}</span>
+              <span style="text-wrap:pretty">{{ t.name }}</span>
+            </a>
+          </sc-for>
+        </nav>
+        <div style="border-top:1px solid #E6E6E6;padding-top:14px;display:flex;flex-direction:column;gap:9px">
+          <div style="font-size:12px;font-weight:700;color:#8A96A3">{{ asideTitle }}</div>
+          <p style="margin:0;font-size:13px;line-height:1.6;color:#5B6B7B;text-wrap:pretty">{{ asideBody }}</p>
+          <a href="{{ asideHref }}" onClick="{{ go }}" style="display:inline-flex;align-items:center;gap:6px;min-height:40px;font-size:13.5px;font-weight:700;color:#0B7A87">{{ asideLabel }}<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></a>
+        </div>
+      </aside>
+
+      <div style="min-width:0">
+        <sc-for list="{{ sections }}" as="sec" hint-placeholder-count="5">
+          <section id="{{ sec.id }}" aria-labelledby="{{ sec.headId }}" style="scroll-margin-top:100px;margin-bottom:clamp(32px,3.6vw,50px)">
+            <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:12px;max-width:74ch">
+              <span dir="ltr" aria-hidden="true" style="flex:none;font-family:'Frank Ruhl Libre',serif;font-size:15px;color:#14B3C6">{{ sec.num }}</span>
+              <h2 id="{{ sec.headId }}" style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(23px,2.2vw,32px);line-height:1.17;letter-spacing:-0.013em;text-wrap:balance">{{ sec.head }}</h2>
+            </div>
+            <sc-for list="{{ sec.paras }}" as="p" hint-placeholder-count="2">
+              <p style="margin:0 0 15px;max-width:74ch;font-size:17px;line-height:1.78;color:#3E4F62;text-wrap:pretty">{{ p }}</p>
+            </sc-for>
+
+            <sc-if value="{{ sec.hasReqs }}" hint-placeholder-val="{{ false }}">
+              <ul style="list-style:none;margin:8px 0 6px;padding:0;max-width:74ch;display:flex;flex-direction:column;gap:1px;background:#E6E6E6;border:1px solid #E6E6E6;border-radius:16px;overflow:hidden">
+                <sc-for list="{{ sec.reqs }}" as="r" hint-placeholder-count="5">
+                  <li style="display:grid;grid-template-columns:var(--step-cols);gap:4px 0;padding:15px 18px;background:#ffffff">
+                    <span aria-hidden="true" style="display:flex;align-items:flex-start;padding-left:14px"><span style="width:22px;height:22px;border-radius:50%;background:{{ r.dot }};display:inline-flex;align-items:center;justify-content:center;color:#ffffff;font-size:13px;line-height:1">{{ r.mark }}</span></span>
+                    <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
+                      <span style="font-size:16.5px;font-weight:700;text-wrap:pretty">{{ r.name }}</span>
+                      <span style="font-size:15.5px;line-height:1.68;color:#5B6B7B;text-wrap:pretty">{{ r.body }}</span>
+                      <span style="font-size:12.5px;font-weight:700;color:{{ r.tagColor }}">{{ r.tag }}</span>
+                    </span>
+                  </li>
+                </sc-for>
+              </ul>
+            </sc-if>
+
+            <sc-if value="{{ sec.hasRules }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid;grid-template-columns:var(--two-cols);gap:10px;margin:8px 0 6px">
+                <sc-for list="{{ sec.rules }}" as="r" hint-placeholder-count="4">
+                  <div style="display:flex;flex-direction:column;gap:6px;padding:16px 18px;border:1px solid {{ r.border }};border-radius:14px;background:{{ r.bg }}">
+                    <span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:{{ r.tagColor }}">
+                      <span aria-hidden="true" style="width:18px;height:18px;border-radius:50%;background:{{ r.dot }};display:inline-flex;align-items:center;justify-content:center;color:#ffffff;font-size:12px;line-height:1">{{ r.mark }}</span>{{ r.tag }}
+                    </span>
+                    <span style="font-size:15.5px;line-height:1.68;color:#0C243E;text-wrap:pretty">{{ r.body }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ sec.hasPlans }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid;grid-template-columns:var(--price-cols);gap:12px;margin:8px 0 6px">
+                <sc-for list="{{ plans }}" as="p" hint-placeholder-count="3">
+                  <div style="display:flex;flex-direction:column;gap:10px;padding:20px;border:1px solid {{ p.border }};border-radius:18px;background:{{ p.bg }}">
+                    <span style="font-size:12.5px;font-weight:700;color:{{ p.tagColor }}">{{ p.tag }}</span>
+                    <span style="font-family:'Frank Ruhl Libre',serif;font-size:21px;line-height:1.25;color:#0C243E">{{ p.name }}</span>
+                    <span dir="ltr" style="font-family:'Frank Ruhl Libre',serif;font-size:32px;line-height:1.05;color:#0C243E;text-align:right;font-variant-numeric:tabular-nums">{{ p.price }}</span>
+                    <span style="font-size:12.5px;color:#8A96A3">{{ p.unit }}</span>
+                    <ul style="list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:8px">
+                      <sc-for list="{{ p.items }}" as="it" hint-placeholder-count="4">
+                        <li style="display:flex;align-items:flex-start;gap:9px;font-size:14.5px;line-height:1.6;color:#3E4F62">
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#0B7A87" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:5px"><path d="M2.5 7.4 5.4 10.3 11.5 4"></path></svg>
+                          <span style="text-wrap:pretty">{{ it }}</span>
+                        </li>
+                      </sc-for>
+                    </ul>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ sec.hasLabel }}" hint-placeholder-val="{{ false }}">
+              <figure style="margin:10px 0 6px;max-width:74ch;padding:18px;border:1px dashed #D4D4D4;border-radius:18px;background:#FAFBFB">
+                <figcaption style="font-size:12px;font-weight:700;color:#8A96A3;margin-bottom:12px">כך נראה כרטיס ממומן באינדקס</figcaption>
+                <div style="display:flex;align-items:center;gap:13px;padding:13px;border:1px solid #E6E6E6;border-radius:14px;background:#ffffff">
+                  <span aria-hidden="true" style="position:relative;flex:none;width:52px;height:52px;border-radius:11px;overflow:hidden;background:#EDF1F3">
+                    <img src="assets/biz-facial.jpg" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+                  </span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                    <span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                      <span style="font-size:16px;font-weight:700;color:#0C243E">שם העסק</span>
+                      <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;background:#0C243E;font-size:11px;font-weight:700;color:#7ED7E1">ממומן</span>
+                    </span>
+                    <span style="font-size:13px;color:#5B6B7B">תחום · עיר</span>
+                  </span>
+                  <span dir="ltr" style="flex:none;font-size:13px;color:#8A96A3;font-variant-numeric:tabular-nums">★ 4.8 (120)</span>
+                </div>
+                <p style="margin:12px 0 0;font-size:13.5px;line-height:1.6;color:#5B6B7B;text-wrap:pretty">התג "ממומן" מוצג תמיד, בלי אפשרות להסתירו, והכרטיס אינו נספר בדירוג האורגני של העמוד.</p>
+              </figure>
+            </sc-if>
+
+            <sc-if value="{{ sec.hasNote }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:flex-start;gap:12px;margin:10px 0 4px;max-width:74ch;padding:16px 18px;border:1px solid #CDEFF3;border-radius:14px;background:#F0FAFB">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#0B7A87" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:2px"><circle cx="10" cy="10" r="7.6"></circle><path d="M10 6.2v.2M10 9v4.6"></path></svg>
+                <p style="margin:0;font-size:15.5px;line-height:1.7;color:#0C243E;text-wrap:pretty"><strong>{{ sec.noteTitle }}</strong> {{ sec.note }}</p>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ sec.hasFaq }}" hint-placeholder-val="{{ false }}">
+              <div style="max-width:74ch;display:flex;flex-direction:column;border-top:1px solid #E6E6E6;margin-top:8px">
+                <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="4">
+                  <div style="border-bottom:1px solid #E6E6E6;background:{{ f.bg }};transition:background .22s">
+                    <h3 style="margin:0;font-size:16.5px;font-weight:700"><button type="button" onClick="{{ f.toggle }}" aria-expanded="{{ f.open }}" style="display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;min-height:64px;padding:14px 8px;border:0;background:transparent;font:inherit;font-size:16.5px;font-weight:700;line-height:1.45;color:#0C243E;text-align:right;cursor:pointer"><span>{{ f.q }}</span><span aria-hidden="true" style="flex:none;width:30px;height:30px;border:1px solid #D4D4D4;border-radius:50%;background:#ffffff;display:inline-flex;align-items:center;justify-content:center;font-size:17px;color:#0C243E;transform:rotate({{ f.rot }});transition:transform .25s">+</span></button></h3>
+                    <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}">
+                      <p style="margin:0;padding:0 8px 18px;max-width:64ch;font-size:15.5px;line-height:1.72;color:#3E4F62;text-wrap:pretty;animation:bfFade .25s ease both">{{ f.a }}</p>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </section>
+        </sc-for>
+
+        <sc-if value="{{ showTable }}" hint-placeholder-val="{{ false }}">
+          <section id="s-removal" aria-labelledby="h-removal" style="scroll-margin-top:100px;margin-bottom:clamp(32px,3.6vw,50px)">
+            <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:12px;max-width:74ch">
+              <span dir="ltr" aria-hidden="true" style="flex:none;font-family:'Frank Ruhl Libre',serif;font-size:15px;color:#14B3C6">{{ tableNum }}</span>
+              <h2 id="h-removal" style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(23px,2.2vw,32px);line-height:1.17;letter-spacing:-0.013em;text-wrap:balance">מה מוביל להסרה</h2>
+            </div>
+            <p style="margin:0 0 15px;max-width:74ch;font-size:17px;line-height:1.78;color:#3E4F62;text-wrap:pretty">שש העברות שמובילות לאזהרה, להשעיה או להסרה מהאינדקס. ההודעה נשלחת בכתב ומפרטת את הסעיף שהופר ואת הראיה, ולכל החלטה נתונה זכות ערעור.</p>
+            <figure style="margin:10px 0 6px;max-width:74ch">
+              <div style="overflow-x:auto">
+                <table style="border-collapse:collapse;width:100%;min-width:460px;font-size:15px">
+                  <thead><tr>
+                    <sc-for list="{{ tableHead }}" as="h" hint-placeholder-count="3">
+                      <th scope="col" style="text-align:right;padding:0 14px 10px;border-bottom:1px solid #0C243E;font-size:12px;font-weight:700;color:#5B6B7B">{{ h }}</th>
+                    </sc-for>
+                  </tr></thead>
+                  <tbody>
+                    <sc-for list="{{ tableRows }}" as="row" hint-placeholder-count="6">
+                      <tr>
+                        <th scope="row" style="text-align:right;font-weight:600;padding:13px 14px;border-bottom:1px solid #EDEFF2;color:#0C243E">{{ row.label }}</th>
+                        <td style="padding:13px 14px;border-bottom:1px solid #EDEFF2;color:#3E4F62">{{ row.what }}</td>
+                        <td style="padding:13px 14px;border-bottom:1px solid #EDEFF2;color:#0C243E;font-weight:700">{{ row.when }}</td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                </table>
+              </div>
+              <figcaption style="margin-top:10px;font-size:13px;line-height:1.6;color:#8A96A3;text-wrap:pretty">{{ tableCaption }}</figcaption>
+            </figure>
+          </section>
+        </sc-if>
+
+        <section aria-labelledby="h-cta" style="padding:clamp(24px,3vw,40px);border-radius:20px;background:#0C243E;color:#ffffff;display:grid;grid-template-columns:var(--cta-cols);gap:clamp(18px,2.4vw,36px);align-items:center">
+          <div style="min-width:0">
+            <h2 id="h-cta" style="margin:0 0 8px;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(22px,2vw,29px);line-height:1.16;letter-spacing:-0.012em;color:#ffffff">{{ ctaTitle }}</h2>
+            <p style="margin:0;font-size:15.5px;line-height:1.7;color:rgba(255,255,255,.82);max-width:52ch;text-wrap:pretty">{{ ctaBody }}</p>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <a href="{{ ctaHref }}" onClick="{{ go }}" style="display:inline-flex;align-items:center;gap:9px;min-height:52px;padding:0 22px;border-radius:13px;background:#14B3C6;color:#0C243E;font-size:15.5px;font-weight:700;transition:background .18s,transform .18s" style-hover="background:#7ED7E1;transform:translateY(-2px)"><span>{{ ctaLabel }}</span><svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></a>
+            <a href="/contact" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:52px;padding:0 20px;border:1px solid rgba(255,255,255,.34);border-radius:13px;font-size:15.5px;font-weight:700;color:#ffffff;transition:border-color .18s,color .18s" style-hover="border-color:#7ED7E1;color:#7ED7E1">דברו איתנו</a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer style="background:#0C243E;color:#ffffff">
+    <div style="max-width:1320px;margin:0 auto;padding:clamp(44px,5vw,72px) clamp(20px,4vw,32px) 26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:clamp(24px,3vw,40px)">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <span dir="ltr" style="font-family:'Jost',sans-serif;font-weight:300;font-size:26px;line-height:1;color:#ffffff;align-self:flex-start">beauty<span style="color:#7ED7E1">find</span><span style="color:#7ED7E1;font-weight:400">.</span></span>
+        <p style="margin:0;max-width:32ch;font-size:14.5px;line-height:1.7;color:rgba(255,255,255,.78);text-wrap:pretty">אינדקס היופי והאסתטיקה של ישראל: עסקים מאומתים, ביקורות אמיתיות ותפריטי טיפולים שאפשר להשוות.</p>
+      </div>
+      <sc-for list="{{ footGroups }}" as="g" hint-placeholder-count="4">
+        <nav aria-label="{{ g.name }}" style="display:flex;flex-direction:column;gap:12px">
+          <div style="font-size:12.5px;font-weight:700;color:#7ED7E1">{{ g.name }}</div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <sc-for list="{{ g.links }}" as="l" hint-placeholder-count="4">
+              <a href="{{ l.href }}" onClick="{{ go }}" style="min-height:28px;display:flex;align-items:center;font-size:14.5px;color:rgba(255,255,255,.82)" style-hover="color:#7ED7E1">{{ l.name }}</a>
+            </sc-for>
+          </div>
+        </nav>
+      </sc-for>
+    </div>
+    <div style="max-width:1320px;margin:0 auto;padding:20px clamp(20px,4vw,32px) 34px;border-top:1px solid rgba(255,255,255,.14);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px">
+      <span style="font-size:13px;color:rgba(255,255,255,.66)">© 2026 BeautyFind</span>
+      <span style="font-size:13px;color:rgba(255,255,255,.66)">מידע כללי בלבד, לא ייעוץ רפואי</span>
+    </div>
+  </footer>
+  <dc-import name="BeautyFind Cookie Consent" embedded="{{ true }}" hint-size="0,0"></dc-import>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1320},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;standards&quot;,&quot;options&quot;:[&quot;standards&quot;,&quot;sponsorship&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;עמוד&quot;}}">
+const REGIONS = [
+  { name: 'גוש דן', slug: 'dan', cities: ['תל אביב–יפו', 'רמת גן', 'גבעתיים', 'פתח תקווה', 'חולון', 'ראשון לציון'] },
+  { name: 'שרון', slug: 'sharon', cities: ['נתניה', 'רעננה', 'כפר סבא', 'הרצליה'] },
+  { name: 'חיפה', slug: 'haifa', cities: ['חיפה', 'קריית ביאליק', 'חדרה'] },
+  { name: 'ירושלים', slug: 'jerusalem', cities: ['ירושלים', 'בית שמש', 'מבשרת ציון'] },
+  { name: 'שפלה', slug: 'shfela', cities: ['רחובות', 'נס ציונה', 'מודיעין'] },
+  { name: 'צפון', slug: 'north', cities: ['נהריה', 'עכו', 'כרמיאל', 'טבריה'] },
+  { name: 'דרום', slug: 'south', cities: ['אשדוד', 'אשקלון', 'באר שבע', 'אילת'] }
+];
+const CATS = [['אסתטיקה רפואית', 'medical-aesthetics'], ['קוסמטיקה וטיפולי פנים', 'facials'], ['הסרת שיער', 'hair-removal'], ['מספרות ועיצוב שיער', 'hair-salons'], ['ציפורניים, מניקור ופדיקור', 'nails']].map(c => ({ name: c[0], slug: c[1] }));
+
+const TABLE = {
+  head: ['עבירה', 'מה זה אומר', 'תוצאה'],
+  rows: [
+    { label: 'מחיר מטעה', what: 'מחיר בפרופיל שאינו המחיר שנגבה בפועל, או "מ־" בלי רצפה אמיתית', when: 'אזהרה, ואז הסרה' },
+    { label: 'הבטחת תוצאה', what: 'ניסוח שמבטיח תוצאה רפואית או אסתטית מובטחת', when: 'הסרת הניסוח' },
+    { label: 'פעולה בלי הסמכה', what: 'הזרקה או פעולה חודרנית בלי רופא אחראי בקליניקה', when: 'הסרה מיידית' },
+    { label: 'ביקורות מזויפות', what: 'ביקורות שנכתבו על ידי העסק או נקנו', when: 'הסרה מיידית' },
+    { label: 'תמונה שאינה שלכם', what: 'תמונות סטוק או תמונות "לפני ואחרי" שאינן מהקליניקה', when: 'הסרת התמונה' },
+    { label: 'אי־מענה לאימות', what: 'שתי פניות ללא מענה בבדיקת האימות השנתית', when: 'השעיית הפרופיל' }
+  ],
+  caption: 'הסרה מיידית פירושה הורדת הפרופיל מהאינדקס באותו יום, עם הודעה בכתב לעסק וזכות ערעור בתוך 14 יום.'
+};
+
+const PLANS = [
+  { tag: 'ברירת המחדל', name: 'רישום רגיל', price: '₪149', unit: 'לחודש · לא כולל מע״מ', border: '#E6E6E6', bg: '#ffffff', tagColor: '#8A96A3',
+    items: ['פרופיל מלא עם תפריט מחירים', 'שעות פעילות ראשון–שישי', 'WhatsApp, טלפון וקישור Waze', 'הופעה בדירוג האורגני לפי איכות הפרופיל'] },
+  { tag: 'ממומן', name: 'כרטיס מודגש בעיר', price: '₪390', unit: 'לחודש · לעיר אחת · לא כולל מע״מ', border: '#CDEFF3', bg: '#F0FAFB', tagColor: '#0B7A87',
+    items: ['כרטיס אחד בראש עמוד העיר, מסומן "ממומן"', 'עד שני מתחרים ממומנים באותו עמוד', 'אינו משפיע על הדירוג האורגני', 'ביטול בהודעה של 30 יום'] },
+  { tag: 'ממומן', name: 'כרטיס בתחום ארצי', price: '₪690', unit: 'לחודש · לתחום אחד · לא כולל מע״מ', border: '#CDEFF3', bg: '#F0FAFB', tagColor: '#0B7A87',
+    items: ['כרטיס בעמוד התחום הארצי, מסומן "ממומן"', 'דיווח חודשי על חשיפות והקלקות', 'אינו מקנה אזכור במדריכים עריכתיים', 'ביטול בהודעה של 30 יום'] }
+];
+
+const FAQS = [
+  ['אפשר לקנות מקום גבוה יותר בדירוג?', 'לא. הדירוג האורגני נקבע מדירוג גוגל, ממספר הביקורות ומשלמות הפרופיל, ותשלום אינו אחד המשקלים. פרסום ממומן מוצג בנפרד, מעל או לצד הרשימה, ותמיד עם התג "ממומן".'],
+  ['אפשר להסיר ביקורת שלילית?', 'לא. אפשר לדווח על ביקורת שמפרה את הכללים — לשון הרעה, פרטים אישיים, ביקורת שאינה מלקוח — ואנחנו בודקים אותה. ביקורת שלילית ואמיתית נשארת, ואפשר להגיב לה בשם העסק; התגובה מוצגת לצדה.'],
+  ['מה קורה אם אני משנה מחירים?', 'אפשר לעדכן את התפריט בכל עת מהפרופיל, ותאריך העדכון מוצג לצד המחירים. אנחנו מבקשים שהמחיר בפרופיל יהיה המחיר שנגבה בפועל — פער חוזר בין השניים הוא הסיבה השכיחה לאזהרה.'],
+  ['אני מפרסם. זה מקנה אזכור במדריכים?', 'לא, ואין דרך לקנות אזכור. צוות העריכה בוחר אילו עסקים מוזכרים במדריכים לפי הנתונים באינדקס, ואינו יודע מי מפרסם בזמן הכתיבה.']
+];
+
+const VIEWS = [
+  {
+    key: 'standards', name: 'תקן הרישום', kicker: 'תקן הרישום',
+    title: 'מה נדרש כדי להופיע באינדקס',
+    dek: 'רישום באינדקס אינו אישור מקצועי — הוא אומר שהעסק קיים, שהמידע בפרופיל נבדק, ושיש מי שאחראי מקצועית על הטיפול. כאן מפורט מה נדרש, מה אסור, ומה קורה כשמשהו לא תואם.',
+    stats: [['עסקים מאומתים', '3,583'], ['הוסרו ב־2026', '124'], ['ערעורים שהתקבלו', '9'], ['בדיקת אימות', 'שנתית']],
+    aside: { title: 'רוצים להיכנס?', body: 'אישור בעלות פותח את הפרופיל לעריכה, ורישום חדש נבדק בתוך שלושה ימי עסקים.', label: 'אישור בעלות', href: '/for-business/claim' },
+    cta: { title: 'עומדים בתקן?', body: 'רישום כולל תפריט טיפולים עם מחירים, שעות, WhatsApp וקישור Waze. ₪149 לחודש, ללא התחייבות.', label: 'רישום עסק', href: '/for-business' },
+    sections: [
+      { head: 'דרישות הסף', paras: ['חמש דרישות. אין עליהן ויתור, והן נבדקות שוב בכל בדיקת אימות שנתית.'], reqs: [
+        { ok: true, name: 'רישום עסקי וכתובת פיזית', body: 'עוסק פטור, עוסק מורשה או חברה, וכתובת שאפשר להגיע אליה. עסק שמגיע אל הלקוח מציין אזור שירות במקום כתובת.', tag: 'נבדק מול רישום עסקי' },
+        { ok: true, name: 'טלפון שנענה', body: 'מספר פעיל שנענה בשעות הפעילות המוצהרות. אנחנו מתקשרים בפועל.', tag: 'נבדק בשיחה' },
+        { ok: true, name: 'אחריות מקצועית מוצהרת', body: 'בתחומים רפואיים — שם מלא של הרופא, הרופאה או רופא השיניים האחראים. בתחומים אחרים — שם איש או אשת המקצוע האחראים.', tag: 'חובה בתחום רפואי' },
+        { ok: true, name: 'תפריט טיפולים עם מחירים', body: 'לפחות חמישה טיפולים עם מחיר בשקלים. "מחיר בהתאמה" מותר רק לטיפול שבאמת דורש אבחון, ולא לכל התפריט.', tag: 'מוצג עם תאריך עדכון' },
+        { ok: true, name: 'שעות פעילות', body: 'שעות ראשון–שישי, וציון מפורש אם העסק פתוח בשבת או סגור. שעות שאינן מדויקות הן התלונה השכיחה ביותר מצד לקוחות.', tag: 'עדכון חודשי' }
+      ] },
+      { head: 'כללי מחירים', paras: [
+        'המחיר בפרופיל צריך להיות המחיר שנגבה בפועל מלקוח חדש, לפני מע״מ, באותו סניף. אם יש הבדל בין סניפים — נדרש פרופיל לכל סניף.',
+        'מותר להציג טווח או מחיר "מ־", בתנאי שהרצפה אמיתית וזמינה: אם אין בפועל טיפול במחיר הזה, זה מחיר מטעה. בטיפולי סדרה יש לציין את מספר המפגשים שהמחיר מכסה.'
+      ], rules: [
+        { ok: true, tag: 'מותר', body: 'מחיר לפי יחידה או לפי מ״ל, כל עוד מצוין מה נכלל.' },
+        { ok: false, tag: 'אסור', body: '"מ־₪99" כשאין בפועל טיפול ב־₪99.' },
+        { ok: true, tag: 'מותר', body: 'מבצע היכרות, עם תאריך תחילה וסיום מוצהרים.' },
+        { ok: false, tag: 'אסור', body: 'מחיר שכולל מע״מ בפרופיל שמציג את השאר בלעדיו.' }
+      ], noteTitle: 'חשבונית ותשלומים.', note: 'העסק מנפיק חשבונית מס על הטיפול. אם אתם מציעים פריסה לתשלומים ללא ריבית — סמנו זאת בפרופיל; זה שדה נפרד, והוא מוצג ללקוח לצד המחיר.' },
+      { head: 'תמונות וניסוח', paras: [
+        'התמונות בפרופיל צריכות להיות של המקום, של הצוות או של עבודה שבוצעה בעסק. תמונות סטוק מוסרות. תמונות "לפני ואחרי" מותרות רק אם צולמו בעסק, באותם תנאי תאורה, ובלי עריכה שמשנה את התוצאה.',
+        'בניסוח: אין להבטיח תוצאה, אין להשתמש בלשון שמייצרת בושה ביחס לגוף, ואין להציג טיפול אסתטי כהכרחי או כרפואי כשהוא אינו כזה.'
+      ] },
+      { head: 'ערעור', paras: [
+        'הודעת השעיה או הסרה נשלחת בכתב ומפרטת את הסעיף שהופר ואת הראיה. לעסק יש 14 יום להגיב, והתגובה נבדקת על ידי מי שלא קיבל את ההחלטה המקורית.',
+        'ב־2026 הוגשו 31 ערעורים; 9 התקבלו והפרופיל הוחזר, 22 נדחו. כשערעור מתקבל אנחנו מציינים זאת בכתב ומחזירים את הפרופיל לרשימה באותו יום.'
+      ], noteTitle: 'אין קשר בין פרסום להחלטות.', note: 'עסק מפרסם אינו מקבל יחס שונה באכיפה, וביטול פרסום אינו משפיע על הרישום. האכיפה מתבצעת על ידי מי שאינו בקשר עם המפרסמים.' }
+    ]
+  },
+  {
+    key: 'sponsorship', name: 'מידע על פרסום', kicker: 'פרסום באינדקס',
+    title: 'מה אפשר לקנות, ומה לא',
+    dek: 'באינדקס יש שני דברים בתשלום: רישום עסק, ופרסום ממומן שמסומן בגלוי. דירוג, אזכור במדריכים והסרת ביקורות אינם למכירה — בשום מחיר. כאן הפירוט המלא, כולל מחירים.',
+    stats: [['מחיר רישום', '₪149'], ['מקומות ממומנים בעמוד', 'עד 2'], ['משקל התשלום בדירוג', '0%'], ['ביטול', '30 יום']],
+    aside: { title: 'רוצים לפרסם?', body: 'זמינות המקומות הממומנים מוגבלת לפי עיר ותחום. נחזור אליכם עם מה שפנוי באזור שלכם.', label: 'בקשת פרסום', href: '/contact' },
+    cta: { title: 'רוצים לבדוק זמינות?', body: 'ספרו לנו באיזו עיר ובאיזה תחום, ונחזור עם המקומות הפנויים והמחיר המדויק.', label: 'בקשת פרסום', href: '/contact' },
+    sections: [
+      { head: 'מה למכירה ומה לא', rules: [
+        { ok: true, tag: 'למכירה', body: 'רישום עסק: פרופיל מלא עם מחירים, שעות וקישורי יצירת קשר.' },
+        { ok: false, tag: 'לא למכירה', body: 'מקום בדירוג האורגני, או שינוי סדר התוצאות.' },
+        { ok: true, tag: 'למכירה', body: 'כרטיס ממומן, מסומן "ממומן" ומופרד מהרשימה האורגנית.' },
+        { ok: false, tag: 'לא למכירה', body: 'אזכור במדריך עריכתי, ראיון, או המלצה של הצוות.' },
+        { ok: true, tag: 'למכירה', body: 'דיווח חודשי על חשיפות והקלקות לכרטיס הממומן שלכם.' },
+        { ok: false, tag: 'לא למכירה', body: 'הסרת ביקורת שלילית, או הסרת מתחרה מהעמוד.' }
+      ] },
+      { head: 'מחירים', paras: ['כל המחירים בשקלים, לחודש, לא כולל מע״מ. חיוב חודשי בכרטיס אשראי או בהעברה, וחשבונית מס נשלחת אוטומטית.'], plans: true,
+        noteTitle: 'זמינות.', note: 'בכל עמוד עיר יש עד שני מקומות ממומנים, ובעמוד תחום ארצי עד שלושה. כשהמקומות מלאים נכנסים לתור המתנה — אין הגדלה של מספר המקומות בתשלום נוסף.' },
+      { head: 'איך מסומן פרסום', paras: ['תג "ממומן" מוצג על הכרטיס עצמו, בניגודיות מלאה, ובלי תלות במיקום בעמוד. לקוח שמסנן או מסדר את התוצאות רואה את הכרטיס הממומן מחוץ לרשימה הממוינת.'], label: true },
+      { head: 'שאלות נפוצות', faq: true }
+    ]
+  }
+];
+
+class Component extends DCLogic {
+  /* Breakpoints live in CSS custom properties (see <helmet>), never in JS. */
+  state = { menu: null, megaIndex: 0, mobileOpen: false, view: null, faq: 0 };
+  renderVals() {
+    const s = this.state;
+    const locOpen = s.menu === 'loc';
+    const megaRegion = REGIONS[Math.min(s.megaIndex, REGIONS.length - 1)];
+    const cityCount = c => 4 + (c.length * 7) % 23;
+    const viewKey = s.view ?? this.props.view ?? 'standards';
+    const view = VIEWS.find(v => v.key === viewKey) || VIEWS[0];
+
+    const mark = ok => ({
+      mark: ok ? '✓' : '✕',
+      dot: ok ? '#0B7A87' : '#8A96A3',
+      border: ok ? '#CDEFF3' : '#E6E6E6',
+      bg: ok ? '#F0FAFB' : '#FAFBFB',
+      tagColor: ok ? '#0B7A87' : '#5B6B7B'
+    });
+
+    const sections = view.sections.map((sec, i) => ({
+      id: `s-${i + 1}`, headId: `h-s${i + 1}`, num: String(i + 1).padStart(2, '0'),
+      head: sec.head, paras: sec.paras || [],
+      hasReqs: !!sec.reqs, reqs: (sec.reqs || []).map(r => Object.assign({ name: r.name, body: r.body, tag: r.tag }, mark(r.ok))),
+      hasRules: !!sec.rules, rules: (sec.rules || []).map(r => Object.assign({ tag: r.tag, body: r.body }, mark(r.ok))),
+      hasTable: false,
+      hasPlans: !!sec.plans,
+      hasLabel: !!sec.label,
+      hasFaq: !!sec.faq,
+      hasNote: !!sec.note, noteTitle: sec.noteTitle || '', note: sec.note || ''
+    }));
+
+    return {
+      go: e => { if (e) e.preventDefault(); },
+      onKey: e => { if (e.key === 'Escape') this.setState({ menu: null, mobileOpen: false }); },
+
+      showMega: locOpen,
+      locOpen, locBg: locOpen ? '#F0FAFB' : 'transparent', locColor: locOpen ? '#0B7A87' : '#0C243E',
+      toggleLocations: () => this.setState(st => ({ menu: st.menu === 'loc' ? null : 'loc', megaIndex: 0 })),
+      mobileOpen: s.mobileOpen,
+      toggleMobile: () => this.setState(st => ({ mobileOpen: !st.mobileOpen })),
+      leftItems: REGIONS.map((r, i) => {
+        const on = i === s.megaIndex;
+        return { name: r.name, bg: on ? '#F0FAFB' : 'transparent', bar: on ? '#14B3C6' : 'transparent', weight: on ? 700 : 500, select: () => { if (s.megaIndex !== i) this.setState({ megaIndex: i }); } };
+      }),
+      megaTitle: `ערים באזור ${megaRegion.name}`,
+      megaAllHref: `/${megaRegion.slug}`,
+      megaLinks: megaRegion.cities.map(c => ({ name: c, count: String(cityCount(c)), href: `/${megaRegion.slug}/${c}` })),
+
+      views: VIEWS.map(v => {
+        const on = v.key === view.key;
+        return { name: v.name, on, weight: on ? 700 : 500, color: on ? '#0C243E' : '#5B6B7B',
+          line: on ? '#0C243E' : 'transparent',
+          pick: () => this.setState({ view: v.key, faq: 0 }),
+          pickClose: () => this.setState({ view: v.key, faq: 0, mobileOpen: false }) };
+      }),
+      viewName: view.name,
+      kicker: view.kicker, title: view.title, dek: view.dek,
+      heroStats: view.stats.map(st => ({ label: st[0], value: st[1],
+        /* Hebrew-carrying values must stay RTL — dir="ltr" would reorder "30 יום". */
+        dir: /[\u0590-\u05FF]/.test(st[1]) ? 'rtl' : 'ltr' })),
+      showTable: view.key === 'standards',
+      tableNum: String(view.sections.length + 1).padStart(2, '0'),
+      toc: view.sections.map((sec, i) => ({ name: sec.head, anchor: `#s-${i + 1}`, num: String(i + 1).padStart(2, '0') }))
+        .concat(view.key === 'standards' ? [{ name: 'מה מוביל להסרה', anchor: '#s-removal', num: String(view.sections.length + 1).padStart(2, '0') }] : []),
+      sections,
+
+      asideTitle: view.aside.title, asideBody: view.aside.body, asideLabel: view.aside.label, asideHref: view.aside.href,
+      ctaTitle: view.cta.title, ctaBody: view.cta.body, ctaLabel: view.cta.label, ctaHref: view.cta.href,
+
+      tableHead: TABLE.head, tableRows: TABLE.rows, tableCaption: TABLE.caption,
+      plans: PLANS,
+      faqs: FAQS.map(([q, a], i) => {
+        const open = s.faq === i;
+        return { q, a, open, rot: open ? '45deg' : '0deg', bg: open ? '#FAFBFB' : '#ffffff', toggle: () => this.setState({ faq: open ? -1 : i }) };
+      }),
+
+      footGroups: [
+        { name: 'אזורים', links: REGIONS.slice(0, 5).map(r => ({ name: r.name, href: `/${r.slug}` })) },
+        { name: 'תחומי טיפול', links: CATS.map(c => ({ name: c.name, href: `/treatments/${c.slug}` })) },
+        { name: 'לעסקים', links: [{ name: 'רישום עסק', href: '/for-business' }, { name: 'אישור בעלות', href: '/for-business/claim' }, { name: 'תקן הרישום', href: '/listing-standards' }, { name: 'מידע על פרסום', href: '/sponsorship' }] },
+        { name: 'החברה', links: [{ name: 'אודות', href: '/about' }, { name: 'מרכז עזרה', href: '/help' }, { name: 'מדיניות עריכה', href: '/about/editorial' }, { name: 'מדיניות פרטיות', href: '/privacy' }, { name: 'הצהרת נגישות', href: '/accessibility' }] }
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

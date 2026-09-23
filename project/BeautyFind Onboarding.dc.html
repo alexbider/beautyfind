@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="הצטרפות עסק ל־BeautyFind — שבעה שלבים: פרטי העסק, קטגוריות, אחריות רפואית, טיפולים ומחירים, שעות, תמונות ואימות.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#F6F8F9}
+  *{box-sizing:border-box}
+  :root{--ob-shell:minmax(0,1fr);--ob-two:minmax(0,1fr);--ob-cat:repeat(2,minmax(0,1fr));--ob-pad:16px;--ob-gal:repeat(2,minmax(0,1fr))}
+  @media (min-width:560px){:root{--ob-two:repeat(2,minmax(0,1fr));--ob-pad:22px;--ob-cat:repeat(3,minmax(0,1fr));--ob-gal:repeat(3,minmax(0,1fr))}}
+  @media (min-width:1020px){:root{--ob-shell:minmax(0,1fr) 300px;--ob-cat:repeat(4,minmax(0,1fr))}}
+  @media (min-width:1020px) and (min-height:700px){[data-ob-side]{position:sticky;top:18px}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes obFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes obPop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#F6F8F9;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+
+  <header style="background:#fff;border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1200px;margin:0 auto;padding:12px var(--ob-pad);display:flex;align-items:center;gap:13px;flex-wrap:wrap">
+      <a href="./BeautyFind Homepage.dc.html" dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:21px;letter-spacing:-0.01em;color:#0C243E;text-decoration:none">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6">.</span></a>
+      <span style="flex:1;min-width:0;display:flex;flex-direction:column">
+        <span style="font-size:14px;font-weight:700">רישום עסק למדריך</span>
+        <span style="font-size:12px;color:#8A96A3">{{ progressLine }}</span>
+      </span>
+      <button type="button" onClick="{{ saveExit }}" style="flex:none;min-height:42px;padding:0 13px;border:1px solid #E6E6E6;border-radius:11px;background:#fff;font:inherit;font-size:14px;font-weight:700;color:#3E4F62;cursor:pointer" style-hover="border-color:#0C243E">שמירה ויציאה</button>
+    </div>
+    <div aria-hidden="true" style="height:4px;background:#EDEFF2">
+      <span style="display:block;height:100%;width:{{ progressPct }};background:#0B7A87;transition:width .22s"></span>
+    </div>
+  </header>
+
+  <div style="max-width:1200px;margin:0 auto;padding:clamp(16px,2.4vw,28px) var(--ob-pad) 60px">
+
+    <sc-if value="{{ notDone }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;grid-template-columns:var(--ob-shell);gap:clamp(14px,1.8vw,20px);align-items:start">
+
+        <main style="min-width:0;display:flex;flex-direction:column;gap:13px">
+
+          <div>
+            <span style="display:inline-block;margin-bottom:6px;font-size:12.5px;font-weight:700;color:#0B7A87">{{ stepBadge }}</span>
+            <h1 style="margin:0 0 4px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(23px,3vw,31px);font-weight:500;letter-spacing:-0.015em">{{ stepTitle }}</h1>
+            <p style="margin:0;max-width:58ch;font-size:15px;color:#3E4F62;text-wrap:pretty">{{ stepSub }}</p>
+          </div>
+
+          <sc-if value="{{ isBasics }}" hint-placeholder-val="{{ true }}">
+            <section style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px);animation:obFade .22s ease both">
+              <div style="display:grid;grid-template-columns:var(--ob-two);gap:11px">
+                <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">שם מסחרי
+                  <input value="{{ f.name }}" onChange="{{ onName }}" placeholder="השם שהלקוחות מכירות" style="min-height:46px;padding:0 12px;border:1px solid {{ e.name }};border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">שם משפטי
+                  <input value="{{ f.legal }}" onChange="{{ onLegal }}" placeholder="כפי שמופיע ברשם" style="min-height:46px;padding:0 12px;border:1px solid #D4D4D4;border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">ח״פ או עוסק מורשה
+                  <input value="{{ f.hp }}" onChange="{{ onHp }}" dir="ltr" inputMode="numeric" style="min-height:46px;padding:0 12px;border:1px solid {{ e.hp }};border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none;text-align:right">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">טלפון
+                  <input value="{{ f.phone }}" onChange="{{ onPhone }}" dir="ltr" inputMode="tel" placeholder="09-000-0000" style="min-height:46px;padding:0 12px;border:1px solid {{ e.phone }};border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none;text-align:right">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">וואטסאפ לפניות
+                  <input value="{{ f.wa }}" onChange="{{ onWa }}" dir="ltr" inputMode="tel" placeholder="052-000-0000" style="min-height:46px;padding:0 12px;border:1px solid #D4D4D4;border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none;text-align:right">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">דוא״ל
+                  <input value="{{ f.email }}" onChange="{{ onEmail }}" dir="ltr" inputMode="email" style="min-height:46px;padding:0 12px;border:1px solid {{ e.email }};border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none;text-align:right">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">כתובת
+                  <input value="{{ f.address }}" onChange="{{ onAddress }}" placeholder="רחוב, מספר" style="min-height:46px;padding:0 12px;border:1px solid {{ e.address }};border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">עיר
+                  <input value="{{ f.city }}" onChange="{{ onCity }}" list="ob-cities" style="min-height:46px;padding:0 12px;border:1px solid {{ e.city }};border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none">
+                </label>
+              </div>
+              <datalist id="ob-cities"><sc-for list="{{ cities }}" as="ct" hint-placeholder-count="6"><option value="{{ ct }}"></option></sc-for></datalist>
+
+              <div style="margin-top:14px">
+                <span style="display:block;margin-bottom:7px;font-size:13px;font-weight:700">אזור</span>
+                <div role="group" aria-label="אזור" style="display:flex;gap:7px;flex-wrap:wrap">
+                  <sc-for list="{{ regions }}" as="rg" hint-placeholder-count="7">
+                    <button type="button" aria-pressed="{{ rg.on }}" onClick="{{ rg.pick }}" style="min-height:40px;padding:0 13px;border:1px solid {{ rg.border }};border-radius:10px;background:{{ rg.bg }};font:inherit;font-size:13.5px;font-weight:600;color:{{ rg.color }};cursor:pointer">{{ rg.name }}</button>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="margin-top:14px">
+                <span style="display:block;margin-bottom:7px;font-size:13px;font-weight:700">סוג העסק</span>
+                <div style="display:flex;flex-direction:column;gap:9px">
+                  <sc-for list="{{ bizTypes }}" as="bt" hint-placeholder-count="3">
+                    <button type="button" aria-pressed="{{ bt.on }}" onClick="{{ bt.pick }}" style="display:flex;align-items:flex-start;gap:11px;padding:12px 13px;border:1px solid {{ bt.border }};border-radius:12px;background:{{ bt.bg }};font:inherit;text-align:right;cursor:pointer">
+                      <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;margin-top:2px;border:1.5px solid {{ bt.dotBorder }};border-radius:50%;background:#fff">
+                        <sc-if value="{{ bt.checked }}" hint-placeholder-val="{{ false }}"><span style="display:block;width:11px;height:11px;border-radius:50%;background:#0B7A87"></span></sc-if>
+                      </span>
+                      <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                        <span style="font-size:14.5px;font-weight:700">{{ bt.name }}</span>
+                        <span style="font-size:12.5px;color:#5B6B7B;text-wrap:pretty">{{ bt.note }}</span>
+                      </span>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+            </section>
+          </sc-if>
+
+          <sc-if value="{{ isCats }}" hint-placeholder-val="{{ false }}">
+            <section style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px);animation:obFade .22s ease both">
+              <div style="display:grid;grid-template-columns:var(--ob-cat);gap:9px">
+                <sc-for list="{{ cats }}" as="ca" hint-placeholder-count="14">
+                  <button type="button" aria-pressed="{{ ca.on }}" onClick="{{ ca.pick }}" style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-height:74px;padding:11px 12px;border:1px solid {{ ca.border }};border-radius:12px;background:{{ ca.bg }};font:inherit;text-align:right;cursor:pointer">
+                    <span style="font-size:14px;font-weight:700;color:{{ ca.color }};text-wrap:pretty">{{ ca.name }}</span>
+                    <sc-if value="{{ ca.medical }}" hint-placeholder-val="{{ false }}">
+                      <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:7px;background:{{ ca.tagBg }};font-size:11px;font-weight:700;color:{{ ca.tagColor }}">פעולה רפואית</span>
+                    </sc-if>
+                  </button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ hasMedical }}" hint-placeholder-val="{{ false }}">
+                <p style="margin:14px 0 0;padding:12px 14px;border:1px solid #F3D9BE;border-radius:12px;background:#FDF1E7;font-size:13.5px;font-weight:600;color:#9A5B15;text-wrap:pretty">בחרתם קטגוריות שהן פעולה רפואית. בשלב הבא תידרשו להצהיר על רופא/ה אחראי/ת — קוסמטיקאית אינה מוסמכת להזריק.</p>
+              </sc-if>
+            </section>
+          </sc-if>
+
+          <sc-if value="{{ isMedical }}" hint-placeholder-val="{{ false }}">
+            <section style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px);animation:obFade .22s ease both">
+              <sc-if value="{{ hasMedical }}" hint-placeholder-val="{{ true }}">
+                <div style="padding:12px 14px;margin-bottom:14px;border:1px solid #CDEFF3;border-radius:12px;background:#F0FAFB">
+                  <p style="margin:0;font-size:13.5px;color:#3E4F62;text-wrap:pretty">הקטגוריות שבחרתם — {{ medicalList }} — מחייבות רופא/ה. הפרטים יוצגו בכרטיס תחת "אחריות רפואית".</p>
+                </div>
+                <div style="display:grid;grid-template-columns:var(--ob-two);gap:11px">
+                  <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">שם הרופא/ה האחראי/ת
+                    <input value="{{ f.docName }}" onChange="{{ onDocName }}" style="min-height:46px;padding:0 12px;border:1px solid {{ e.docName }};border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none">
+                  </label>
+                  <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">מספר רישיון
+                    <input value="{{ f.docLic }}" onChange="{{ onDocLic }}" dir="ltr" placeholder="34-82115" style="min-height:46px;padding:0 12px;border:1px solid {{ e.docLic }};border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none;text-align:right">
+                  </label>
+                  <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">התמחות
+                    <input value="{{ f.docSpec }}" onChange="{{ onDocSpec }}" placeholder="רפואת עור, אסתטיקה רפואית" style="min-height:46px;padding:0 12px;border:1px solid #D4D4D4;border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none">
+                  </label>
+                  <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">נוכחות בקליניקה
+                    <input value="{{ f.docPresence }}" onChange="{{ onDocPresence }}" placeholder="בכל טיפול הזרקה" style="min-height:46px;padding:0 12px;border:1px solid #D4D4D4;border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none">
+                  </label>
+                </div>
+                <div style="margin-top:14px">
+                  <span style="display:block;margin-bottom:7px;font-size:13px;font-weight:700">העלאת רישיון</span>
+                  <div style="position:relative;width:100%;max-width:340px;aspect-ratio:16/10;max-height:200px;background:#F6F8F9;border:1px dashed #D4D4D4;border-radius:13px;overflow:hidden">
+                    <image-slot id="ob-license" shape="rounded" radius="12" placeholder="צילום או סריקה של הרישיון"></image-slot>
+                  </div>
+                  <p style="margin:8px 0 0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">המסמך נבדק על ידי צוות המערכת ואינו מוצג בכרטיס הפומבי.</p>
+                </div>
+              </sc-if>
+              <sc-if value="{{ noMedical }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:13px 15px;margin-bottom:14px;border:1px solid #CFE3CF;border-radius:12px;background:#EAF3EA">
+                  <p style="margin:0;font-size:13.5px;font-weight:600;color:#3B6B3F;text-wrap:pretty">הקטגוריות שבחרתם אינן פעולות רפואיות, ולכן אין צורך ברופא/ה. בכרטיס יופיע "איש מקצוע אחראי".</p>
+                </div>
+                <div style="display:grid;grid-template-columns:var(--ob-two);gap:11px">
+                  <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">שם איש/אשת המקצוע האחראי/ת
+                    <input value="{{ f.proName }}" onChange="{{ onProName }}" style="min-height:46px;padding:0 12px;border:1px solid {{ e.proName }};border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none">
+                  </label>
+                  <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">הכשרה או תעודה
+                    <input value="{{ f.proCert }}" onChange="{{ onProCert }}" placeholder="קוסמטיקאית רפואית · מכון וייצמן" style="min-height:46px;padding:0 12px;border:1px solid #D4D4D4;border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none">
+                  </label>
+                  <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">שנות ניסיון
+                    <input value="{{ f.proYears }}" onChange="{{ onProYears }}" dir="ltr" inputMode="numeric" style="min-height:46px;padding:0 12px;border:1px solid #D4D4D4;border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none;text-align:right">
+                  </label>
+                </div>
+              </sc-if>
+            </section>
+          </sc-if>
+
+          <sc-if value="{{ isServices }}" hint-placeholder-val="{{ false }}">
+            <section style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px);animation:obFade .22s ease both">
+              <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:13px">
+                <sc-for list="{{ svcRows }}" as="sv" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:flex-end;gap:9px;flex-wrap:wrap;padding:12px 13px;border:1px solid #EDEFF2;border-radius:12px;background:#FAFBFB">
+                    <label style="flex:1;min-width:150px;display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:600;color:#5B6B7B">שם הטיפול
+                      <input value="{{ sv.name }}" onChange="{{ sv.onName }}" style="min-height:42px;padding:0 11px;border:1px solid #D4D4D4;border-radius:10px;font:inherit;font-size:14.5px;color:#0C243E;background:#fff;outline:none">
+                    </label>
+                    <label style="flex:none;display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:600;color:#5B6B7B">מחיר ₪
+                      <input value="{{ sv.price }}" onChange="{{ sv.onPrice }}" dir="ltr" inputMode="numeric" style="width:92px;min-height:42px;padding:0 10px;border:1px solid #D4D4D4;border-radius:10px;font:inherit;font-size:14.5px;color:#0C243E;background:#fff;outline:none;text-align:right;font-variant-numeric:tabular-nums">
+                    </label>
+                    <label style="flex:none;display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:600;color:#5B6B7B">דקות
+                      <input value="{{ sv.dur }}" onChange="{{ sv.onDur }}" dir="ltr" inputMode="numeric" style="width:78px;min-height:42px;padding:0 10px;border:1px solid #D4D4D4;border-radius:10px;font:inherit;font-size:14.5px;color:#0C243E;background:#fff;outline:none;text-align:right;font-variant-numeric:tabular-nums">
+                    </label>
+                    <button type="button" onClick="{{ sv.remove }}" aria-label="הסרת טיפול" style="flex:none;width:42px;height:42px;border:1px solid #E6E6E6;border-radius:10px;background:#fff;font:inherit;font-size:16px;color:#5B6B7B;cursor:pointer">×</button>
+                  </div>
+                </sc-for>
+              </div>
+              <button type="button" onClick="{{ addSvc }}" style="min-height:44px;padding:0 14px;border:1px dashed #CDEFF3;border-radius:11px;background:#F0FAFB;font:inherit;font-size:14px;font-weight:700;color:#0B7A87;cursor:pointer">הוספת טיפול</button>
+              <p style="margin:12px 0 0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">מחירים בשקלים, כולל מע״מ. מספיקים שלושה טיפולים כדי לפרסם — אפשר להשלים אחר כך בלוח הבקרה. שקיפות מחיר היא הסיבה מספר אחת שלקוחה פונה.</p>
+            </section>
+          </sc-if>
+
+          <sc-if value="{{ isHours }}" hint-placeholder-val="{{ false }}">
+            <section style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px);animation:obFade .22s ease both">
+              <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ hours }}" as="hr" hint-placeholder-count="7">
+                  <li style="display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid #EDEFF2;border-radius:11px;background:{{ hr.rowBg }}">
+                    <span style="flex:1;min-width:0;font-size:14px;font-weight:700">{{ hr.day }}</span>
+                    <input value="{{ hr.from }}" onChange="{{ hr.onFrom }}" disabled="{{ hr.closed }}" dir="ltr" aria-label="שעת פתיחה" style="width:72px;min-height:40px;padding:0 8px;border:1px solid #D4D4D4;border-radius:10px;font:inherit;font-size:14px;color:#0C243E;background:#fff;outline:none;text-align:center;font-variant-numeric:tabular-nums">
+                    <span aria-hidden="true" style="flex:none;color:#8A96A3">–</span>
+                    <input value="{{ hr.to }}" onChange="{{ hr.onTo }}" disabled="{{ hr.closed }}" dir="ltr" aria-label="שעת סגירה" style="width:72px;min-height:40px;padding:0 8px;border:1px solid #D4D4D4;border-radius:10px;font:inherit;font-size:14px;color:#0C243E;background:#fff;outline:none;text-align:center;font-variant-numeric:tabular-nums">
+                    <span style="flex:none;width:40px;font-size:12.5px;font-weight:700;color:#5B6B7B">{{ hr.label }}</span>
+                    <button type="button" role="switch" aria-checked="{{ hr.pressed }}" aria-label="פתוח או סגור" onClick="{{ hr.toggle }}" style="flex:none;width:44px;height:26px;border:0;border-radius:13px;background:{{ hr.knobBg }};cursor:pointer;padding:0;position:relative">
+                      <span aria-hidden="true" style="position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:#fff;transform:{{ hr.knobX }};transition:transform .16s"></span>
+                    </button>
+                  </li>
+                </sc-for>
+              </ul>
+              <p style="margin:12px 0 0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">לקוחות מסננות לפי "פתוח עכשיו" — שעות לא מדויקות עולות בפניות שלא נענות.</p>
+            </section>
+          </sc-if>
+
+          <sc-if value="{{ isPhotos }}" hint-placeholder-val="{{ false }}">
+            <section style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px);animation:obFade .22s ease both">
+              <div style="display:grid;grid-template-columns:var(--ob-two);gap:13px;margin-bottom:15px">
+                <div style="min-width:0">
+                  <span style="display:block;margin-bottom:6px;font-size:13px;font-weight:700">תמונת כיסוי</span>
+                  <div style="position:relative;width:100%;aspect-ratio:16/9;max-height:230px;background:#F0FAFB;border:1px dashed #CDEFF3;border-radius:13px;overflow:hidden">
+                    <image-slot id="ob-cover" shape="rounded" radius="12" placeholder="חזית או חדר טיפולים · 1600×900"></image-slot>
+                  </div>
+                </div>
+                <div style="min-width:0">
+                  <span style="display:block;margin-bottom:6px;font-size:13px;font-weight:700">לוגו</span>
+                  <div style="position:relative;width:148px;height:148px;background:#F6F8F9;border:1px dashed #D4D4D4;border-radius:18px;overflow:hidden">
+                    <image-slot id="ob-logo" shape="rounded" radius="17" fit="contain" placeholder="לוגו · 600×600"></image-slot>
+                  </div>
+                </div>
+              </div>
+              <span style="display:block;margin-bottom:8px;font-size:13px;font-weight:700">גלריה</span>
+              <div style="display:grid;grid-template-columns:var(--ob-gal);gap:10px">
+                <sc-for list="{{ gallery }}" as="gl" hint-placeholder-count="6">
+                  <div style="min-width:0;position:relative;width:100%;aspect-ratio:4/3;max-height:170px;background:#F6F8F9;border:1px dashed #D4D4D4;border-radius:12px;overflow:hidden">
+                    <image-slot id="{{ gl.slotId }}" shape="rounded" radius="11" placeholder="{{ gl.ph }}"></image-slot>
+                  </div>
+                </sc-for>
+              </div>
+              <p style="margin:12px 0 0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">כרטיס עם תמונות מקבל פי שלושה פניות. תמונות לפני/אחרי מחייבות הסכמה חתומה של הלקוחה — מנוהלת בכרטיס הלקוח, לא כאן.</p>
+            </section>
+          </sc-if>
+
+          <sc-if value="{{ isVerify }}" hint-placeholder-val="{{ false }}">
+            <section style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px);animation:obFade .22s ease both">
+              <dl style="margin:0 0 15px;display:grid;grid-template-columns:118px minmax(0,1fr);gap:9px 12px;font-size:14.5px">
+                <sc-for list="{{ summary }}" as="sm" hint-placeholder-count="6">
+                  <dt style="color:#8A96A3">{{ sm.label }}</dt>
+                  <dd dir="{{ sm.dir }}" style="margin:0;text-align:right;font-weight:{{ sm.weight }};color:{{ sm.color }};text-wrap:pretty">{{ sm.value }}</dd>
+                </sc-for>
+              </dl>
+
+              <h3 style="margin:0 0 10px;padding-top:14px;border-top:1px solid #EDEFF2;font-size:15px;font-weight:700">אישורים לפני שליחה</h3>
+              <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px">
+                <sc-for list="{{ declarations }}" as="dc" hint-placeholder-count="4">
+                  <li>
+                    <button type="button" role="checkbox" aria-checked="{{ dc.on }}" onClick="{{ dc.toggle }}" style="width:100%;display:flex;align-items:flex-start;gap:11px;padding:0;border:0;background:transparent;font:inherit;text-align:right;cursor:pointer">
+                      <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;margin-top:1px;border:1.5px solid {{ dc.border }};border-radius:7px;background:{{ dc.bg }};color:#fff">
+                        <sc-if value="{{ dc.checked }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg></sc-if>
+                      </span>
+                      <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                        <span style="font-size:14px;font-weight:600;text-wrap:pretty">{{ dc.label }}</span>
+                        <span style="font-size:12px;color:#8A96A3;text-wrap:pretty">{{ dc.note }}</span>
+                      </span>
+                    </button>
+                  </li>
+                </sc-for>
+              </ul>
+            </section>
+          </sc-if>
+
+          <sc-if value="{{ errorOn }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:0;padding:12px 14px;border:1px solid #F0C9C4;border-radius:12px;background:#FDEDEC;font-size:14px;font-weight:700;color:#A33A31;text-wrap:pretty">{{ errorText }}</p>
+          </sc-if>
+
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <sc-if value="{{ canBack }}" hint-placeholder-val="{{ false }}">
+              <button type="button" onClick="{{ back }}" style="flex:none;min-height:50px;padding:0 16px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font:inherit;font-size:15px;font-weight:600;color:#3E4F62;cursor:pointer">חזרה</button>
+            </sc-if>
+            <button type="button" onClick="{{ next }}" style="flex:1;min-width:200px;min-height:50px;padding:0 18px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:16px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#0C243E">{{ nextLabel }}</button>
+            <sc-if value="{{ canSkip }}" hint-placeholder-val="{{ false }}">
+              <button type="button" onClick="{{ skip }}" style="flex:none;min-height:50px;padding:0 13px;border:0;border-radius:12px;background:transparent;font:inherit;font-size:14.5px;font-weight:700;color:#0B7A87;cursor:pointer">אשלים אחר כך</button>
+            </sc-if>
+          </div>
+          <p style="margin:0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">{{ nextHint }}</p>
+        </main>
+
+        <aside data-ob-side style="min-width:0">
+          <div style="background:#fff;border:1px solid #E6E6E6;border-radius:16px;padding:12px;margin-bottom:12px">
+            <ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px">
+              <sc-for list="{{ rail }}" as="rl" hint-placeholder-count="7">
+                <li>
+                  <button type="button" onClick="{{ rl.go }}" disabled="{{ rl.locked }}" aria-current="{{ rl.current }}" style="width:100%;display:flex;align-items:center;gap:10px;min-height:44px;padding:0 11px;border:0;border-radius:10px;background:{{ rl.bg }};font:inherit;text-align:right;cursor:{{ rl.cursor }}">
+                    <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:{{ rl.dotBg }};color:{{ rl.dotColor }};font-size:12px;font-weight:700">{{ rl.badge }}</span>
+                    <span style="flex:1;min-width:0;font-size:13.5px;font-weight:700;color:{{ rl.color }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ rl.name }}</span>
+                  </button>
+                </li>
+              </sc-for>
+            </ol>
+          </div>
+          <div style="background:#fff;border:1px solid #E6E6E6;border-radius:16px;padding:14px 16px">
+            <h2 style="margin:0 0 9px;font-size:14.5px;font-weight:700">{{ tipTitle }}</h2>
+            <p style="margin:0 0 11px;font-size:13.5px;color:#3E4F62;text-wrap:pretty">{{ tipBody }}</p>
+            <p style="margin:0;padding-top:11px;border-top:1px solid #EDEFF2;font-size:12.5px;color:#8A96A3;text-wrap:pretty">הקריטריונים המלאים ב־<a href="./BeautyFind Standards.dc.html">תקן הרישום</a>. שאלות — <a href="./BeautyFind Contact.dc.html">צוות ההצטרפות</a>.</p>
+          </div>
+        </aside>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+      <div style="max-width:640px;background:#fff;border:1px solid #CDEFF3;border-radius:18px;padding:clamp(20px,2.6vw,32px);animation:obPop .2s ease both">
+        <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;margin-bottom:14px;border-radius:50%;background:#F0FAFB;color:#0B7A87">
+          <svg width="27" height="27" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg>
+        </span>
+        <h1 style="margin:0 0 6px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(23px,3vw,30px);font-weight:500;letter-spacing:-0.014em">הבקשה נשלחה לבדיקה</h1>
+        <p style="margin:0 0 16px;font-size:15px;color:#3E4F62;text-wrap:pretty">{{ doneBody }}</p>
+        <ol style="list-style:none;margin:0 0 18px;padding:0;display:flex;flex-direction:column;gap:12px">
+          <sc-for list="{{ nextSteps }}" as="ns" hint-placeholder-count="3">
+            <li style="display:flex;align-items:flex-start;gap:11px">
+              <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-top:1px;border-radius:50%;background:#F0FAFB;color:#0B7A87;font-size:12.5px;font-weight:700">{{ ns.n }}</span>
+              <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                <span style="font-size:14.5px;font-weight:700">{{ ns.name }}</span>
+                <span style="font-size:13px;color:#5B6B7B;text-wrap:pretty">{{ ns.note }}</span>
+              </span>
+            </li>
+          </sc-for>
+        </ol>
+        <dl style="margin:0 0 18px;padding:13px 15px;background:#FAFBFB;border:1px solid #EDEFF2;border-radius:12px;display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px 12px;font-size:14px">
+          <dt style="color:#8A96A3">אסמכתא</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">{{ ref }}</dd>
+          <dt style="color:#8A96A3">זמן מענה</dt><dd style="margin:0;font-weight:600">עד 2 ימי עסקים</dd>
+        </dl>
+        <div style="display:flex;gap:9px;flex-wrap:wrap">
+          <a href="./BeautyFind Dashboard.dc.html" style="min-height:48px;display:inline-flex;align-items:center;padding:0 17px;border-radius:12px;background:#0B7A87;font-size:15.5px;font-weight:700;color:#fff;text-decoration:none">ללוח הבקרה</a>
+          <a href="./BeautyFind Standards.dc.html" style="min-height:48px;display:inline-flex;align-items:center;padding:0 15px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font-size:15.5px;font-weight:600;color:#3E4F62;text-decoration:none">תקן הרישום</a>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:fixed;bottom:18px;right:50%;transform:translateX(50%);z-index:40;max-width:min(90vw,440px);padding:12px 17px;border-radius:13px;background:#0C243E;color:#fff;font-size:14px;font-weight:600;box-shadow:0 12px 30px rgba(12,36,62,.28);animation:obPop .16s ease both;text-wrap:pretty">{{ toastText }}</div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1200,&quot;height&quot;:940}}">
+const STEPS = [
+  { key: 'basics', name: 'פרטי העסק', title: 'נתחיל בפרטים הבסיסיים', sub: 'המידע הזה מופיע בכרטיס הפומבי, חוץ מהח״פ שמשמש לאימות בלבד.' },
+  { key: 'cats', name: 'קטגוריות', title: 'אילו טיפולים אתם מבצעים?', sub: 'בחרו את הקטגוריות שאתם מבצעים בפועל. הן קובעות באילו חיפושים תופיעו.' },
+  { key: 'medical', name: 'אחריות מקצועית', title: 'מי אחראי מקצועית?', sub: 'זה השדה שהלקוחות בודקות ראשון, והוא מה שמבדיל בין מדריך אמין לרשימה.' },
+  { key: 'services', name: 'טיפולים ומחירים', title: 'טיפולים ומחירים', sub: 'שלושה טיפולים מספיקים לפרסום. אפשר להוסיף ולערוך בכל זמן בלוח הבקרה.' },
+  { key: 'hours', name: 'שעות פעילות', title: 'מתי אתם פתוחים?', sub: 'ראשון עד שישי, שבת סגור כברירת מחדל. אפשר לשנות כל יום בנפרד.' },
+  { key: 'photos', name: 'תמונות', title: 'תמונות הכרטיס', sub: 'תמונת כיסוי, לוגו וגלריה. אפשר לדלג ולהשלים אחר כך, אבל זה משפיע ישירות על פניות.' },
+  { key: 'verify', name: 'סיכום ואימות', title: 'בדיקה אחרונה ושליחה', sub: 'עברו על הפרטים, אשרו את ההצהרות, ואנחנו נתחיל את האימות.' }
+];
+
+const REGIONS = ['צפון', 'חיפה', 'שרון', 'גוש דן', 'ירושלים', 'שפלה', 'דרום'];
+const CITIES = ['תל אביב', 'רעננה', 'הרצליה', 'נתניה', 'חיפה', 'ירושלים', 'ראשון לציון', 'באר שבע', 'אשדוד', 'כפר סבא'];
+
+const BIZ_TYPES = [
+  ['clinic', 'קליניקה רפואית', 'רופא/ה מבצע/ת טיפולים רפואיים, כולל הזרקות'],
+  ['medspa', 'מדיספא · קליניקה משולבת', 'קוסמטיקה מקצועית לצד טיפולים רפואיים באחריות רופא/ה'],
+  ['cosmetics', 'קוסמטיקה וטיפולי פנים', 'קוסמטיקאית או קוסמטיקאית רפואית, ללא הזרקות']
+];
+
+const CATS = [
+  ['בוטוקס', true], ['מלאנים וחומצה היאלורונית', true], ['מזותרפיה', true], ['הסרת נגעי עור', true],
+  ['הסרת שיער בלייזר', false], ['טיפולי פנים', false], ['פילינג כימי', false], ['מיקרוניידלינג', false],
+  ['מיצוק והידוק', false], ['טיפולי גוף', false], ['איפור קבוע', false], ['עיצוב גבות וריסים', false],
+  ['טיפולי שיער וקרקפת', false], ['ייעוץ אסתטי', false]
+];
+
+const HOURS0 = [
+  ['ראשון', '09:00', '19:00', false], ['שני', '09:00', '19:00', false], ['שלישי', '09:00', '19:00', false],
+  ['רביעי', '09:00', '19:00', false], ['חמישי', '09:00', '20:00', false], ['שישי', '09:00', '13:00', false],
+  ['שבת', '', '', true]
+];
+
+const GALLERY = [
+  { slotId: 'ob-gal-1', ph: 'חדר טיפולים' }, { slotId: 'ob-gal-2', ph: 'פינת המתנה' },
+  { slotId: 'ob-gal-3', ph: 'מכשור' }, { slotId: 'ob-gal-4', ph: 'הצוות' },
+  { slotId: 'ob-gal-5', ph: 'תמונה נוספת' }, { slotId: 'ob-gal-6', ph: 'תמונה נוספת' }
+];
+
+const TIPS = {
+  basics: ['למה אנחנו מבקשים ח״פ', 'הח״פ מאומת מול רשם החברות ואינו מוצג בכרטיס. עסק ללא ח״פ תקף לא מתפרסם — זה מה שמונע מהמדריך להתמלא בעסקים פיקטיביים.'],
+  cats: ['בחרו רק מה שאתם מבצעים', 'קטגוריה שנבחרה ולא מבוצעת בפועל היא עילה להסרה. עדיף ארבע קטגוריות מדויקות מעשר רחבות.'],
+  medical: ['הזרקות הן פעולה רפואית', 'בוטוקס, מלאנים ומזותרפיה מחייבים רופא/ה. קוסמטיקאית אינה מוסמכת להזריק, ואנחנו בודקים את הרישיון מול משרד הבריאות.'],
+  services: ['מחיר גלוי מכניס פניות', 'שקיפות מחיר היא הסיבה הראשונה שלקוחה פונה. טווח מחירים עדיף על "לפי ייעוץ".'],
+  hours: ['שעות מדויקות חוסכות פניות מבוזבזות', 'לקוחות מסננות לפי "פתוח עכשיו". שעות שגויות מייצרות פניות שלא נענות, וזה פוגע בדירוג התגובה שלכם.'],
+  photos: ['תמונות אמיתיות, לא סטוק', 'תמונות סטוק מזוהות ומוסרות. צילום טלפון של חדר נקי ומואר עובד טוב יותר מתמונה כללית מהאינטרנט.'],
+  verify: ['מה קורה אחרי השליחה', 'בודקים ח״פ, רישיון רופא אם נדרש, וכתובת. בדרך כלל תוך יומיים. אם משהו חסר נפנה בוואטסאפ במקום לדחות.']
+};
+
+const DECLARATIONS = [
+  ['accurate', 'כל הפרטים שמסרתי נכונים ומעודכנים', 'פרט שגוי שדווח נבדק בתוך יום עסקים'],
+  ['authorized', 'אני בעל/ת העסק או מוסמך/ת לפעול בשמו', 'נדרש לאימות בעלות על הכרטיס'],
+  ['standards', 'קראתי את תקן הרישום ואני מתחייב/ת לעמוד בו', 'כולל איסור על הבטחת תוצאה ועל הנחה בעד ביקורת'],
+  ['medical', 'טיפולים רפואיים בקליניקה מבוצעים על ידי רופא/ה בלבד', 'חובה כשנבחרו קטגוריות הזרקה']
+];
+
+const NEXT_STEPS = [
+  { n: '1', name: 'אימות פרטים', note: 'בודקים ח״פ, כתובת ורישיון רופא אם נדרש. אם חסר משהו נפנה בוואטסאפ.' },
+  { n: '2', name: 'פרסום הכרטיס', note: 'עם האישור הכרטיס עולה לאוויר ומתחיל להופיע בחיפושים באזור שלכם.' },
+  { n: '3', name: 'חיבור היומן', note: 'אפשר לחבר יומן קיים או להשתמש ביומן שלנו, כדי שלקוחות יקבעו תור ישירות.' }
+];
+
+class Component extends DCLogic {
+  state = {
+    step: 0, done: false, tried: false, ref: '',
+    f: { name: '', legal: '', hp: '', phone: '', wa: '', email: '', address: '', city: '', region: '', bizType: '',
+         docName: '', docLic: '', docSpec: '', docPresence: '', proName: '', proCert: '', proYears: '' },
+    cats: {},
+    svcs: [{ id: 1, name: '', price: '', dur: '' }, { id: 2, name: '', price: '', dur: '' }, { id: 3, name: '', price: '', dur: '' }],
+    hours: HOURS0.map(h => h.slice()),
+    decl: {}, toast: ''
+  };
+
+  componentWillUnmount() { clearTimeout(this._t); }
+  flash(t) { clearTimeout(this._t); this.setState({ toast: t }); this._t = setTimeout(() => this.setState({ toast: '' }), 3000); }
+
+  renderVals() {
+    const s = this.state;
+    const teal = '#0B7A87';
+    const line = '#E6E6E6';
+    const bad = '#D98A80';
+    const st = STEPS[s.step];
+    const setF = k => e => { const v = e.target.value; this.setState(stt => ({ f: Object.assign({}, stt.f, { [k]: v }) })); };
+
+    const pickedCats = CATS.filter(c => s.cats[c[0]]);
+    const medCats = pickedCats.filter(c => c[1]);
+    const hasMedical = medCats.length > 0;
+
+    const nameOk = s.f.name.trim().length >= 2;
+    const hpOk = /^\d{9}$/.test(s.f.hp.replace(/\D/g, ''));
+    const phoneOk = /^0\d{1,2}[- ]?\d{3}[- ]?\d{4}$/.test(s.f.phone.trim());
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s.f.email.trim());
+    const addressOk = s.f.address.trim().length >= 4;
+    const cityOk = s.f.city.trim().length >= 2;
+    const regionOk = !!s.f.region;
+    const typeOk = !!s.f.bizType;
+    const basicsOk = nameOk && hpOk && phoneOk && emailOk && addressOk && cityOk && regionOk && typeOk;
+
+    const catsOk = pickedCats.length > 0;
+    const medOk = hasMedical
+      ? (s.f.docName.trim().length >= 2 && s.f.docLic.trim().length >= 4)
+      : s.f.proName.trim().length >= 2;
+    const filledSvcs = s.svcs.filter(x => x.name.trim() && String(x.price).trim());
+    const svcsOk = filledSvcs.length >= 3;
+    const declRequired = DECLARATIONS.filter(d => d[0] !== 'medical' || hasMedical);
+    const declOk = declRequired.every(d => s.decl[d[0]]);
+
+    const stepOk = { basics: basicsOk, cats: catsOk, medical: medOk, services: svcsOk, hours: true, photos: true, verify: declOk }[st.key];
+
+    const err = !s.tried ? '' : {
+      basics: !nameOk ? 'נדרש שם מסחרי' : !hpOk ? 'ח״פ או עוסק מורשה חייב להיות 9 ספרות' : !phoneOk ? 'מספר הטלפון אינו תקין'
+        : !emailOk ? 'כתובת הדוא״ל אינה תקינה' : !addressOk ? 'נדרשת כתובת' : !cityOk ? 'נדרשת עיר'
+        : !regionOk ? 'בחרו אזור' : !typeOk ? 'בחרו סוג עסק' : '',
+      cats: 'בחרו לפחות קטגוריה אחת',
+      medical: hasMedical ? 'נדרשים שם הרופא/ה ומספר רישיון' : 'נדרש שם איש/אשת המקצוע האחראי/ת',
+      services: 'נדרשים לפחות שלושה טיפולים עם שם ומחיר',
+      hours: '', photos: '',
+      verify: hasMedical ? 'יש לאשר את כל ארבעת האישורים' : 'יש לאשר את שלושת האישורים'
+    }[st.key];
+
+    const reach = (() => {
+      if (!basicsOk) return 0;
+      if (!catsOk) return 1;
+      if (!medOk) return 2;
+      if (!svcsOk) return 3;
+      return 6;
+    })();
+
+    return {
+      notDone: !s.done, isDone: s.done,
+      progressPct: Math.round(((s.step + (s.done ? 1 : 0)) / STEPS.length) * 100) + '%',
+      progressLine: s.done ? 'הושלם' : 'שלב ' + (s.step + 1) + ' מתוך ' + STEPS.length + ' · ' + st.name,
+      stepBadge: 'שלב ' + (s.step + 1) + ' מתוך ' + STEPS.length,
+      stepTitle: st.title, stepSub: st.sub,
+
+      isBasics: st.key === 'basics', isCats: st.key === 'cats', isMedical: st.key === 'medical',
+      isServices: st.key === 'services', isHours: st.key === 'hours', isPhotos: st.key === 'photos',
+      isVerify: st.key === 'verify',
+
+      f: s.f,
+      onName: setF('name'), onLegal: setF('legal'), onHp: setF('hp'), onPhone: setF('phone'),
+      onWa: setF('wa'), onEmail: setF('email'), onAddress: setF('address'), onCity: setF('city'),
+      onDocName: setF('docName'), onDocLic: setF('docLic'), onDocSpec: setF('docSpec'), onDocPresence: setF('docPresence'),
+      onProName: setF('proName'), onProCert: setF('proCert'), onProYears: setF('proYears'),
+      e: {
+        name: s.tried && !nameOk ? bad : '#D4D4D4',
+        hp: s.tried && !hpOk ? bad : '#D4D4D4',
+        phone: s.tried && !phoneOk ? bad : '#D4D4D4',
+        email: s.tried && !emailOk ? bad : '#D4D4D4',
+        address: s.tried && !addressOk ? bad : '#D4D4D4',
+        city: s.tried && !cityOk ? bad : '#D4D4D4',
+        docName: s.tried && hasMedical && s.f.docName.trim().length < 2 ? bad : '#D4D4D4',
+        docLic: s.tried && hasMedical && s.f.docLic.trim().length < 4 ? bad : '#D4D4D4',
+        proName: s.tried && !hasMedical && s.f.proName.trim().length < 2 ? bad : '#D4D4D4'
+      },
+      cities: CITIES,
+      regions: REGIONS.map(r => {
+        const on = s.f.region === r;
+        return { name: r, on: on ? 'true' : 'false',
+          bg: on ? teal : '#fff', color: on ? '#fff' : '#3E4F62', border: on ? teal : (s.tried && !regionOk ? bad : line),
+          pick: () => this.setState(stt => ({ f: Object.assign({}, stt.f, { region: r }) })) };
+      }),
+      bizTypes: BIZ_TYPES.map(b => {
+        const on = s.f.bizType === b[0];
+        return { name: b[1], note: b[2], on: on ? 'true' : 'false', checked: on,
+          bg: on ? '#F0FAFB' : '#fff', border: on ? '#CDEFF3' : (s.tried && !typeOk ? bad : line),
+          dotBorder: on ? teal : '#C9CFD6',
+          pick: () => this.setState(stt => ({ f: Object.assign({}, stt.f, { bizType: b[0] }) })) };
+      }),
+
+      cats: CATS.map(c => {
+        const on = !!s.cats[c[0]];
+        return { name: c[0], medical: c[1], on: on ? 'true' : 'false',
+          bg: on ? '#F0FAFB' : '#fff', border: on ? '#CDEFF3' : line,
+          color: on ? teal : '#0C243E',
+          tagBg: on ? 'rgba(11,122,135,.14)' : '#FDF1E7',
+          tagColor: on ? teal : '#9A5B15',
+          pick: () => this.setState(stt => ({ cats: Object.assign({}, stt.cats, { [c[0]]: !stt.cats[c[0]] }) })) };
+      }),
+      hasMedical, noMedical: !hasMedical,
+      medicalList: medCats.map(c => c[0]).join(', '),
+
+      svcRows: s.svcs.map((x, i) => ({
+        name: x.name, price: String(x.price), dur: String(x.dur),
+        onName: e => { const v = e.target.value; this.setState(stt => ({ svcs: stt.svcs.map((y, j) => j === i ? Object.assign({}, y, { name: v }) : y) })); },
+        onPrice: e => { const v = e.target.value; this.setState(stt => ({ svcs: stt.svcs.map((y, j) => j === i ? Object.assign({}, y, { price: v }) : y) })); },
+        onDur: e => { const v = e.target.value; this.setState(stt => ({ svcs: stt.svcs.map((y, j) => j === i ? Object.assign({}, y, { dur: v }) : y) })); },
+        remove: () => this.setState(stt => ({ svcs: stt.svcs.length > 1 ? stt.svcs.filter((y, j) => j !== i) : stt.svcs }))
+      })),
+      addSvc: () => this.setState(stt => ({ svcs: stt.svcs.concat([{ id: Date.now(), name: '', price: '', dur: '' }]) })),
+
+      hours: s.hours.map((h, i) => ({
+        day: h[0], from: h[1], to: h[2], closed: h[3],
+        label: h[3] ? 'סגור' : 'פתוח',
+        rowBg: h[3] ? '#F6F8F9' : '#fff',
+        pressed: h[3] ? 'false' : 'true',
+        knobBg: h[3] ? '#D4D4D4' : teal,
+        knobX: h[3] ? 'translateX(0)' : 'translateX(-18px)',
+        onFrom: e => { const v = e.target.value; this.setState(stt => { const hs = stt.hours.map(r => r.slice()); hs[i][1] = v; return { hours: hs }; }); },
+        onTo: e => { const v = e.target.value; this.setState(stt => { const hs = stt.hours.map(r => r.slice()); hs[i][2] = v; return { hours: hs }; }); },
+        toggle: () => this.setState(stt => { const hs = stt.hours.map(r => r.slice()); hs[i][3] = !hs[i][3]; return { hours: hs }; })
+      })),
+
+      gallery: GALLERY,
+
+      summary: [
+        { label: 'שם מסחרי', value: s.f.name.trim() || '—', dir: 'rtl', weight: '700', color: '#0C243E' },
+        { label: 'מיקום', value: (s.f.address.trim() || '—') + (s.f.city.trim() ? ', ' + s.f.city.trim() : '') + (s.f.region ? ' · ' + s.f.region : ''), dir: 'rtl', weight: '600', color: '#3E4F62' },
+        { label: 'ח״פ', value: s.f.hp.trim() || '—', dir: 'ltr', weight: '600', color: '#3E4F62' },
+        { label: 'קטגוריות', value: pickedCats.length ? pickedCats.map(c => c[0]).join(', ') : '—', dir: 'rtl', weight: '600', color: '#3E4F62' },
+        { label: hasMedical ? 'אחריות רפואית' : 'איש מקצוע אחראי',
+          value: hasMedical
+            ? (s.f.docName.trim() || '—') + (s.f.docLic.trim() ? ' · רישיון ' + s.f.docLic.trim() : '')
+            : (s.f.proName.trim() || '—') + (s.f.proCert.trim() ? ' · ' + s.f.proCert.trim() : ''),
+          dir: 'rtl', weight: '700', color: hasMedical ? teal : '#3E4F62' },
+        { label: 'טיפולים', value: filledSvcs.length ? filledSvcs.length + ' טיפולים · ' + filledSvcs.map(x => x.name.trim()).slice(0, 3).join(', ') : '—', dir: 'rtl', weight: '600', color: '#3E4F62' },
+        { label: 'שעות', value: s.hours.filter(h => !h[3]).length + ' ימי פעילות · שבת ' + (s.hours[6][3] ? 'סגור' : 'פתוח'), dir: 'rtl', weight: '600', color: '#3E4F62' }
+      ],
+
+      declarations: declRequired.map(d => {
+        const on = !!s.decl[d[0]];
+        return { label: d[1], note: d[2], on: on ? 'true' : 'false', checked: on,
+          bg: on ? teal : '#fff', border: on ? teal : (s.tried && !declOk ? bad : '#C9CFD6'),
+          toggle: () => this.setState(stt => ({ decl: Object.assign({}, stt.decl, { [d[0]]: !stt.decl[d[0]] }) })) };
+      }),
+
+      errorOn: !!err && !stepOk, errorText: err,
+      canBack: s.step > 0,
+      back: () => this.setState(stt => ({ step: Math.max(0, stt.step - 1), tried: false })),
+      canSkip: st.key === 'photos',
+      skip: () => this.setState(stt => ({ step: stt.step + 1, tried: false }), () => this.flash('אפשר להשלים תמונות בלוח הבקרה')),
+      nextLabel: st.key === 'verify' ? 'שליחה לאימות' : 'המשך',
+      nextHint: st.key === 'verify'
+        ? 'לאחר השליחה נתחיל באימות. בדרך כלל עד יומיים, ואם חסר משהו נפנה בוואטסאפ.'
+        : stepOk ? 'הכול מוכן — אפשר להמשיך' : 'השלימו את שדות החובה כדי להמשיך',
+      next: () => {
+        if (!stepOk) { this.setState({ tried: true }); return; }
+        if (st.key === 'verify') {
+          this.setState({ done: true, ref: 'BF-L' + (Math.floor(Math.random() * 9000) + 1000) },
+            () => this.flash('הבקשה נשלחה — נעדכן בוואטסאפ'));
+          return;
+        }
+        this.setState(stt => ({ step: stt.step + 1, tried: false }));
+      },
+      saveExit: () => this.flash('הטופס נשמר — הקישור להמשך נשלח בוואטסאפ'),
+
+      rail: STEPS.map((x, i) => {
+        const cur = s.step === i;
+        const doneStep = i < reach && i < s.step;
+        const locked = i > Math.max(reach, s.step);
+        return { name: x.name, current: cur ? 'step' : 'false', locked,
+          badge: doneStep || (i < s.step) ? '✓' : String(i + 1),
+          bg: cur ? '#F0FAFB' : 'transparent',
+          dotBg: cur ? teal : (i < s.step ? '#CDEFF3' : '#EDEFF2'),
+          dotColor: cur ? '#fff' : (i < s.step ? teal : '#8A96A3'),
+          color: cur ? teal : (locked ? '#8A96A3' : '#0C243E'),
+          cursor: locked ? 'default' : 'pointer',
+          go: locked ? () => {} : () => this.setState({ step: i, tried: false }) };
+      }),
+      tipTitle: TIPS[st.key][0], tipBody: TIPS[st.key][1],
+
+      ref: s.ref,
+      doneBody: hasMedical
+        ? 'הבקשה בתור לבדיקה. נאמת את הח״פ, הכתובת ואת רישיון הרופא/ה מול משרד הבריאות. הכרטיס יתפרסם רק לאחר האימות.'
+        : 'הבקשה בתור לבדיקה. נאמת את הח״פ ואת הכתובת, והכרטיס יתפרסם לאחר מכן.',
+      nextSteps: NEXT_STEPS,
+
+      toastOn: !!s.toast, toastText: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

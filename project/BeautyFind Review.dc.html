@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="כתיבת ביקורת מאומתת ב־BeautyFind — דירוג, חוויה בפועל, תמונות בהסכמה, ופרסום לאחר בדיקה.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#F6F8F9}
+  *{box-sizing:border-box}
+  :root{--rv-shell:minmax(0,1fr);--rv-pad:16px;--rv-asp:repeat(2,minmax(0,1fr))}
+  @media (min-width:560px){:root{--rv-pad:22px;--rv-asp:repeat(3,minmax(0,1fr))}}
+  @media (min-width:1000px){:root{--rv-shell:minmax(0,1fr) 320px}}
+  @media (min-width:1000px) and (min-height:700px){[data-rv-side]{position:sticky;top:18px}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes rvFade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  @keyframes rvPop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#F6F8F9;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+
+  <header style="background:#fff;border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1100px;margin:0 auto;padding:12px var(--rv-pad);display:flex;align-items:center;gap:13px;flex-wrap:wrap">
+      <a href="./BeautyFind Homepage.dc.html" dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:21px;letter-spacing:-0.01em;color:#0C243E;text-decoration:none">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6">.</span></a>
+      <span style="flex:1;min-width:0"></span>
+      <a href="./BeautyFind Account.dc.html" style="flex:none;display:inline-flex;align-items:center;gap:7px;min-height:42px;padding:0 13px;border:0;border-radius:11px;background:#F0FAFB;font-size:14px;font-weight:700;color:#0B7A87;text-decoration:none">
+        <svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg>
+        <span>לחשבון שלי</span>
+      </a>
+    </div>
+  </header>
+
+  <div style="max-width:1100px;margin:0 auto;padding:clamp(16px,2.4vw,28px) var(--rv-pad) 60px">
+
+    <sc-if value="{{ isForm }}" hint-placeholder-val="{{ true }}">
+      <div style="animation:rvFade .22s ease both">
+        <h1 style="margin:0 0 5px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(25px,3.4vw,34px);font-weight:500;letter-spacing:-0.015em">איך היה הטיפול?</h1>
+        <p style="margin:0 0 clamp(16px,2vw,22px);max-width:58ch;font-size:15.5px;color:#3E4F62;text-wrap:pretty">הביקורת שלכם עוזרת ללקוחות הבאות לבחור נכון. אפשר לכתוב רק על טיפול שהיה בפועל — הביקור שלכם אומת מול היומן של הקליניקה.</p>
+
+        <div style="display:grid;grid-template-columns:var(--rv-shell);gap:clamp(14px,1.8vw,20px);align-items:start">
+
+          <main style="min-width:0;display:flex;flex-direction:column;gap:13px">
+
+            <section aria-labelledby="rv-h1" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px)">
+              <h2 id="rv-h1" style="margin:0 0 13px;font-size:16.5px;font-weight:700">דירוג כללי</h2>
+              <div dir="ltr" role="group" aria-label="דירוג בכוכבים" style="display:flex;gap:6px;justify-content:flex-end;margin-bottom:9px">
+                <sc-for list="{{ starBtns }}" as="sb" hint-placeholder-count="5">
+                  <button type="button" aria-label="{{ sb.label }}" aria-pressed="{{ sb.on }}" onClick="{{ sb.pick }}" style="width:52px;height:52px;border:1px solid {{ sb.border }};border-radius:13px;background:{{ sb.bg }};font:inherit;font-size:25px;line-height:1;color:{{ sb.color }};cursor:pointer;transition:background .14s">★</button>
+                </sc-for>
+              </div>
+              <p style="margin:0;font-size:14.5px;font-weight:700;color:{{ ratingColor }}">{{ ratingLabel }}</p>
+
+              <h3 style="margin:16px 0 9px;font-size:14.5px;font-weight:700">מה בלט בטיפול?</h3>
+              <div style="display:grid;grid-template-columns:var(--rv-asp);gap:9px">
+                <sc-for list="{{ aspects }}" as="as" hint-placeholder-count="6">
+                  <div style="min-width:0;padding:11px 12px;border:1px solid {{ as.border }};border-radius:12px;background:{{ as.bg }}">
+                    <span style="display:block;margin-bottom:6px;font-size:13px;font-weight:700">{{ as.name }}</span>
+                    <div dir="ltr" role="group" aria-label="{{ as.name }}" style="display:flex;gap:4px;justify-content:flex-end">
+                      <sc-for list="{{ as.stars }}" as="ast" hint-placeholder-count="5">
+                        <button type="button" aria-label="{{ ast.label }}" onClick="{{ ast.pick }}" style="width:26px;height:26px;border:0;border-radius:7px;background:transparent;font:inherit;font-size:16px;line-height:1;color:{{ ast.color }};cursor:pointer;padding:0">★</button>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </section>
+
+            <section aria-labelledby="rv-h2" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px)">
+              <h2 id="rv-h2" style="margin:0 0 3px;font-size:16.5px;font-weight:700">הביקורת שלכם</h2>
+              <p style="margin:0 0 12px;font-size:13.5px;color:#5B6B7B;text-wrap:pretty">ספרו מה עשו, איך הרגשתם ומה הייתם רוצות לדעת מראש. אין צורך בשמות של אנשי צוות בהקשר שלילי — אנחנו לא מפרסמים אותם.</p>
+
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700;margin-bottom:11px">כותרת
+                <input value="{{ f.title }}" onChange="{{ onTitle }}" placeholder="למשל: ייעוץ כנה בלי לחץ למכור" style="min-height:46px;padding:0 12px;border:1px solid {{ errTitle }};border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none">
+              </label>
+
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">מה חשוב לדעת
+                <textarea value="{{ f.body }}" onChange="{{ onBody }}" rows="6" placeholder="הגעתי לייעוץ, הוסבר לי מה מתאים ומה לא, ולא לחצו עליי לקבוע טיפול באותו יום." style="padding:12px;border:1px solid {{ errBody }};border-radius:11px;font:inherit;font-size:15px;line-height:1.6;color:#0C243E;background:#fff;outline:none;resize:vertical"></textarea>
+              </label>
+              <div style="display:flex;align-items:center;gap:9px;margin-top:6px;flex-wrap:wrap">
+                <span aria-hidden="true" style="flex:1;min-width:120px;height:5px;border-radius:3px;background:#EDEFF2;overflow:hidden">
+                  <span style="display:block;height:100%;width:{{ lenWidth }};background:{{ lenColor }};transition:width .18s"></span>
+                </span>
+                <span dir="ltr" style="flex:none;font-size:12.5px;font-weight:700;color:{{ lenColor }};font-variant-numeric:tabular-nums">{{ lenText }}</span>
+              </div>
+
+              <h3 style="margin:16px 0 9px;font-size:14.5px;font-weight:700">מה מתאר את הביקור?</h3>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <sc-for list="{{ tags }}" as="tg" hint-placeholder-count="6">
+                  <button type="button" aria-pressed="{{ tg.on }}" onClick="{{ tg.pick }}" style="min-height:38px;padding:0 13px;border:1px solid {{ tg.border }};border-radius:10px;background:{{ tg.bg }};font:inherit;font-size:13.5px;font-weight:600;color:{{ tg.color }};cursor:pointer">{{ tg.name }}</button>
+                </sc-for>
+              </div>
+            </section>
+
+            <section aria-labelledby="rv-h3" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px)">
+              <h2 id="rv-h3" style="margin:0 0 3px;font-size:16.5px;font-weight:700">תמונות <span style="font-size:13px;font-weight:600;color:#8A96A3">· לא חובה</span></h2>
+              <p style="margin:0 0 12px;font-size:13.5px;color:#5B6B7B;text-wrap:pretty">תמונות לפני/אחרי מתפרסמות רק באישור מפורש שלכם, ותמיד בלי פרטים מזהים. אפשר לבקש הסרה בכל זמן.</p>
+              <div style="display:grid;grid-template-columns:var(--rv-asp);gap:10px;margin-bottom:12px">
+                <sc-for list="{{ photoSlots }}" as="ph" hint-placeholder-count="3">
+                  <div style="min-width:0">
+                    <span style="display:block;margin-bottom:6px;font-size:12.5px;font-weight:700">{{ ph.label }}</span>
+                    <div style="position:relative;width:100%;aspect-ratio:4/3;max-height:190px;background:#F6F8F9;border:1px dashed #D4D4D4;border-radius:12px;overflow:hidden">
+                      <image-slot id="{{ ph.slotId }}" shape="rounded" radius="11" placeholder="{{ ph.ph }}"></image-slot>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <button type="button" role="checkbox" aria-checked="{{ photoConsentOn }}" onClick="{{ togglePhotoConsent }}" style="width:100%;display:flex;align-items:flex-start;gap:11px;padding:12px 13px;border:1px solid {{ photoConsentBorder }};border-radius:12px;background:{{ photoConsentBg }};font:inherit;text-align:right;cursor:pointer">
+                <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;margin-top:1px;border:1.5px solid {{ photoBoxBorder }};border-radius:7px;background:{{ photoBoxBg }};color:#fff">
+                  <sc-if value="{{ photoConsentChecked }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg></sc-if>
+                </span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                  <span style="font-size:14px;font-weight:700">אני מאשרת פרסום התמונות בפרופיל הקליניקה</span>
+                  <span style="font-size:12.5px;color:#5B6B7B;text-wrap:pretty">ללא אישור התמונות נשמרות בביקורת אך לא מתפרסמות</span>
+                </span>
+              </button>
+            </section>
+
+            <section aria-labelledby="rv-h4" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px)">
+              <h2 id="rv-h4" style="margin:0 0 12px;font-size:16.5px;font-weight:700">איך לפרסם</h2>
+              <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:14px">
+                <sc-for list="{{ nameModes }}" as="nm" hint-placeholder-count="3">
+                  <button type="button" aria-pressed="{{ nm.on }}" onClick="{{ nm.pick }}" style="display:flex;align-items:flex-start;gap:11px;padding:12px 13px;border:1px solid {{ nm.border }};border-radius:12px;background:{{ nm.bg }};font:inherit;text-align:right;cursor:pointer">
+                    <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;margin-top:2px;border:1.5px solid {{ nm.dotBorder }};border-radius:50%;background:#fff">
+                      <sc-if value="{{ nm.checked }}" hint-placeholder-val="{{ false }}"><span style="display:block;width:11px;height:11px;border-radius:50%;background:#0B7A87"></span></sc-if>
+                    </span>
+                    <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                      <span style="font-size:14.5px;font-weight:700">{{ nm.name }}</span>
+                      <span style="font-size:12.5px;color:#5B6B7B;text-wrap:pretty">{{ nm.note }}</span>
+                    </span>
+                  </button>
+                </sc-for>
+              </div>
+
+              <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px">
+                <sc-for list="{{ declarations }}" as="dc" hint-placeholder-count="2">
+                  <li>
+                    <button type="button" role="checkbox" aria-checked="{{ dc.on }}" onClick="{{ dc.toggle }}" style="width:100%;display:flex;align-items:flex-start;gap:11px;padding:0;border:0;background:transparent;font:inherit;text-align:right;cursor:pointer">
+                      <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;margin-top:1px;border:1.5px solid {{ dc.border }};border-radius:7px;background:{{ dc.bg }};color:#fff">
+                        <sc-if value="{{ dc.checked }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg></sc-if>
+                      </span>
+                      <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                        <span style="font-size:14px;font-weight:600;text-wrap:pretty">{{ dc.label }}</span>
+                        <span style="font-size:12px;color:#8A96A3;text-wrap:pretty">{{ dc.note }}</span>
+                      </span>
+                    </button>
+                  </li>
+                </sc-for>
+              </ul>
+            </section>
+
+            <sc-if value="{{ errorOn }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0;padding:12px 14px;border:1px solid #F0C9C4;border-radius:12px;background:#FDEDEC;font-size:14px;font-weight:700;color:#A33A31;text-wrap:pretty">{{ errorText }}</p>
+            </sc-if>
+
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <button type="button" onClick="{{ submit }}" style="flex:1;min-width:190px;min-height:50px;padding:0 18px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:16px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#0C243E">שליחת הביקורת</button>
+              <button type="button" onClick="{{ saveDraft }}" style="flex:none;min-height:50px;padding:0 16px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font:inherit;font-size:15px;font-weight:600;color:#3E4F62;cursor:pointer">שמירה כטיוטה</button>
+            </div>
+            <p style="margin:0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">הביקורת נבדקת לפני פרסום, בדרך כלל בתוך <span dir="ltr">6</span> שעות. לא נפרסם ביקורת שכוללת האשמה פלילית ללא אסמכתה, ולא נמחק ביקורת רק מפני שהיא שלילית.</p>
+          </main>
+
+          <aside data-rv-side style="min-width:0">
+            <div style="background:#fff;border:1px solid #CDEFF3;border-radius:17px;overflow:hidden;margin-bottom:12px">
+              <div style="padding:13px 16px;background:#F0FAFB;border-bottom:1px solid #CDEFF3;display:flex;align-items:center;gap:9px">
+                <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:#0B7A87;color:#fff">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg>
+                </span>
+                <span style="flex:1;min-width:0;font-size:14px;font-weight:700;color:#0B7A87">הביקור אומת</span>
+              </div>
+              <dl style="margin:0;padding:14px 16px;display:grid;grid-template-columns:70px minmax(0,1fr);gap:9px 11px;font-size:14px">
+                <dt style="color:#8A96A3">קליניקה</dt><dd style="margin:0;font-weight:700">ביוטי לאב · חיפה</dd>
+                <dt style="color:#8A96A3">טיפול</dt><dd style="margin:0;font-weight:600">הסרת שיער בלייזר — רגליים</dd>
+                <dt style="color:#8A96A3">מטפלת</dt><dd style="margin:0;font-weight:600">מאיה כהן</dd>
+                <dt style="color:#8A96A3">תאריך</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums">11/09/2026</dd>
+                <dt style="color:#8A96A3">אסמכתא</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums">BF-4288</dd>
+              </dl>
+            </div>
+
+            <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:14px 16px">
+              <h2 style="margin:0 0 10px;font-size:15px;font-weight:700">מה מתפרסם ומה לא</h2>
+              <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+                <sc-for list="{{ rules }}" as="rl" hint-placeholder-count="4">
+                  <li style="display:flex;align-items:flex-start;gap:10px">
+                    <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-top:1px;border-radius:7px;background:{{ rl.bg }};color:{{ rl.color }};font-size:13px;font-weight:700">{{ rl.mark }}</span>
+                    <span style="flex:1;min-width:0;font-size:13px;color:#3E4F62;text-wrap:pretty">{{ rl.name }}</span>
+                  </li>
+                </sc-for>
+              </ul>
+              <p style="margin:12px 0 0;padding-top:11px;border-top:1px solid #EDEFF2;font-size:12.5px;color:#8A96A3;text-wrap:pretty">מלא הכללים ב־<a href="./BeautyFind Standards.dc.html">תקן הרישום</a>.</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+      <div style="max-width:620px;background:#fff;border:1px solid #CDEFF3;border-radius:18px;padding:clamp(20px,2.6vw,30px);animation:rvPop .2s ease both">
+        <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;margin-bottom:13px;border-radius:50%;background:#F0FAFB;color:#0B7A87">
+          <svg width="27" height="27" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg>
+        </span>
+        <h1 style="margin:0 0 5px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(22px,2.8vw,28px);font-weight:500;letter-spacing:-0.014em">הביקורת נשלחה</h1>
+        <p style="margin:0 0 15px;font-size:15px;color:#3E4F62;text-wrap:pretty">{{ doneBody }}</p>
+        <dl style="margin:0 0 16px;display:grid;grid-template-columns:86px minmax(0,1fr);gap:8px 12px;font-size:14.5px">
+          <dt style="color:#8A96A3">דירוג</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:700;color:#0B7A87">{{ doneStars }}</dd>
+          <dt style="color:#8A96A3">כותרת</dt><dd style="margin:0;font-weight:600">{{ doneTitle }}</dd>
+          <dt style="color:#8A96A3">פרסום</dt><dd style="margin:0;font-weight:600">{{ doneName }}</dd>
+        </dl>
+        <div style="display:flex;gap:9px;flex-wrap:wrap">
+          <a href="./BeautyFind Account.dc.html" style="min-height:46px;display:inline-flex;align-items:center;padding:0 16px;border-radius:12px;background:#0B7A87;font-size:15px;font-weight:700;color:#fff;text-decoration:none">לביקורות שלי</a>
+          <a href="./BeautyFind Business Profile.dc.html" style="min-height:46px;display:inline-flex;align-items:center;padding:0 14px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font-size:15px;font-weight:600;color:#3E4F62;text-decoration:none">לפרופיל הקליניקה</a>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:fixed;bottom:18px;right:50%;transform:translateX(50%);z-index:40;max-width:min(90vw,440px);padding:12px 17px;border-radius:13px;background:#0C243E;color:#fff;font-size:14px;font-weight:600;box-shadow:0 12px 30px rgba(12,36,62,.28);animation:rvPop .16s ease both;text-wrap:pretty">{{ toastText }}</div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1100,&quot;height&quot;:920}}">
+const RATING_LABELS = [
+  '',
+  'לא הייתי חוזרת — ספרו לנו מה קרה',
+  'לא עמד בציפיות',
+  'סביר — היו דברים טובים ופחות',
+  'טוב, הייתי חוזרת',
+  'מעולה — הייתי ממליצה לחברה'
+];
+
+const ASPECTS = [
+  ['clean', 'נקיון וסטריליזציה'],
+  ['explain', 'הסבר לפני הטיפול'],
+  ['result', 'תוצאה בפועל'],
+  ['time', 'עמידה בזמנים'],
+  ['price', 'שקיפות מחיר'],
+  ['after', 'ליווי אחרי הטיפול']
+];
+
+const TAGS = [
+  'ייעוץ ללא לחץ למכור', 'הוסבר על סיכונים', 'המתנה קצרה', 'מחיר כמו שנאמר מראש',
+  'הנחיות אחרי בוואטסאפ', 'חניה נוחה', 'התאמה אישית', 'מכשור נקי ומכוסה'
+];
+
+const PHOTOS = [
+  { slotId: 'rv-photo-before', label: 'לפני', ph: 'תמונה לפני הטיפול' },
+  { slotId: 'rv-photo-after', label: 'אחרי', ph: 'תמונה אחרי הטיפול' },
+  { slotId: 'rv-photo-place', label: 'הקליניקה', ph: 'חדר טיפול או פינת המתנה' }
+];
+
+const NAME_MODES = [
+  ['full', 'בשם מלא — שירה כהן', 'הביקורת מקבלת אמינות גבוהה יותר'],
+  ['initial', 'בראשי תיבות — ש. כהן', 'ברירת המחדל שלנו'],
+  ['anon', 'אנונימית', 'מסומנת כ"ביקור אומת" אך בלי שם']
+];
+
+const DECLARATIONS = [
+  ['real', 'הביקורת מתארת טיפול שעברתי בפועל בקליניקה הזו', 'ביקורת שאינה מאומתת לא מתפרסמת'],
+  ['nointerest', 'אין לי קשר עסקי לקליניקה ולא קיבלתי תמורה על הביקורת', 'תמורה בעד ביקורת אסורה לפי התקן']
+];
+
+const RULES = [
+  ['+', 'חוויה בפועל — מה עשו, איך הוסבר, איך הרגשתם', true],
+  ['+', 'ביקורת שלילית עניינית, כולל המתנה, מחיר או תוצאה', true],
+  ['×', 'האשמה פלילית ("גנבו", "רימו") ללא אסמכתה', false],
+  ['×', 'שם איש צוות בהקשר שלילי', false],
+  ['×', 'עצה רפואית או הבטחת תוצאה ללא סיכון', false]
+];
+
+class Component extends DCLogic {
+  state = {
+    view: 'form', rating: 0, aspects: {},
+    f: { title: '', body: '' },
+    tags: {}, nameMode: 'initial', decl: {}, photoConsent: false,
+    tried: false, toast: ''
+  };
+
+  componentWillUnmount() { clearTimeout(this._t); }
+  flash(t) { clearTimeout(this._t); this.setState({ toast: t }); this._t = setTimeout(() => this.setState({ toast: '' }), 3200); }
+
+  renderVals() {
+    const s = this.state;
+    const teal = '#0B7A87';
+    const line = '#E6E6E6';
+    const bad = '#D98A80';
+    const bodyLen = s.f.body.trim().length;
+    const titleOk = s.f.title.trim().length >= 4;
+    const bodyOk = bodyLen >= 40;
+    const declOk = DECLARATIONS.every(d => s.decl[d[0]]);
+    const ratingOk = s.rating > 0;
+    const ok = ratingOk && titleOk && bodyOk && declOk;
+
+    const err = !s.tried ? '' :
+      !ratingOk ? 'בחרו דירוג בכוכבים' :
+      !titleOk ? 'הוסיפו כותרת קצרה לביקורת' :
+      !bodyOk ? 'כתבו לפחות 40 תווים — ביקורת קצרה מדי לא עוזרת לאף אחת' :
+      !declOk ? 'יש לאשר את שתי ההצהרות בתחתית הטופס' : '';
+
+    const nameLabel = { full: 'בשם מלא · שירה כהן', initial: 'בראשי תיבות · ש. כהן', anon: 'אנונימית · ביקור אומת' }[s.nameMode];
+
+    return {
+      isForm: s.view === 'form', isDone: s.view === 'done',
+
+      starBtns: [1, 2, 3, 4, 5].map(n => {
+        const active = n <= s.rating;
+        return { label: n + ' מתוך 5', on: s.rating === n ? 'true' : 'false',
+          bg: active ? '#F0FAFB' : '#fff',
+          border: active ? '#CDEFF3' : (s.tried && !ratingOk ? bad : line),
+          color: active ? teal : '#D4D4D4',
+          pick: () => this.setState({ rating: n }) };
+      }),
+      ratingLabel: s.rating ? RATING_LABELS[s.rating] : 'בחרו דירוג — חובה',
+      ratingColor: !s.rating ? (s.tried ? '#A33A31' : '#8A96A3') : s.rating >= 4 ? '#3B6B3F' : s.rating === 3 ? '#9A5B15' : '#A33A31',
+
+      aspects: ASPECTS.map(a => {
+        const val = s.aspects[a[0]] || 0;
+        return {
+          name: a[1],
+          bg: val ? '#FAFBFB' : '#fff',
+          border: val ? '#CDEFF3' : line,
+          stars: [1, 2, 3, 4, 5].map(n => ({
+            label: a[1] + ' ' + n + ' מתוך 5',
+            color: n <= val ? teal : '#DDE2E6',
+            pick: () => this.setState(st => ({ aspects: Object.assign({}, st.aspects, { [a[0]]: n }) }))
+          }))
+        };
+      }),
+
+      f: s.f,
+      onTitle: e => { const v = e.target.value; this.setState(st => ({ f: Object.assign({}, st.f, { title: v }) })); },
+      onBody: e => { const v = e.target.value; this.setState(st => ({ f: Object.assign({}, st.f, { body: v }) })); },
+      errTitle: s.tried && !titleOk ? bad : '#D4D4D4',
+      errBody: s.tried && !bodyOk ? bad : '#D4D4D4',
+      lenWidth: Math.min(100, bodyLen / 2) + '%',
+      lenColor: bodyLen === 0 ? '#8A96A3' : bodyLen < 40 ? '#9A5B15' : bodyLen < 120 ? '#0B7A87' : '#3B6B3F',
+      lenText: bodyLen < 40 ? bodyLen + ' / 40 תווים' : bodyLen + ' תווים',
+
+      tags: TAGS.map(t => {
+        const on = !!s.tags[t];
+        return { name: t, on: on ? 'true' : 'false',
+          bg: on ? teal : '#fff', color: on ? '#fff' : '#3E4F62', border: on ? teal : line,
+          pick: () => this.setState(st => ({ tags: Object.assign({}, st.tags, { [t]: !st.tags[t] }) })) };
+      }),
+
+      photoSlots: PHOTOS,
+      photoConsentOn: s.photoConsent ? 'true' : 'false',
+      photoConsentChecked: s.photoConsent,
+      photoConsentBg: s.photoConsent ? '#F0FAFB' : '#FAFBFB',
+      photoConsentBorder: s.photoConsent ? '#CDEFF3' : line,
+      photoBoxBg: s.photoConsent ? teal : '#fff',
+      photoBoxBorder: s.photoConsent ? teal : '#C9CFD6',
+      togglePhotoConsent: () => this.setState(st => ({ photoConsent: !st.photoConsent })),
+
+      nameModes: NAME_MODES.map(m => {
+        const on = s.nameMode === m[0];
+        return { name: m[1], note: m[2], on: on ? 'true' : 'false', checked: on,
+          bg: on ? '#F0FAFB' : '#fff', border: on ? '#CDEFF3' : line,
+          dotBorder: on ? teal : '#C9CFD6',
+          pick: () => this.setState({ nameMode: m[0] }) };
+      }),
+
+      declarations: DECLARATIONS.map(d => {
+        const on = !!s.decl[d[0]];
+        return { label: d[1], note: d[2], on: on ? 'true' : 'false', checked: on,
+          bg: on ? teal : '#fff', border: on ? teal : (s.tried && !declOk ? bad : '#C9CFD6'),
+          toggle: () => this.setState(st => ({ decl: Object.assign({}, st.decl, { [d[0]]: !st.decl[d[0]] }) })) };
+      }),
+
+      rules: RULES.map(r => ({ mark: r[0], name: r[1],
+        bg: r[2] ? '#EAF3EA' : '#FDEDEC', color: r[2] ? '#3B6B3F' : '#A33A31' })),
+
+      errorOn: !!err, errorText: err,
+      submit: () => {
+        if (!ok) { this.setState({ tried: true }); return; }
+        this.setState({ view: 'done' }, () => this.flash('הביקורת נשלחה לבדיקה'));
+      },
+      saveDraft: () => this.flash('הביקורת נשמרה כטיוטה בחשבון שלך'),
+
+      doneBody: s.photoConsent
+        ? 'הביקורת והתמונות נבדקות לפני פרסום, בדרך כלל בתוך 6 שעות. נעדכן בוואטסאפ כשהיא תעלה.'
+        : 'הביקורת נבדקת לפני פרסום, בדרך כלל בתוך 6 שעות. נעדכן בוואטסאפ כשהיא תעלה.',
+      doneStars: '★★★★★'.slice(0, s.rating) + '☆☆☆☆☆'.slice(0, 5 - s.rating),
+      doneTitle: s.f.title.trim() || '—',
+      doneName: nameLabel,
+
+      toastOn: !!s.toast, toastText: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

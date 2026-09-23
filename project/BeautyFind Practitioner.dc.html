@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="עמוד איש מקצוע ב־BeautyFind — רישיון מאומת, תחומי טיפול, מקום עבודה וחוות דעת מאומתות.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#FAFBFB}
+  *{box-sizing:border-box}
+  :root{--pr-pad:16px;--pr-hero:minmax(0,1fr);--pr-shell:minmax(0,1fr);--pr-tx:minmax(0,1fr)}
+  @media (min-width:560px){:root{--pr-pad:22px;--pr-tx:repeat(2,minmax(0,1fr))}}
+  @media (min-width:820px){:root{--pr-hero:220px minmax(0,1fr)}}
+  @media (min-width:1000px){:root{--pr-shell:minmax(0,1fr) 330px}}
+  @media (min-width:1000px) and (min-height:700px){[data-pr-side]{position:sticky;top:18px}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes prFade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#FAFBFB;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+
+  <header style="background:#fff;border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1160px;margin:0 auto;padding:12px var(--pr-pad);display:flex;align-items:center;gap:13px;flex-wrap:wrap">
+      <a href="./BeautyFind Homepage.dc.html" dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:21px;letter-spacing:-0.01em;color:#0C243E;text-decoration:none">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6">.</span></a>
+      <span style="flex:1;min-width:0"></span>
+      <a href="./BeautyFind Business Profile.dc.html" style="flex:none;display:inline-flex;align-items:center;gap:7px;min-height:42px;padding:0 13px;border-radius:11px;background:#F0FAFB;font-size:14px;font-weight:700;color:#0B7A87;text-decoration:none"><svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg><span>לקליניקת נועה</span></a>
+    </div>
+  </header>
+
+  <nav aria-label="פירורי לחם" style="max-width:1160px;margin:0 auto;padding:14px var(--pr-pad) 0;font-size:13px;color:#8A96A3;display:flex;gap:6px;flex-wrap:wrap">
+    <a href="./BeautyFind Region.dc.html" style="color:#5B6B7B;text-decoration:none">שרון</a><span aria-hidden="true">/</span>
+    <a href="./BeautyFind Business Profile.dc.html" style="color:#5B6B7B;text-decoration:none">קליניקת נועה</a><span aria-hidden="true">/</span>
+    <span style="color:#0C243E;font-weight:600">{{ p.name }}</span>
+  </nav>
+
+  <div style="max-width:1160px;margin:0 auto;padding:clamp(14px,2vw,22px) var(--pr-pad) 64px">
+    <section aria-labelledby="pr-h" style="display:grid;grid-template-columns:var(--pr-hero);gap:clamp(16px,2.4vw,30px);align-items:center;margin-bottom:clamp(20px,3vw,34px);animation:prFade .25s ease both">
+      <div style="position:relative;width:100%;max-width:220px;aspect-ratio:4/5;border-radius:20px;overflow:hidden;background:#F0FAFB">
+        <image-slot id="pr-portrait" shape="rounded" radius="20" placeholder="תמונת פורטרט של איש המקצוע"></image-slot>
+      </div>
+      <div style="min-width:0">
+        <span style="display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px;border-radius:9px;background:{{ p.badgeBg }};font-size:13px;font-weight:700;color:{{ p.badgeColor }}"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg>{{ p.badge }}</span>
+        <h1 id="pr-h" style="margin:10px 0 3px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(30px,4.4vw,48px);font-weight:500;line-height:1.1;letter-spacing:-0.015em">{{ p.name }}</h1>
+        <p style="margin:0 0 12px;font-size:17px;font-weight:600;color:#3E4F62">{{ p.title }}</p>
+        <p style="margin:0 0 16px;max-width:60ch;font-size:15.5px;color:#3E4F62;text-wrap:pretty">{{ p.bio }}</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a href="{{ p.ctaHref }}" style="min-height:48px;display:inline-flex;align-items:center;padding:0 18px;border-radius:12px;background:#0B7A87;font-size:15.5px;font-weight:700;color:#fff;text-decoration:none">{{ p.cta }}</a>
+          <a href="https://wa.me/972977411180" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 15px;border-radius:12px;font:inherit;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;transition:background .15s,border-color .15s;border:1px solid #BFE6CC;background:#EAF7EF;color:#0E6B3A;" style-hover="background:#DDF2E5;border-color:#9ED9B3"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="flex:none;color:#1DA851"><path fill="currentColor" d="M12 2.2A9.7 9.7 0 0 0 3.6 16.8L2.3 21.7l5-1.3A9.7 9.7 0 1 0 12 2.2zm0 17.7c-1.5 0-2.9-.4-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 19.9zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.3.9 2.5c.1.2 1.6 2.5 4 3.5 1.5.6 2 .7 2.8.6.4-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1z"></path></svg><span style="display:inline-flex;align-items:center;gap:6px">וואטסאפ</span></a>
+          <a href="tel:+972977411180" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 15px;border-radius:12px;font:inherit;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;transition:background .15s,border-color .15s;border:1px solid #D4D4D4;background:#fff;color:#0C243E;" style-hover="background:#F0FAFB;border-color:#7ED7E1"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;color:#0B7A87"><path d="M5 3.5h3.2l1.6 4-2 1.3a11 11 0 0 0 5.4 5.4l1.3-2 4 1.6V17a2.5 2.5 0 0 1-2.7 2.5A15.5 15.5 0 0 1 2.5 6.2 2.5 2.5 0 0 1 5 3.5z"></path></svg><span style="display:inline-flex;align-items:center;gap:6px">חיוג <span dir="ltr" style="unicode-bidi:isolate;font-weight:600;opacity:.75;font-variant-numeric:tabular-nums">09-774-1180</span></span></a>
+        </div>
+      </div>
+    </section>
+
+    <div style="display:grid;grid-template-columns:var(--pr-shell);gap:clamp(16px,2vw,24px);align-items:start">
+      <main style="min-width:0;display:flex;flex-direction:column;gap:clamp(20px,2.6vw,30px)">
+
+        <section aria-labelledby="pr-tx">
+          <h2 id="pr-tx" style="margin:0 0 4px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(22px,2.4vw,28px);font-weight:500;letter-spacing:-0.012em">{{ p.txTitle }}</h2>
+          <p style="margin:0 0 12px;font-size:14px;color:#5B6B7B">מחירים מהקליניקה, לא כולל מע״מ. הכמות והמחיר הסופי נקבעים בייעוץ.</p>
+          <div style="display:grid;grid-template-columns:var(--pr-tx);gap:10px">
+            <sc-for list="{{ p.treatments }}" as="t" hint-placeholder-count="4"><div style="min-width:0;padding:14px 15px;background:#fff;border:1px solid #E6E6E6;border-radius:15px;display:flex;flex-direction:column;gap:6px"><span style="display:flex;align-items:baseline;gap:10px"><span style="flex:1;min-width:0;font-size:15.5px;font-weight:700">{{ t.name }}</span><span style="flex:none;font-size:14.5px;font-weight:700;color:#0B7A87">{{ t.price }}</span></span><span style="font-size:13px;color:#5B6B7B;text-wrap:pretty">{{ t.note }}</span><span style="align-self:flex-start;height:24px;display:inline-flex;align-items:center;padding:0 8px;border-radius:7px;background:{{ t.tagBg }};font-size:12px;font-weight:700;color:{{ t.tagColor }}">{{ t.tag }}</span></div></sc-for>
+          </div>
+        </section>
+
+        <section aria-labelledby="pr-bg">
+          <h2 id="pr-bg" style="margin:0 0 12px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(22px,2.4vw,28px);font-weight:500;letter-spacing:-0.012em">הכשרה וניסיון</h2>
+          <ol style="list-style:none;margin:0;padding:0;border-right:2px solid #CDEFF3">
+            <sc-for list="{{ p.cv }}" as="c" hint-placeholder-count="4"><li style="position:relative;padding:0 18px 16px 0"><span aria-hidden="true" style="position:absolute;right:-7px;top:6px;width:12px;height:12px;border-radius:50%;background:#fff;border:2px solid #14B3C6"></span><span dir="ltr" style="display:block;font-size:12.5px;font-weight:700;color:#0B7A87;text-align:right;font-variant-numeric:tabular-nums">{{ c.years }}</span><span style="display:block;font-size:15px;font-weight:700">{{ c.what }}</span><span style="display:block;font-size:13.5px;color:#5B6B7B">{{ c.where }}</span></li></sc-for>
+          </ol>
+        </section>
+
+        <section aria-labelledby="pr-rv">
+          <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+            <h2 id="pr-rv" style="flex:1;min-width:0;margin:0;font-family:'Frank Ruhl Libre',serif;font-size:clamp(22px,2.4vw,28px);font-weight:500;letter-spacing:-0.012em">חוות דעת שמזכירות את {{ p.first }}</h2>
+            <span style="flex:none;font-size:14px;font-weight:700"><span dir="ltr" style="unicode-bidi:isolate;color:#0B7A87">★ 4.9</span> · 38 ביקורות מאומתות</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ reviews }}" as="r" hint-placeholder-count="3"><article style="padding:15px 16px;background:#fff;border:1px solid #E6E6E6;border-radius:15px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px"><span dir="ltr" style="flex:none;color:#0B7A87;font-size:14px;letter-spacing:1px">{{ r.stars }}</span><span style="flex:1;min-width:0;font-size:15px;font-weight:700">{{ r.title }}</span><span style="flex:none;font-size:12.5px;color:#8A96A3">{{ r.meta }}</span></div><p style="margin:0;font-size:14.5px;color:#3E4F62;text-wrap:pretty">{{ r.body }}</p></article></sc-for>
+          </div>
+          <a href="./BeautyFind Review.dc.html" style="display:inline-flex;align-items:center;min-height:42px;margin-top:10px;font-size:14.5px;font-weight:700">כתיבת ביקורת על טיפול שעברתם</a>
+        </section>
+      </main>
+
+      <aside data-pr-side style="min-width:0;display:flex;flex-direction:column;gap:12px">
+        <div style="background:#fff;border:1px solid {{ p.licBorder }};border-radius:17px;overflow:hidden">
+          <div style="padding:13px 16px;background:{{ p.licHead }};border-bottom:1px solid {{ p.licBorder }}">
+            <span style="display:block;font-size:12.5px;font-weight:700;color:{{ p.badgeColor }}">{{ p.respLabel }}</span>
+            <span style="display:block;font-size:16px;font-weight:700">{{ p.licType }}</span>
+          </div>
+          <dl style="margin:0;padding:14px 16px;display:grid;grid-template-columns:92px minmax(0,1fr);gap:9px 11px;font-size:14px">
+            <dt style="color:#8A96A3">מספר</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">{{ p.licNo }}</dd>
+            <dt style="color:#8A96A3">נבדק מול</dt><dd style="margin:0;font-weight:600">{{ p.licSource }}</dd>
+            <dt style="color:#8A96A3">בדיקה אחרונה</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums">14/09/2026</dd>
+          </dl>
+          <p style="margin:0;padding:11px 16px;border-top:1px solid #EDEFF2;font-size:12.5px;color:#5B6B7B;text-wrap:pretty">{{ p.licNote }} <a href="./BeautyFind Standards.dc.html">איך אנחנו בודקים</a></p>
+        </div>
+
+        <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:14px 16px">
+          <h2 style="margin:0 0 10px;font-size:15px;font-weight:700">איפה אפשר לפגוש</h2>
+          <a href="./BeautyFind Business Profile.dc.html" style="display:block;text-decoration:none;color:inherit;padding:10px 12px;border:1px solid #E6E6E6;border-radius:12px" style-hover="border-color:#7ED7E1">
+            <span style="display:block;font-size:15px;font-weight:700;color:#0C243E">קליניקת נועה · רעננה</span>
+            <span style="display:block;font-size:13px;color:#5B6B7B">רחוב אחוזה 128, קומה 2</span>
+            <span style="display:block;margin-top:4px;font-size:13px;font-weight:600;color:#3E4F62">{{ p.days }}</span>
+          </a>
+          <a href="https://waze.com/ul?q=%D7%90%D7%97%D7%95%D7%96%D7%94%20128%20%D7%A8%D7%A2%D7%A0%D7%A0%D7%94&navigate=yes" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;min-height:40px;margin-top:6px;font-size:14px;font-weight:700">ניווט ב־Waze</a>
+        </div>
+
+        <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:14px 16px">
+          <h2 style="margin:0 0 8px;font-size:15px;font-weight:700">שפות</h2>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <sc-for list="{{ p.langs }}" as="l" hint-placeholder-count="3"><span style="height:30px;display:inline-flex;align-items:center;padding:0 11px;border-radius:9px;background:#F6F8F9;font-size:13.5px;font-weight:600">{{ l }}</span></sc-for>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <dc-import name="BeautyFind Cookie Consent" embedded="{{ true }}" hint-size="0,0"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1160,&quot;height&quot;:1000},&quot;practitionerType&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;doctor&quot;,&quot;cosmetic&quot;],&quot;default&quot;:&quot;doctor&quot;,&quot;tsType&quot;:&quot;'doctor'|'cosmetic'&quot;}}">
+const MED = { tagBg: '#FDF1E7', tagColor: '#9A5B15', tag: 'בייעוץ רפואי' };
+const ON = { tagBg: '#EAF3EA', tagColor: '#3B6B3F', tag: 'קביעה אונליין' };
+const PEOPLE = {
+  doctor: {
+    name: 'ד״ר נועה לוי', first: 'ד״ר לוי', title: 'רופאה אסתטית · מייסדת קליניקת נועה',
+    bio: 'מטפלת בהזרקות אסתטיות מאז 2014, עם דגש על תוצאה טבעית ועל ייעוץ כנה — גם כשהתשובה היא ״לא צריך״. כל טיפול בהזרקה בקליניקה מתבצע על ידה או בפיקוחה.',
+    badge: 'רישיון רופאה מאומת', badgeBg: '#EAF3EA', badgeColor: '#3B6B3F',
+    cta: 'בקשת ייעוץ', ctaHref: './BeautyFind Consult Request.dc.html',
+    txTitle: 'טיפולים שהיא מבצעת',
+    treatments: [
+      Object.assign({ name: 'בוטוקס — מצח וקמטי הבעה', price: 'מ־₪1,200', note: 'לפי אזורים ויחידות, נקבע בבדיקה' }, MED),
+      Object.assign({ name: 'חומצה היאלורונית — שפתיים', price: 'מ־₪1,600', note: 'לפי מ״ל. כולל ביקורת אחרי שבועיים' }, MED),
+      Object.assign({ name: 'חומצה היאלורונית — קו לסת', price: 'מ־₪2,400', note: 'בדרך כלל 2–3 מ״ל' }, MED),
+      Object.assign({ name: 'ייעוץ רפואי אסתטי', price: '₪200', note: 'מתקזז מהטיפול אם מתבצע' }, ON)
+    ],
+    cv: [
+      { years: '2020–היום', what: 'מייסדת ורופאה אחראית', where: 'קליניקת נועה, רעננה' },
+      { years: '2014–2020', what: 'רופאה במרפאת אסתטיקה', where: 'מרכז רפואי בגוש דן' },
+      { years: '2013', what: 'השתלמות ברפואה אסתטית', where: 'האיגוד הישראלי לרפואה אסתטית' },
+      { years: '2005–2011', what: 'תואר MD', where: 'הפקולטה לרפואה, אוניברסיטת תל אביב' }
+    ],
+    respLabel: 'אחריות רפואית', licType: 'רישיון רופא', licNo: '34-82115', licSource: 'פנקס הרופאים, משרד הבריאות',
+    licNote: 'הזרקה היא פעולה רפואית, ורק רופא/ה או אח/ות בפיקוח רשאים לבצעה.', licBorder: '#CDEFF3', licHead: '#F0FAFB',
+    days: 'ראשון, שלישי, חמישי', langs: ['עברית', 'אנגלית', 'רוסית']
+  },
+  cosmetic: {
+    name: 'שירן אבוטבול', first: 'שירן', title: 'קוסמטיקאית מוסמכת · טיפולי פנים ולייזר',
+    bio: 'מתמחה בטיפולי פנים לעור רגיש ובהסרת שיער בלייזר. מאמינה בפרוטוקול קבוע ובהסבר ברור מה אפשר לצפות אחרי כל טיפול.',
+    badge: 'הסמכה מקצועית אומתה', badgeBg: '#F0FAFB', badgeColor: '#0B7A87',
+    cta: 'קביעת תור', ctaHref: './BeautyFind Booking.dc.html',
+    txTitle: 'טיפולים שהיא מבצעת',
+    treatments: [
+      Object.assign({ name: 'טיפול פנים — ניקוי עמוק', price: '₪380', note: 'כ־75 דקות' }, ON),
+      Object.assign({ name: 'פילינג כימי עדין', price: '₪450', note: 'סדרה מומלצת של 3–4 טיפולים' }, ON),
+      Object.assign({ name: 'הסרת שיער בלייזר — רגליים', price: '₪690', note: 'אפשר בתשלומים' }, ON),
+      Object.assign({ name: 'מיקרונידלינג', price: '₪650', note: 'דורש הצהרת בריאות לפני' }, ON)
+    ],
+    cv: [
+      { years: '2021–היום', what: 'קוסמטיקאית בכירה', where: 'קליניקת נועה, רעננה' },
+      { years: '2018–2021', what: 'קוסמטיקאית', where: 'ספא עירוני, הרצליה' },
+      { years: '2018', what: 'הסמכת מפעילת לייזר', where: 'קורס מוכר' },
+      { years: '2017', what: 'תעודת קוסמטיקאית מוסמכת', where: 'בית ספר לקוסמטיקה' }
+    ],
+    respLabel: 'איש מקצוע אחראי', licType: 'תעודת קוסמטיקאית מוסמכת', licNo: 'C-20417', licSource: 'תעודה שהועלתה ונבדקה ידנית',
+    licNote: 'קוסמטיקאיות אינן רשאיות להזריק. טיפולי הזרקה בקליניקה מבוצעים על ידי ד״ר נועה לוי.', licBorder: '#E6E6E6', licHead: '#F6F8F9',
+    days: 'ראשון עד חמישי', langs: ['עברית', 'ערבית']
+  }
+};
+const REVIEWS = {
+  doctor: [
+    [5, 'אמרה לי לא להזריק, וצדקה', 'ש. כהן · בוטוקס · אוגוסט 2026', 'באתי עם רשימה, ד״ר לוי הסבירה שחצי מזה לא יעזור. עשינו רק מצח, ונראה טבעי לגמרי.'],
+    [5, 'סבלנות והסבר', 'מ. שטרן · שפתיים · יולי 2026', 'הסבירה כל שלב, הראתה מראה באמצע, והזמינה לביקורת אחרי שבועיים בלי תשלום.'],
+    [4, 'תוצאה טובה, המתנה ארוכה', 'אנונימית · קו לסת · יוני 2026', 'התוצאה מעולה. חיכיתי 25 דקות מעבר לשעה שנקבעה.']
+  ],
+  cosmetic: [
+    [5, 'העור שלי סוף סוף רגוע', 'ר. חדד · טיפול פנים · ספטמבר 2026', 'שירן התאימה את החומרים לעור רגיש ושלחה הנחיות בוואטסאפ אחרי.'],
+    [5, 'לייזר בלי כאב מיותר', 'ל. מזרחי · לייזר · אוגוסט 2026', 'מקצועית, מהירה, והסבירה למה צריך רווח של 6 שבועות בין טיפולים.'],
+    [4, 'טוב, קצת יקר', 'אנונימית · פילינג · יולי 2026', 'תוצאה יפה, המחיר גבוה ממקומות אחרים באזור.']
+  ]
+};
+
+class Component extends DCLogic {
+  renderVals() {
+    const k = this.props.practitionerType === 'cosmetic' ? 'cosmetic' : 'doctor';
+    return {
+      p: PEOPLE[k],
+      reviews: REVIEWS[k].map(r => ({ stars: '★★★★★'.slice(0, r[0]) + '☆☆☆☆☆'.slice(0, 5 - r[0]), title: r[1], meta: r[2], body: r[3] }))
+    };
+  }
+}
+</script>
+</body>
+</html>

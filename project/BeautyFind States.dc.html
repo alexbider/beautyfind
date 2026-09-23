@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="מצבי מערכת ב־BeautyFind — עמוד 404, אין תוצאות, אזור ללא עסקים, כרטיס לא מאומת, לוח בקרה ריק ותקלות.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#F6F8F9}
+  *{box-sizing:border-box}
+  :root{--st-pad:16px;--st-sug:minmax(0,1fr);--st-card:repeat(2,minmax(0,1fr));--st-kpi:repeat(2,minmax(0,1fr))}
+  @media (min-width:560px){:root{--st-pad:22px;--st-sug:repeat(2,minmax(0,1fr))}}
+  @media (min-width:900px){:root{--st-sug:repeat(3,minmax(0,1fr));--st-card:repeat(4,minmax(0,1fr));--st-kpi:repeat(4,minmax(0,1fr))}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes stFade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  @keyframes stSpin{to{transform:rotate(360deg)}}
+  @keyframes stPulse{0%,100%{opacity:.55}50%{opacity:1}}
+</style>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#F6F8F9;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+
+  <header style="background:#fff;border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1160px;margin:0 auto;padding:12px var(--st-pad);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <a href="./BeautyFind Homepage.dc.html" dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:21px;letter-spacing:-0.01em;color:#0C243E;text-decoration:none">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6">.</span></a>
+      <span style="flex:none;display:inline-flex;align-items:center;height:25px;padding:0 9px;border-radius:7px;background:#F0FAFB;font-size:11.5px;font-weight:700;color:#0B7A87">מצבי מערכת</span>
+      <span style="flex:1;min-width:0"></span>
+      <a href="./BeautyFind Design System.dc.html" style="flex:none;min-height:42px;display:inline-flex;align-items:center;padding:0 13px;border:1px solid #E6E6E6;border-radius:11px;background:#fff;font-size:14px;font-weight:700;color:#0C243E;text-decoration:none" style-hover="border-color:#0C243E">למערכת העיצוב</a>
+    </div>
+  </header>
+
+  <div style="max-width:1160px;margin:0 auto;padding:clamp(16px,2.4vw,28px) var(--st-pad) 60px">
+
+    <div style="margin-bottom:14px">
+      <h1 style="margin:0 0 4px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(24px,3.2vw,33px);font-weight:500;letter-spacing:-0.015em">מצבי מערכת</h1>
+      <p style="margin:0;max-width:64ch;font-size:15.5px;color:#3E4F62;text-wrap:pretty">כל מצב שאינו "הכול עובד ויש תוצאות". לכל מצב יש הסבר מה קרה, ומה הפעולה הבאה — מסך ריק בלי יציאה הוא באג, לא עיצוב.</p>
+    </div>
+
+    <div role="group" aria-label="בחירת מצב" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px">
+      <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="7">
+        <button type="button" aria-pressed="{{ tb.on }}" onClick="{{ tb.pick }}" style="min-height:40px;padding:0 13px;border:1px solid {{ tb.border }};border-radius:11px;background:{{ tb.bg }};font:inherit;font-size:13.5px;font-weight:700;color:{{ tb.color }};cursor:pointer">{{ tb.name }}</button>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;align-items:flex-start;gap:11px;flex-wrap:wrap;padding:13px 15px;margin-bottom:14px;background:#fff;border:1px solid #E6E6E6;border-radius:14px">
+      <span style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:2px">
+        <span style="font-size:14.5px;font-weight:700">{{ meta.when }}</span>
+        <span style="font-size:13px;color:#5B6B7B;text-wrap:pretty">{{ meta.rule }}</span>
+      </span>
+      <span dir="ltr" style="flex:none;display:inline-flex;align-items:center;height:26px;padding:0 10px;border:1px solid #EDEFF2;border-radius:8px;background:#FAFBFB;font-size:12px;font-weight:700;color:#5B6B7B;unicode-bidi:isolate">{{ meta.code }}</span>
+    </div>
+
+    <div style="background:#fff;border:1px solid #E6E6E6;border-radius:18px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #EDEFF2;background:#FAFBFB">
+        <span aria-hidden="true" style="display:flex;gap:5px">
+          <span style="width:10px;height:10px;border-radius:50%;background:#E0E4E8"></span>
+          <span style="width:10px;height:10px;border-radius:50%;background:#E0E4E8"></span>
+          <span style="width:10px;height:10px;border-radius:50%;background:#E0E4E8"></span>
+        </span>
+        <span dir="ltr" style="flex:1;min-width:0;text-align:center;font-size:12px;color:#8A96A3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;unicode-bidi:isolate">{{ meta.url }}</span>
+      </div>
+
+      <div style="padding:clamp(20px,3vw,44px) clamp(16px,2.4vw,32px)">
+
+        <sc-if value="{{ is404 }}" hint-placeholder-val="{{ true }}">
+          <div style="max-width:640px;margin:0 auto;text-align:center;animation:stFade .22s ease both">
+            <span dir="ltr" aria-hidden="true" style="display:block;font-family:'Frank Ruhl Libre',serif;font-size:clamp(64px,11vw,110px);font-weight:500;line-height:1;letter-spacing:-0.03em;color:#CDEFF3">404</span>
+            <h2 style="margin:6px 0 7px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(23px,3vw,30px);font-weight:500;letter-spacing:-0.014em">העמוד הזה לא קיים</h2>
+            <p style="margin:0 0 20px;font-size:15.5px;color:#3E4F62;text-wrap:pretty">ייתכן שהכרטיס הוסר, שהקישור נשבר, או שיש שגיאת כתיב בכתובת. הנה הדרכים הקצרות להמשיך.</p>
+            <div style="display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-bottom:22px">
+              <a href="./BeautyFind Homepage.dc.html" style="min-height:48px;display:inline-flex;align-items:center;padding:0 18px;border-radius:12px;background:#0B7A87;font-size:15.5px;font-weight:700;color:#fff;text-decoration:none">לדף הבית</a>
+              <a href="./BeautyFind Search.dc.html" style="min-height:48px;display:inline-flex;align-items:center;padding:0 16px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font-size:15.5px;font-weight:700;color:#3E4F62;text-decoration:none">חיפוש קליניקה</a>
+              <a href="./BeautyFind Contact.dc.html" style="min-height:48px;display:inline-flex;align-items:center;padding:0 14px;border-radius:12px;font-size:15.5px;font-weight:700;color:#0B7A87;text-decoration:none">דיווח על קישור שבור</a>
+            </div>
+            <div style="display:grid;grid-template-columns:var(--st-sug);gap:10px;text-align:right">
+              <sc-for list="{{ popular }}" as="pp" hint-placeholder-count="3">
+                <a href="{{ pp.href }}" style="min-width:0;display:flex;align-items:center;gap:10px;padding:13px 15px;border:1px solid #E6E6E6;border-radius:13px;background:#fff;text-decoration:none;color:inherit" style-hover="border-color:#0B7A87">
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                    <span style="font-size:14.5px;font-weight:700;color:#0C243E">{{ pp.name }}</span>
+                    <span style="font-size:12.5px;color:#8A96A3">{{ pp.note }}</span>
+                  </span>
+                  <svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="#0B7A87" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M12 7H2M6 3 2 7l4 4"></path></svg>
+                </a>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isNoResults }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:stFade .22s ease both">
+            <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:11px 13px;margin-bottom:18px;background:#FAFBFB;border:1px solid #EDEFF2;border-radius:13px">
+              <span style="flex:none;font-size:13px;color:#8A96A3">החיפוש שלך:</span>
+              <sc-for list="{{ activeFilters }}" as="af" hint-placeholder-count="3">
+                <span style="flex:none;display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 10px;border:1px solid #CDEFF3;border-radius:9px;background:#F0FAFB;font-size:13px;font-weight:700;color:#0B7A87">
+                  <span>{{ af.name }}</span>
+                  <button type="button" onClick="{{ af.drop }}" aria-label="הסרת הסינון" style="width:18px;height:18px;border:0;border-radius:5px;background:rgba(11,122,135,.14);font:inherit;font-size:12px;color:#0B7A87;cursor:pointer;padding:0">×</button>
+                </span>
+              </sc-for>
+            </div>
+
+            <div style="max-width:620px;text-align:center;margin:0 auto 22px">
+              <h2 style="margin:0 0 7px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(21px,2.6vw,27px);font-weight:500;letter-spacing:-0.014em">{{ noResTitle }}</h2>
+              <p style="margin:0;font-size:15px;color:#3E4F62;text-wrap:pretty">{{ noResBody }}</p>
+            </div>
+
+            <h3 style="margin:0 0 10px;font-size:15px;font-weight:700">נסו להרחיב את החיפוש</h3>
+            <div style="display:grid;grid-template-columns:var(--st-sug);gap:10px;margin-bottom:20px">
+              <sc-for list="{{ widenOptions }}" as="wo" hint-placeholder-count="3">
+                <button type="button" onClick="{{ wo.pick }}" style="min-width:0;display:flex;align-items:center;gap:10px;padding:13px 15px;border:1px solid #E6E6E6;border-radius:13px;background:#fff;font:inherit;text-align:right;cursor:pointer" style-hover="border-color:#0B7A87">
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                    <span style="font-size:14.5px;font-weight:700">{{ wo.name }}</span>
+                    <span style="font-size:12.5px;color:#8A96A3">{{ wo.note }}</span>
+                  </span>
+                  <span dir="ltr" style="flex:none;font-size:14px;font-weight:700;color:#0B7A87;font-variant-numeric:tabular-nums">{{ wo.n }}</span>
+                </button>
+              </sc-for>
+            </div>
+
+            <div style="padding:15px 17px;border:1px solid #CDEFF3;border-radius:14px;background:#F0FAFB">
+              <h3 style="margin:0 0 4px;font-size:15px;font-weight:700">שנעדכן כשייפתח משהו באזור?</h3>
+              <p style="margin:0 0 12px;font-size:13.5px;color:#3E4F62;text-wrap:pretty">נשלח הודעה אחת בוואטסאפ כשקליניקה שמתאימה לסינון שלך תצטרף למדריך.</p>
+              <div style="display:flex;gap:9px;flex-wrap:wrap">
+                <input value="{{ alertPhone }}" onChange="{{ onAlertPhone }}" dir="ltr" inputMode="tel" placeholder="052-000-0000" aria-label="טלפון להתראה" style="flex:1;min-width:170px;min-height:46px;padding:0 12px;border:1px solid #D4D4D4;border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none;text-align:right">
+                <button type="button" onClick="{{ subscribeAlert }}" style="flex:none;min-height:46px;padding:0 16px;border:0;border-radius:11px;background:#0B7A87;font:inherit;font-size:15px;font-weight:700;color:#fff;cursor:pointer">עדכנו אותי</button>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isEmptyRegion }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:stFade .22s ease both">
+            <div style="max-width:640px;margin:0 auto 22px;text-align:center">
+              <span style="display:inline-flex;align-items:center;height:28px;padding:0 11px;margin-bottom:11px;border:1px solid #F3D9BE;border-radius:9px;background:#FDF1E7;font-size:12.5px;font-weight:700;color:#9A5B15">אזור בהקמה</span>
+              <h2 style="margin:0 0 7px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(21px,2.6vw,28px);font-weight:500;letter-spacing:-0.014em">עדיין אין קליניקות מאומתות בערבה</h2>
+              <p style="margin:0;font-size:15px;color:#3E4F62;text-wrap:pretty">אנחנו לא מציגים עסקים שלא עברו אימות, גם במחיר של עמוד ריק. עד שיצטרפו — הנה מה שיש בסביבה הקרובה.</p>
+            </div>
+            <div style="display:grid;grid-template-columns:var(--st-sug);gap:10px;margin-bottom:20px">
+              <sc-for list="{{ nearbyRegions }}" as="nr" hint-placeholder-count="3">
+                <a href="./BeautyFind Region.dc.html" style="min-width:0;display:flex;align-items:center;gap:10px;padding:14px 16px;border:1px solid #E6E6E6;border-radius:13px;background:#fff;text-decoration:none;color:inherit" style-hover="border-color:#0B7A87">
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                    <span style="font-size:15px;font-weight:700;color:#0C243E">{{ nr.name }}</span>
+                    <span style="font-size:12.5px;color:#8A96A3">{{ nr.note }}</span>
+                  </span>
+                  <span dir="ltr" style="flex:none;font-size:15px;font-weight:700;color:#0B7A87;font-variant-numeric:tabular-nums">{{ nr.n }}</span>
+                </a>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:var(--st-sug);gap:10px">
+              <div style="min-width:0;padding:15px 17px;border:1px solid #CDEFF3;border-radius:14px;background:#F0FAFB">
+                <h3 style="margin:0 0 4px;font-size:15px;font-weight:700">יש לכם קליניקה בערבה?</h3>
+                <p style="margin:0 0 12px;font-size:13.5px;color:#3E4F62;text-wrap:pretty">רישום ראשון באזור חדש מקבל ליווי בהקמת הכרטיס, בלי עלות בשנה הראשונה.</p>
+                <a href="./BeautyFind Get Listed.dc.html" style="min-height:44px;display:inline-flex;align-items:center;padding:0 15px;border-radius:11px;background:#0B7A87;font-size:14.5px;font-weight:700;color:#fff;text-decoration:none">רישום העסק</a>
+              </div>
+              <div style="min-width:0;padding:15px 17px;border:1px solid #E6E6E6;border-radius:14px;background:#FAFBFB">
+                <h3 style="margin:0 0 4px;font-size:15px;font-weight:700">מכירות מטפלת באזור?</h3>
+                <p style="margin:0 0 12px;font-size:13.5px;color:#3E4F62;text-wrap:pretty">ספרו לנו והצוות יפנה אליה. אנחנו בונים את המדריך מלמטה למעלה.</p>
+                <a href="./BeautyFind Contact.dc.html" style="min-height:44px;display:inline-flex;align-items:center;padding:0 14px;border:1px solid #E6E6E6;border-radius:11px;background:#fff;font-size:14.5px;font-weight:700;color:#3E4F62;text-decoration:none">המלצה על עסק</a>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isUnclaimed }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:stFade .22s ease both">
+            <div style="padding:13px 15px;margin-bottom:18px;border:1px solid #F3D9BE;border-radius:13px;background:#FDF1E7">
+              <p style="margin:0;font-size:14px;font-weight:700;color:#9A5B15;text-wrap:pretty">הכרטיס הזה לא נוהל על ידי העסק. הפרטים נאספו ממקורות פומביים, ועשויים להיות לא מעודכנים.</p>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:18px">
+              <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:17px;background:#EDEFF2;color:#8A96A3;font-size:19px;font-weight:700">לי</span>
+              <div style="flex:1;min-width:200px">
+                <h2 style="margin:0 0 4px;font-size:21px;font-weight:700">סטודיו לין</h2>
+                <p style="margin:0 0 7px;font-size:14px;color:#5B6B7B">תל אביב · גוש דן · טיפולי פנים</p>
+                <span style="display:inline-flex;align-items:center;height:26px;padding:0 10px;border:1px solid #D4D4D4;border-radius:8px;background:#EDEFF2;font-size:11.5px;font-weight:700;color:#5B6B7B">לא מאומת</span>
+              </div>
+            </div>
+            <dl style="margin:0 0 18px;display:grid;grid-template-columns:var(--st-card);gap:11px">
+              <sc-for list="{{ unclaimedFields }}" as="uf" hint-placeholder-count="4">
+                <div style="min-width:0;display:flex;flex-direction:column;gap:3px;padding:12px 14px;background:#FAFBFB;border:1px solid #EDEFF2;border-radius:12px">
+                  <dt style="font-size:12px;font-weight:600;color:#8A96A3">{{ uf.label }}</dt>
+                  <dd dir="{{ uf.dir }}" style="margin:0;font-size:14px;font-weight:700;text-align:right;color:{{ uf.color }};text-wrap:pretty">{{ uf.value }}</dd>
+                </div>
+              </sc-for>
+            </dl>
+            <div style="display:grid;grid-template-columns:var(--st-sug);gap:10px">
+              <div style="min-width:0;padding:15px 17px;border:1px solid #CDEFF3;border-radius:14px;background:#F0FAFB">
+                <h3 style="margin:0 0 4px;font-size:15px;font-weight:700">זה העסק שלכם?</h3>
+                <p style="margin:0 0 12px;font-size:13.5px;color:#3E4F62;text-wrap:pretty">קבלו שליטה על הכרטיס, עדכנו טיפולים ושעות, וקבלו פניות ישר אליכם.</p>
+                <a href="./BeautyFind Claim.dc.html" style="min-height:44px;display:inline-flex;align-items:center;padding:0 15px;border-radius:11px;background:#0B7A87;font-size:14.5px;font-weight:700;color:#fff;text-decoration:none">בקשת בעלות</a>
+              </div>
+              <div style="min-width:0;padding:15px 17px;border:1px solid #E6E6E6;border-radius:14px;background:#FAFBFB">
+                <h3 style="margin:0 0 4px;font-size:15px;font-weight:700">משהו כאן לא מדויק?</h3>
+                <p style="margin:0 0 12px;font-size:13.5px;color:#3E4F62;text-wrap:pretty">דיווח על פרט שגוי נבדק בתוך יום עסקים.</p>
+                <a href="./BeautyFind Contact.dc.html" style="min-height:44px;display:inline-flex;align-items:center;padding:0 14px;border:1px solid #E6E6E6;border-radius:11px;background:#fff;font-size:14.5px;font-weight:700;color:#3E4F62;text-decoration:none">דיווח על תיקון</a>
+              </div>
+              <div style="min-width:0;padding:15px 17px;border:1px solid #E6E6E6;border-radius:14px;background:#FAFBFB">
+                <h3 style="margin:0 0 4px;font-size:15px;font-weight:700">מחפשים תור עכשיו?</h3>
+                <p style="margin:0 0 12px;font-size:13.5px;color:#3E4F62;text-wrap:pretty">קליניקות מאומתות באותו אזור עם יומן פעיל.</p>
+                <a href="./BeautyFind Search.dc.html" style="min-height:44px;display:inline-flex;align-items:center;padding:0 14px;border:1px solid #E6E6E6;border-radius:11px;background:#fff;font-size:14.5px;font-weight:700;color:#3E4F62;text-decoration:none">קליניקות מאומתות</a>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isNewBiz }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:stFade .22s ease both">
+            <div style="margin-bottom:16px">
+              <h2 style="margin:0 0 4px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(21px,2.6vw,27px);font-weight:500;letter-spacing:-0.014em">ברוכים הבאים, קליניקת נועה</h2>
+              <p style="margin:0;font-size:15px;color:#3E4F62;text-wrap:pretty">הכרטיס פורסם לפני שעתיים. אין עוד נתונים להציג — וזה נורמלי. במקום גרפים ריקים, הנה מה שמזיז את המחוג.</p>
+            </div>
+
+            <div style="padding:15px 17px;margin-bottom:16px;border:1px solid #CDEFF3;border-radius:14px;background:#F0FAFB">
+              <div style="display:flex;align-items:center;gap:11px;margin-bottom:10px">
+                <span style="flex:1;min-width:0;font-size:15px;font-weight:700">שלמות הפרופיל</span>
+                <span dir="ltr" style="flex:none;font-size:17px;font-weight:700;color:#0B7A87;font-variant-numeric:tabular-nums">{{ completion }}</span>
+              </div>
+              <span aria-hidden="true" style="display:block;height:8px;border-radius:4px;background:rgba(11,122,135,.16);overflow:hidden;margin-bottom:12px">
+                <span style="display:block;height:100%;width:{{ completion }};background:#0B7A87;transition:width .2s"></span>
+              </span>
+              <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px">
+                <sc-for list="{{ setupTasks }}" as="tk" hint-placeholder-count="4">
+                  <li style="display:flex;align-items:center;gap:11px">
+                    <button type="button" role="checkbox" aria-checked="{{ tk.on }}" onClick="{{ tk.toggle }}" aria-label="{{ tk.name }}" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;border:1.5px solid {{ tk.border }};border-radius:7px;background:{{ tk.bg }};color:#fff;cursor:pointer">
+                      <sc-if value="{{ tk.checked }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg></sc-if>
+                    </button>
+                    <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                      <span style="font-size:14.5px;font-weight:700;color:{{ tk.color }};text-decoration:{{ tk.deco }}">{{ tk.name }}</span>
+                      <span style="font-size:12.5px;color:#8A96A3;text-wrap:pretty">{{ tk.note }}</span>
+                    </span>
+                    <span style="flex:none;font-size:12px;font-weight:700;color:#0B7A87">{{ tk.impact }}</span>
+                  </li>
+                </sc-for>
+              </ul>
+            </div>
+
+            <dl style="margin:0;display:grid;grid-template-columns:var(--st-kpi);gap:11px">
+              <sc-for list="{{ zeroKpis }}" as="zk" hint-placeholder-count="4">
+                <div style="min-width:0;display:flex;flex-direction:column;gap:3px;padding:13px 15px;background:#FAFBFB;border:1px dashed #D4D4D4;border-radius:13px">
+                  <dt style="font-size:12.5px;font-weight:600;color:#5B6B7B">{{ zk.label }}</dt>
+                  <dd dir="ltr" style="margin:0;font-size:23px;font-weight:700;text-align:right;color:#8A96A3;font-variant-numeric:tabular-nums">—</dd>
+                  <span style="font-size:11.5px;color:#8A96A3;text-wrap:pretty">{{ zk.note }}</span>
+                </div>
+              </sc-for>
+            </dl>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:stFade .22s ease both">
+            <p style="margin:0 0 16px;font-size:14px;color:#5B6B7B;text-wrap:pretty">שלד טעינה בצורת התוצאה הסופית — בלי קפיצת פריסה כשהנתונים מגיעים. לא ספינר על מסך ריק.</p>
+            <div style="display:grid;grid-template-columns:var(--st-card);gap:12px">
+              <sc-for list="{{ skeletons }}" as="sk" hint-placeholder-count="4">
+                <div style="min-width:0;background:#fff;border:1px solid #E6E6E6;border-radius:15px;overflow:hidden">
+                  <div aria-hidden="true" style="aspect-ratio:16/9;background:#EDEFF2;animation:stPulse 1.4s ease-in-out infinite"></div>
+                  <div style="padding:14px 15px;display:flex;flex-direction:column;gap:9px">
+                    <span aria-hidden="true" style="display:block;height:14px;width:{{ sk.w1 }};border-radius:5px;background:#EDEFF2;animation:stPulse 1.4s ease-in-out infinite"></span>
+                    <span aria-hidden="true" style="display:block;height:11px;width:{{ sk.w2 }};border-radius:5px;background:#F1F3F5;animation:stPulse 1.4s ease-in-out infinite"></span>
+                    <span aria-hidden="true" style="display:block;height:11px;width:{{ sk.w3 }};border-radius:5px;background:#F1F3F5;animation:stPulse 1.4s ease-in-out infinite"></span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <p role="status" style="margin:16px 0 0;display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;color:#5B6B7B">
+              <span aria-hidden="true" style="flex:none;display:block;width:16px;height:16px;border:2px solid #CDEFF3;border-top-color:#0B7A87;border-radius:50%;animation:stSpin .8s linear infinite"></span>
+              <span>טוען קליניקות בשרון…</span>
+            </p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+          <div style="max-width:620px;margin:0 auto;text-align:center;animation:stFade .22s ease both">
+            <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:58px;height:58px;margin-bottom:14px;border-radius:50%;background:#FDEDEC;color:#A33A31;font-size:26px;font-weight:700">!</span>
+            <h2 style="margin:0 0 7px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(21px,2.6vw,28px);font-weight:500;letter-spacing:-0.014em">משהו נשבר אצלנו, לא אצלכם</h2>
+            <p style="margin:0 0 18px;font-size:15px;color:#3E4F62;text-wrap:pretty">לא הצלחנו לטעון את היומן של הקליניקה. הבקשה שלכם לא בוצעה, ולא נשמר שום שינוי — אפשר לנסות שוב בבטחה.</p>
+            <div style="display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-bottom:18px">
+              <button type="button" onClick="{{ retry }}" style="min-height:48px;padding:0 18px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:15.5px;font-weight:700;color:#fff;cursor:pointer">ניסיון חוזר</button>
+              <a href="tel:+972977411180" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 15px;border-radius:12px;font:inherit;font-size:15.5px;font-weight:700;text-decoration:none;cursor:pointer;transition:background .15s,border-color .15s;border:1px solid #D4D4D4;background:#fff;color:#0C243E;" style-hover="background:#F0FAFB;border-color:#7ED7E1"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;color:#0B7A87"><path d="M5 3.5h3.2l1.6 4-2 1.3a11 11 0 0 0 5.4 5.4l1.3-2 4 1.6V17a2.5 2.5 0 0 1-2.7 2.5A15.5 15.5 0 0 1 2.5 6.2 2.5 2.5 0 0 1 5 3.5z"></path></svg><span style="display:inline-flex;align-items:center;gap:6px">התקשרות לקליניקה</span></a>
+              <a href="./BeautyFind Contact.dc.html" style="min-height:48px;display:inline-flex;align-items:center;padding:0 14px;border-radius:12px;font-size:15.5px;font-weight:700;color:#0B7A87;text-decoration:none">דיווח לתמיכה</a>
+            </div>
+            <p style="margin:0;padding:11px 13px;border:1px solid #EDEFF2;border-radius:11px;background:#FAFBFB;font-size:12.5px;color:#8A96A3;text-wrap:pretty">
+              קוד תקלה <span dir="ltr" style="font-weight:700;color:#5B6B7B;unicode-bidi:isolate">CAL-503</span> · <span dir="ltr" style="unicode-bidi:isolate">22/09/2026 09:41</span> — צטטו את הקוד בפנייה לתמיכה.
+            </p>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;padding:15px 17px;background:#fff;border:1px solid #E6E6E6;border-radius:15px">
+      <h2 style="margin:0 0 10px;font-size:15.5px;font-weight:700">הכללים לכל מצב</h2>
+      <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{ principles }}" as="pr" hint-placeholder-count="4">
+          <li style="display:flex;align-items:flex-start;gap:11px">
+            <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;margin-top:1px;border-radius:7px;background:#F0FAFB;color:#0B7A87;font-size:12.5px;font-weight:700">{{ pr.n }}</span>
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:14.5px;font-weight:700;text-wrap:pretty">{{ pr.name }}</span>
+              <span style="font-size:13.5px;color:#5B6B7B;text-wrap:pretty">{{ pr.note }}</span>
+            </span>
+          </li>
+        </sc-for>
+      </ul>
+    </div>
+  </div>
+
+  <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:fixed;bottom:18px;right:50%;transform:translateX(50%);z-index:40;max-width:min(90vw,440px);padding:12px 17px;border-radius:13px;background:#0C243E;color:#fff;font-size:14px;font-weight:600;box-shadow:0 12px 30px rgba(12,36,62,.28);text-wrap:pretty">{{ toastText }}</div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1160,&quot;height&quot;:900}}">
+const STATES = [
+  { key: '404', name: 'עמוד לא קיים', url: 'beautyfind.co.il/biz/studio-lin-old', code: 'HTTP 404',
+    when: 'כתובת שאינה קיימת, או כרטיס שהוסר',
+    rule: 'תמיד שלוש יציאות: דף הבית, חיפוש, ודיווח על קישור שבור. אף פעם לא רק "חזרה".' },
+  { key: 'noresults', name: 'אין תוצאות', url: 'beautyfind.co.il/search?q=HIFU&city=ערד&price=low', code: 'results: 0',
+    when: 'הסינון תקף אך אין התאמות',
+    rule: 'מציגים מה סוננן, מאפשרים להסיר סינון בנקישה, ומציעים הרחבה עם מספרים אמיתיים.' },
+  { key: 'region', name: 'אזור ללא עסקים', url: 'beautyfind.co.il/region/arava', code: 'region: empty',
+    when: 'עמוד אזור שטרם נבנה',
+    rule: 'לא מציגים עסקים לא מאומתים כדי למלא עמוד. מפנים לאזור סמוך ומזמינים רישום.' },
+  { key: 'unclaimed', name: 'כרטיס לא מאומת', url: 'beautyfind.co.il/biz/studio-lin', code: 'claimed: false',
+    when: 'כרטיס שנאסף ממקורות פומביים וטרם נוהל',
+    rule: 'אומרים במפורש שהמידע לא אומת, ומציעים גם בקשת בעלות וגם דיווח על תיקון.' },
+  { key: 'newbiz', name: 'לוח בקרה ריק', url: 'beautyfind.co.il/dashboard', code: 'data: none',
+    when: 'עסק שנרשם ואין לו עדיין נתונים',
+    rule: 'במקום גרפים באפס — משימות הקמה עם השפעה מוצהרת. מדדים מוצגים כקו מקף, לא כאפס.' },
+  { key: 'loading', name: 'טעינה', url: 'beautyfind.co.il/search?region=sharon', code: 'pending',
+    when: 'בקשה שנמשכת מעל 300 מילישניות',
+    rule: 'שלד בצורת התוצאה הסופית, בלי קפיצת פריסה. ספינר רק ככתובית מלווה.' },
+  { key: 'error', name: 'תקלה', url: 'beautyfind.co.il/biz/noa-clinic/booking', code: 'HTTP 503',
+    when: 'כשל בצד שלנו או בשירות חיצוני',
+    rule: 'אומרים שהאשמה שלנו, שהבקשה לא בוצעה, ונותנים קוד תקלה שאפשר לצטט.' }
+];
+
+const POPULAR = [
+  { name: 'קליניקות בשרון', href: './BeautyFind Region.dc.html', note: '402 עסקים מאומתים' },
+  { name: 'הסרת שיער בלייזר', href: './BeautyFind Treatment Category.dc.html', note: 'מחירים וטווחי טיפול' },
+  { name: 'איך בוחרים מטפלת', href: './BeautyFind Article.dc.html', note: 'מדריך עם בדיקה רפואית' }
+];
+
+const FILTERS0 = [
+  { key: 'svc', name: 'מיצוק HIFU' },
+  { key: 'city', name: 'ערד' },
+  { key: 'price', name: 'עד ₪1,000' },
+  { key: 'open', name: 'פתוח עכשיו' }
+];
+
+const WIDEN = [
+  { key: 'city', name: 'כל הדרום', note: 'במקום ערד בלבד', n: '12' },
+  { key: 'price', name: 'ללא הגבלת מחיר', note: 'טיפולי HIFU מתחילים ב־₪1,800', n: '9' },
+  { key: 'open', name: 'כולל סגור עכשיו', note: 'אפשר לקבוע תור להמשך השבוע', n: '4' }
+];
+
+const NEARBY = [
+  { name: 'באר שבע והסביבה', note: 'עד 45 דקות נסיעה', n: '38' },
+  { name: 'אילת', note: 'עד שעתיים נסיעה', n: '11' },
+  { name: 'שפלה', note: 'הכי קרוב עם מגוון מלא', n: '233' }
+];
+
+const UNCLAIMED_FIELDS = [
+  { label: 'טלפון', value: '03-000-0000', dir: 'ltr', color: '#0C243E' },
+  { label: 'שעות פעילות', value: 'לא ידוע', dir: 'rtl', color: '#8A96A3' },
+  { label: 'מחירים', value: 'לא פורסמו', dir: 'rtl', color: '#8A96A3' },
+  { label: 'אחריות רפואית', value: 'לא הוצהרה', dir: 'rtl', color: '#9A5B15' }
+];
+
+const TASKS = [
+  ['photos', 'העלאת תמונת כיסוי וארבע תמונות גלריה', 'כרטיס עם תמונות מקבל פי 3 פניות', '+34% פניות'],
+  ['hours', 'אישור שעות הפעילות', 'לקוחות מסננות לפי "פתוח עכשיו"', '+18% צפיות'],
+  ['prices', 'הוספת מחירים לחמישה טיפולים', 'שקיפות מחיר היא הסיבה מספר אחת לפנייה', '+22% פניות'],
+  ['medical', 'הצהרת אחריות רפואית', 'חובה לפרסום טיפולי הזרקה', 'נדרש']
+];
+
+const ZERO_KPIS = [
+  { label: 'צפיות בפרופיל', note: 'יתחיל להצטבר עם האינדוקס, בדרך כלל תוך 48 שעות' },
+  { label: 'פניות', note: 'וואטסאפ, טלפון וטופס — יופיעו כאן עם הפנייה הראשונה' },
+  { label: 'דירוג', note: 'נפתח אחרי הביקורת המאומתת הראשונה' },
+  { label: 'מקומות בחיפוש', note: 'נמדד שבועית מול עסקים באותו אזור' }
+];
+
+const SKELETONS = [
+  { w1: '72%', w2: '54%', w3: '38%' },
+  { w1: '61%', w2: '48%', w3: '44%' },
+  { w1: '80%', w2: '58%', w3: '33%' },
+  { w1: '66%', w2: '42%', w3: '50%' }
+];
+
+const PRINCIPLES = [
+  { n: '1', name: 'מה קרה, בשפה של הלקוחה', note: 'לא "אירעה שגיאה" — אלא מה לא נטען ומה המשמעות בפועל.' },
+  { n: '2', name: 'האם המידע שלי נשמר', note: 'בתקלה אומרים במפורש שהבקשה לא בוצעה ושאפשר לנסות שוב בבטחה.' },
+  { n: '3', name: 'לפחות שתי פעולות אפשריות', note: 'מסך ללא יציאה הוא באג. לפעולה הראשית יש מספר או יעד אמיתי מאחוריה.' },
+  { n: '4', name: 'לא ממלאים ריק בתוכן לא מאומת', note: 'עמוד ריק עם הסבר עדיף על עסקים שלא עברו אימות.' },
+  { n: '5', name: 'קוד שאפשר לצטט', note: 'תקלה מציגה קוד וזמן, כדי שהתמיכה תמצא את האירוע ביומן.' }
+];
+
+class Component extends DCLogic {
+  state = {
+    key: '404', dropped: {}, tasks: {}, alertPhone: '', toast: ''
+  };
+
+  componentWillUnmount() { clearTimeout(this._t); }
+  flash(t) { clearTimeout(this._t); this.setState({ toast: t }); this._t = setTimeout(() => this.setState({ toast: '' }), 3000); }
+
+  renderVals() {
+    const s = this.state;
+    const teal = '#0B7A87';
+    const line = '#E6E6E6';
+    const st = STATES.filter(x => x.key === s.key)[0] || STATES[0];
+    const activeF = FILTERS0.filter(f => !s.dropped[f.key]);
+    const doneTasks = TASKS.filter(t => s.tasks[t[0]]).length;
+    const pct = Math.round(38 + (doneTasks / TASKS.length) * 62);
+
+    return {
+      tabs: STATES.map(x => {
+        const on = s.key === x.key;
+        return { name: x.name, on: on ? 'true' : 'false',
+          bg: on ? teal : '#fff', color: on ? '#fff' : '#3E4F62', border: on ? teal : line,
+          pick: () => this.setState({ key: x.key }) };
+      }),
+      meta: { url: st.url, code: st.code, when: st.when, rule: st.rule },
+
+      is404: s.key === '404',
+      isNoResults: s.key === 'noresults',
+      isEmptyRegion: s.key === 'region',
+      isUnclaimed: s.key === 'unclaimed',
+      isNewBiz: s.key === 'newbiz',
+      isLoading: s.key === 'loading',
+      isError: s.key === 'error',
+
+      popular: POPULAR,
+
+      activeFilters: activeF.map(f => ({
+        name: f.name,
+        drop: () => this.setState(stt => ({ dropped: Object.assign({}, stt.dropped, { [f.key]: true }) }),
+          () => this.flash('הסינון "' + f.name + '" הוסר'))
+      })),
+      noResTitle: activeF.length === FILTERS0.length
+        ? 'אין קליניקה שעונה על כל ארבעת הסינונים'
+        : activeF.length === 0 ? 'הסרתם את כל הסינונים' : 'עדיין אין התאמה מדויקת',
+      noResBody: activeF.length === 0
+        ? 'עכשיו מוצגות כל הקליניקות המאומתות. אפשר להתחיל לסנן מחדש.'
+        : 'מיצוק HIFU בערד עם תקציב עד ₪1,000 — השילוב הזה לא קיים במדריך. הרחבה אחת בדרך כלל פותרת את זה.',
+      widenOptions: WIDEN.map(w => ({
+        name: w.name, note: w.note, n: w.n,
+        pick: () => this.setState(stt => ({ dropped: Object.assign({}, stt.dropped, { [w.key]: true }) }),
+          () => this.flash(w.n + ' קליניקות נמצאו לאחר ההרחבה'))
+      })),
+      alertPhone: s.alertPhone,
+      onAlertPhone: e => this.setState({ alertPhone: e.target.value }),
+      subscribeAlert: () => {
+        if (!/^0\d{1,2}[- ]?\d{3}[- ]?\d{4}$/.test(s.alertPhone.trim())) { this.flash('הזינו מספר נייד תקין'); return; }
+        this.flash('נעדכן אותך בוואטסאפ כשתיפתח קליניקה מתאימה');
+      },
+
+      nearbyRegions: NEARBY,
+      unclaimedFields: UNCLAIMED_FIELDS,
+
+      completion: pct + '%',
+      setupTasks: TASKS.map(t => {
+        const on = !!s.tasks[t[0]];
+        return { name: t[1], note: t[2], impact: t[3],
+          on: on ? 'true' : 'false', checked: on,
+          bg: on ? teal : '#fff', border: on ? teal : '#C9CFD6',
+          color: on ? '#8A96A3' : '#0C243E',
+          deco: on ? 'line-through' : 'none',
+          toggle: () => this.setState(stt => ({ tasks: Object.assign({}, stt.tasks, { [t[0]]: !stt.tasks[t[0]] }) })) };
+      }),
+      zeroKpis: ZERO_KPIS,
+      skeletons: SKELETONS,
+      retry: () => this.flash('טוען מחדש את היומן…'),
+      principles: PRINCIPLES,
+
+      toastOn: !!s.toast, toastText: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="רכישת מקום ממומן ב־BeautyFind — בחירת אזור ותחום, שבועות פנויים, תצוגה מקדימה עם תג ממומן, בדיקת תוכן ותשלום.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#F6F8F9}
+  *{box-sizing:border-box}
+  :root{--sp-pad:16px;--sp-shell:minmax(0,1fr);--sp-weeks:repeat(2,minmax(0,1fr));--sp-kpi:repeat(2,minmax(0,1fr))}
+  @media (min-width:560px){:root{--sp-pad:22px;--sp-weeks:repeat(4,minmax(0,1fr));--sp-kpi:repeat(4,minmax(0,1fr))}}
+  @media (min-width:1000px){:root{--sp-shell:minmax(0,1fr) 360px}}
+  @media (min-width:1000px) and (min-height:760px){[data-sp-side]{position:sticky;top:18px}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes spFade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  @keyframes spPop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#F6F8F9;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+
+  <header style="background:#fff;border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1160px;margin:0 auto;padding:12px var(--sp-pad);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <a href="./BeautyFind Dashboard.dc.html" dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:21px;letter-spacing:-0.01em;color:#0C243E;text-decoration:none">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6">.</span></a>
+      <span style="flex:none;font-size:13.5px;font-weight:700;color:#5B6B7B">קליניקת נועה</span>
+      <span style="flex:1;min-width:0"></span>
+      <div role="tablist" aria-label="תצוגה" style="flex:none;display:flex;gap:3px;padding:3px;border-radius:11px;background:#F0F3F5">
+        <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="2"><button type="button" role="tab" aria-selected="{{ tb.on }}" onClick="{{ tb.pick }}" style="min-height:38px;padding:0 12px;border:0;border-radius:9px;background:{{ tb.bg }};box-shadow:{{ tb.sh }};font:inherit;font-size:13.5px;font-weight:700;color:{{ tb.color }};cursor:pointer">{{ tb.name }}</button></sc-for>
+      </div>
+    </div>
+  </header>
+
+  <div style="max-width:1160px;margin:0 auto;padding:clamp(16px,2.4vw,28px) var(--sp-pad) 60px">
+
+    <sc-if value="{{ isBuy }}" hint-placeholder-val="{{ true }}">
+      <div style="animation:spFade .22s ease both">
+        <sc-if value="{{ buyForm }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <h1 style="margin:0 0 5px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(26px,3.6vw,38px);font-weight:500;letter-spacing:-0.015em">מקום ממומן</h1>
+            <p style="margin:0 0 clamp(16px,2vw,22px);max-width:62ch;font-size:15.5px;color:#3E4F62;text-wrap:pretty">הכרטיס שלכם מופיע ראשון ברשימה של אזור ותחום, עם תג ״ממומן״. זה לא משנה את הדירוג, את ההשוואה או את הביקורות — רק את הנראות. עד שני מקומות ממומנים בכל רשימה.</p>
+            <div style="display:grid;grid-template-columns:var(--sp-shell);gap:clamp(14px,1.8vw,22px);align-items:start">
+              <main style="min-width:0;display:flex;flex-direction:column;gap:13px">
+                <section aria-labelledby="sp-h1" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px)">
+                  <h2 id="sp-h1" style="margin:0 0 11px;font-size:16.5px;font-weight:700">איפה להופיע</h2>
+                  <span style="display:block;margin-bottom:7px;font-size:13px;font-weight:700">אזור</span>
+                  <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px">
+                    <sc-for list="{{ regions }}" as="r" hint-placeholder-count="7"><button type="button" aria-pressed="{{ r.on }}" onClick="{{ r.pick }}" style="min-height:40px;padding:0 13px;border:1px solid {{ r.border }};border-radius:10px;background:{{ r.bg }};font:inherit;font-size:14px;font-weight:600;color:{{ r.color }};cursor:pointer">{{ r.name }}</button></sc-for>
+                  </div>
+                  <span style="display:block;margin-bottom:7px;font-size:13px;font-weight:700">תחום</span>
+                  <div style="display:flex;gap:7px;flex-wrap:wrap">
+                    <sc-for list="{{ cats }}" as="c" hint-placeholder-count="5"><button type="button" aria-pressed="{{ c.on }}" onClick="{{ c.pick }}" style="min-height:40px;padding:0 13px;border:1px solid {{ c.border }};border-radius:10px;background:{{ c.bg }};font:inherit;font-size:14px;font-weight:600;color:{{ c.color }};cursor:pointer">{{ c.name }} <span style="font-size:12.5px;opacity:.8">{{ c.price }}</span></button></sc-for>
+                  </div>
+                  <p style="margin:12px 0 0;font-size:13px;color:#5B6B7B;text-wrap:pretty">{{ reach }}</p>
+                </section>
+
+                <section aria-labelledby="sp-h2" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px)">
+                  <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:11px">
+                    <h2 id="sp-h2" style="flex:1;min-width:0;margin:0;font-size:16.5px;font-weight:700">שבועות</h2>
+                    <span style="flex:none;font-size:12.5px;color:#8A96A3">ראשון עד שבת · מתחיל ב־00:00</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:var(--sp-weeks);gap:8px">
+                    <sc-for list="{{ weeks }}" as="w" hint-placeholder-count="8"><button type="button" aria-pressed="{{ w.on }}" onClick="{{ w.pick }}" disabled="{{ w.full }}" style="min-width:0;min-height:64px;padding:8px 10px;border:1px solid {{ w.border }};border-radius:12px;background:{{ w.bg }};font:inherit;text-align:right;cursor:pointer;opacity:{{ w.op }};display:flex;flex-direction:column;gap:2px"><span dir="ltr" style="text-align:right;font-size:14.5px;font-weight:700;color:{{ w.color }};font-variant-numeric:tabular-nums">{{ w.range }}</span><span style="font-size:12px;font-weight:600;color:{{ w.subColor }}">{{ w.left }}</span></button></sc-for>
+                  </div>
+                </section>
+
+                <section aria-labelledby="sp-h3" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px);display:flex;flex-direction:column;gap:11px">
+                  <h2 id="sp-h3" style="margin:0;font-size:16.5px;font-weight:700">מה יופיע בכרטיס</h2>
+                  <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">שורת הדגשה <span style="font-weight:500;color:#8A96A3">· עד 60 תווים</span>
+                    <input value="{{ line }}" onChange="{{ onLine }}" maxlength="60" placeholder="ייעוץ רפואי ללא לחץ · תורים גם בערב" style="min-height:46px;padding:0 12px;border:1px solid {{ lineBorder }};border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none">
+                    <span dir="ltr" style="text-align:right;font-size:12px;font-weight:600;color:{{ lineCountColor }};font-variant-numeric:tabular-nums">{{ lineCount }}</span>
+                  </label>
+                  <sc-if value="{{ hasFlags }}" hint-placeholder-val="{{ false }}">
+                    <div role="alert" style="padding:11px 13px;border:1px solid #F1DDB5;border-radius:12px;background:#FFF8EC;font-size:13.5px;color:#3E4F62;text-wrap:pretty"><strong style="color:#9A5B15">לא יאושר בבדיקה:</strong> {{ flagsTxt }}</div>
+                  </sc-if>
+                  <span style="font-size:13px;font-weight:700">טיפול להבליט</span>
+                  <div style="display:flex;gap:7px;flex-wrap:wrap">
+                    <sc-for list="{{ features }}" as="f" hint-placeholder-count="4"><button type="button" aria-pressed="{{ f.on }}" onClick="{{ f.pick }}" style="min-height:40px;padding:0 13px;border:1px solid {{ f.border }};border-radius:10px;background:{{ f.bg }};font:inherit;font-size:14px;font-weight:600;color:{{ f.color }};cursor:pointer">{{ f.name }}</button></sc-for>
+                  </div>
+                </section>
+
+                <sc-if value="{{ errOn }}" hint-placeholder-val="{{ false }}">
+                  <p role="alert" style="margin:0;padding:12px 14px;border:1px solid #F0C9C4;border-radius:12px;background:#FDEDEC;font-size:14px;font-weight:700;color:#A33A31">{{ errText }}</p>
+                </sc-if>
+              </main>
+
+              <aside data-sp-side style="min-width:0;display:flex;flex-direction:column;gap:12px">
+                <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:14px 16px">
+                  <span style="display:block;margin-bottom:9px;font-size:12.5px;font-weight:700;color:#5B6B7B">תצוגה מקדימה · {{ listName }}</span>
+                  <article style="border:1px solid #E6E6E6;border-radius:15px;overflow:hidden">
+                    <div style="position:relative;aspect-ratio:16/9;background:#F0FAFB">
+                      <image-slot id="sp-cover" shape="rect" placeholder="תמונת הכריכה של הקליניקה"></image-slot>
+                      <span style="position:absolute;top:9px;right:9px;height:24px;display:inline-flex;align-items:center;padding:0 9px;border-radius:7px;background:#0C243E;font-size:12px;font-weight:700;color:#fff">ממומן</span>
+                    </div>
+                    <div style="padding:11px 13px;display:flex;flex-direction:column;gap:3px">
+                      <span style="display:flex;align-items:baseline;gap:8px"><span style="flex:1;min-width:0;font-size:15.5px;font-weight:700">קליניקת נועה</span><span dir="ltr" style="flex:none;font-size:13.5px;font-weight:700;color:#0B7A87">★ 4.9</span></span>
+                      <span style="font-size:13px;color:#5B6B7B">אסתטיקה רפואית · רעננה</span>
+                      <span style="font-size:13.5px;font-weight:600;color:#3E4F62;text-wrap:pretty">{{ previewLine }}</span>
+                      <span style="align-self:flex-start;margin-top:3px;height:24px;display:inline-flex;align-items:center;padding:0 8px;border-radius:7px;background:#F0FAFB;font-size:12px;font-weight:700;color:#0B7A87">{{ previewFeature }}</span>
+                    </div>
+                  </article>
+                </div>
+                <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;overflow:hidden">
+                  <dl style="margin:0;padding:14px 16px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;font-size:14px">
+                    <dt style="color:#5B6B7B">{{ sumLabel }}</dt><dd style="margin:0;font-weight:600">{{ sub }}</dd>
+                    <sc-if value="{{ hasDisc }}" hint-placeholder-val="{{ false }}"><dt style="color:#3B6B3F">הנחת 4 שבועות ומעלה · 10%</dt></sc-if>
+                    <sc-if value="{{ hasDisc }}" hint-placeholder-val="{{ false }}"><dd style="margin:0;font-weight:700;color:#3B6B3F">{{ disc }}</dd></sc-if>
+                    <dt style="color:#5B6B7B">מע״מ 18%</dt><dd style="margin:0;font-weight:600">{{ vat }}</dd>
+                    <dt style="font-weight:700;padding-top:8px;border-top:1px solid #EDEFF2">סה״כ</dt><dd style="margin:0;font-weight:800;padding-top:8px;border-top:1px solid #EDEFF2">{{ total }}</dd>
+                  </dl>
+                  <div style="padding:0 16px 14px">
+                    <button type="button" onClick="{{ submit }}" style="width:100%;min-height:50px;padding:0 16px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:16px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#0C243E">שליחה לבדיקה ותשלום</button>
+                    <p style="margin:9px 0 0;font-size:12.5px;color:#5B6B7B;text-wrap:pretty">החיוב רק אחרי אישור התוכן, בדרך כלל תוך יום עסקים. חשבונית מס נשלחת לפי פרטי המנוי. אפשר לבטל עד 48 שעות לפני תחילת שבוע, בהחזר מלא על אותו שבוע.</p>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ buyDone }}" hint-placeholder-val="{{ false }}">
+          <div style="max-width:620px;background:#fff;border:1px solid #CDEFF3;border-radius:18px;padding:clamp(20px,2.6vw,30px);animation:spPop .2s ease both">
+            <h1 style="margin:0 0 5px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(22px,2.8vw,28px);font-weight:500;letter-spacing:-0.014em">נשלח לבדיקה</h1>
+            <p style="margin:0 0 15px;font-size:15px;color:#3E4F62;text-wrap:pretty">השבועות שמורים לכם ל־24 שעות, עד שהבדיקה תסתיים. נעדכן במייל ובלוח הבקרה, והחיוב יבוצע רק אחרי אישור.</p>
+            <dl style="margin:0 0 16px;display:grid;grid-template-columns:86px minmax(0,1fr);gap:8px 12px;font-size:14.5px">
+              <dt style="color:#8A96A3">רשימה</dt><dd style="margin:0;font-weight:700">{{ listName }}</dd>
+              <dt style="color:#8A96A3">שבועות</dt><dd style="margin:0;font-weight:600">{{ doneWeeks }}</dd>
+              <dt style="color:#8A96A3">סה״כ</dt><dd style="margin:0;font-weight:700">{{ total }}</dd>
+            </dl>
+            <div style="display:flex;gap:9px;flex-wrap:wrap">
+              <button type="button" onClick="{{ toManage }}" style="min-height:46px;padding:0 16px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:15px;font-weight:700;color:#fff;cursor:pointer">לקמפיינים שלי</button>
+              <a href="./BeautyFind Dashboard.dc.html" style="min-height:46px;display:inline-flex;align-items:center;padding:0 14px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font-size:15px;font-weight:600;color:#3E4F62;text-decoration:none">ללוח הבקרה</a>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isManage }}" hint-placeholder-val="{{ false }}">
+      <div style="animation:spFade .22s ease both">
+        <h1 style="margin:0 0 14px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(25px,3.2vw,32px);font-weight:500;letter-spacing:-0.015em">הקמפיינים שלי</h1>
+        <dl style="margin:0 0 14px;display:grid;grid-template-columns:var(--sp-kpi);gap:10px">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4"><div style="min-width:0;padding:13px 15px;background:#fff;border:1px solid #E6E6E6;border-radius:15px"><dt style="font-size:12.5px;font-weight:700;color:#8A96A3">{{ k.name }}</dt><dd dir="ltr" style="margin:2px 0 0;text-align:right;font-size:22px;font-weight:800;font-variant-numeric:tabular-nums">{{ k.v }}</dd><span style="font-size:12px;color:#5B6B7B">{{ k.note }}</span></div></sc-for>
+        </dl>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ camps }}" as="c" hint-placeholder-count="3"><article style="padding:14px 16px;background:#fff;border:1px solid #E6E6E6;border-radius:15px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="flex:1 1 240px;min-width:0;display:flex;flex-direction:column"><span style="font-size:15.5px;font-weight:700">{{ c.list }}</span><span style="font-size:13px;color:#5B6B7B">{{ c.when }}</span><sc-if value="{{ c.hasNote }}" hint-placeholder-val="{{ false }}"><span style="margin-top:3px;font-size:13px;color:#A33A31;text-wrap:pretty">{{ c.note }}</span></sc-if></span><span style="flex:none;font-size:13.5px;font-weight:600;color:#3E4F62">{{ c.stats }}</span><span style="flex:none;height:26px;display:inline-flex;align-items:center;padding:0 9px;border-radius:7px;background:{{ c.stBg }};font-size:12.5px;font-weight:700;color:{{ c.stColor }}">{{ c.st }}</span></article></sc-for>
+        </div>
+        <p style="margin:12px 0 0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">הצגות ולחיצות נמדדות רק אצל מבקרים שאישרו קובצי מדידה. לא נמסר לכם מידע על מבקרים בודדים.</p>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1160,&quot;height&quot;:1000},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;buy&quot;,&quot;manage&quot;],&quot;default&quot;:&quot;buy&quot;,&quot;tsType&quot;:&quot;'buy'|'manage'&quot;}}">
+const REGIONS = ['צפון', 'חיפה', 'שרון', 'גוש דן', 'ירושלים', 'שפלה', 'דרום'];
+const CATS = [['med', 'אסתטיקה רפואית', 1.4], ['laser', 'הסרת שיער', 1.1], ['face', 'טיפולי פנים', 1], ['body', 'עיצוב גוף', 1], ['nails', 'ציפורניים', 0.7]];
+const REGION_BASE = { 'צפון': 180, 'חיפה': 200, 'שרון': 260, 'גוש דן': 340, 'ירושלים': 260, 'שפלה': 220, 'דרום': 160 };
+const REACH = { 'שרון': 8400, 'גוש דן': 21000, 'ירושלים': 9600 };
+const FEATURES = ['ייעוץ רפואי', 'לייזר רגליים', 'טיפול פנים', 'שובר מתנה'];
+const BANNED = [['מובטח', 'הבטחת תוצאה'], ['100%', 'הבטחת תוצאה'], ['ללא כאב', 'הבטחה רפואית'], ['ללא סיכון', 'הבטחה רפואית'], ['הכי טוב', 'טענת עליונות ללא אסמכתה'], ['מספר 1', 'טענת עליונות ללא אסמכתה'], ['לפני/אחרי', 'תמונות לפני/אחרי בטיפול רפואי'], ['חינם', 'מבצע רפואי ״חינם״']];
+const nis = n => '₪' + Math.round(n).toLocaleString('he-IL');
+const plW = n => n === 1 ? 'שבוע אחד' : n === 2 ? 'שבועיים' : n + ' שבועות';
+const pad = n => String(n).padStart(2, '0');
+const WEEKS = (() => { const out = []; const d = new Date(2026, 8, 27); for (let i = 0; i < 8; i++) { const e = new Date(d); e.setDate(e.getDate() + 6); out.push({ i, range: pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '–' + pad(e.getDate()) + '/' + pad(e.getMonth() + 1) }); d.setDate(d.getDate() + 7); } return out; })();
+
+class Component extends DCLogic {
+  state = { tab: null, region: 'שרון', cat: 'med', weeks: [1, 2], line: '', feature: 'ייעוץ רפואי', tried: false, done: false };
+  renderVals() {
+    const s = this.state, teal = '#0B7A87', line = '#E6E6E6';
+    const tab = s.tab || this.props.view || 'buy';
+    const chip = on => ({ on: on ? 'true' : 'false', bg: on ? teal : '#fff', color: on ? '#fff' : '#3E4F62', border: on ? teal : line });
+    const cat = CATS.find(c => c[0] === s.cat);
+    const weekly = Math.round(REGION_BASE[s.region] * cat[2] / 10) * 10;
+    const taken = w => ((w.i * 3 + s.region.length + s.cat.length) % 5 === 0) ? 2 : ((w.i + s.region.length) % 3 === 0 ? 1 : 0);
+    const n = s.weeks.length;
+    const sub = weekly * n, disc = n >= 4 ? sub * 0.1 : 0, net = sub - disc, vat = net * 0.18;
+    const flags = BANNED.filter(b => s.line.includes(b[0]));
+    const lineOk = s.line.trim().length >= 6 && !flags.length;
+    const err = !s.tried ? '' : !n ? 'בחרו לפחות שבוע אחד' : !s.line.trim() ? 'כתבו שורת הדגשה' : flags.length ? 'שורת ההדגשה כוללת ניסוח שלא יאושר' : s.line.trim().length < 6 ? 'שורת ההדגשה קצרה מדי' : '';
+    const listName = cat[1] + ' · ' + s.region;
+    const selWeeks = WEEKS.filter(w => s.weeks.includes(w.i));
+    const CAMPS = [
+      { list: 'אסתטיקה רפואית · שרון', when: '13/09–26/09 · שבועיים', stats: '3,120 הצגות · 214 כניסות לפרופיל · 19 תורים', st: 'פעיל', stBg: '#EAF3EA', stColor: '#3B6B3F' },
+      { list: 'הסרת שיער · שרון', when: '04/10–17/10 · שבועיים', stats: 'מתחיל בעוד 11 ימים', st: 'אושר', stBg: '#F0FAFB', stColor: teal },
+      { list: 'אסתטיקה רפואית · גוש דן', when: '06/09–12/09 · שבוע', stats: '—', st: 'נדחה · לא חויב', stBg: '#FDEDEC', stColor: '#A33A31', note: 'שורת ההדגשה ״תוצאה מובטחת תוך שבוע״ כוללת הבטחת תוצאה בטיפול רפואי. אפשר לשלוח מחדש עם ניסוח אחר.' }
+    ];
+    return {
+      tabs: [['buy', 'רכישה'], ['manage', 'הקמפיינים שלי']].map(x => { const on = tab === x[0]; return { name: x[1], on: on ? 'true' : 'false', bg: on ? '#fff' : 'transparent', sh: on ? '0 1px 3px rgba(12,36,62,.12)' : 'none', color: on ? '#0C243E' : '#5B6B7B', pick: () => this.setState({ tab: x[0] }) }; }),
+      isBuy: tab === 'buy', isManage: tab === 'manage',
+      buyForm: !s.done, buyDone: s.done,
+      regions: REGIONS.map(r => Object.assign({ name: r, pick: () => this.setState({ region: r, weeks: [] }) }, chip(s.region === r))),
+      cats: CATS.map(c => Object.assign({ name: c[1], price: nis(Math.round(REGION_BASE[s.region] * c[2] / 10) * 10) + '/שבוע', pick: () => this.setState({ cat: c[0], weeks: [] }) }, chip(s.cat === c[0]))),
+      reach: (REACH[s.region] ? 'בשבוע ממוצע ' + REACH[s.region].toLocaleString('he-IL') + ' מבקרים ייחודיים ברשימות של ' + s.region + '. ' : '') + 'המחיר לשבוע, לא כולל מע״מ.',
+      weeks: WEEKS.map(w => {
+        const t = taken(w), full = t >= 2, on = s.weeks.includes(w.i);
+        return { range: w.range, full, on: on ? 'true' : 'false', op: full ? '.45' : '1',
+          left: full ? 'תפוס' : t === 1 ? 'מקום אחד פנוי' : 'שני מקומות פנויים',
+          bg: on ? teal : '#fff', border: on ? teal : line, color: on ? '#fff' : '#0C243E', subColor: on ? '#DFF5F8' : full ? '#8A96A3' : t === 1 ? '#9A5B15' : '#3B6B3F',
+          pick: () => { if (full) return; this.setState(st => ({ weeks: on ? st.weeks.filter(x => x !== w.i) : st.weeks.concat([w.i]).sort((a, b) => a - b) })); } };
+      }),
+      line: s.line, onLine: e => this.setState({ line: e.target.value }),
+      lineBorder: flags.length ? '#E8C98F' : (s.tried && !lineOk ? '#D98A80' : '#D4D4D4'),
+      lineCount: s.line.length + ' / 60', lineCountColor: s.line.length > 52 ? '#9A5B15' : '#8A96A3',
+      hasFlags: flags.length > 0,
+      flagsTxt: flags.map(f => '״' + f[0] + '״ — ' + f[1]).join(' · ') + '. בפרסום טיפולים רפואיים אסור להבטיח תוצאה.',
+      features: FEATURES.map(f => Object.assign({ name: f, pick: () => this.setState({ feature: f }) }, chip(s.feature === f))),
+      listName,
+      previewLine: s.line.trim() || 'שורת ההדגשה שלכם תופיע כאן',
+      previewFeature: s.feature,
+      sumLabel: plW(n) + ' × ' + nis(weekly),
+      sub: nis(sub), hasDisc: disc > 0, disc: '−' + nis(disc), vat: nis(vat), total: nis(net + vat),
+      errOn: !!err, errText: err,
+      submit: () => { if (!n || !lineOk) { this.setState({ tried: true }); return; } this.setState({ done: true }); },
+      doneWeeks: selWeeks.map(w => w.range).join(' · '),
+      toManage: () => this.setState({ tab: 'manage', done: false, weeks: [], line: '', tried: false }),
+      kpis: [{ name: 'הצגות · 30 יום', v: '5,840', note: 'ברשימות ממומנות' }, { name: 'כניסות לפרופיל', v: '402', note: '6.9% מההצגות' }, { name: 'תורים ובקשות', v: '31', note: 'מכניסה ממקום ממומן' }, { name: 'הוצאה · 30 יום', v: '₪1,450', note: 'לא כולל מע״מ' }],
+      camps: CAMPS.map(c => Object.assign({ hasNote: !!c.note, note: c.note || '' }, c))
+    };
+  }
+}
+</script>
+</body>
+</html>

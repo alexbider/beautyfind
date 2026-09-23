@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="קונסולת המערכת של BeautyFind — אישור רישומים, ניהול ביקורות, בקשות בעלות, דיווחים ויומן החלטות.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#F6F8F9}
+  *{box-sizing:border-box}
+  :root{--mo-kpi:repeat(2,minmax(0,1fr));--mo-pad:14px;--mo-split:minmax(0,1fr);--mo-side:none}
+  @media (min-width:600px){:root{--mo-kpi:repeat(4,minmax(0,1fr));--mo-pad:20px}}
+  @media (min-width:1020px){:root{--mo-split:minmax(0,1fr) 300px;--mo-side:block}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes moFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @keyframes moPop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#F6F8F9;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+
+  <header style="background:#0C243E;color:#fff">
+    <div style="max-width:1280px;margin:0 auto;padding:12px var(--mo-pad);display:flex;align-items:center;gap:13px;flex-wrap:wrap">
+      <span dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:20px;letter-spacing:-0.01em;color:#fff">beauty<span style="color:#7ED7E1">find</span><span style="color:#7ED7E1">.</span></span>
+      <span style="flex:none;display:inline-flex;align-items:center;height:25px;padding:0 9px;border-radius:7px;background:rgba(126,215,225,.18);font-size:11.5px;font-weight:700;color:#7ED7E1">קונסולת מערכת</span>
+      <span style="flex:1;min-width:0"></span>
+      <div role="group" aria-label="תפקיד מערכת" style="flex:none;display:flex;gap:6px;padding:4px;background:rgba(255,255,255,.1);border-radius:11px">
+        <sc-for list="{{ roleTabs }}" as="rt" hint-placeholder-count="3">
+          <button type="button" aria-pressed="{{ rt.on }}" onClick="{{ rt.pick }}" style="min-height:34px;padding:0 11px;border:0;border-radius:8px;background:{{ rt.bg }};font:inherit;font-size:12.5px;font-weight:700;color:{{ rt.color }};cursor:pointer">{{ rt.name }}</button>
+        </sc-for>
+      </div>
+      <span style="flex:none;display:flex;align-items:center;gap:8px">
+        <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:10px;background:#7ED7E1;color:#0C243E;font-size:12.5px;font-weight:700">יס</span>
+        <span style="display:flex;flex-direction:column">
+          <span style="font-size:13px;font-weight:700;color:#fff">יעל סגל</span>
+          <span style="font-size:11.5px;color:rgba(255,255,255,.7)">{{ roleName }}</span>
+        </span>
+      </span>
+    </div>
+    <nav aria-label="ניווט קונסולה" style="max-width:1280px;margin:0 auto;padding:0 var(--mo-pad);display:flex;gap:4px;overflow-x:auto">
+      <sc-for list="{{ nav }}" as="nv" hint-placeholder-count="5">
+        <button type="button" aria-current="{{ nv.current }}" onClick="{{ nv.pick }}" style="flex:none;display:flex;align-items:center;gap:8px;min-height:46px;padding:0 13px;border:0;border-bottom:2px solid {{ nv.underline }};background:transparent;font:inherit;font-size:14px;font-weight:700;color:{{ nv.color }};cursor:pointer">
+          <span>{{ nv.name }}</span>
+          <sc-if value="{{ nv.hasCount }}" hint-placeholder-val="{{ true }}">
+            <span dir="ltr" style="display:inline-flex;align-items:center;justify-content:center;min-width:21px;height:21px;padding:0 6px;border-radius:7px;background:{{ nv.badgeBg }};font-size:11.5px;font-weight:700;color:{{ nv.badgeColor }};font-variant-numeric:tabular-nums">{{ nv.count }}</span>
+          </sc-if>
+        </button>
+      </sc-for>
+    </nav>
+  </header>
+
+  <div style="max-width:1280px;margin:0 auto;padding:clamp(16px,2.2vw,26px) var(--mo-pad) 60px">
+
+    <div style="display:flex;align-items:flex-end;gap:13px;flex-wrap:wrap;margin-bottom:14px">
+      <div style="flex:1;min-width:220px">
+        <h1 style="margin:0 0 3px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(22px,2.8vw,30px);font-weight:500;letter-spacing:-0.015em">{{ pageTitle }}</h1>
+        <p style="margin:0;font-size:14px;color:#5B6B7B;text-wrap:pretty">{{ pageSub }}</p>
+      </div>
+      <sc-if value="{{ readOnly }}" hint-placeholder-val="{{ false }}">
+        <p style="flex:none;margin:0;padding:10px 13px;background:#EDEFF2;border:1px solid #D4D4D4;border-radius:11px;font-size:13px;font-weight:700;color:#3E4F62">{{ readOnlyNote }}</p>
+      </sc-if>
+    </div>
+
+    <dl style="margin:0 0 15px;display:grid;grid-template-columns:var(--mo-kpi);gap:11px">
+      <sc-for list="{{ kpis }}" as="kp" hint-placeholder-count="4">
+        <div style="min-width:0;display:flex;flex-direction:column;gap:3px;padding:13px 15px;background:#fff;border:1px solid {{ kp.border }};border-radius:13px">
+          <dt style="font-size:12.5px;font-weight:600;color:#5B6B7B">{{ kp.label }}</dt>
+          <dd dir="ltr" style="margin:0;font-size:23px;font-weight:700;text-align:right;color:{{ kp.color }};font-variant-numeric:tabular-nums">{{ kp.value }}</dd>
+          <span style="font-size:11.5px;color:#8A96A3;text-wrap:pretty">{{ kp.note }}</span>
+        </div>
+      </sc-for>
+    </dl>
+
+    <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:14px">
+      <div role="group" aria-label="סינון מצב" style="display:flex;gap:7px;flex-wrap:wrap">
+        <sc-for list="{{ filters }}" as="fl" hint-placeholder-count="4">
+          <button type="button" aria-pressed="{{ fl.on }}" onClick="{{ fl.pick }}" style="min-height:38px;padding:0 13px;border:1px solid {{ fl.border }};border-radius:10px;background:{{ fl.bg }};font:inherit;font-size:13.5px;font-weight:600;color:{{ fl.color }};cursor:pointer">{{ fl.name }}</button>
+        </sc-for>
+      </div>
+      <label style="flex:1;min-width:190px;display:flex;align-items:center;min-height:38px;padding:0 12px;background:#fff;border:1px solid #E6E6E6;border-radius:10px">
+        <span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">חיפוש בתור</span>
+        <input type="search" value="{{ query }}" onChange="{{ onQuery }}" placeholder="{{ searchPlaceholder }}" style="flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:14px;color:#0C243E;outline:none">
+      </label>
+      <sc-if value="{{ hasSelection }}" hint-placeholder-val="{{ false }}">
+        <span style="flex:none;display:flex;align-items:center;gap:8px;padding:0 4px">
+          <span style="font-size:13px;font-weight:700;color:#3E4F62">{{ selectionLine }}</span>
+          <button type="button" onClick="{{ bulkApprove }}" style="min-height:38px;padding:0 12px;border:0;border-radius:10px;background:#0B7A87;font:inherit;font-size:13px;font-weight:700;color:#fff;cursor:pointer">אישור נבחרים</button>
+          <button type="button" onClick="{{ clearSelection }}" style="min-height:38px;padding:0 10px;border:0;border-radius:10px;background:transparent;font:inherit;font-size:13px;font-weight:700;color:#0B7A87;cursor:pointer">ניקוי</button>
+        </span>
+      </sc-if>
+    </div>
+
+    <div style="display:grid;grid-template-columns:var(--mo-split);gap:clamp(13px,1.6vw,18px);align-items:start">
+
+      <main style="min-width:0;display:flex;flex-direction:column;gap:11px">
+        <sc-for list="{{ items }}" as="it" hint-placeholder-count="4">
+          <article style="min-width:0;background:#fff;border:1px solid {{ it.cardBorder }};border-radius:15px;overflow:hidden;animation:moFade .2s ease both">
+            <div style="display:flex;align-items:flex-start;gap:11px;padding:14px 16px">
+              <sc-if value="{{ it.selectable }}" hint-placeholder-val="{{ true }}">
+                <button type="button" role="checkbox" aria-checked="{{ it.picked }}" aria-label="בחירת רשומה" onClick="{{ it.toggleSel }}" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;margin-top:2px;border:1.5px solid {{ it.selBorder }};border-radius:7px;background:{{ it.selBg }};color:#fff;cursor:pointer">
+                  <sc-if value="{{ it.isPicked }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg></sc-if>
+                </button>
+              </sc-if>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+                <div style="display:flex;align-items:flex-start;gap:9px;flex-wrap:wrap">
+                  <h2 style="flex:1;min-width:150px;margin:0;font-size:16px;font-weight:700;text-wrap:pretty">{{ it.title }}</h2>
+                  <span style="flex:none;display:inline-flex;align-items:center;height:25px;padding:0 9px;border:1px solid {{ it.stBorder }};border-radius:8px;background:{{ it.stBg }};font-size:11.5px;font-weight:700;color:{{ it.stColor }}">{{ it.state }}</span>
+                  <sc-if value="{{ it.hasFlag }}" hint-placeholder-val="{{ false }}">
+                    <span style="flex:none;display:inline-flex;align-items:center;height:25px;padding:0 9px;border:1px solid #F3D9BE;border-radius:8px;background:#FDF1E7;font-size:11.5px;font-weight:700;color:#9A5B15">{{ it.flag }}</span>
+                  </sc-if>
+                </div>
+                <p style="margin:0;font-size:13px;color:#5B6B7B;text-wrap:pretty">{{ it.meta }}</p>
+                <p style="margin:2px 0 0;font-size:14px;color:#3E4F62;text-wrap:pretty">{{ it.body }}</p>
+                <sc-if value="{{ it.hasChecks }}" hint-placeholder-val="{{ false }}">
+                  <ul style="list-style:none;margin:6px 0 0;padding:0;display:flex;gap:7px;flex-wrap:wrap">
+                    <sc-for list="{{ it.checks }}" as="ck" hint-placeholder-count="3">
+                      <li style="display:inline-flex;align-items:center;gap:6px;height:27px;padding:0 9px;border:1px solid {{ ck.border }};border-radius:8px;background:{{ ck.bg }};font-size:12px;font-weight:600;color:{{ ck.color }}">
+                        <span aria-hidden="true">{{ ck.mark }}</span>
+                        <span>{{ ck.name }}</span>
+                      </li>
+                    </sc-for>
+                  </ul>
+                </sc-if>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:11px 16px;border-top:1px solid #EDEFF2;background:#FAFBFB">
+              <sc-if value="{{ canAct }}" hint-placeholder-val="{{ true }}">
+                <button type="button" onClick="{{ it.approve }}" style="min-height:40px;padding:0 14px;border:0;border-radius:11px;background:#0B7A87;font:inherit;font-size:13.5px;font-weight:700;color:#fff;cursor:pointer">{{ it.approveLabel }}</button>
+                <button type="button" onClick="{{ it.openReject }}" style="min-height:40px;padding:0 13px;border:1px solid #E6E6E6;border-radius:11px;background:#fff;font:inherit;font-size:13.5px;font-weight:700;color:#3E4F62;cursor:pointer">{{ it.rejectLabel }}</button>
+                <button type="button" onClick="{{ it.requestInfo }}" style="min-height:40px;padding:0 13px;border:1px solid #E6E6E6;border-radius:11px;background:#fff;font:inherit;font-size:13.5px;font-weight:600;color:#3E4F62;cursor:pointer">בקשת השלמה</button>
+              </sc-if>
+              <a href="{{ it.href }}" style="min-height:40px;display:inline-flex;align-items:center;padding:0 12px;border-radius:11px;font-size:13.5px;font-weight:700;color:#0B7A87;text-decoration:none">{{ it.linkLabel }}</a>
+              <span style="margin-right:auto;font-size:12px;color:#8A96A3"><span dir="ltr">{{ it.age }}</span> · {{ it.source }}</span>
+            </div>
+
+            <sc-if value="{{ it.rejectOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:14px 16px;border-top:1px solid #EDEFF2;animation:moFade .16s ease both">
+                <span style="display:block;margin-bottom:8px;font-size:13px;font-weight:700">סיבת הדחייה — תישלח לעסק</span>
+                <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px">
+                  <sc-for list="{{ it.reasons }}" as="rs" hint-placeholder-count="3">
+                    <button type="button" aria-pressed="{{ rs.on }}" onClick="{{ rs.pick }}" style="min-height:36px;padding:0 11px;border:1px solid {{ rs.border }};border-radius:9px;background:{{ rs.bg }};font:inherit;font-size:12.5px;font-weight:600;color:{{ rs.color }};cursor:pointer">{{ rs.name }}</button>
+                  </sc-for>
+                </div>
+                <textarea value="{{ it.note }}" onChange="{{ it.onNote }}" rows="2" placeholder="הערה פנימית או הסבר לעסק" style="width:100%;padding:10px 11px;border:1px solid #E6E6E6;border-radius:10px;font:inherit;font-size:14px;line-height:1.5;color:#0C243E;background:#fff;resize:vertical"></textarea>
+                <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+                  <button type="button" onClick="{{ it.confirmReject }}" style="min-height:40px;padding:0 14px;border:0;border-radius:11px;background:#A33A31;font:inherit;font-size:13.5px;font-weight:700;color:#fff;cursor:pointer">שליחת דחייה</button>
+                  <button type="button" onClick="{{ it.closeReject }}" style="min-height:40px;padding:0 13px;border:1px solid #E6E6E6;border-radius:11px;background:#fff;font:inherit;font-size:13.5px;font-weight:600;color:#3E4F62;cursor:pointer">ביטול</button>
+                </div>
+              </div>
+            </sc-if>
+          </article>
+        </sc-for>
+
+        <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:44px 20px;background:#fff;border:1px dashed #D4D4D4;border-radius:15px;text-align:center">
+            <p style="margin:0 0 4px;font-size:16px;font-weight:700">{{ emptyTitle }}</p>
+            <p style="margin:0;font-size:14px;color:#5B6B7B;text-wrap:pretty">{{ emptyBody }}</p>
+          </div>
+        </sc-if>
+      </main>
+
+      <aside style="display:var(--mo-side);min-width:0">
+        <div style="background:#fff;border:1px solid #E6E6E6;border-radius:15px;padding:14px 16px;margin-bottom:12px">
+          <h2 style="margin:0 0 4px;font-size:15px;font-weight:700">זמן טיפול</h2>
+          <p style="margin:0 0 11px;font-size:12.5px;color:#8A96A3;text-wrap:pretty">היעד הפומבי: מענה לרישום חדש בתוך <span dir="ltr">2</span> ימי עסקים.</p>
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px">
+            <sc-for list="{{ slaRows }}" as="sl" hint-placeholder-count="3">
+              <li style="display:flex;align-items:center;gap:9px;font-size:13.5px">
+                <span style="flex:1;min-width:0">{{ sl.name }}</span>
+                <span dir="ltr" style="flex:none;font-weight:700;color:{{ sl.color }};font-variant-numeric:tabular-nums">{{ sl.value }}</span>
+              </li>
+            </sc-for>
+          </ul>
+        </div>
+
+        <div style="background:#fff;border:1px solid #E6E6E6;border-radius:15px;overflow:hidden">
+          <div style="padding:13px 16px;border-bottom:1px solid #EDEFF2">
+            <h2 style="margin:0;font-size:15px;font-weight:700">יומן החלטות</h2>
+          </div>
+          <sc-for list="{{ decisions }}" as="dc" hint-placeholder-count="5">
+            <div style="padding:11px 16px;border-bottom:1px solid #F3F5F6;display:flex;flex-direction:column;gap:2px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:7px;background:{{ dc.bg }};font-size:11px;font-weight:700;color:{{ dc.color }}">{{ dc.act }}</span>
+                <span dir="ltr" style="margin-right:auto;font-size:11.5px;color:#8A96A3;font-variant-numeric:tabular-nums">{{ dc.when }}</span>
+              </div>
+              <span style="font-size:13.5px;font-weight:600;text-wrap:pretty">{{ dc.what }}</span>
+              <span style="font-size:12px;color:#8A96A3">{{ dc.who }}</span>
+            </div>
+          </sc-for>
+          <p style="margin:0;padding:11px 16px;font-size:12px;color:#8A96A3;text-wrap:pretty">כל החלטה נשמרת עם המשתמש והנימוק. היומן אינו ניתן לעריכה.</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:fixed;bottom:18px;right:50%;transform:translateX(50%);z-index:40;max-width:min(90vw,440px);padding:12px 17px;border-radius:13px;background:#0C243E;color:#fff;font-size:14px;font-weight:600;box-shadow:0 12px 30px rgba(12,36,62,.28);animation:moPop .16s ease both;text-wrap:pretty">{{ toastText }}</div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900}}">
+const ROLES = [
+  { key: 'admin', name: 'מנהל מערכת', can: ['listings', 'reviews', 'claims', 'reports', 'editorial'] },
+  { key: 'mod', name: 'מנחה תוכן', can: ['reviews', 'reports'] },
+  { key: 'support', name: 'תמיכה', can: [] }
+];
+
+const NAV = [
+  { key: 'listings', name: 'רישומים חדשים' },
+  { key: 'claims', name: 'בקשות בעלות' },
+  { key: 'reviews', name: 'ביקורות' },
+  { key: 'reports', name: 'דיווחים' },
+  { key: 'editorial', name: 'תוכן עריכתי' }
+];
+
+const LISTINGS = [
+  { id: 'l1', title: 'אסתטיקה בוטיק · הרצליה', state: 'ממתין', meta: 'שרון · הזרקות, טיפולי פנים · הוגש על ידי ליאת מור',
+    body: 'עסק חדש שמבקש להיכלל במדריך. הצהיר על אחריות רפואית של ד״ר אמיר כספי.',
+    checks: [['ח״פ תקף', true], ['רישיון רופא אומת', true], ['כתובת אומתה', false], ['תמונות', true]],
+    age: '4 שעות', source: 'טופס רישום', flag: '' },
+  { id: 'l2', title: 'קוסמטיקס ביוטי · באר שבע', state: 'ממתין', meta: 'דרום · הסרת שיער בלייזר, טיפולי פנים · הוגש על ידי סיגל דוד',
+    body: 'קוסמטיקאית עצמאית. לא הצהירה על רופא — הקטגוריות שנבחרו אינן רפואיות, ולכן תקינה.',
+    checks: [['ח״פ תקף', true], ['קטגוריות לא רפואיות', true], ['כתובת אומתה', true], ['תמונות', false]],
+    age: 'יום', source: 'טופס רישום', flag: '' },
+  { id: 'l3', title: 'מדיקל סקין · נתניה', state: 'דורש בדיקה', meta: 'שרון · בוטוקס, מלאנים · הוגש על ידי דוד אלון',
+    body: 'בחר קטגוריות הזרקה אך לא צירף רישיון רופא. לפי תקן הרישום לא ניתן לאשר הזרקות ללא אחריות רפואית.',
+    checks: [['ח״פ תקף', true], ['רישיון רופא אומת', false], ['כתובת אומתה', true], ['תמונות', true]],
+    age: 'יומיים', source: 'טופס רישום', flag: 'חסרה אחריות רפואית' }
+];
+
+const CLAIMS = [
+  { id: 'c1', title: 'קליניקת נועה · רעננה', state: 'ממתין', meta: 'מבקש: ד״ר נועה לוי · noa@noaclinic.co.il',
+    body: 'בקשת בעלות על כרטיס קיים. הטלפון בבקשה תואם את הטלפון בכרטיס, והרישיון הרפואי תואם את השם.',
+    checks: [['טלפון תואם', true], ['דוא״ל בדומיין העסק', true], ['רישיון תואם שם', true]],
+    age: '2 שעות', source: 'טופס בעלות', flag: '' },
+  { id: 'c2', title: 'סטודיו לין · תל אביב', state: 'דורש בדיקה', meta: 'מבקש: רון לוי · ronlevi91@gmail.com',
+    body: 'הכרטיס כבר משויך לבעלים אחר שפעיל בשלושה החודשים האחרונים. נדרש מסמך התאגדות או שינוי בעלות.',
+    checks: [['טלפון תואם', false], ['דוא״ל בדומיין העסק', false], ['בעלים פעיל קיים', false]],
+    age: '3 ימים', source: 'טופס בעלות', flag: 'התנגשות בעלות' }
+];
+
+const REVIEWS = [
+  { id: 'r1', title: 'ביקורת 5 כוכבים · קליניקת נועה', state: 'ממתין', meta: 'ד. לוי · טיפול אומת מול היומן · 22/09/2026',
+    body: '"הגעתי לייעוץ והוסבר לי בסבלנות מה מתאים ומה לא. לא לחצו עליי לקבוע טיפול." — ביקורת תקנית.',
+    checks: [['ביקור אומת', true], ['ללא שם מטפלת שלילי', true], ['ללא הבטחה רפואית', true]],
+    age: 'שעה', source: 'לאחר ביקור', flag: '' },
+  { id: 'r2', title: 'ביקורת 1 כוכב · מדיקל סקין', state: 'דורש בדיקה', meta: 'אנונימי · ביקור לא אומת · 21/09/2026',
+    body: '"נורא, גם גנבו לי כסף ואסור להם בכלל לעבוד" — טענה חמורה ללא אימות ביקור. לפי המדיניות נדרשת אסמכתה.',
+    checks: [['ביקור אומת', false], ['ללא האשמה פלילית', false], ['ללא הבטחה רפואית', true]],
+    age: 'יום', source: 'טופס פומבי', flag: 'טענה חמורה' },
+  { id: 'r3', title: 'ביקורת 5 כוכבים · סטודיו לין', state: 'דורש בדיקה', meta: 'שלוש ביקורות מאותה כתובת IP · 20/09/2026',
+    body: 'שלוש ביקורות חמש כוכבים נכתבו בתוך 11 דקות מאותו מכשיר. חשד לדירוג מוזמן.',
+    checks: [['ביקור אומת', false], ['מכשירים שונים', false], ['ללא טקסט מועתק', false]],
+    age: '2 ימים', source: 'זיהוי אוטומטי', flag: 'חשד לדירוג מוזמן' }
+];
+
+const REPORTS = [
+  { id: 'p1', title: 'דיווח על תוכן מטעה · מדיקל סקין', state: 'ממתין', meta: 'דווח על ידי לקוחה · "מבטיחים תוצאה ללא סיכון"',
+    body: 'תיאור העסק מבטיח "ללא כל סיכון" בהזרקות. אמירה כזו אסורה — כל פעולה רפואית כוללת סיכון שחייב גילוי.',
+    checks: [['תוכן אומת', true], ['נוגד תקן רישום', true]],
+    age: '5 שעות', source: 'דיווח לקוחה', flag: 'הבטחה רפואית' },
+  { id: 'p2', title: 'דיווח על פרטים שגויים · קוסמטיקס ביוטי', state: 'ממתין', meta: 'דווח על ידי לקוחה · שעות פעילות לא מעודכנות',
+    body: 'הקליניקה סגורה בימי שישי בפועל, אך בכרטיס מופיע פתוח עד 13:00. נדרש עדכון מהעסק.',
+    checks: [['תוכן אומת', true], ['נוגד תקן רישום', false]],
+    age: 'יום', source: 'דיווח לקוחה', flag: '' }
+];
+
+const EDITORIAL = [
+  { id: 'e1', title: 'כתבה: כמה זמן מחזיק בוטוקס', state: 'ממתין', meta: 'נכתב על ידי מערכת BeautyFind · ממתין לבדיקה רפואית',
+    body: 'מאמר מדריך שמצטט טווח של 3–6 חודשים. לפני פרסום נדרש אישור של רופא/ה מהפאנל הרפואי.',
+    checks: [['מקורות מצוטטים', true], ['בדיקה רפואית', false], ['ללא המלצה אישית', true]],
+    age: 'יום', source: 'מערכת', flag: 'ממתין לבדיקה רפואית' },
+  { id: 'e2', title: 'עדכון עמוד קטגוריה: מיקרוניידלינג', state: 'ממתין', meta: 'נכתב על ידי מערכת BeautyFind · עדכון מחירים',
+    body: 'טווח המחירים עודכן ל־₪600–₪1,100 לפי סקר 40 קליניקות. דורש אישור עורך.',
+    checks: [['מקורות מצוטטים', true], ['בדיקה רפואית', true], ['ללא המלצה אישית', true]],
+    age: '4 ימים', source: 'מערכת', flag: '' }
+];
+
+const DATA = { listings: LISTINGS, claims: CLAIMS, reviews: REVIEWS, reports: REPORTS, editorial: EDITORIAL };
+
+const META = {
+  listings: { title: 'רישומים חדשים', sub: 'עסקים שהגישו בקשה להיכלל במדריך. בודקים ח״פ, אחריות רפואית וכתובת לפני אישור.',
+    search: 'חיפוש לפי שם עסק, עיר או מגיש', approve: 'אישור ופרסום', reject: 'דחייה',
+    link: 'פתיחת הטופס', reasons: ['חסרה אחריות רפואית', 'ח״פ לא תקף', 'כתובת לא אומתה', 'תמונות לא תקינות', 'כפילות'],
+    empty: ['אין רישומים בתור', 'כל הבקשות טופלו. חדשות יופיעו כאן עם הגשתן.'] },
+  claims: { title: 'בקשות בעלות', sub: 'בעלי עסקים שמבקשים לקבל שליטה על כרטיס קיים. אימות זהות מול הפרטים בכרטיס.',
+    search: 'חיפוש לפי שם עסק, מבקש או דוא״ל', approve: 'אישור בעלות', reject: 'דחיית בקשה',
+    link: 'פתיחת הכרטיס', reasons: ['זהות לא אומתה', 'התנגשות עם בעלים פעיל', 'נדרש מסמך התאגדות', 'דוא״ל פרטי'],
+    empty: ['אין בקשות בעלות', 'בקשות חדשות יופיעו כאן לאימות.'] },
+  reviews: { title: 'ביקורות', sub: 'ביקורת מתפרסמת רק אם הביקור אומת. טענות חמורות דורשות אסמכתה, ואין פרסום שם מטפלת בהקשר שלילי.',
+    search: 'חיפוש לפי עסק, כותב או תוכן', approve: 'אישור ופרסום', reject: 'הסרה',
+    link: 'פתיחת הביקורת', reasons: ['ביקור לא אומת', 'טענה חמורה ללא אסמכתה', 'חשד לדירוג מוזמן', 'שפה פוגענית', 'ניגוד עניינים'],
+    empty: ['אין ביקורות בתור', 'ביקורות חדשות מגיעות לכאן לפני פרסום.'] },
+  reports: { title: 'דיווחים', sub: 'דיווחי לקוחות על תוכן שגוי, מטעה או אסור. הבטחה רפואית היא עילה להסרה מיידית.',
+    search: 'חיפוש לפי עסק או סוג דיווח', approve: 'טיפול והסרת התוכן', reject: 'סגירה ללא עילה',
+    link: 'פתיחת הכרטיס', reasons: ['אין עילה', 'טופל מול העסק', 'דיווח כפול', 'מחוץ לתחום'],
+    empty: ['אין דיווחים פתוחים', 'דיווחים חדשים יופיעו כאן.'] },
+  editorial: { title: 'תוכן עריכתי', sub: 'כתבות ועמודי קטגוריה לפני פרסום. תוכן רפואי מחייב בדיקה של רופא/ה מהפאנל.',
+    search: 'חיפוש לפי כותרת או כותב', approve: 'אישור לפרסום', reject: 'החזרה לכתיבה',
+    link: 'פתיחת הטיוטה', reasons: ['נדרשת בדיקה רפואית', 'חסרים מקורות', 'ניסוח שיווקי מדי', 'עדכון מחירים נדרש'],
+    empty: ['אין תוכן בתור', 'טיוטות חדשות יופיעו כאן.'] }
+};
+
+const FILTERS = [['all', 'הכול'], ['ממתין', 'ממתין'], ['דורש בדיקה', 'דורש בדיקה'], ['flagged', 'מסומן']];
+
+const DECISIONS = [
+  { act: 'אושר', what: 'קליניקת נועה · רעננה — רישום אושר ופורסם', who: 'יעל סגל · מנהל מערכת', when: '22/09 · 09:14', bg: '#EAF3EA', color: '#3B6B3F' },
+  { act: 'הוסר', what: 'ביקורת 1 כוכב · סטודיו לין — חשד לדירוג מוזמן', who: 'עמית רז · מנחה תוכן', when: '22/09 · 08:40', bg: '#FDEDEC', color: '#A33A31' },
+  { act: 'נדחה', what: 'לייזר פלוס · אשדוד — ח״פ לא תקף', who: 'יעל סגל · מנהל מערכת', when: '21/09 · 16:22', bg: '#FDEDEC', color: '#A33A31' },
+  { act: 'בעלות', what: 'ביוטי לאב · חיפה — בעלות הועברה לאחר אימות', who: 'יעל סגל · מנהל מערכת', when: '21/09 · 11:05', bg: '#EAECF9', color: '#4450A8' },
+  { act: 'השלמה', what: 'קוסמטיקס ביוטי · באר שבע — נדרשו תמונות', who: 'עמית רז · מנחה תוכן', when: '20/09 · 14:48', bg: '#FDF1E7', color: '#9A5B15' }
+];
+
+class Component extends DCLogic {
+  state = {
+    view: 'listings', role: 'admin', filter: 'all', q: '',
+    sel: {}, rejectId: null, reason: {}, notes: {}, resolved: {}, toast: ''
+  };
+
+  componentWillUnmount() { clearTimeout(this._t); }
+  flash(t) { clearTimeout(this._t); this.setState({ toast: t }); this._t = setTimeout(() => this.setState({ toast: '' }), 3000); }
+
+  renderVals() {
+    const s = this.state;
+    const roleDef = ROLES.filter(r => r.key === s.role)[0] || ROLES[0];
+    const canAct = roleDef.can.indexOf(s.view) > -1;
+    const m = META[s.view];
+    const teal = '#0B7A87';
+    const line = '#E6E6E6';
+
+    const all = (DATA[s.view] || []).filter(x => !s.resolved[x.id]);
+    const shown = all.filter(x => {
+      if (s.filter === 'flagged' && !x.flag) return false;
+      if (s.filter !== 'all' && s.filter !== 'flagged' && x.state !== s.filter) return false;
+      const q = s.q.trim().toLowerCase();
+      if (!q) return true;
+      return (x.title + ' ' + x.meta + ' ' + x.body).toLowerCase().indexOf(q) !== -1;
+    });
+
+    const selIds = Object.keys(s.sel).filter(k => s.sel[k] && shown.some(x => x.id === k));
+    const resolve = (id, msg) => this.setState(st => ({
+      resolved: Object.assign({}, st.resolved, { [id]: true }),
+      sel: Object.assign({}, st.sel, { [id]: false }),
+      rejectId: null
+    }), () => this.flash(msg));
+
+    const pending = all.filter(x => x.state === 'ממתין').length;
+    const needs = all.filter(x => x.state === 'דורש בדיקה').length;
+    const flagged = all.filter(x => !!x.flag).length;
+
+    return {
+      roleTabs: ROLES.map(r => {
+        const on = s.role === r.key;
+        return { name: r.name, on: on ? 'true' : 'false',
+          bg: on ? '#7ED7E1' : 'transparent', color: on ? '#0C243E' : 'rgba(255,255,255,.8)',
+          pick: () => this.setState({ role: r.key, rejectId: null }) };
+      }),
+      roleName: roleDef.name,
+      nav: NAV.map(n => {
+        const cur = s.view === n.key;
+        const count = (DATA[n.key] || []).filter(x => !s.resolved[x.id]).length;
+        return { name: n.name, current: cur ? 'page' : 'false',
+          color: cur ? '#fff' : 'rgba(255,255,255,.72)',
+          underline: cur ? '#7ED7E1' : 'transparent',
+          hasCount: count > 0, count: String(count),
+          badgeBg: cur ? '#7ED7E1' : 'rgba(255,255,255,.16)',
+          badgeColor: cur ? '#0C243E' : '#fff',
+          pick: () => this.setState({ view: n.key, filter: 'all', q: '', rejectId: null, sel: {} }) };
+      }),
+
+      pageTitle: m.title, pageSub: m.sub,
+      readOnly: !canAct,
+      readOnlyNote: roleDef.name + ' — צפייה בלבד במסך הזה',
+      canAct,
+
+      kpis: [
+        { label: 'בתור', value: String(all.length), note: 'רשומות פתוחות', border: line, color: '#0C243E' },
+        { label: 'ממתין', value: String(pending), note: 'טרם נבדק', border: line, color: '#0C243E' },
+        { label: 'דורש בדיקה', value: String(needs), note: 'נדרשת החלטה אנושית', border: needs ? '#F3D9BE' : line, color: needs ? '#9A5B15' : '#0C243E' },
+        { label: 'מסומן', value: String(flagged), note: flagged ? 'חריגה מתקן הרישום' : 'ללא חריגות', border: flagged ? '#F0C9C4' : line, color: flagged ? '#A33A31' : '#0C243E' }
+      ],
+
+      filters: FILTERS.map(f => {
+        const on = s.filter === f[0];
+        return { name: f[1], on: on ? 'true' : 'false',
+          bg: on ? teal : '#fff', color: on ? '#fff' : '#3E4F62', border: on ? teal : line,
+          pick: () => this.setState({ filter: f[0] }) };
+      }),
+      query: s.q, onQuery: e => this.setState({ q: e.target.value }),
+      searchPlaceholder: m.search,
+
+      hasSelection: canAct && selIds.length > 0,
+      selectionLine: selIds.length === 1 ? 'רשומה אחת נבחרה' : selIds.length + ' רשומות נבחרו',
+      bulkApprove: () => this.setState(st => {
+        const r = Object.assign({}, st.resolved);
+        selIds.forEach(id => { r[id] = true; });
+        return { resolved: r, sel: {} };
+      }, () => this.flash(selIds.length === 1 ? 'רשומה אחת אושרה' : selIds.length + ' רשומות אושרו')),
+      clearSelection: () => this.setState({ sel: {} }),
+
+      items: shown.map(x => {
+        const picked = !!s.sel[x.id];
+        const open = s.rejectId === x.id;
+        return {
+          title: x.title, meta: x.meta, body: x.body,
+          state: x.state,
+          stBg: x.state === 'ממתין' ? '#F0FAFB' : '#FDF1E7',
+          stColor: x.state === 'ממתין' ? teal : '#9A5B15',
+          stBorder: x.state === 'ממתין' ? '#CDEFF3' : '#F3D9BE',
+          hasFlag: !!x.flag, flag: x.flag,
+          cardBorder: x.flag ? '#F3D9BE' : line,
+          selectable: canAct, isPicked: picked, picked: picked ? 'true' : 'false',
+          selBg: picked ? teal : '#fff', selBorder: picked ? teal : '#C9CFD6',
+          toggleSel: () => this.setState(st => ({ sel: Object.assign({}, st.sel, { [x.id]: !st.sel[x.id] }) })),
+          hasChecks: (x.checks || []).length > 0,
+          checks: (x.checks || []).map(c => ({
+            name: c[0], mark: c[1] ? '✓' : '×',
+            bg: c[1] ? '#EAF3EA' : '#FDEDEC',
+            color: c[1] ? '#3B6B3F' : '#A33A31',
+            border: c[1] ? '#CFE3CF' : '#F0C9C4'
+          })),
+          age: x.age, source: x.source,
+          href: './BeautyFind Business Profile.dc.html',
+          linkLabel: m.link,
+          approveLabel: m.approve, rejectLabel: m.reject,
+          approve: () => resolve(x.id, x.title + ' — ' + m.approve),
+          requestInfo: () => resolve(x.id, 'בקשת השלמה נשלחה · ' + x.title),
+          openReject: () => this.setState({ rejectId: x.id }),
+          closeReject: () => this.setState({ rejectId: null }),
+          rejectOpen: open,
+          reasons: m.reasons.map(r => {
+            const on = s.reason[x.id] === r;
+            return { name: r, on: on ? 'true' : 'false',
+              bg: on ? teal : '#fff', color: on ? '#fff' : '#3E4F62', border: on ? teal : line,
+              pick: () => this.setState(st => ({ reason: Object.assign({}, st.reason, { [x.id]: r }) })) };
+          }),
+          note: s.notes[x.id] || '',
+          onNote: e => { const v = e.target.value; this.setState(st => ({ notes: Object.assign({}, st.notes, { [x.id]: v }) })); },
+          confirmReject: () => {
+            if (!s.reason[x.id]) { this.flash('בחרו סיבת דחייה — הסיבה נשלחת לעסק'); return; }
+            resolve(x.id, x.title + ' — נדחה: ' + s.reason[x.id]);
+          }
+        };
+      }),
+      isEmpty: shown.length === 0,
+      emptyTitle: all.length === 0 ? m.empty[0] : 'אין רשומות שמתאימות לסינון',
+      emptyBody: all.length === 0 ? m.empty[1] : 'נקו את הסינון או החיפוש כדי לראות את כל התור.',
+
+      slaRows: [
+        { name: 'רישום חדש', value: '1.4 ימים', color: '#3B6B3F' },
+        { name: 'בקשת בעלות', value: '2.1 ימים', color: '#9A5B15' },
+        { name: 'ביקורת', value: '6 שעות', color: '#3B6B3F' },
+        { name: 'דיווח על תוכן', value: '9 שעות', color: '#3B6B3F' }
+      ],
+      decisions: DECISIONS,
+      toastOn: !!s.toast, toastText: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

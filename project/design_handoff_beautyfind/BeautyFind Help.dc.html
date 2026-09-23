@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="מרכז העזרה של BeautyFind — שאלות נפוצות ללקוחות ולעסקים: תורים, מקדמות, ביקורות, שוברים, חשבוניות, פרטיות ורישום עסק.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#FAFBFB}
+  *{box-sizing:border-box}
+  :root{--hp-pad:16px;--hp-topics:repeat(2,minmax(0,1fr));--hp-shell:minmax(0,1fr)}
+  @media (min-width:640px){:root{--hp-pad:22px;--hp-topics:repeat(3,minmax(0,1fr))}}
+  @media (min-width:1000px){:root{--hp-topics:repeat(6,minmax(0,1fr));--hp-shell:minmax(0,1fr) 300px}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes hpFade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#FAFBFB;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+
+  <header style="background:#fff;border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1160px;margin:0 auto;padding:12px var(--hp-pad);display:flex;align-items:center;gap:13px;flex-wrap:wrap">
+      <a href="./BeautyFind Homepage.dc.html" dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:21px;letter-spacing:-0.01em;color:#0C243E;text-decoration:none">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6">.</span></a>
+      <span style="flex:none;font-size:14px;font-weight:700;color:#5B6B7B">מרכז עזרה</span>
+      <span style="flex:1;min-width:0"></span>
+      <a href="./BeautyFind Contact.dc.html" style="flex:none;min-height:42px;display:inline-flex;align-items:center;padding:0 13px;border-radius:11px;background:#F0FAFB;font-size:14px;font-weight:700;color:#0B7A87;text-decoration:none">צור קשר</a>
+    </div>
+  </header>
+
+  <section aria-labelledby="hp-h" style="background:#0C243E;color:#fff">
+    <div style="max-width:880px;margin:0 auto;padding:clamp(28px,5vw,60px) var(--hp-pad) clamp(26px,4vw,44px);text-align:center">
+      <h1 id="hp-h" style="margin:0 0 14px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(30px,4.6vw,48px);font-weight:500;line-height:1.12;letter-spacing:-0.015em">במה אפשר לעזור?</h1>
+      <div role="tablist" aria-label="אני" style="display:inline-flex;gap:3px;padding:3px;margin-bottom:14px;border-radius:12px;background:rgba(255,255,255,.1)">
+        <sc-for list="{{ auds }}" as="au" hint-placeholder-count="2"><button type="button" role="tab" aria-selected="{{ au.on }}" onClick="{{ au.pick }}" style="min-height:40px;padding:0 16px;border:0;border-radius:10px;background:{{ au.bg }};font:inherit;font-size:14.5px;font-weight:700;color:{{ au.color }};cursor:pointer">{{ au.name }}</button></sc-for>
+      </div>
+      <label style="position:relative;display:block;max-width:620px;margin:0 auto">
+        <span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">חיפוש בשאלות</span>
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#5B6B7B" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="position:absolute;right:16px;top:50%;transform:translateY(-50%)"><circle cx="8.5" cy="8.5" r="6"></circle><path d="m13 13 5 5"></path></svg>
+        <input type="search" value="{{ q }}" onChange="{{ onQ }}" placeholder="{{ qPh }}" style="width:100%;min-height:56px;padding:0 48px 0 16px;border:0;border-radius:14px;font:inherit;font-size:16.5px;color:#0C243E;background:#fff;outline:none;box-shadow:0 10px 30px rgba(0,0,0,.18)">
+      </label>
+    </div>
+  </section>
+
+  <div style="max-width:1160px;margin:0 auto;padding:clamp(18px,3vw,32px) var(--hp-pad) 64px">
+    <nav aria-label="נושאים" style="display:grid;grid-template-columns:var(--hp-topics);gap:10px;margin-bottom:clamp(20px,3vw,32px)">
+      <sc-for list="{{ topics }}" as="tp" hint-placeholder-count="6"><button type="button" aria-pressed="{{ tp.on }}" onClick="{{ tp.pick }}" style="min-width:0;min-height:84px;padding:12px 13px;border:1px solid {{ tp.border }};border-radius:15px;background:{{ tp.bg }};font:inherit;text-align:right;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;gap:6px" style-hover="border-color:#7ED7E1"><span style="font-size:15px;font-weight:700;color:#0C243E">{{ tp.name }}</span><span style="font-size:12.5px;font-weight:600;color:#5B6B7B">{{ tp.count }}</span></button></sc-for>
+    </nav>
+
+    <div style="display:grid;grid-template-columns:var(--hp-shell);gap:clamp(16px,2.4vw,30px);align-items:start">
+      <main style="min-width:0;animation:hpFade .2s ease both">
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+          <h2 style="flex:1;min-width:0;margin:0;font-family:'Frank Ruhl Libre',serif;font-size:clamp(22px,2.6vw,28px);font-weight:500;letter-spacing:-0.012em">{{ listTitle }}</h2>
+          <sc-if value="{{ filtered }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ clear }}" style="flex:none;min-height:36px;padding:0 10px;border:0;border-radius:9px;background:transparent;font:inherit;font-size:13.5px;font-weight:700;color:#0B7A87;cursor:pointer">כל השאלות</button></sc-if>
+        </div>
+        <sc-if value="{{ none }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:20px;background:#fff;border:1px dashed #D4D4D4;border-radius:15px">
+            <p style="margin:0 0 4px;font-size:16px;font-weight:700">לא מצאנו תשובה ל״{{ q }}״</p>
+            <p style="margin:0;font-size:14.5px;color:#5B6B7B">נסו מילה אחרת, או <a href="./BeautyFind Contact.dc.html">כתבו לנו</a> — אנחנו עונים תוך יום עסקים.</p>
+          </div>
+        </sc-if>
+        <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;overflow:hidden">
+          <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="8"><div style="border-top:1px solid #EDEFF2"><button type="button" aria-expanded="{{ f.exp }}" onClick="{{ f.toggle }}" style="width:100%;min-height:56px;display:flex;align-items:center;gap:12px;padding:12px 18px;border:0;background:{{ f.bg }};font:inherit;text-align:right;cursor:pointer"><span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-size:15.5px;font-weight:700;color:#0C243E;text-wrap:pretty">{{ f.q }}</span><span style="font-size:12.5px;font-weight:600;color:#8A96A3">{{ f.topic }}</span></span><span aria-hidden="true" style="flex:none;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:#F6F8F9;font-size:17px;font-weight:700;color:#0B7A87">{{ f.sign }}</span></button><sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}"><div style="padding:0 18px 16px;background:#FAFBFB"><p style="margin:0;max-width:70ch;font-size:15px;line-height:1.7;color:#3E4F62;text-wrap:pretty">{{ f.a }}</p><sc-if value="{{ f.hasLink }}" hint-placeholder-val="{{ false }}"><a href="{{ f.href }}" style="display:inline-flex;align-items:center;min-height:40px;margin-top:4px;font-size:14px;font-weight:700">{{ f.link }}</a></sc-if><div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap"><span style="font-size:13px;color:#5B6B7B">{{ f.voteQ }}</span><sc-if value="{{ f.canVote }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ f.yes }}" style="min-height:34px;padding:0 11px;border:1px solid #E6E6E6;border-radius:9px;background:#fff;font:inherit;font-size:13px;font-weight:700;color:#3E4F62;cursor:pointer">כן</button></sc-if><sc-if value="{{ f.canVote }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ f.no }}" style="min-height:34px;padding:0 11px;border:1px solid #E6E6E6;border-radius:9px;background:#fff;font:inherit;font-size:13px;font-weight:700;color:#3E4F62;cursor:pointer">לא</button></sc-if></div></div></sc-if></div></sc-for>
+        </div>
+      </main>
+
+      <aside style="min-width:0;display:flex;flex-direction:column;gap:12px">
+        <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:15px 16px">
+          <h2 style="margin:0 0 4px;font-size:15.5px;font-weight:700">{{ side.title }}</h2>
+          <p style="margin:0 0 11px;font-size:13.5px;color:#5B6B7B;text-wrap:pretty">{{ side.body }}</p>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <sc-for list="{{ side.links }}" as="sl" hint-placeholder-count="3"><a href="{{ sl.href }}" style="min-height:44px;display:flex;align-items:center;padding:0 13px;border:1px solid #E6E6E6;border-radius:11px;font-size:14px;font-weight:700;color:#0C243E;text-decoration:none" style-hover="border-color:#7ED7E1">{{ sl.name }}</a></sc-for>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:15px 16px">
+          <h2 style="margin:0 0 8px;font-size:15.5px;font-weight:700">לא מצאתם?</h2>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <a href="./BeautyFind Contact.dc.html" style="min-height:44px;display:flex;align-items:center;padding:0 13px;border-radius:11px;background:#0B7A87;font-size:14px;font-weight:700;color:#fff;text-decoration:none">טופס פנייה · מענה תוך יום עסקים</a>
+            <a href="mailto:help@beautyfind.co.il" style="min-height:44px;display:flex;align-items:center;padding:0 13px;border:1px solid #E6E6E6;border-radius:11px;font-size:14px;font-weight:700;color:#0C243E;text-decoration:none"><span dir="ltr" style="unicode-bidi:isolate">help@beautyfind.co.il</span></a>
+          </div>
+          <p style="margin:11px 0 0;padding-top:10px;border-top:1px solid #EDEFF2;font-size:12.5px;color:#5B6B7B;text-wrap:pretty">שאלה על טיפול או תור ספציפי? הקליניקה היא הכתובת — הפרטים בכל פרופיל. בבעיה רפואית דחופה חייגו <span dir="ltr" style="unicode-bidi:isolate;font-weight:700">101</span>.</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1160,&quot;height&quot;:1000},&quot;audience&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;client&quot;,&quot;biz&quot;],&quot;default&quot;:&quot;client&quot;,&quot;tsType&quot;:&quot;'client'|'biz'&quot;}}">
+const TOPICS = {
+  client: [['book', 'תורים וביטולים'], ['pay', 'מקדמות וחשבוניות'], ['medical', 'טיפולים רפואיים'], ['reviews', 'ביקורות'], ['gift', 'שוברי מתנה'], ['privacy', 'חשבון ופרטיות']],
+  biz: [['join', 'הצטרפות ובעלות'], ['profile', 'פרופיל ותוכן'], ['billing', 'מנוי וחשבוניות'], ['team', 'צוות והרשאות'], ['breviews', 'ביקורות ומענה'], ['ads', 'מקום ממומן']]
+};
+const FAQ = [
+  ['client', 'book', 'איך מבטלים או מזיזים תור?', 'דרך הקישור בהודעת האישור בוואטסאפ או במייל — בלי להתחבר. אפשר לבטל או לבחור מועד אחר לפי מדיניות הביטול של הקליניקה, שמופיעה לפני האישור.', 'לניהול התור', './BeautyFind Manage Booking.dc.html'],
+  ['client', 'book', 'אין תור פנוי במועד שמתאים לי. מה עושים?', 'הצטרפו לרשימת ההמתנה של הטיפול. כשמתפנה תור שמתאים להעדפות שלכם, נשלח הודעה והתור נשמר לכם לזמן מוגבל.', 'לרשימת ההמתנה', './BeautyFind Waitlist.dc.html'],
+  ['client', 'pay', 'למה נגבית מקדמה, ומתי היא מוחזרת?', 'המקדמה נקבעת על ידי כל קליניקה — סכום קבוע או אחוז, ולפעמים רק לטיפולים רפואיים. היא מתקזזת מהתשלום בקליניקה, ומוחזרת במלואה עם חשבונית זיכוי אם מבטלים בזמן.', 'קבלות והחזרים', './BeautyFind Receipt.dc.html'],
+  ['client', 'pay', 'האם המחירים כוללים מע״מ?', 'לא. המחירים באתר מוצגים לפני מע״מ, והסכום הסופי מופיע בחשבונית המס. רוב הקליניקות מאפשרות תשלומים.'],
+  ['client', 'pay', 'הקופה או הביטוח מכסים את הטיפול?', 'לא. טיפולים אסתטיים אינם בסל הבריאות ואינם מכוסים בקופות החולים. חלק מהביטוחים הפרטיים מכסים ייעוץ עור רפואי — כדאי לבדוק מול הביטוח.'],
+  ['client', 'medical', 'למה אי אפשר לקבוע בוטוקס ישירות?', 'הזרקה היא פעולה רפואית. רופא/ה צריכים לבדוק אתכם ולהחליט אם, איך ובאיזו כמות. לכן טיפולים כאלה עוברים דרך בקשת ייעוץ ולא דרך תור מיידי.', 'לבקשת ייעוץ', './BeautyFind Consult Request.dc.html'],
+  ['client', 'medical', 'מי רשאי להזריק?', 'רופא/ה, או אח/ות מוסמך/ת בפיקוח רופא. קוסמטיקאיות אינן רשאיות להזריק. בכל פרופיל מופיע מי אחראי/ת רפואית, והרישיון נבדק מול פנקס משרד הבריאות.', 'איך אנחנו בודקים', './BeautyFind Standards.dc.html'],
+  ['client', 'medical', 'מה זו הצהרת הבריאות ומי רואה אותה?', 'שאלון קצר שנחתם דיגיטלית לפני הטיפול. רק הצוות המטפל בתור רואה אותו — לא הקבלה ולא BeautyFind.', 'למילוי ההצהרה', './BeautyFind Health Declaration.dc.html'],
+  ['client', 'reviews', 'למה הביקורת שלי עוד לא פורסמה?', 'כל ביקורת נבדקת לפני פרסום, בדרך כלל תוך 6 שעות. אנחנו מפרסמים רק ביקורות על ביקור שאומת מול היומן של הקליניקה.'],
+  ['client', 'reviews', 'הקליניקה יכולה למחוק ביקורת שלילית?', 'לא. קליניקה יכולה להגיב פומבית או לדווח על ביקורת שמפרה את התקן. ההחלטה של צוות הבדיקה, והיא מתועדת.', 'תקן הרישום', './BeautyFind Standards.dc.html'],
+  ['client', 'gift', 'כמה זמן שובר מתנה בתוקף?', 'לפחות 5 שנים מיום הקנייה. אפשר לממש בכמה ביקורים עד שהיתרה נגמרת, ולבדוק יתרה בכל עת עם הקוד.', 'לבדיקת יתרה', './BeautyFind Gift Cards.dc.html'],
+  ['client', 'privacy', 'איך מקבלים או מוחקים את המידע שלי?', 'מתוך החשבון, בהגדרות הפרטיות, אפשר לבקש עותק של המידע או מחיקה. מידע רפואי שנמצא בתיק בקליניקה נשמר אצלה לפי חובת השמירה החוקית.', 'למדיניות הפרטיות', './BeautyFind Legal.dc.html'],
+  ['client', 'privacy', 'איך מפסיקים לקבל הודעות שיווקיות?', 'בכל הודעה שיווקית יש קישור להסרה. הודעות על תורים — אישור, תזכורת והנחיות אחרי טיפול — ימשיכו להגיע.'],
+  ['biz', 'join', 'העסק שלי כבר מופיע. איך מקבלים שליטה?', 'בקשו בעלות על הכרטיס הקיים. האימות נעשה דרך Google Business או בשיחה למספר הרשום, ורוב הבקשות נסגרות באותו יום.', 'לבקשת בעלות', './BeautyFind Claim.dc.html'],
+  ['biz', 'join', 'אני קוסמטיקאית. אפשר להציע בוטוקס בפרופיל?', 'רק אם יש בעסק רופא/ה שמבצע/ת את ההזרקות ורשום/ה כאחראי/ת רפואית. בלי זה, טיפולי הזרקה לא יופיעו בתפריט.', 'להצטרפות', './BeautyFind Onboarding.dc.html'],
+  ['biz', 'profile', 'מה מותר לפרסם בתמונות לפני/אחרי?', 'רק תמונות אמיתיות של מטופלות שנתנו הסכמה מפורשת בכתב, בלי פרטים מזהים ובלי עריכה. בטיפולים רפואיים — בלי הבטחת תוצאה.'],
+  ['biz', 'billing', 'מה ההבדל בין בסיסי למתקדם?', 'בסיסי (₪149 לסניף): פרופיל מאומת, קביעת תור אונליין עם סנכרון יומן, אישורים ותזכורות, ביקורות ולוח פניות. מתקדם + CRM (₪249 לסניף): בנוסף — מערכת ניהול הקליניקה: יומן מלא, כרטיסי לקוחות, הצהרות בריאות, צ׳ק־אין, מקדמות, שוברים, רשימת המתנה, בקשות ייעוץ, מלאי ואוטומציות.', 'להשוואת המסלולים', './BeautyFind Get Listed.dc.html'],
+  ['biz', 'billing', 'איך עובד החיוב על כמה סניפים?', 'מנוי אחד וחשבונית אחת. החיוב לפי מספר הסניפים המפורסמים — ₪149 לסניף בבסיסי או ₪249 לסניף במתקדם עם CRM. סניף בטיוטה לא מחויב, וסניף חדש נכנס למחזור החיוב הבא.', 'לניהול סניפים', './BeautyFind Branches.dc.html'],
+  ['biz', 'billing', 'BeautyFind גובה עמלה על תורים או מקדמות?', 'לא. המנוי הוא החיוב היחיד. מקדמות, תשלומים ושוברים עוברים ישירות לקליניקה.'],
+  ['biz', 'team', 'איך מוסיפים רופא/ה לצוות?', 'מלוח הבקרה, תחת צוות והרשאות, שולחים הזמנה במייל. בהצטרפות הרופא/ה מזינים מספר רישיון, ושמם מופיע כאחראי/ת רפואית רק אחרי אימות.', 'ללוח הבקרה', './BeautyFind Dashboard.dc.html'],
+  ['biz', 'team', 'מי יכול לסגור בקשת ייעוץ מסיבה רפואית?', 'רק רופא/ה. צוות עם הרשאת הזמנות יכול להציע מועד, לבקש פרטים או לסגור בקשה כפולה — אבל לא לקבוע התווית נגד.'],
+  ['biz', 'breviews', 'אפשר להגיב לביקורת?', 'כן, פעם אחת ופומבית, מלוח הבקרה. בלי פרטים רפואיים של המטופלת, גם אם היא כתבה אותם בעצמה.'],
+  ['biz', 'ads', 'מה זה מקום ממומן ואיך הוא מסומן?', 'מקום בראש רשימת אזור ותחום, לשבוע או יותר. הוא תמיד נושא תג ״ממומן״, לא משפיע על הדירוג, על ההשוואה או על הביקורות, ומוגבל לשני מקומות בכל רשימה.', 'לרכישת מקום', './BeautyFind Sponsored.dc.html']
+];
+
+class Component extends DCLogic {
+  state = { aud: null, topic: null, q: '', open: {}, voted: {} };
+  renderVals() {
+    const s = this.state;
+    const aud = s.aud || this.props.audience || 'client';
+    const q = s.q.trim();
+    const pool = FAQ.filter(f => f[0] === aud);
+    const topicName = k => ((TOPICS[aud].find(t => t[0] === k) || [])[1]) || '';
+    const list = pool.filter(f => (!s.topic || f[1] === s.topic) && (!q || (f[2] + ' ' + f[3]).includes(q)));
+    const plQ = n => n === 1 ? 'שאלה אחת' : n === 2 ? 'שתי שאלות' : n + ' שאלות';
+    return {
+      auds: [['client', 'אני לקוחה'], ['biz', 'יש לי עסק']].map(a => { const on = aud === a[0]; return { name: a[1], on: on ? 'true' : 'false', bg: on ? '#fff' : 'transparent', color: on ? '#0C243E' : '#fff', pick: () => this.setState({ aud: a[0], topic: null, open: {} }) }; }),
+      q: s.q, onQ: e => this.setState({ q: e.target.value, topic: null }),
+      qPh: aud === 'client' ? 'למשל: ביטול תור, מקדמה, בוטוקס' : 'למשל: סניף נוסף, רישיון, ביקורת',
+      topics: TOPICS[aud].map(t => { const on = s.topic === t[0]; return { name: t[1], count: plQ(pool.filter(f => f[1] === t[0]).length), on: on ? 'true' : 'false', bg: on ? '#F0FAFB' : '#fff', border: on ? '#7ED7E1' : '#E6E6E6', pick: () => this.setState({ topic: on ? null : t[0], q: '' }) }; }),
+      listTitle: q ? plQ(list.length) + ' על ״' + q + '״' : s.topic ? topicName(s.topic) : (aud === 'client' ? 'שאלות נפוצות' : 'שאלות נפוצות לעסקים'),
+      filtered: !!(q || s.topic),
+      clear: () => this.setState({ q: '', topic: null }),
+      none: list.length === 0,
+      faqs: list.map(f => {
+        const key = f[2], open = !!s.open[key], v = s.voted[key];
+        return { q: f[2], a: f[3], topic: topicName(f[1]), link: f[4] || '', href: f[5] || '', hasLink: !!f[4],
+          open, exp: open ? 'true' : 'false', sign: open ? '−' : '+', bg: open ? '#FAFBFB' : '#fff',
+          toggle: () => this.setState(st => ({ open: Object.assign({}, st.open, { [key]: !st.open[key] }) })),
+          canVote: !v, voteQ: v === 'y' ? 'תודה!' : v === 'n' ? 'תודה. נשפר את התשובה.' : 'עזר?',
+          yes: () => this.setState(st => ({ voted: Object.assign({}, st.voted, { [key]: 'y' }) })),
+          no: () => this.setState(st => ({ voted: Object.assign({}, st.voted, { [key]: 'n' }) })) };
+      }),
+      side: aud === 'client'
+        ? { title: 'קיצורי דרך', body: 'הפעולות שהכי מחפשים.', links: [{ name: 'ניהול תור קיים', href: './BeautyFind Manage Booking.dc.html' }, { name: 'קליניקות שמורות', href: './BeautyFind Saved.dc.html' }, { name: 'בדיקת יתרת שובר', href: './BeautyFind Gift Cards.dc.html' }] }
+        : { title: 'לעסקים', body: 'ניהול העסק באזור בעלי העסקים.', links: [{ name: 'לוח הבקרה', href: './BeautyFind Dashboard.dc.html' }, { name: 'רכישת מקום ממומן', href: './BeautyFind Sponsored.dc.html' }, { name: 'תקן הרישום', href: './BeautyFind Standards.dc.html' }] }
+    };
+  }
+}
+</script>
+</body>
+</html>

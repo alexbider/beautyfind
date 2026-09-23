@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="אישור בעלות על עסק ב־BeautyFind: איתור העסק, אימות בעלות בקוד לטלפון או בדואר אלקטרוני, השלמת פרטים ותפריט מחירים — בארבעה שלבים.">
+<link rel="canonical" href="https://beautyfind.co.il/for-business/claim">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Assistant:wght@400;500;600;700&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0;background:#ffffff}
+body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:#0C243E;text-decoration:none}
+a:hover{color:#0B7A87}
+:focus-visible{outline:2px solid #14B3C6;outline-offset:2px;border-radius:6px}
+@keyframes bfRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes bfDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes bfFade{from{opacity:0}to{opacity:1}}
+@keyframes bfPop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+::selection{background:rgba(20,179,198,.25)}
+*{-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{overscroll-behavior-y:contain}
+button,a[href],[role="button"],summary,label{touch-action:manipulation}
+button:not(:disabled):active,a[href]:active,[role="button"]:active{transform:scale(.985)}
+img,svg,video{max-width:100%}
+input,textarea,select{font-family:inherit}
+@media (max-width:760px){input,select,textarea{font-size:16px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+[data-desktop-only]{display:none}
+@media (min-width:1000px){[data-desktop-only]{display:flex}[data-mobile-only]{display:none!important}}
+[data-wide-rail]{display:none}
+[data-step-note]{display:none}
+@media (min-width:1000px){[data-wide-rail]{display:flex}[data-step-note]{display:block}}
+:root{--main-cols:minmax(0,1fr);--rail-pos:static;--two-cols:minmax(0,1fr);--field-cols:minmax(0,1fr);--hours-cols:minmax(0,1fr);--steps-dir:row;--steps-overflow:auto;--step-bar:0;--step-radius:10px}
+@media (min-width:620px){:root{--two-cols:repeat(2,minmax(0,1fr));--field-cols:repeat(2,minmax(0,1fr));--hours-cols:120px minmax(0,1fr)}}
+@media (min-width:1000px){:root{--main-cols:minmax(240px,300px) minmax(0,1fr);--steps-dir:column;--steps-overflow:visible;--step-bar:2px;--step-radius:9px 0 0 9px}}
+@media (min-width:1000px) and (min-height:760px){:root{--rail-pos:sticky}}
+</style>
+</helmet>
+<div dir="rtl" onKeyDown="{{ onKey }}" style="font-family:'Assistant',system-ui,sans-serif;font-size:16px;line-height:1.55;color:#0C243E;background:#ffffff;min-height:100dvh;overflow-x:clip">
+
+  <header style="position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:saturate(1.2) blur(8px);border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1320px;margin:0 auto;padding:0 clamp(20px,4vw,32px);height:72px;display:flex;align-items:center;gap:26px">
+      <a href="/" onClick="{{ go }}" aria-label="BeautyFind — לדף הבית" style="flex:none;display:flex;align-items:center"><span dir="ltr" style="font-family:'Jost',sans-serif;font-weight:300;font-size:28px;line-height:1;color:#0C243E;white-space:nowrap">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6;font-weight:400">.</span></span></a>
+      <nav aria-label="ראשי" data-desktop-only style="align-items:center;gap:2px;flex:1">
+        <a href="/for-business" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 14px;border-radius:10px;font-size:16px;font-weight:500;transition:background .18s" style-hover="background:#F6F8F9">רישום עסק</a>
+        <a href="/listing-standards" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 14px;border-radius:10px;font-size:16px;font-weight:500;transition:background .18s" style-hover="background:#F6F8F9">תקן הרישום</a>
+        <a href="/sponsorship" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 14px;border-radius:10px;font-size:16px;font-weight:500;transition:background .18s" style-hover="background:#F6F8F9">מידע על פרסום</a>
+      </nav>
+      <a href="/contact" onClick="{{ go }}" data-desktop-only style="flex:none;align-items:center;height:44px;padding:0 18px;border-radius:11px;border:1px solid #D4D4D4;font-size:15px;font-weight:700;color:#0C243E;transition:border-color .18s,color .18s" style-hover="border-color:#14B3C6;color:#0B7A87">צריכים עזרה?</a>
+      <a href="/contact" onClick="{{ go }}" data-mobile-only style="margin-right:auto;display:flex;align-items:center;height:44px;padding:0 14px;border-radius:11px;border:1px solid #D4D4D4;font-size:14.5px;font-weight:700;color:#0C243E">עזרה</a>
+    </div>
+    <div aria-hidden="true" style="height:3px;background:#EDEFF2"><div style="height:3px;width:{{ progress }};background:#14B3C6;transition:width .35s cubic-bezier(.2,.7,.2,1)"></div></div>
+  </header>
+
+  <main style="max-width:1320px;margin:0 auto;padding:clamp(22px,3vw,44px) clamp(20px,4vw,32px) clamp(56px,6vw,96px)">
+    <div style="display:grid;grid-template-columns:var(--main-cols);gap:clamp(24px,3vw,56px);align-items:start">
+
+      <aside aria-label="שלבי התהליך" style="min-width:0;position:var(--rail-pos);top:92px;display:flex;flex-direction:column;gap:14px">
+        <div>
+          <span style="display:flex;align-items:center;gap:12px;font-size:13px;font-weight:700;color:#5B6B7B;margin-bottom:8px"><span aria-hidden="true" style="width:24px;height:1px;background:#14B3C6;display:inline-block"></span>אישור בעלות</span>
+          <h1 style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(26px,2.4vw,34px);line-height:1.12;letter-spacing:-0.014em;text-wrap:balance">העסק הזה שלכם<span style="color:#14B3C6">?</span></h1>
+        </div>
+        <ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:var(--steps-dir);gap:2px;overflow-x:var(--steps-overflow);scrollbar-width:none">
+          <sc-for list="{{ steps }}" as="st" hint-placeholder-count="4">
+            <li style="flex:none">
+              <button type="button" disabled="{{ st.locked }}" onClick="{{ st.jump }}" aria-current="{{ st.current }}" style="display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:8px 12px;border:0;border-right:var(--step-bar) solid {{ st.bar }};border-radius:var(--step-radius);background:{{ st.bg }};font:inherit;text-align:right;cursor:{{ st.cursor }};transition:background .2s;white-space:nowrap">
+                <span aria-hidden="true" style="flex:none;width:26px;height:26px;border-radius:50%;background:{{ st.dotBg }};border:1px solid {{ st.dotBorder }};display:inline-flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:{{ st.dotColor }}">{{ st.mark }}</span>
+                <span style="display:flex;flex-direction:column;gap:1px;min-width:0">
+                  <span style="font-size:15px;font-weight:{{ st.weight }};color:{{ st.color }}">{{ st.name }}</span>
+                  <span data-step-note style="font-size:12.5px;color:#8A96A3">{{ st.note }}</span>
+                </span>
+              </button>
+            </li>
+          </sc-for>
+        </ol>
+        <div data-wide-rail style="border-top:1px solid #E6E6E6;padding-top:14px;flex-direction:column;gap:9px">
+          <div style="font-size:12px;font-weight:700;color:#8A96A3">מה זה נותן</div>
+          <p style="margin:0;font-size:13px;line-height:1.65;color:#5B6B7B;text-wrap:pretty">אישור בעלות פותח את הפרופיל לעריכה: תפריט מחירים, שעות, טלפון, WhatsApp, תמונות ותגובה לביקורות. האישור עצמו חינם; רישום מלא הוא ₪149 לחודש.</p>
+          <a href="/listing-standards" onClick="{{ go }}" style="display:inline-flex;align-items:center;gap:6px;min-height:40px;font-size:13.5px;font-weight:700;color:#0B7A87">תקן הרישום<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></a>
+        </div>
+      </aside>
+
+      <div style="min-width:0">
+
+        <sc-if value="{{ isFind }}" hint-placeholder-val="{{ true }}">
+          <section aria-labelledby="h-find" style="animation:bfFade .25s ease both">
+            <h2 id="h-find" style="margin:0 0 8px;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(24px,2.3vw,33px);line-height:1.16;letter-spacing:-0.013em">איתור העסק<span style="color:#14B3C6">.</span></h2>
+            <p style="margin:0 0 18px;font-size:16.5px;line-height:1.7;color:#3E4F62;max-width:62ch;text-wrap:pretty">חפשו את העסק לפי שם או עיר. אם הוא כבר באינדקס — בחרו אותו. אם לא מצאתם אותו, אפשר לפתוח פרופיל חדש בסוף הרשימה.</p>
+            <label style="position:relative;display:flex;align-items:center;gap:10px;min-height:56px;padding:0 16px;background:#ffffff;border:1px solid #D4D4D4;border-radius:14px;margin-bottom:14px">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#8A96A3" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" style="flex:none"><circle cx="8" cy="8" r="5.4"></circle><path d="m12.2 12.2 3 3"></path></svg>
+              <span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">חיפוש עסק</span>
+              <input type="search" value="{{ q }}" onChange="{{ onQuery }}" placeholder="שם העסק או העיר — למשל: שרון קליניק, רעננה" style="flex:1;min-width:0;border:0;outline:none;background:transparent;font-size:16px;color:#0C243E">
+            </label>
+            <p style="margin:0 0 10px;font-size:13.5px;color:#5B6B7B">{{ resultLine }}</p>
+            <ul style="list-style:none;margin:0 0 16px;padding:0;display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ results }}" as="b" hint-placeholder-count="4">
+                <li>
+                  <button type="button" onClick="{{ b.pick }}" aria-pressed="{{ b.on }}" style="display:flex;align-items:center;gap:13px;width:100%;padding:13px;border:1px solid {{ b.border }};border-radius:15px;background:{{ b.bg }};font:inherit;text-align:right;cursor:pointer;transition:border-color .2s,background .2s,box-shadow .2s" style-hover="border-color:#14B3C6;box-shadow:0 14px 32px rgba(12,36,62,.07)">
+                    <span aria-hidden="true" style="position:relative;flex:none;width:54px;height:54px;border-radius:12px;overflow:hidden;background:#EDF1F3">
+                      <img src="{{ b.img }}" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+                    </span>
+                    <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                      <span style="font-size:16.5px;font-weight:700;color:#0C243E">{{ b.name }}</span>
+                      <span style="font-size:13.5px;color:#5B6B7B">{{ b.cat }} · {{ b.city }}</span>
+                      <span dir="ltr" style="font-size:12.5px;color:#8A96A3;text-align:right;font-variant-numeric:tabular-nums">{{ b.phone }}</span>
+                    </span>
+                    <span style="flex:none;display:inline-flex;align-items:center;height:26px;padding:0 9px;border-radius:7px;background:{{ b.tagBg }};font-size:11.5px;font-weight:700;color:{{ b.tagColor }}">{{ b.tag }}</span>
+                  </button>
+                </li>
+              </sc-for>
+            </ul>
+            <button type="button" onClick="{{ pickNew }}" aria-pressed="{{ newOn }}" style="display:flex;align-items:center;gap:11px;width:100%;min-height:60px;padding:13px;border:1px dashed {{ newBorder }};border-radius:15px;background:{{ newBg }};font:inherit;text-align:right;cursor:pointer;transition:border-color .2s,background .2s">
+              <span aria-hidden="true" style="flex:none;width:32px;height:32px;border-radius:50%;background:#0C243E;color:#ffffff;display:inline-flex;align-items:center;justify-content:center;font-size:18px;line-height:1">+</span>
+              <span style="display:flex;flex-direction:column;gap:2px">
+                <span style="font-size:15.5px;font-weight:700">העסק שלי לא מופיע</span>
+                <span style="font-size:13px;color:#5B6B7B">נפתח פרופיל חדש, ונאמת אותו מול הרישום העסקי</span>
+              </span>
+            </button>
+          </section>
+        </sc-if>
+
+        <sc-if value="{{ isVerify }}" hint-placeholder-val="{{ false }}">
+          <section aria-labelledby="h-verify" style="animation:bfFade .25s ease both">
+            <h2 id="h-verify" style="margin:0 0 8px;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(24px,2.3vw,33px);line-height:1.16;letter-spacing:-0.013em">אימות בעלות<span style="color:#14B3C6">.</span></h2>
+            <p style="margin:0 0 18px;font-size:16.5px;line-height:1.7;color:#3E4F62;max-width:62ch;text-wrap:pretty">בחרו דרך אימות ל<strong>{{ chosenName }}</strong>. הקוד תקף ל־10 דקות, ואפשר לבקש חדש.</p>
+            <div style="display:grid;grid-template-columns:var(--two-cols);gap:8px;margin-bottom:18px">
+              <sc-for list="{{ methods }}" as="m" hint-placeholder-count="3">
+                <button type="button" aria-pressed="{{ m.on }}" onClick="{{ m.pick }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:82px;padding:14px;border:1px solid {{ m.border }};border-radius:14px;background:{{ m.bg }};font:inherit;text-align:right;cursor:pointer;transition:border-color .18s,background .18s">
+                  <span style="font-size:15.5px;font-weight:700;color:{{ m.color }}">{{ m.name }}</span>
+                  <span dir="{{ m.dir }}" style="font-size:13.5px;color:#3E4F62;font-variant-numeric:tabular-nums">{{ m.target }}</span>
+                  <span style="font-size:12.5px;color:#8A96A3;text-wrap:pretty">{{ m.note }}</span>
+                </button>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ codeSent }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:clamp(18px,2.2vw,26px);border:1px solid #CDEFF3;border-radius:18px;background:#F0FAFB;animation:bfPop .25s cubic-bezier(.2,.7,.2,1) both">
+                <p style="margin:0 0 12px;font-size:15.5px;line-height:1.7;color:#0C243E;text-wrap:pretty">שלחנו קוד בן שש ספרות ל<span dir="{{ methodDir }}" style="font-weight:700">{{ methodTarget }}</span>. הזינו אותו כאן.</p>
+                <label style="display:flex;flex-direction:column;gap:6px;max-width:260px">
+                  <span style="font-size:13.5px;font-weight:700">קוד אימות</span>
+                  <input type="text" dir="ltr" value="{{ code }}" onChange="{{ onCode }}" inputMode="numeric" autoComplete="one-time-code" maxLength="6" placeholder="000000" aria-invalid="{{ codeBad }}" aria-describedby="err-code" style="min-height:56px;padding:0 16px;border:1px solid {{ codeBorder }};border-radius:12px;background:#ffffff;font-size:22px;font-weight:700;letter-spacing:.24em;color:#0C243E;outline:none;text-align:center;font-variant-numeric:tabular-nums">
+                </label>
+                <sc-if value="{{ codeBad }}" hint-placeholder-val="{{ false }}">
+                  <p id="err-code" role="alert" style="margin:8px 0 0;font-size:13.5px;font-weight:700;color:#A8432C">הקוד שגוי או פג תוקף. בהדגמה הזו הקוד הוא <span dir="ltr">123456</span>.</p>
+                </sc-if>
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px">
+                  <button type="button" onClick="{{ checkCode }}" style="display:inline-flex;align-items:center;gap:9px;min-height:52px;padding:0 22px;border:0;border-radius:13px;background:#0C243E;color:#ffffff;font:inherit;font-size:15.5px;font-weight:700;cursor:pointer;transition:background .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateY(-2px)"><span>אימות הקוד</span></button>
+                  <button type="button" onClick="{{ resend }}" style="min-height:44px;padding:0 12px;border:0;background:transparent;font:inherit;font-size:14px;font-weight:700;color:#0B7A87;cursor:pointer">שליחת קוד חדש</button>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ needSend }}" hint-placeholder-val="{{ true }}">
+              <button type="button" onClick="{{ sendCode }}" style="display:inline-flex;align-items:center;gap:9px;min-height:54px;padding:0 24px;border:0;border-radius:13px;background:#0C243E;color:#ffffff;font:inherit;font-size:16px;font-weight:700;cursor:pointer;transition:background .18s,color .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateY(-2px)"><span>שליחת קוד</span><svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></button>
+            </sc-if>
+
+            <div style="display:flex;align-items:flex-start;gap:12px;margin-top:20px;padding:16px 18px;border:1px solid #E6E6E6;border-radius:14px;background:#FAFBFB">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#5B6B7B" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:2px"><circle cx="10" cy="10" r="7.6"></circle><path d="M10 6.2v.2M10 9v4.6"></path></svg>
+              <p style="margin:0;font-size:15px;line-height:1.7;color:#3E4F62;text-wrap:pretty"><strong>אין לכם גישה לטלפון או לדואר הרשומים?</strong> אפשר לאמת במסמך: תעודת עוסק, אישור ניהול ספרים או רישיון עסק על שם העסק. שלחו אותו ל<a href="mailto:business@beautyfind.co.il" style="font-weight:700;border-bottom:1px solid #D4D4D4"><span dir="ltr">business@beautyfind.co.il</span></a> ונטפל בתוך שני ימי עסקים.</p>
+            </div>
+          </section>
+        </sc-if>
+
+        <sc-if value="{{ isDetails }}" hint-placeholder-val="{{ false }}">
+          <section aria-labelledby="h-details" style="animation:bfFade .25s ease both">
+            <h2 id="h-details" style="margin:0 0 8px;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(24px,2.3vw,33px);line-height:1.16;letter-spacing:-0.013em">פרטי העסק<span style="color:#14B3C6">.</span></h2>
+            <p style="margin:0 0 18px;font-size:16.5px;line-height:1.7;color:#3E4F62;max-width:62ch;text-wrap:pretty">אישרנו שהעסק שלכם. עכשיו נשלים את מה שהלקוחות רואים ראשון — ואפשר לערוך את הכול גם אחר כך.</p>
+            <div style="display:grid;grid-template-columns:var(--field-cols);gap:14px;margin-bottom:18px">
+              <label style="display:flex;flex-direction:column;gap:6px;min-width:0">
+                <span style="font-size:13.5px;font-weight:700">שם העסק <span aria-hidden="true" style="color:#0B7A87">*</span></span>
+                <input type="text" value="{{ bizName }}" onChange="{{ onBizName }}" style="min-height:52px;padding:0 14px;border:1px solid {{ bizNameBorder }};border-radius:12px;background:#ffffff;font-size:16px;color:#0C243E;outline:none">
+              </label>
+              <label style="display:flex;flex-direction:column;gap:6px;min-width:0">
+                <span style="font-size:13.5px;font-weight:700">כתובת ועיר <span aria-hidden="true" style="color:#0B7A87">*</span></span>
+                <input type="text" value="{{ address }}" onChange="{{ onAddress }}" placeholder="רחוב ומספר, עיר" style="min-height:52px;padding:0 14px;border:1px solid {{ addressBorder }};border-radius:12px;background:#ffffff;font-size:16px;color:#0C243E;outline:none">
+              </label>
+              <label style="display:flex;flex-direction:column;gap:6px;min-width:0">
+                <span style="font-size:13.5px;font-weight:700">טלפון לפניות <span aria-hidden="true" style="color:#0B7A87">*</span></span>
+                <input type="tel" dir="ltr" value="{{ bizPhone }}" onChange="{{ onBizPhone }}" inputMode="tel" placeholder="03-0000000" style="min-height:52px;padding:0 14px;border:1px solid {{ bizPhoneBorder }};border-radius:12px;background:#ffffff;font-size:16px;color:#0C243E;outline:none;text-align:left">
+              </label>
+              <label style="display:flex;flex-direction:column;gap:6px;min-width:0">
+                <span style="font-size:13.5px;font-weight:700">WhatsApp <span style="font-weight:500;color:#8A96A3">(לא חובה)</span></span>
+                <input type="tel" dir="ltr" value="{{ whatsapp }}" onChange="{{ onWhatsapp }}" inputMode="tel" placeholder="050-0000000" style="min-height:52px;padding:0 14px;border:1px solid #D4D4D4;border-radius:12px;background:#ffffff;font-size:16px;color:#0C243E;outline:none;text-align:left">
+              </label>
+            </div>
+
+            <fieldset style="margin:0 0 18px;padding:0;border:0;min-width:0">
+              <legend style="padding:0;margin-bottom:10px;font-size:13.5px;font-weight:700">תחומי הטיפול שאתם מציעים <span aria-hidden="true" style="color:#0B7A87">*</span></legend>
+              <div style="display:flex;flex-wrap:wrap;gap:8px">
+                <sc-for list="{{ cats }}" as="c" hint-placeholder-count="14">
+                  <button type="button" aria-pressed="{{ c.on }}" onClick="{{ c.toggle }}" style="display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 14px;border:1px solid {{ c.border }};border-radius:999px;background:{{ c.bg }};font:inherit;font-size:14.5px;font-weight:{{ c.weight }};color:{{ c.color }};cursor:pointer;transition:border-color .18s,background .18s">{{ c.name }}</button>
+                </sc-for>
+              </div>
+              <p style="margin:10px 0 0;font-size:13px;color:#8A96A3">{{ catsLine }}</p>
+            </fieldset>
+
+            <sc-if value="{{ medicalPicked }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;padding:16px 18px;border:1px solid #CDEFF3;border-radius:14px;background:#F0FAFB;animation:bfFade .2s ease both">
+                <p style="margin:0;font-size:15px;line-height:1.7;color:#0C243E;text-wrap:pretty"><strong>בחרתם תחום רפואי.</strong> הזרקות ופעולות חודרניות מחייבות רופא או רופאה מוסמכים, או אחות בהסמכה ובאחריות רופא הנמצא בקליניקה. נדרש שם מלא של האחראי הרפואי כדי לפרסם את התחום.</p>
+                <label style="display:flex;flex-direction:column;gap:6px;max-width:420px">
+                  <span style="font-size:13.5px;font-weight:700">שם האחראי הרפואי <span aria-hidden="true" style="color:#0B7A87">*</span></span>
+                  <input type="text" value="{{ doctor }}" onChange="{{ onDoctor }}" placeholder="ד״ר שם מלא, מספר רישיון" style="min-height:52px;padding:0 14px;border:1px solid {{ doctorBorder }};border-radius:12px;background:#ffffff;font-size:16px;color:#0C243E;outline:none">
+                </label>
+              </div>
+            </sc-if>
+
+            <div style="margin-bottom:6px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px">
+                <span style="font-size:13.5px;font-weight:700">שעות פעילות</span>
+                <span style="font-size:13px;color:#8A96A3">ראשון–שישי · שבת סגור כברירת מחדל</span>
+              </div>
+              <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px;background:#E6E6E6;border:1px solid #E6E6E6;border-radius:14px;overflow:hidden">
+                <sc-for list="{{ days }}" as="d" hint-placeholder-count="7">
+                  <li style="display:grid;grid-template-columns:var(--hours-cols);gap:6px 14px;align-items:center;padding:12px 16px;background:#ffffff">
+                    <span style="font-size:15px;font-weight:600;color:{{ d.labelColor }}">{{ d.name }}</span>
+                    <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                      <button type="button" aria-pressed="{{ d.open }}" onClick="{{ d.toggle }}" style="display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 12px;border:1px solid {{ d.border }};border-radius:10px;background:{{ d.bg }};font:inherit;font-size:13.5px;font-weight:700;color:{{ d.color }};cursor:pointer;transition:border-color .18s,background .18s">{{ d.state }}</button>
+                      <sc-if value="{{ d.open }}" hint-placeholder-val="{{ true }}">
+                        <span dir="ltr" style="font-size:14.5px;color:#3E4F62;font-variant-numeric:tabular-nums">{{ d.hours }}</span>
+                      </sc-if>
+                    </span>
+                  </li>
+                </sc-for>
+              </ul>
+            </div>
+          </section>
+        </sc-if>
+
+        <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+          <section aria-labelledby="h-done" style="animation:bfPop .3s cubic-bezier(.2,.7,.2,1) both">
+            <span aria-hidden="true" style="width:48px;height:48px;border-radius:50%;background:#0B7A87;display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px"><svg width="23" height="23" viewBox="0 0 18 18" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.8 7.6 6.6 11.4 15 3"></path></svg></span>
+            <h2 id="h-done" style="margin:0 0 8px;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(24px,2.3vw,33px);line-height:1.16;letter-spacing:-0.013em">הבעלות אושרה<span style="color:#14B3C6">.</span></h2>
+            <p style="margin:0 0 18px;font-size:16.5px;line-height:1.7;color:#3E4F62;max-width:60ch;text-wrap:pretty"><strong>{{ bizName }}</strong> שייך לכם עכשיו. הפרופיל פתוח לעריכה, והשינויים שעשיתם נשמרו. מה שנשאר זה תפריט המחירים — הוא הדבר הראשון שלקוחות מחפשים.</p>
+            <div style="display:grid;grid-template-columns:var(--two-cols);gap:10px;margin-bottom:20px">
+              <sc-for list="{{ nextSteps }}" as="n" hint-placeholder-count="4">
+                <div style="display:flex;align-items:flex-start;gap:11px;padding:16px;border:1px solid #E6E6E6;border-radius:15px;background:#ffffff">
+                  <span aria-hidden="true" style="flex:none;width:24px;height:24px;border-radius:50%;background:#F0FAFB;color:#0B7A87;display:inline-flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700">{{ n.n }}</span>
+                  <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
+                    <span style="font-size:15.5px;font-weight:700;text-wrap:pretty">{{ n.name }}</span>
+                    <span style="font-size:13.5px;line-height:1.6;color:#5B6B7B;text-wrap:pretty">{{ n.body }}</span>
+                  </span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px">
+              <a href="/for-business/dashboard" onClick="{{ go }}" style="display:inline-flex;align-items:center;gap:9px;min-height:54px;padding:0 24px;border-radius:13px;background:#0C243E;color:#ffffff;font-size:16px;font-weight:700;transition:background .18s,color .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateY(-2px)"><span>לעריכת הפרופיל</span><svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></a>
+              <button type="button" onClick="{{ restart }}" style="display:inline-flex;align-items:center;min-height:54px;padding:0 20px;border:1px solid #D4D4D4;border-radius:13px;background:transparent;font:inherit;font-size:16px;font-weight:700;color:#0C243E;cursor:pointer;transition:border-color .18s,color .18s" style-hover="border-color:#14B3C6;color:#0B7A87">אישור עסק נוסף</button>
+            </div>
+          </section>
+        </sc-if>
+
+        <sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:clamp(24px,2.8vw,36px);padding-top:clamp(20px,2.2vw,28px);border-top:1px solid #E6E6E6">            <button type="button" onClick="{{ next }}" disabled="{{ nextBlocked }}" style="display:inline-flex;align-items:center;gap:9px;min-height:54px;padding:0 24px;border:0;border-radius:13px;background:{{ nextBg }};color:#ffffff;font:inherit;font-size:16px;font-weight:700;cursor:{{ nextCursor }};transition:background .18s,transform .18s" style-hover="transform:translateY(-2px)"><span>{{ nextLabel }}</span><svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></button>
+            <sc-if value="{{ canBack }}" hint-placeholder-val="{{ false }}">
+              <button type="button" onClick="{{ back }}" style="min-height:54px;padding:0 18px;border:1px solid #D4D4D4;border-radius:13px;background:transparent;font:inherit;font-size:15.5px;font-weight:700;color:#0C243E;cursor:pointer;transition:border-color .18s,color .18s" style-hover="border-color:#14B3C6;color:#0B7A87">חזרה</button>
+            </sc-if>
+            <span style="font-size:13.5px;color:#5B6B7B;text-wrap:pretty">{{ hintLine }}</span>
+          </div>
+        </sc-if>
+
+        <p data-mobile-only style="margin:clamp(20px,2.4vw,28px) 0 0;font-size:13.5px;line-height:1.7;color:#5B6B7B;text-wrap:pretty">אישור בעלות פותח את הפרופיל לעריכה — מחירים, שעות, תמונות ותגובה לביקורות. האישור חינם; רישום מלא הוא ₪149 לחודש. <a href="/listing-standards" onClick="{{ go }}" style="font-weight:700;border-bottom:1px solid #D4D4D4">תקן הרישום</a></p>
+      </div>
+    </div>
+  </main>
+
+  <footer style="background:#0C243E;color:#ffffff">
+    <div style="max-width:1320px;margin:0 auto;padding:clamp(36px,4vw,56px) clamp(20px,4vw,32px) 24px;display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:24px">
+      <div style="display:flex;flex-direction:column;gap:12px;max-width:34ch">
+        <span dir="ltr" style="font-family:'Jost',sans-serif;font-weight:300;font-size:26px;line-height:1;color:#ffffff;align-self:flex-start">beauty<span style="color:#7ED7E1">find</span><span style="color:#7ED7E1;font-weight:400">.</span></span>
+        <p style="margin:0;font-size:14.5px;line-height:1.7;color:rgba(255,255,255,.78);text-wrap:pretty">אישור בעלות חינם. רישום מלא ₪149 לחודש, לא כולל מע״מ, ללא התחייבות.</p>
+      </div>
+      <nav aria-label="קישורים לעסקים" style="display:flex;flex-wrap:wrap;gap:10px 26px">
+        <sc-for list="{{ footLinks }}" as="l" hint-placeholder-count="5">
+          <a href="{{ l.href }}" onClick="{{ go }}" style="min-height:32px;display:flex;align-items:center;font-size:14.5px;color:rgba(255,255,255,.82)" style-hover="color:#7ED7E1">{{ l.name }}</a>
+        </sc-for>
+      </nav>
+    </div>
+    <div style="max-width:1320px;margin:0 auto;padding:18px clamp(20px,4vw,32px) 30px;border-top:1px solid rgba(255,255,255,.14);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px">
+      <span style="font-size:13px;color:rgba(255,255,255,.66)">© 2026 BeautyFind</span>
+      <span style="font-size:13px;color:rgba(255,255,255,.66)">מידע כללי בלבד, לא ייעוץ רפואי</span>
+    </div>
+  </footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1320}}">
+const BIZ = [
+  { name: 'שרון קליניק', cat: 'אסתטיקה רפואית', city: 'רעננה', phone: '09-748-2210', img: 'assets/biz-medical.jpg', claimed: false },
+  { name: 'סטודיו נחלת בנימין', cat: 'מספרות ועיצוב שיער', city: 'תל אביב–יפו', phone: '03-516-4420', img: 'assets/biz-hair.jpg', claimed: false },
+  { name: 'פלורנטין סקין', cat: 'קוסמטיקה וטיפולי פנים', city: 'תל אביב–יפו', phone: '03-682-7714', img: 'assets/biz-facial.jpg', claimed: true },
+  { name: 'לייזר האוס פתח תקווה', cat: 'הסרת שיער', city: 'פתח תקווה', phone: '03-930-5567', img: 'assets/biz-laser.jpg', claimed: false },
+  { name: 'ניילס על הים', cat: 'ציפורניים ומניקור', city: 'תל אביב–יפו', phone: '03-527-9903', img: 'assets/biz-nails.jpg', claimed: false },
+  { name: 'ספא הדרים', cat: 'ספא ועיסויים', city: 'פתח תקווה', phone: '03-914-2288', img: 'assets/biz-spa.jpg', claimed: false },
+  { name: 'כרמל אסתטיקה', cat: 'אסתטיקה רפואית', city: 'חיפה', phone: '04-855-1190', img: 'assets/hero-clinic.jpg', claimed: false },
+  { name: 'ביאליק ביוטי', cat: 'קוסמטיקה וטיפולי פנים', city: 'רמת גן', phone: '03-673-4401', img: 'assets/hero-skin.jpg', claimed: false }
+];
+
+const CATS = [
+  'אסתטיקה רפואית', 'קוסמטיקה וטיפולי פנים', 'הסרת שיער', 'מספרות ועיצוב שיער',
+  'ציפורניים, מניקור ופדיקור', 'גבות וריסים', 'איפור מקצועי', 'איפור קבוע',
+  'ספא ועיסויים', 'עיצוב וחיטוב הגוף', 'שיזוף', 'כירורגיה פלסטית',
+  'השתלות שיער וטיפול בנשירה', 'אסתטיקה דנטלית'
+];
+const MEDICAL = ['אסתטיקה רפואית', 'כירורגיה פלסטית', 'השתלות שיער וטיפול בנשירה', 'אסתטיקה דנטלית'];
+
+const DAYS = [
+  { name: 'ראשון', hours: '9:00–19:00', open: true },
+  { name: 'שני', hours: '9:00–19:00', open: true },
+  { name: 'שלישי', hours: '9:00–19:00', open: true },
+  { name: 'רביעי', hours: '9:00–20:00', open: true },
+  { name: 'חמישי', hours: '9:00–20:00', open: true },
+  { name: 'שישי', hours: '9:00–13:00', open: true },
+  { name: 'שבת', hours: '—', open: false }
+];
+
+const STEPS = [
+  { key: 'find', name: 'איתור העסק', note: 'חיפוש באינדקס' },
+  { key: 'verify', name: 'אימות בעלות', note: 'קוד לטלפון או לדואר' },
+  { key: 'details', name: 'פרטי העסק', note: 'תחומים, שעות, קשר' },
+  { key: 'done', name: 'סיום', note: 'הפרופיל פתוח לעריכה' }
+];
+
+class Component extends DCLogic {
+  /* Breakpoints live in CSS custom properties (see <helmet>), never in JS. */
+  state = {
+    step: 'find', q: '', picked: null, isNew: false,
+    method: 'sms', codeSent: false, code: '', codeBad: false, verified: false,
+    bizName: '', address: '', bizPhone: '', whatsapp: '', doctor: '',
+    cats: [], days: DAYS.map(d => d.open), touched: false
+  };
+  componentWillUnmount() { if (this._t) clearTimeout(this._t); }
+
+  renderVals() {
+    const s = this.state;
+    const stepIndex = STEPS.findIndex(x => x.key === s.step);
+    const chosen = s.isNew ? null : (s.picked === null ? null : BIZ[s.picked]);
+    const chosenName = s.isNew ? 'העסק החדש' : (chosen ? chosen.name : '');
+
+    const q = s.q.trim();
+    const hits = BIZ.map((b, i) => ({ b, i })).filter(({ b }) =>
+      !q || (b.name + ' ' + b.city + ' ' + b.cat).indexOf(q) !== -1);
+
+    const methods = [
+      { key: 'sms', name: 'קוד ב־SMS', target: chosen ? chosen.phone : '050-0000000', dir: 'ltr', note: 'למספר הרשום בפרופיל' },
+      { key: 'call', name: 'שיחה קולית', target: chosen ? chosen.phone : '050-0000000', dir: 'ltr', note: 'הקוד נמסר בשיחה מוקלטת' },
+      { key: 'mail', name: 'דואר אלקטרוני', target: 'info@' + (chosen ? 'business' : 'newbusiness') + '.co.il', dir: 'ltr', note: 'לכתובת בדומיין של העסק' }
+    ];
+    const method = methods.find(m => m.key === s.method) || methods[0];
+
+    const medicalPicked = s.cats.some(c => MEDICAL.indexOf(c) !== -1);
+    const detailsOk = s.bizName.trim().length >= 2 && s.address.trim().length >= 4 &&
+      s.bizPhone.trim().length >= 7 && s.cats.length > 0 && (!medicalPicked || s.doctor.trim().length >= 3);
+    const findOk = s.isNew || s.picked !== null;
+    const bad = (cond) => (s.touched && !cond) ? '#D98A74' : '#D4D4D4';
+
+    const nextOk = s.step === 'find' ? findOk : s.step === 'verify' ? s.verified : s.step === 'details' ? detailsOk : true;
+    const hint = s.step === 'find'
+      ? (findOk ? 'אפשר להמשיך לאימות' : 'בחרו עסק מהרשימה, או פתחו פרופיל חדש')
+      : s.step === 'verify'
+        ? (s.verified ? 'האימות הושלם' : 'שלחו קוד ואמתו אותו כדי להמשיך')
+        : (detailsOk ? 'הפרטים נשמרים בפרופיל' : 'יש שדות חובה שצריך להשלים');
+
+    const goStep = k => this.setState({ step: k, touched: false });
+
+    return {
+      go: e => { if (e) e.preventDefault(); },
+      onKey: e => { if (e.key === 'Escape') this.setState({ codeBad: false }); },
+      progress: `${Math.round(((stepIndex + (s.step === 'done' ? 1 : 0)) / STEPS.length) * 100)}%`,
+
+      steps: STEPS.map((st, i) => {
+        const cur = i === stepIndex;
+        const doneStep = i < stepIndex;
+        const locked = i > stepIndex;
+        return {
+          name: st.name, note: st.note, current: cur ? 'step' : 'false',
+          mark: doneStep ? '✓' : String(i + 1),
+          bar: cur ? '#14B3C6' : 'transparent',
+          bg: cur ? '#F0FAFB' : 'transparent',
+          weight: cur ? 700 : 500,
+          color: locked ? '#8A96A3' : '#0C243E',
+          dotBg: doneStep ? '#0B7A87' : cur ? '#0C243E' : '#ffffff',
+          dotBorder: doneStep || cur ? 'transparent' : '#D4D4D4',
+          dotColor: doneStep || cur ? '#ffffff' : '#8A96A3',
+          locked, cursor: locked ? 'default' : 'pointer',
+          jump: () => { if (!locked) goStep(st.key); }
+        };
+      }),
+
+      isFind: s.step === 'find', isVerify: s.step === 'verify', isDetails: s.step === 'details', isDone: s.step === 'done',
+      showNav: s.step !== 'done',
+
+      q: s.q,
+      onQuery: e => this.setState({ q: e.target.value }),
+      resultLine: q ? `${hits.length} עסקים תואמים "${q}"` : `${BIZ.length} עסקים נמצאו לפי החיפוש שלכם`,
+      results: hits.map(({ b, i }) => {
+        const on = s.picked === i && !s.isNew;
+        return {
+          name: b.name, cat: b.cat, city: b.city, phone: b.phone, img: b.img, on,
+          border: on ? '#14B3C6' : '#E6E6E6', bg: on ? '#F0FAFB' : '#ffffff',
+          tag: b.claimed ? 'כבר אושר' : 'זמין לאישור',
+          tagBg: b.claimed ? '#F6F8F9' : '#F0FAFB',
+          tagColor: b.claimed ? '#8A96A3' : '#0B7A87',
+          pick: () => this.setState({ picked: i, isNew: false, bizName: b.name, address: b.city, bizPhone: b.phone, cats: [b.cat].filter(c => CATS.indexOf(c) !== -1) })
+        };
+      }),
+      newOn: s.isNew, newBorder: s.isNew ? '#14B3C6' : '#D4D4D4', newBg: s.isNew ? '#F0FAFB' : '#FAFBFB',
+      pickNew: () => this.setState({ isNew: true, picked: null, bizName: '', address: '', bizPhone: '', cats: [] }),
+
+      chosenName,
+      methods: methods.map(m => {
+        const on = m.key === method.key;
+        return { name: m.name, target: m.target, note: m.note, dir: m.dir, on,
+          border: on ? '#14B3C6' : '#E6E6E6', bg: on ? '#F0FAFB' : '#ffffff', color: on ? '#0B7A87' : '#0C243E',
+          pick: () => this.setState({ method: m.key, codeSent: false, code: '', codeBad: false }) };
+      }),
+      methodTarget: method.target, methodDir: method.dir,
+      needSend: !s.codeSent, codeSent: s.codeSent,
+      sendCode: () => this.setState({ codeSent: true }),
+      resend: () => this.setState({ code: '', codeBad: false }),
+      code: s.code, codeBad: s.codeBad, codeBorder: s.codeBad ? '#D98A74' : '#D4D4D4',
+      onCode: e => this.setState({ code: e.target.value.replace(/[^0-9]/g, '').slice(0, 6), codeBad: false }),
+      checkCode: () => {
+        if (s.code === '123456') this.setState({ verified: true, codeBad: false, step: 'details', touched: false });
+        else this.setState({ codeBad: true });
+      },
+
+      bizName: s.bizName, address: s.address, bizPhone: s.bizPhone, whatsapp: s.whatsapp, doctor: s.doctor,
+      onBizName: e => this.setState({ bizName: e.target.value }),
+      onAddress: e => this.setState({ address: e.target.value }),
+      onBizPhone: e => this.setState({ bizPhone: e.target.value }),
+      onWhatsapp: e => this.setState({ whatsapp: e.target.value }),
+      onDoctor: e => this.setState({ doctor: e.target.value }),
+      bizNameBorder: bad(s.bizName.trim().length >= 2),
+      addressBorder: bad(s.address.trim().length >= 4),
+      bizPhoneBorder: bad(s.bizPhone.trim().length >= 7),
+      doctorBorder: bad(!medicalPicked || s.doctor.trim().length >= 3),
+
+      cats: CATS.map(c => {
+        const on = s.cats.indexOf(c) !== -1;
+        return { name: c, on,
+          border: on ? '#14B3C6' : '#E6E6E6', bg: on ? '#F0FAFB' : '#ffffff',
+          color: on ? '#0B7A87' : '#0C243E', weight: on ? 700 : 500,
+          toggle: () => this.setState(st => ({ cats: on ? st.cats.filter(x => x !== c) : st.cats.concat([c]) })) };
+      }),
+      catsLine: s.cats.length ? `נבחרו ${s.cats.length} תחומים` : 'בחרו לפחות תחום אחד',
+      medicalPicked,
+
+      days: DAYS.map((d, i) => {
+        const open = s.days[i];
+        return { name: d.name, hours: d.hours, open,
+          state: open ? 'פתוח' : 'סגור',
+          border: open ? '#CDEFF3' : '#E6E6E6', bg: open ? '#F0FAFB' : '#F6F8F9',
+          color: open ? '#0B7A87' : '#8A96A3',
+          labelColor: open ? '#0C243E' : '#8A96A3',
+          toggle: () => this.setState(st => ({ days: st.days.map((v, n) => n === i ? !v : v) })) };
+      }),
+
+      nextLabel: s.step === 'details' ? 'שמירה וסיום' : 'המשך',
+      nextBlocked: false,
+      nextBg: nextOk ? '#0C243E' : '#8A96A3',
+      nextCursor: nextOk ? 'pointer' : 'not-allowed',
+      hintLine: hint,
+      next: () => {
+        if (!nextOk) { this.setState({ touched: true }); return; }
+        const order = ['find', 'verify', 'details', 'done'];
+        goStep(order[Math.min(order.indexOf(s.step) + 1, order.length - 1)]);
+      },
+      canBack: stepIndex > 0,
+      back: () => {
+        const order = ['find', 'verify', 'details', 'done'];
+        goStep(order[Math.max(order.indexOf(s.step) - 1, 0)]);
+      },
+
+      nextSteps: [
+        { n: '1', name: 'תפריט מחירים', body: 'לפחות חמישה טיפולים עם מחיר בשקלים, ללא מע״מ. זה השדה שמניע פניות.' },
+        { n: '2', name: 'תמונות של המקום', body: 'שלוש תמונות אמיתיות של הקליניקה או הסטודיו. תמונות סטוק מוסרות.' },
+        { n: '3', name: 'קישור Waze', body: 'מוסיפים ניווט בלחיצה אחת, וזה מפחית שיחות "איך מגיעים".' },
+        { n: '4', name: 'תגובה לביקורות', body: 'אפשר להגיב בשם העסק. התגובה מוצגת לצד הביקורת המקורית.' }
+      ],
+      restart: () => this.setState({ step: 'find', q: '', picked: null, isNew: false, codeSent: false, code: '', verified: false, cats: [], bizName: '', address: '', bizPhone: '', whatsapp: '', doctor: '', touched: false }),
+
+      footLinks: [
+        { name: 'רישום עסק', href: '/for-business' },
+        { name: 'תקן הרישום', href: '/listing-standards' },
+        { name: 'מידע על פרסום', href: '/sponsorship' },
+        { name: 'תנאי שימוש', href: '/terms' },
+        { name: 'יצירת קשר', href: '/contact' }
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

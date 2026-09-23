@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="שוברי מתנה לקליניקות ב־BeautyFind — קנייה לפי סכום או טיפול, שליחה בוואטסאפ או במייל, בדיקת יתרה ומימוש בקליניקה.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#F6F8F9}
+  *{box-sizing:border-box}
+  :root{--gc-pad:16px;--gc-shell:minmax(0,1fr);--gc-amt:repeat(2,minmax(0,1fr));--gc-kpi:repeat(2,minmax(0,1fr))}
+  @media (min-width:560px){:root{--gc-pad:22px;--gc-amt:repeat(4,minmax(0,1fr));--gc-kpi:repeat(4,minmax(0,1fr))}}
+  @media (min-width:1000px){:root{--gc-shell:minmax(0,1fr) 380px}}
+  @media (min-width:1000px) and (min-height:760px){[data-gc-side]{position:sticky;top:18px}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes gcFade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  @keyframes gcPop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#F6F8F9;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+
+  <header style="background:#fff;border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1160px;margin:0 auto;padding:12px var(--gc-pad);display:flex;align-items:center;gap:13px;flex-wrap:wrap">
+      <a href="./BeautyFind Homepage.dc.html" dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:21px;letter-spacing:-0.01em;color:#0C243E;text-decoration:none">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6">.</span></a>
+      <span style="flex:1;min-width:0"></span>
+      <div role="tablist" aria-label="תצוגה" style="flex:none;display:flex;gap:3px;padding:3px;border-radius:11px;background:#F0F3F5;flex-wrap:wrap">
+        <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="3"><button type="button" role="tab" aria-selected="{{ tb.on }}" onClick="{{ tb.pick }}" style="min-height:38px;padding:0 12px;border:0;border-radius:9px;background:{{ tb.bg }};box-shadow:{{ tb.sh }};font:inherit;font-size:13.5px;font-weight:700;color:{{ tb.color }};cursor:pointer">{{ tb.name }}</button></sc-for>
+      </div>
+    </div>
+  </header>
+
+  <div style="max-width:1160px;margin:0 auto;padding:clamp(16px,2.4vw,28px) var(--gc-pad) 60px">
+
+    <sc-if value="{{ isBuy }}" hint-placeholder-val="{{ true }}">
+      <div style="animation:gcFade .22s ease both">
+        <sc-if value="{{ buyForm }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <h1 style="margin:0 0 5px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(26px,3.6vw,38px);font-weight:500;letter-spacing:-0.015em">שובר מתנה לקליניקת נועה</h1>
+            <p style="margin:0 0 clamp(16px,2vw,22px);max-width:60ch;font-size:15.5px;color:#3E4F62;text-wrap:pretty">השובר מונפק על ידי הקליניקה ובתוקף {{ validity }}. אפשר לממש אותו על כל טיפול, בכמה ביקורים, עד שהיתרה נגמרת.</p>
+            <div style="display:grid;grid-template-columns:var(--gc-shell);gap:clamp(14px,1.8vw,22px);align-items:start">
+              <main style="min-width:0;display:flex;flex-direction:column;gap:13px">
+                <section aria-labelledby="gc-h1" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px)">
+                  <h2 id="gc-h1" style="margin:0 0 11px;font-size:16.5px;font-weight:700">סוג השובר</h2>
+                  <div role="radiogroup" aria-label="סוג השובר" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+                    <sc-for list="{{ kinds }}" as="k" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{ k.on }}" onClick="{{ k.pick }}" style="min-height:44px;padding:0 15px;border:1px solid {{ k.border }};border-radius:11px;background:{{ k.bg }};font:inherit;font-size:14.5px;font-weight:700;color:{{ k.color }};cursor:pointer">{{ k.name }}</button></sc-for>
+                  </div>
+                  <sc-if value="{{ byAmount }}" hint-placeholder-val="{{ true }}">
+                    <div>
+                      <div role="radiogroup" aria-label="סכום" style="display:grid;grid-template-columns:var(--gc-amt);gap:8px">
+                        <sc-for list="{{ amounts }}" as="a" hint-placeholder-count="4"><button type="button" role="radio" aria-checked="{{ a.on }}" onClick="{{ a.pick }}" style="min-width:0;min-height:52px;border:1px solid {{ a.border }};border-radius:12px;background:{{ a.bg }};font:inherit;font-size:17px;font-weight:800;color:{{ a.color }};cursor:pointer">{{ a.name }}</button></sc-for>
+                      </div>
+                      <label style="display:flex;flex-direction:column;gap:5px;margin-top:11px;font-size:13px;font-weight:700;max-width:240px">סכום אחר
+                        <span style="position:relative;display:block"><input dir="ltr" inputmode="numeric" value="{{ custom }}" onChange="{{ onCustom }}" placeholder="100–5,000" style="width:100%;min-height:46px;padding:0 34px 0 12px;border:1px solid {{ customBorder }};border-radius:11px;font:inherit;font-size:15px;text-align:right;color:#0C243E;background:#fff;outline:none;font-variant-numeric:tabular-nums"><span aria-hidden="true" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:15px;font-weight:700;color:#8A96A3">₪</span></span>
+                      </label>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ byTreat }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;gap:8px">
+                      <sc-for list="{{ treats }}" as="t" hint-placeholder-count="4"><button type="button" role="radio" aria-checked="{{ t.on }}" onClick="{{ t.pick }}" style="display:flex;align-items:center;gap:12px;min-height:56px;padding:0 14px;border:1px solid {{ t.border }};border-radius:12px;background:{{ t.bg }};font:inherit;text-align:right;cursor:pointer"><span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700;color:#0C243E">{{ t.name }}</span><span style="font-size:12.5px;color:#5B6B7B">{{ t.note }}</span></span><span style="flex:none;font-size:15px;font-weight:800;color:#0B7A87">{{ t.price }}</span></button></sc-for>
+                    </div>
+                  </sc-if>
+                </section>
+
+                <section aria-labelledby="gc-h2" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px);display:flex;flex-direction:column;gap:11px">
+                  <h2 id="gc-h2" style="margin:0;font-size:16.5px;font-weight:700">למי ומתי</h2>
+                  <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">שם המקבל/ת
+                    <input value="{{ to }}" onChange="{{ onTo }}" placeholder="דנה" style="min-height:46px;padding:0 12px;border:1px solid {{ toBorder }};border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none">
+                  </label>
+                  <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">ברכה <span style="font-weight:500;color:#8A96A3">· עד 140 תווים</span>
+                    <textarea value="{{ msg }}" onChange="{{ onMsg }}" rows="2" maxlength="140" placeholder="יום הולדת שמח! מגיע לך רגע רק בשבילך" style="padding:11px 12px;border:1px solid #D4D4D4;border-radius:11px;font:inherit;font-size:15px;line-height:1.55;color:#0C243E;background:#fff;outline:none;resize:vertical"></textarea>
+                  </label>
+                  <div>
+                    <span style="display:block;margin-bottom:7px;font-size:13px;font-weight:700">שליחה</span>
+                    <div role="radiogroup" aria-label="ערוץ שליחה" style="display:flex;gap:8px;flex-wrap:wrap">
+                      <sc-for list="{{ channels }}" as="ch" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{ ch.on }}" onClick="{{ ch.pick }}" style="min-height:42px;padding:0 14px;border:1px solid {{ ch.border }};border-radius:11px;background:{{ ch.bg }};font:inherit;font-size:14px;font-weight:600;color:{{ ch.color }};cursor:pointer">{{ ch.name }}</button></sc-for>
+                    </div>
+                  </div>
+                  <sc-if value="{{ needsContact }}" hint-placeholder-val="{{ true }}">
+                    <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">{{ contactLabel }}
+                      <input dir="ltr" value="{{ contact }}" onChange="{{ onContact }}" placeholder="{{ contactPh }}" style="min-height:46px;padding:0 12px;border:1px solid {{ contactBorder }};border-radius:11px;font:inherit;font-size:15px;text-align:right;color:#0C243E;background:#fff;outline:none">
+                    </label>
+                  </sc-if>
+                  <div>
+                    <span style="display:block;margin-bottom:7px;font-size:13px;font-weight:700">מועד שליחה</span>
+                    <div role="radiogroup" aria-label="מועד שליחה" style="display:flex;gap:8px;flex-wrap:wrap">
+                      <sc-for list="{{ whens }}" as="w" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{ w.on }}" onClick="{{ w.pick }}" style="min-height:42px;padding:0 14px;border:1px solid {{ w.border }};border-radius:11px;background:{{ w.bg }};font:inherit;font-size:14px;font-weight:600;color:{{ w.color }};cursor:pointer">{{ w.name }}</button></sc-for>
+                    </div>
+                  </div>
+                </section>
+
+                <sc-if value="{{ errOn }}" hint-placeholder-val="{{ false }}">
+                  <p role="alert" style="margin:0;padding:12px 14px;border:1px solid #F0C9C4;border-radius:12px;background:#FDEDEC;font-size:14px;font-weight:700;color:#A33A31">{{ errText }}</p>
+                </sc-if>
+                <button type="button" onClick="{{ pay }}" style="min-height:52px;padding:0 18px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:16.5px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#0C243E">{{ payLabel }}</button>
+                <p style="margin:0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">בקנייה תתקבל קבלה; חשבונית מס מופקת בכל מימוש. ביטול תוך 14 ימים מהקנייה, כל עוד השובר לא מומש, בהחזר מלא.</p>
+              </main>
+
+              <aside data-gc-side style="min-width:0;display:flex;flex-direction:column;gap:12px">
+                <div aria-label="תצוגת השובר" style="position:relative;aspect-ratio:1.6/1;border-radius:20px;overflow:hidden;background:#0C243E;color:#fff;padding:clamp(18px,2.4vw,24px);display:flex;flex-direction:column;box-shadow:0 18px 44px rgba(12,36,62,.24)">
+                  <span aria-hidden="true" style="position:absolute;left:-60px;bottom:-80px;width:240px;height:240px;border-radius:50%;border:1px solid rgba(126,215,225,.35)"></span>
+                  <span aria-hidden="true" style="position:absolute;left:-20px;bottom:-40px;width:160px;height:160px;border-radius:50%;border:1px solid rgba(126,215,225,.25)"></span>
+                  <span style="display:flex;align-items:center;gap:10px"><span style="flex:1;min-width:0;font-size:13px;font-weight:700;color:#7ED7E1">שובר מתנה</span><span dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:16px">beauty<span style="color:#7ED7E1">find.</span></span></span>
+                  <span style="margin-top:auto;display:block;font-family:'Frank Ruhl Libre',serif;font-size:clamp(30px,4vw,40px);font-weight:500;line-height:1.05">{{ cardValue }}</span>
+                  <span style="display:block;font-size:14.5px;font-weight:700">{{ cardWhat }}</span>
+                  <span style="display:block;margin-top:6px;font-size:13px;color:rgba(255,255,255,.8);text-wrap:pretty">{{ cardTo }}</span>
+                </div>
+                <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:14px 16px">
+                  <h2 style="margin:0 0 9px;font-size:15px;font-weight:700">חשוב לדעת</h2>
+                  <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px">
+                    <sc-for list="{{ facts }}" as="f" hint-placeholder-count="4"><li style="display:flex;align-items:flex-start;gap:9px;font-size:13px;color:#3E4F62;text-wrap:pretty"><span aria-hidden="true" style="flex:none;width:6px;height:6px;margin-top:8px;border-radius:50%;background:#14B3C6"></span><span style="flex:1;min-width:0">{{ f }}</span></li></sc-for>
+                  </ul>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ buyDone }}" hint-placeholder-val="{{ false }}">
+          <div style="max-width:620px;background:#fff;border:1px solid #CDEFF3;border-radius:18px;padding:clamp(20px,2.6vw,30px);animation:gcPop .2s ease both">
+            <h1 style="margin:0 0 5px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(22px,2.8vw,28px);font-weight:500;letter-spacing:-0.014em">{{ doneTitle }}</h1>
+            <p style="margin:0 0 15px;font-size:15px;color:#3E4F62;text-wrap:pretty">{{ doneBody }}</p>
+            <dl style="margin:0 0 16px;display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px 12px;font-size:14.5px">
+              <dt style="color:#8A96A3">קוד השובר</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:800;letter-spacing:.06em;font-variant-numeric:tabular-nums">NOA-7K4M-29QX</dd>
+              <dt style="color:#8A96A3">שווי</dt><dd style="margin:0;font-weight:700">{{ cardValue }} · {{ cardWhat }}</dd>
+              <dt style="color:#8A96A3">בתוקף עד</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums">{{ expiry }}</dd>
+            </dl>
+            <div style="display:flex;gap:9px;flex-wrap:wrap">
+              <a href="./BeautyFind Receipt.dc.html" style="min-height:46px;display:inline-flex;align-items:center;padding:0 16px;border-radius:12px;background:#0B7A87;font-size:15px;font-weight:700;color:#fff;text-decoration:none">לקבלה</a>
+              <button type="button" onClick="{{ again }}" style="min-height:46px;padding:0 14px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font:inherit;font-size:15px;font-weight:600;color:#3E4F62;cursor:pointer">שובר נוסף</button>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isRedeem }}" hint-placeholder-val="{{ false }}">
+      <div style="max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:14px;animation:gcFade .22s ease both">
+        <div>
+          <h1 style="margin:0 0 5px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(26px,3.4vw,34px);font-weight:500;letter-spacing:-0.015em">קיבלת שובר?</h1>
+          <p style="margin:0;font-size:15.5px;color:#3E4F62;text-wrap:pretty">הקלידי את הקוד כדי לראות יתרה, תוקף ואיפה אפשר לממש.</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input dir="ltr" value="{{ code }}" onChange="{{ onCode }}" aria-label="קוד השובר" placeholder="NOA-XXXX-XXXX" style="flex:1 1 240px;min-width:0;min-height:52px;padding:0 14px;border:1px solid {{ codeBorder }};border-radius:12px;font:inherit;font-size:18px;font-weight:700;letter-spacing:.06em;text-align:center;color:#0C243E;background:#fff;outline:none;text-transform:none">
+          <button type="button" onClick="{{ check }}" style="flex:none;min-height:52px;padding:0 20px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:16px;font-weight:700;color:#fff;cursor:pointer">בדיקה</button>
+        </div>
+        <sc-if value="{{ codeBad }}" hint-placeholder-val="{{ false }}">
+          <p role="alert" style="margin:0;font-size:14px;font-weight:700;color:#A33A31">הקוד לא נמצא. בדקי שהעתקת את כל 12 התווים, או נסי NOA-7K4M-29QX.</p>
+        </sc-if>
+        <sc-if value="{{ found }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #CDEFF3;border-radius:18px;overflow:hidden;animation:gcPop .2s ease both">
+            <div style="padding:16px 18px;background:#F0FAFB;border-bottom:1px solid #CDEFF3;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+              <span style="flex:1;min-width:0;font-size:14px;font-weight:700;color:#0B7A87">יתרה בשובר</span>
+              <span style="flex:none;font-family:'Frank Ruhl Libre',serif;font-size:34px;font-weight:500">₪320</span>
+            </div>
+            <dl style="margin:0;padding:14px 18px;display:grid;grid-template-columns:96px minmax(0,1fr);gap:9px 12px;font-size:14.5px">
+              <dt style="color:#8A96A3">שווי מקורי</dt><dd style="margin:0;font-weight:600">₪500 · מאת נועם</dd>
+              <dt style="color:#8A96A3">מומש</dt><dd style="margin:0;font-weight:600">₪180 · טיפול פנים, <span dir="ltr" style="unicode-bidi:isolate;font-variant-numeric:tabular-nums">12/08/2026</span></dd>
+              <dt style="color:#8A96A3">בתוקף עד</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums">14/06/2031</dd>
+              <dt style="color:#8A96A3">למימוש ב</dt><dd style="margin:0;font-weight:600">קליניקת נועה · רעננה ותל אביב</dd>
+            </dl>
+            <div style="padding:12px 18px;border-top:1px solid #EDEFF2;display:flex;gap:8px;flex-wrap:wrap">
+              <a href="./BeautyFind Booking.dc.html" style="min-height:46px;display:inline-flex;align-items:center;padding:0 16px;border-radius:12px;background:#0B7A87;font-size:15px;font-weight:700;color:#fff;text-decoration:none">קביעת תור עם השובר</a>
+              <button type="button" onClick="{{ saveToAccount }}" style="min-height:46px;padding:0 14px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font:inherit;font-size:15px;font-weight:600;color:#3E4F62;cursor:pointer">שמירה בחשבון</button>
+            </div>
+            <p style="margin:0;padding:11px 18px;border-top:1px solid #EDEFF2;background:#FAFBFB;font-size:12.5px;color:#5B6B7B;text-wrap:pretty">השובר מקוזז מהתשלום בקליניקה. בטיפול בהזרקה — המימוש אחרי ייעוץ רפואי, והרופאה מחליטה אם הטיפול מתאים.</p>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isClinic }}" hint-placeholder-val="{{ false }}">
+      <div style="animation:gcFade .22s ease both">
+        <div style="margin-bottom:14px">
+          <span style="display:block;font-size:13px;font-weight:700;color:#5B6B7B">קליניקת נועה · הכנסות</span>
+          <h1 style="margin:2px 0 0;font-family:'Frank Ruhl Libre',serif;font-size:clamp(25px,3.2vw,32px);font-weight:500;letter-spacing:-0.015em">שוברי מתנה</h1>
+        </div>
+        <dl style="margin:0 0 14px;display:grid;grid-template-columns:var(--gc-kpi);gap:10px">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4"><div style="min-width:0;padding:13px 15px;background:#fff;border:1px solid #E6E6E6;border-radius:15px"><dt style="font-size:12.5px;font-weight:700;color:#8A96A3">{{ k.name }}</dt><dd style="margin:2px 0 0;font-size:22px;font-weight:800">{{ k.v }}</dd><span style="font-size:12px;color:#5B6B7B">{{ k.note }}</span></div></sc-for>
+        </dl>
+        <div style="padding:14px 16px;margin-bottom:14px;background:#fff;border:1px solid #CDEFF3;border-radius:15px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <span style="flex:none;font-size:14.5px;font-weight:700">מימוש בקבלה</span>
+          <input dir="ltr" value="{{ deskCode }}" onChange="{{ onDeskCode }}" aria-label="קוד שובר" placeholder="NOA-XXXX-XXXX" style="flex:1 1 180px;min-width:0;min-height:44px;padding:0 12px;border:1px solid #D4D4D4;border-radius:11px;font:inherit;font-size:15px;font-weight:700;letter-spacing:.05em;text-align:center;color:#0C243E;background:#fff;outline:none">
+          <input dir="ltr" inputmode="numeric" value="{{ deskAmt }}" onChange="{{ onDeskAmt }}" aria-label="סכום למימוש" placeholder="₪" style="flex:0 1 110px;min-width:0;min-height:44px;padding:0 12px;border:1px solid #D4D4D4;border-radius:11px;font:inherit;font-size:15px;text-align:right;color:#0C243E;background:#fff;outline:none;font-variant-numeric:tabular-nums">
+          <button type="button" onClick="{{ deskRedeem }}" style="flex:none;min-height:44px;padding:0 16px;border:0;border-radius:11px;background:#0B7A87;font:inherit;font-size:14.5px;font-weight:700;color:#fff;cursor:pointer">מימוש והפקת חשבונית</button>
+        </div>
+        <div style="overflow-x:auto;background:#fff;border:1px solid #E6E6E6;border-radius:17px">
+          <table style="width:100%;min-width:620px;border-collapse:collapse;font-size:14px">
+            <thead><tr style="background:#FAFBFB"><th scope="col" style="padding:11px 14px;text-align:right;font-size:12.5px;color:#5B6B7B">קוד</th><th scope="col" style="padding:11px 14px;text-align:right;font-size:12.5px;color:#5B6B7B">מקבל/ת</th><th scope="col" style="padding:11px 14px;text-align:right;font-size:12.5px;color:#5B6B7B">שווי</th><th scope="col" style="padding:11px 14px;text-align:right;font-size:12.5px;color:#5B6B7B">יתרה</th><th scope="col" style="padding:11px 14px;text-align:right;font-size:12.5px;color:#5B6B7B">מצב</th></tr></thead>
+            <tbody>
+              <sc-for list="{{ ledger }}" as="l" hint-placeholder-count="5"><tr style="border-top:1px solid #EDEFF2"><td dir="ltr" style="padding:11px 14px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">{{ l.code }}</td><td style="padding:11px 14px">{{ l.to }}</td><td style="padding:11px 14px;font-weight:600">{{ l.value }}</td><td style="padding:11px 14px;font-weight:700">{{ l.bal }}</td><td style="padding:11px 14px"><span style="height:24px;display:inline-flex;align-items:center;padding:0 8px;border-radius:7px;background:{{ l.stBg }};font-size:12px;font-weight:700;color:{{ l.stColor }}">{{ l.st }}</span></td></tr></sc-for>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin:10px 0 0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">יתרת שוברים פתוחה היא התחייבות של הקליניקה, לא הכנסה. היא נרשמת כהכנסה רק במימוש, יחד עם חשבונית המס. BeautyFind לא גובה עמלה על שוברים.</p>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:fixed;bottom:18px;right:50%;transform:translateX(50%);z-index:40;max-width:min(90vw,440px);padding:12px 17px;border-radius:13px;background:#0C243E;color:#fff;font-size:14px;font-weight:600;box-shadow:0 12px 30px rgba(12,36,62,.28);animation:gcPop .16s ease both">{{ toastText }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1160,&quot;height&quot;:1000},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;buy&quot;,&quot;redeem&quot;,&quot;clinic&quot;],&quot;default&quot;:&quot;buy&quot;,&quot;tsType&quot;:&quot;'buy'|'redeem'|'clinic'&quot;},&quot;validityYears&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:5,&quot;min&quot;:5,&quot;max&quot;:10,&quot;unit&quot;:&quot;שנים&quot;,&quot;tsType&quot;:&quot;number&quot;}}">
+const AMOUNTS = [250, 500, 750, 1000];
+const TREATS = [
+  ['facial', 'טיפול פנים — ניקוי עמוק', 'כ־75 דקות', 380],
+  ['peel', 'פילינג כימי עדין', 'טיפול אחד', 450],
+  ['laser', 'לייזר רגליים — סדרה של 3', 'אפשר גם בתשלומים', 1890],
+  ['consult', 'ייעוץ רפואי אסתטי', 'עם ד״ר נועה לוי · מתקזז מהטיפול', 200]
+];
+const CHANNELS = [['wa', 'וואטסאפ'], ['email', 'מייל'], ['me', 'אליי, אמסור בעצמי']];
+const WHENS = [['now', 'עכשיו'], ['bday', 'ביום ההולדת · 02/10'], ['pick', 'תאריך אחר']];
+const LEDGER = [
+  ['NOA-7K4M-29QX', 'שירה כ.', 500, 320, 'part'],
+  ['NOA-3H8P-11LA', 'דנה ר.', 380, 380, 'open'],
+  ['NOA-9Q2R-05ZE', 'מיכל ש.', 1000, 0, 'used'],
+  ['NOA-4B6T-77YW', 'ליאת מ.', 250, 250, 'sched'],
+  ['NOA-1C5N-62KD', 'נגה א.', 750, 0, 'refund']
+];
+const ST = { open: ['פעיל', '#EAF3EA', '#3B6B3F'], part: ['מומש חלקית', '#F0FAFB', '#0B7A87'], used: ['מומש', '#F0F3F5', '#5B6B7B'], sched: ['יישלח 02/10', '#FFF8EC', '#9A5B15'], refund: ['בוטל · הוחזר', '#FDEDEC', '#A33A31'] };
+const nis = n => '₪' + n.toLocaleString('he-IL');
+
+class Component extends DCLogic {
+  state = { tab: null, kind: 'amount', amt: 500, custom: '', treat: 'facial', to: '', msg: '', channel: 'wa', contact: '', when: 'now', tried: false, done: false, code: '', checked: false, deskCode: '', deskAmt: '', toast: '' };
+  componentWillUnmount() { clearTimeout(this._t); }
+  flash(t) { clearTimeout(this._t); this.setState({ toast: t }); this._t = setTimeout(() => this.setState({ toast: '' }), 3200); }
+
+  renderVals() {
+    const s = this.state, teal = '#0B7A87', line = '#E6E6E6', bad = '#D98A80';
+    const tab = s.tab || this.props.view || 'buy';
+    const years = this.props.validityYears ?? 5;
+    const chip = on => ({ on: on ? 'true' : 'false', bg: on ? teal : '#fff', color: on ? '#fff' : '#3E4F62', border: on ? teal : line });
+    const customN = parseInt(s.custom.replace(/\D/g, ''), 10) || 0;
+    const customOk = !s.custom || (customN >= 100 && customN <= 5000);
+    const treat = TREATS.find(t => t[0] === s.treat);
+    const value = s.kind === 'amount' ? (s.custom ? customN : s.amt) : treat[3];
+    const needsContact = s.channel !== 'me';
+    const contactOk = !needsContact || (s.channel === 'wa' ? s.contact.replace(/\D/g, '').length >= 9 : /.+@.+\..+/.test(s.contact));
+    const toOk = s.to.trim().length >= 2;
+    const ok = toOk && contactOk && customOk && value > 0;
+    const err = !s.tried ? '' : !customOk ? 'סכום בין ₪100 ל־₪5,000' : !toOk ? 'למי השובר?' : !contactOk ? (s.channel === 'wa' ? 'מספר וואטסאפ לא מלא' : 'כתובת מייל לא תקינה') : '';
+    const exp = new Date(2026 + years, 8, 23);
+    const pad = n => String(n).padStart(2, '0');
+    const expiry = pad(exp.getDate()) + '/' + pad(exp.getMonth() + 1) + '/' + exp.getFullYear();
+    const whenTxt = s.when === 'now' ? 'נשלח עכשיו' : s.when === 'bday' ? 'יישלח ב־02/10 בשעה 09:00' : 'יישלח בתאריך שבחרת';
+    const open = LEDGER.filter(l => l[4] === 'open' || l[4] === 'part' || l[4] === 'sched');
+    const liability = open.reduce((a, l) => a + l[3], 0);
+    const codeNorm = s.code.trim().toUpperCase();
+
+    return {
+      tabs: [['buy', 'קניית שובר'], ['redeem', 'מימוש ויתרה'], ['clinic', 'קליניקה']].map(x => { const on = tab === x[0]; return { name: x[1], on: on ? 'true' : 'false', bg: on ? '#fff' : 'transparent', sh: on ? '0 1px 3px rgba(12,36,62,.12)' : 'none', color: on ? '#0C243E' : '#5B6B7B', pick: () => this.setState({ tab: x[0] }) }; }),
+      isBuy: tab === 'buy', isRedeem: tab === 'redeem', isClinic: tab === 'clinic',
+      buyForm: !s.done, buyDone: s.done,
+      validity: years + ' שנים',
+      kinds: [['amount', 'לפי סכום'], ['treat', 'לפי טיפול']].map(k => Object.assign({ name: k[1], pick: () => this.setState({ kind: k[0] }) }, chip(s.kind === k[0]))),
+      byAmount: s.kind === 'amount', byTreat: s.kind === 'treat',
+      amounts: AMOUNTS.map(a => Object.assign({ name: nis(a), pick: () => this.setState({ amt: a, custom: '' }) }, chip(!s.custom && s.amt === a))),
+      custom: s.custom, onCustom: e => this.setState({ custom: e.target.value.replace(/[^\d,]/g, '') }),
+      customBorder: s.custom && !customOk ? bad : '#D4D4D4',
+      treats: TREATS.map(t => { const on = s.treat === t[0]; return { name: t[1], note: t[2], price: nis(t[3]), on: on ? 'true' : 'false', bg: on ? '#F0FAFB' : '#fff', border: on ? '#7ED7E1' : line, pick: () => this.setState({ treat: t[0] }) }; }),
+      to: s.to, onTo: e => this.setState({ to: e.target.value }), toBorder: s.tried && !toOk ? bad : '#D4D4D4',
+      msg: s.msg, onMsg: e => this.setState({ msg: e.target.value }),
+      channels: CHANNELS.map(c => Object.assign({ name: c[1], pick: () => this.setState({ channel: c[0], contact: '' }) }, chip(s.channel === c[0]))),
+      needsContact, contactLabel: s.channel === 'wa' ? 'מספר הוואטסאפ של המקבל/ת' : 'המייל של המקבל/ת', contactPh: s.channel === 'wa' ? '050-000-0000' : 'name@example.com',
+      contact: s.contact, onContact: e => this.setState({ contact: e.target.value }), contactBorder: s.tried && !contactOk ? bad : '#D4D4D4',
+      whens: WHENS.map(w => Object.assign({ name: w[1], pick: () => this.setState({ when: w[0] }) }, chip(s.when === w[0]))),
+      errOn: !!err, errText: err,
+      payLabel: 'תשלום ' + nis(value),
+      pay: () => { if (!ok) { this.setState({ tried: true }); return; } this.setState({ done: true }); },
+      cardValue: nis(value),
+      cardWhat: s.kind === 'amount' ? 'לכל טיפול בקליניקת נועה' : treat[1],
+      cardTo: (s.to.trim() ? 'ל' + s.to.trim() : 'למי שאת אוהבת') + (s.msg.trim() ? ' — ' + s.msg.trim() : ''),
+      facts: [
+        'בתוקף ' + years + ' שנים מיום הקנייה, כנדרש בחוק',
+        'מימוש בכמה ביקורים, בכל סניף של הקליניקה',
+        'בטיפול בהזרקה — המימוש מותנה בייעוץ רפואי',
+        'אי אפשר להמיר לכסף, אבל אפשר להעביר לאדם אחר'
+      ],
+      doneTitle: s.channel === 'me' ? 'השובר מוכן' : 'השובר ' + (s.when === 'now' ? 'נשלח' : 'מתוזמן'),
+      doneBody: s.channel === 'me' ? 'שלחנו לך את השובר כ־PDF להדפסה או להעברה. הקבלה נשלחה במייל.' : whenTxt + ' ל' + s.to.trim() + (s.channel === 'wa' ? ' בוואטסאפ' : ' במייל') + '. תקבלי עדכון כשהשובר ייפתח. הקבלה נשלחה אלייך במייל.',
+      expiry,
+      again: () => this.setState({ done: false, tried: false, to: '', msg: '', contact: '' }),
+      code: s.code, onCode: e => this.setState({ code: e.target.value, checked: false }),
+      check: () => this.setState({ checked: true }),
+      found: s.checked && codeNorm === 'NOA-7K4M-29QX',
+      codeBad: s.checked && codeNorm !== 'NOA-7K4M-29QX',
+      codeBorder: s.checked && codeNorm !== 'NOA-7K4M-29QX' ? bad : '#D4D4D4',
+      saveToAccount: () => this.flash('השובר נשמר בחשבון שלך · תקבלי תזכורת לפני שפג תוקפו'),
+      kpis: [
+        { name: 'נמכרו החודש', v: '14', note: nis(7240) },
+        { name: 'מומשו החודש', v: nis(5180), note: 'עם חשבונית מס' },
+        { name: 'יתרה פתוחה', v: nis(liability), note: 'התחייבות · לא הכנסה' },
+        { name: 'פג תוקף בקרוב', v: '0', note: 'ב־90 הימים הקרובים' }
+      ],
+      deskCode: s.deskCode, onDeskCode: e => this.setState({ deskCode: e.target.value }),
+      deskAmt: s.deskAmt, onDeskAmt: e => this.setState({ deskAmt: e.target.value.replace(/\D/g, '') }),
+      deskRedeem: () => {
+        const c = s.deskCode.trim().toUpperCase(), a = parseInt(s.deskAmt, 10) || 0;
+        const row = LEDGER.find(l => l[0] === c);
+        if (!row) { this.flash('קוד לא נמצא'); return; }
+        if (!a) { this.flash('הכניסי סכום למימוש'); return; }
+        if (a > row[3]) { this.flash('היתרה בשובר ' + nis(row[3]) + ' בלבד'); return; }
+        this.flash('מומשו ' + nis(a) + ' · יתרה ' + nis(row[3] - a) + ' · חשבונית מס הופקה');
+      },
+      ledger: LEDGER.map(l => ({ code: l[0], to: l[1], value: nis(l[2]), bal: nis(l[3]), st: ST[l[4]][0], stBg: ST[l[4]][1], stColor: ST[l[4]][2] })),
+      toastOn: !!s.toast, toastText: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

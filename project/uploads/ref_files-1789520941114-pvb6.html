@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin:0; padding:0; scroll-behavior:smooth; }
+  body { background:#f8f8f8; -webkit-font-smoothing:antialiased; }
+  a { color:#0c243e; text-decoration:none; }
+  a:hover { color:#16b3c6; }
+  @keyframes glRise { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+  @keyframes glDrop { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
+</style>
+</helmet>
+<div style="font-family:'Instrument Sans',system-ui,sans-serif;color:#0c243e;background:#f8f8f8;min-height:100vh">
+
+  <header style="position:sticky;top:0;z-index:50;background:#ffffff;border-bottom:1px solid #e7e7e7">
+    <div style="max-width:1360px;margin:0 auto;padding:0 24px;height:72px;display:flex;align-items:center;gap:28px">
+      <a href="/ca" style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:24px;letter-spacing:-0.035em;flex:none">Medspa<span style="color:#16b3c6">Find</span></a>
+      <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+        <nav style="display:flex;align-items:center;gap:6px;flex:1">
+          <button type="button" onClick="{{ toggleLocations }}" style="display:flex;align-items:center;gap:7px;padding:9px 14px;border:0;border-radius:9px;background:transparent;font:inherit;font-size:15px;font-weight:500;color:{{ locColor }};cursor:pointer" style-hover="background:#f8f8f8">Locations<span style="font-size:10px;opacity:0.6">▼</span></button>
+          <button type="button" onClick="{{ toggleServices }}" style="display:flex;align-items:center;gap:7px;padding:9px 14px;border:0;border-radius:9px;background:transparent;font:inherit;font-size:15px;font-weight:500;color:{{ svcColor }};cursor:pointer" style-hover="background:#f8f8f8">Services<span style="font-size:10px;opacity:0.6">▼</span></button>
+          <a href="/ca/about" style="padding:9px 14px;border-radius:9px;font-size:15px;font-weight:500" style-hover="background:#f8f8f8">About us</a>
+          <a href="/blog" style="padding:9px 14px;border-radius:9px;font-size:15px;font-weight:500" style-hover="background:#f8f8f8">Blog</a>
+        </nav>
+        <a href="/business" aria-current="page" style="flex:none;padding:11px 20px;border-radius:10px;background:#16b3c6;color:#0c243e;font-size:15px;font-weight:600;transition:background .2s ease" style-hover="background:#0c243e;color:#ffffff">Get listed</a>
+      </sc-if>
+      <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+        <a href="https://members.medspafind.com/claim" style="margin-left:auto;display:flex;align-items:center;min-height:44px;padding:0 16px;border-radius:10px;background:#0c243e;color:#ffffff;font-size:15px;font-weight:600">Get listed</a>
+        <button type="button" onClick="{{ toggleMobile }}" aria-label="Menu" style="width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px solid #e7e7e7;border-radius:10px;background:#ffffff;cursor:pointer">
+          <span style="display:block;width:18px;height:2px;background:#0c243e"></span>
+          <span style="display:block;width:18px;height:2px;background:#0c243e"></span>
+        </button>
+      </sc-if>
+    </div>
+    <sc-if value="{{ showMega }}" hint-placeholder-val="{{ false }}">
+      <div style="border-top:1px solid #e7e7e7;background:#ffffff;box-shadow:0 18px 34px rgba(12,36,62,0.08);animation:glDrop .2s ease both">
+        <div style="max-width:1360px;margin:0 auto;padding:26px 24px 30px;display:grid;grid-template-columns:minmax(220px,32%) 1fr;gap:34px">
+          <div style="border-right:1px solid #e7e7e7;padding-right:24px;max-height:340px;overflow:auto">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(12,36,62,0.5);margin-bottom:12px">{{ leftLabel }}</div>
+            <sc-for list="{{ leftItems }}" as="item" hint-placeholder-count="5">
+              <button type="button" onClick="{{ item.select }}" onMouseEnter="{{ item.select }}" style="display:block;width:100%;text-align:left;padding:10px 12px;margin-bottom:2px;border:0;border-left:3px solid {{ item.bar }};border-radius:0 8px 8px 0;background:{{ item.bg }};font:inherit;font-size:15px;font-weight:{{ item.weight }};color:#0c243e;cursor:pointer">{{ item.name }}</button>
+            </sc-for>
+          </div>
+          <div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:14px">
+              <div style="font-size:17px;font-weight:600">{{ rightTitle }}</div>
+              <a href="{{ rightAllHref }}" style="font-size:14px;font-weight:500;color:#16b3c6">{{ rightAllLabel }}</a>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:2px">
+              <sc-for list="{{ rightLinks }}" as="link" hint-placeholder-count="9">
+                <a href="{{ link.href }}" style="display:flex;flex-direction:column;gap:2px;padding:9px 12px;border-radius:8px" style-hover="background:#f8f8f8;color:#16b3c6">
+                  <span style="font-size:15px;font-weight:500">{{ link.name }}</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(12,36,62,0.42)">{{ link.href }}</span>
+                </a>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </header>
+
+  <sc-if value="{{ mobileOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:72px 0 0;z-index:45;background:#ffffff;overflow:auto;padding:20px 20px 48px;animation:glDrop .2s ease both">
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button type="button" onClick="{{ toggleLocations }}" style="flex:1;padding:13px;border:1px solid {{ locBorder }};border-radius:10px;background:{{ locBg }};font:inherit;font-size:15px;font-weight:600;color:#0c243e;cursor:pointer">Locations</button>
+        <button type="button" onClick="{{ toggleServices }}" style="flex:1;padding:13px;border:1px solid {{ svcBorder }};border-radius:10px;background:{{ svcBg }};font:inherit;font-size:15px;font-weight:600;color:#0c243e;cursor:pointer">Services</button>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(12,36,62,0.5);margin-bottom:10px">{{ leftLabel }}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px">
+        <sc-for list="{{ leftItems }}" as="item" hint-placeholder-count="5">
+          <button type="button" onClick="{{ item.select }}" style="padding:11px 14px;border:1px solid {{ item.bar }};border-radius:999px;background:{{ item.bg }};font:inherit;font-size:14px;font-weight:{{ item.weight }};color:#0c243e;cursor:pointer">{{ item.name }}</button>
+        </sc-for>
+      </div>
+      <div style="font-size:16px;font-weight:600;margin-bottom:10px">{{ rightTitle }}</div>
+      <div style="display:flex;flex-direction:column;border-top:1px solid #e7e7e7">
+        <sc-for list="{{ rightLinks }}" as="link" hint-placeholder-count="6">
+          <a href="{{ link.href }}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:12px 2px;border-bottom:1px solid #e7e7e7;font-size:16px;font-weight:500">{{ link.name }}<span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(12,36,62,0.42)">{{ link.href }}</span></a>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:26px">
+        <a href="/ca/about" style="min-height:48px;display:flex;align-items:center;font-size:16px;font-weight:500">About us</a>
+        <a href="/blog" style="min-height:48px;display:flex;align-items:center;font-size:16px;font-weight:500">Blog</a>
+        <a href="https://members.medspafind.com/claim" style="min-height:52px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:#0c243e;color:#ffffff;font-size:16px;font-weight:600">Get listed</a>
+        <a href="https://members.medspafind.com/login" style="min-height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#16b3c6">Already a member? Log in</a>
+      </div>
+    </div>
+  </sc-if>
+
+  <section style="position:relative;overflow:hidden;background:radial-gradient(100% 90% at 78% -10%, #ffffff 0%, #f8f8f8 50%, #eaeff2 100%);border-bottom:1px solid #e7e7e7">
+    <div style="position:absolute;top:-300px;right:-140px;width:760px;height:760px;border-radius:50%;background:radial-gradient(circle, rgba(22,179,198,0.13) 0%, rgba(22,179,198,0) 64%);pointer-events:none"></div>
+    <div style="position:relative;max-width:1360px;margin:0 auto;padding:clamp(48px,6vw,86px) 24px clamp(52px,6vw,90px);display:grid;grid-template-columns:{{ heroCols }};gap:clamp(32px,4vw,64px);align-items:center">
+      <div style="min-width:0;animation:glRise .8s cubic-bezier(.2,.7,.2,1) both">
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:26px;letter-spacing:-0.035em;margin-bottom:22px">Medspa<span style="color:#16b3c6">Find</span><span style="margin-left:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:400;letter-spacing:0.16em;text-transform:uppercase;color:rgba(12,36,62,0.5);vertical-align:middle">for clinics</span></div>
+        <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(36px,4.6vw,60px);line-height:1.04;letter-spacing:-0.04em;text-wrap:balance">Get your medspa listed on MedspaFind</h1>
+        <p style="margin:20px 0 0;max-width:46ch;font-size:clamp(16px,1.4vw,18.5px);line-height:1.6;color:rgba(12,36,62,0.74);text-wrap:pretty">Patients search by city and treatment — "Botox in Toronto", "laser hair removal in Dubai". A verified profile puts your clinic in front of them at the moment they're choosing.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:32px">
+          <a href="https://members.medspafind.com/claim" style="display:flex;align-items:center;justify-content:center;min-height:56px;padding:0 30px;border-radius:12px;background:#0c243e;color:#ffffff;font-size:16.5px;font-weight:600;transition:background .2s ease" style-hover="background:#16b3c6;color:#ffffff">Claim your clinic</a>
+          <a href="#pricing" style="display:flex;align-items:center;justify-content:center;min-height:56px;padding:0 26px;border:1px solid #0c243e;border-radius:12px;font-size:16.5px;font-weight:600;transition:all .2s ease" style-hover="border-color:#16b3c6;color:#16b3c6">See pricing</a>
+        </div>
+        <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;font-size:14px;color:rgba(12,36,62,0.6)">
+          <span>Already a member? <a href="https://members.medspafind.com/login" style="font-weight:600;color:#16b3c6">Log in</a></span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(12,36,62,0.4)">CTA → members.medspafind.com/claim</span>
+        </div>
+      </div>
+      <div style="min-width:0;animation:glRise .8s cubic-bezier(.2,.7,.2,1) .12s both">
+        <div style="height:{{ heroVisualH }};border-radius:18px;border:1px solid #e7e7e7;background:repeating-linear-gradient(135deg,#e6edf0 0px,#e6edf0 12px,#f3f7f8 12px,#f3f7f8 24px);display:flex;align-items:center;justify-content:center;box-shadow:0 20px 50px rgba(12,36,62,0.08)">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(12,36,62,0.42)">hero photo — clinic interior</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:#ffffff;border-bottom:1px solid #e7e7e7">
+    <div style="max-width:1360px;margin:0 auto;padding:24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:clamp(20px,4vw,56px);font-size:14.5px;color:rgba(12,36,62,0.68)">
+      <span>Clinics listed across <strong style="color:#0c243e;font-weight:600">Canada, the US and the UAE</strong></span>
+      <span style="color:#e7e7e7">|</span>
+      <span>Ratings pulled from <strong style="color:#0c243e;font-weight:600">verified Google profiles</strong></span>
+      <span style="color:#e7e7e7">|</span>
+      <span><strong style="color:#0c243e;font-weight:600">Ownership-verified</strong> listings only</span>
+    </div>
+  </section>
+
+  <section style="max-width:1360px;margin:0 auto;padding:clamp(56px,6vw,90px) 24px 0">
+    <div style="max-width:640px">
+      <h2 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:clamp(26px,3vw,38px);letter-spacing:-0.032em;text-wrap:balance">Claim once. Your profile does the rest.</h2>
+      <p style="margin:16px 0 0;font-size:17px;line-height:1.6;color:rgba(12,36,62,0.72);text-wrap:pretty">Verification takes a few minutes. After that you control everything patients see — photos, treatment menu, pricing, team and hours.</p>
+    </div>
+    <div style="margin-top:36px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px">
+      <sc-for list="{{ features }}" as="f" hint-placeholder-count="6">
+        <div style="background:#ffffff;border:1px solid #e7e7e7;border-radius:14px;padding:26px 24px;display:flex;flex-direction:column;gap:12px;animation:glRise .6s cubic-bezier(.2,.7,.2,1) both;animation-delay:{{ f.delay }}">
+          <span style="width:40px;height:40px;border-radius:10px;background:rgba(22,179,198,0.12);color:#0c243e;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500">{{ f.num }}</span>
+          <div style="font-size:18px;font-weight:600;letter-spacing:-0.015em">{{ f.title }}</div>
+          <div style="font-size:14.5px;line-height:1.62;color:rgba(12,36,62,0.7);text-wrap:pretty">{{ f.body }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section id="pricing" style="max-width:1360px;margin:0 auto;padding:clamp(56px,6vw,90px) 24px 0;scroll-margin-top:90px">
+    <div style="display:grid;grid-template-columns:{{ pricingCols }};gap:clamp(28px,4vw,56px);align-items:start">
+      <div style="min-width:0">
+        <h2 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:clamp(26px,3vw,38px);letter-spacing:-0.032em;text-wrap:balance">One plan, billed per location</h2>
+        <p style="margin:16px 0 0;max-width:44ch;font-size:17px;line-height:1.6;color:rgba(12,36,62,0.72);text-wrap:pretty">There is a single MedspaFind membership. The quantity on your subscription is simply the number of locations you've claimed.</p>
+        <div style="margin-top:26px;display:flex;flex-direction:column;gap:14px">
+          <sc-for list="{{ pricingNotes }}" as="n" hint-placeholder-count="4">
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <span style="flex:none;margin-top:5px;width:7px;height:7px;border-radius:50%;background:#16b3c6"></span>
+              <span style="font-size:15px;line-height:1.6;color:rgba(12,36,62,0.78);text-wrap:pretty">{{ n }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="min-width:0;background:#ffffff;border:1px solid #e7e7e7;border-radius:18px;padding:30px;box-shadow:0 16px 40px rgba(12,36,62,0.07)">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#16b3c6">MedspaFind Membership</div>
+        <div style="margin-top:16px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(42px,5vw,58px);letter-spacing:-0.04em">{{ price }}</span>
+          <span style="font-size:16px;color:rgba(12,36,62,0.6)">{{ priceUnit }}</span>
+        </div>
+        <div style="margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:rgba(12,36,62,0.42)">editable — price / currency / interval</div>
+
+        <div style="margin-top:22px;padding-top:20px;border-top:1px solid #e7e7e7;display:flex;flex-direction:column;gap:12px">
+          <sc-for list="{{ planIncludes }}" as="p" hint-placeholder-count="6">
+            <div style="display:flex;gap:11px;align-items:flex-start">
+              <span style="flex:none;margin-top:1px;color:#16b3c6;font-size:14px">✓</span>
+              <span style="font-size:14.5px;line-height:1.55;color:rgba(12,36,62,0.78)">{{ p }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <a href="https://members.medspafind.com/claim" style="display:flex;align-items:center;justify-content:center;min-height:56px;margin-top:26px;border-radius:12px;background:#16b3c6;color:#0c243e;font-size:16.5px;font-weight:700;transition:background .2s ease" style-hover="background:#0c243e;color:#ffffff">Get listed</a>
+        <div style="margin-top:10px;text-align:center;font-size:13.5px;color:rgba(12,36,62,0.58)">Cancel anytime — access ends immediately on cancellation.</div>
+        <div style="margin-top:4px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:rgba(12,36,62,0.4)">→ member portal signup</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="max-width:1360px;margin:0 auto;padding:clamp(56px,6vw,90px) 24px 0">
+    <div style="background:#ffffff;border:1px solid #e7e7e7;border-radius:18px;padding:clamp(28px,4vw,48px);display:grid;grid-template-columns:{{ outcomeCols }};gap:clamp(28px,4vw,52px);align-items:center">
+      <div style="min-width:0">
+        <h2 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:clamp(24px,2.7vw,34px);letter-spacing:-0.03em;text-wrap:balance">Built for clinics that want to be chosen, not just found</h2>
+        <div style="margin-top:22px;display:flex;flex-direction:column;gap:18px">
+          <sc-for list="{{ outcomes }}" as="o" hint-placeholder-count="3">
+            <div>
+              <div style="font-size:16.5px;font-weight:600;letter-spacing:-0.012em">{{ o.title }}</div>
+              <div style="margin-top:5px;font-size:14.5px;line-height:1.6;color:rgba(12,36,62,0.7);text-wrap:pretty">{{ o.body }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="min-width:0;display:flex;flex-direction:column;gap:12px">
+        <div style="padding:16px 18px;border:1px solid #e7e7e7;border-radius:12px;background:#f8f8f8">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(12,36,62,0.45);margin-bottom:10px">Unclaimed</div>
+          <div style="font-size:15.5px;font-weight:600;color:rgba(12,36,62,0.55)">Your Clinic Name</div>
+          <div style="margin-top:5px;font-size:13.5px;color:rgba(12,36,62,0.45)">Toronto, ON · no photos · no treatment menu</div>
+        </div>
+        <div style="display:flex;justify-content:center;color:#16b3c6;font-size:16px">↓</div>
+        <div style="padding:18px 20px;border:1px solid #16b3c6;border-radius:12px;background:#ffffff;box-shadow:0 10px 26px rgba(12,36,62,0.07)">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:#16b3c6;margin-bottom:10px">Claimed &amp; verified</div>
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+            <span style="font-size:16.5px;font-weight:600">Your Clinic Name</span>
+            <span style="padding:3px 8px;border-radius:5px;background:rgba(22,179,198,0.14);font-size:11px;font-weight:600">Verified</span>
+          </div>
+          <div style="margin-top:6px;display:flex;align-items:center;gap:7px;font-size:13.5px"><span style="color:#16b3c6">★</span><span style="font-weight:600">4.9</span><span style="color:rgba(12,36,62,0.55)">312 Google reviews</span></div>
+          <div style="margin-top:6px;font-size:13.5px;color:rgba(12,36,62,0.7)">12 photos · 24 treatments priced · online booking</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="max-width:860px;margin:0 auto;padding:clamp(56px,6vw,90px) 24px 0">
+    <h2 style="margin:0 0 22px;font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:clamp(26px,3vw,38px);letter-spacing:-0.032em">Questions from clinic owners</h2>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="6">
+        <div style="background:#ffffff;border:1px solid {{ f.border }};border-radius:12px;overflow:hidden">
+          <button type="button" onClick="{{ f.toggle }}" style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;width:100%;text-align:left;padding:18px 20px;border:0;background:transparent;font:inherit;font-size:16px;font-weight:600;line-height:1.4;color:#0c243e;cursor:pointer">{{ f.q }}<span style="flex:none;color:#16b3c6;font-size:17px">{{ f.sign }}</span></button>
+          <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:0 20px 19px;font-size:15px;line-height:1.68;color:rgba(12,36,62,0.74);text-wrap:pretty">{{ f.a }}</div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="max-width:1360px;margin:0 auto;padding:clamp(56px,6vw,90px) 24px clamp(56px,6vw,90px)">
+    <div style="position:relative;overflow:hidden;background:#0c243e;color:#ffffff;border-radius:20px;padding:clamp(38px,5vw,64px);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:28px">
+      <div style="position:absolute;top:-180px;right:-60px;width:460px;height:460px;border-radius:50%;background:radial-gradient(circle, rgba(22,179,198,0.28) 0%, rgba(22,179,198,0) 66%);pointer-events:none"></div>
+      <div style="position:relative;min-width:0;max-width:34ch">
+        <h2 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:clamp(24px,2.9vw,36px);line-height:1.12;letter-spacing:-0.03em;text-wrap:balance">Ready to get your clinic in front of patients?</h2>
+        <p style="margin:12px 0 0;font-size:16px;line-height:1.6;color:rgba(255,255,255,0.76);text-wrap:pretty">Claim your location today — verification usually clears the same business day.</p>
+      </div>
+      <a href="https://members.medspafind.com/claim" style="position:relative;flex:none;display:flex;align-items:center;justify-content:center;min-height:58px;padding:0 34px;border-radius:12px;background:#16b3c6;color:#0c243e;font-size:17px;font-weight:700;transition:background .2s ease" style-hover="background:#ffffff;color:#0c243e">Get listed</a>
+    </div>
+  </section>
+
+  <footer style="background:#0c243e;color:#ffffff">
+    <div style="max-width:1360px;margin:0 auto;padding:clamp(44px,5vw,68px) 24px 26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:40px">
+      <div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:23px;letter-spacing:-0.035em">Medspa<span style="color:#16b3c6">Find</span></div>
+        <p style="margin:14px 0 0;max-width:32ch;font-size:14px;line-height:1.6;color:rgba(255,255,255,0.72);text-wrap:pretty">The directory for medical aesthetics — verified clinics, real reviews, and treatment menus you can compare.</p>
+      </div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#16b3c6;margin-bottom:14px">Provinces</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a href="/ca/on" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Ontario</a>
+          <a href="/ca/bc" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">British Columbia</a>
+          <a href="/ca/ab" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Alberta</a>
+          <a href="/ca/qc" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Quebec</a>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#16b3c6;margin-bottom:14px">Services</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a href="/ca/tattoo-removal" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Tattoo Removal</a>
+          <a href="/ca/botox" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Botox</a>
+          <a href="/ca/laser-hair-removal" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Laser Hair Removal</a>
+          <a href="/ca/hydrafacial" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Hydrafacial</a>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#16b3c6;margin-bottom:14px">Company</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a href="/ca/about" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">About us</a>
+          <a href="/blog" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Blog</a>
+          <a href="/business" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Get listed</a>
+          <a href="https://members.medspafind.com/login" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Member log in</a>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#16b3c6;margin-bottom:14px">Legal</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a href="/privacy" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Privacy</a>
+          <a href="/terms" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Terms</a>
+          <a href="/" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Change country</a>
+        </div>
+      </div>
+    </div>
+    <div style="max-width:1360px;margin:0 auto;padding:20px 24px 34px;border-top:1px solid rgba(255,255,255,0.14)">
+      <span style="font-size:13px;color:rgba(255,255,255,0.6)">© 2026 MedspaFind</span>
+    </div>
+  </footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;price&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:89,&quot;min&quot;:19,&quot;max&quot;:499,&quot;step&quot;:10,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Pricing&quot;},&quot;currency&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;CAD&quot;,&quot;USD&quot;,&quot;AED&quot;],&quot;default&quot;:&quot;CAD&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Pricing&quot;}}">
+const REGIONS = [
+  { name: "Ontario", slug: "on", cities: ["Toronto","Ottawa","Mississauga","Hamilton","London","Markham","Vaughan","Oakville","Kitchener"] },
+  { name: "British Columbia", slug: "bc", cities: ["Vancouver","Victoria","Surrey","Burnaby","Kelowna"] },
+  { name: "Alberta", slug: "ab", cities: ["Calgary","Edmonton","Red Deer"] },
+  { name: "Quebec", slug: "qc", cities: ["Montreal","Quebec City","Laval"] }
+];
+const SERVICES = [
+  { name: "Tattoo Removal", slug: "tattoo-removal" },
+  { name: "Botox", slug: "botox" },
+  { name: "Laser Hair Removal", slug: "laser-hair-removal" },
+  { name: "CoolSculpting", slug: "coolsculpting" },
+  { name: "Hydrafacial", slug: "hydrafacial" },
+  { name: "Dermal Fillers", slug: "dermal-fillers" }
+];
+
+const FEATURES = [
+  ["01","Claim your location","Verify ownership of an existing listing — or add a clinic that isn't on MedspaFind yet — and take control of the page."],
+  ["02","Verified listing","Verified clinics carry a badge and rank above unclaimed pages in city and treatment searches."],
+  ["03","Rich profile","Photo gallery, priced treatment menu, staff bios, hours, FAQs and before-and-after results, all editable by you."],
+  ["04","Google reviews","Your rating and review count are pulled from your Google Business profile and refreshed weekly — with an optional review CTA."],
+  ["05","Online booking link","Send patients straight into your own booking flow. We never sit between you and the appointment."],
+  ["06","Multi-location","Claim as many clinics as you operate. Billing is per location on one subscription."]
+];
+
+const FAQS = [
+  ["Do I need an existing listing to claim?","No. If your clinic is already in our directory you can claim the existing page; if it isn't, you add it during signup and it goes live once verification clears."],
+  ["How does verification work?","We confirm ownership through your Google Business profile or a phone or postal verification to the address on file. Most clinics clear the same business day."],
+  ["Can I manage multiple locations?","Yes. One member account manages every clinic you operate, each with its own profile, hours and treatment menu. The subscription quantity matches your number of claimed locations."],
+  ["What appears on my public profile?","Everything you publish: gallery, description, services with prices, staff, videos, working hours, FAQs, before-and-after images, map and contact links — plus your Google rating."],
+  ["How do Google reviews work?","We display your public Google rating and review count and link to your profile. We can't edit, filter or reorder reviews, and neither can you through MedspaFind."],
+  ["How does billing work per location?","One subscription, quantity equal to your claimed locations. Add a location and it appears on the next billing cycle. Cancel anytime — access ends when you cancel."]
+];
+
+const OUTCOMES = [
+  ["Appear in local searches","\"Botox in Toronto\" and \"medspa near me\" are how patients actually shop. City and treatment pages put your clinic in those results."],
+  ["Control your story","Unclaimed listings show a name and an address. A claimed profile shows your rooms, your team, your prices and your standards."],
+  ["Convert browsers to bookings","Patients comparing three clinics pick the one that answered their questions before they called. Your booking link is one tap away."]
+];
+
+class Component extends DCLogic {
+  state = { menu: null, region: 0, service: 0, faq: 0, mobileOpen: false, vw: typeof window !== "undefined" ? window.innerWidth : 1440 };
+
+  componentDidMount() {
+    this._r = () => this.setState({ vw: window.innerWidth });
+    window.addEventListener("resize", this._r);
+    this._r();
+  }
+  componentWillUnmount() { window.removeEventListener("resize", this._r); }
+
+  renderVals() {
+    const isMobile = this.state.vw < 980;
+    const menu = this.state.menu;
+    const region = REGIONS[this.state.region];
+    const service = SERVICES[this.state.service];
+    const slug = s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-");
+
+    const leftItems = (menu === "services" ? SERVICES : REGIONS).map((it, i) => {
+      const active = menu === "services" ? i === this.state.service : i === this.state.region;
+      return { name: it.name, bar: active ? "#16b3c6" : "transparent", bg: active ? "rgba(22,179,198,0.09)" : "transparent", weight: active ? 600 : 400,
+        select: () => menu === "services" ? this.setState({ service: i }) : this.setState({ region: i }) };
+    });
+
+    const amount = this.props.price ?? 89;
+    const currency = this.props.currency ?? "CAD";
+
+    return {
+      isMobile, isDesktop: !isMobile,
+      showMega: !isMobile && !!menu,
+      leftLabel: menu === "services" ? "Services" : "Provinces",
+      leftItems,
+      rightLinks: menu === "services"
+        ? REGIONS.flatMap(r => r.cities.slice(0,3).map(c => ({ name: c, href: "/ca/" + r.slug + "/" + slug(c) + "/" + service.slug }))).slice(0,12)
+        : region.cities.map(c => ({ name: c, href: "/ca/" + region.slug + "/" + slug(c) })),
+      rightTitle: menu === "services" ? service.name + " — cities with listings" : "Cities in " + region.name,
+      rightAllLabel: menu === "services" ? "All " + service.name + " clinics →" : "View all in " + region.name + " →",
+      rightAllHref: menu === "services" ? "/ca/" + service.slug : "/ca/" + region.slug,
+      locColor: menu === "locations" ? "#16b3c6" : "#0c243e",
+      svcColor: menu === "services" ? "#16b3c6" : "#0c243e",
+      mobileOpen: isMobile && this.state.mobileOpen,
+      locBorder: menu === "locations" ? "#16b3c6" : "#e7e7e7",
+      svcBorder: menu === "services" ? "#16b3c6" : "#e7e7e7",
+      locBg: menu === "locations" ? "rgba(22,179,198,0.09)" : "#ffffff",
+      svcBg: menu === "services" ? "rgba(22,179,198,0.09)" : "#ffffff",
+      toggleMobile: () => this.setState(s => ({ mobileOpen: !s.mobileOpen, menu: s.menu || "locations" })),
+      toggleLocations: () => this.setState(s => ({ menu: s.menu === "locations" ? (isMobile ? "locations" : null) : "locations" })),
+      toggleServices: () => this.setState(s => ({ menu: s.menu === "services" ? (isMobile ? "services" : null) : "services" })),
+
+      heroCols: isMobile ? "1fr" : "minmax(0,1.08fr) minmax(0,1fr)",
+      heroVisualH: isMobile ? "240px" : "430px",
+      pricingCols: isMobile ? "1fr" : "minmax(0,1fr) minmax(360px,0.85fr)",
+      outcomeCols: isMobile ? "1fr" : "minmax(0,1.15fr) minmax(0,1fr)",
+
+      features: FEATURES.map((f, i) => ({ num: f[0], title: f[1], body: f[2], delay: (0.05 * i).toFixed(2) + "s" })),
+      outcomes: OUTCOMES.map(o => ({ title: o[0], body: o[1] })),
+
+      price: "$" + amount,
+      priceUnit: currency + " / location / month",
+      pricingNotes: [
+        "One subscription per member account — quantity equals the number of locations you've claimed.",
+        "Add a location and it's billed from the next cycle. No mid-cycle surprises.",
+        "Cancel anytime. Access ends when you cancel, and your listing reverts to an unclaimed page.",
+        "No commission, no lead fees, no charge per booking."
+      ],
+      planIncludes: [
+        "Verified badge and priority placement in city and treatment searches",
+        "Full profile: gallery, services with pricing, staff, hours, FAQs",
+        "Before-and-after gallery and video embeds",
+        "Google rating and review count, refreshed weekly",
+        "Direct online booking link and click-to-call",
+        "Profile analytics — views, calls, booking clicks"
+      ],
+
+      faqs: FAQS.map((f, i) => {
+        const open = this.state.faq === i;
+        return { q: f[0], a: f[1], open, sign: open ? "−" : "+", border: open ? "#16b3c6" : "#e7e7e7",
+          toggle: () => this.setState(s => ({ faq: s.faq === i ? -1 : i })) };
+      })
+    };
+  }
+}
+
+</script>
+</body>
+</html>

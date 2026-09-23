@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="קביעת תור אונליין לקליניקת נועה ברעננה — בחירת טיפול, מטפלת, מועד ואישור בשלושה שלבים, כולל הצהרת בריאות ודמי קדימה.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#F6F8F9}
+  *{box-sizing:border-box}
+  :root{
+    --bk-main:minmax(0,1fr);
+    --bk-two:minmax(0,1fr);
+    --bk-svc:minmax(0,1fr);
+    --bk-slots:repeat(2,minmax(0,1fr));
+    --bk-pad:16px;
+  }
+  @media (min-width:560px){:root{--bk-two:repeat(2,minmax(0,1fr));--bk-slots:repeat(3,minmax(0,1fr));--bk-pad:22px}}
+  @media (min-width:860px){:root{--bk-svc:repeat(2,minmax(0,1fr));--bk-slots:repeat(4,minmax(0,1fr))}}
+  @media (min-width:1040px){:root{--bk-main:minmax(0,1fr) 330px}}
+  @media (min-width:1040px) and (min-height:720px){[data-bk-aside]{position:sticky;top:18px}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes bkFade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  @keyframes bkPop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+  @keyframes bkRing{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+</style>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#F6F8F9;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+
+  <header style="background:#fff;border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1160px;margin:0 auto;padding:12px var(--bk-pad);display:flex;align-items:center;gap:13px;flex-wrap:wrap">
+      <a href="./BeautyFind Homepage.dc.html" dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:21px;letter-spacing:-0.01em;color:#0C243E;text-decoration:none">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6">.</span></a>
+      <span aria-hidden="true" style="flex:none;width:1px;height:26px;background:#E6E6E6"></span>
+      <span style="flex:1;min-width:0;display:flex;flex-direction:column">
+        <span style="font-family:'Frank Ruhl Libre',serif;font-size:17px;font-weight:500;letter-spacing:-0.014em">קליניקת נועה</span>
+        <span style="font-size:12.5px;color:#5B6B7B">אחוזה 128, רעננה · אחריות רפואית: ד״ר נועה לוי</span>
+      </span>
+      <a href="tel:+972977411180" style="flex:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 15px;border-radius:11px;font:inherit;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;transition:background .15s,border-color .15s;border:1px solid #D4D4D4;background:#fff;color:#0C243E;" style-hover="background:#F0FAFB;border-color:#7ED7E1"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;color:#0B7A87"><path d="M5 3.5h3.2l1.6 4-2 1.3a11 11 0 0 0 5.4 5.4l1.3-2 4 1.6V17a2.5 2.5 0 0 1-2.7 2.5A15.5 15.5 0 0 1 2.5 6.2 2.5 2.5 0 0 1 5 3.5z"></path></svg><span style="display:inline-flex;align-items:center;gap:6px"><span dir="ltr" style="unicode-bidi:isolate;font-weight:600;opacity:.75;font-variant-numeric:tabular-nums">09-774-1180</span></span></a>
+      <a href="./BeautyFind Business Profile.dc.html" style="flex:none;display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 13px;border:0;border-radius:11px;background:#F0FAFB;font-size:14px;font-weight:700;color:#0B7A87;text-decoration:none">
+        <svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg>
+        <span>לפרופיל הקליניקה</span>
+      </a>
+    </div>
+  </header>
+
+  <div style="max-width:1160px;margin:0 auto;padding:clamp(16px,2.4vw,28px) var(--bk-pad) 60px">
+
+    <h1 style="margin:0 0 5px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(25px,3.4vw,34px);font-weight:500;letter-spacing:-0.015em">קביעת תור</h1>
+    <p style="margin:0 0 clamp(16px,2vw,22px);max-width:60ch;font-size:15.5px;color:#3E4F62;text-wrap:pretty">בחרו טיפול ומועד פנוי. אישור נשלח בוואטסאפ מיד עם הקביעה, ותזכורת נשלחת 24 שעות לפני התור.</p>
+
+    <ol style="list-style:none;margin:0 0 clamp(16px,2vw,22px);padding:0;display:flex;gap:7px;flex-wrap:wrap">
+      <sc-for list="{{ steps }}" as="st" hint-placeholder-count="4">
+        <li style="flex:1;min-width:132px">
+          <button type="button" onClick="{{ st.go }}" disabled="{{ st.locked }}" aria-current="{{ st.current }}" style="width:100%;display:flex;align-items:center;gap:9px;min-height:52px;padding:0 13px;border:1px solid {{ st.border }};border-radius:12px;background:{{ st.bg }};font:inherit;text-align:right;cursor:{{ st.cursor }}">
+            <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:{{ st.dotBg }};color:{{ st.dotColor }};font-size:12.5px;font-weight:700">{{ st.badge }}</span>
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column">
+              <span style="font-size:13.5px;font-weight:700;color:{{ st.titleColor }}">{{ st.name }}</span>
+              <span style="font-size:11.5px;color:#8A96A3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ st.note }}</span>
+            </span>
+          </button>
+        </li>
+      </sc-for>
+    </ol>
+
+    <div style="display:grid;grid-template-columns:var(--bk-main);gap:clamp(14px,1.8vw,20px);align-items:start">
+
+      <main style="min-width:0;display:flex;flex-direction:column;gap:14px">
+
+        <sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ true }}">
+          <section aria-labelledby="bk-h1" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px);animation:bkFade .24s ease both">
+            <h2 id="bk-h1" style="margin:0 0 3px;font-size:17px;font-weight:700">איזה טיפול תרצו לקבוע?</h2>
+            <p style="margin:0 0 13px;font-size:13.5px;color:#5B6B7B;text-wrap:pretty">טיפולי הזרקה מחייבים ייעוץ עם רופא לפני הטיפול — עבורם נקבע ייעוץ ונחזור אליכם טלפונית.</p>
+
+            <div role="group" aria-label="סינון לפי תחום" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px">
+              <sc-for list="{{ svcCats }}" as="c" hint-placeholder-count="6">
+                <button type="button" aria-pressed="{{ c.on }}" onClick="{{ c.pick }}" style="min-height:38px;padding:0 13px;border:1px solid {{ c.border }};border-radius:10px;background:{{ c.bg }};font:inherit;font-size:13.5px;font-weight:600;color:{{ c.color }};cursor:pointer">{{ c.name }}</button>
+              </sc-for>
+            </div>
+
+            <div style="display:grid;grid-template-columns:var(--bk-svc);gap:10px">
+              <sc-for list="{{ svcRows }}" as="sv" hint-placeholder-count="6">
+                <button type="button" onClick="{{ sv.pick }}" aria-pressed="{{ sv.on }}" style="min-width:0;display:flex;flex-direction:column;gap:7px;padding:14px 15px;border:1px solid {{ sv.border }};border-radius:14px;background:{{ sv.bg }};font:inherit;text-align:right;cursor:pointer;box-shadow:{{ sv.shadow }}">
+                  <span style="display:flex;align-items:flex-start;gap:9px;width:100%">
+                    <span style="flex:1;min-width:0;font-size:15.5px;font-weight:700;text-wrap:pretty">{{ sv.name }}</span>
+                    <span dir="ltr" style="flex:none;font-size:15.5px;font-weight:700;font-variant-numeric:tabular-nums">{{ sv.price }}</span>
+                  </span>
+                  <span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;width:100%">
+                    <span style="font-size:12.5px;color:#5B6B7B">{{ sv.cat }} · <span dir="ltr">{{ sv.dur }}</span></span>
+                    <span style="display:inline-flex;align-items:center;height:23px;padding:0 8px;border:1px solid {{ sv.tagBorder }};border-radius:7px;background:{{ sv.tagBg }};font-size:11.5px;font-weight:700;color:{{ sv.tagColor }}">{{ sv.tag }}</span>
+                  </span>
+                  <sc-if value="{{ sv.hasDeposit }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:12px;color:#8A96A3">דמי קדימה <span dir="ltr">{{ sv.deposit }}</span> · מקוזזים מהתשלום</span>
+                  </sc-if>
+                </button>
+              </sc-for>
+            </div>
+          </section>
+        </sc-if>
+
+        <sc-if value="{{ isStep2 }}" hint-placeholder-val="{{ false }}">
+          <section aria-labelledby="bk-h2" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px);animation:bkFade .24s ease both">
+            <h2 id="bk-h2" style="margin:0 0 3px;font-size:17px;font-weight:700">מי תבצע את הטיפול?</h2>
+            <p style="margin:0 0 13px;font-size:13.5px;color:#5B6B7B;text-wrap:pretty">{{ staffNote }}</p>
+            <div style="display:grid;grid-template-columns:var(--bk-two);gap:10px">
+              <sc-for list="{{ staffRows }}" as="p" hint-placeholder-count="2">
+                <button type="button" onClick="{{ p.pick }}" aria-pressed="{{ p.on }}" style="min-width:0;display:flex;align-items:center;gap:12px;padding:13px 14px;border:1px solid {{ p.border }};border-radius:14px;background:{{ p.bg }};font:inherit;text-align:right;cursor:pointer">
+                  <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:13px;background:{{ p.tint }};color:{{ p.color }};font-size:15px;font-weight:700">{{ p.init }}</span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                    <span style="font-size:15px;font-weight:700">{{ p.name }}</span>
+                    <span style="font-size:12.5px;color:#5B6B7B">{{ p.role }}</span>
+                    <span style="font-size:12px;color:#8A96A3"><span dir="ltr">{{ p.hours }}</span> · {{ p.avail }}</span>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+          </section>
+        </sc-if>
+
+        <sc-if value="{{ isStep3 }}" hint-placeholder-val="{{ false }}">
+          <section aria-labelledby="bk-h3" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px);animation:bkFade .24s ease both">
+            <h2 id="bk-h3" style="margin:0 0 3px;font-size:17px;font-weight:700">בחירת מועד</h2>
+            <p style="margin:0 0 13px;font-size:13.5px;color:#5B6B7B;text-wrap:pretty">השעות הפנויות מתעדכנות לפי היומן של {{ pickedStaffShort }}. שבת סגור.</p>
+
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:11px">
+              <button type="button" onClick="{{ weekPrev }}" disabled="{{ weekAtStart }}" aria-label="שבוע קודם" style="flex:none;width:40px;height:40px;border:1px solid #E6E6E6;border-radius:11px;background:#fff;font:inherit;color:#3E4F62;cursor:pointer">
+                <svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:scaleX(-1)"><path d="M12 7H2M6 3 2 7l4 4"></path></svg>
+              </button>
+              <span style="flex:1;min-width:0;text-align:center;font-size:14.5px;font-weight:700">{{ weekLabel }}</span>
+              <button type="button" onClick="{{ weekNext }}" aria-label="שבוע הבא" style="flex:none;width:40px;height:40px;border:1px solid #E6E6E6;border-radius:11px;background:#fff;font:inherit;color:#3E4F62;cursor:pointer">
+                <svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg>
+              </button>
+            </div>
+
+            <div role="group" aria-label="בחירת יום" style="display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin-bottom:15px">
+              <sc-for list="{{ dayRows }}" as="d" hint-placeholder-count="7">
+                <button type="button" onClick="{{ d.pick }}" disabled="{{ d.closed }}" aria-pressed="{{ d.on }}" style="flex:none;width:76px;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:76px;padding:9px 6px;border:1px solid {{ d.border }};border-radius:13px;background:{{ d.bg }};font:inherit;cursor:{{ d.cursor }}">
+                  <span style="font-size:12px;font-weight:600;color:{{ d.sub }}">{{ d.dow }}</span>
+                  <span dir="ltr" style="font-size:19px;font-weight:700;color:{{ d.fg }};font-variant-numeric:tabular-nums">{{ d.dom }}</span>
+                  <span style="font-size:11px;color:{{ d.sub }}">{{ d.note }}</span>
+                </button>
+              </sc-for>
+            </div>
+
+            <sc-for list="{{ slotGroups }}" as="g" hint-placeholder-count="3">
+              <div style="margin-bottom:14px">
+                <div style="display:flex;align-items:baseline;gap:9px;margin-bottom:8px">
+                  <h3 style="flex:1;margin:0;font-size:14px;font-weight:700">{{ g.name }}</h3>
+                  <span style="font-size:12px;color:#8A96A3">{{ g.count }}</span>
+                </div>
+                <div style="display:grid;grid-template-columns:var(--bk-slots);gap:8px">
+                  <sc-for list="{{ g.slots }}" as="sl" hint-placeholder-count="4">
+                    <button type="button" onClick="{{ sl.pick }}" aria-pressed="{{ sl.on }}" style="min-height:46px;padding:0 8px;border:1px solid {{ sl.border }};border-radius:11px;background:{{ sl.bg }};font:inherit;font-size:15px;font-weight:700;color:{{ sl.color }};cursor:pointer;font-variant-numeric:tabular-nums" dir="ltr">{{ sl.t }}</button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+
+            <sc-if value="{{ noSlots }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:20px 16px;border:1px dashed #D4D4D4;border-radius:13px;background:#F6F8F9;text-align:center">
+                <p style="margin:0 0 4px;font-size:14.5px;font-weight:700">אין שעות פנויות ביום הזה</p>
+                <p style="margin:0 0 11px;font-size:13px;color:#5B6B7B">נסו יום אחר, או הצטרפו לרשימת ההמתנה ונעדכן בפינוי.</p>
+                <button type="button" onClick="{{ joinWait }}" style="min-height:42px;padding:0 15px;border:1px solid #CDEFF3;border-radius:11px;background:#F0FAFB;font:inherit;font-size:14px;font-weight:700;color:#0B7A87;cursor:pointer">הצטרפות לרשימת המתנה</button>
+              </div>
+            </sc-if>
+          </section>
+        </sc-if>
+
+        <sc-if value="{{ isStep4 }}" hint-placeholder-val="{{ false }}">
+          <section aria-labelledby="bk-h4" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px);animation:bkFade .24s ease both">
+            <h2 id="bk-h4" style="margin:0 0 13px;font-size:17px;font-weight:700">הפרטים שלכם</h2>
+
+            <div style="display:grid;grid-template-columns:var(--bk-two);gap:11px">
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">שם מלא
+                <input value="{{ form.name }}" onChange="{{ onName }}" autocomplete="name" style="min-height:46px;padding:0 12px;border:1px solid {{ errName }};border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none">
+              </label>
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">טלפון נייד
+                <input value="{{ form.phone }}" onChange="{{ onPhone }}" dir="ltr" inputMode="tel" autocomplete="tel" placeholder="052-000-0000" style="min-height:46px;padding:0 12px;border:1px solid {{ errPhone }};border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none;text-align:right">
+              </label>
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">דוא״ל <span style="font-weight:600;color:#8A96A3">· לא חובה</span>
+                <input value="{{ form.email }}" onChange="{{ onEmail }}" dir="ltr" inputMode="email" autocomplete="email" style="min-height:46px;padding:0 12px;border:1px solid #D4D4D4;border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none;text-align:right">
+              </label>
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">תאריך לידה <span style="font-weight:600;color:#8A96A3">· לאימות גיל</span>
+                <input value="{{ form.dob }}" onChange="{{ onDob }}" dir="ltr" placeholder="01/01/1990" style="min-height:46px;padding:0 12px;border:1px solid #D4D4D4;border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none;text-align:right">
+              </label>
+            </div>
+
+            <div style="margin-top:14px">
+              <span style="display:block;margin-bottom:7px;font-size:13px;font-weight:700">ביקור ראשון בקליניקה?</span>
+              <div role="group" aria-label="ביקור ראשון" style="display:flex;gap:8px;flex-wrap:wrap">
+                <sc-for list="{{ firstOpts }}" as="fo" hint-placeholder-count="2">
+                  <button type="button" aria-pressed="{{ fo.on }}" onClick="{{ fo.pick }}" style="min-height:42px;padding:0 15px;border:1px solid {{ fo.border }};border-radius:11px;background:{{ fo.bg }};font:inherit;font-size:14px;font-weight:600;color:{{ fo.color }};cursor:pointer">{{ fo.name }}</button>
+                </sc-for>
+              </div>
+            </div>
+
+            <label style="display:flex;flex-direction:column;gap:5px;margin-top:14px;font-size:13px;font-weight:700">משהו שכדאי שנדע? <span style="font-weight:600;color:#8A96A3">· רגישויות, תרופות, הריון, טיפולים קודמים</span>
+              <textarea value="{{ form.notes }}" onChange="{{ onNotes }}" rows="3" style="padding:11px 12px;border:1px solid #D4D4D4;border-radius:11px;font:inherit;font-size:15px;line-height:1.55;color:#0C243E;background:#fff;outline:none;resize:vertical"></textarea>
+            </label>
+
+            <div style="margin-top:15px;padding:14px 15px;border:1px solid #E6E6E6;border-radius:13px;background:#FAFBFB">
+              <h3 style="margin:0 0 9px;font-size:14px;font-weight:700">אישורים</h3>
+              <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px">
+                <sc-for list="{{ consentRows }}" as="cn" hint-placeholder-count="3">
+                  <li>
+                    <button type="button" role="checkbox" aria-checked="{{ cn.on }}" onClick="{{ cn.toggle }}" style="width:100%;display:flex;align-items:flex-start;gap:11px;padding:0;border:0;background:transparent;font:inherit;text-align:right;cursor:pointer">
+                      <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-top:1px;border:1.5px solid {{ cn.boxBorder }};border-radius:7px;background:{{ cn.boxBg }};color:#fff">
+                        <sc-if value="{{ cn.checked }}" hint-placeholder-val="{{ false }}">
+                          <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg>
+                        </sc-if>
+                      </span>
+                      <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                        <span style="font-size:14px;font-weight:600;text-wrap:pretty">{{ cn.label }}</span>
+                        <span style="font-size:12px;color:#8A96A3;text-wrap:pretty">{{ cn.note }}</span>
+                      </span>
+                    </button>
+                  </li>
+                </sc-for>
+              </ul>
+            </div>
+
+            <sc-if value="{{ hasDeposit }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:13px;padding:14px 15px;border:1px solid #CDEFF3;border-radius:13px;background:#F0FAFB">
+                <h3 style="margin:0 0 4px;font-size:14px;font-weight:700">דמי קדימה <span dir="ltr">{{ depositText }}</span></h3>
+                <p style="margin:0;font-size:13px;color:#3E4F62;text-wrap:pretty">הסליקה מתבצעת בקליניקה או בקישור מאובטח שיישלח בוואטסאפ. הסכום מקוזז מהתשלום על הטיפול, ומוחזר בביטול עד <span dir="ltr">{{ depRefundText }}</span> שעות לפני התור.</p>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ formError }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:13px 0 0;padding:11px 13px;border:1px solid #F0C9C4;border-radius:11px;background:#FDEDEC;font-size:13.5px;font-weight:700;color:#A33A31;text-wrap:pretty">{{ formErrorText }}</p>
+            </sc-if>
+          </section>
+        </sc-if>
+
+        <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+          <section aria-labelledby="bk-h5" style="background:#fff;border:1px solid #CDEFF3;border-radius:17px;padding:clamp(18px,2.2vw,26px);animation:bkFade .26s ease both">
+            <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;margin-bottom:13px;border-radius:50%;background:#F0FAFB;color:#0B7A87;animation:bkRing .3s ease both">
+              <svg width="27" height="27" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg>
+            </span>
+            <h2 id="bk-h5" style="margin:0 0 5px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(21px,2.6vw,26px);font-weight:500;letter-spacing:-0.014em">{{ doneTitle }}</h2>
+            <p style="margin:0 0 15px;max-width:52ch;font-size:15px;color:#3E4F62;text-wrap:pretty">{{ doneBody }}</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 15px"><a href="./BeautyFind Manage Booking.dc.html" style="min-height:40px;display:inline-flex;align-items:center;padding:0 13px;border:1px solid #CDEFF3;border-radius:10px;background:#F0FAFB;font-size:14px;font-weight:700;color:#0B7A87;text-decoration:none">ניהול התור</a><a href="./BeautyFind Health Declaration.dc.html" style="min-height:40px;display:inline-flex;align-items:center;padding:0 13px;border:1px solid #CDEFF3;border-radius:10px;background:#F0FAFB;font-size:14px;font-weight:700;color:#0B7A87;text-decoration:none">מילוי הצהרת בריאות</a><a href="./BeautyFind Consult Request.dc.html" style="min-height:40px;display:inline-flex;align-items:center;padding:0 13px;border:1px solid #E6E6E6;border-radius:10px;background:#fff;font-size:14px;font-weight:600;color:#3E4F62;text-decoration:none">בקשת ייעוץ מפורטת</a></div>
+
+            <dl style="margin:0 0 16px;display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px 12px;font-size:14.5px">
+              <dt style="color:#8A96A3">אסמכתא</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">{{ ref }}</dd>
+              <dt style="color:#8A96A3">טיפול</dt><dd style="margin:0;font-weight:600">{{ sumSvc }}</dd>
+              <dt style="color:#8A96A3">מטפלת</dt><dd style="margin:0;font-weight:600">{{ sumStaff }}</dd>
+              <dt style="color:#8A96A3">מועד</dt><dd style="margin:0;font-weight:600">{{ sumWhen }}</dd>
+              <dt style="color:#8A96A3">כתובת</dt><dd style="margin:0">אחוזה 128, רעננה · חניה בחניון העירוני</dd>
+            </dl>
+
+            <div style="display:flex;gap:9px;flex-wrap:wrap">
+              <button type="button" onClick="{{ addCal }}" style="min-height:46px;padding:0 16px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:14.5px;font-weight:700;color:#fff;cursor:pointer">הוספה ליומן</button>
+              <button type="button" onClick="{{ waze }}" style="min-height:46px;padding:0 15px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font:inherit;font-size:14.5px;font-weight:600;color:#3E4F62;cursor:pointer">ניווט ב־Waze</button>
+              <button type="button" onClick="{{ wapp }}" style="min-height:46px;padding:0 15px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font:inherit;font-size:14.5px;font-weight:600;color:#3E4F62;cursor:pointer">שליחת הודעה לקליניקה</button>
+              <button type="button" onClick="{{ restart }}" style="min-height:46px;padding:0 14px;border:0;border-radius:12px;background:transparent;font:inherit;font-size:14.5px;font-weight:700;color:#0B7A87;cursor:pointer">קביעת תור נוסף</button>
+            </div>
+
+            <p style="margin:16px 0 0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">ביטול או שינוי עד <span dir="ltr">24</span> שעות לפני התור ללא חיוב. ביטול מאוחר מזה מחויב ב־<span dir="ltr">30%</span> משווי הטיפול.</p>
+          </section>
+        </sc-if>
+
+        <sc-if value="{{ showFooterNav }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <sc-if value="{{ canBack }}" hint-placeholder-val="{{ false }}">
+              <button type="button" onClick="{{ back }}" style="flex:none;min-height:48px;padding:0 16px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font:inherit;font-size:15px;font-weight:600;color:#3E4F62;cursor:pointer">חזרה</button>
+            </sc-if>
+            <button type="button" onClick="{{ next }}" disabled="{{ nextBlocked }}" style="flex:1;min-width:190px;min-height:48px;padding:0 18px;border:0;border-radius:12px;background:{{ nextBg }};font:inherit;font-size:15.5px;font-weight:700;color:{{ nextColor }};cursor:{{ nextCursor }}">{{ nextLabel }}</button>
+          </div>
+          <p style="margin:0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">{{ nextHint }}</p>
+        </sc-if>
+
+      </main>
+
+      <aside data-bk-aside style="min-width:0">
+        <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;overflow:hidden">
+          <div style="padding:14px 16px;border-bottom:1px solid #EDEFF2">
+            <h2 style="margin:0;font-size:15.5px;font-weight:700">סיכום ההזמנה</h2>
+          </div>
+          <dl style="margin:0;padding:14px 16px;display:flex;flex-direction:column;gap:11px">
+            <sc-for list="{{ summary }}" as="sm" hint-placeholder-count="4">
+              <div style="display:flex;align-items:flex-start;gap:10px">
+                <dt style="flex:none;width:72px;font-size:12.5px;color:#8A96A3">{{ sm.label }}</dt>
+                <dd dir="{{ sm.dir }}" style="flex:1;min-width:0;margin:0;text-align:right;font-size:14px;font-weight:{{ sm.weight }};color:{{ sm.color }};text-wrap:pretty">{{ sm.value }}</dd>
+              </div>
+            </sc-for>
+          </dl>
+          <div style="padding:13px 16px;border-top:1px solid #EDEFF2;background:#FAFBFB">
+            <div style="display:flex;align-items:baseline;gap:9px">
+              <span style="flex:1;font-size:14px;font-weight:700">{{ totalLabel }}</span>
+              <span dir="ltr" style="flex:none;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">{{ totalText }}</span>
+            </div>
+            <p style="margin:5px 0 0;font-size:12px;color:#8A96A3;text-wrap:pretty">{{ totalNote }}</p>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;padding:14px 16px;background:#fff;border:1px solid #E6E6E6;border-radius:17px">
+          <h3 style="margin:0 0 9px;font-size:14px;font-weight:700">שעות פעילות</h3>
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px">
+            <sc-for list="{{ openHours }}" as="oh" hint-placeholder-count="3">
+              <li style="display:flex;align-items:center;gap:9px;font-size:13.5px">
+                <span style="flex:1;min-width:0;font-weight:{{ oh.weight }}">{{ oh.day }}</span>
+                <span dir="ltr" style="flex:none;color:{{ oh.color }};font-variant-numeric:tabular-nums">{{ oh.h }}</span>
+              </li>
+            </sc-for>
+          </ul>
+          <p style="margin:11px 0 0;padding-top:11px;border-top:1px solid #EDEFF2;font-size:12.5px;color:#5B6B7B;text-wrap:pretty">אחריות רפואית: ד״ר נועה לוי, רישיון <span dir="ltr">34-82115</span>. טיפולי אסתטיקה אינם בסל הבריאות.</p>
+          <p style="margin:9px 0 0;font-size:12.5px;display:flex;gap:12px;flex-wrap:wrap"><a href="./BeautyFind Practitioner.dc.html">על ד״ר נועה לוי</a><a href="./BeautyFind Waitlist.dc.html">רשימת המתנה</a><a href="./BeautyFind Legal.dc.html">הצהרת נגישות ותקנון</a></p>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:fixed;bottom:18px;right:50%;transform:translateX(50%);z-index:40;max-width:min(90vw,440px);padding:12px 17px;border-radius:13px;background:#0C243E;color:#fff;font-size:14px;font-weight:600;box-shadow:0 12px 30px rgba(12,36,62,.28);animation:bkPop .16s ease both;text-wrap:pretty">{{ toastText }}</div>
+  </sc-if>
+  <dc-import name="BeautyFind Cookie Consent" embedded="{{ true }}" hint-size="0,0"></dc-import>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180,&quot;height&quot;:900},&quot;depositEnabled&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;דמי קדימה&quot;,&quot;label&quot;:&quot;גביית דמי קדימה&quot;},&quot;depositMode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;medical-fixed&quot;,&quot;options&quot;:[&quot;medical-fixed&quot;,&quot;all-fixed&quot;,&quot;percent&quot;,&quot;per-treatment&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;דמי קדימה&quot;},&quot;depositValue&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:300,&quot;min&quot;:0,&quot;max&quot;:2000,&quot;step&quot;:50,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;דמי קדימה&quot;},&quot;depositRefundHours&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:24,&quot;min&quot;:0,&quot;max&quot;:96,&quot;step&quot;:12,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;דמי קדימה&quot;}}">
+const NF = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const ILS = n => n === 0 ? 'ללא עלות' : '₪' + NF(n);
+
+const STAFF = [
+  { id: 'noa', name: 'ד״ר נועה לוי', role: 'בעלים · רופאה מומחית', init: 'נל', color: '#0B7A87', tint: '#F0FAFB', open: [9, 17] },
+  { id: 'maya', name: 'מאיה כהן', role: 'קוסמטיקאית', init: 'מכ', color: '#C77D4A', tint: '#FBEEE2', open: [9, 18] },
+  { id: 'roni', name: 'רוני אלקיים', role: 'קוסמטיקאית רפואית', init: 'רא', color: '#5B6ABF', tint: '#EAECF9', open: [10, 19] }
+];
+
+const SERVICES = [
+  { id: 's1', name: 'ייעוץ ראשוני', cat: 'ייעוץ', price: 0, dur: 30, staff: ['noa', 'roni'], deposit: 0, online: true },
+  { id: 's9', name: 'טיפול פנים עמוק', cat: 'טיפולי פנים', price: 380, dur: 60, staff: ['maya'], deposit: 0, online: true },
+  { id: 's8', name: 'פילינג כימי', cat: 'טיפולי פנים', price: 650, dur: 45, staff: ['roni', 'maya'], deposit: 0, online: true },
+  { id: 's12', name: 'מיקרוניידלינג', cat: 'טיפולי פנים', price: 800, dur: 50, staff: ['roni'], deposit: 0, online: true },
+  { id: 's7', name: 'הסרת שיער בלייזר — בית שחי', cat: 'לייזר', price: 180, dur: 20, staff: ['maya', 'roni'], deposit: 0, online: true },
+  { id: 's6', name: 'הסרת שיער בלייזר — רגליים', cat: 'לייזר', price: 450, dur: 45, staff: ['maya', 'roni'], deposit: 0, online: true },
+  { id: 's5', name: 'מיצוק HIFU — פנים מלא', cat: 'מכשור', price: 2400, dur: 60, staff: ['roni'], deposit: 500, online: true },
+  { id: 's2', name: 'בוטוקס — אזור אחד', cat: 'אסתטיקה רפואית', price: 1100, dur: 30, staff: ['noa'], deposit: 300, online: false },
+  { id: 's3', name: 'בוטוקס — שלושה אזורים', cat: 'אסתטיקה רפואית', price: 2600, dur: 45, staff: ['noa'], deposit: 500, online: false },
+  { id: 's4', name: 'חומצה היאלורונית — שפתיים', cat: 'אסתטיקה רפואית', price: 1600, dur: 45, staff: ['noa'], deposit: 400, online: false },
+  { id: 's10', name: 'מזותרפיה לקרקפת', cat: 'אסתטיקה רפואית', price: 900, dur: 40, staff: ['noa'], deposit: 200, online: false },
+  { id: 's11', name: 'הסרת נגעי עור', cat: 'אסתטיקה רפואית', price: 700, dur: 30, staff: ['noa'], deposit: 0, online: false }
+];
+
+const DOW = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+const MON = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+const HOURS_TABLE = [['ראשון–חמישי', '09:00–19:00'], ['שישי', '09:00–13:00'], ['שבת', 'סגור']];
+
+// deterministic "already booked" pattern so availability feels real and stable
+const BUSY = { noa: [9, 11.5, 13, 15.5], maya: [10, 12, 14.5, 16], roni: [10.5, 12.5, 15, 17.5] };
+
+const CONSENT_DEFS = [
+  ['health', 'קראתי ומאשרת שאדווח על מצב רפואי, תרופות, הריון או הנקה לפני הטיפול', 'הצהרת בריאות מלאה נחתמת דיגיטלית בקליניקה לפני הטיפול הראשון'],
+  ['policy', 'אני מאשרת את מדיניות הביטולים — ביטול עד 24 שעות לפני התור ללא חיוב', 'ביטול מאוחר מחויב ב־30% משווי הטיפול'],
+  ['marketing', 'אשמח לקבל עדכונים ומבצעים בוואטסאפ', 'לא חובה · אפשר לבטל בכל הודעה']
+];
+
+class Component extends DCLogic {
+  static MQ = { wide: '(min-width:1040px)' };
+
+  state = {
+    step: 1, svc: null, staff: null, day: 0, slot: null, week: 0,
+    cat: 'all', first: null,
+    form: { name: '', phone: '', email: '', dob: '', notes: '' },
+    consents: { health: false, policy: false, marketing: false },
+    submitted: false, tried: false, ref: '',
+    toast: '', mq: { wide: false }
+  };
+
+  componentDidMount() { this.readMQ(); }
+  componentWillUnmount() { (this._mqls || []).forEach(x => x.mql.removeEventListener('change', x.fn)); clearTimeout(this._t); }
+
+  readMQ() {
+    this._mqls = Object.keys(Component.MQ).map(k => {
+      const mql = window.matchMedia(Component.MQ[k]);
+      const fn = () => this.setState(s => ({ mq: Object.assign({}, s.mq, { [k]: mql.matches }) }));
+      mql.addEventListener('change', fn);
+      return { mql, fn, k };
+    });
+    const mq = {};
+    this._mqls.forEach(x => { mq[x.k] = x.mql.matches; });
+    this.setState({ mq });
+  }
+
+  flash(t) { clearTimeout(this._t); this.setState({ toast: t }); this._t = setTimeout(() => this.setState({ toast: '' }), 3200); }
+
+  // day 0 = today, Tuesday 22/09/2026
+  dayInfo(i) {
+    const base = new Date(2026, 8, 22);
+    const d = new Date(base.getTime() + i * 86400000);
+    const dow = d.getDay();
+    return { i, d, dow, dowName: DOW[dow], dom: String(d.getDate()).padStart(2, '0'),
+      dateText: String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear(),
+      monthName: MON[d.getMonth()], closed: dow === 6, friday: dow === 5, today: i === 0 };
+  }
+
+  slotsFor(dayIdx, staffId, svc) {
+    const info = this.dayInfo(dayIdx);
+    if (info.closed || !staffId || !svc) return [];
+    const st = STAFF.filter(x => x.id === staffId)[0];
+    if (!st) return [];
+    const from = st.open[0];
+    const to = info.friday ? Math.min(st.open[1], 13) : st.open[1];
+    const stepH = svc.dur >= 60 ? 1 : svc.dur >= 45 ? 0.75 : 0.5;
+    const busy = (BUSY[staffId] || []).map(h => h + (dayIdx % 3) * 0.5);
+    const out = [];
+    for (let h = from; h + svc.dur / 60 <= to; h += stepH) {
+      const clash = busy.some(b => h < b + 0.75 && b < h + svc.dur / 60);
+      const past = info.today && h < 12;
+      if (!clash && !past) out.push(h);
+    }
+    return out;
+  }
+
+  hm(h) {
+    const hh = Math.floor(h);
+    const mm = Math.round((h - hh) * 60);
+    return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+  }
+
+  renderVals() {
+    const s = this.state;
+    const svc = SERVICES.filter(x => x.id === s.svc)[0] || null;
+    const staff = STAFF.filter(x => x.id === s.staff)[0] || null;
+    const info = this.dayInfo(s.day);
+    const needsConsult = svc && !svc.online;
+    const pol = {
+      on: this.props.depositEnabled ?? true,
+      mode: this.props.depositMode ?? 'medical-fixed',
+      val: this.props.depositValue ?? 300,
+      refundH: this.props.depositRefundHours ?? 24
+    };
+    const depFor = x => {
+      if (!x || !pol.on) return 0;
+      if (pol.mode === 'per-treatment') return x.deposit || 0;
+      if (pol.mode === 'medical-fixed' && x.online) return 0;
+      if (pol.mode === 'percent') return Math.round(x.price * pol.val / 100);
+      return x.price === 0 ? 0 : pol.val;
+    };
+    const dep = depFor(svc);
+    const teal = '#0B7A87', navy = '#0C243E', line = '#E6E6E6';
+
+    const go = n => () => this.setState({ step: n, tried: false });
+    const freeTxt = n => n === 0 ? 'תפוס' : n === 1 ? 'פנויה אחת' : n === 2 ? 'שתיים פנויות' : n + ' פנויות';
+    const weekTxt = n => n === 0 ? 'אין מועדים השבוע' : n === 1 ? 'מועד אחד פנוי השבוע' : n + ' מועדים פנויים השבוע';
+
+    // ---- step rail
+    const stepDefs = [
+      { n: 1, name: 'טיפול', note: svc ? svc.name : 'בחרו מהתפריט' },
+      { n: 2, name: 'מטפלת', note: staff ? staff.name : 'לפי הטיפול' },
+      { n: 3, name: 'מועד', note: s.slot !== null ? info.dowName + ' ' + info.dateText + ' · ' + this.hm(s.slot) : 'שעות פנויות' },
+      { n: 4, name: 'פרטים ואישור', note: s.submitted ? 'הושלם' : 'שם, טלפון, אישורים' }
+    ];
+    const reach = !svc ? 1 : !staff ? 2 : s.slot === null ? 3 : 4;
+    const steps = stepDefs.map(d => {
+      const cur = s.step === d.n && !s.submitted;
+      const done = s.submitted || d.n < reach;
+      const locked = d.n > reach || s.submitted;
+      return {
+        name: d.name, note: d.note, badge: done && !cur ? '✓' : String(d.n),
+        current: cur ? 'step' : 'false', locked,
+        bg: cur ? '#F0FAFB' : '#fff', border: cur ? '#CDEFF3' : line,
+        dotBg: cur ? teal : done ? '#CDEFF3' : '#EDEFF2',
+        dotColor: cur ? '#fff' : done ? '#0B7A87' : '#8A96A3',
+        titleColor: locked && !cur ? '#8A96A3' : navy,
+        cursor: locked ? 'default' : 'pointer',
+        go: locked ? () => {} : go(d.n)
+      };
+    });
+
+    // ---- step 1
+    const cats = ['all'].concat(SERVICES.map(x => x.cat).filter((c, i, a) => a.indexOf(c) === i));
+    const svcShown = SERVICES.filter(x => s.cat === 'all' || x.cat === s.cat);
+
+    // ---- step 3
+    const dayRows = [];
+    for (let k = 0; k < 7; k++) {
+      const idx = s.week * 7 + k;
+      const di = this.dayInfo(idx);
+      const on = idx === s.day;
+      const free = this.slotsFor(idx, s.staff, svc).length;
+      dayRows.push({
+        dow: di.today ? 'היום' : di.dowName, dom: di.dom, on: on ? 'true' : 'false',
+        closed: di.closed, cursor: di.closed ? 'default' : 'pointer',
+        note: di.closed ? 'סגור' : freeTxt(free),
+        bg: on ? teal : di.closed ? '#F6F8F9' : '#fff',
+        border: on ? teal : line,
+        fg: on ? '#fff' : di.closed ? '#8A96A3' : navy,
+        sub: on ? 'rgba(255,255,255,.82)' : '#8A96A3',
+        pick: di.closed ? () => {} : () => this.setState({ day: idx, slot: null })
+      });
+    }
+    const slots = this.slotsFor(s.day, s.staff, svc);
+    const bucket = [
+      { name: 'בוקר', from: 0, to: 12 },
+      { name: 'צהריים', from: 12, to: 16 },
+      { name: 'אחר הצהריים', from: 16, to: 24 }
+    ];
+    const slotGroups = bucket.map(b => {
+      const inB = slots.filter(h => h >= b.from && h < b.to);
+      return {
+        name: b.name, count: freeTxt(inB.length),
+        slots: inB.map(h => ({
+          t: this.hm(h), on: s.slot === h ? 'true' : 'false',
+          bg: s.slot === h ? teal : '#fff', border: s.slot === h ? teal : line,
+          color: s.slot === h ? '#fff' : navy,
+          pick: () => this.setState({ slot: h })
+        }))
+      };
+    }).filter(g => g.slots.length);
+
+    const weekStart = this.dayInfo(s.week * 7);
+    const weekEnd = this.dayInfo(s.week * 7 + 6);
+
+    // ---- step 4 validation
+    const phoneOk = /^0\d{1,2}[- ]?\d{3}[- ]?\d{4}$/.test(s.form.phone.trim());
+    const nameOk = s.form.name.trim().length >= 2;
+    const consentOk = s.consents.health && s.consents.policy;
+    const formOk = nameOk && phoneOk && consentOk;
+    const errText = !nameOk ? 'נדרש שם מלא' : !phoneOk ? 'מספר טלפון נייד אינו תקין' : 'יש לאשר את הצהרת הבריאות ואת מדיניות הביטולים';
+
+    const nextMap = {
+      1: { ok: !!svc, label: needsConsult ? 'המשך לקביעת ייעוץ רפואי' : 'המשך לבחירת מטפלת', hint: !svc ? 'בחרו טיפול כדי להמשיך' : needsConsult ? 'הטיפול שבחרתם הוא פעולה רפואית. בשלב הבא בוחרים מועד לייעוץ עם ד״ר נועה לוי ועונים על כמה שאלות קצרות.' : svc.name + ' · ' + svc.dur + ' דקות' },
+      2: { ok: !!staff, label: 'המשך לבחירת מועד', hint: !staff ? 'בחרו מטפלת כדי להמשיך' : 'היומן של ' + staff.name + ' ייטען בשלב הבא' },
+      3: { ok: s.slot !== null, label: 'המשך למילוי פרטים', hint: s.slot === null ? 'בחרו שעה פנויה כדי להמשיך' : info.dowName + ', ' + info.dateText + ' בשעה ' + this.hm(s.slot) },
+      4: { ok: formOk, label: needsConsult ? 'אישור בקשת ייעוץ' : 'אישור וקביעת התור', hint: formOk ? 'אישור יישלח בוואטסאפ למספר ' + s.form.phone.trim() : 'שדות חובה: שם, טלפון, שני האישורים הראשונים' }
+    };
+    const nx = nextMap[s.step] || nextMap[1];
+
+    const submit = () => {
+      if (!formOk) { this.setState({ tried: true }); return; }
+      const ref = 'BF-' + String(Math.floor(Math.random() * 9000) + 1000);
+      this.setState({ submitted: true, ref },
+        () => this.flash(needsConsult ? 'בקשת הייעוץ נשלחה — נחזור אליכם בשעות הקרובות' : 'התור נקבע · אישור נשלח בוואטסאפ'));
+    };
+
+    const total = svc ? svc.price : 0;
+
+    return {
+      wide: s.mq.wide,
+      isStep1: !s.submitted && s.step === 1,
+      isStep2: !s.submitted && s.step === 2,
+      isStep3: !s.submitted && s.step === 3,
+      isStep4: !s.submitted && s.step === 4,
+      isDone: s.submitted,
+      steps,
+
+      svcCats: cats.map(c => ({
+        name: c === 'all' ? 'כל הטיפולים' : c, on: s.cat === c ? 'true' : 'false',
+        bg: s.cat === c ? teal : '#fff', color: s.cat === c ? '#fff' : '#3E4F62', border: s.cat === c ? teal : line,
+        pick: () => this.setState({ cat: c })
+      })),
+      svcRows: svcShown.map(x => {
+        const on = s.svc === x.id;
+        return {
+          name: x.name, cat: x.cat, price: ILS(x.price), dur: x.dur + ' דק׳',
+          on: on ? 'true' : 'false',
+          bg: on ? '#F0FAFB' : '#fff', border: on ? '#CDEFF3' : line,
+          shadow: on ? '0 2px 10px rgba(11,122,135,.12)' : 'none',
+          tag: x.online ? 'זמין לקביעה מיידית' : 'נדרש ייעוץ רפואי',
+          tagBg: x.online ? '#EAF3EA' : '#FDF1E7',
+          tagColor: x.online ? '#3B6B3F' : '#9A5B15',
+          tagBorder: x.online ? '#CFE3CF' : '#F3D9BE',
+          hasDeposit: depFor(x) > 0, deposit: '₪' + NF(depFor(x)),
+          pick: () => {
+            const avail = x.staff;
+            this.setState({ svc: x.id, step: 2, slot: null,
+              staff: avail.length === 1 ? avail[0] : (avail.indexOf(s.staff) > -1 ? s.staff : null) });
+          }
+        };
+      }),
+
+      staffNote: svc
+        ? (svc.staff.length > 1 ? 'שלוש מטפלות מבצעות את ' + svc.name + ' — בחרו את מי שמתאימה לכם.' : svc.name + ' מבוצע על ידי מטפלת אחת בקליניקה.')
+        : 'בחרו קודם טיפול.',
+      staffRows: (svc ? STAFF.filter(p => svc.staff.indexOf(p.id) > -1) : []).map(p => {
+        const on = s.staff === p.id;
+        const free = [0, 1, 2, 3, 4, 5, 6].reduce((a, k) => a + this.slotsFor(k, p.id, svc).length, 0);
+        return {
+          name: p.name, role: p.role, init: p.init, color: p.color, tint: p.tint,
+          hours: this.hm(p.open[0]) + '–' + this.hm(p.open[1]),
+          avail: weekTxt(free),
+          on: on ? 'true' : 'false',
+          bg: on ? '#F0FAFB' : '#fff', border: on ? '#CDEFF3' : line,
+          pick: () => this.setState({ staff: p.id, step: 3, slot: null })
+        };
+      }),
+
+      pickedStaffShort: staff ? staff.name : 'הקליניקה',
+      weekLabel: weekStart.monthName === weekEnd.monthName
+        ? weekStart.dom + '–' + weekEnd.dom + ' ' + weekStart.monthName
+        : weekStart.dom + ' ' + weekStart.monthName + ' – ' + weekEnd.dom + ' ' + weekEnd.monthName,
+      weekAtStart: s.week === 0,
+      weekPrev: () => this.setState(st => ({ week: Math.max(0, st.week - 1) })),
+      weekNext: () => this.setState(st => ({ week: Math.min(6, st.week + 1) })),
+      dayRows, slotGroups,
+      noSlots: slotGroups.length === 0,
+      joinWait: () => this.flash('נוספתם לרשימת ההמתנה — נעדכן בוואטסאפ על פינוי'),
+
+      form: s.form,
+      onName: e => { const v = e.target.value; this.setState(st => ({ form: Object.assign({}, st.form, { name: v }) })); },
+      onPhone: e => { const v = e.target.value; this.setState(st => ({ form: Object.assign({}, st.form, { phone: v }) })); },
+      onEmail: e => { const v = e.target.value; this.setState(st => ({ form: Object.assign({}, st.form, { email: v }) })); },
+      onDob: e => { const v = e.target.value; this.setState(st => ({ form: Object.assign({}, st.form, { dob: v }) })); },
+      onNotes: e => { const v = e.target.value; this.setState(st => ({ form: Object.assign({}, st.form, { notes: v }) })); },
+      errName: s.tried && !nameOk ? '#D98A80' : '#D4D4D4',
+      errPhone: s.tried && !phoneOk ? '#D98A80' : '#D4D4D4',
+      firstOpts: [['yes', 'כן, ביקור ראשון'], ['no', 'לא, אני לקוחה קיימת']].map(o => {
+        const on = s.first === o[0];
+        return { name: o[1], on: on ? 'true' : 'false',
+          bg: on ? '#F0FAFB' : '#fff', color: on ? '#0B7A87' : '#3E4F62', border: on ? '#CDEFF3' : line,
+          pick: () => this.setState({ first: o[0] }) };
+      }),
+      consentRows: CONSENT_DEFS.map(c => {
+        const on = !!s.consents[c[0]];
+        return { label: c[1], note: c[2], on: on ? 'true' : 'false', checked: on,
+          boxBg: on ? teal : '#fff', boxBorder: on ? teal : '#C9CFD6',
+          toggle: () => this.setState(st => ({ consents: Object.assign({}, st.consents, { [c[0]]: !st.consents[c[0]] }) })) };
+      }),
+      hasDeposit: dep > 0,
+      depositText: dep > 0 ? '₪' + NF(dep) : '',
+      depRefundText: pol.refundH,
+      formError: s.tried && !formOk,
+      formErrorText: errText,
+
+      showFooterNav: !s.submitted,
+      canBack: s.step > 1,
+      back: () => this.setState(st => ({ step: Math.max(1, st.step - 1), tried: false })),
+      next: s.step === 4 ? submit : () => { if (!nx.ok) return; if (s.step === 1 && needsConsult) { window.location.href = './BeautyFind Consult Request.dc.html'; return; } this.setState({ step: s.step + 1 }); },
+      nextBlocked: s.step !== 4 && !nx.ok,
+      nextLabel: nx.label, nextHint: nx.hint,
+      nextBg: (s.step === 4 || nx.ok) ? teal : '#EDEFF2',
+      nextColor: (s.step === 4 || nx.ok) ? '#fff' : '#8A96A3',
+      nextCursor: (s.step === 4 || nx.ok) ? 'pointer' : 'default',
+
+      doneTitle: needsConsult ? 'בקשת הייעוץ נשלחה' : 'התור נקבע',
+      doneBody: needsConsult
+        ? 'הטיפול שבחרתם הוא פעולה רפואית ומחייב ייעוץ עם רופא. שמרנו לכם את המועד לייעוץ, ונאשר אותו טלפונית בשעות הקרובות.'
+        : 'אישור נשלח בוואטסאפ, ותזכורת תישלח 24 שעות לפני התור. אם תרצו לשנות מועד, השיבו להודעה.',
+      ref: s.ref,
+      sumSvc: svc ? svc.name + ' · ' + svc.dur + ' דק׳' : '—',
+      sumStaff: staff ? staff.name : '—',
+      sumWhen: s.slot !== null ? info.dowName + ', ' + info.dateText + ' · ' + this.hm(s.slot) : '—',
+      addCal: () => this.flash('התור נוסף ליומן שלכם'),
+      waze: () => this.flash('פותח ניווט לאחוזה 128, רעננה'),
+      wapp: () => this.flash('פותח שיחת וואטסאפ עם הקליניקה'),
+      restart: () => this.setState({ step: 1, svc: null, staff: null, slot: null, day: 0, week: 0, submitted: false, tried: false,
+        form: { name: '', phone: '', email: '', dob: '', notes: '' }, consents: { health: false, policy: false, marketing: false } }),
+
+      summary: [
+        { label: 'טיפול', value: svc ? svc.name : 'טרם נבחר', dir: 'rtl', weight: svc ? '700' : '600', color: svc ? navy : '#8A96A3' },
+        { label: 'משך', value: svc ? svc.dur + ' דקות' : '—', dir: 'rtl', weight: '600', color: svc ? '#3E4F62' : '#8A96A3' },
+        { label: 'מטפלת', value: staff ? staff.name : 'טרם נבחרה', dir: 'rtl', weight: '600', color: staff ? '#3E4F62' : '#8A96A3' },
+        { label: 'מועד', value: s.slot !== null ? info.dowName + ', ' + info.dateText + ' · ' + this.hm(s.slot) : 'טרם נבחר', dir: 'rtl', weight: '600', color: s.slot !== null ? '#3E4F62' : '#8A96A3' },
+        { label: 'דמי קדימה', value: dep > 0 ? '₪' + NF(dep) : (pol.on ? 'ללא' : 'הקליניקה אינה גובה'), dir: dep > 0 ? 'ltr' : 'rtl', weight: '600', color: '#3E4F62' }
+      ],
+      totalLabel: svc && svc.price === 0 ? 'ייעוץ' : 'מחיר הטיפול',
+      totalText: svc ? ILS(svc.price) : '—',
+      totalNote: svc && svc.price ? 'כולל מע״מ · תשלום בקליניקה, אפשר בתשלומים · חשבונית מס נשלחת בדוא״ל' : 'הייעוץ ללא עלות ואינו מחייב בהמשך טיפול',
+
+      openHours: HOURS_TABLE.map(h => ({ day: h[0], h: h[1],
+        weight: h[0].indexOf(info.dowName) > -1 ? '700' : '600',
+        color: h[1] === 'סגור' ? '#A33A31' : '#3E4F62' })),
+
+      toastOn: !!s.toast, toastText: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

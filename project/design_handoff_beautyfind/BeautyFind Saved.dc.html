@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="קליניקות שמורות והשוואה ב־BeautyFind — עד שלוש קליניקות זו לצד זו: מחיר, אחריות רפואית, זמינות, דירוג ומדיניות.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#FAFBFB}
+  *{box-sizing:border-box}
+  :root{--sv-pad:16px;--sv-grid:minmax(0,1fr)}
+  @media (min-width:640px){:root{--sv-pad:22px;--sv-grid:repeat(2,minmax(0,1fr))}}
+  @media (min-width:1000px){:root{--sv-grid:repeat(3,minmax(0,1fr))}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes svFade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  @keyframes svPop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#FAFBFB;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+
+  <header style="background:#fff;border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1160px;margin:0 auto;padding:12px var(--sv-pad);display:flex;align-items:center;gap:13px;flex-wrap:wrap">
+      <a href="./BeautyFind Homepage.dc.html" dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:21px;letter-spacing:-0.01em;color:#0C243E;text-decoration:none">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6">.</span></a>
+      <span style="flex:1;min-width:0"></span>
+      <a href="./BeautyFind Search.dc.html" style="flex:none;min-height:42px;display:inline-flex;align-items:center;padding:0 12px;border-radius:11px;font-size:14px;font-weight:700;color:#5B6B7B;text-decoration:none" style-hover="background:#F6F8F9">חיפוש</a>
+      <a href="./BeautyFind Account.dc.html" style="flex:none;min-height:42px;display:inline-flex;align-items:center;padding:0 13px;border-radius:11px;background:#F0FAFB;font-size:14px;font-weight:700;color:#0B7A87;text-decoration:none">החשבון שלי</a>
+    </div>
+  </header>
+
+  <div style="max-width:1160px;margin:0 auto;padding:clamp(16px,2.4vw,28px) var(--sv-pad) 120px">
+    <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+      <div style="flex:1 1 300px;min-width:0">
+        <h1 style="margin:0 0 3px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(26px,3.6vw,38px);font-weight:500;letter-spacing:-0.015em">{{ title }}</h1>
+        <p style="margin:0;font-size:15px;color:#3E4F62;text-wrap:pretty">{{ sub }}</p>
+      </div>
+      <div role="tablist" aria-label="תצוגה" style="flex:none;display:flex;gap:3px;padding:3px;border-radius:11px;background:#F0F3F5">
+        <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="2"><button type="button" role="tab" aria-selected="{{ tb.on }}" onClick="{{ tb.pick }}" style="min-height:40px;padding:0 14px;border:0;border-radius:9px;background:{{ tb.bg }};box-shadow:{{ tb.sh }};font:inherit;font-size:14px;font-weight:700;color:{{ tb.color }};cursor:pointer">{{ tb.name }}</button></sc-for>
+      </div>
+    </div>
+
+    <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+      <div style="animation:svFade .22s ease both">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+          <sc-for list="{{ filters }}" as="f" hint-placeholder-count="4"><button type="button" aria-pressed="{{ f.on }}" onClick="{{ f.pick }}" style="min-height:40px;padding:0 13px;border:1px solid {{ f.border }};border-radius:10px;background:{{ f.bg }};font:inherit;font-size:13.5px;font-weight:600;color:{{ f.color }};cursor:pointer">{{ f.name }}</button></sc-for>
+        </div>
+        <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:clamp(24px,4vw,44px);background:#fff;border:1px dashed #D4D4D4;border-radius:18px;text-align:center">
+            <p style="margin:0 0 6px;font-size:17px;font-weight:700">אין כאן קליניקות שמורות</p>
+            <p style="margin:0 auto 14px;max-width:44ch;font-size:14.5px;color:#5B6B7B;text-wrap:pretty">לחצו על הלב בכל כרטיס קליניקה כדי לשמור אותה כאן ולהשוות מאוחר יותר.</p>
+            <a href="./BeautyFind Directory.dc.html" style="min-height:46px;display:inline-flex;align-items:center;padding:0 16px;border-radius:12px;background:#0B7A87;font-size:15px;font-weight:700;color:#fff;text-decoration:none">לאינדקס הקליניקות</a>
+          </div>
+        </sc-if>
+        <div style="display:grid;grid-template-columns:var(--sv-grid);gap:14px">
+          <sc-for list="{{ cards }}" as="c" hint-placeholder-count="5"><article style="min-width:0;background:#fff;border:1px solid {{ c.border }};border-radius:18px;overflow:hidden;display:flex;flex-direction:column"><div style="position:relative;aspect-ratio:16/9;background:#F0FAFB"><image-slot id="{{ c.slot }}" shape="rect" placeholder="{{ c.ph }}"></image-slot><button type="button" aria-label="{{ c.unsaveLabel }}" aria-pressed="true" onClick="{{ c.unsave }}" style="position:absolute;top:10px;left:10px;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;padding:0;border:1px solid rgba(255,255,255,.7);border-radius:50%;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);box-shadow:0 4px 14px rgba(12,36,62,.16);color:#0B7A87;cursor:pointer;transition:transform .15s ease,background .15s ease" style-hover="transform:scale(1.06);background:#fff" style-active="transform:scale(.94)"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.3s-7.3-4.4-9.2-9.1C1.5 7.9 3.6 4.5 7 4.5c2 0 3.5 1.1 5 3 1.5-1.9 3-3 5-3 3.4 0 5.5 3.4 4.2 6.7-1.9 4.7-9.2 9.1-9.2 9.1z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path></svg></button></div><div style="padding:13px 15px;display:flex;flex-direction:column;gap:5px;flex:1"><span style="display:flex;align-items:baseline;gap:8px"><a href="./BeautyFind Business Profile.dc.html" style="flex:1;min-width:0;font-size:16.5px;font-weight:700;color:#0C243E;text-decoration:none">{{ c.name }}</a><span dir="ltr" style="flex:none;font-size:14px;font-weight:700;color:#0B7A87">★ {{ c.rating }}</span></span><span style="font-size:13.5px;color:#5B6B7B">{{ c.cat }} · {{ c.city }}</span><span style="font-size:13px;color:#3E4F62">{{ c.note }}</span><span style="font-size:12.5px;color:#8A96A3">נשמרה {{ c.saved }}</span></div><div style="padding:10px 15px;border-top:1px solid #EDEFF2;background:#FAFBFB;display:flex;gap:8px;align-items:center"><button type="button" role="checkbox" aria-checked="{{ c.cmpOn }}" onClick="{{ c.toggleCmp }}" disabled="{{ c.cmpLocked }}" style="flex:1;min-height:42px;display:flex;align-items:center;gap:9px;padding:0;border:0;background:transparent;font:inherit;text-align:right;cursor:pointer;opacity:{{ c.cmpOp }}"><span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border:1.5px solid {{ c.boxBorder }};border-radius:7px;background:{{ c.boxBg }};color:#fff;font-size:12px;font-weight:800">{{ c.boxMark }}</span><span style="font-size:14px;font-weight:700;color:#3E4F62">להשוואה</span></button><a href="./BeautyFind Booking.dc.html" style="flex:none;min-height:40px;display:inline-flex;align-items:center;padding:0 13px;border-radius:10px;background:#0B7A87;font-size:13.5px;font-weight:700;color:#fff;text-decoration:none">{{ c.cta }}</a></div></article></sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isCompare }}" hint-placeholder-val="{{ false }}">
+      <div style="animation:svFade .22s ease both">
+        <sc-if value="{{ cmpTooFew }}" hint-placeholder-val="{{ false }}">
+          <p style="margin:0;padding:18px;background:#fff;border:1px dashed #D4D4D4;border-radius:16px;font-size:15px;color:#3E4F62;text-align:center">סמנו לפחות שתי קליניקות ברשימה כדי להשוות.</p>
+        </sc-if>
+        <sc-if value="{{ cmpReady }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+              <span style="font-size:14px;font-weight:700">השוואה לפי טיפול:</span>
+              <sc-for list="{{ treatOpts }}" as="to" hint-placeholder-count="3"><button type="button" aria-pressed="{{ to.on }}" onClick="{{ to.pick }}" style="min-height:40px;padding:0 13px;border:1px solid {{ to.border }};border-radius:10px;background:{{ to.bg }};font:inherit;font-size:13.5px;font-weight:600;color:{{ to.color }};cursor:pointer">{{ to.name }}</button></sc-for>
+            </div>
+            <div style="overflow-x:auto;background:#fff;border:1px solid #E6E6E6;border-radius:18px">
+              <table style="width:100%;min-width:640px;border-collapse:collapse;font-size:14.5px">
+                <thead><tr><th scope="col" style="width:170px;padding:14px 16px;text-align:right;font-size:12.5px;font-weight:700;color:#8A96A3;background:#FAFBFB;border-bottom:1px solid #EDEFF2"></th><sc-for list="{{ cmpCols }}" as="cc" hint-placeholder-count="3"><th scope="col" style="padding:14px 16px;text-align:right;background:#FAFBFB;border-bottom:1px solid #EDEFF2;vertical-align:top"><span style="display:block;font-size:16px;font-weight:700;color:#0C243E">{{ cc.name }}</span><span style="display:block;font-size:12.5px;font-weight:600;color:#5B6B7B">{{ cc.city }}</span></th></sc-for></tr></thead>
+                <tbody>
+                  <sc-for list="{{ cmpRows }}" as="r" hint-placeholder-count="8"><tr style="border-top:1px solid #EDEFF2"><th scope="row" style="padding:12px 16px;text-align:right;font-size:13.5px;font-weight:700;color:#5B6B7B;vertical-align:top">{{ r.label }}</th><sc-for list="{{ r.cells }}" as="cl" hint-placeholder-count="3"><td style="padding:12px 16px;vertical-align:top;background:{{ cl.bg }}"><sc-if value="{{ cl.isText }}" hint-placeholder-val="{{ true }}"><span style="display:block;font-weight:{{ cl.w }};color:{{ cl.color }};text-wrap:pretty">{{ cl.v }}</span></sc-if><sc-if value="{{ cl.isSegs }}" hint-placeholder-val="{{ false }}"><span style="display:flex;flex-direction:column;gap:2px;font-weight:{{ cl.w }};color:{{ cl.color }}"><sc-for list="{{ cl.segs }}" as="sg" hint-placeholder-count="2"><span>{{ sg.d }} <span dir="ltr" style="unicode-bidi:isolate;font-variant-numeric:tabular-nums">{{ sg.t }}</span></span></sc-for></span></sc-if><sc-if value="{{ cl.hasSub }}" hint-placeholder-val="{{ false }}"><span style="display:block;font-size:12.5px;color:#8A96A3">{{ cl.sub }}</span></sc-if></td></sc-for></tr></sc-for>
+                  <tr style="border-top:1px solid #EDEFF2"><th scope="row" style="padding:12px 16px"></th><sc-for list="{{ cmpCols }}" as="cc" hint-placeholder-count="3"><td style="padding:12px 16px"><a href="{{ cc.href }}" style="min-height:42px;display:inline-flex;align-items:center;padding:0 14px;border-radius:11px;background:#0B7A87;font-size:14px;font-weight:700;color:#fff;text-decoration:none">{{ cc.cta }}</a></td></sc-for></tr>
+                </tbody>
+              </table>
+            </div>
+            <p style="margin:10px 0 0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">הנתונים מגיעים מהקליניקות ומתעדכנים בזמן אמת. המחירים לא כוללים מע״מ. מקום ממומן לא משפיע על ההשוואה. הערך המודגש בכל שורה מסמן את הנמוך או המהיר ביותר — לא המלצה.</p>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ trayOn }}" hint-placeholder-val="{{ false }}">
+    <div role="region" aria-label="סל השוואה" style="position:fixed;z-index:40;bottom:14px;right:14px;left:14px;max-width:760px;margin:0 auto;padding:10px 12px;background:#0C243E;border-radius:16px;box-shadow:0 16px 40px rgba(12,36,62,.3);display:flex;align-items:center;gap:10px;flex-wrap:wrap;animation:svPop .18s ease both">
+      <span style="flex:1 1 200px;min-width:0;font-size:14px;font-weight:700;color:#fff">{{ trayText }}</span>
+      <button type="button" onClick="{{ clearCmp }}" style="flex:none;min-height:40px;padding:0 12px;border:0;border-radius:10px;background:transparent;font:inherit;font-size:13.5px;font-weight:600;color:#7ED7E1;cursor:pointer">ניקוי</button>
+      <button type="button" onClick="{{ goCompare }}" disabled="{{ trayDisabled }}" style="flex:none;min-height:42px;padding:0 16px;border:0;border-radius:11px;background:{{ trayBtnBg }};font:inherit;font-size:14.5px;font-weight:700;color:#0C243E;cursor:pointer">השוואה</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:fixed;bottom:84px;right:50%;transform:translateX(50%);z-index:45;max-width:min(90vw,440px);padding:12px 17px;border-radius:13px;background:#0C243E;color:#fff;font-size:14px;font-weight:600;box-shadow:0 12px 30px rgba(12,36,62,.28);animation:svPop .16s ease both;display:flex;gap:12px;align-items:center">{{ toastText }}<sc-if value="{{ undoOn }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ undo }}" style="border:0;background:transparent;font:inherit;font-size:14px;font-weight:700;color:#7ED7E1;cursor:pointer;padding:0">ביטול</button></sc-if></div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1160,&quot;height&quot;:960},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;list&quot;,&quot;compare&quot;],&quot;default&quot;:&quot;list&quot;,&quot;tsType&quot;:&quot;'list'|'compare'&quot;}}">
+const CLINICS = [
+  { id: 'noa', name: 'קליניקת נועה', city: 'רעננה', cat: 'אסתטיקה רפואית', rating: '4.9', reviews: 212, saved: 'לפני יומיים', med: true, resp: 'ד״ר נועה לוי', respSub: 'רופאה · רישיון מאומת',
+    price: { botox: [1200, 'מצח'], lips: [1600, '1 מ״ל'], laser: [690, 'רגליים'] }, next: ['מחר', 1], deposit: 'מקדמה ₪150 · מוחזרת עד 24 שעות', hours: [['א׳–ה׳', '09:00–20:00'], ['ו׳', '08:30–13:00']], access: true, parking: 'חניון חינם', pay: 'עד 3 תשלומים', online: true },
+  { id: 'bl', name: 'ביוטי לאב', city: 'חיפה', cat: 'לייזר וקוסמטיקה', rating: '4.7', reviews: 148, saved: 'לפני שבוע', med: false, resp: 'מאיה כהן', respSub: 'קוסמטיקאית · ללא הזרקות',
+    price: { botox: null, lips: null, laser: [590, 'רגליים'] }, next: ['היום', 0], deposit: 'ללא מקדמה', hours: [['א׳–ה׳', '10:00–21:00'], ['ו׳', '09:00–14:00']], access: false, parking: 'חניה ברחוב', pay: 'עד 6 תשלומים', online: true },
+  { id: 'dm', name: 'דרמה קליניק', city: 'תל אביב', cat: 'אסתטיקה רפואית', rating: '4.8', reviews: 390, saved: 'לפני שבועיים', med: true, resp: 'ד״ר יואב שמיר', respSub: 'רופא עור · רישיון מאומת',
+    price: { botox: [1400, 'מצח'], lips: [1800, '1 מ״ל'], laser: [750, 'רגליים'] }, next: ['יום ה׳', 3], deposit: 'מקדמה 20% · מוחזרת עד 48 שעות', hours: [['א׳–ה׳', '08:00–19:00'], ['ו׳', 'סגור']], access: true, parking: 'חניון בתשלום', pay: 'עד 10 תשלומים', online: false },
+  { id: 'sk', name: 'סקין סטודיו', city: 'כפר סבא', cat: 'טיפולי פנים', rating: '4.6', reviews: 87, saved: 'לפני חודש', med: false, resp: 'לינוי אברהם', respSub: 'קוסמטיקאית מוסמכת',
+    price: { botox: null, lips: null, laser: null }, next: ['יום ב׳', 5], deposit: 'ללא מקדמה', hours: [['א׳–ה׳', '09:00–18:00']], access: true, parking: 'חניה חינם', pay: 'תשלום אחד', online: true },
+  { id: 'ag', name: 'אגם אסתטיקה', city: 'ירושלים', cat: 'אסתטיקה רפואית', rating: '4.8', reviews: 156, saved: 'לפני חודש', med: true, resp: 'ד״ר רחל אמסלם', respSub: 'רופאה · רישיון מאומת',
+    price: { botox: [1100, 'מצח'], lips: [1500, '1 מ״ל'], laser: null }, next: ['יום א׳', 4], deposit: 'מקדמה ₪200', hours: [['א׳–ה׳', '09:00–19:00'], ['ו׳', '09:00–12:00']], access: false, parking: 'חניון חינם', pay: 'עד 3 תשלומים', online: false }
+];
+const TREATS = [['botox', 'בוטוקס'], ['lips', 'מילוי שפתיים'], ['laser', 'לייזר רגליים']];
+const FILTERS = [['all', 'הכל'], ['med', 'אסתטיקה רפואית'], ['cos', 'קוסמטיקה ולייזר'], ['online', 'קביעה אונליין']];
+const plCl = n => n === 1 ? 'קליניקה אחת' : n === 2 ? 'שתי קליניקות' : n + ' קליניקות';
+const nis = n => '₪' + n.toLocaleString('he-IL');
+
+class Component extends DCLogic {
+  state = { tab: null, list: CLINICS.map(c => c.id), cmp: ['noa', 'dm'], filter: 'all', treat: 'botox', toast: '', undoId: null };
+  componentWillUnmount() { clearTimeout(this._t); }
+  flash(t, undoId) { clearTimeout(this._t); this.setState({ toast: t, undoId: undoId || null }); this._t = setTimeout(() => this.setState({ toast: '', undoId: null }), 4000); }
+
+  renderVals() {
+    const s = this.state, teal = '#0B7A87', line = '#E6E6E6';
+    const tab = s.tab || this.props.view || 'list';
+    const saved = CLINICS.filter(c => s.list.includes(c.id));
+    const shown = saved.filter(c => s.filter === 'all' || (s.filter === 'med' && c.med) || (s.filter === 'cos' && !c.med) || (s.filter === 'online' && c.online));
+    const cmp = CLINICS.filter(c => s.cmp.includes(c.id) && s.list.includes(c.id));
+    const chip = on => ({ on: on ? 'true' : 'false', bg: on ? teal : '#fff', color: on ? '#fff' : '#3E4F62', border: on ? teal : line });
+
+    const best = (vals, fn) => { const nums = vals.map(fn).filter(v => v != null); return nums.length > 1 ? Math.min.apply(null, nums) : null; };
+    const pr = cmp.map(c => c.price[s.treat]);
+    const bestPrice = best(pr, p => p ? p[0] : null);
+    const bestNext = best(cmp, c => c.next[1]);
+    const cell = (v, o) => Object.assign({ v, sub: '', hasSub: false, w: 600, color: '#0C243E', bg: '#fff', isText: true, isSegs: false, segs: [] }, o || {});
+    const hi = { bg: '#F0FAFB', color: teal, w: 800 };
+    const rows = [
+      { label: 'מחיר · ' + TREATS.find(t => t[0] === s.treat)[1], cells: cmp.map((c, i) => pr[i] ? cell(nis(pr[i][0]), Object.assign({ sub: pr[i][1] + ' · לא כולל מע״מ', hasSub: true }, pr[i][0] === bestPrice ? hi : {})) : cell('לא מבוצע', { color: '#8A96A3', w: 500 })) },
+      { label: 'אחריות', cells: cmp.map(c => cell(c.resp, { sub: c.respSub, hasSub: true })) },
+      { label: 'דירוג', cells: cmp.map(c => cell('★ ' + c.rating, { sub: c.reviews + ' ביקורות מאומתות', hasSub: true })) },
+      { label: 'תור פנוי ראשון', cells: cmp.map(c => cell(c.next[0], c.next[1] === bestNext ? hi : {})) },
+      { label: 'קביעה', cells: cmp.map(c => cell(c.online ? 'אונליין' : 'בייעוץ / טלפון', c.online ? {} : { color: '#9A5B15' })) },
+      { label: 'מקדמה וביטול', cells: cmp.map(c => cell(c.deposit, { w: 500 })) },
+      { label: 'תשלומים', cells: cmp.map(c => cell(c.pay, { w: 500 })) },
+      { label: 'שעות', cells: cmp.map(c => cell('', { w: 500, isText: false, isSegs: true, segs: c.hours.map(h => ({ d: h[0], t: h[1] })) })) },
+      { label: 'נגישות וחניה', cells: cmp.map(c => cell((c.access ? 'נגיש לכיסא גלגלים' : 'לא נגיש') + ' · ' + c.parking, { w: 500, color: c.access ? '#0C243E' : '#5B6B7B' })) }
+    ];
+    const undoId = s.undoId;
+
+    return {
+      title: tab === 'compare' ? 'השוואת קליניקות' : 'קליניקות שמורות',
+      sub: tab === 'compare' ? 'עד שלוש קליניקות, אותם שדות, אותו טיפול.' : plCl(saved.length) + ' שמורות. סמנו עד שלוש להשוואה.',
+      tabs: [['list', 'שמורות'], ['compare', 'השוואה']].map(x => { const on = tab === x[0]; return { name: x[1] + (x[0] === 'compare' ? ' · ' + cmp.length : ''), on: on ? 'true' : 'false', bg: on ? '#fff' : 'transparent', sh: on ? '0 1px 3px rgba(12,36,62,.12)' : 'none', color: on ? '#0C243E' : '#5B6B7B', pick: () => this.setState({ tab: x[0] }) }; }),
+      isList: tab === 'list', isCompare: tab === 'compare',
+      filters: FILTERS.map(f => Object.assign({ name: f[1], pick: () => this.setState({ filter: f[0] }) }, chip(s.filter === f[0]))),
+      empty: shown.length === 0,
+      cards: shown.map(c => {
+        const on = s.cmp.includes(c.id), locked = !on && cmp.length >= 3;
+        return { name: c.name, city: c.city, cat: c.cat, rating: c.rating, saved: c.saved, slot: 'sv-' + c.id, ph: 'תמונת ' + c.name,
+          note: c.med ? 'אחריות רפואית: ' + c.resp : 'איש מקצוע אחראי: ' + c.resp,
+          cta: c.online ? 'קביעת תור' : 'בקשת ייעוץ',
+          border: on ? '#7ED7E1' : line,
+          unsaveLabel: 'הסרת ' + c.name + ' מהשמורות',
+          unsave: () => { this.setState(st => ({ list: st.list.filter(x => x !== c.id), cmp: st.cmp.filter(x => x !== c.id) })); this.flash(c.name + ' הוסרה מהשמורות', c.id); },
+          cmpOn: on ? 'true' : 'false', cmpLocked: locked, cmpOp: locked ? '.45' : '1',
+          boxBg: on ? teal : '#fff', boxBorder: on ? teal : '#C9CFD6', boxMark: on ? '✓' : '',
+          toggleCmp: () => { if (locked) return; this.setState(st => ({ cmp: on ? st.cmp.filter(x => x !== c.id) : st.cmp.concat([c.id]) })); } };
+      }),
+      cmpTooFew: cmp.length < 2, cmpReady: cmp.length >= 2,
+      treatOpts: TREATS.map(t => Object.assign({ name: t[1], pick: () => this.setState({ treat: t[0] }) }, chip(s.treat === t[0]))),
+      cmpCols: cmp.map(c => ({ name: c.name, city: c.city + ' · ' + c.cat, cta: c.online ? 'קביעת תור' : 'בקשת ייעוץ', href: c.online ? './BeautyFind Booking.dc.html' : './BeautyFind Consult Request.dc.html' })),
+      cmpRows: rows,
+      trayOn: tab === 'list' && cmp.length > 0,
+      trayText: cmp.length === 1 ? 'נבחרה קליניקה אחת · בחרו עוד אחת לפחות' : plCl(cmp.length) + ' להשוואה' + (cmp.length === 3 ? ' · מקסימום' : ''),
+      trayDisabled: cmp.length < 2, trayBtnBg: cmp.length < 2 ? '#5B6B7B' : '#7ED7E1',
+      clearCmp: () => this.setState({ cmp: [] }),
+      goCompare: () => { if (cmp.length >= 2) this.setState({ tab: 'compare' }); },
+      toastOn: !!s.toast, toastText: s.toast, undoOn: !!undoId,
+      undo: () => { this.setState(st => ({ list: st.list.concat([undoId]), toast: '', undoId: null })); }
+    };
+  }
+}
+</script>
+</body>
+</html>

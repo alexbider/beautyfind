@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="הצטרפות לצוות קליניקה ב־BeautyFind — קבלת הזמנה, אימות טלפון והרשאות לפי תפקיד.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#F6F8F9}
+  *{box-sizing:border-box}
+  :root{--si-shell:minmax(0,1fr);--si-pad:16px;--si-pr:minmax(0,1fr)}
+  @media (min-width:560px){:root{--si-pad:22px;--si-pr:repeat(3,minmax(0,1fr))}}
+  @media (min-width:960px){:root{--si-shell:minmax(0,1fr) minmax(0,1fr)}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes siFade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  @keyframes siPop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#F6F8F9;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+
+  <header style="background:#fff;border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1040px;margin:0 auto;padding:12px var(--si-pad);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <a href="./BeautyFind Homepage.dc.html" dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:21px;letter-spacing:-0.01em;color:#0C243E;text-decoration:none">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6">.</span></a>
+      <span style="flex:none;font-size:13px;font-weight:700;color:#8A96A3">לעסקים</span>
+    </div>
+  </header>
+
+  <div style="max-width:1040px;margin:0 auto;padding:clamp(18px,3vw,40px) var(--si-pad) 60px">
+
+    <sc-if value="{{ isExpired }}" hint-placeholder-val="{{ false }}">
+      <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #E6E6E6;border-radius:18px;padding:clamp(20px,2.6vw,30px);animation:siPop .2s ease both">
+        <h1 style="margin:0 0 5px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(22px,2.8vw,28px);font-weight:500;letter-spacing:-0.014em">פג תוקף ההזמנה</h1>
+        <p style="margin:0 0 16px;font-size:15px;color:#3E4F62;text-wrap:pretty">הזמנות לצוות תקפות 7 ימים. ההזמנה הזו לקליניקת נועה נשלחה ב־<span dir="ltr" style="unicode-bidi:isolate;font-variant-numeric:tabular-nums">09/09/2026</span>. נבקש מרותם אלון לשלוח הזמנה חדשה.</p>
+        <button type="button" onClick="{{ requestNew }}" style="min-height:48px;padding:0 18px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:15.5px;font-weight:700;color:#fff;cursor:pointer">בקשת הזמנה חדשה</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isUsed }}" hint-placeholder-val="{{ false }}">
+      <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #E6E6E6;border-radius:18px;padding:clamp(20px,2.6vw,30px);animation:siPop .2s ease both">
+        <h1 style="margin:0 0 5px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(22px,2.8vw,28px);font-weight:500;letter-spacing:-0.014em">ההזמנה כבר מומשה</h1>
+        <p style="margin:0 0 16px;font-size:15px;color:#3E4F62;text-wrap:pretty">כבר הצטרפת לקליניקת נועה עם הכתובת <span dir="ltr" style="unicode-bidi:isolate">maya@noaclinic.co.il</span>. אפשר פשוט להתחבר.</p>
+        <a href="./BeautyFind Auth.dc.html" style="min-height:48px;display:inline-flex;align-items:center;padding:0 18px;border-radius:12px;background:#0B7A87;font-size:15.5px;font-weight:700;color:#fff;text-decoration:none">כניסה</a>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isValid }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;grid-template-columns:var(--si-shell);gap:clamp(16px,2.4vw,32px);align-items:start;animation:siFade .22s ease both">
+
+        <section aria-labelledby="si-h" style="min-width:0">
+          <span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;border-radius:8px;background:#F0FAFB;font-size:12.5px;font-weight:700;color:#0B7A87">הזמנה לצוות</span>
+          <h1 id="si-h" style="margin:11px 0 6px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(27px,3.8vw,40px);font-weight:500;line-height:1.14;letter-spacing:-0.015em;text-wrap:balance">רותם אלון מזמינה אותך לצוות של קליניקת נועה</h1>
+          <p style="margin:0 0 18px;font-size:15.5px;color:#3E4F62;text-wrap:pretty">רעננה · 3 חברי צוות · ההזמנה בתוקף עד <span dir="ltr" style="unicode-bidi:isolate;font-variant-numeric:tabular-nums">30/09/2026</span></p>
+
+          <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;overflow:hidden">
+            <div style="padding:14px 16px;border-bottom:1px solid #EDEFF2;display:flex;align-items:center;gap:10px">
+              <span style="flex:1;min-width:0;font-size:14px;font-weight:700;color:#5B6B7B">ההרשאה שלך</span>
+              <span style="flex:none;height:30px;display:inline-flex;align-items:center;padding:0 12px;border-radius:9px;background:#0C243E;font-size:14px;font-weight:700;color:#fff">{{ role.name }}</span>
+            </div>
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:14px">
+              <div>
+                <span style="display:block;margin-bottom:7px;font-size:13px;font-weight:700;color:#3B6B3F">אפשר</span>
+                <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px">
+                  <sc-for list="{{ role.can }}" as="c" hint-placeholder-count="3"><li style="display:flex;align-items:flex-start;gap:9px;font-size:14px;text-wrap:pretty"><span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin-top:1px;border-radius:6px;background:#EAF3EA;color:#3B6B3F;font-size:12px;font-weight:800">+</span><span style="flex:1;min-width:0">{{ c }}</span></li></sc-for>
+                </ul>
+              </div>
+              <div>
+                <span style="display:block;margin-bottom:7px;font-size:13px;font-weight:700;color:#5B6B7B">לא כלול</span>
+                <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px">
+                  <sc-for list="{{ role.cannot }}" as="c" hint-placeholder-count="3"><li style="display:flex;align-items:flex-start;gap:9px;font-size:14px;color:#5B6B7B;text-wrap:pretty"><span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin-top:1px;border-radius:6px;background:#F0F3F5;color:#8A96A3;font-size:12px;font-weight:800">–</span><span style="flex:1;min-width:0">{{ c }}</span></li></sc-for>
+                </ul>
+              </div>
+            </div>
+            <p style="margin:0;padding:11px 16px;border-top:1px solid #EDEFF2;background:#FAFBFB;font-size:12.5px;color:#5B6B7B;text-wrap:pretty">מנהלי הקליניקה יכולים לשנות את ההרשאה בכל עת. כל פעולה שלך נרשמת ביומן הפעולות.</p>
+          </div>
+        </section>
+
+        <section aria-label="יצירת חשבון" style="min-width:0;background:#fff;border:1px solid #E6E6E6;border-radius:18px;padding:clamp(17px,2.2vw,26px)">
+
+          <sc-if value="{{ stepDetails }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:13px">
+              <h2 style="margin:0;font-size:18px;font-weight:700">הפרטים שלך</h2>
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">מייל
+                <input dir="ltr" value="maya@noaclinic.co.il" readonly style="min-height:46px;padding:0 12px;border:1px solid #E6E6E6;border-radius:11px;font:inherit;font-size:15px;text-align:right;color:#5B6B7B;background:#F6F8F9;outline:none">
+                <span style="font-size:12px;font-weight:500;color:#8A96A3">נקבע בהזמנה ולא ניתן לשינוי</span>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">שם מלא
+                <input value="{{ name }}" onChange="{{ onName }}" placeholder="מאיה כהן" style="min-height:46px;padding:0 12px;border:1px solid {{ nameBorder }};border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none">
+              </label>
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">טלפון נייד
+                <input dir="ltr" type="tel" value="{{ phone }}" onChange="{{ onPhone }}" placeholder="050-000-0000" style="min-height:46px;padding:0 12px;border:1px solid {{ phoneBorder }};border-radius:11px;font:inherit;font-size:15px;text-align:right;color:#0C243E;background:#fff;outline:none;font-variant-numeric:tabular-nums">
+                <span style="font-size:12px;font-weight:500;color:#8A96A3">לאימות בכניסה — נשלח קוד ב־SMS</span>
+              </label>
+
+              <div>
+                <span style="display:block;margin-bottom:7px;font-size:13px;font-weight:700">תפקיד בקליניקה</span>
+                <div role="radiogroup" aria-label="תפקיד בקליניקה" style="display:grid;grid-template-columns:var(--si-pr);gap:8px">
+                  <sc-for list="{{ profs }}" as="pf" hint-placeholder-count="6"><button type="button" role="radio" aria-checked="{{ pf.on }}" onClick="{{ pf.pick }}" style="min-width:0;min-height:44px;padding:0 10px;border:1px solid {{ pf.border }};border-radius:11px;background:{{ pf.bg }};font:inherit;font-size:14px;font-weight:600;color:{{ pf.color }};cursor:pointer">{{ pf.name }}</button></sc-for>
+                </div>
+              </div>
+
+              <sc-if value="{{ needsLicense }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:13px 14px;border:1px solid #CDEFF3;border-radius:13px;background:#F0FAFB;display:flex;flex-direction:column;gap:9px;animation:siFade .2s ease both">
+                  <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">{{ licenseLabel }}
+                    <input dir="ltr" inputmode="numeric" value="{{ license }}" onChange="{{ onLicense }}" placeholder="34-82115" style="min-height:46px;padding:0 12px;border:1px solid {{ licBorder }};border-radius:11px;font:inherit;font-size:15px;text-align:right;color:#0C243E;background:#fff;outline:none;font-variant-numeric:tabular-nums">
+                  </label>
+                  <p style="margin:0;font-size:12.5px;color:#3E4F62;text-wrap:pretty">נבדק מול פנקס משרד הבריאות לפני שהשם שלך יופיע בפרופיל כ־אחריות רפואית. עד האימות אפשר לעבוד במערכת כרגיל.</p>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ errorOn }}" hint-placeholder-val="{{ false }}">
+                <p role="alert" style="margin:0;padding:11px 13px;border:1px solid #F0C9C4;border-radius:12px;background:#FDEDEC;font-size:14px;font-weight:700;color:#A33A31">{{ errorText }}</p>
+              </sc-if>
+              <button type="button" onClick="{{ toCode }}" style="min-height:50px;padding:0 18px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:16px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#0C243E">שליחת קוד אימות</button>
+              <p style="margin:0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">בהצטרפות את מאשרת את <a href="./BeautyFind Legal.dc.html">תנאי השימוש לעסקים</a>. לא זו את? <button type="button" onClick="{{ decline }}" style="padding:0;border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:700;color:#0B7A87;cursor:pointer;text-decoration:underline">דחיית ההזמנה</button></p>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ stepCode }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:13px;animation:siFade .2s ease both">
+              <h2 style="margin:0;font-size:18px;font-weight:700">קוד אימות</h2>
+              <p style="margin:0;font-size:14.5px;color:#3E4F62">שלחנו קוד בן 6 ספרות ל־<span dir="ltr" style="unicode-bidi:isolate;font-weight:700;font-variant-numeric:tabular-nums">{{ phoneShown }}</span></p>
+              <input dir="ltr" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="{{ code }}" onChange="{{ onCode }}" placeholder="• • • • • •" aria-label="קוד אימות" style="min-height:58px;padding:0 14px;border:1px solid {{ codeBorder }};border-radius:12px;font:inherit;font-size:26px;font-weight:700;letter-spacing:.3em;text-align:center;color:#0C243E;background:#fff;outline:none;font-variant-numeric:tabular-nums">
+              <sc-if value="{{ codeErr }}" hint-placeholder-val="{{ false }}">
+                <p role="alert" style="margin:0;font-size:13.5px;font-weight:700;color:#A33A31">הקוד צריך להכיל 6 ספרות</p>
+              </sc-if>
+              <button type="button" onClick="{{ verify }}" style="min-height:50px;padding:0 18px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:16px;font-weight:700;color:#fff;cursor:pointer">אימות והצטרפות</button>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button type="button" onClick="{{ resend }}" style="min-height:40px;padding:0 10px;border:0;border-radius:9px;background:transparent;font:inherit;font-size:13.5px;font-weight:700;color:#0B7A87;cursor:pointer">שליחה חוזרת</button>
+                <button type="button" onClick="{{ backDetails }}" style="min-height:40px;padding:0 10px;border:0;border-radius:9px;background:transparent;font:inherit;font-size:13.5px;font-weight:600;color:#5B6B7B;cursor:pointer">תיקון מספר</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ stepDone }}" hint-placeholder-val="{{ false }}">
+            <div style="animation:siPop .2s ease both">
+              <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:54px;height:54px;margin-bottom:12px;border-radius:50%;background:#F0FAFB;color:#0B7A87">
+                <svg width="26" height="26" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg>
+              </span>
+              <h2 style="margin:0 0 5px;font-family:'Frank Ruhl Libre',serif;font-size:26px;font-weight:500;letter-spacing:-0.014em">{{ welcome }}</h2>
+              <p style="margin:0 0 16px;font-size:15px;color:#3E4F62;text-wrap:pretty">{{ doneBody }}</p>
+              <div style="display:flex;gap:9px;flex-wrap:wrap">
+                <a href="./Noa Clinic.dc.html" style="min-height:48px;display:inline-flex;align-items:center;padding:0 18px;border-radius:12px;background:#0B7A87;font-size:15.5px;font-weight:700;color:#fff;text-decoration:none">כניסה לקליניקה</a>
+                <a href="./BeautyFind Dashboard.dc.html" style="min-height:48px;display:inline-flex;align-items:center;padding:0 16px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font-size:15px;font-weight:600;color:#3E4F62;text-decoration:none">ללוח הבקרה</a>
+              </div>
+            </div>
+          </sc-if>
+        </section>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:fixed;bottom:18px;right:50%;transform:translateX(50%);z-index:40;max-width:min(90vw,440px);padding:12px 17px;border-radius:13px;background:#0C243E;color:#fff;font-size:14px;font-weight:600;box-shadow:0 12px 30px rgba(12,36,62,.28);animation:siPop .16s ease both;text-wrap:pretty">{{ toastText }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1040,&quot;height&quot;:860},&quot;inviteState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;valid&quot;,&quot;expired&quot;,&quot;used&quot;],&quot;default&quot;:&quot;valid&quot;,&quot;tsType&quot;:&quot;'valid'|'expired'|'used'&quot;},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;manager&quot;,&quot;front&quot;,&quot;book&quot;,&quot;practitioner&quot;],&quot;default&quot;:&quot;front&quot;,&quot;tsType&quot;:&quot;'manager'|'front'|'book'|'practitioner'&quot;}}">
+const ROLES = {
+  manager: { name: 'מנהלת קליניקה', can: ['עריכת פרופיל, גלריה, טיפולים ומחירים', 'ניהול יומן, תורים ובקשות ייעוץ', 'מענה לביקורות וניהול לקוחות'], cannot: ['מנוי וחשבוניות', 'ניהול צוות והרשאות', 'החלטה רפואית על התאמה לטיפול'] },
+  front: { name: 'מזכירות', can: ['קביעה, הזזה וביטול תורים', 'צ׳ק־אין, פניות ובקשות ייעוץ', 'הודעות וואטסאפ ללקוחות ומימוש שוברים'], cannot: ['עריכת פרופיל ומחירים', 'מנוי וחשבוניות', 'תשובות בהצהרות בריאות — רק הסטטוס'] },
+  book: { name: 'הנהלת חשבונות', can: ['מנוי, חשבוניות וקבלות', 'דוחות תשלומים, מקדמות ושוברים', 'צפייה בתפריט המחירים'], cannot: ['יומן ופרטי לקוחות', 'ביקורות ופרופיל'] },
+  practitioner: { name: 'מטפל/ת', can: ['היומן והתורים שלך', 'הצהרות בריאות ורישום קליני בתורים שלך', 'ירידת מלאי בסיום טיפול'], cannot: ['תורים של מטפלים אחרים', 'מנוי וחשבוניות', 'עריכת פרופיל ומחירים'] }
+};
+const PROFS = [
+  ['doctor', 'רופא/ה', 'מספר רישיון משרד הבריאות'],
+  ['nurse', 'אח/ות מוסמך/ת', 'מספר רישיון אחות מוסמכת'],
+  ['cosm', 'קוסמטיקאית', null],
+  ['tech', 'מטפל/ת', null],
+  ['front', 'קבלה ומזכירות', null],
+  ['mgmt', 'ניהול', null]
+];
+
+class Component extends DCLogic {
+  state = { step: 'details', name: '', phone: '', prof: null, license: '', code: '', tried: false, codeTried: false, toast: '' };
+
+  componentWillUnmount() { clearTimeout(this._t); }
+  flash(t) { clearTimeout(this._t); this.setState({ toast: t }); this._t = setTimeout(() => this.setState({ toast: '' }), 3200); }
+
+  renderVals() {
+    const s = this.state, p = this.props;
+    const teal = '#0B7A87', line = '#E6E6E6', bad = '#D98A80';
+    const inv = p.inviteState || 'valid';
+    const role = ROLES[p.role] || ROLES.front;
+    const prof = PROFS.find(x => x[0] === s.prof);
+    const needsLicense = !!(prof && prof[2]);
+    const nameOk = s.name.trim().split(/\s+/).length >= 2;
+    const digits = s.phone.replace(/\D/g, '');
+    const phoneOk = digits.length >= 9;
+    const licOk = !needsLicense || s.license.replace(/\D/g, '').length >= 4;
+    const ok = nameOk && phoneOk && prof && licOk;
+    const err = !s.tried ? '' :
+      !nameOk ? 'כתבי שם פרטי ושם משפחה' :
+      !phoneOk ? 'מספר הטלפון לא מלא' :
+      !prof ? 'בחרי תפקיד בקליניקה' :
+      !licOk ? 'חסר מספר רישיון' : '';
+    const codeOk = s.code.replace(/\D/g, '').length === 6;
+    const first = s.name.trim().split(/\s+/)[0] || '';
+
+    return {
+      isValid: inv === 'valid', isExpired: inv === 'expired', isUsed: inv === 'used',
+      role,
+      stepDetails: s.step === 'details', stepCode: s.step === 'code', stepDone: s.step === 'done',
+      name: s.name, onName: e => this.setState({ name: e.target.value }),
+      nameBorder: s.tried && !nameOk ? bad : '#D4D4D4',
+      phone: s.phone, onPhone: e => this.setState({ phone: e.target.value }),
+      phoneBorder: s.tried && !phoneOk ? bad : '#D4D4D4',
+      profs: PROFS.map(x => {
+        const on = s.prof === x[0];
+        return { name: x[1], on: on ? 'true' : 'false', bg: on ? teal : '#fff', color: on ? '#fff' : '#3E4F62',
+          border: on ? teal : (s.tried && !prof ? bad : line), pick: () => this.setState({ prof: x[0] }) };
+      }),
+      needsLicense, licenseLabel: prof && prof[2] ? prof[2] : '',
+      license: s.license, onLicense: e => this.setState({ license: e.target.value }),
+      licBorder: s.tried && !licOk ? bad : '#D4D4D4',
+      errorOn: !!err, errorText: err,
+      toCode: () => { if (!ok) { this.setState({ tried: true }); return; } this.setState({ step: 'code' }); },
+      decline: () => this.flash('ההזמנה נדחתה. רותם אלון תקבל עדכון'),
+      phoneShown: digits.length >= 9 ? digits.slice(0, 3) + '-•••-' + digits.slice(-4) : s.phone,
+      code: s.code, onCode: e => this.setState({ code: e.target.value.replace(/\D/g, '').slice(0, 6) }),
+      codeBorder: s.codeTried && !codeOk ? bad : '#D4D4D4',
+      codeErr: s.codeTried && !codeOk,
+      verify: () => { if (!codeOk) { this.setState({ codeTried: true }); return; } this.setState({ step: 'done' }); },
+      resend: () => this.flash('קוד חדש נשלח. אפשר לבקש שוב בעוד 30 שניות'),
+      backDetails: () => this.setState({ step: 'details', code: '', codeTried: false }),
+      welcome: 'ברוכה הבאה' + (first ? ', ' + first : ''),
+      doneBody: 'הצטרפת לקליניקת נועה בהרשאת ' + role.name + '.' + (needsLicense ? ' מספר הרישיון נשלח לאימות — נעדכן במייל כשיאושר, בדרך כלל תוך יום עסקים.' : ' רותם אלון קיבלה עדכון.'),
+      requestNew: () => this.flash('הבקשה נשלחה לרותם אלון'),
+      toastOn: !!s.toast, toastText: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin:0; padding:0; }
+  body { background:#f8f8f8; -webkit-font-smoothing:antialiased; }
+  a { color:#0c243e; text-decoration:none; }
+  a:hover { color:#16b3c6; }
+  @keyframes bpRise { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+  @keyframes bpDrop { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
+  @keyframes bpScrim { from { opacity:0; } to { opacity:1; } }
+  @keyframes bpPop { from { opacity:0; transform:scale(.97); } to { opacity:1; transform:none; } }
+</style>
+</helmet>
+<div style="font-family:'Instrument Sans',system-ui,sans-serif;color:#0c243e;background:#f8f8f8;min-height:100vh">
+
+  <header style="position:sticky;top:0;z-index:50;background:#ffffff;border-bottom:1px solid #e7e7e7">
+    <div style="max-width:1360px;margin:0 auto;padding:0 24px;height:72px;display:flex;align-items:center;gap:28px">
+      <a href="/ca" style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:24px;letter-spacing:-0.035em;flex:none">Medspa<span style="color:#16b3c6">Find</span></a>
+      <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+        <nav style="display:flex;align-items:center;gap:6px;flex:1">
+          <button type="button" onClick="{{ toggleLocations }}" style="display:flex;align-items:center;gap:7px;padding:9px 14px;border:0;border-radius:9px;background:transparent;font:inherit;font-size:15px;font-weight:500;color:{{ locColor }};cursor:pointer" style-hover="background:#f8f8f8">Locations<span style="font-size:10px;opacity:0.6">▼</span></button>
+          <button type="button" onClick="{{ toggleServices }}" style="display:flex;align-items:center;gap:7px;padding:9px 14px;border:0;border-radius:9px;background:transparent;font:inherit;font-size:15px;font-weight:500;color:{{ svcColor }};cursor:pointer" style-hover="background:#f8f8f8">Services<span style="font-size:10px;opacity:0.6">▼</span></button>
+          <a href="/ca/about" style="padding:9px 14px;border-radius:9px;font-size:15px;font-weight:500" style-hover="background:#f8f8f8">About us</a>
+          <a href="/blog" style="padding:9px 14px;border-radius:9px;font-size:15px;font-weight:500" style-hover="background:#f8f8f8">Blog</a>
+        </nav>
+        <a href="/ca/get-listed" style="flex:none;padding:11px 20px;border-radius:10px;background:#0c243e;color:#ffffff;font-size:15px;font-weight:600;transition:background .2s ease" style-hover="background:#16b3c6;color:#ffffff">Get listed</a>
+      </sc-if>
+      <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{ toggleMobile }}" aria-label="Menu" style="margin-left:auto;width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px solid #e7e7e7;border-radius:10px;background:#ffffff;cursor:pointer">
+          <span style="display:block;width:18px;height:2px;background:#0c243e"></span>
+          <span style="display:block;width:18px;height:2px;background:#0c243e"></span>
+        </button>
+      </sc-if>
+    </div>
+    <sc-if value="{{ showMega }}" hint-placeholder-val="{{ false }}">
+      <div style="border-top:1px solid #e7e7e7;background:#ffffff;box-shadow:0 18px 34px rgba(12,36,62,0.08);animation:bpDrop .2s ease both">
+        <div style="max-width:1360px;margin:0 auto;padding:26px 24px 30px;display:grid;grid-template-columns:minmax(220px,32%) 1fr;gap:34px">
+          <div style="border-right:1px solid #e7e7e7;padding-right:24px;max-height:340px;overflow:auto">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(12,36,62,0.5);margin-bottom:12px">{{ leftLabel }}</div>
+            <sc-for list="{{ leftItems }}" as="item" hint-placeholder-count="5">
+              <button type="button" onClick="{{ item.select }}" onMouseEnter="{{ item.select }}" style="display:block;width:100%;text-align:left;padding:10px 12px;margin-bottom:2px;border:0;border-left:3px solid {{ item.bar }};border-radius:0 8px 8px 0;background:{{ item.bg }};font:inherit;font-size:15px;font-weight:{{ item.weight }};color:#0c243e;cursor:pointer">{{ item.name }}</button>
+            </sc-for>
+          </div>
+          <div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:14px">
+              <div style="font-size:17px;font-weight:600">{{ rightTitle }}</div>
+              <a href="{{ rightAllHref }}" style="font-size:14px;font-weight:500;color:#16b3c6">{{ rightAllLabel }}</a>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:2px">
+              <sc-for list="{{ rightLinks }}" as="link" hint-placeholder-count="9">
+                <a href="{{ link.href }}" style="display:flex;flex-direction:column;gap:2px;padding:9px 12px;border-radius:8px" style-hover="background:#f8f8f8;color:#16b3c6">
+                  <span style="font-size:15px;font-weight:500">{{ link.name }}</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(12,36,62,0.42)">{{ link.href }}</span>
+                </a>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </header>
+
+  <sc-if value="{{ mobileOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:72px 0 0;z-index:45;background:#ffffff;overflow:auto;padding:20px 20px 48px;animation:bpDrop .2s ease both">
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button type="button" onClick="{{ toggleLocations }}" style="flex:1;padding:13px;border:1px solid {{ locBorder }};border-radius:10px;background:{{ locBg }};font:inherit;font-size:15px;font-weight:600;color:#0c243e;cursor:pointer">Locations</button>
+        <button type="button" onClick="{{ toggleServices }}" style="flex:1;padding:13px;border:1px solid {{ svcBorder }};border-radius:10px;background:{{ svcBg }};font:inherit;font-size:15px;font-weight:600;color:#0c243e;cursor:pointer">Services</button>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(12,36,62,0.5);margin-bottom:10px">{{ leftLabel }}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px">
+        <sc-for list="{{ leftItems }}" as="item" hint-placeholder-count="5">
+          <button type="button" onClick="{{ item.select }}" style="padding:11px 14px;border:1px solid {{ item.bar }};border-radius:999px;background:{{ item.bg }};font:inherit;font-size:14px;font-weight:{{ item.weight }};color:#0c243e;cursor:pointer">{{ item.name }}</button>
+        </sc-for>
+      </div>
+      <div style="font-size:16px;font-weight:600;margin-bottom:10px">{{ rightTitle }}</div>
+      <div style="display:flex;flex-direction:column;border-top:1px solid #e7e7e7">
+        <sc-for list="{{ rightLinks }}" as="link" hint-placeholder-count="6">
+          <a href="{{ link.href }}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:12px 2px;border-bottom:1px solid #e7e7e7;font-size:16px;font-weight:500">{{ link.name }}<span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(12,36,62,0.42)">{{ link.href }}</span></a>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:26px">
+        <a href="/ca/about" style="min-height:48px;display:flex;align-items:center;font-size:16px;font-weight:500">About us</a>
+        <a href="/blog" style="min-height:48px;display:flex;align-items:center;font-size:16px;font-weight:500">Blog</a>
+        <a href="/ca/get-listed" style="min-height:52px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:#0c243e;color:#ffffff;font-size:16px;font-weight:600">Get listed</a>
+      </div>
+    </div>
+  </sc-if>
+
+  <div style="max-width:1360px;margin:0 auto;padding:18px 24px 0;display:flex;flex-wrap:wrap;align-items:center;gap:9px;font-size:13.5px;color:rgba(12,36,62,0.55)">
+    <a href="/ca" style="color:rgba(12,36,62,0.62)">Canada</a><span>›</span>
+    <a href="/ca/on" style="color:rgba(12,36,62,0.62)">Ontario</a><span>›</span>
+    <a href="/ca/on/toronto" style="color:rgba(12,36,62,0.62)">Toronto</a><span>›</span>
+    <span style="color:#0c243e;font-weight:500">Glow Medspa Toronto</span>
+    <span style="margin-left:8px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(12,36,62,0.4)">/glow-medspa-toronto</span>
+  </div>
+
+  <section style="max-width:1360px;margin:0 auto;padding:16px 24px 0;animation:bpRise .6s cubic-bezier(.2,.7,.2,1) both">
+    <div style="display:grid;grid-template-columns:{{ galleryCols }};grid-auto-rows:{{ galleryRow }};gap:10px">
+      <button type="button" onClick="{{ openPrimary }}" style="grid-row:{{ primarySpan }};position:relative;padding:0;border:1px solid #e7e7e7;border-radius:14px;overflow:hidden;background:repeating-linear-gradient(135deg,#e8eef1 0px,#e8eef1 12px,#f4f7f8 12px,#f4f7f8 24px);cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="border-color:#16b3c6">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(12,36,62,0.42)">images[0] — primary</span>
+      </button>
+      <sc-for list="{{ galleryTiles }}" as="t" hint-placeholder-count="4">
+        <button type="button" onClick="{{ t.open }}" style="position:relative;padding:0;border:1px solid #e7e7e7;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(135deg,#eef2f4 0px,#eef2f4 10px,#f7f9fa 10px,#f7f9fa 20px);cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="border-color:#16b3c6">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(12,36,62,0.4);opacity:{{ t.labelOpacity }}">{{ t.label }}</span>
+          <sc-if value="{{ t.isLast }}" hint-placeholder-val="{{ false }}">
+            <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(12,36,62,0.66);color:#ffffff;font-size:15px;font-weight:600;letter-spacing:-0.01em">{{ viewAllLabel }}</span>
+          </sc-if>
+        </button>
+      </sc-for>
+    </div>
+  </section>
+
+  <main style="max-width:1360px;margin:0 auto;padding:30px 24px 0;display:grid;grid-template-columns:{{ mainCols }};gap:40px;align-items:start">
+
+    <div style="min-width:0;display:flex;flex-direction:column;gap:36px">
+
+      <section style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <div style="width:64px;height:64px;flex:none;border-radius:12px;border:1px solid #e7e7e7;background:#ffffff;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:21px;letter-spacing:-0.03em;color:#0c243e">GM</div>
+          <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(30px,3.6vw,46px);line-height:1.04;letter-spacing:-0.035em;text-wrap:balance">Glow Medspa Toronto</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:15px">
+          <span style="display:flex;align-items:center;gap:6px"><span style="color:#16b3c6;font-size:16px">★★★★★</span><span style="font-weight:600">4.9</span></span>
+          <span style="color:rgba(12,36,62,0.55)">312 Google reviews</span>
+          <span style="color:#e7e7e7">|</span>
+          <span style="color:rgba(12,36,62,0.72)">112 Cumberland St, Suite 400, Toronto, ON M5R 1A6</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:2px">
+          <sc-for list="{{ highlights }}" as="h" hint-placeholder-count="4">
+            <span style="padding:6px 12px;border:1px solid #e7e7e7;border-radius:999px;background:#ffffff;font-size:13px;font-weight:500;color:rgba(12,36,62,0.78)">{{ h }}</span>
+          </sc-for>
+        </div>
+      </section>
+
+      <section>
+        <h2 style="margin:0 0 12px;font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:23px;letter-spacing:-0.025em">About Glow Medspa</h2>
+        <div style="font-size:15.5px;line-height:1.72;color:rgba(12,36,62,0.78)">
+          <p style="margin:0 0 14px;text-wrap:pretty">Glow Medspa is a physician-led medical aesthetics clinic in Yorkville, operating since 2014. Treatments are delivered by registered nurses under the direct supervision of our medical director, Dr. Amara Osei, MD, CCFP, who is on site six days a week.</p>
+          <p style="margin:0 0 14px;text-wrap:pretty">The clinic runs three treatment rooms and a dedicated laser suite with Candela GentleMax Pro and PicoWay platforms. We are a diamond-level Allergan account, which means our injectors train annually on current Botox and Juvéderm technique.</p>
+          <ul style="margin:0;padding-left:20px;line-height:1.8">
+            <li>Free 20-minute consultation with your treating injector</li>
+            <li>Written treatment plans with total session counts, not per-visit pricing</li>
+            <li>Complimentary two-week touch-up review on all neuromodulator treatments</li>
+          </ul>
+        </div>
+        <div style="margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(12,36,62,0.4)">description — rich HTML from CMS</div>
+      </section>
+
+      <section>
+        <h2 style="margin:0 0 14px;font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:23px;letter-spacing:-0.025em">Services &amp; pricing</h2>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <sc-for list="{{ services }}" as="s" hint-placeholder-count="4">
+            <div style="background:#ffffff;border:1px solid #e7e7e7;border-radius:13px;padding:18px 20px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap">
+                <a href="{{ s.href }}" style="font-size:17px;font-weight:600;letter-spacing:-0.012em">{{ s.name }}</a>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(12,36,62,0.4)">{{ s.href }}</span>
+              </div>
+              <div style="margin-top:12px;display:flex;flex-direction:column">
+                <sc-for list="{{ s.variants }}" as="v" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:9px 0;border-top:1px solid #f1f3f4">
+                    <span style="font-size:14.5px;color:rgba(12,36,62,0.8)">{{ v.label }}</span>
+                    <span style="font-size:14.5px;font-weight:600;white-space:nowrap">{{ v.price }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(12,36,62,0.4)">services[] → variants[] (label + price range)</div>
+      </section>
+
+      <section>
+        <h2 style="margin:0 0 14px;font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:23px;letter-spacing:-0.025em">Before &amp; after</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px">
+          <sc-for list="{{ beforeAfter }}" as="ba" hint-placeholder-count="3">
+            <button type="button" onClick="{{ ba.open }}" style="padding:0;border:1px solid #e7e7e7;border-radius:13px;overflow:hidden;background:#ffffff;cursor:pointer;text-align:left;display:flex;flex-direction:column" style-hover="border-color:#16b3c6">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#e7e7e7">
+                <div style="height:130px;background:repeating-linear-gradient(135deg,#eef2f4 0px,#eef2f4 9px,#f7f9fa 9px,#f7f9fa 18px);display:flex;align-items:flex-end;padding:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(12,36,62,0.45)">before</span></div>
+                <div style="height:130px;background:repeating-linear-gradient(135deg,#e8eef1 0px,#e8eef1 9px,#f4f7f8 9px,#f4f7f8 18px);display:flex;align-items:flex-end;padding:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(12,36,62,0.45)">after</span></div>
+              </div>
+              <div style="padding:12px 14px;font-size:14px;color:rgba(12,36,62,0.75)">{{ ba.caption }}</div>
+            </button>
+          </sc-for>
+        </div>
+        <div style="margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(12,36,62,0.4)">before_after_images[] — opens the same lightbox</div>
+      </section>
+
+      <section>
+        <h2 style="margin:0 0 14px;font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:23px;letter-spacing:-0.025em">Meet the team</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+          <sc-for list="{{ staff }}" as="p" hint-placeholder-count="3">
+            <div style="background:#ffffff;border:1px solid #e7e7e7;border-radius:13px;padding:16px;display:flex;flex-direction:column;gap:11px">
+              <div style="width:62px;height:62px;border-radius:50%;border:1px solid #e7e7e7;background:repeating-linear-gradient(135deg,#eef2f4 0px,#eef2f4 7px,#f7f9fa 7px,#f7f9fa 14px)"></div>
+              <div>
+                <div style="font-size:16px;font-weight:600;letter-spacing:-0.01em">{{ p.name }}</div>
+                <div style="margin-top:3px;font-size:13.5px;color:#16b3c6;font-weight:500">{{ p.role }}</div>
+              </div>
+              <div style="font-size:13.5px;line-height:1.6;color:rgba(12,36,62,0.68);text-wrap:pretty">{{ p.bio }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section>
+        <h2 style="margin:0 0 14px;font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:23px;letter-spacing:-0.025em">Videos</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px">
+          <sc-for list="{{ videos }}" as="v" hint-placeholder-count="2">
+            <a href="{{ v.href }}" style="display:flex;flex-direction:column;gap:11px">
+              <div style="position:relative;height:158px;border-radius:12px;border:1px solid #e7e7e7;background:repeating-linear-gradient(135deg,#e8eef1 0px,#e8eef1 10px,#f4f7f8 10px,#f4f7f8 20px);display:flex;align-items:center;justify-content:center">
+                <span style="width:48px;height:48px;border-radius:50%;background:#0c243e;color:#ffffff;display:flex;align-items:center;justify-content:center;font-size:15px">▶</span>
+              </div>
+              <div style="font-size:15px;font-weight:600;line-height:1.35">{{ v.title }}</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(12,36,62,0.4)">{{ v.source }}</div>
+            </a>
+          </sc-for>
+        </div>
+      </section>
+
+      <section>
+        <h2 style="margin:0 0 14px;font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:23px;letter-spacing:-0.025em">Working hours</h2>
+        <div style="background:#ffffff;border:1px solid #e7e7e7;border-radius:13px;overflow:hidden">
+          <sc-for list="{{ hours }}" as="h" hint-placeholder-count="7">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 18px;border-top:1px solid {{ h.line }};background:{{ h.bg }}">
+              <span style="font-size:14.5px;font-weight:{{ h.weight }}">{{ h.day }}</span>
+              <span style="font-size:14.5px;color:{{ h.color }};font-weight:{{ h.weight }}">{{ h.value }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(12,36,62,0.4)">working_hours[] — today tinted teal</div>
+      </section>
+
+      <section>
+        <h2 style="margin:0 0 14px;font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:23px;letter-spacing:-0.025em">Frequently asked</h2>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="4">
+            <div style="background:#ffffff;border:1px solid {{ f.border }};border-radius:12px;overflow:hidden">
+              <button type="button" onClick="{{ f.toggle }}" style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;width:100%;text-align:left;padding:16px 18px;border:0;background:transparent;font:inherit;font-size:15.5px;font-weight:600;line-height:1.4;color:#0c243e;cursor:pointer">{{ f.q }}<span style="flex:none;color:#16b3c6;font-size:16px">{{ f.sign }}</span></button>
+              <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:0 18px 17px;font-size:14.5px;line-height:1.65;color:rgba(12,36,62,0.72);text-wrap:pretty">{{ f.a }}</div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section style="padding-bottom:8px">
+        <h2 style="margin:0 0 14px;font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:23px;letter-spacing:-0.025em">Location</h2>
+        <div style="background:#ffffff;border:1px solid #e7e7e7;border-radius:13px;overflow:hidden">
+          <div style="position:relative;height:270px;background:linear-gradient(#f2f5f6,#e9eff1)">
+            <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(12,36,62,0.055) 1px, transparent 1px), linear-gradient(90deg, rgba(12,36,62,0.055) 1px, transparent 1px);background-size:46px 46px"></div>
+            <div style="position:absolute;left:0;right:0;top:38%;height:12px;background:#ffffff;border-top:1px solid #e7e7e7;border-bottom:1px solid #e7e7e7;transform:rotate(-2deg)"></div>
+            <div style="position:absolute;top:0;bottom:0;left:44%;width:12px;background:#ffffff;border-left:1px solid #e7e7e7;border-right:1px solid #e7e7e7"></div>
+            <div style="position:absolute;left:44%;top:38%;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;gap:4px">
+              <span style="padding:6px 11px;border-radius:8px;background:#0c243e;color:#ffffff;font-size:12px;font-weight:600;white-space:nowrap">Glow Medspa</span>
+              <span style="width:14px;height:14px;border-radius:50%;background:#16b3c6;border:3px solid #ffffff;box-shadow:0 2px 6px rgba(12,36,62,0.25)"></span>
+            </div>
+          </div>
+          <div style="padding:16px 18px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;border-top:1px solid #e7e7e7">
+            <div>
+              <div style="font-size:14.5px;color:rgba(12,36,62,0.8)">112 Cumberland St, Suite 400, Toronto, ON M5R 1A6</div>
+              <div style="margin-top:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(12,36,62,0.4)">lat 43.6702 · lng −79.3936</div>
+            </div>
+            <a href="https://maps.google.com" style="font-size:14.5px;font-weight:600;color:#16b3c6">Get directions →</a>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside style="position:{{ asidePos }};top:92px;min-width:0;order:{{ asideOrder }}">
+      <div style="background:#ffffff;border:1px solid #e7e7e7;border-radius:16px;padding:22px;box-shadow:0 12px 30px rgba(12,36,62,0.06)">
+        <div style="font-size:17px;font-weight:600;letter-spacing:-0.015em">Glow Medspa Toronto</div>
+        <div style="margin-top:6px;font-size:13.5px;color:rgba(12,36,62,0.6)">Yorkville, Toronto · Open until 7:00 PM</div>
+
+        <a href="https://book.glowmedspa.ca" style="display:flex;align-items:center;justify-content:center;min-height:54px;margin-top:18px;border-radius:12px;background:#0c243e;color:#ffffff;font-size:16px;font-weight:600;transition:background .2s ease" style-hover="background:#16b3c6;color:#ffffff">Book an appointment</a>
+        <div style="margin-top:7px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:rgba(12,36,62,0.4)">booking.url · type: external</div>
+
+        <div style="display:flex;gap:10px;margin-top:12px">
+          <a href="tel:+14165550142" style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;border:1px solid #e7e7e7;border-radius:11px;font-size:15px;font-weight:600" style-hover="border-color:#16b3c6;color:#16b3c6">Call</a>
+          <a href="mailto:hello@glowmedspa.ca" style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;border:1px solid #e7e7e7;border-radius:11px;font-size:15px;font-weight:600" style-hover="border-color:#16b3c6;color:#16b3c6">Email</a>
+        </div>
+
+        <div style="margin-top:20px;padding-top:18px;border-top:1px solid #e7e7e7;display:flex;flex-direction:column;gap:12px">
+          <a href="tel:+14165550142" style="display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14.5px"><span style="color:rgba(12,36,62,0.55)">Phone</span><span style="font-weight:600">+1 (416) 555-0142</span></a>
+          <a href="mailto:hello@glowmedspa.ca" style="display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14.5px"><span style="color:rgba(12,36,62,0.55)">Email</span><span style="font-weight:600">hello@glowmedspa.ca</span></a>
+          <a href="https://glowmedspa.ca" style="display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14.5px"><span style="color:rgba(12,36,62,0.55)">Website</span><span style="font-weight:600">glowmedspa.ca</span></a>
+        </div>
+
+        <div style="margin-top:18px;padding-top:18px;border-top:1px solid #e7e7e7">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(12,36,62,0.45);margin-bottom:11px">Follow</div>
+          <div style="display:flex;gap:9px">
+            <a href="https://instagram.com/glowmedspato" style="display:flex;align-items:center;justify-content:center;min-width:46px;height:44px;padding:0 12px;border:1px solid #e7e7e7;border-radius:10px;font-size:13.5px;font-weight:600" style-hover="border-color:#16b3c6;color:#16b3c6">IG</a>
+            <a href="https://facebook.com/glowmedspato" style="display:flex;align-items:center;justify-content:center;min-width:46px;height:44px;padding:0 12px;border:1px solid #e7e7e7;border-radius:10px;font-size:13.5px;font-weight:600" style-hover="border-color:#16b3c6;color:#16b3c6">FB</a>
+            <a href="https://tiktok.com/@glowmedspato" style="display:flex;align-items:center;justify-content:center;min-width:46px;height:44px;padding:0 12px;border:1px solid #e7e7e7;border-radius:10px;font-size:13.5px;font-weight:600" style-hover="border-color:#16b3c6;color:#16b3c6">TT</a>
+          </div>
+        </div>
+
+        <div style="margin-top:18px;padding:16px;border:1px solid #e7e7e7;border-radius:12px;background:#f8f8f8">
+          <div style="display:flex;align-items:center;gap:9px">
+            <span style="color:#16b3c6;font-size:15px">★</span>
+            <span style="font-size:15px;font-weight:600">4.9</span>
+            <span style="font-size:13.5px;color:rgba(12,36,62,0.55)">· 312 Google reviews</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+            <a href="https://g.page/glow-medspa-toronto" style="font-size:14px;font-weight:600;color:#16b3c6">Read reviews on Google →</a>
+            <a href="https://g.page/r/glow-medspa-toronto/review" style="font-size:14px;font-weight:500;color:rgba(12,36,62,0.7)">Write a review</a>
+          </div>
+          <div style="margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:rgba(12,36,62,0.4)">google_my_business_url · google_review_cta</div>
+        </div>
+
+        <a href="https://maps.google.com" style="display:block;margin-top:16px;font-size:14px;font-weight:600;color:#16b3c6">Get directions →</a>
+      </div>
+    </aside>
+  </main>
+
+  <sc-if value="{{ mobileBar }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:rgba(255,255,255,0.96);border-top:1px solid #e7e7e7;backdrop-filter:blur(8px)">
+      <a href="tel:+14165550142" style="flex:0 0 42%;display:flex;align-items:center;justify-content:center;min-height:52px;border:1px solid #0c243e;border-radius:12px;font-size:16px;font-weight:600">Call</a>
+      <a href="https://book.glowmedspa.ca" style="flex:1;display:flex;align-items:center;justify-content:center;min-height:52px;border-radius:12px;background:#0c243e;color:#ffffff;font-size:16px;font-weight:600">Book</a>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ lightboxOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:90;background:rgba(12,36,62,0.94);display:flex;flex-direction:column;animation:bpScrim .2s ease both" onClick="{{ closeLightbox }}">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 22px;color:#ffffff">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.08em">{{ lightboxCounter }}</span>
+        <button type="button" onClick="{{ closeLightbox }}" aria-label="Close" style="width:44px;height:44px;border:1px solid rgba(255,255,255,0.25);border-radius:50%;background:transparent;color:#ffffff;font:inherit;font-size:17px;cursor:pointer" style-hover="border-color:#16b3c6;color:#16b3c6">✕</button>
+      </div>
+      <div style="flex:1;display:flex;align-items:center;gap:16px;padding:0 clamp(12px,3vw,34px) 10px;min-height:0">
+        <button type="button" onClick="{{ prevImage }}" aria-label="Previous" style="flex:none;width:52px;height:52px;border:1px solid rgba(255,255,255,0.25);border-radius:50%;background:rgba(255,255,255,0.06);color:#ffffff;font:inherit;font-size:18px;cursor:pointer" style-hover="border-color:#16b3c6;color:#16b3c6">←</button>
+        <div style="flex:1;height:100%;min-width:0;border-radius:14px;background:repeating-linear-gradient(135deg,#2a4157 0px,#2a4157 14px,#31495f 14px,#31495f 28px);display:flex;align-items:center;justify-content:center;animation:bpPop .22s cubic-bezier(.2,.7,.2,1) both">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.6)">{{ lightboxLabel }}</span>
+        </div>
+        <button type="button" onClick="{{ nextImage }}" aria-label="Next" style="flex:none;width:52px;height:52px;border:1px solid rgba(255,255,255,0.25);border-radius:50%;background:rgba(255,255,255,0.06);color:#ffffff;font:inherit;font-size:18px;cursor:pointer" style-hover="border-color:#16b3c6;color:#16b3c6">→</button>
+      </div>
+      <div style="padding:12px 22px 22px;display:flex;flex-direction:column;gap:12px;align-items:center">
+        <span style="font-size:14px;color:rgba(255,255,255,0.72);text-align:center">{{ lightboxCaption }}</span>
+        <div style="display:flex;gap:8px;overflow-x:auto;max-width:100%;padding-bottom:4px">
+          <sc-for list="{{ thumbs }}" as="t" hint-placeholder-count="8">
+            <button type="button" onClick="{{ t.go }}" style="flex:0 0 68px;height:48px;padding:0;border:2px solid {{ t.border }};border-radius:8px;background:repeating-linear-gradient(135deg,#2a4157 0px,#2a4157 8px,#35506a 8px,#35506a 16px);cursor:pointer;opacity:{{ t.opacity }}"></button>
+          </sc-for>
+        </div>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:rgba(255,255,255,0.42)">← → arrows · swipe on mobile · Esc to close</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <footer style="background:#0c243e;color:#ffffff;margin-top:60px">
+    <div style="max-width:1360px;margin:0 auto;padding:clamp(44px,5vw,68px) 24px 26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:40px">
+      <div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:23px;letter-spacing:-0.035em">Medspa<span style="color:#16b3c6">Find</span></div>
+        <p style="margin:14px 0 0;max-width:32ch;font-size:14px;line-height:1.6;color:rgba(255,255,255,0.72);text-wrap:pretty">The directory for medical aesthetics — verified clinics, real reviews, and treatment menus you can compare.</p>
+      </div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#16b3c6;margin-bottom:14px">Provinces</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a href="/ca/on" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Ontario</a>
+          <a href="/ca/bc" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">British Columbia</a>
+          <a href="/ca/ab" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Alberta</a>
+          <a href="/ca/qc" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Quebec</a>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#16b3c6;margin-bottom:14px">Services</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a href="/ca/tattoo-removal" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Tattoo Removal</a>
+          <a href="/ca/botox" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Botox</a>
+          <a href="/ca/laser-hair-removal" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Laser Hair Removal</a>
+          <a href="/ca/hydrafacial" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Hydrafacial</a>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#16b3c6;margin-bottom:14px">Company</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a href="/ca/about" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">About us</a>
+          <a href="/blog" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Blog</a>
+          <a href="/ca/get-listed" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Get listed</a>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#16b3c6;margin-bottom:14px">Legal</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a href="/privacy" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Privacy</a>
+          <a href="/terms" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Terms</a>
+          <a href="/" style="font-size:14px;color:rgba(255,255,255,0.82)" style-hover="color:#16b3c6">Change country</a>
+        </div>
+      </div>
+    </div>
+    <div style="max-width:1360px;margin:0 auto;padding:20px 24px 34px;border-top:1px solid rgba(255,255,255,0.14)">
+      <span style="font-size:13px;color:rgba(255,255,255,0.6)">© 2026 MedspaFind</span>
+    </div>
+  </footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const REGIONS = [
+  { name: "Ontario", slug: "on", cities: ["Toronto","Ottawa","Mississauga","Hamilton","London","Markham","Vaughan","Oakville","Kitchener"] },
+  { name: "British Columbia", slug: "bc", cities: ["Vancouver","Victoria","Surrey","Burnaby","Kelowna"] },
+  { name: "Alberta", slug: "ab", cities: ["Calgary","Edmonton","Red Deer"] },
+  { name: "Quebec", slug: "qc", cities: ["Montreal","Quebec City","Laval"] }
+];
+const SERVICES = [
+  { name: "Tattoo Removal", slug: "tattoo-removal" },
+  { name: "Botox", slug: "botox" },
+  { name: "Laser Hair Removal", slug: "laser-hair-removal" },
+  { name: "CoolSculpting", slug: "coolsculpting" },
+  { name: "Hydrafacial", slug: "hydrafacial" },
+  { name: "Dermal Fillers", slug: "dermal-fillers" }
+];
+
+const IMAGES = [
+  "Reception — Yorkville", "Injectable suite", "Laser room", "Treatment room 2",
+  "Consultation lounge", "Skincare dispensary", "Hallway", "Facade at dusk",
+  "Team portrait", "Product wall", "Recovery lounge", "Signage detail"
+];
+
+const CLINIC_SERVICES = [
+  { name: "Botox & neuromodulators", slug: "botox", variants: [["Glabellar lines (frown)","$180 – $320"],["Forehead + crow's feet","$340 – $520"],["Masseter / jawline slimming","$480 – $700"],["Per unit (Botox Cosmetic)","$12 / unit"]] },
+  { name: "Dermal fillers", slug: "dermal-fillers", variants: [["Lip filler (0.5 – 1 mL)","$450 – $750"],["Cheek augmentation","$800 – $1,400"],["Under-eye (tear trough)","$700 – $950"]] },
+  { name: "Laser hair removal", slug: "laser-hair-removal", variants: [["Underarms — package of 6","$540"],["Full legs — package of 6","$1,680"],["Bikini — single session","$120"]] },
+  { name: "Tattoo removal (PicoWay)", slug: "tattoo-removal", variants: [["Small — up to 2 in²","$140 / session"],["Medium — 2–6 in²","$260 / session"],["Consultation + test patch","Free"]] },
+  { name: "Hydrafacial & skin health", slug: "hydrafacial", variants: [["Signature Hydrafacial","$199"],["Deluxe + booster","$275"],["Medical-grade peel","$180 – $240"]] }
+];
+
+const BEFORE_AFTER = [
+  "Lip filler — 1 mL Juvéderm, 2 weeks post",
+  "Tattoo removal — 7 of 10 sessions, forearm",
+  "Laser resurfacing — 3 months post-treatment",
+  "Masseter Botox — 6 weeks, 25 units per side"
+];
+
+const STAFF = [
+  { name: "Dr. Amara Osei, MD", role: "Medical Director", bio: "Family physician with a decade in aesthetic medicine. Oversees all injectable and laser protocols on site." },
+  { name: "Priya Raman, RN", role: "Lead Nurse Injector", bio: "Allergan-certified trainer, 3,000+ treatments in neuromodulators and filler." },
+  { name: "Danielle Roy, RN", role: "Laser Specialist", bio: "Candela and PicoWay certified; focuses on tattoo removal and pigment correction." },
+  { name: "Marcus Villante", role: "Medical Aesthetician", bio: "Hydrafacial Master provider; builds post-procedure skin protocols." }
+];
+
+const VIDEOS = [
+  { title: "A walkthrough of the Yorkville clinic", source: "YouTube · 2:14", href: "https://youtube.com/watch?v=demo1" },
+  { title: "What to expect at your first injectable consult", source: "Vimeo · 4:02", href: "https://vimeo.com/demo2" }
+];
+
+const HOURS = [
+  ["Monday","9:00 AM – 6:00 PM"], ["Tuesday","9:00 AM – 7:00 PM"], ["Wednesday","9:00 AM – 7:00 PM"],
+  ["Thursday","9:00 AM – 8:00 PM"], ["Friday","9:00 AM – 6:00 PM"], ["Saturday","10:00 AM – 4:00 PM"], ["Sunday","Closed"]
+];
+
+const FAQS = [
+  ["Do I need a referral to book?","No. All treatments at Glow Medspa are elective and self-referred. Your first visit includes a free consultation with the nurse who will treat you."],
+  ["Is parking available?","Yes — validated underground parking at 112 Cumberland, entrance off Bellair Street. Bay subway station is a three-minute walk."],
+  ["What is your cancellation policy?","We ask for 24 hours' notice. Late cancellations forfeit the $50 booking deposit, which is otherwise credited to your treatment."],
+  ["Who supervises the treatments?","Dr. Amara Osei is our medical director and is on site Monday to Saturday. Registered nurses perform injections under her delegation."],
+  ["Do you offer financing?","Yes, through Medicard for treatment plans over $1,000. Applications are approved in-clinic, usually within 15 minutes."]
+];
+
+class Component extends DCLogic {
+  state = { menu: null, region: 0, service: 0, faq: 0, mobileOpen: false, lb: -1, vw: typeof window !== "undefined" ? window.innerWidth : 1440 };
+
+  componentDidMount() {
+    this._r = () => this.setState({ vw: window.innerWidth });
+    this._k = (e) => {
+      if (this.state.lb < 0) return;
+      if (e.key === "Escape") this.setState({ lb: -1 });
+      if (e.key === "ArrowRight") this.setState(s => ({ lb: (s.lb + 1) % IMAGES.length }));
+      if (e.key === "ArrowLeft") this.setState(s => ({ lb: (s.lb - 1 + IMAGES.length) % IMAGES.length }));
+    };
+    window.addEventListener("resize", this._r);
+    window.addEventListener("keydown", this._k);
+    this._r();
+  }
+  componentWillUnmount() { window.removeEventListener("resize", this._r); window.removeEventListener("keydown", this._k); }
+
+  renderVals() {
+    const isMobile = this.state.vw < 980;
+    const menu = this.state.menu;
+    const region = REGIONS[this.state.region];
+    const service = SERVICES[this.state.service];
+    const slug = s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+    const today = new Date().getDay();
+    const todayIdx = (today + 6) % 7;
+
+    const leftItems = (menu === "services" ? SERVICES : REGIONS).map((it, i) => {
+      const active = menu === "services" ? i === this.state.service : i === this.state.region;
+      return { name: it.name, bar: active ? "#16b3c6" : "transparent", bg: active ? "rgba(22,179,198,0.09)" : "transparent", weight: active ? 600 : 400,
+        select: () => menu === "services" ? this.setState({ service: i }) : this.setState({ region: i }) };
+    });
+
+    const tileCount = isMobile ? 3 : 4;
+    const galleryTiles = IMAGES.slice(1, 1 + tileCount).map((label, i) => ({
+      label: "images[" + (i + 1) + "]",
+      isLast: i === tileCount - 1,
+      labelOpacity: i === tileCount - 1 ? 0 : 1,
+      open: () => this.setState({ lb: i + 1 })
+    }));
+
+    return {
+      isMobile, isDesktop: !isMobile,
+      showMega: !isMobile && !!menu,
+      leftLabel: menu === "services" ? "Services" : "Provinces",
+      leftItems,
+      rightLinks: menu === "services"
+        ? REGIONS.flatMap(r => r.cities.slice(0,3).map(c => ({ name: c, href: "/ca/" + r.slug + "/" + slug(c) + "/" + service.slug }))).slice(0,12)
+        : region.cities.map(c => ({ name: c, href: "/ca/" + region.slug + "/" + slug(c) })),
+      rightTitle: menu === "services" ? service.name + " — cities with listings" : "Cities in " + region.name,
+      rightAllLabel: menu === "services" ? "All " + service.name + " clinics →" : "View all in " + region.name + " →",
+      rightAllHref: menu === "services" ? "/ca/" + service.slug : "/ca/" + region.slug,
+      locColor: menu === "locations" ? "#16b3c6" : "#0c243e",
+      svcColor: menu === "services" ? "#16b3c6" : "#0c243e",
+      mobileOpen: isMobile && this.state.mobileOpen,
+      locBorder: menu === "locations" ? "#16b3c6" : "#e7e7e7",
+      svcBorder: menu === "services" ? "#16b3c6" : "#e7e7e7",
+      locBg: menu === "locations" ? "rgba(22,179,198,0.09)" : "#ffffff",
+      svcBg: menu === "services" ? "rgba(22,179,198,0.09)" : "#ffffff",
+      toggleMobile: () => this.setState(s => ({ mobileOpen: !s.mobileOpen, menu: s.menu || "locations" })),
+      toggleLocations: () => this.setState(s => ({ menu: s.menu === "locations" ? (isMobile ? "locations" : null) : "locations" })),
+      toggleServices: () => this.setState(s => ({ menu: s.menu === "services" ? (isMobile ? "services" : null) : "services" })),
+
+      galleryCols: isMobile ? "1fr 1fr" : "2fr 1fr 1fr",
+      galleryRow: isMobile ? "150px" : "180px",
+      primarySpan: isMobile ? "span 1" : "span 2",
+      galleryTiles, viewAllLabel: "View all " + IMAGES.length + " photos",
+      openPrimary: () => this.setState({ lb: 0 }),
+
+      mainCols: isMobile ? "1fr" : "minmax(0,1.7fr) minmax(320px,1fr)",
+      asidePos: isMobile ? "static" : "sticky",
+      asideOrder: isMobile ? -1 : 0,
+      mobileBar: isMobile,
+
+      highlights: ["Physician-led","Online booking","Free consultation","Wheelchair accessible","Validated parking"],
+      services: CLINIC_SERVICES.map(s => ({
+        name: s.name, href: "/ca/on/toronto/" + s.slug,
+        variants: s.variants.map(v => ({ label: v[0], price: v[1] }))
+      })),
+      beforeAfter: BEFORE_AFTER.map((c, i) => ({ caption: c, open: () => this.setState({ lb: i % IMAGES.length }) })),
+      staff: STAFF, videos: VIDEOS,
+      hours: HOURS.map((h, i) => ({
+        day: h[0], value: h[1],
+        bg: i === todayIdx ? "rgba(22,179,198,0.08)" : "#ffffff",
+        line: i === 0 ? "transparent" : "#f1f3f4",
+        weight: i === todayIdx ? 600 : 400,
+        color: h[1] === "Closed" ? "rgba(12,36,62,0.45)" : "rgba(12,36,62,0.8)"
+      })),
+      faqs: FAQS.map((f, i) => {
+        const open = this.state.faq === i;
+        return { q: f[0], a: f[1], open, sign: open ? "−" : "+", border: open ? "#16b3c6" : "#e7e7e7",
+          toggle: () => this.setState(s => ({ faq: s.faq === i ? -1 : i })) };
+      }),
+
+      lightboxOpen: this.state.lb >= 0,
+      lightboxCounter: (this.state.lb + 1) + " / " + IMAGES.length,
+      lightboxLabel: "images[" + Math.max(this.state.lb, 0) + "]",
+      lightboxCaption: IMAGES[Math.max(this.state.lb, 0)],
+      thumbs: IMAGES.map((_, i) => ({
+        border: i === this.state.lb ? "#16b3c6" : "transparent",
+        opacity: i === this.state.lb ? 1 : 0.55,
+        go: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.setState({ lb: i }); }
+      })),
+      closeLightbox: () => this.setState({ lb: -1 }),
+      prevImage: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.setState(s => ({ lb: (s.lb - 1 + IMAGES.length) % IMAGES.length })); },
+      nextImage: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.setState(s => ({ lb: (s.lb + 1) % IMAGES.length })); }
+    };
+  }
+}
+
+</script>
+</body>
+</html>

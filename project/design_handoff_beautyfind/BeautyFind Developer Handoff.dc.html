@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="מפת זרימה למפתחים — כל המסעות ב־BeautyFind, שלב אחר שלב, עם קישור לכל מסך.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#F6F8F9}
+  *{box-sizing:border-box}
+  :root{--dh-pad:16px;--dh-docs:repeat(2,minmax(0,1fr))}
+  @media (min-width:640px){:root{--dh-pad:24px;--dh-docs:repeat(4,minmax(0,1fr))}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+</style>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#F6F8F9;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+  <header style="background:#0C243E;color:#fff">
+    <div style="max-width:1320px;margin:0 auto;padding:clamp(22px,3.4vw,40px) var(--dh-pad) clamp(20px,3vw,32px)">
+      <span dir="ltr" style="display:inline-block;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:20px">beauty<span style="color:#7ED7E1">find.</span></span>
+      <h1 style="margin:10px 0 6px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(28px,4vw,44px);font-weight:500;line-height:1.12;letter-spacing:-0.015em">מפת זרימה למפתחים</h1>
+      <p style="margin:0;max-width:70ch;font-size:15.5px;color:rgba(255,255,255,.82);text-wrap:pretty">כל מסע במוצר, שלב אחר שלב. כל תיבה פותחת את המסך. ההחלטות הפתוחות, מודל הנתונים, מכונות המצבים וההרשאות — בקבצי המסמכים בתיקיית ההעברה.</p>
+      <div style="display:grid;grid-template-columns:var(--dh-docs);gap:8px;margin-top:18px">
+        <sc-for list="{{ docs }}" as="d" hint-placeholder-count="8"><a href="{{ d.href }}" style="min-height:48px;display:flex;flex-direction:column;justify-content:center;padding:8px 12px;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:{{ d.bg }};color:#fff;text-decoration:none" style-hover="border-color:#7ED7E1"><span dir="ltr" style="text-align:right;font-size:12px;font-weight:700;color:#7ED7E1">{{ d.file }}</span><span style="font-size:14px;font-weight:700">{{ d.name }}</span></a></sc-for>
+      </div>
+    </div>
+  </header>
+
+  <div style="max-width:1320px;margin:0 auto;padding:clamp(18px,3vw,30px) var(--dh-pad) 60px;display:flex;flex-direction:column;gap:clamp(18px,2.4vw,26px)">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <sc-for list="{{ lanes }}" as="ln" hint-placeholder-count="4"><button type="button" aria-pressed="{{ ln.on }}" onClick="{{ ln.pick }}" style="min-height:42px;padding:0 14px;border:1px solid {{ ln.border }};border-radius:11px;background:{{ ln.bg }};font:inherit;font-size:14px;font-weight:700;color:{{ ln.color }};cursor:pointer">{{ ln.name }} <span dir="ltr" style="unicode-bidi:isolate;opacity:.7">{{ ln.n }}</span></button></sc-for>
+    </div>
+
+    <sc-for list="{{ flows }}" as="fl" hint-placeholder-count="6"><section aria-label="{{ fl.title }}" style="background:#fff;border:1px solid #E6E6E6;border-radius:18px;padding:clamp(15px,2vw,22px)"><div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px"><span dir="ltr" style="flex:none;height:26px;display:inline-flex;align-items:center;padding:0 9px;border-radius:7px;background:{{ fl.tagBg }};font-size:12.5px;font-weight:800;color:{{ fl.tagColor }}">{{ fl.id }}</span><h2 style="flex:1;min-width:0;margin:0;font-size:18px;font-weight:700">{{ fl.title }}</h2><span style="flex:none;font-size:12.5px;color:#8A96A3">{{ fl.lane }}</span></div><ol style="list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:stretch;gap:6px"><sc-for list="{{ fl.steps }}" as="st" hint-placeholder-count="5"><li style="display:flex;align-items:center;gap:6px"><a href="{{ st.href }}" style="min-width:150px;max-width:230px;min-height:66px;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:9px 12px;border:1px solid {{ st.border }};border-radius:13px;background:{{ st.bg }};color:#0C243E;text-decoration:none" style-hover="border-color:#7ED7E1;background:#F0FAFB"><span style="font-size:14px;font-weight:700">{{ st.screen }}</span><span style="font-size:12.5px;color:#5B6B7B;text-wrap:pretty">{{ st.note }}</span></a><sc-if value="{{ st.arrow }}" hint-placeholder-val="{{ true }}"><svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="#8A96A3" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></sc-if></li></sc-for></ol><sc-if value="{{ fl.hasNote }}" hint-placeholder-val="{{ false }}"><p style="margin:12px 0 0;padding:10px 12px;border-radius:11px;background:{{ fl.noteBg }};font-size:13.5px;color:#3E4F62;text-wrap:pretty">{{ fl.note }}</p></sc-if></section></sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1320,&quot;height&quot;:1000}}">
+const S = n => './BeautyFind ' + n + '.dc.html';
+const DOCS = [
+  ['README.md', 'התחלה כאן'], ['08-open-decisions.md', 'החלטות פתוחות'], ['01-flows.md', 'זרימות וניתובים'], ['02-data-model.md', 'מודל נתונים'],
+  ['03-states.md', 'מכונות מצבים'], ['04-permissions.md', 'הרשאות'], ['05-messages.md', 'הודעות'], ['07-rules-and-tokens.md', 'כללים וטוקנים']
+];
+const FLOWS = [
+  ['C1', 'client', 'גילוי ובחירה', [['Homepage', 'חיפוש לפי טיפול ומקום'], ['Search', 'סינון, מפה, שמירה'], ['Directory', 'עיר / אזור / טיפול'], ['Business Profile', 'מחירים, צוות, ביקורות'], ['Practitioner', 'רישיון מאומת'], ['Saved', 'השוואה עד 3']], 'כפתור הפעולה בפרופיל תלוי ב־booking_mode ובסוג הטיפול: קביעה אונליין, ייעוץ רפואי, או קישור חיצוני.', 'info'],
+  ['C2', 'client', 'קביעת תור (לא רפואי)', [['Booking', '4 שלבים · מקדמה לפי מדיניות'], ['Receipt', 'קבלה על המקדמה'], ['Manage Booking', 'קישור אישי מהוואטסאפ'], ['Health Declaration', 'אם הטיפול דורש']], '', ''],
+  ['C3', 'client', 'טיפול בהזרקה', [['Consult Request', 'בקשה מהמטופלת'], ['Consult Request', 'תיבת הקליניקה · הצעת מועד'], ['Booking', 'תור ייעוץ ← תור טיפול'], ['Health Declaration', 'חובה לפני הזרקה']], 'סגירה מסיבה רפואית — רופא/ה בלבד. אין קביעה מיידית של הזרקה.', 'warn'],
+  ['C4', 'client', 'ביטול, העברה ורשימת המתנה', [['Manage Booking', 'העברה / ביטול לפי חלון'], ['Receipt', 'חשבונית זיכוי והחזר'], ['Waitlist', 'הצעה לבאה ברשימה'], ['Waitlist', 'שמירה ל־30 דקות']], '', ''],
+  ['C5', 'client', 'הביקור ואחריו', [['Clinic Booking', 'צ׳ק־אין → טיפול → סיום'], ['Aftercare', 'הנחיות לפי שלבים'], ['Review', 'אחרי 3 ימים · ביקור מאומת'], ['Moderation', 'בדיקה עד 6 שעות'], ['Business Profile', 'פרסום']], 'התחלת טיפול חסומה בלי הצהרה חתומה; הצהרה עם ״כן״ דורשת אישור רופא/ה.', 'warn'],
+  ['C6', 'client', 'שוברי מתנה', [['Gift Cards', 'קנייה לפי סכום או טיפול'], ['Emails', 'שובר למקבל/ת'], ['Gift Cards', 'בדיקת יתרה'], ['Gift Cards', 'מימוש בקבלה + חשבונית']], '', ''],
+  ['C7', 'client', 'חשבון ופרטיות', [['Auth', 'קוד בוואטסאפ'], ['Account', 'תורים, שמורות, ביקורות'], ['Unsubscribe', 'לפי קליניקה וערוץ'], ['Cookie Consent', 'הכרחיים כברירת מחדל'], ['Help', 'שאלות נפוצות']], '', ''],
+  ['B1', 'business', 'הצטרפות עסק', [['Get Listed', 'מחיר לסניף'], ['Onboarding', '7 שלבים'], ['Verification', 'רישיון / תעודה'], ['Dashboard', 'העסק באוויר']], 'שלב האחריות הרפואית מופיע רק אם נבחרו טיפולי הזרקה.', 'info'],
+  ['B2', 'business', 'בקשת בעלות', [['Claim', 'אימות בקוד'], ['Verification', 'רשם החברות + Google'], ['Dashboard', 'בעלות הועברה']], '', ''],
+  ['B3', 'business', 'צוות', [['Dashboard', 'הזמנה + הרשאה'], ['Staff Invite', 'פרטים, מקצוע, קוד'], ['Verification', 'רישיון לרופא/ה ואח/ות'], ['Practitioner', 'אחריות רפואית מוצגת']], '', ''],
+  ['B4', 'business', 'צמיחה', [['Branches', 'טיוטה לא מחויבת'], ['Sponsored', 'אזור × תחום × שבועות'], ['Admin', 'בדיקת תוכן'], ['Search', 'תג ״ממומן״']], 'החיוב רק אחרי אישור. עד 2 מקומות לרשימה. לא משפיע על דירוג או השוואה.', 'info'],
+  ['K1', 'clinic', 'ניהול יומיומי בקליניקה', [['Noa Clinic', 'יומן, לקוחות, מלאי, הגדרות'], ['Clinic Booking', 'כרטיס תור'], ['Consult Request', 'בקשות ייעוץ'], ['Waitlist', 'תור ממתינות'], ['Gift Cards', 'ספר שוברים']], 'מדיניות מקדמה, חלון ביטול, זמן שמירה ברשימת המתנה ועלות ייעוץ — כולם הגדרות קליניקה.', 'info'],
+  ['O1', 'ops', 'צוות BeautyFind', [['Admin', 'עסקים, חיובים, מחלוקות, ממומן'], ['Verification', 'רישיונות ובעלות'], ['Moderation', 'ביקורות ודיווחים']], 'כל החלטה נרשמת ואינה ניתנת לעריכה. צוות BeautyFind לא רואה הצהרות בריאות.', 'warn'],
+  ['S1', 'system', 'מערכת ותבניות', [['Notifications', 'וואטסאפ / SMS'], ['Emails', 'חשבונית, שובר, סיסמה'], ['States', '404, ריק, שגיאה'], ['Design System', 'רכיבים ו־RTL']], '', '']
+];
+const LANES = [['all', 'הכל'], ['client', 'לקוחות'], ['business', 'עסקים'], ['clinic', 'קליניקה'], ['ops', 'BeautyFind'], ['system', 'מערכת']];
+const LANE_NAME = { client: 'צד הלקוח', business: 'צד העסק', clinic: 'תפעול קליניקה', ops: 'צוות BeautyFind', system: 'מערכת' };
+const TAG = { client: ['#F0FAFB', '#0B7A87'], business: ['#EDEFF2', '#0C243E'], clinic: ['#FFF8EC', '#9A5B15'], ops: ['#0C243E', '#fff'], system: ['#F0F3F5', '#5B6B7B'] };
+
+class Component extends DCLogic {
+  state = { lane: 'all' };
+  renderVals() {
+    const s = this.state;
+    const list = FLOWS.filter(f => s.lane === 'all' || f[1] === s.lane);
+    return {
+      docs: DOCS.map((d, i) => ({ file: d[0], name: d[1], href: './' + d[0], bg: i === 0 ? 'rgba(126,215,225,.14)' : 'transparent' })),
+      lanes: LANES.map(l => { const on = s.lane === l[0]; return { name: l[1], n: String(l[0] === 'all' ? FLOWS.length : FLOWS.filter(f => f[1] === l[0]).length), on: on ? 'true' : 'false', bg: on ? '#0B7A87' : '#fff', color: on ? '#fff' : '#3E4F62', border: on ? '#0B7A87' : '#E6E6E6', pick: () => this.setState({ lane: l[0] }) }; }),
+      flows: list.map(f => ({ id: f[0], title: f[2], lane: LANE_NAME[f[1]], tagBg: TAG[f[1]][0], tagColor: TAG[f[1]][1],
+        steps: f[3].map((st, i) => ({ screen: st[0], note: st[1], href: st[0] === 'Noa Clinic' ? './Noa Clinic.dc.html' : S(st[0]), arrow: i < f[3].length - 1, bg: i === 0 ? '#F6F8F9' : '#fff', border: '#E6E6E6' })),
+        hasNote: !!f[4], note: f[4], noteBg: f[5] === 'warn' ? '#FFF8EC' : '#F0FAFB' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

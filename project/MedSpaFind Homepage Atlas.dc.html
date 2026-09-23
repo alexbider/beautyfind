@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>MedSpaFind: Find Med Spas and Aesthetic Clinics in the US, Canada, and UAE</title>
+<meta name="description" content="MedSpaFind is a discovery platform for medical spas and aesthetic clinics across the United States, Canada, and the United Arab Emirates. Explore treatments, compare clinic details, and find your next consultation.">
+<link rel="canonical" href="https://medspafind.com/">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://medspafind.com/#org","name":"MedSpaFind","url":"https://medspafind.com/","logo":"https://medspafind.com/medspafind_logo_black.png","areaServed":["US","CA","AE"]},{"@type":"WebSite","@id":"https://medspafind.com/#site","url":"https://medspafind.com/","name":"MedSpaFind","publisher":{"@id":"https://medspafind.com/#org"},"potentialAction":{"@type":"SearchAction","target":"https://medspafind.com/search?q={search_term_string}","query-input":"required name=search_term_string"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is MedSpaFind?","acceptedAnswer":{"@type":"Answer","text":"MedSpaFind is a discovery platform that lists medical spas and aesthetic clinics in the United States, Canada, and the United Arab Emirates, with treatment information to help people research their options."}},{"@type":"Question","name":"Which countries does MedSpaFind cover?","acceptedAnswer":{"@type":"Answer","text":"The United States, Canada, and the United Arab Emirates, each with its own directory of regions, cities, and clinics."}},{"@type":"Question","name":"Does MedSpaFind provide medical advice?","acceptedAnswer":{"@type":"Answer","text":"No. Treatment pages are informational. Whether a treatment is suitable for you should be discussed with a qualified professional."}},{"@type":"Question","name":"What does Sponsored mean on a listing?","acceptedAnswer":{"@type":"Answer","text":"Clinics can pay for a highlighted position. Sponsored placement affects where a listing appears; it does not change the listing information and is not an endorsement."}},{"@type":"Question","name":"Can I book an appointment through MedSpaFind?","acceptedAnswer":{"@type":"Answer","text":"MedSpaFind helps you find and compare clinics. You contact a clinic directly by phone, email, or its website from the clinic profile."}}]}]}</script>
+<style>
+@keyframes msfOrbit{to{transform:rotate(360deg)}}
+@keyframes msfRing{0%{transform:scale(.6);opacity:0}30%{opacity:.5}100%{transform:scale(1.6);opacity:0}}
+@keyframes msfFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes msfDrift{0%,100%{transform:translate3d(0,0,0) rotate(var(--r,0deg))}50%{transform:translate3d(0,-14px,0) rotate(calc(var(--r,0deg) + .6deg))}}
+@keyframes msfSheen{0%{opacity:0}40%{opacity:.5}100%{opacity:0}}
+@keyframes msfTag{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes msfLine{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+html,body{margin:0;padding:0;background:#ffffff}
+body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:#0C243E;text-decoration:none}
+a:hover{color:#0B7A87}
+:focus-visible{outline:2px solid #14B3C6;outline-offset:2px;border-radius:6px}
+input::placeholder{color:#8A96A3}
+@keyframes msfDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes msfRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes msfFade{from{opacity:0}to{opacity:1}}
+@keyframes msfWord{from{opacity:0;transform:translateY(0.35em)}to{opacity:1;transform:none}}
+@keyframes msfPhoto{from{opacity:0;clip-path:inset(0 0 0 6%)}to{opacity:1;clip-path:inset(0)}}
+@keyframes msfZoom{from{transform:scale(1.06)}to{transform:scale(1)}}
+@keyframes msfPop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+@keyframes msfCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+html{scroll-behavior:smooth}
+::selection{background:rgba(20,179,198,.25)}
+/* app-feel */
+*{-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{overscroll-behavior-y:contain}
+button,a[href],[role="button"],summary,label{touch-action:manipulation}
+button:not(:disabled):active,a[href]:active,[role="button"]:active{transform:scale(.985)}
+[data-rail],[data-rvrail],[data-scroller]{-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+img,svg,video{max-width:100%}
+@media (max-width:760px){input,select,textarea{font-size:16px}}
+@supports (padding:env(safe-area-inset-bottom)){[data-panel][data-open="1"],[role="dialog"]{padding-bottom:max(18px,env(safe-area-inset-bottom))}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@keyframes msfSpin{to{transform:rotate(360deg)}}
+@keyframes msfGlobe{to{transform:translateX(-50%)}}
+@keyframes msfSweep{0%,100%{transform:translateX(0) rotate(8deg);opacity:0}45%{opacity:.7}90%{transform:translateX(260%) rotate(8deg);opacity:0}}
+@keyframes msfPing{0%{box-shadow:0 0 0 5px rgba(20,179,198,.18)}50%{box-shadow:0 0 0 14px rgba(20,179,198,0)}100%{box-shadow:0 0 0 5px rgba(20,179,198,.18)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div onKeyDown="{{ onKey }}" style="font-family:'Figtree',system-ui,sans-serif;font-size:16px;line-height:1.5;color:#0C243E;background:#ffffff;overflow-x:hidden;min-height:100dvh">
+<a href="#main" style="position:absolute;left:16px;top:-48px;z-index:100;padding:10px 14px;background:#0C243E;color:#ffffff;border-radius:8px;font-size:14px;font-weight:600" style-focus="top:12px">Skip to content</a>
+<header style="position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:saturate(1.2) blur(8px);border-bottom:1px solid {{ headerLine }};transition:border-color .2s">
+  <div style="max-width:1280px;margin:0 auto;padding:0 clamp(20px,4vw,32px);height:72px;display:flex;align-items:center;gap:28px">
+    <a href="/" onClick="{{ go }}" aria-label="MedSpaFind home" style="flex:none;display:flex;align-items:center"><img src="assets/medspafind-logo.webp" alt="MedSpaFind" style="height:28px;width:auto;display:block"></a>
+    <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+      <nav aria-label="Primary" style="display:flex;align-items:center;gap:2px;flex:1">
+        <sc-if value="{{ scrolled }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ focusSearch }}" style="display:flex;align-items:center;gap:8px;height:40px;padding:0 14px 0 12px;margin-right:8px;border:1px solid #E6E6E6;border-radius:10px;background:#F6F8F9;font:inherit;font-size:14px;font-weight:500;color:#5B6B7B;cursor:pointer;animation:msfFade .2s ease both" style-hover="border-color:#0C243E;color:#0C243E"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="5.5"></circle><path d="m12.5 12.5 3.5 3.5"></path></svg>Search clinics</button></sc-if>
+        <button type="button" onClick="{{ toggleFind }}" aria-haspopup="true" aria-expanded="{{ findOpen }}" style="display:flex;align-items:center;gap:6px;height:44px;padding:0 14px;border:0;border-radius:10px;background:{{ findBg }};font:inherit;font-size:15px;font-weight:500;color:#0C243E;cursor:pointer;transition:background .18s" style-hover="background:#F3F6F8">Find a Clinic<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"></path></svg></button>
+        <button type="button" onClick="{{ toggleTreat }}" aria-haspopup="true" aria-expanded="{{ treatOpen }}" style="display:flex;align-items:center;gap:6px;height:44px;padding:0 14px;border:0;border-radius:10px;background:{{ treatBg }};font:inherit;font-size:15px;font-weight:500;color:#0C243E;cursor:pointer;transition:background .18s" style-hover="background:#F3F6F8">Treatments<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"></path></svg></button>
+        <a href="/resources" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 14px;border-radius:10px;font-size:15px;font-weight:500;transition:background .18s" style-hover="background:#F3F6F8;color:#0C243E">Resources</a>
+        <a href="/about" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 14px;border-radius:10px;font-size:15px;font-weight:500;transition:background .18s" style-hover="background:#F3F6F8;color:#0C243E">About</a>
+      </nav>
+      <div style="display:flex;align-items:center;gap:10px;flex:none">
+        <div style="position:relative">
+          <button type="button" onClick="{{ toggleCountry }}" aria-haspopup="listbox" aria-expanded="{{ countryOpen }}" aria-label="Country: {{ countryName }}" style="display:flex;align-items:center;gap:8px;height:44px;padding:0 12px 0 10px;border:1px solid #E6E6E6;border-radius:10px;background:#ffffff;font:inherit;font-size:14px;font-weight:500;color:#0C243E;cursor:pointer;transition:border-color .18s" style-hover="border-color:#0C243E">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="8" r="6.5"></circle><path d="M1.5 8h13M8 1.5c2.2 2 2.2 11 0 13M8 1.5c-2.2 2-2.2 11 0 13"></path></svg>
+            {{ countryName }}
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"></path></svg>
+          </button>
+          <sc-if value="{{ countryOpen }}" hint-placeholder-val="{{ false }}">
+            <ul role="listbox" aria-label="Choose a country" style="position:absolute;right:0;top:calc(100% + 8px);width:260px;margin:0;padding:6px;list-style:none;background:#ffffff;border:1px solid #E6E6E6;border-radius:12px;box-shadow:0 12px 32px rgba(12,36,62,0.12);animation:msfDrop .18s ease both;z-index:60">
+              <sc-for list="{{ countryOptions }}" as="c" hint-placeholder-count="4">
+                <li role="option" aria-selected="{{ c.selected }}">
+                  <button type="button" onClick="{{ c.pick }}" style="display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:8px 10px;border:0;border-radius:8px;background:{{ c.bg }};font:inherit;font-size:15px;font-weight:{{ c.weight }};color:#0C243E;text-align:left;cursor:pointer" style-hover="background:#F3F6F8">
+                    <span style="flex:none;width:30px;height:22px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #E6E6E6;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:.06em;color:#5B6B7B;background:#FAFBFB">{{ c.short }}</span>
+                    <span style="flex:1">{{ c.name }}</span>
+                    <span style="color:#14B3C6;font-size:14px">{{ c.check }}</span>
+                  </button>
+                </li>
+              </sc-for>
+            </ul>
+          </sc-if>
+        </div>
+        <a href="/for-clinics" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 12px;font-size:14px;font-weight:500;color:#5B6B7B;border-radius:10px" style-hover="color:#0C243E;background:#F3F6F8">For Clinics</a>
+      </div>
+    </sc-if>
+    <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+        <button type="button" onClick="{{ toggleCountry }}" aria-label="Country: {{ countryName }}" style="display:flex;align-items:center;gap:6px;height:44px;padding:0 10px;border:1px solid #E6E6E6;border-radius:10px;background:#ffffff;font:inherit;font-size:13px;font-weight:600;letter-spacing:.04em;color:#0C243E;cursor:pointer">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="8" r="6.5"></circle><path d="M1.5 8h13M8 1.5c2.2 2 2.2 11 0 13M8 1.5c-2.2 2-2.2 11 0 13"></path></svg>{{ countryShort }}
+        </button>
+        <button type="button" onClick="{{ toggleMobile }}" aria-label="{{ mobileLabel }}" aria-expanded="{{ mobileOpen }}" style="width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px solid #E6E6E6;border-radius:10px;background:#ffffff;cursor:pointer">
+          <span style="display:block;width:18px;height:2px;background:#0C243E;border-radius:1px"></span>
+          <span style="display:block;width:18px;height:2px;background:#0C243E;border-radius:1px"></span>
+        </button>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ findOpen }}" hint-placeholder-val="{{ false }}">
+    <div onMouseLeave="{{ closeMenus }}" style="position:absolute;left:0;right:0;top:100%;background:#ffffff;border-top:1px solid #E6E6E6;border-bottom:1px solid #E6E6E6;box-shadow:0 24px 48px rgba(12,36,62,0.10);animation:msfDrop .18s ease both">
+      <div style="max-width:1280px;margin:0 auto;padding:32px clamp(20px,4vw,32px) 36px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) 260px;gap:32px">
+        <sc-for list="{{ megaCountries }}" as="c" hint-placeholder-count="3">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <a href="{{ c.href }}" onClick="{{ go }}" style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 0 12px;border-bottom:1px solid #E6E6E6;margin-bottom:8px" style-hover="color:#0B7A87">
+              <span style="font-family:'Newsreader',serif;font-size:24px;font-weight:500;letter-spacing:-0.01em">{{ c.name }}</span>
+              <span style="font-size:13px;font-weight:600;color:#0B7A87;white-space:nowrap;display:inline-flex;align-items:center">Explore<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-left:6px"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></span>
+            </a>
+            <sc-for list="{{ c.cities }}" as="ct" hint-placeholder-count="5">
+              <a href="{{ ct.href }}" onClick="{{ go }}" style="display:flex;align-items:center;justify-content:space-between;min-height:40px;padding:0 10px;margin:0 -10px;border-radius:8px;font-size:15px" style-hover="background:#F3F6F8;color:#0C243E"><span>{{ ct.name }}</span><span style="font-size:12px;color:#8A96A3">{{ ct.region }}</span></a>
+            </sc-for>
+          </div>
+        </sc-for>
+        <div style="background:#F3F6F8;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:12px;align-self:start">
+          <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5B6B7B">Not listed here?</div>
+          <p style="margin:0;font-size:15px;line-height:1.5;color:#0C243E;text-wrap:pretty">Search any city or region across our three countries, or browse a country page for its full directory.</p>
+          <button type="button" onClick="{{ focusSearch }}" style="align-self:flex-start;height:40px;padding:0 14px;border:1px solid #0C243E;border-radius:9px;background:#ffffff;font:inherit;font-size:14px;font-weight:600;color:#0C243E;cursor:pointer" style-hover="background:#0C243E;color:#ffffff">Search a location</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ treatOpen }}" hint-placeholder-val="{{ false }}">
+    <div onMouseLeave="{{ closeMenus }}" style="position:absolute;left:0;right:0;top:100%;background:#ffffff;border-top:1px solid #E6E6E6;border-bottom:1px solid #E6E6E6;box-shadow:0 24px 48px rgba(12,36,62,0.10);animation:msfDrop .18s ease both">
+      <div style="max-width:1280px;margin:0 auto;padding:32px clamp(20px,4vw,32px) 36px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:28px">
+        <sc-for list="{{ treatGroups }}" as="g" hint-placeholder-count="5">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5B6B7B;padding-bottom:10px;border-bottom:1px solid #E6E6E6;margin-bottom:6px">{{ g.name }}</div>
+            <sc-for list="{{ g.items }}" as="t" hint-placeholder-count="3">
+              <a href="{{ t.href }}" onClick="{{ go }}" style="display:flex;align-items:center;min-height:40px;padding:0 10px;margin:0 -10px;border-radius:8px;font-size:15px" style-hover="background:#F3F6F8;color:#0C243E">{{ t.name }}</a>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-top:1px solid #E6E6E6;background:#FAFBFB">
+        <div style="max-width:1280px;margin:0 auto;padding:14px clamp(20px,4vw,32px);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:14px;color:#5B6B7B">
+          <span>Treatment pages are informational. Discuss suitability with a qualified professional.</span>
+          <a href="/treatments" onClick="{{ go }}" style="font-weight:600;color:#0B7A87">View all treatments<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-left:6px"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></a>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</header>
+
+<sc-if value="{{ mobileOpen }}" hint-placeholder-val="{{ false }}">
+  <div role="dialog" aria-label="Menu" style="position:fixed;inset:72px 0 0;z-index:45;background:#ffffff;overflow:auto;padding:16px 20px 40px;animation:msfDrop .2s ease both">
+    <div style="display:flex;flex-direction:column">
+      <sc-for list="{{ mobileSections }}" as="s" hint-placeholder-count="4">
+        <div style="border-bottom:1px solid #E6E6E6">
+          <button type="button" onClick="{{ s.toggle }}" aria-expanded="{{ s.open }}" style="display:flex;align-items:center;justify-content:space-between;width:100%;min-height:56px;padding:0;border:0;background:transparent;font:inherit;font-size:18px;font-weight:600;color:#0C243E;text-align:left;cursor:pointer">{{ s.name }}<span style="font-size:20px;color:#8A96A3;transform:rotate({{ s.rot }});transition:transform .2s;display:inline-block">+</span></button>
+          <sc-if value="{{ s.open }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:0 0 16px;display:flex;flex-direction:column;gap:14px">
+              <sc-for list="{{ s.groups }}" as="g" hint-placeholder-count="3">
+                <div>
+                  <a href="{{ g.href }}" onClick="{{ go }}" style="display:flex;align-items:center;justify-content:space-between;min-height:44px;font-size:16px;font-weight:600;color:#0C243E">{{ g.name }}<span style="font-size:13px;font-weight:600;color:#0B7A87">{{ g.cta }}</span></a>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:4px">
+                    <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+                      <a href="{{ it.href }}" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border:1px solid #E6E6E6;border-radius:10px;font-size:15px;color:#0C243E">{{ it.name }}</a>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+      <a href="/resources" onClick="{{ go }}" style="display:flex;align-items:center;min-height:56px;border-bottom:1px solid #E6E6E6;font-size:18px;font-weight:600">Resources</a>
+      <a href="/about" onClick="{{ go }}" style="display:flex;align-items:center;min-height:56px;border-bottom:1px solid #E6E6E6;font-size:18px;font-weight:600">About</a>
+    </div>
+    <div style="margin-top:24px">
+      <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5B6B7B;margin-bottom:10px">Country</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <sc-for list="{{ countryOptions }}" as="c" hint-placeholder-count="4">
+          <button type="button" onClick="{{ c.pick }}" aria-pressed="{{ c.selected }}" style="display:flex;align-items:center;gap:10px;min-height:48px;padding:0 12px;border:1px solid {{ c.border }};border-radius:10px;background:{{ c.bg }};font:inherit;font-size:15px;font-weight:{{ c.weight }};color:#0C243E;text-align:left;cursor:pointer">
+            <span style="flex:none;width:28px;height:20px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #E6E6E6;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.06em;color:#5B6B7B;background:#FAFBFB">{{ c.short }}</span>{{ c.name }}
+          </button>
+        </sc-for>
+      </div>
+    </div>
+    <a href="/for-clinics" onClick="{{ go }}" style="display:flex;align-items:center;justify-content:center;min-height:52px;margin-top:24px;border:1px solid #E6E6E6;border-radius:12px;font-size:16px;font-weight:600;color:#0C243E">For Clinics</a>
+  </div>
+</sc-if>
+
+<sc-if value="{{ mobileCountryOpen }}" hint-placeholder-val="{{ false }}">
+  <div role="dialog" aria-label="Choose a country" style="position:fixed;inset:72px 0 auto;z-index:46;background:#ffffff;border-bottom:1px solid #E6E6E6;padding:16px 20px 20px;box-shadow:0 24px 48px rgba(12,36,62,0.12);animation:msfDrop .18s ease both">
+    <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5B6B7B;margin-bottom:10px">Browse clinics in</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <sc-for list="{{ countryOptions }}" as="c" hint-placeholder-count="4">
+        <button type="button" onClick="{{ c.pick }}" aria-pressed="{{ c.selected }}" style="display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;border:1px solid {{ c.border }};border-radius:10px;background:{{ c.bg }};font:inherit;font-size:16px;font-weight:{{ c.weight }};color:#0C243E;text-align:left;cursor:pointer">
+          <span style="flex:none;width:30px;height:22px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #E6E6E6;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:.06em;color:#5B6B7B;background:#FAFBFB">{{ c.short }}</span><span style="flex:1">{{ c.name }}</span><span style="color:#14B3C6">{{ c.check }}</span>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+</sc-if>
+
+
+<main id="main">
+<section aria-labelledby="hero-h1" style="position:relative;background:#FAFBFB;border-bottom:1px solid #E6E6E6;overflow:hidden">
+  <div style="position:absolute;right:-8%;top:-30%;width:46vw;height:46vw;border-radius:50%;background:radial-gradient(circle,rgba(20,179,198,.10),transparent 68%);pointer-events:none" aria-hidden="true"></div>
+  <div style="max-width:1280px;margin:0 auto;padding:clamp(36px,4.5vw,68px) clamp(20px,4vw,32px) clamp(48px,6vw,88px);display:grid;grid-template-columns:{{ heroCols }};gap:clamp(32px,5vw,72px);align-items:center;position:relative;z-index:1">
+    <div style="display:flex;flex-direction:column;gap:clamp(20px,2.4vw,30px)">
+      <div style="display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5B6B7B;animation:msfFade .6s ease both"><span style="width:26px;height:1px;background:#14B3C6;display:inline-block;transform-origin:left;animation:msfLine .7s cubic-bezier(.2,.7,.2,1) .2s both"></span>Med spa &amp; aesthetic clinic directory</div>
+      <h1 id="hero-h1" style="margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(44px,5.8vw,90px);line-height:0.98;letter-spacing:-0.03em;color:#0C243E;text-wrap:balance">
+        <span style="display:inline-block;animation:msfWord .8s cubic-bezier(.2,.7,.2,1) .05s both">Find the Best</span><br><span style="display:inline-block;animation:msfWord .8s cubic-bezier(.2,.7,.2,1) .2s both">Medspas</span><br><span style="display:inline-block;animation:msfWord .8s cubic-bezier(.2,.7,.2,1) .35s both">Near Me<span style="color:#14B3C6">.</span></span>
+      </h1>
+      <p style="margin:0;max-width:48ch;font-size:clamp(17px,1.3vw,19px);line-height:1.55;color:#3E4F62;text-wrap:pretty;animation:msfFade .8s ease .5s both">Explore med spas and aesthetic clinics across the United States, Canada, and UAE. Discover treatments, compare clinic details, and find your next consultation.</p>
+      <div style="display:flex;flex-direction:column;gap:14px;animation:msfRise .8s cubic-bezier(.2,.7,.2,1) .55s both">
+        <form onSubmit="{{ submitSearch }}" role="search" aria-label="Find clinics" style="position:relative;background:#ffffff;border:1px solid #E6E6E6;border-radius:18px;box-shadow:0 24px 64px rgba(12,36,62,0.14);padding:8px;display:grid;grid-template-columns:{{ searchCols }};gap:8px;align-items:stretch">
+        <div style="position:relative;display:flex;flex-direction:column;gap:2px;padding:12px 16px 10px;border-radius:12px;background:{{ qBg }};transition:background .18s">
+          <label for="msf-q" style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5B6B7B">Treatment or clinic</label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input id="msf-q" type="text" autoComplete="off" value="{{ q }}" onChange="{{ setQ }}" onFocus="{{ focusQ }}" onBlur="{{ blurQ }}" placeholder="Botox, laser hair removal, a clinic name" aria-autocomplete="list" aria-expanded="{{ qOpen }}" style="flex:1;min-width:0;height:30px;border:0;background:transparent;font:inherit;font-size:17px;color:#0C243E;outline:none;padding:0">
+            <sc-if value="{{ hasTreat }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ clearQ }}" aria-label="Clear treatment" style="width:28px;height:28px;border:0;border-radius:50%;background:#F3F6F8;color:#5B6B7B;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">×</button></sc-if>
+          </div>
+          <sc-if value="{{ qOpen }}" hint-placeholder-val="{{ false }}">
+            <div role="listbox" onMouseDown="{{ keepFocus }}" style="position:absolute;left:0;top:calc(100% + 12px);width:min(440px,calc(100vw - 48px));background:#ffffff;border:1px solid #E6E6E6;border-radius:14px;box-shadow:0 16px 40px rgba(12,36,62,0.14);padding:8px;animation:msfDrop .16s ease both;z-index:40;max-height:380px;overflow:auto">
+              <sc-if value="{{ qEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:14px 12px;font-size:14px;color:#5B6B7B;line-height:1.5">No matches for “<strong style="color:#0C243E">{{ q }}</strong>”. Try a treatment such as Botox or Microneedling, or a city such as Toronto.</div></sc-if>
+              <sc-for list="{{ qGroups }}" as="g" hint-placeholder-count="2">
+                <div style="padding:8px 12px 4px;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#8A96A3">{{ g.name }}</div>
+                <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+                  <button type="button" role="option" onClick="{{ it.pick }}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:44px;padding:8px 12px;border:0;border-radius:8px;background:transparent;font:inherit;font-size:15px;color:#0C243E;text-align:left;cursor:pointer" style-hover="background:#F3F6F8"><span>{{ it.name }}</span><span style="font-size:13px;color:#8A96A3;white-space:nowrap">{{ it.meta }}</span></button>
+                </sc-for>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+        <div style="position:relative;display:flex;flex-direction:column;gap:2px;padding:12px 16px 10px;border-radius:12px;background:{{ locBg }};transition:background .18s;border-left:{{ searchDivider }}">
+          <label for="msf-loc" style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5B6B7B">City, region, or country</label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input id="msf-loc" type="text" autoComplete="off" value="{{ loc }}" onChange="{{ setLoc }}" onFocus="{{ focusLoc }}" onBlur="{{ blurLoc }}" placeholder="{{ locPlaceholder }}" aria-autocomplete="list" aria-expanded="{{ locOpen }}" style="flex:1;min-width:0;height:30px;border:0;background:transparent;font:inherit;font-size:17px;color:#0C243E;outline:none;padding:0">
+            <sc-if value="{{ hasLoc }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ clearLoc }}" aria-label="Clear location" style="width:28px;height:28px;border:0;border-radius:50%;background:#F3F6F8;color:#5B6B7B;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">×</button></sc-if>
+          </div>
+          <sc-if value="{{ locOpen }}" hint-placeholder-val="{{ false }}">
+            <div role="listbox" onMouseDown="{{ keepFocus }}" style="position:absolute;left:0;top:calc(100% + 12px);width:min(420px,calc(100vw - 48px));background:#ffffff;border:1px solid #E6E6E6;border-radius:14px;box-shadow:0 16px 40px rgba(12,36,62,0.14);padding:8px;animation:msfDrop .16s ease both;z-index:40;max-height:380px;overflow:auto">
+              <button type="button" onClick="{{ useMyLocation }}" style="display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:8px 12px;border:0;border-radius:8px;background:transparent;font:inherit;font-size:15px;font-weight:600;color:#0B7A87;text-align:left;cursor:pointer" style-hover="background:#F3F6F8"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="3"></circle><path d="M8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15"></path></svg>{{ geoLabel }}</button>
+              <sc-if value="{{ geoNote }}" hint-placeholder-val="{{ false }}"><div style="padding:0 12px 8px;font-size:13px;color:#5B6B7B">{{ geoNote }}</div></sc-if>
+              <sc-if value="{{ locEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:12px;font-size:14px;color:#5B6B7B;line-height:1.5">No locations match “<strong style="color:#0C243E">{{ loc }}</strong>”. We currently cover the United States, Canada, and the United Arab Emirates.</div></sc-if>
+              <sc-for list="{{ locGroups }}" as="g" hint-placeholder-count="2">
+                <div style="padding:8px 12px 4px;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#8A96A3">{{ g.name }}</div>
+                <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+                  <button type="button" role="option" onClick="{{ it.pick }}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:44px;padding:8px 12px;border:0;border-radius:8px;background:transparent;font:inherit;font-size:15px;color:#0C243E;text-align:left;cursor:pointer" style-hover="background:#F3F6F8"><span>{{ it.name }}</span><span style="font-size:13px;color:#8A96A3;white-space:nowrap">{{ it.meta }}</span></button>
+                </sc-for>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+        <button type="submit" style="min-height:60px;padding:0 26px;border:0;border-radius:12px;background:#0C243E;color:#ffffff;font:inherit;font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .18s,color .18s" style-hover="background:#14B3C6;color:#0C243E">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="5.5"></circle><path d="m12.5 12.5 3.5 3.5"></path></svg>Find clinics
+        </button>
+      </form>
+
+      <sc-if value="{{ result }}" hint-placeholder-val="{{ false }}">
+        <div role="status" aria-live="polite" style="border:1px solid #E6E6E6;border-radius:14px;padding:16px 18px;background:#ffffff;display:flex;flex-direction:column;gap:12px;animation:msfRise .2s ease both;box-shadow:0 12px 32px rgba(12,36,62,0.08)">
+          <sc-if value="{{ resLoading }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:12px;font-size:15px;color:#5B6B7B"><span style="width:18px;height:18px;border:2px solid #D4D4D4;border-top-color:#14B3C6;border-radius:50%;animation:msfSpin .8s linear infinite;display:inline-block"></span>Finding clinics</div>
+          </sc-if>
+          <sc-if value="{{ resReady }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+              <div><div style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5B6B7B">Clinic directory</div><div style="font-family:'Newsreader',serif;font-size:22px;margin-top:2px">{{ resTitle }}</div><div style="font-size:13px;color:#8A96A3;margin-top:2px">{{ resHref }}</div></div>
+              <a href="{{ resHref }}" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:10px;background:#0C243E;color:#ffffff;font-size:15px;font-weight:600" style-hover="background:#14B3C6;color:#0C243E">Open directory<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-left:6px"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></a>
+            </div>
+          </sc-if>
+          <sc-if value="{{ resNeedLoc }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:15px;line-height:1.5">Where would you like to look for <strong>{{ resTreat }}</strong>? Choose a country or city to continue.</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{ locChips }}" as="c" hint-placeholder-count="6"><button type="button" onClick="{{ c.pick }}" style="min-height:40px;padding:0 14px;border:1px solid #D4D4D4;border-radius:10px;background:#ffffff;font:inherit;font-size:14px;font-weight:{{ c.weight }};color:#0C243E;cursor:pointer;transition:border-color .18s" style-hover="border-color:#0C243E">{{ c.name }}</button></sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ resNone }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:15px;line-height:1.5"><strong>No results for that search.</strong> Try a treatment name, a clinic name, or one of the cities we currently cover, or browse by country.</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{ noneChips }}" as="c" hint-placeholder-count="5"><button type="button" onClick="{{ c.pick }}" style="min-height:40px;padding:0 14px;border:1px solid #D4D4D4;border-radius:10px;background:#ffffff;font:inherit;font-size:14px;color:#0C243E;cursor:pointer" style-hover="border-color:#0C243E">{{ c.name }}</button></sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ resHint }}" hint-placeholder-val="{{ false }}"><div style="font-size:15px;color:#3E4F62">Enter a treatment, a clinic name, or a location to begin.</div></sc-if>
+        </div>
+      </sc-if>
+      
+        
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;font-size:15px;color:#5B6B7B">
+          <span style="font-weight:600;color:#0C243E">Explore treatments</span>
+          <sc-for list="{{ shortcuts }}" as="s" hint-placeholder-count="4">
+            <button type="button" onClick="{{ s.pick }}" style="min-height:36px;padding:0 4px;border:0;border-bottom:1px solid #D4D4D4;background:transparent;font:inherit;font-size:15px;color:#0C243E;cursor:pointer;transition:border-color .18s,color .18s" style-hover="border-color:#14B3C6;color:#0B7A87">{{ s.name }}</button>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{ heroCountries }}" as="c" hint-placeholder-count="3">
+            <button type="button" onClick="{{ c.pick }}" aria-pressed="{{ c.on }}" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0 16px;border:1px solid {{ c.border }};border-radius:12px;background:#ffffff;font:inherit;font-size:14px;font-weight:600;color:#0C243E;cursor:pointer;transition:border-color .18s,transform .18s" style-hover="border-color:#0C243E;transform:translateY(-2px)"><span style="width:8px;height:8px;border-radius:50%;background:{{ c.dot }};transition:background .18s"></span>{{ c.name }}</button>
+          </sc-for>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:14px;color:#8A96A3"><span>United States · Canada · United Arab Emirates</span><button type="button" onClick="{{ openPrototype }}" style="border:0;background:transparent;font:inherit;font-size:14px;color:#8A96A3;cursor:pointer;text-decoration:underline;min-height:32px;padding:0" style-hover="color:#0C243E">About this prototype</button></div>
+      </div>
+    </div>
+
+    <div style="position:relative;max-width:540px;width:100%;justify-self:center;display:{{ orbDisplay }}">
+      <div style="position:relative;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:16px;z-index:2">
+        <figure style="grid-column:1 / -1;margin:0;border-radius:20px;overflow:hidden;background:#ffffff;padding:8px;box-shadow:0 24px 52px rgba(12,36,62,.14);animation:msfCard .9s cubic-bezier(.2,.7,.2,1) .5s both,msfDrift 13s ease-in-out .5s infinite;transition:box-shadow .3s" style-hover="box-shadow:0 32px 66px rgba(12,36,62,.2)">
+          <span style="position:relative;display:block;aspect-ratio:16/10;border-radius:14px;overflow:hidden;background:repeating-linear-gradient(135deg,#E9EEF1 0 12px,#F4F7F8 12px 24px);display:flex;align-items:center;justify-content:center;min-height:210px">
+            <span style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8A96A3;text-align:center;padding:0 16px">Clinic interior photography</span>
+          </span>
+        </figure>
+        <figure style="margin:0;border-radius:18px;overflow:hidden;background:#ffffff;padding:8px;box-shadow:0 20px 44px rgba(12,36,62,.12);animation:msfCard .9s cubic-bezier(.2,.7,.2,1) .7s both,msfDrift 15s ease-in-out .7s infinite;transition:box-shadow .3s" style-hover="box-shadow:0 28px 58px rgba(12,36,62,.18)">
+          <span style="position:relative;display:block;aspect-ratio:1/1;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(135deg,#E9EEF1 0 12px,#F4F7F8 12px 24px)"><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px"><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8A96A3;text-align:center">Skin detail</span></span></span>
+        </figure>
+        <figure style="margin:0;border-radius:18px;overflow:hidden;background:#ffffff;padding:8px;box-shadow:0 20px 44px rgba(12,36,62,.12);animation:msfCard .9s cubic-bezier(.2,.7,.2,1) .9s both,msfDrift 17s ease-in-out .9s infinite;transition:box-shadow .3s" style-hover="box-shadow:0 28px 58px rgba(12,36,62,.18)">
+          <span style="position:relative;display:block;aspect-ratio:1/1;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(135deg,#E9EEF1 0 12px,#F4F7F8 12px 24px)"><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px"><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8A96A3;text-align:center">Consultation</span></span></span>
+        </figure>
+      </div>
+      <div aria-hidden="true" style="position:absolute;left:-46px;bottom:-34px;width:112px;height:112px;border-radius:50%;background:#14B3C6;opacity:.92;animation:msfPop .9s cubic-bezier(.2,.7,.2,1) .5s both;z-index:1"></div>
+      <p style="margin:14px 0 0;font-size:12px;letter-spacing:.04em;color:#8A96A3;text-align:right">Photography placeholders. Licensed imagery to be supplied.</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-clinics" style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,104px) clamp(20px,4vw,32px) clamp(40px,5vw,72px)">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:20px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <h2 id="h-clinics" style="margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(34px,4vw,56px);line-height:1.02;letter-spacing:-0.022em">Medical Spas Near You<span style="color:#14B3C6">.</span></h2>
+    </div>
+      <p style="margin:0;max-width:52ch;font-size:17px;line-height:1.55;color:#3E4F62;text-wrap:pretty">Discover Top-Rated Med Spas in Your Area</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;position:relative">
+      <button type="button" onClick="{{ toggleAds }}" aria-expanded="{{ adsOpen }}" style="display:inline-flex;align-items:center;gap:5px;height:36px;padding:0 12px;border:1px solid #E6E6E6;border-radius:10px;background:#ffffff;font:inherit;font-size:13px;font-weight:600;color:#5B6B7B;cursor:pointer;transition:border-color .18s,color .18s" style-hover="border-color:#0C243E;color:#0C243E"><span>Ads</span><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" style="flex:none"><circle cx="8" cy="8" r="6.4"></circle><path d="M8 7.2v4" stroke-linecap="round"></path><circle cx="8" cy="4.9" r=".75" fill="currentColor" stroke="none"></circle></svg></button>
+      <sc-if value="{{ adsOpen }}" hint-placeholder-val="{{ false }}">
+        <div role="note" onClick="{{ stop }}" style="position:absolute;right:0;top:calc(100% + 10px);z-index:20;width:300px;max-width:calc(100vw - 48px);padding:20px;background:#ffffff;border:1px solid #EDEFF2;border-radius:16px;box-shadow:0 22px 52px rgba(12,36,62,.18);text-align:left;animation:msfDrop .16s ease both">
+          <div style="font-size:16px;font-weight:700;color:#0C243E;margin-bottom:8px">Ad Disclosure</div>
+          <p style="margin:0 0 14px;font-size:14px;line-height:1.55;color:#3E4F62;text-wrap:pretty">We financially support the site through advertisers who pay for clearly marked placements.</p>
+          <button type="button" onClick="{{ openSponsored }}" style="display:inline-flex;align-items:center;gap:6px;border:0;padding:0;background:transparent;font:inherit;font-size:14px;font-weight:600;color:#0B7A87;cursor:pointer" style-hover="color:#0C243E"><span>Learn More</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></button>
+        </div>
+      </sc-if>
+      <button type="button" onClick="{{ clinicPrev }}" aria-label="Scroll clinics left" style="width:44px;height:44px;border:1px solid #E6E6E6;border-radius:50%;background:#ffffff;color:#0C243E;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:border-color .18s,background .18s" style-hover="border-color:#0C243E;background:#F6F8F9"><svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></button>
+      <button type="button" onClick="{{ clinicNext }}" aria-label="Scroll clinics right" style="width:44px;height:44px;border:1px solid #E6E6E6;border-radius:50%;background:#ffffff;color:#0C243E;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:border-color .18s,background .18s" style-hover="border-color:#0C243E;background:#F6F8F9"><svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></button>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid #E6E6E6;margin-bottom:clamp(20px,2.5vw,28px)">
+    <div role="tablist" aria-label="Country" style="display:flex;gap:4px;overflow-x:auto;scrollbar-width:none">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3"><button type="button" role="tab" aria-selected="{{ t.on }}" onClick="{{ t.pick }}" style="flex:none;min-height:48px;padding:0 16px;border:0;border-bottom:2px solid {{ t.line }};margin-bottom:-1px;background:transparent;font:inherit;font-size:16px;font-weight:{{ t.weight }};color:{{ t.color }};cursor:pointer;transition:color .18s,border-color .18s;white-space:nowrap" style-hover="color:#0C243E">{{ t.name }}</button></sc-for>
+    </div>
+    <a href="{{ tabHref }}" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:44px;font-size:15px;font-weight:600;color:#0B7A87"><span>All clinics in {{ tabName }}</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-left:6px"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></a>
+  </div>
+  <div style="position:relative">
+    <span aria-hidden="true" style="position:absolute;right:0;top:0;bottom:14px;width:96px;background:linear-gradient(to left,#ffffff 20%,rgba(255,255,255,0));pointer-events:none;z-index:2"></span>
+    <div ref="{{ clinicRef }}" onScroll="{{ clinicScroll }}" role="tabpanel" style="display:grid;grid-auto-flow:column;grid-auto-columns:{{ clinicAutoCols }};gap:clamp(16px,2vw,24px);overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding:4px {{ clinicPadX }} 12px;margin:0 {{ clinicBleed }};scrollbar-width:none">
+    <sc-for list="{{ clinics }}" as="c" hint-placeholder-count="0">
+      <article style="position:relative;display:flex;flex-direction:column;border:1px solid #E6E6E6;border-radius:18px;background:#ffffff;transition:box-shadow .25s,border-color .25s;scroll-snap-align:start;animation:msfCard .4s cubic-bezier(.2,.7,.2,1) both;animation-delay:{{ c.delay }}" style-hover="box-shadow:0 20px 48px rgba(12,36,62,0.10);border-color:#D4D4D4">
+        <a href="{{ c.href }}" onClick="{{ go }}" tabIndex="-1" aria-hidden="true" style="position:relative;display:block;aspect-ratio:16/10;overflow:hidden;border-radius:17px 17px 0 0;background:repeating-linear-gradient(135deg,#E9EEF1 0 12px,#F4F7F8 12px 24px);isolation:isolate">
+          <span style="position:absolute;inset:0;display:flex;align-items:flex-start;justify-content:flex-start;padding:14px"><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8A96A3">Clinic photo</span></span>
+        </a>
+        <div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1">
+          <div>
+            <h3 style="margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:24px;letter-spacing:-0.015em;line-height:1.1">{{ c.name }}</h3>
+            <div style="font-size:14px;color:#5B6B7B;margin-top:3px">{{ c.place }}</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+              <sc-if value="{{ c.hasReview }}" hint-placeholder-val="{{ true }}">
+                <span aria-label="{{ c.reviewAria }}" role="img" style="position:relative;display:inline-block;width:85px;height:16px;flex:none">
+                  <svg width="85" height="16" viewBox="0 0 85 16" fill="#DADCE0" aria-hidden="true" style="display:block"><path d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(17,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(34,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(51,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(68,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path></svg>
+                  <span style="position:absolute;left:0;top:0;height:16px;overflow:hidden;width:{{ c.starPct }}">
+                    <svg width="85" height="16" viewBox="0 0 85 16" fill="#FBBC04" aria-hidden="true" style="display:block"><path d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(17,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(34,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(51,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(68,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path></svg>
+                  </span>
+                </span>
+                <span style="font-size:14px;font-weight:700;color:#0C243E">{{ c.score }}</span>
+                <span style="font-size:13px;color:#8A96A3;white-space:nowrap">({{ c.count }})</span>
+              </sc-if>
+              <sc-if value="{{ c.noReview }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:13px;color:#8A96A3">No reviews yet</span>
+              </sc-if>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <sc-for list="{{ c.tags }}" as="tg" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;border:1px solid #E6E6E6;border-radius:7px;background:#FAFBFB;font-size:13px;font-weight:500;color:#3E4F62">{{ tg }}</span></sc-for>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:auto;padding-top:4px">
+            <a href="{{ c.href }}" onClick="{{ go }}" aria-label="View {{ c.name }}" style="flex:none;display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border-radius:10px;background:#F6F8F9;font-size:14px;font-weight:600;color:#0C243E;transition:background .18s,color .18s" style-hover="background:#0C243E;color:#ffffff"><span>View</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></a>
+          </div>
+        </div>
+      </article>
+    </sc-for>
+    </div>
+  </div>
+  <div style="margin-top:16px;display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+    <div role="presentation" style="flex:1;min-width:200px;height:3px;border-radius:2px;background:#E6E6E6;overflow:hidden"><span style="display:block;height:100%;width:{{ clinicProgress }};min-width:18%;background:#14B3C6;border-radius:2px;transition:width .25s ease"></span></div>
+    <button type="button" onClick="{{ openSponsored }}" style="border:0;background:transparent;font:inherit;font-size:13px;color:#5B6B7B;cursor:pointer;text-decoration:underline;min-height:32px;padding:0" style-hover="color:#0C243E">How paid placements work</button>
+  </div>
+</section>
+
+<section aria-labelledby="h-what" style="position:relative;background:#ffffff">
+  <div style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,110px) clamp(20px,4vw,32px);display:grid;grid-template-columns:{{ whatCols }};gap:clamp(36px,5vw,80px);align-items:center">
+
+    <div style="display:flex;flex-direction:column;gap:clamp(22px,2.6vw,32px);min-width:0">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <span style="display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5B6B7B"><span style="width:26px;height:1px;background:#14B3C6;display:inline-block"></span>The platform</span>
+        <h2 id="h-what" style="margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(36px,4.4vw,62px);line-height:1;letter-spacing:-0.026em;text-wrap:balance">What is MedSpaFind<span style="color:#14B3C6">?</span></h2>
+        <p style="margin:0;font-size:clamp(17px,1.25vw,20px);line-height:1.55;color:#3E4F62;text-wrap:pretty;max-width:52ch">A discovery platform for medical spas and aesthetic clinics: clinic profiles, treatment information, and city directories across the United States, Canada, and the United Arab Emirates, in one place.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column">
+        <sc-for list="{{ whatRows }}" as="r" hint-placeholder-count="3">
+          <div style="display:grid;grid-template-columns:{{ whatRowCols }};gap:8px 24px;padding:18px 0;border-top:1px solid #E6E6E6">
+            <span style="display:flex;align-items:center;gap:9px;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5B6B7B"><span style="width:7px;height:7px;border-radius:50%;background:{{ r.dot }};display:block;flex:none"></span>{{ r.label }}</span>
+            <span style="font-size:16.5px;line-height:1.5;color:{{ r.color }};text-wrap:pretty">{{ r.value }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px">
+        <a href="/about" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:48px;padding:0 20px;border-radius:12px;background:#0C243E;color:#ffffff;font-size:15px;font-weight:600;transition:background .18s,color .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateY(-2px)"><span>About MedSpaFind</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-left:8px"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></a>
+        <button type="button" onClick="{{ openListings }}" style="min-height:48px;padding:0;border:0;border-bottom:1px solid #D4D4D4;background:transparent;font:inherit;font-size:15px;font-weight:600;color:#0C243E;cursor:pointer;transition:border-color .18s,color .18s" style-hover="border-color:#14B3C6;color:#0B7A87">How our listings work</button>
+      </div>
+    </div>
+
+    <div style="position:relative;width:100%;max-width:560px;justify-self:center;aspect-ratio:1/1">
+      <span aria-hidden="true" style="position:absolute;inset:-6%;border-radius:50%;background:radial-gradient(circle,rgba(20,179,198,.16),transparent 66%)"></span>
+      <span aria-hidden="true" style="position:absolute;inset:-2%;border-radius:50%;border:1px dashed rgba(20,179,198,.28);animation:msfOrbit 90s linear infinite"></span>
+      <span aria-hidden="true" style="position:absolute;inset:4%;border-radius:50%;border:1px solid rgba(12,36,62,.08)"></span>
+
+      <div style="position:absolute;inset:8%;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 32% 26%,#1E4C70 0%,#103457 42%,#0A2136 74%,#061421 100%);box-shadow:0 40px 90px rgba(6,20,33,.42),inset 0 0 60px rgba(0,0,0,.45)">
+        <span aria-hidden="true" style="position:absolute;top:0;left:0;height:100%;width:200%;background-image:radial-gradient(circle,rgba(126,215,225,.55) 1.1px,transparent 1.6px);background-size:16px 16px;opacity:.55;animation:msfGlobe 30s linear infinite"></span>
+        <span aria-hidden="true" style="position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,transparent 42%,rgba(4,15,26,.72) 92%)"></span>
+        <span aria-hidden="true" style="position:absolute;inset:0;background:radial-gradient(circle at 30% 24%,rgba(255,255,255,.22),transparent 46%)"></span>
+        <span aria-hidden="true" style="position:absolute;left:-30%;top:-30%;width:90%;height:160%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.16),transparent);animation:msfSweep 9s ease-in-out infinite"></span>
+      <span aria-hidden="true" style="position:absolute;left:0;top:50%;width:100%;height:20%;transform:translateY(-50%);border:1px solid rgba(255,255,255,.09);border-radius:50%"></span>
+      <span aria-hidden="true" style="position:absolute;left:0;top:50%;width:100%;height:52%;transform:translateY(-50%);border:1px solid rgba(255,255,255,.09);border-radius:50%"></span>
+      <span aria-hidden="true" style="position:absolute;left:0;top:50%;width:100%;height:80%;transform:translateY(-50%);border:1px solid rgba(255,255,255,.09);border-radius:50%"></span>
+      <span aria-hidden="true" style="position:absolute;left:0;top:50%;width:100%;height:97%;transform:translateY(-50%);border:1px solid rgba(255,255,255,.09);border-radius:50%"></span>
+      <span aria-hidden="true" style="position:absolute;left:50%;top:0;width:24%;height:100%;transform:translateX(-50%);border:1px solid rgba(255,255,255,.08);border-radius:50%"></span>
+      <span aria-hidden="true" style="position:absolute;left:50%;top:0;width:56%;height:100%;transform:translateX(-50%);border:1px solid rgba(255,255,255,.08);border-radius:50%"></span>
+      <span aria-hidden="true" style="position:absolute;left:50%;top:0;width:86%;height:100%;transform:translateX(-50%);border:1px solid rgba(255,255,255,.08);border-radius:50%"></span>
+      </div>
+
+      <span aria-hidden="true" style="position:absolute;left:34%;top:52%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#7ED7E1;opacity:.85;animation:msfPing 4s ease-out 0.2s infinite"></span>
+      <span aria-hidden="true" style="position:absolute;left:41%;top:61%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#7ED7E1;opacity:.85;animation:msfPing 4s ease-out 1.1s infinite"></span>
+      <span aria-hidden="true" style="position:absolute;left:26%;top:44%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#7ED7E1;opacity:.85;animation:msfPing 4s ease-out 1.7s infinite"></span>
+      <span aria-hidden="true" style="position:absolute;left:58%;top:58%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#7ED7E1;opacity:.85;animation:msfPing 4s ease-out 2.3s infinite"></span>
+      <span aria-hidden="true" style="position:absolute;left:66%;top:40%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#7ED7E1;opacity:.85;animation:msfPing 4s ease-out 0.7s infinite"></span>
+      <span aria-hidden="true" style="position:absolute;left:49%;top:70%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#7ED7E1;opacity:.85;animation:msfPing 4s ease-out 1.5s infinite"></span>
+      <span role="img" aria-label="United States" style="position:absolute;left:33%;top:44%;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;gap:8px;animation:msfFloat 8s ease-in-out 0s infinite">
+        <span aria-hidden="true" style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.4);backdrop-filter:blur(8px) saturate(1.3);box-shadow:0 14px 34px rgba(4,15,26,.5),inset 0 1px 0 rgba(255,255,255,.5);font-size:14px;font-weight:700;letter-spacing:.06em;color:#ffffff">US
+          <span style="position:absolute;inset:-7px;border-radius:50%;border:1px solid rgba(20,179,198,.45);animation:msfRing 4s ease-out 0s infinite"></span>
+        </span>
+        <span aria-hidden="true" style="width:1px;height:24px;background:linear-gradient(to bottom,rgba(255,255,255,.7),rgba(20,179,198,.1))"></span>
+        <span aria-hidden="true" style="width:9px;height:9px;border-radius:50%;background:#14B3C6;box-shadow:0 0 0 4px rgba(20,179,198,.22);animation:msfPing 3.2s ease-out 0s infinite"></span>
+      </span>
+      <span role="img" aria-label="Canada" style="position:absolute;left:38%;top:25%;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;gap:7px;animation:msfFloat 6.5s ease-in-out 1.2s infinite">
+        <span aria-hidden="true" style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.4);backdrop-filter:blur(8px) saturate(1.3);box-shadow:0 14px 34px rgba(4,15,26,.5),inset 0 1px 0 rgba(255,255,255,.5);font-size:12.5px;font-weight:700;letter-spacing:.06em;color:#ffffff">CA
+          <span style="position:absolute;inset:-7px;border-radius:50%;border:1px solid rgba(20,179,198,.45);animation:msfRing 4s ease-out 1.2s infinite"></span>
+        </span>
+        <span aria-hidden="true" style="width:1px;height:17px;background:linear-gradient(to bottom,rgba(255,255,255,.7),rgba(20,179,198,.1))"></span>
+        <span aria-hidden="true" style="width:9px;height:9px;border-radius:50%;background:#14B3C6;box-shadow:0 0 0 4px rgba(20,179,198,.22);animation:msfPing 3.2s ease-out 1.2s infinite"></span>
+      </span>
+      <span role="img" aria-label="United Arab Emirates" style="position:absolute;left:69%;top:55%;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;gap:7px;animation:msfFloat 6.5s ease-in-out 2.1s infinite">
+        <span aria-hidden="true" style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.4);backdrop-filter:blur(8px) saturate(1.3);box-shadow:0 14px 34px rgba(4,15,26,.5),inset 0 1px 0 rgba(255,255,255,.5);font-size:12.5px;font-weight:700;letter-spacing:.06em;color:#ffffff">AE
+          <span style="position:absolute;inset:-7px;border-radius:50%;border:1px solid rgba(20,179,198,.45);animation:msfRing 4s ease-out 2.1s infinite"></span>
+        </span>
+        <span aria-hidden="true" style="width:1px;height:17px;background:linear-gradient(to bottom,rgba(255,255,255,.7),rgba(20,179,198,.1))"></span>
+        <span aria-hidden="true" style="width:9px;height:9px;border-radius:50%;background:#14B3C6;box-shadow:0 0 0 4px rgba(20,179,198,.22);animation:msfPing 3.2s ease-out 2.1s infinite"></span>
+      </span>
+
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-country" style="border-top:1px solid #E6E6E6;border-bottom:1px solid #E6E6E6;background:#F6F8F9">
+  <div style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,104px) clamp(20px,4vw,32px)">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:clamp(24px,3vw,40px)">
+      <h2 id="h-country" style="margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(34px,4vw,56px);line-height:1.02;letter-spacing:-0.022em">Find care where you are<span style="color:#14B3C6">.</span></h2>
+      <p style="margin:0;max-width:38ch;font-size:16px;color:#5B6B7B;text-wrap:pretty">Three countries, each with its own directory of regions, cities, and clinics.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;border-top:1px solid #D4D4D4">
+      <sc-for list="{{ countryCards }}" as="c" hint-placeholder-count="0">
+        <article style="display:grid;grid-template-columns:{{ rowCols }};gap:clamp(16px,3vw,44px);align-items:center;padding:clamp(20px,2.6vw,34px) clamp(0px,1.5vw,20px);margin:0 clamp(0px,-1.5vw,-20px);border-bottom:1px solid #D4D4D4;border-radius:18px;transition:background .25s" style-hover="background:#ffffff">
+          <a href="{{ c.href }}" onClick="{{ go }}" tabIndex="-1" aria-hidden="true" style="position:relative;display:block;aspect-ratio:4/3;border-radius:16px;overflow:hidden;background:repeating-linear-gradient(135deg,#E9EEF1 0 12px,#F4F7F8 12px 24px);isolation:isolate">
+            <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px"><span style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A96A3;text-align:center">{{ c.name }} destination photo</span></span>
+          </a>
+          <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+            <div style="display:flex;align-items:center;gap:12px"><span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:24px;border:1px solid #D4D4D4;border-radius:5px;font-size:11px;font-weight:600;letter-spacing:.1em;color:#5B6B7B;background:#ffffff">{{ c.short }}</span><span style="font-size:13px;color:#8A96A3">{{ c.href }}</span></div>
+            <h3 style="margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(30px,3.2vw,44px);line-height:1.02;letter-spacing:-0.02em"><a href="{{ c.href }}" onClick="{{ go }}" style="color:#0C243E" style-hover="color:#0B7A87">{{ c.name }}</a></h3>
+            <div style="display:flex;flex-wrap:wrap;gap:6px 16px;font-size:15px">
+              <sc-for list="{{ c.cities }}" as="ct" hint-placeholder-count="3"><a href="{{ ct.href }}" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:32px;color:#3E4F62;border-bottom:1px solid transparent;transition:color .18s,border-color .18s" style-hover="color:#0B7A87;border-bottom-color:#14B3C6">{{ ct.name }}</a></sc-for>
+            </div>
+          </div>
+          <a href="{{ c.href }}" onClick="{{ go }}" aria-label="Explore {{ c.name }}" style="justify-self:{{ rowBtnAlign }};display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:#0C243E;color:#ffffff;transition:background .18s,color .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateX(4px)"><svg width="20" height="20" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></a>
+        </article>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-treat" style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,104px) clamp(20px,4vw,32px)">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:clamp(24px,3vw,40px)">
+    <div>
+      <h2 id="h-treat" style="margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(34px,4vw,56px);line-height:1.02;letter-spacing:-0.022em">Explore your treatment options<span style="color:#14B3C6">.</span></h2>
+      <p style="margin:14px 0 0;max-width:46ch;font-size:17px;color:#3E4F62;text-wrap:pretty">Start with a treatment you know, or discover what you’d like to learn more about.</p>
+    </div>
+    <a href="/treatments" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1px solid #E6E6E6;border-radius:10px;font-size:15px;font-weight:600;color:#0C243E;transition:border-color .18s" style-hover="border-color:#0C243E;color:#0C243E"><span>View all treatments</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-left:6px"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></a>
+  </div>
+  <div style="display:grid;grid-template-columns:{{ bentoCols }};grid-auto-rows:minmax(150px,auto);gap:clamp(12px,1.6vw,18px)">
+    <article style="grid-column:{{ bentoFeatCol }};grid-row:{{ bentoFeatRow }};position:relative;border-radius:20px;overflow:hidden;background:#0C243E;color:#ffffff;min-height:340px;display:flex;flex-direction:column;justify-content:flex-end;padding:24px;isolation:isolate">
+      <span style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 14px,rgba(255,255,255,.02) 14px 28px);z-index:-1"></span>
+      <span style="position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(20,179,198,.35),transparent 68%);z-index:-1"></span>
+      <span aria-hidden="true" style="position:absolute;left:24px;top:24px;width:60px;height:60px;border-radius:18px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#7ED7E1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><sc-for list="{{ featured.icon }}" as="d" hint-placeholder-count="0"><path d="{{ d }}"></path></sc-for></svg>
+      </span>
+      <span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#7ED7E1">Most requested</span>
+      <h3 style="margin:8px 0 6px;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(28px,2.8vw,40px);line-height:1.05;letter-spacing:-0.02em"><a href="{{ featured.href }}" onClick="{{ go }}" style="color:#ffffff" style-hover="color:#7ED7E1">{{ featured.name }}</a></h3>
+      <p style="margin:0 0 16px;max-width:44ch;font-size:15px;line-height:1.5;color:rgba(255,255,255,.82)">{{ featured.short }}</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" onClick="{{ featured.find }}" style="display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border:0;border-radius:10px;background:#ffffff;font:inherit;font-size:14px;font-weight:600;color:#0C243E;cursor:pointer;transition:background .18s" style-hover="background:#14B3C6;color:#0C243E">Find clinics</button>
+      </div>
+    </article>
+    <sc-for list="{{ restTrending }}" as="t" hint-placeholder-count="0">
+      <article style="position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:12px;padding:18px;border:1px solid #E6E6E6;border-radius:18px;background:#ffffff;transition:box-shadow .25s,border-color .25s,transform .25s;overflow:hidden" style-hover="box-shadow:0 20px 48px rgba(12,36,62,0.10);border-color:#D4D4D4;transform:translateY(-3px)">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5B6B7B">{{ t.group }}</span>
+          <span aria-hidden="true" style="width:44px;height:44px;border-radius:12px;background:#F0FAFB;flex:none;display:flex;align-items:center;justify-content:center;transition:background .25s" style-hover="background:#D9F2F5"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0B7A87" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><sc-for list="{{ t.icon }}" as="d" hint-placeholder-count="0"><path d="{{ d }}"></path></sc-for></svg></span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <h3 style="margin:0;font-size:18px;font-weight:600;letter-spacing:-0.01em;line-height:1.25"><a href="{{ t.href }}" onClick="{{ go }}" style="color:#0C243E" style-hover="color:#0B7A87">{{ t.name }}</a></h3>
+          <p style="margin:0;font-size:14px;line-height:1.45;color:#5B6B7B;text-wrap:pretty">{{ t.short }}</p>
+        </div>
+        <div style="display:flex;gap:14px;font-size:14px;font-weight:600">
+          <button type="button" onClick="{{ t.find }}" style="display:inline-flex;align-items:center;min-height:36px;padding:0;border:0;border-bottom:1px solid transparent;background:transparent;font:inherit;font-size:14px;font-weight:600;color:#0B7A87;cursor:pointer" style-hover="border-color:#14B3C6">Find clinics</button>
+        </div>
+      </article>
+    </sc-for>
+  </div>
+</section>
+
+<section aria-labelledby="h-how" style="background:#F6F8F9;border-top:1px solid #E6E6E6;border-bottom:1px solid #E6E6E6">
+  <div style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,104px) clamp(20px,4vw,32px)">
+    <div style="display:grid;grid-template-columns:{{ splitCols }};gap:clamp(24px,4vw,64px);align-items:end;margin-bottom:clamp(28px,3.5vw,48px)">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <span style="display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5B6B7B"><span style="width:26px;height:1px;background:#14B3C6;display:inline-block"></span>Transparency</span>
+        <h2 id="h-how" style="margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(34px,4vw,56px);line-height:1.02;letter-spacing:-0.022em">How our listings work<span style="color:#14B3C6">.</span></h2>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <p style="margin:0;max-width:46ch;font-size:17px;line-height:1.55;color:#3E4F62;text-wrap:pretty">Every clinic profile follows the same structure, so you can compare like with like. Here is what a profile contains and where the information comes from.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <a href="/listing-standards" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:46px;padding:0 18px;border-radius:12px;background:#0C243E;color:#ffffff;font-size:15px;font-weight:600;transition:background .18s,color .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateY(-2px)"><span>Listing standards</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-left:6px"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></a>
+          <button type="button" onClick="{{ openSponsored }}" style="display:inline-flex;align-items:center;min-height:46px;padding:0 18px;border:1px solid #D4D4D4;border-radius:12px;background:#ffffff;font:inherit;font-size:15px;font-weight:600;color:#0C243E;cursor:pointer;transition:border-color .18s" style-hover="border-color:#0C243E">How sponsorship works</button>
+        </div>
+      </div>
+    </div>
+    <ol style="margin:0;padding:0;list-style:none;display:grid;grid-template-columns:{{ stdCols }};gap:clamp(14px,1.8vw,20px)">
+      <sc-for list="{{ standards }}" as="st" hint-placeholder-count="4">
+        <li style="position:relative;display:flex;flex-direction:column;gap:14px;padding:26px 24px 28px;background:#ffffff;border:1px solid #E6E6E6;border-radius:18px;overflow:hidden;transition:border-color .25s,box-shadow .25s,transform .25s" style-hover="border-color:#D4D4D4;box-shadow:0 20px 48px rgba(12,36,62,0.10);transform:translateY(-3px)">
+          <span aria-hidden="true" style="position:absolute;left:0;top:0;right:0;height:3px;background:#14B3C6"></span>
+          <span aria-hidden="true" style="position:absolute;right:-26px;bottom:-46px;font-family:'Newsreader',serif;font-size:140px;line-height:1;color:#F0FAFB;pointer-events:none">{{ st.n }}</span>
+          <span style="position:relative;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#0B7A87"><span style="width:7px;height:7px;border-radius:50%;background:#14B3C6;display:block"></span>{{ st.tag }}</span>
+          <h3 style="position:relative;margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:24px;line-height:1.12;letter-spacing:-0.015em">{{ st.title }}</h3>
+          <p style="position:relative;margin:0;font-size:15.5px;line-height:1.55;color:#5B6B7B;text-wrap:pretty">{{ st.body }}</p>
+        </li>
+      </sc-for>
+    </ol>
+  </div>
+</section>
+
+
+<section aria-labelledby="h-faq" style="background:#ffffff;color:#0C243E;margin-top:clamp(48px,6vw,88px)">
+  <div style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,104px) clamp(20px,4vw,32px);display:grid;grid-template-columns:{{ splitCols }};gap:clamp(28px,4vw,64px);align-items:start">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <span style="display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5B6B7B"><span style="width:26px;height:1px;background:#14B3C6;display:inline-block"></span>Common questions</span>
+      <h2 id="h-faq" style="margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(34px,4vw,56px);line-height:1.02;letter-spacing:-0.022em;color:#0C243E">Questions people ask<span style="color:#14B3C6">.</span></h2>
+      <p style="margin:0;max-width:40ch;font-size:16px;color:#3E4F62;text-wrap:pretty">Short, direct answers about what MedSpaFind is and how to use it.</p>
+      <a href="/about" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:44px;font-size:15px;font-weight:600;color:#0B7A87" style-hover="color:#0C243E"><span>More about the platform</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-left:6px"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></a>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="5">
+        <div style="border:1px solid {{ f.border }};background:{{ f.bg }};transition:background .25s,border-color .25s;padding:0 18px;border-radius:14px">
+          <h3 style="margin:0;font-size:17px;font-weight:600"><button type="button" onClick="{{ f.toggle }}" aria-expanded="{{ f.open }}" style="display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;min-height:60px;padding:0;border:0;background:transparent;font:inherit;font-size:17px;font-weight:600;color:#0C243E;text-align:left;cursor:pointer"><span>{{ f.q }}</span><span style="flex:none;width:34px;height:34px;border:1px solid #D4D4D4;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:18px;font-weight:400;color:#0C243E;background:#ffffff;transform:rotate({{ f.rot }});transition:transform .25s,border-color .2s">+</span></button></h3>
+          <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}"><p style="margin:0;padding:0 48px 20px 0;font-size:16px;line-height:1.6;color:#3E4F62;text-wrap:pretty;animation:msfFade .25s ease both">{{ f.a }}</p></sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-res" style="background:#F6F8F9;border-top:1px solid #E6E6E6">
+  <div style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,104px) clamp(20px,4vw,32px)">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:clamp(24px,3vw,40px)">
+      <h2 id="h-res" style="margin:0;max-width:16ch;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(34px,4vw,56px);line-height:1.02;letter-spacing:-0.022em;text-wrap:balance">A little knowledge. A more informed decision<span style="color:#14B3C6">.</span></h2>
+      <a href="/resources" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1px solid #D4D4D4;border-radius:10px;font-size:15px;font-weight:600;color:#0C243E;background:#ffffff;transition:border-color .18s" style-hover="border-color:#0C243E;color:#0C243E"><span>Explore resources</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-left:6px"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:clamp(16px,2vw,24px)">
+      <sc-for list="{{ resources }}" as="a" hint-placeholder-count="0">
+        <article style="display:flex;flex-direction:column;gap:14px;background:#ffffff;border:1px solid #E6E6E6;border-radius:18px;padding:10px 10px 18px;transition:box-shadow .25s,transform .25s" style-hover="box-shadow:0 20px 48px rgba(12,36,62,0.10);transform:translateY(-3px)">
+          <a href="{{ a.href }}" onClick="{{ go }}" tabIndex="-1" aria-hidden="true" style="position:relative;display:block;aspect-ratio:16/10;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(135deg,#E9EEF1 0 12px,#F4F7F8 12px 24px)"><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px"><span style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A96A3;text-align:center">Article image</span></span></a>
+          <div style="display:flex;flex-direction:column;gap:8px;padding:0 8px">
+            <span style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#0B7A87">{{ a.kind }}</span>
+            <h3 style="margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:24px;line-height:1.15;letter-spacing:-0.01em"><a href="{{ a.href }}" onClick="{{ go }}" style="color:#0C243E" style-hover="color:#0B7A87">{{ a.title }}</a></h3>
+            <p style="margin:0;font-size:15px;color:#5B6B7B;line-height:1.5;text-wrap:pretty">{{ a.desc }}</p>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:6px;padding-top:12px;border-top:1px solid #E6E6E6;font-size:13px;color:#5B6B7B"><span style="width:28px;height:28px;border-radius:50%;background:#D9E6EA;display:block"></span><span>Author and reviewer shown when supplied</span></div>
+          </div>
+        </article>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-prov" style="max-width:1280px;margin:0 auto;padding:clamp(72px,9vw,140px) clamp(20px,4vw,32px) clamp(64px,8vw,120px)">
+  <div style="position:relative;border-radius:26px;overflow:hidden;background:#F6F8F9;border:1px solid #E6E6E6;padding:clamp(30px,3.6vw,56px);display:grid;grid-template-columns:{{ provCols }};gap:clamp(28px,4vw,56px);align-items:center">
+    <span aria-hidden="true" style="position:absolute;right:-90px;top:-90px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(20,179,198,.18),transparent 66%);pointer-events:none"></span>
+    <span aria-hidden="true" style="position:absolute;left:-70px;bottom:-90px;width:230px;height:230px;border-radius:50%;border:1px solid #E6E6E6;pointer-events:none"></span>
+    <div style="position:relative;display:flex;flex-direction:column;gap:18px">
+      <span style="display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5B6B7B"><span style="width:26px;height:1px;background:#14B3C6;display:inline-block"></span>For clinics</span>
+      <h2 id="h-prov" style="margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(32px,3.6vw,50px);line-height:1.02;letter-spacing:-0.022em;text-wrap:balance">Help people discover your clinic<span style="color:#14B3C6">.</span></h2>
+      <p style="margin:0;max-width:48ch;font-size:17px;line-height:1.55;color:#3E4F62;text-wrap:pretty">Present your services, introduce your team, and keep your clinic information up to date.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;padding-top:4px">
+        <a href="/for-clinics/claim" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:52px;padding:0 22px;border-radius:12px;background:#0C243E;color:#ffffff;font-size:16px;font-weight:600;transition:background .18s,color .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateY(-2px)"><span>Claim your clinic</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-left:6px"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></a>
+        <a href="/for-clinics" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:52px;padding:0 22px;border:1px solid #D4D4D4;border-radius:12px;background:#ffffff;font-size:16px;font-weight:600;color:#0C243E;transition:border-color .18s,transform .18s" style-hover="border-color:#0C243E;transform:translateY(-2px)">Explore listing options</a>
+      </div>
+    </div>
+    <ul style="position:relative;margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px">
+      <sc-for list="{{ provPoints }}" as="p" hint-placeholder-count="3">
+        <li style="display:grid;grid-template-columns:40px 1fr;gap:14px;align-items:center;padding:18px 20px;background:#ffffff;border:1px solid #E6E6E6;border-radius:14px;transition:border-color .2s,transform .2s" style-hover="border-color:#14B3C6;transform:translateX(3px)">
+          <span style="width:40px;height:40px;border-radius:50%;background:#F0FAFB;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#0B7A87" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5 7 13l7.5-8"></path></svg></span>
+          <span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:600">{{ p.title }}</span><span style="font-size:14.5px;line-height:1.45;color:#5B6B7B">{{ p.body }}</span></span>
+        </li>
+      </sc-for>
+    </ul>
+  </div>
+</section>
+</main>
+<footer style="background:#0C243E;color:#ffffff;overflow:hidden">
+  <div style="max-width:1280px;margin:0 auto;padding:clamp(48px,6vw,80px) clamp(20px,4vw,32px) 32px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;padding-bottom:clamp(32px,4vw,56px);margin-bottom:clamp(32px,4vw,56px);border-bottom:1px solid rgba(255,255,255,.14)">
+      <p style="margin:0;font-family:'Newsreader',serif;font-size:clamp(30px,3.6vw,52px);line-height:1.05;letter-spacing:-0.02em;max-width:22ch;text-wrap:balance">Start with a treatment or a place<span style="color:#14B3C6">.</span> We’ll show you the clinics.</p>
+      <button type="button" onClick="{{ focusSearch }}" style="display:inline-flex;align-items:center;gap:10px;min-height:52px;padding:0 22px;border:0;border-radius:12px;background:#14B3C6;color:#0C243E;font:inherit;font-size:16px;font-weight:600;cursor:pointer;transition:background .18s" style-hover="background:#ffffff">Back to search<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 12V2M3 6l4-4 4 4"></path></svg></button>
+    </div>
+    <div style="display:grid;grid-template-columns:{{ footCols }};gap:40px clamp(24px,3vw,48px)">
+      <div style="display:flex;flex-direction:column;gap:16px;grid-column:{{ footBrandSpan }}">
+        <img src="assets/medspafind-logo.webp" alt="MedSpaFind" style="height:26px;width:auto;display:block;align-self:flex-start;filter:brightness(0) invert(1)">
+        <p style="margin:0;max-width:34ch;font-size:15px;line-height:1.6;color:rgba(255,255,255,.72);text-wrap:pretty">A discovery platform for medical spas and aesthetic clinics in the United States, Canada, and the United Arab Emirates.</p>
+      </div>
+      <sc-for list="{{ footGroups }}" as="g" hint-placeholder-count="4">
+        <div>
+          <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#7ED7E1;margin-bottom:14px">{{ g.name }}</div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ g.links }}" as="l" hint-placeholder-count="4">
+              <a href="{{ l.href }}" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:36px;font-size:15px;color:rgba(255,255,255,.85)" style-hover="color:#7ED7E1">{{ l.name }}</a>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="margin-top:clamp(40px,5vw,64px);padding-top:24px;border-top:1px solid rgba(255,255,255,.14);display:flex;flex-direction:column;gap:18px">
+      <p style="margin:0;max-width:90ch;font-size:14px;line-height:1.6;color:rgba(255,255,255,.62);text-wrap:pretty">MedSpaFind is a discovery platform. We list clinics and treatment information to help you research your options; we do not provide medical advice. Whether a treatment is suitable for you should be discussed with a qualified professional.</p>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;font-size:14px;color:rgba(255,255,255,.62)">
+        <span>© 2026 MedSpaFind</span>
+        <div style="display:flex;flex-wrap:wrap;gap:4px 20px">
+          <a href="/privacy" onClick="{{ go }}" style="color:rgba(255,255,255,.75);min-height:36px;display:inline-flex;align-items:center" style-hover="color:#7ED7E1">Privacy</a>
+          <a href="/terms" onClick="{{ go }}" style="color:rgba(255,255,255,.75);min-height:36px;display:inline-flex;align-items:center" style-hover="color:#7ED7E1">Terms</a>
+          <a href="/listing-standards" onClick="{{ go }}" style="color:rgba(255,255,255,.75);min-height:36px;display:inline-flex;align-items:center" style-hover="color:#7ED7E1">Listing standards</a>
+          <a href="/sponsorship" onClick="{{ go }}" style="color:rgba(255,255,255,.75);min-height:36px;display:inline-flex;align-items:center" style-hover="color:#7ED7E1">Sponsorship</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<sc-if value="{{ dialog }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeDialog }}" style="position:fixed;inset:0;z-index:80;background:rgba(12,36,62,0.45);display:flex;align-items:center;justify-content:center;padding:20px;animation:msfRise .18s ease both">
+    <div role="dialog" aria-modal="true" aria-labelledby="dlg-title" onClick="{{ stop }}" style="width:100%;max-width:520px;background:#ffffff;border-radius:18px;padding:28px;box-shadow:0 32px 80px rgba(12,36,62,0.3);display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+        <h2 id="dlg-title" style="margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:28px;line-height:1.1;letter-spacing:-0.01em">{{ dialogTitle }}</h2>
+        <button type="button" onClick="{{ closeDialog }}" aria-label="Close" style="flex:none;width:40px;height:40px;border:1px solid #E6E6E6;border-radius:10px;background:#ffffff;font-size:18px;color:#0C243E;cursor:pointer" style-hover="border-color:#0C243E">×</button>
+      </div>
+      <sc-for list="{{ dialogParas }}" as="p" hint-placeholder-count="2"><p style="margin:0;font-size:16px;line-height:1.6;color:#3E4F62;text-wrap:pretty">{{ p }}</p></sc-for>
+      <sc-if value="{{ dialogLocPick }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{ locChips }}" as="c" hint-placeholder-count="6">
+            <button type="button" onClick="{{ c.pickDialog }}" style="min-height:44px;padding:0 14px;border:1px solid #D4D4D4;border-radius:10px;background:#ffffff;font:inherit;font-size:15px;font-weight:{{ c.weight }};color:#0C243E;cursor:pointer" style-hover="border-color:#0C243E">{{ c.name }}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ dialogLink }}" hint-placeholder-val="{{ false }}">
+        <a href="{{ dialogLink }}" onClick="{{ go }}" style="align-self:flex-start;font-size:15px;font-weight:600;color:#0B7A87">{{ dialogLinkLabel }}<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-left:6px"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></a>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ route }}" hint-placeholder-val="{{ false }}">
+  <div role="status" style="position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:90;max-width:calc(100vw - 40px);display:flex;align-items:center;gap:14px;padding:10px 12px 10px 16px;background:#0C243E;color:#ffffff;border-radius:12px;box-shadow:0 16px 40px rgba(12,36,62,0.3);font-size:14px;animation:msfRise .18s ease both">
+    <span style="color:#7ED7E1;font-weight:600;white-space:nowrap">Prototype</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">would open <strong>{{ route }}</strong></span>
+    <button type="button" onClick="{{ closeRoute }}" aria-label="Dismiss" style="width:32px;height:32px;border:0;border-radius:8px;background:rgba(255,255,255,.1);color:#ffffff;cursor:pointer;font-size:16px">×</button>
+  </div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultCountry&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;global&quot;,&quot;options&quot;:[&quot;global&quot;,&quot;us&quot;,&quot;ca&quot;,&quot;ae&quot;],&quot;tsType&quot;:&quot;'global'|'us'|'ca'|'ae'&quot;,&quot;section&quot;:&quot;Behaviour&quot;},&quot;showSponsoredExample&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behaviour&quot;}}">
+const COUNTRIES = [
+  { cc: 'global', name: 'Global', short: 'GL' },
+  { cc: 'us', name: 'United States', short: 'US' },
+  { cc: 'ca', name: 'Canada', short: 'CA' },
+  { cc: 'ae', name: 'United Arab Emirates', short: 'AE' }
+];
+const CNAME = Object.fromEntries(COUNTRIES.map(c => [c.cc, c.name]));
+const CITIES = [
+  { name: 'New York', cc: 'us', region: 'New York', rs: 'ny' }, { name: 'Los Angeles', cc: 'us', region: 'California', rs: 'ca' }, { name: 'Miami', cc: 'us', region: 'Florida', rs: 'fl' }, { name: 'Chicago', cc: 'us', region: 'Illinois', rs: 'il' }, { name: 'Houston', cc: 'us', region: 'Texas', rs: 'tx' }, { name: 'Scottsdale', cc: 'us', region: 'Arizona', rs: 'az' },
+  { name: 'Toronto', cc: 'ca', region: 'Ontario', rs: 'on' }, { name: 'Vancouver', cc: 'ca', region: 'British Columbia', rs: 'bc' }, { name: 'Montreal', cc: 'ca', region: 'Quebec', rs: 'qc' }, { name: 'Calgary', cc: 'ca', region: 'Alberta', rs: 'ab' }, { name: 'Ottawa', cc: 'ca', region: 'Ontario', rs: 'on' },
+  { name: 'Dubai', cc: 'ae', region: 'Dubai', rs: 'dubai' }, { name: 'Abu Dhabi', cc: 'ae', region: 'Abu Dhabi', rs: 'abu-dhabi' }, { name: 'Sharjah', cc: 'ae', region: 'Sharjah', rs: 'sharjah' }
+];
+const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const cityHref = c => `/${c.cc}/${c.rs}/${slug(c.name)}`;
+const TREATMENTS = [
+  ['Botox', 'Injectables'], ['Dermal Fillers', 'Injectables'], ['Skin Boosters', 'Injectables'], ['Lip Filler', 'Injectables'],
+  ['Laser Hair Removal', 'Laser & light'], ['IPL Photofacial', 'Laser & light'], ['Tattoo Removal', 'Laser & light'],
+  ['Microneedling', 'Skin'], ['RF Microneedling', 'Skin'], ['Chemical Peels', 'Skin'], ['HydraFacial', 'Skin'], ['Skin Treatments', 'Skin'],
+  ['CoolSculpting', 'Body'], ['Skin Tightening', 'Body'],
+  ['PRP Hair Restoration', 'Hair'], ['Exosome Scalp Therapy', 'Hair']
+].map(([name, group]) => ({ name, group, slug: slug(name) }));
+const GROUP_ORDER = ['Injectables', 'Laser & light', 'Skin', 'Body', 'Hair'];
+const U = (id, w) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`;
+const TRENDING = [
+  { name: 'Neuromodulators', slug: 'neuromodulators', icon: ["M13.8 3.6l6.6 6.6","M11.7 5.7l6.6 6.6","M16.4 8.1l-8.6 8.6L3.6 20.4l3.7-4.2 8.6-8.6","M9.2 11.3l3.5 3.5"], group: 'Injectables', short: 'Botox, Dysport, Xeomin for expression lines.', desc: 'Prescription injectables such as Botox, Dysport, and Xeomin that temporarily relax targeted facial muscles. Still the most requested category in med spas.', img: U('1573497019940-1c28c88b4f3e', 900), alt: 'Practitioner in clinic scrubs' },
+  { name: 'Dermal Fillers', slug: 'dermal-fillers', icon: ["M12 3.4c3.3 3.9 5.1 6.4 5.1 9a5.1 5.1 0 0 1-10.2 0c0-2.6 1.8-5.1 5.1-9z","M9.6 13.6a2.4 2.4 0 0 0 2.4 2.4"], group: 'Injectables', short: 'Volume and contour, with a shift toward subtle results.', desc: 'Hyaluronic-acid and other fillers discussed for volume and contour, with a current shift toward subtle, balanced results.', img: U('1573497019940-1c28c88b4f3e', 900), alt: 'Portrait of a smiling woman in natural light' },
+  { name: 'Skin Boosters', slug: 'skin-boosters', icon: ["M11.2 5c2.8 3.3 4.3 5.5 4.3 7.7a4.3 4.3 0 0 1-8.6 0C6.9 10.5 8.4 8.3 11.2 5z","M18.4 4.2v3.4","M16.7 5.9h3.4"], group: 'Injectables', short: 'Injectable hydrators and collagen stimulators.', desc: 'Injectable hydrators and collagen stimulators, including polynucleotides and poly-L-lactic acid, focused on skin quality rather than volume.', img: U('1554151228-14d9def656e4', 900), alt: 'Close-up portrait showing natural skin texture' },
+  { name: 'RF Microneedling', slug: 'rf-microneedling', icon: ["M6 3.6v5.8","M10 3.6v5.8","M14 3.6v5.8","M18 3.6v5.8","M3.8 13.2h16.4","M7.4 17.2h9.2","M10 20.6h4"], group: 'Skin', short: 'Microneedling with radiofrequency for texture and firmness.', desc: 'Microneedling combined with radiofrequency energy, offered for texture, firmness, and acne scarring.', img: U('1570172619644-dfd03ed5d881', 900), alt: 'Facial treatment being applied in a clinic' },
+  { name: 'Laser Hair Removal', slug: 'laser-hair-removal', icon: ["M9.2 3.6h5.6l-1.1 5.6h-3.4z","M12 9.2v3.4","M8.8 16.4c.9-1.1 2-1.7 3.2-1.7s2.3.6 3.2 1.7","M5.4 20.4h13.2","M6.6 12.4 4.4 14.6","M17.4 12.4l2.2 2.2"], group: 'Laser', short: 'Hair reduction planned as a course of sessions.', desc: 'Light-based hair reduction planned as a course of sessions. Newer devices are cleared for a wider range of skin tones.', img: U('1583209814683-c023dd293cc6', 900), alt: 'Gloved practitioner hands' },
+  { name: 'Laser & IPL', slug: 'laser-resurfacing-ipl', icon: ["M15.4 12a3.4 3.4 0 1 1-6.8 0 3.4 3.4 0 0 1 6.8 0","M12 2.6v2.4","M12 19v2.4","M2.6 12H5","M19 12h2.4","M5.5 5.5 7.2 7.2","M16.8 16.8l1.7 1.7","M5.5 18.5l1.7-1.7","M16.8 7.2l1.7-1.7"], group: 'Laser', short: 'Tone, sun damage, and redness, gentle to fractional.', desc: 'Energy-based treatments for tone, sun damage, and redness, from gentle photofacials to fractional resurfacing.', img: U('1573497019940-1c28c88b4f3e', 900), alt: 'Sunscreen tube on sand' },
+  { name: 'PRP & Exosomes', slug: 'prp-exosomes', icon: ["M12 4.2a7.8 7.8 0 1 0 0 15.6 7.8 7.8 0 0 0 0-15.6","M12 9.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6","M7.4 7.6l1.8 1.8","M16.6 16.4l-1.8-1.8"], group: 'Regenerative', short: 'Regenerative approaches for skin and scalp.', desc: 'Regenerative approaches using platelet-rich plasma or exosomes, often paired with microneedling for skin and scalp.', img: U('1554151228-14d9def656e4', 900), alt: 'Skincare serum bottles' },
+  { name: 'Body Contouring', slug: 'body-contouring', icon: ["M7.4 3.6c1.9 3.1 1.9 5.3 0 8.4s-1.9 5.3 0 8.4","M16.6 3.6c-1.9 3.1-1.9 5.3 0 8.4s1.9 5.3 0 8.4","M9.6 12h4.8"], group: 'Body', short: 'Non-surgical fat reduction and muscle toning.', desc: 'Non-surgical fat-reduction and muscle-toning devices, frequently chosen for their minimal downtime.', img: U('1616394584738-fc6e612e71b9', 900), alt: 'Treatment in progress in a calm room' }
+];
+const CLINICS = {
+  us: [
+    { name: 'Meridian Aesthetics', city: 'New York', tags: ['Botox', 'Fillers', 'Microneedling'], review: { source: 'Google', score: '4.8', count: 212 }, sponsored: true, img: U('1554151228-14d9def656e4', 800) },
+    { name: 'Silver Lake Skin Studio', city: 'Los Angeles', tags: ['Laser Hair Removal', 'IPL'], review: { source: 'Google', score: '4.7', count: 96 }, img: U('1616394584738-fc6e612e71b9', 800) },
+    { name: 'Brickell Dermal Lounge', city: 'Miami', tags: ['Body Contouring', 'HydraFacial'], review: null, img: U('1620916566398-39f1143ab7be', 800) },
+    { name: 'Gold Coast Aesthetics', city: 'Chicago', tags: ['Neuromodulators', 'Skin Boosters'], review: { source: 'Google', score: '4.9', count: 154 }, img: U('1554151228-14d9def656e4', 800) },
+    { name: 'Camelback Skin Clinic', city: 'Scottsdale', tags: ['RF Microneedling', 'Peels'], review: { source: 'Google', score: '4.6', count: 71 }, img: U('1616394584738-fc6e612e71b9', 800) },
+    { name: 'Heights Laser Studio', city: 'Houston', tags: ['Laser Hair Removal', 'Skin Tightening'], review: null, img: U('1583209814683-c023dd293cc6', 800) }
+  ],
+  ca: [
+    { name: 'Yorkville Skin Studio', city: 'Toronto', tags: ['Botox', 'Lip Filler', 'HydraFacial'], review: { source: 'Google', score: '4.9', count: 340 }, img: U('1616394584738-fc6e612e71b9', 800) },
+    { name: 'Kitsilano Laser & Skin', city: 'Vancouver', tags: ['Laser Hair Removal', 'Skin Tightening'], review: { source: 'Google', score: '4.6', count: 58 }, sponsored: true, img: U('1583209814683-c023dd293cc6', 800) },
+    { name: 'Clinique Plateau', city: 'Montreal', tags: ['Microneedling', 'Peels', 'PRP'], review: null, img: U('1554151228-14d9def656e4', 800) },
+    { name: 'Kensington Aesthetics', city: 'Calgary', tags: ['Neuromodulators', 'Fillers'], review: { source: 'Google', score: '4.8', count: 120 }, img: U('1616394584738-fc6e612e71b9', 800) },
+    { name: 'Glebe Skin Clinic', city: 'Ottawa', tags: ['IPL', 'Skin Boosters'], review: { source: 'Google', score: '4.7', count: 44 }, img: U('1554151228-14d9def656e4', 800) },
+    { name: 'Gastown Laser Lab', city: 'Vancouver', tags: ['Laser Hair Removal', 'Tattoo Removal'], review: null, img: U('1620916566398-39f1143ab7be', 800) }
+  ],
+  ae: [
+    { name: 'Marina Skin Clinic', city: 'Dubai', tags: ['Injectables', 'Laser Hair Removal'], review: { source: 'Google', score: '4.8', count: 410 }, img: U('1616394584738-fc6e612e71b9', 800) },
+    { name: 'Corniche Aesthetics', city: 'Abu Dhabi', tags: ['Body Contouring', 'Skin Tightening'], review: { source: 'Google', score: '4.7', count: 122 }, img: U('1620916566398-39f1143ab7be', 800) },
+    { name: 'Al Majaz Laser Centre', city: 'Sharjah', tags: ['Laser Hair Removal', 'IPL'], review: null, sponsored: true, img: U('1573497019940-1c28c88b4f3e', 800) },
+    { name: 'Jumeirah Skin House', city: 'Dubai', tags: ['Skin Boosters', 'HydraFacial'], review: { source: 'Google', score: '4.9', count: 268 }, img: U('1616394584738-fc6e612e71b9', 800) },
+    { name: 'Saadiyat Aesthetics', city: 'Abu Dhabi', tags: ['Neuromodulators', 'RF Microneedling'], review: { source: 'Google', score: '4.6', count: 63 }, img: U('1554151228-14d9def656e4', 800) },
+    { name: 'Downtown Derma Lounge', city: 'Dubai', tags: ['PRP', 'Peels'], review: null, img: U('1554151228-14d9def656e4', 800) }
+  ]
+};
+const AREAS = [
+  { name: 'Skin', hint: 'Texture, tone, sun damage', cat: 'laser-resurfacing-ipl', topics: ['What microneedling involves', 'Chemical peel strengths explained', 'Questions to ask about laser skin treatments'] },
+  { name: 'Face', hint: 'Lines, volume, contour', cat: 'neuromodulators', topics: ['How neuromodulators like Botox work', 'Dermal fillers: areas and considerations', 'Preparing for a first consultation'] },
+  { name: 'Body', hint: 'Contouring, tightening', cat: 'body-contouring', topics: ['Non-surgical body contouring: an overview', 'Skin-tightening technologies compared', 'What a course of treatments involves'] },
+  { name: 'Hair', hint: 'Removal or restoration', cat: 'laser-hair-removal', topics: ['Laser hair removal: sessions and skin types', 'PRP for thinning hair: an overview', 'Choosing a clinic for hair treatments'] }
+];
+const ARTICLES = [
+  { kind: 'Checklist', title: 'Questions to ask before your first consultation', desc: 'A short list to bring with you, covering the practitioner, the plan, and aftercare.', href: '/resources/questions-to-ask-before-your-first-consultation', img: 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=400&q=80' },
+  { kind: 'Explainer', title: 'Understanding treatment prices', desc: 'Why quotes vary by unit, area, and session, and how to compare them fairly.', href: '/resources/understanding-treatment-prices', img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80' }
+];
+const DIALOGS = {
+  prototype: { title: 'About this prototype', paras: ['Clinic names, reviews, articles, and prices shown here are sample content for design review; none refer to real businesses. Photography is licensed stock imagery and does not depict the premises or staff of any named clinic.', 'Listing counts and ratings will appear only when real data is connected.'], link: null },
+  guide: { title: 'About guided discovery', paras: ['Guided discovery is a navigation aid. It helps you pick a treatment area and a location, then shows educational topics and the matching clinic directory.', 'It does not assess medical suitability or recommend procedures. Whether a treatment is right for you should be discussed with a qualified professional.'], link: '/listing-standards', linkLabel: 'Read our listing standards' },
+  sponsored: { title: 'Ad disclosure', paras: ['We financially support the site through advertisers who pay for clearly marked placements. Paid placement affects where a listing appears; it does not change the listing’s information, and it is not a recommendation or an endorsement of the clinic.', 'Every paid placement carries an “Ads” marker on the card so you can tell it apart from other results.'], link: '/sponsorship', linkLabel: 'Read our sponsorship information' },
+  listings: { title: 'How our listings work', paras: ['Clinic profiles bring together the information a clinic provides (services, team, photos, and contact details) with the location and treatment structure of our directory so you can compare clinics side by side.', 'MedSpaFind is a discovery platform. Listings are not medical advice, and whether a treatment is right for you should be discussed with a qualified professional.'], link: '/listing-standards', linkLabel: 'Read our listing standards' }
+};
+const SHORTCUTS = ['Botox', 'Laser Hair Removal', 'Microneedling', 'Skin Treatments'];
+
+class Component extends DCLogic {
+  clinicRef = React.createRef();
+  scrollClinics(dir) {
+    const el = this.clinicRef.current;
+    if (!el) return;
+    const card = el.firstElementChild;
+    const w = card ? card.getBoundingClientRect().width + 20 : 320;
+    const step = w * (this.state.w >= 1000 ? 2 : 1);
+    const max = el.scrollWidth - el.clientWidth;
+    const from = el.scrollLeft;
+    const to = Math.max(0, Math.min(max, from + dir * step));
+    if (to === from) return;
+    if (this._railAnim) clearInterval(this._railAnim);
+    const t0 = Date.now();
+    const ease = p => 1 - Math.pow(1 - p, 3);
+    this._railAnim = setInterval(() => {
+      const p = Math.min(1, (Date.now() - t0) / 320);
+      el.scrollLeft = from + (to - from) * ease(p);
+      if (p >= 1) { el.scrollLeft = to; clearInterval(this._railAnim); this._railAnim = null; }
+    }, 16);
+  }
+  state = { w: typeof window !== 'undefined' ? window.innerWidth : 1440, adsCard: null, menu: null, countryOpen: false, country: 'global', q: '', qFocus: false, loc: '', locFocus: false, selTreat: null, selLoc: null, result: null, guideStep: 0, guideArea: null, guideCountry: null, guideCity: null, tab: 'us', dialog: null, pendingCat: null, mobileOpen: false, mobileSection: null, route: null, geo: null, activeCat: 0, scrolled: false, faq: 0, clinicProg: 0 };
+  componentDidMount() {
+    this._onResize = () => { const now = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0); if (now && now !== this.state.w) this.setState({ w: now }); };
+    this._settle = () => { this._timers = [0, 60, 150, 300, 600, 1000].map(ms => setTimeout(this._onResize, ms)); };
+    window.addEventListener('load', this._onResize);
+    this._settle();
+    window.addEventListener('resize', this._onResize);
+    this._onScroll = () => { const sc = window.scrollY > 560; if (sc !== this.state.scrolled) this.setState({ scrolled: sc }); };
+    window.addEventListener('scroll', this._onScroll, { passive: true });
+    this._country = this.props.defaultCountry ?? 'global';
+    if (this._country !== 'global') this.setState({ country: this._country });
+  }
+  componentWillUnmount() {
+    (this._timers || []).forEach(clearTimeout);
+    if (this._rvAnim) clearInterval(this._rvAnim);
+    if (this._r) window.removeEventListener('load', this._r);
+    if (this._onResize) window.removeEventListener('load', this._onResize); window.removeEventListener('resize', this._onResize); window.removeEventListener('scroll', this._onScroll); clearTimeout(this._t); clearTimeout(this._rt); }
+  go = e => {
+    e.preventDefault();
+    const href = e.currentTarget.getAttribute('href');
+    this.setState({ route: href, menu: null, mobileOpen: false });
+    clearTimeout(this._rt); this._rt = setTimeout(() => this.setState({ route: null }), 3500);
+  };
+  setCountry(cc) {
+    this.setState(s => {
+      const keepLoc = s.selLoc && (cc === 'global' || s.selLoc.cc === cc);
+      return { country: cc, countryOpen: false, mobileOpen: false, selLoc: keepLoc ? s.selLoc : null, loc: keepLoc ? s.loc : '', tab: cc === 'global' ? s.tab : cc, result: keepLoc ? s.result : null };
+    });
+  }
+  pickLoc(c, extra) {
+    this.setState({ selLoc: c, loc: c.name, country: c.cc, locFocus: false, geo: null, ...(extra || {}) });
+  }
+  runSearch(treat, locObj) {
+    clearTimeout(this._t);
+    this.setState({ result: { status: 'loading' } });
+    this._t = setTimeout(() => {
+      const place = locObj.kind === 'country' ? CNAME[locObj.cc] : `${locObj.name}, ${CNAME[locObj.cc]}`;
+      const base = locObj.kind === 'country' ? `/${locObj.cc}` : cityHref(locObj);
+      const href = treat ? `${base}/${treat.slug}` : base;
+      this.setState({ result: { status: 'ready', title: treat ? `${treat.name} · ${place}` : place, href } });
+    }, 900);
+  }
+  submitSearch = e => {
+    e.preventDefault();
+    const { q, loc, selTreat, selLoc } = this.state;
+    let treat = selTreat, locObj = selLoc;
+    if (!treat && q.trim()) treat = TREATMENTS.find(t => t.name.toLowerCase() === q.trim().toLowerCase()) || null;
+    if (!locObj && loc.trim()) {
+      const l = loc.trim().toLowerCase();
+      const city = CITIES.find(c => c.name.toLowerCase() === l);
+      const ctry = COUNTRIES.find(c => c.cc !== 'global' && (c.name.toLowerCase() === l || c.cc === l || (l === 'uae' && c.cc === 'ae') || (l === 'usa' && c.cc === 'us')));
+      locObj = city ? { ...city, kind: 'city' } : ctry ? { name: ctry.name, cc: ctry.cc, kind: 'country' } : null;
+      if (locObj) this.setState({ selLoc: locObj, country: locObj.cc });
+    }
+    if (!q.trim() && !loc.trim()) return this.setState({ result: { status: 'hint' } });
+    if (q.trim() && !treat && !CLINICS[this.state.tab].some(c => c.name.toLowerCase().includes(q.trim().toLowerCase()))) return this.setState({ result: { status: 'none' } });
+    if (loc.trim() && !locObj) return this.setState({ result: { status: 'none' } });
+    if (!locObj && this.state.country !== 'global') locObj = { name: CNAME[this.state.country], cc: this.state.country, kind: 'country' };
+    if (treat && !locObj) return this.setState({ result: { status: 'needloc', treat }, qFocus: false });
+    this.runSearch(treat, locObj);
+  };
+  onKey = e => { if (e.key === 'Escape') this.setState({ menu: null, countryOpen: false, dialog: null, adsCard: null, qFocus: false, locFocus: false, mobileOpen: false }); };
+  renderVals() {
+    const s = this.state;
+    const isMobile = s.w < 760, isDesktop = !isMobile, wide = s.w >= 1000, mid = s.w >= 760;
+    const country = s.country;
+    const showSponsored = this.props.showSponsoredExample ?? true;
+    const ql = s.q.trim().toLowerCase(), ll = s.loc.trim().toLowerCase();
+    // search suggestions
+    const tMatch = ql ? TREATMENTS.filter(t => t.name.toLowerCase().includes(ql)) : TREATMENTS.slice(0, 4);
+    const allClinics = Object.entries(CLINICS).flatMap(([cc, arr]) => arr.map(c => ({ ...c, cc })));
+    const cMatch = ql ? allClinics.filter(c => c.name.toLowerCase().includes(ql) && (country === 'global' || c.cc === country)) : [];
+    const lMatch = ql ? CITIES.filter(c => c.name.toLowerCase().includes(ql)) : [];
+    const qGroups = [];
+    if (tMatch.length) qGroups.push({ name: ql ? 'Treatments' : 'Popular treatments', items: tMatch.slice(0, 5).map(t => ({ name: t.name, meta: t.group, pick: () => this.setState({ selTreat: t, q: t.name, qFocus: false, result: null }) })) });
+    if (cMatch.length) qGroups.push({ name: 'Clinics', items: cMatch.slice(0, 3).map(c => ({ name: c.name, meta: `${c.city}, ${CNAME[c.cc]}`, pick: () => { this.setState({ q: c.name, qFocus: false, route: `/${c.cc}/${slug(c.city)}/${slug(c.name)}` }); clearTimeout(this._rt); this._rt = setTimeout(() => this.setState({ route: null }), 3500); } })) });
+    if (lMatch.length) qGroups.push({ name: 'Locations', items: lMatch.slice(0, 3).map(c => ({ name: c.name, meta: CNAME[c.cc], pick: () => this.pickLoc({ ...c, kind: 'city' }, { q: '', qFocus: false }) })) });
+    const qOpen = s.qFocus;
+    const qEmpty = qOpen && !!ql && qGroups.length === 0;
+    const inScope = CITIES.filter(c => country === 'global' || c.cc === country);
+    const locCities = ll ? CITIES.filter(c => c.name.toLowerCase().includes(ll) || c.region.toLowerCase().includes(ll)) : inScope;
+    const locCountries = COUNTRIES.filter(c => c.cc !== 'global' && (!ll || c.name.toLowerCase().includes(ll) || (ll === 'uae' && c.cc === 'ae') || (ll === 'usa' && c.cc === 'us')));
+    const locGroups = [];
+    if (locCountries.length) locGroups.push({ name: 'Countries', items: locCountries.map(c => ({ name: c.name, meta: `/${c.cc}`, pick: () => this.pickLoc({ name: c.name, cc: c.cc, kind: 'country' }) })) });
+    if (locCities.length) locGroups.push({ name: ll ? 'Cities' : (country === 'global' ? 'Popular cities' : `Cities in ${CNAME[country]}`), items: locCities.slice(0, 8).map(c => ({ name: c.name, meta: `${c.region} · ${CNAME[c.cc]}`, pick: () => this.pickLoc({ ...c, kind: 'city' }) })) });
+    const locOpen = s.locFocus;
+    const locEmpty = locOpen && !!ll && locGroups.length === 0;
+    const geoLabel = s.geo === 'asking' ? 'Requesting your location…' : s.geo === 'ok' ? 'Using your current location' : 'Use my location';
+    const geoNote = s.geo === 'denied' ? 'Location permission was not granted. Type a city instead.' : s.geo === 'ok' ? 'We only use your position to suggest nearby cities; nothing is stored.' : false;
+    const mkChips = pickFn => [...COUNTRIES.filter(c => c.cc !== 'global').map(c => ({ name: c.name, weight: 600, pick: () => pickFn({ name: c.name, cc: c.cc, kind: 'country' }) })), ...(country === 'global' ? ['us', 'ca', 'ae'].flatMap(cc => CITIES.filter(c => c.cc === cc).slice(0, 2)) : inScope.slice(0, 5)).map(c => ({ name: c.name, weight: 400, pick: () => pickFn({ ...c, kind: 'city' }) }))];
+    const locChips = mkChips(l => { this.pickLoc(l); this.runSearch(s.result && s.result.treat ? s.result.treat : s.selTreat, l); }).map(c => ({ ...c, pickDialog: () => { const l = c; this.setState({ dialog: null }); c.pick(); } }));
+    // dialog chips for treatment tiles
+    const catChips = mkChips(l => { const cat = s.pendingCat; this.pickLoc(l, { dialog: null }); this.setState({ route: `/${l.cc}${l.kind === 'city' ? `/${l.rs}/${slug(l.name)}` : ''}/${cat}` }); clearTimeout(this._rt); this._rt = setTimeout(() => this.setState({ route: null }), 3500); }).map(c => ({ ...c, pickDialog: c.pick }));
+    const r = s.result || {};
+    const megaCountries = COUNTRIES.filter(c => c.cc !== 'global').map(c => ({ name: c.name, href: `/${c.cc}`, cities: CITIES.filter(ct => ct.cc === c.cc).slice(0, 5).map(ct => ({ name: ct.name, region: ct.region, href: cityHref(ct) })) }));
+    const treatGroups = GROUP_ORDER.map(g => ({ name: g, items: TREATMENTS.filter(t => t.group === g).map(t => ({ name: t.name, href: `/treatments/${t.slug}` })) }));
+    const cur = COUNTRIES.find(c => c.cc === country);
+    const countryOptions = COUNTRIES.map(c => { const on = c.cc === country; return { name: c.name, short: c.short, selected: on, weight: on ? 600 : 400, bg: on ? 'rgba(20,179,198,0.10)' : 'transparent', border: on ? '#14B3C6' : '#E6E6E6', check: on ? '✓' : '', pick: () => this.setCountry(c.cc) }; });
+    const catFind = cat => () => {
+      const l = s.selLoc || (country !== 'global' ? { name: CNAME[country], cc: country, kind: 'country' } : null);
+      if (l) { this.setState({ route: `/${l.cc}${l.kind === 'city' ? `/${l.rs}/${slug(l.name)}` : ''}/${cat.slug}` }); clearTimeout(this._rt); this._rt = setTimeout(() => this.setState({ route: null }), 3500); }
+      else this.setState({ dialog: 'locpick', pendingCat: cat.slug, pendingName: cat.name });
+    };
+    const area = AREAS.find(a => a.name === s.guideArea);
+    const gLoc = s.guideCity || (s.guideCountry ? { name: CNAME[s.guideCountry], cc: s.guideCountry, kind: 'country' } : null);
+    const dlg = s.dialog === 'locpick' ? { title: `Where would you like to find ${s.pendingName || 'these'} clinics?`, paras: ['Choose a country or city. You can change this at any time from the country selector.'], link: null } : DIALOGS[s.dialog];
+    const tabCC = s.tab;
+    const clinicsTab = CLINICS[tabCC].map((c, i) => ({ ...c, delay: `${i * 60}ms`, place: `${c.city}, ${CNAME[tabCC]}`, href: `/${tabCC}/${slug(c.city)}/${slug(c.name)}`, sponsored: showSponsored && !!c.sponsored, hasReview: !!c.review, noReview: !c.review, score: c.review ? c.review.score : '', count: c.review ? String(c.review.count) : '', starPct: c.review ? `${Math.round((parseFloat(c.review.score) / 5) * 100)}%` : '0%', reviewAria: c.review ? `${c.review.score} out of 5 on Google from ${c.review.count} reviews` : '', }));
+    const footGroups = [
+      { name: 'Countries', links: COUNTRIES.filter(c => c.cc !== 'global').map(c => ({ name: c.name, href: `/${c.cc}` })) },
+      { name: 'Treatments', links: [...TRENDING.slice(0, 5).map(c => ({ name: c.name, href: `/treatments/${c.slug}` })), { name: 'View all treatments', href: '/treatments' }] },
+      { name: 'Resources', links: [{ name: 'How to choose a med spa', href: '/resources/how-to-choose-a-med-spa' }, { name: 'Consultation questions', href: ARTICLES[0].href }, { name: 'Understanding prices', href: ARTICLES[1].href }, { name: 'All resources', href: '/resources' }] },
+      { name: 'Company', links: [{ name: 'About', href: '/about' }, { name: 'Contact', href: '/contact' }, { name: 'For Clinics', href: '/for-clinics' }, { name: 'Listing standards', href: '/listing-standards' }, { name: 'Sponsorship information', href: '/sponsorship' }] }
+    ];
+    const trendAll = TRENDING.map(c => ({ ...c, href: `/treatments/${c.slug}`, find: catFind(c) }));
+    const FAQS = [
+      { q: 'What is MedSpaFind?', a: 'MedSpaFind is a discovery platform that lists medical spas and aesthetic clinics in the United States, Canada, and the United Arab Emirates, with treatment information to help you research your options.' },
+      { q: 'Which countries does MedSpaFind cover?', a: 'The United States, Canada, and the United Arab Emirates. Each country has its own directory of regions, cities, and clinics.' },
+      { q: 'Does MedSpaFind provide medical advice?', a: 'No. Treatment pages are informational. Whether a treatment is suitable for you should be discussed with a qualified professional.' },
+      { q: 'What does “Sponsored” mean on a listing?', a: 'Clinics can pay for a highlighted position. Sponsored placement affects where a listing appears; it does not change the listing’s information and is not an endorsement.' },
+      { q: 'Can I book an appointment through MedSpaFind?', a: 'MedSpaFind helps you find and compare clinics. You contact a clinic directly by phone, email, or its website from the clinic profile.' }
+    ];
+    const orbPts = [['New York', 'us', '18%', '22%', '.9s'], ['Toronto', 'ca', '78%', '16%', '1.2s'], ['Dubai', 'ae', '84%', '62%', '1.5s'], ['Los Angeles', 'us', '12%', '70%', '1.8s'], ['Vancouver', 'ca', '50%', '6%', '2.1s'], ['Abu Dhabi', 'ae', '58%', '92%', '2.4s']];
+    return {
+      featured: trendAll.find(t => t.slug === 'laser-hair-removal') || trendAll[0], restTrending: trendAll.filter(t => t.slug !== 'laser-hair-removal'),
+      faqs: FAQS.map((f, i) => ({ ...f, open: s.faq === i, toggle: () => this.setState({ faq: s.faq === i ? -1 : i }), rot: s.faq === i ? '45deg' : '0deg', bg: s.faq === i ? '#FAFBFB' : 'transparent', border: s.faq === i ? '#14B3C6' : '#E6E6E6' })),
+      orbCities: orbPts.map(([name, cc, x, y, delay]) => ({ name, cc: cc.toUpperCase(), x, y, delay, pick: () => { const c = CITIES.find(ct => ct.name === name); this.pickLoc({ ...c, kind: 'city' }); const el = document.getElementById('msf-q'); if (el) el.focus({ preventScroll: true }); } })),
+      whatCols: wide ? 'minmax(0,6fr) minmax(0,6fr)' : 'minmax(0,1fr)', whatFactCols: wide ? 'repeat(3,minmax(0,1fr))' : 'minmax(0,1fr)',
+      whatRowCols: wide ? '170px minmax(0,1fr)' : 'minmax(0,1fr)',
+      whatRows: [
+        { label: 'Where we cover', value: 'United States, Canada, and the United Arab Emirates, browsable by region, city, and clinic.', dot: '#14B3C6', color: '#3E4F62' },
+        { label: 'What you can do', value: 'Search by treatment or clinic, compare services and pricing, then contact a clinic directly.', dot: '#14B3C6', color: '#3E4F62' },
+        { label: 'What it is not', value: 'Not a booking agent, not medical advice, and not a ranking of clinical quality.', dot: '#D4D4D4', color: '#5B6B7B' }
+      ],
+      whatCountries: COUNTRIES.filter(c => c.cc !== 'global').map(c => ({ name: c.name, href: `/${c.cc}` })),
+      whatCan: ['Search by treatment or clinic name', 'Browse regions and cities in each country', 'Compare services, team, photos, and available pricing', 'Contact a clinic directly from its profile'],
+      whatNot: ['Not medical advice or a diagnosis', 'Not a booking or availability service', 'Not a ranking of the best clinics'],
+      orbDisplay: wide ? 'block' : 'none', rowCols: mid ? 'minmax(0,3fr) minmax(0,6fr) auto' : 'minmax(0,1fr)', rowBtnAlign: mid ? 'end' : 'start',
+      bentoCols: wide ? 'repeat(4,minmax(0,1fr))' : mid ? 'repeat(2,minmax(0,1fr))' : 'minmax(0,1fr)', bentoFeatCol: wide ? 'span 2' : mid ? 'span 2' : 'auto', bentoFeatRow: wide ? 'span 2' : 'auto',
+      stdCols: wide ? 'repeat(4,minmax(0,1fr))' : mid ? 'repeat(2,minmax(0,1fr))' : 'minmax(0,1fr)',
+      provCols: mid ? 'minmax(0,6fr) minmax(0,5fr)' : 'minmax(0,1fr)',
+      provPoints: [{ title: 'Your information, kept current', body: 'Update services, team, photos, and contact details from one profile.' }, { title: 'Found by treatment and city', body: 'Appear in the directories people actually browse.' }, { title: 'One consistent structure', body: 'Your profile is presented in the same clear format as every other clinic.' }],
+      clinicProgress: s.clinicProg + '%', clinicCount: CLINICS[tabCC].length,
+      clinicScroll: e => { const el = e.currentTarget; const max = el.scrollWidth - el.clientWidth; const p = max > 0 ? Math.round((el.scrollLeft / max) * 100) : 0; if (p !== s.clinicProg) this.setState({ clinicProg: p }); },
+      standards: [
+        { n: '1', tag: 'Source', title: 'Information comes from the clinic', body: 'Services, team, photos, prices, and contact details are provided by the clinic and shown as supplied. We do not add claims a clinic has not made.' },
+        { n: '2', tag: 'Structure', title: 'Every profile uses the same structure', body: 'Treatment menu, team, photography, opening hours, and contact options appear in the same order so you can compare clinics quickly.' },
+        { n: '3', tag: 'Reviews', title: 'Reviews show their source', body: 'Where a clinic has reviews, we display the platform, the score, and the count together. Clinics without reviews show “No reviews listed yet”, never a zero rating.' },
+        { n: '4', tag: 'Sponsorship', title: 'Sponsored placement is labelled', body: 'Paid positions carry a “Sponsored” label on the card itself. Placement never changes a profile’s information.' }
+      ],
+      resources: [{ kind: 'Guide', title: 'How to choose a med spa', desc: 'What to look for in a clinic’s team, treatment menu, and consultation process.', href: '/resources/how-to-choose-a-med-spa', img: U('1616394584738-fc6e612e71b9', 800) }, ...ARTICLES],
+      isMobile, isDesktop, go: this.go, onKey: this.onKey, stop: e => e.stopPropagation(), 
+      heroCols: wide ? 'minmax(0,7fr) minmax(0,5fr)' : 'minmax(0,1fr)', heroPadL: 'max(clamp(20px,4vw,32px), calc((100vw - 1280px) / 2))', heroPadR: wide ? '0px' : 'clamp(20px,4vw,32px)', heroPadR2: 'clamp(20px,4vw,32px)', heroMinH: wide ? 'min(72vh, 680px)' : '320px', heroRadius: wide ? '28px 0 0 28px' : '20px',
+      searchMT: wide ? '-72px' : '0px', searchMaxW: wide ? 'min(940px, 68%)' : '100%', searchDivider: s.w >= 900 ? '1px solid #E6E6E6' : '0',
+      scrolled: s.scrolled, headerLine: s.scrolled ? '#E6E6E6' : 'transparent',
+      clinicAutoCols: wide ? 'calc((100% - 3.5 * clamp(16px,2vw,24px)) / 4.5)' : mid ? 'calc((100% - 1.5 * clamp(16px,2vw,24px)) / 2.5)' : '78%', clinicBleed: mid ? '0' : 'calc(-1 * clamp(20px,4vw,32px))', clinicPadX: mid ? '0' : 'clamp(20px,4vw,32px)',
+      searchCols: s.w >= 900 ? 'minmax(0,1.15fr) minmax(0,1fr) auto' : 'minmax(0,1fr)',
+      splitCols: mid ? 'minmax(0,1fr) minmax(0,1fr)' : 'minmax(0,1fr)', guideCols: mid ? 'minmax(0,5fr) minmax(0,6fr)' : 'minmax(0,1fr)', guideResCols: s.w >= 560 ? 'minmax(0,1fr) 220px' : 'minmax(0,1fr)', resCols: wide ? 'minmax(0,7fr) minmax(0,5fr)' : 'minmax(0,1fr)',
+      footCols: wide ? '1.4fr repeat(4,minmax(0,1fr))' : mid ? 'repeat(2,minmax(0,1fr))' : 'minmax(0,1fr)', footBrandSpan: wide ? 'auto' : '1 / -1', previewAlign: mid ? 'end' : 'start', provAlign: mid ? 'flex-end' : 'flex-start',
+      findOpen: isDesktop && s.menu === 'find', treatOpen: isDesktop && s.menu === 'treat', findBg: s.menu === 'find' ? '#F3F6F8' : 'transparent', treatBg: s.menu === 'treat' ? '#F3F6F8' : 'transparent',
+      toggleFind: () => this.setState(st => ({ menu: st.menu === 'find' ? null : 'find', countryOpen: false })), toggleTreat: () => this.setState(st => ({ menu: st.menu === 'treat' ? null : 'treat', countryOpen: false })), closeMenus: () => this.setState({ menu: null }),
+      countryOpen: isDesktop && s.countryOpen, mobileCountryOpen: isMobile && s.countryOpen, toggleCountry: () => this.setState(st => ({ countryOpen: !st.countryOpen, menu: null, mobileOpen: false })), countryName: cur.name, countryShort: cur.short, countryOptions,
+      mobileOpen: isMobile && s.mobileOpen, mobileLabel: s.mobileOpen ? 'Close menu' : 'Open menu', toggleMobile: () => this.setState(st => ({ mobileOpen: !st.mobileOpen, countryOpen: false })),
+      mobileSections: [
+        { name: 'Find a Clinic', key: 'find', groups: megaCountries.map(c => ({ name: c.name, href: c.href, cta: 'Explore', items: c.cities.slice(0, 3) })) },
+        { name: 'Treatments', key: 'treat', groups: treatGroups.map(g => ({ name: g.name, href: '/treatments', cta: '', items: g.items })) }
+      ].map(sec => ({ ...sec, open: s.mobileSection === sec.key, rot: s.mobileSection === sec.key ? '45deg' : '0deg', toggle: () => this.setState(st => ({ mobileSection: st.mobileSection === sec.key ? null : sec.key })) })),
+      megaCountries, treatGroups, focusSearch: () => { this.setState({ menu: null, mobileOpen: false }); window.scrollTo(0, 0); setTimeout(() => { const el = document.getElementById('msf-q'); if (el) el.focus({ preventScroll: true }); }, 450); },
+      q: s.q, setQ: e => this.setState({ q: e.target.value, selTreat: null, qFocus: true, result: null }), focusQ: () => this.setState({ qFocus: true, locFocus: false, menu: null, countryOpen: false }), blurQ: () => this.setState({ qFocus: false }), clearQ: () => this.setState({ q: '', selTreat: null, result: null }),
+      hasTreat: !!s.q, qOpen, qEmpty, qGroups, qBg: s.qFocus ? '#F3F6F8' : 'transparent', keepFocus: e => e.preventDefault(),
+      loc: s.loc, setLoc: e => this.setState({ loc: e.target.value, selLoc: null, locFocus: true, result: null }), focusLoc: () => this.setState({ locFocus: true, qFocus: false, menu: null, countryOpen: false }), blurLoc: () => this.setState({ locFocus: false }), clearLoc: () => this.setState({ loc: '', selLoc: null, result: null, geo: null }),
+      hasLoc: !!s.loc, locOpen, locEmpty, locGroups, locBg: s.locFocus ? '#F3F6F8' : 'transparent', locPlaceholder: country === 'global' ? 'Toronto, Dubai, New York…' : `Any city in ${CNAME[country]}`,
+      geoLabel, geoNote, useMyLocation: () => {
+        if (!navigator.geolocation) return this.setState({ geo: 'denied' });
+        this.setState({ geo: 'asking' });
+        navigator.geolocation.getCurrentPosition(() => this.setState({ geo: 'ok', loc: 'Near my location', selLoc: { name: 'Near my location', cc: country === 'global' ? 'us' : country, kind: 'country' }, locFocus: false }), () => this.setState({ geo: 'denied' }), { timeout: 8000 });
+      },
+      submitSearch: this.submitSearch,
+      result: !!s.result, resLoading: r.status === 'loading', resReady: r.status === 'ready', resNeedLoc: r.status === 'needloc', resNone: r.status === 'none', resHint: r.status === 'hint', resTitle: r.title || '', resHref: r.href || '/', resTreat: r.treat ? r.treat.name : '',
+      noneChips: [...SHORTCUTS.map(n => ({ name: n, pick: () => { const t = TREATMENTS.find(t => t.name === n); this.setState({ q: n, selTreat: t, result: null }); } })), ...COUNTRIES.filter(c => c.cc !== 'global').map(c => ({ name: `Browse ${c.name}`, pick: () => this.pickLoc({ name: c.name, cc: c.cc, kind: 'country' }, { q: '', selTreat: null, result: null }) }))],
+      shortcuts: SHORTCUTS.map(n => ({ name: n, pick: () => { const t = TREATMENTS.find(t => t.name === n); this.setState({ q: n, selTreat: t, result: null }); const el = document.getElementById('msf-loc'); if (el && !s.selLoc) el.focus(); } })),
+      countryCards: [
+        { cc: 'us', img: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=900&q=80', alt: 'Manhattan skyline at dusk', pos: 'center 40%', aspect: '4/5' },
+        { cc: 'ca', img: 'https://images.unsplash.com/photo-1517090504586-fde19ea6066f?auto=format&fit=crop&w=900&q=80', alt: 'Toronto waterfront', pos: 'center 55%', aspect: '4/5' },
+        { cc: 'ae', img: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=900&q=80', alt: 'Dubai skyline in warm light', pos: 'center 60%', aspect: '4/5' }
+      ].map((c, i) => ({ ...c, name: CNAME[c.cc], short: COUNTRIES.find(x => x.cc === c.cc).short, href: `/${c.cc}`, cities: CITIES.filter(ct => ct.cc === c.cc).slice(0, 3).map(ct => ({ name: ct.name, href: cityHref(ct) })) })),
+      contextLabel: s.selLoc ? (s.selLoc.kind === 'city' ? `${s.selLoc.name}, ${CNAME[s.selLoc.cc]}` : s.selLoc.name) : country === 'global' ? 'all three countries' : CNAME[country],
+      trending: TRENDING.map((c, i) => { const on = i === s.activeCat && wide; return { ...c, href: `/treatments/${c.slug}`, find: catFind(c), hover: () => { if (s.activeCat !== i) this.setState({ activeCat: i }); }, dot: on ? '#14B3C6' : 'transparent', pad: on ? '22px 0 22px 16px' : '22px 0' }; }),
+      trendingImgs: TRENDING.map((c, i) => ({ src: c.img, alt: c.alt, op: i === s.activeCat ? 1 : 0 })), activeName: TRENDING[s.activeCat].name,
+      endAlign: mid ? 'flex-end' : 'flex-start',
+      guideIdle: s.guideStep === 0, guideActive: s.guideStep > 0, guideStep: s.guideStep, guideStep1: s.guideStep === 1, guideStep2: s.guideStep === 2, guideStep3: s.guideStep === 3, guideCanBack: s.guideStep > 1,
+      guideDots: [1, 2, 3].map(n => ({ bg: n <= s.guideStep ? '#14B3C6' : '#E6E6E6', w: n === s.guideStep ? '32px' : '14px' })),
+      guideTitle: s.guideStep === 1 ? 'What would you like to explore?' : s.guideStep === 2 ? 'Where would you like to find clinics?' : `${s.guideArea}: a few places to start`,
+      guideAreas: AREAS.map((a, i) => ({ name: a.name, hint: a.hint, tint: ['#14B3C6', '#7ED7E1', '#0B7A87', '#B7E8EE'][i], pick: () => this.setState({ guideArea: a.name, guideStep: 2, guideCountry: country === 'global' ? null : country, guideCity: s.selLoc && s.selLoc.kind === 'city' ? s.selLoc : null }) })),
+      guideStart: () => this.setState({ guideStep: 1 }), guideBack: () => this.setState(st => ({ guideStep: Math.max(1, st.guideStep - 1) })), guideReset: () => this.setState({ guideStep: 0, guideArea: null, guideCountry: null, guideCity: null }), guideNext: () => this.setState({ guideStep: 3 }),
+      guideCountries: COUNTRIES.filter(c => c.cc !== 'global').map(c => { const on = s.guideCountry === c.cc; return { name: c.name, on, border: on ? '#14B3C6' : '#D4D4D4', bg: on ? '#F0FAFB' : '#ffffff', pick: () => this.setState({ guideCountry: c.cc, guideCity: null }) }; }),
+      guideHasCountry: !!s.guideCountry, guideCountryName: s.guideCountry ? CNAME[s.guideCountry] : '',
+      guideCities: CITIES.filter(c => c.cc === s.guideCountry).slice(0, 5).map(c => ({ name: c.name, pick: () => this.setState({ guideCity: { ...c, kind: 'city' }, guideStep: 3 }) })),
+      guideTopics: area ? area.topics.map(t => ({ name: t, href: `/resources/${slug(t)}` })) : [],
+      guideAreaName: s.guideArea || '', guideLocName: gLoc ? (gLoc.kind === 'city' ? `${gLoc.name}, ${CNAME[gLoc.cc]}` : gLoc.name) : '',
+      guideFindHref: area && gLoc ? `/${gLoc.cc}${gLoc.kind === 'city' ? `/${gLoc.rs}/${slug(gLoc.name)}` : ''}/${area.cat}` : '/',
+      tabs: COUNTRIES.filter(c => c.cc !== 'global').map(c => { const on = tabCC === c.cc; return { name: c.name, on, weight: on ? 600 : 500, color: on ? '#0C243E' : '#5B6B7B', line: on ? '#0C243E' : 'transparent', pick: () => { this.setState({ tab: c.cc, clinicProg: 0 }); const el = this.clinicRef.current; if (el) el.scrollTo({ left: 0 }); } }; }),
+      clinicRef: this.clinicRef, clinicPrev: () => this.scrollClinics(-1), clinicNext: () => this.scrollClinics(1),
+      openPrototype: () => this.setState({ dialog: 'prototype' }), openGuideInfo: () => this.setState({ dialog: 'guide' }),
+      heroCountries: COUNTRIES.filter(c => c.cc !== 'global').map(c => { const on = country === c.cc; return { name: c.name, cc: c.cc, on, border: on ? '#14B3C6' : '#E6E6E6', dot: on ? '#14B3C6' : '#D4D4D4', pick: () => this.setCountry(c.cc) }; }), wide,
+      clinics: clinicsTab, tabName: CNAME[tabCC], tabHref: `/${tabCC}`,
+      adsOpen: !!s.adsCard, toggleAds: e => { e.preventDefault(); e.stopPropagation(); this.setState(st => ({ adsCard: !st.adsCard })); },
+      openSponsored: e => { e.preventDefault(); e.stopPropagation(); this.setState({ dialog: 'sponsored' }); }, openListings: () => this.setState({ dialog: 'listings' }), closeDialog: () => this.setState({ dialog: null }),
+      dialog: !!s.dialog, dialogTitle: dlg ? dlg.title : '', dialogParas: dlg ? dlg.paras : [], dialogLink: dlg && dlg.link ? dlg.link : false, dialogLinkLabel: dlg && dlg.linkLabel ? dlg.linkLabel : '', dialogLocPick: s.dialog === 'locpick',
+      locChips: s.dialog === 'locpick' ? catChips : locChips,
+      benefits: [
+        { n: '01', title: 'Understand your options.', body: 'Explore treatment information and questions to ask.' },
+        { n: '02', title: 'Compare clinic details.', body: 'Review services, team information, photos, and available pricing.' },
+        { n: '03', title: 'Choose your next step.', body: 'Contact a clinic or visit its website through its profile.' }
+      ],
+      previewMenu: [{ name: 'Neuromodulator (per area)', price: 'From CA$220' }, { name: 'Dermal filler (1 mL)', price: 'CA$650 – 850' }, { name: 'Microneedling (course of 3)', price: 'Ask clinic' }],
+      articles: ARTICLES, footGroups,
+      route: s.route || false, closeRoute: () => this.setState({ route: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

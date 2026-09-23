@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="מגזין BeautyFind: מדריכי טיפולים בשפה פשוטה על אסתטיקה רפואית, קוסמטיקה, לייזר ועור — נבדקים מקצועית ומתויגים לפי עיר ולפי תחום טיפול.">
+<link rel="canonical" href="https://beautyfind.co.il/magazine">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Assistant:wght@400;500;600;700&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0;background:#ffffff}
+body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:#0C243E;text-decoration:none}
+a:hover{color:#0B7A87}
+:focus-visible{outline:2px solid #14B3C6;outline-offset:2px;border-radius:6px}
+@keyframes bfRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes bfDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes bfCard{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes bfPing{0%{box-shadow:0 0 0 4px rgba(20,179,198,.18)}50%{box-shadow:0 0 0 12px rgba(20,179,198,0)}100%{box-shadow:0 0 0 4px rgba(20,179,198,.18)}}
+::selection{background:rgba(20,179,198,.25)}
+*{-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{overscroll-behavior-y:contain}
+button,a[href],[role="button"],summary,label{touch-action:manipulation}
+button:not(:disabled):active,a[href]:active,[role="button"]:active{transform:scale(.985)}
+img,svg,video{max-width:100%}
+@media (max-width:760px){input,select,textarea{font-size:16px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+[data-desktop-only]{display:none}
+[data-intro],[data-feat],[data-browse],[data-standards]{display:grid;grid-template-columns:minmax(0,1fr)}
+[data-grid]{display:grid;grid-template-columns:repeat(auto-fit,minmax(288px,1fr));gap:clamp(16px,1.8vw,24px)}
+[data-thumb]{height:190px}
+@media (min-width:700px){
+[data-thumb]{height:158px}
+[data-browse]{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (min-width:1000px){
+[data-desktop-only]{display:flex}
+[data-mobile-only]{display:none!important}
+[data-intro]{grid-template-columns:minmax(0,1.5fr) minmax(300px,.85fr)}
+[data-feat]{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}
+[data-standards]{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}
+[data-feat-photo]{min-height:340px}
+}
+[data-feat-photo]{min-height:220px}
+</style>
+</helmet>
+<div dir="rtl" onKeyDown="{{ onKey }}" style="font-family:'Assistant',system-ui,sans-serif;font-size:16px;line-height:1.55;color:#0C243E;background:#ffffff;min-height:100dvh;overflow-x:clip">
+
+  <header style="position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:saturate(1.2) blur(8px);border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1320px;margin:0 auto;padding:0 clamp(20px,4vw,32px);height:72px;display:flex;align-items:center;gap:26px">
+      <a href="/" onClick="{{ go }}" aria-label="BeautyFind — לדף הבית" style="flex:none;display:flex;align-items:center"><span dir="ltr" style="font-family:'Jost',sans-serif;font-weight:300;font-size:28px;line-height:1;color:#0C243E;white-space:nowrap">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6;font-weight:400">.</span></span></a>
+      <nav aria-label="ראשי" data-desktop-only style="align-items:center;gap:2px;flex:1">
+        <button type="button" onClick="{{ toggleLocations }}" aria-expanded="{{ locOpen }}" style="display:flex;align-items:center;gap:7px;height:44px;padding:0 14px;border:0;border-radius:10px;background:{{ locBg }};font:inherit;font-size:16px;font-weight:600;color:{{ locColor }};cursor:pointer;transition:background .18s" style-hover="background:#F6F8F9">איתור עסק<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"></path></svg></button>
+        <button type="button" onClick="{{ toggleServices }}" aria-expanded="{{ svcOpen }}" style="display:flex;align-items:center;gap:7px;height:44px;padding:0 14px;border:0;border-radius:10px;background:{{ svcBg }};font:inherit;font-size:16px;font-weight:600;color:{{ svcColor }};cursor:pointer;transition:background .18s" style-hover="background:#F6F8F9">תחומי טיפול<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"></path></svg></button>
+        <a href="/magazine" onClick="{{ go }}" aria-current="page" style="display:flex;align-items:center;height:44px;padding:0 14px;border-radius:10px;background:#F0FAFB;font-size:16px;font-weight:700;color:#0B7A87">מדריכים</a>
+        <a href="/about" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 14px;border-radius:10px;font-size:16px;font-weight:500;transition:background .18s" style-hover="background:#F6F8F9">אודות</a>
+      </nav>
+      <a href="/for-business" onClick="{{ go }}" data-desktop-only style="flex:none;align-items:center;height:44px;padding:0 18px;border-radius:11px;background:#0C243E;color:#ffffff;font-size:15px;font-weight:700;transition:background .18s,color .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateY(-1px)">רישום עסק</a>
+      <button type="button" data-mobile-only onClick="{{ toggleMobile }}" aria-label="תפריט" aria-expanded="{{ mobileOpen }}" style="margin-right:auto;width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px solid #E6E6E6;border-radius:10px;background:#ffffff;cursor:pointer">
+        <span style="display:block;width:18px;height:1.5px;background:#0C243E"></span>
+        <span style="display:block;width:18px;height:1.5px;background:#0C243E"></span>
+      </button>
+    </div>
+
+    <sc-if value="{{ showMega }}" hint-placeholder-val="{{ false }}">
+      <div style="border-top:1px solid #E6E6E6;background:#ffffff;box-shadow:0 24px 48px rgba(12,36,62,.10);animation:bfDrop .2s ease both">
+        <div style="max-width:1320px;margin:0 auto;padding:26px clamp(20px,4vw,32px) 30px;display:grid;grid-template-columns:minmax(220px,32%) minmax(0,1fr);gap:34px">
+          <div style="border-left:1px solid #E6E6E6;padding-left:24px;max-height:340px;overflow:auto">
+            <div style="font-size:13px;font-weight:700;color:#8A96A3;margin-bottom:12px">{{ leftLabel }}</div>
+            <sc-for list="{{ leftItems }}" as="item" hint-placeholder-count="5">
+              <button type="button" onClick="{{ item.select }}" onMouseEnter="{{ item.select }}" style="display:block;width:100%;min-height:44px;text-align:right;padding:10px 12px;margin-bottom:2px;border:0;border-right:2px solid {{ item.bar }};border-radius:8px 0 0 8px;background:{{ item.bg }};font:inherit;font-size:15px;font-weight:{{ item.weight }};color:#0C243E;cursor:pointer;transition:background .18s">{{ item.name }}</button>
+            </sc-for>
+          </div>
+          <div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:14px">
+              <div style="font-size:17px;font-weight:700">{{ rightTitle }}</div>
+              <a href="{{ rightAllHref }}" onClick="{{ go }}" style="font-size:14px;font-weight:700;color:#0B7A87">{{ rightAllLabel }}</a>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:2px">
+              <sc-for list="{{ rightLinks }}" as="link" hint-placeholder-count="9">
+                <a href="{{ link.href }}" onClick="{{ go }}" style="display:flex;flex-direction:column;gap:2px;min-height:48px;justify-content:center;padding:8px 12px;border-radius:9px;transition:background .18s" style-hover="background:#F6F8F9;color:#0B7A87">
+                  <span style="font-size:15px;font-weight:500">{{ link.name }}</span>
+                  <span dir="ltr" style="font-size:12px;color:#8A96A3;text-align:right">{{ link.href }}</span>
+                </a>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </header>
+
+  <sc-if value="{{ mobileOpen }}" hint-placeholder-val="{{ false }}">
+    <div role="dialog" aria-label="תפריט" style="position:fixed;inset:72px 0 0;z-index:45;background:#ffffff;overflow:auto;padding:20px clamp(20px,4vw,32px) 48px;animation:bfDrop .2s ease both">
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button type="button" onClick="{{ toggleLocations }}" style="flex:1;min-height:48px;border:1px solid {{ locBorder }};border-radius:11px;background:{{ locChipBg }};font:inherit;font-size:15px;font-weight:700;color:#0C243E;cursor:pointer">אזורים</button>
+        <button type="button" onClick="{{ toggleServices }}" style="flex:1;min-height:48px;border:1px solid {{ svcBorder }};border-radius:11px;background:{{ svcChipBg }};font:inherit;font-size:15px;font-weight:700;color:#0C243E;cursor:pointer">תחומי טיפול</button>
+      </div>
+      <div style="display:flex;flex-direction:column;border-top:1px solid #E6E6E6;margin-bottom:22px">
+        <sc-for list="{{ rightLinks }}" as="link" hint-placeholder-count="6">
+          <a href="{{ link.href }}" onClick="{{ go }}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;padding:12px 2px;border-bottom:1px solid #E6E6E6;font-size:16px;font-weight:500">{{ link.name }}<span dir="ltr" style="font-size:12px;color:#8A96A3">{{ link.href }}</span></a>
+        </sc-for>
+      </div>
+      <a href="/for-business" onClick="{{ go }}" style="min-height:52px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:#0C243E;color:#ffffff;font-size:16px;font-weight:700">רישום עסק</a>
+    </div>
+  </sc-if>
+
+  <main style="max-width:1320px;margin:0 auto;padding:clamp(20px,2.4vw,30px) clamp(20px,4vw,32px) clamp(56px,6vw,96px)">
+
+    <nav aria-label="נתיב ניווט" style="margin-bottom:clamp(18px,2vw,26px)">
+      <ol style="list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0;padding:0;font-size:13.5px;color:#5B6B7B">
+        <li><a href="/" onClick="{{ go }}" style="color:#5B6B7B" style-hover="color:#0B7A87">BeautyFind</a></li>
+        <li aria-hidden="true" style="color:#C6CDD4">/</li>
+        <li aria-current="page" style="font-weight:700;color:#0C243E">מדריכים</li>
+      </ol>
+    </nav>
+
+    <div data-intro style="gap:clamp(24px,3.4vw,52px);align-items:end">
+      <div style="min-width:0;display:flex;flex-direction:column;gap:16px">
+        <span style="display:flex;align-items:center;gap:12px;font-size:13px;font-weight:700;color:#5B6B7B"><span aria-hidden="true" style="width:24px;height:1px;background:#14B3C6;display:inline-block"></span>המגזין של BeautyFind</span>
+        <h1 style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(34px,4.1vw,58px);line-height:1.1;letter-spacing:-0.015em;text-wrap:balance;animation:bfRise .6s cubic-bezier(.2,.7,.2,1) both">מדריכי טיפולים, בשפה פשוטה<span style="color:#14B3C6">.</span></h1>
+        <p style="margin:0;font-size:clamp(17px,1.2vw,19.5px);line-height:1.65;color:#3E4F62;text-wrap:pretty;max-width:66ch">{{ introCopy }}</p>
+
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;padding:14px 0;border-top:1px solid #E6E6E6;border-bottom:1px solid #E6E6E6">
+          <span style="display:inline-flex;align-items:center;gap:9px;font-size:14px;color:#3E4F62"><span aria-hidden="true" style="width:30px;height:30px;border-radius:50%;background:#F0FAFB;display:inline-flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="#0B7A87" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 10.4a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4"></path><path d="M3.4 15.4c.9-2.3 3-3.6 5.6-3.6s4.7 1.3 5.6 3.6"></path></svg></span>נבדק מקצועית על ידי <a href="/about/editorial" onClick="{{ go }}" style="font-weight:700;border-bottom:1px solid #D4D4D4">ד״ר יעל אברהמי, MD</a></span>
+          <span style="display:inline-flex;align-items:center;gap:8px;font-size:14px;color:#5B6B7B"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="#8A96A3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="6.6"></circle><path d="M9 5.2V9l2.6 1.6"></path></svg>עודכן לאחרונה <time datetime="2026-09-16">16 בספטמבר 2026</time></span>
+          <a href="/about/editorial" onClick="{{ go }}" style="font-size:14px;font-weight:700;border-bottom:1px solid #D4D4D4;color:#0C243E" style-hover="border-color:#14B3C6;color:#0B7A87">מדיניות עריכה</a>
+        </div>
+      </div>
+
+      <form onSubmit="{{ onSearch }}" role="search" style="min-width:0;display:flex;flex-direction:column;gap:10px;padding:clamp(20px,2.2vw,26px);background:#FAFBFB;border:1px solid #E6E6E6;border-radius:20px;animation:bfRise .6s cubic-bezier(.2,.7,.2,1) .08s both">
+        <label for="blog-q" style="font-size:13px;font-weight:700;color:#5B6B7B">חיפוש במגזין</label>
+        <div style="display:flex;align-items:center;gap:8px;height:52px;padding:0 14px;background:#ffffff;border:1px solid #E6E6E6;border-radius:13px">
+          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="#8A96A3" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="5.4"></circle><path d="M12 12l3.4 3.4"></path></svg>
+          <input id="blog-q" type="search" value="{{ query }}" onChange="{{ onQuery }}" placeholder="נסו ״מחיר חומר מילוי״ או ״לייזר בחיפה״" style="flex:1;min-width:0;height:100%;border:0;outline:none;background:transparent;font:inherit;font-size:15.5px;color:#0C243E">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px">
+          <sc-for list="{{ suggestions }}" as="sug" hint-placeholder-count="3">
+            <button type="button" onClick="{{ sug.pick }}" style="min-height:34px;padding:0 12px;border:1px solid #E6E6E6;border-radius:999px;background:#ffffff;font:inherit;font-size:13.5px;font-weight:500;color:#3E4F62;cursor:pointer;transition:border-color .18s,color .18s" style-hover="border-color:#14B3C6;color:#0B7A87">{{ sug.name }}</button>
+          </sc-for>
+        </div>
+      </form>
+    </div>
+
+    <sc-if value="{{ showFeatured }}" hint-placeholder-val="{{ true }}">
+    <section aria-labelledby="h-featured" style="margin-top:clamp(34px,4vw,54px)">
+      <h2 id="h-featured" style="margin:0 0 16px;font-size:13px;font-weight:700;color:#5B6B7B">בחירת המערכת</h2>
+      <article data-feat style="gap:clamp(20px,2.6vw,38px);align-items:stretch;padding:clamp(16px,1.6vw,20px);border:1px solid #E6E6E6;border-radius:24px;background:#ffffff;transition:border-color .22s,box-shadow .22s" style-hover="border-color:#D4D4D4;box-shadow:0 22px 52px rgba(12,36,62,.10)">
+        <a href="{{ feature.href }}" onClick="{{ go }}" tabIndex="-1" aria-hidden="true" data-feat-photo style="position:relative;display:block;border-radius:18px;overflow:hidden;background:#EDF1F3">
+          <img src="{{ feature.img }}" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+          <span aria-hidden="true" style="position:absolute;left:18px;bottom:18px;width:12px;height:12px;border-radius:50%;background:#14B3C6;animation:bfPing 3.4s ease-out infinite"></span>
+        </a>
+        <div style="display:flex;flex-direction:column;gap:12px;padding:clamp(8px,1.4vw,22px) 0 clamp(12px,1.4vw,22px) clamp(8px,1.4vw,18px);min-width:0">
+          <div style="display:flex;flex-wrap:wrap;gap:7px">
+            <a href="{{ feature.locHref }}" onClick="{{ go }}" style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:7px;background:#F0FAFB;font-size:12.5px;font-weight:700;color:#0B7A87"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 12.5S2.4 8.9 2.4 6a4.6 4.6 0 1 1 9.2 0c0 2.9-4.6 6.5-4.6 6.5Z"></path><circle cx="7" cy="5.9" r="1.5"></circle></svg>{{ feature.location }}</a>
+            <a href="{{ feature.svcHref }}" onClick="{{ go }}" style="display:inline-flex;align-items:center;height:28px;padding:0 11px;border:1px solid #E6E6E6;border-radius:7px;background:#FAFBFB;font-size:12.5px;font-weight:700;color:#3E4F62" style-hover="border-color:#14B3C6;color:#0B7A87">{{ feature.service }}</a>
+          </div>
+          <h3 style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(26px,2.8vw,39px);line-height:1.18;letter-spacing:-0.014em;text-wrap:balance"><a href="{{ feature.href }}" onClick="{{ go }}" style="color:#0C243E" style-hover="color:#0B7A87">{{ feature.title }}</a></h3>
+          <p style="margin:0;font-size:17px;line-height:1.7;color:#3E4F62;text-wrap:pretty;max-width:56ch">{{ feature.excerpt }}</p>
+          <dl style="margin:0;display:flex;flex-wrap:wrap;gap:8px 26px">
+            <sc-for list="{{ feature.facts }}" as="f" hint-placeholder-count="2">
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <dt style="font-size:12px;font-weight:700;color:#8A96A3">{{ f.label }}</dt>
+                <dd style="margin:0;font-family:'Frank Ruhl Libre',serif;font-size:22px;line-height:1.1;color:#0C243E">{{ f.value }}</dd>
+              </div>
+            </sc-for>
+          </dl>
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:auto;padding-top:8px;border-top:1px solid #E6E6E6">
+            <span style="font-size:13.5px;color:#5B6B7B">{{ feature.author }}</span>
+            <span aria-hidden="true" style="width:4px;height:4px;border-radius:50%;background:#C6CDD4"></span>
+            <time datetime="{{ feature.iso }}" style="font-size:13.5px;color:#5B6B7B">{{ feature.date }}</time>
+            <span aria-hidden="true" style="width:4px;height:4px;border-radius:50%;background:#C6CDD4"></span>
+            <span style="font-size:13.5px;color:#5B6B7B">{{ feature.read }}</span>
+            <a href="{{ feature.href }}" onClick="{{ go }}" style="margin-right:auto;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border-radius:11px;background:#0C243E;color:#ffffff;font-size:15px;font-weight:700;transition:background .18s,color .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateY(-1px)">לקריאת המדריך<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></a>
+          </div>
+        </div>
+      </article>
+    </section>
+    </sc-if>
+
+    <section aria-labelledby="h-all" style="margin-top:clamp(36px,4.4vw,60px)">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px">
+        <h2 id="h-all" style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(25px,2.5vw,35px);line-height:1.15;letter-spacing:-0.012em">{{ listHeading }}<span style="color:#14B3C6">.</span></h2>
+        <span style="font-size:14px;color:#5B6B7B">{{ resultCount }}</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;padding:16px 18px;border:1px solid #E6E6E6;border-radius:18px;background:#FAFBFB;margin-bottom:22px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span style="flex:none;width:96px;font-size:12px;font-weight:700;color:#8A96A3">מקום</span>
+          <div role="group" aria-label="סינון לפי מקום" style="display:flex;flex-wrap:wrap;gap:7px;flex:1;min-width:0">
+            <sc-for list="{{ locTags }}" as="t" hint-placeholder-count="6">
+              <button type="button" onClick="{{ t.pick }}" aria-pressed="{{ t.on }}" style="display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:0 13px;border:1px solid {{ t.border }};border-radius:999px;background:{{ t.bg }};font:inherit;font-size:14px;font-weight:{{ t.weight }};color:{{ t.color }};cursor:pointer;transition:border-color .18s,background .18s" style-hover="border-color:#14B3C6">{{ t.name }}<span style="font-size:12px;color:{{ t.countColor }}">{{ t.count }}</span></button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="height:1px;background:#E6E6E6"></div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span style="flex:none;width:96px;font-size:12px;font-weight:700;color:#8A96A3">תחום טיפול</span>
+          <div role="group" aria-label="סינון לפי תחום טיפול" style="display:flex;flex-wrap:wrap;gap:7px;flex:1;min-width:0">
+            <sc-for list="{{ svcTags }}" as="t" hint-placeholder-count="7">
+              <button type="button" onClick="{{ t.pick }}" aria-pressed="{{ t.on }}" style="display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:0 13px;border:1px solid {{ t.border }};border-radius:999px;background:{{ t.bg }};font:inherit;font-size:14px;font-weight:{{ t.weight }};color:{{ t.color }};cursor:pointer;transition:border-color .18s,background .18s" style-hover="border-color:#14B3C6">{{ t.name }}<span style="font-size:12px;color:{{ t.countColor }}">{{ t.count }}</span></button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="height:1px;background:#E6E6E6"></div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="position:relative">
+            <button type="button" onClick="{{ toggleSortMenu }}" aria-expanded="{{ sortMenuOpen }}" style="display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border:1px solid #E6E6E6;border-radius:10px;background:#ffffff;font:inherit;font-size:14px;color:#0C243E;cursor:pointer;transition:border-color .18s" style-hover="border-color:#14B3C6"><span style="color:#8A96A3">מיון</span><span style="font-weight:700">{{ sortLabel }}</span><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity:.6"><path d="M2.5 4.5 6 8l3.5-3.5"></path></svg></button>
+            <sc-if value="{{ sortMenuOpen }}" hint-placeholder-val="{{ false }}">
+              <div role="group" aria-label="מיון מדריכים" style="position:absolute;right:0;top:calc(100% + 8px);z-index:20;width:220px;padding:8px;background:#ffffff;border:1px solid #E6E6E6;border-radius:14px;box-shadow:0 20px 48px rgba(12,36,62,.16);animation:bfDrop .16s ease both">
+                <sc-for list="{{ sorts }}" as="o" hint-placeholder-count="3">
+                  <button type="button" onClick="{{ o.select }}" aria-pressed="{{ o.on }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:42px;padding:0 10px;border:0;border-radius:9px;background:{{ o.bg }};font:inherit;font-size:14.5px;font-weight:{{ o.weight }};color:#0C243E;text-align:right;cursor:pointer;transition:background .15s" style-hover="background:#F6F8F9"><span>{{ o.name }}</span><span aria-hidden="true" style="color:#0B7A87;font-size:13px">{{ o.tick }}</span></button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+          <sc-if value="{{ hasFilters }}" hint-placeholder-val="{{ false }}">
+            <button type="button" onClick="{{ clearAll }}" style="min-height:40px;padding:0 6px;border:0;background:transparent;font:inherit;font-size:13.5px;font-weight:700;color:#0B7A87;cursor:pointer">נקו סינונים</button>
+          </sc-if>
+          <span style="margin-right:auto;font-size:13.5px;color:#8A96A3">{{ matchLine }}</span>
+        </div>
+      </div>
+
+      <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:34px 26px;border:1px dashed #D4D4D4;border-radius:18px;background:#FAFBFB">
+          <span style="font-family:'Frank Ruhl Libre',serif;font-size:23px;line-height:1.3">עוד לא פרסמנו על השילוב הזה</span>
+          <span style="font-size:15px;line-height:1.6;color:#5B6B7B;max-width:48ch;text-wrap:pretty">נסו תג אחד במקום שניים, או עיינו בתחום הטיפול בלבד. מדריכים חדשים עולים כמעט כל שבוע.</span>
+          <button type="button" onClick="{{ clearAll }}" style="min-height:44px;margin-top:4px;padding:0 18px;border:1px solid #0C243E;border-radius:11px;background:transparent;font:inherit;font-size:14px;font-weight:700;color:#0C243E;cursor:pointer;transition:background .18s,color .18s" style-hover="background:#0C243E;color:#ffffff">הצגת כל המדריכים</button>
+        </div>
+      </sc-if>
+
+      <div data-grid>
+        <sc-for list="{{ posts }}" as="p" hint-placeholder-count="6">
+          <article style="display:flex;flex-direction:column;border:1px solid #E6E6E6;border-radius:18px;background:#ffffff;overflow:hidden;transition:border-color .22s,box-shadow .22s,transform .22s cubic-bezier(.2,.7,.2,1);animation:bfCard .4s cubic-bezier(.2,.7,.2,1) both;animation-delay:{{ p.delay }}" style-hover="border-color:#D4D4D4;box-shadow:0 18px 44px rgba(12,36,62,.10);transform:translateY(-3px)">
+            <a href="{{ p.href }}" onClick="{{ go }}" tabIndex="-1" aria-hidden="true" data-thumb style="position:relative;display:block;background:#EDF1F3">
+              <img src="{{ p.img }}" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+            </a>
+            <div style="display:flex;flex-direction:column;gap:9px;padding:18px;flex:1">
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <a href="{{ p.locHref }}" onClick="{{ go }}" style="display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 10px;border-radius:7px;background:#F0FAFB;font-size:12px;font-weight:700;color:#0B7A87"><svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 12.5S2.4 8.9 2.4 6a4.6 4.6 0 1 1 9.2 0c0 2.9-4.6 6.5-4.6 6.5Z"></path><circle cx="7" cy="5.9" r="1.5"></circle></svg>{{ p.location }}</a>
+                <a href="{{ p.svcHref }}" onClick="{{ go }}" style="display:inline-flex;align-items:center;height:26px;padding:0 10px;border:1px solid #E6E6E6;border-radius:7px;background:#FAFBFB;font-size:12px;font-weight:700;color:#3E4F62" style-hover="border-color:#14B3C6;color:#0B7A87">{{ p.service }}</a>
+              </div>
+              <h3 style="margin:2px 0 0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:22px;line-height:1.3;text-wrap:pretty"><a href="{{ p.href }}" onClick="{{ go }}" style="color:#0C243E" style-hover="color:#0B7A87">{{ p.title }}</a></h3>
+              <p style="margin:0;font-size:14.5px;line-height:1.6;color:#5B6B7B;text-wrap:pretty">{{ p.excerpt }}</p>
+              <div style="display:flex;align-items:center;gap:9px;margin-top:auto;padding-top:12px;border-top:1px solid #F0F2F4;font-size:12.5px;color:#8A96A3">
+                <time datetime="{{ p.iso }}">{{ p.date }}</time>
+                <span aria-hidden="true" style="width:3px;height:3px;border-radius:50%;background:#C6CDD4"></span>
+                <span>{{ p.read }}</span>
+                <sc-if value="{{ p.reviewed }}" hint-placeholder-val="{{ true }}">
+                  <span style="margin-right:auto;display:inline-flex;align-items:center;gap:5px;font-weight:700;color:#0B7A87"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.4 5.4 10.3 11.5 4"></path></svg>נבדק</span>
+                </sc-if>
+              </div>
+            </div>
+          </article>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:24px">
+        <sc-if value="{{ moreToShow }}" hint-placeholder-val="{{ true }}">
+          <button type="button" onClick="{{ loadMore }}" style="min-height:48px;padding:0 24px;border:1px solid #0C243E;border-radius:12px;background:transparent;font:inherit;font-size:15px;font-weight:700;color:#0C243E;cursor:pointer;transition:background .18s,color .18s" style-hover="background:#0C243E;color:#ffffff">{{ loadMoreLabel }}</button>
+        </sc-if>
+        <div role="presentation" style="flex:1;min-width:160px;height:3px;border-radius:2px;background:#E6E6E6;overflow:hidden"><span style="display:block;height:100%;width:{{ shownPct }};background:#14B3C6;border-radius:2px;transition:width .3s ease"></span></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-browse" data-browse style="margin-top:clamp(40px,4.6vw,66px);gap:clamp(20px,2.6vw,34px)">
+      <div>
+        <h2 id="h-browse" style="margin:0 0 4px;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(21px,1.9vw,27px);line-height:1.2;letter-spacing:-0.012em">עיון לפי מקום</h2>
+        <p dir="ltr" style="margin:0 0 14px;font-size:13.5px;color:#8A96A3;text-align:right">/magazine/location/{city}</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{ locLinks }}" as="l" hint-placeholder-count="8">
+            <a href="{{ l.href }}" onClick="{{ go }}" style="display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 14px;border:1px solid #E6E6E6;border-radius:999px;background:#ffffff;font-size:14.5px;font-weight:500;transition:border-color .18s,background .18s" style-hover="border-color:#14B3C6;background:#F0FAFB;color:#0B7A87">{{ l.name }}<span style="font-size:12.5px;color:#8A96A3">{{ l.count }}</span></a>
+          </sc-for>
+        </div>
+      </div>
+      <div>
+        <h2 style="margin:0 0 4px;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(21px,1.9vw,27px);line-height:1.2;letter-spacing:-0.012em">עיון לפי תחום טיפול</h2>
+        <p dir="ltr" style="margin:0 0 14px;font-size:13.5px;color:#8A96A3;text-align:right">/magazine/treatment/{service}</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{ svcLinks }}" as="l" hint-placeholder-count="7">
+            <a href="{{ l.href }}" onClick="{{ go }}" style="display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 14px;border:1px solid #E6E6E6;border-radius:999px;background:#ffffff;font-size:14.5px;font-weight:500;transition:border-color .18s,background .18s" style-hover="border-color:#14B3C6;background:#F0FAFB;color:#0B7A87">{{ l.name }}<span style="font-size:12.5px;color:#8A96A3">{{ l.count }}</span></a>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-standards" style="margin-top:clamp(40px,4.6vw,66px);padding:clamp(28px,3.2vw,44px);border-radius:24px;background:#0C243E;color:#ffffff">
+      <div data-standards style="gap:clamp(22px,3vw,44px);align-items:start">
+        <div style="min-width:0">
+          <span style="display:flex;align-items:center;gap:12px;font-size:13px;font-weight:700;color:#7ED7E1;margin-bottom:12px"><span aria-hidden="true" style="width:24px;height:1px;background:#14B3C6;display:inline-block"></span>איך אנחנו כותבים</span>
+          <h2 id="h-standards" style="margin:0 0 12px;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(25px,2.5vw,35px);line-height:1.2;letter-spacing:-0.012em">בלי כתבות ממומנות, נקודה<span style="color:#14B3C6">.</span></h2>
+          <p style="margin:0;max-width:52ch;font-size:16.5px;line-height:1.7;color:rgba(255,255,255,.82);text-wrap:pretty">עסקים יכולים לשלם כדי להירשם באינדקס. הם אינם יכולים לשלם כדי שנכתוב עליהם, שנצטט אותם, שנמליץ עליהם או שנסיר אותם מכתבה. נתוני המחירים הם חציונים מתוך העסקים באינדקס בתאריך המופיע.</p>
+        </div>
+        <dl style="margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px">
+          <sc-for list="{{ standards }}" as="s" hint-placeholder-count="4">
+            <div style="display:flex;flex-direction:column;gap:6px;padding-top:14px;border-top:1px solid rgba(255,255,255,.18)">
+              <dt style="font-size:15px;font-weight:700;color:#ffffff">{{ s.title }}</dt>
+              <dd style="margin:0;font-size:14px;line-height:1.6;color:rgba(255,255,255,.74);text-wrap:pretty">{{ s.body }}</dd>
+            </div>
+          </sc-for>
+        </dl>
+      </div>
+    </section>
+  </main>
+
+  <footer style="background:#0C243E;color:#ffffff">
+    <div style="max-width:1320px;margin:0 auto;padding:clamp(44px,5vw,72px) clamp(20px,4vw,32px) 26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:clamp(24px,3vw,40px)">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <span dir="ltr" style="font-family:'Jost',sans-serif;font-weight:300;font-size:26px;line-height:1;color:#ffffff;align-self:flex-start">beauty<span style="color:#7ED7E1">find</span><span style="color:#7ED7E1;font-weight:400">.</span></span>
+        <p style="margin:0;max-width:32ch;font-size:14.5px;line-height:1.7;color:rgba(255,255,255,.78);text-wrap:pretty">אינדקס היופי והאסתטיקה של ישראל: עסקים מאומתים, ביקורות אמיתיות ותפריטי טיפולים שאפשר להשוות.</p>
+      </div>
+      <sc-for list="{{ footGroups }}" as="g" hint-placeholder-count="4">
+        <nav aria-label="{{ g.name }}" style="display:flex;flex-direction:column;gap:12px">
+          <div style="font-size:12.5px;font-weight:700;color:#7ED7E1">{{ g.name }}</div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <sc-for list="{{ g.links }}" as="l" hint-placeholder-count="4">
+              <a href="{{ l.href }}" onClick="{{ go }}" style="min-height:28px;display:flex;align-items:center;font-size:14.5px;color:rgba(255,255,255,.82)" style-hover="color:#7ED7E1">{{ l.name }}</a>
+            </sc-for>
+          </div>
+        </nav>
+      </sc-for>
+    </div>
+    <div style="max-width:1320px;margin:0 auto;padding:20px clamp(20px,4vw,32px) 34px;border-top:1px solid rgba(255,255,255,.14);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px">
+      <span style="font-size:13px;color:rgba(255,255,255,.66)">© 2026 BeautyFind</span>
+      <span style="font-size:13px;color:rgba(255,255,255,.66)">תוכן לדוגמה לצורך בדיקת עיצוב</span>
+    </div>
+  </footer>
+  <dc-import name="BeautyFind Cookie Consent" embedded="{{ true }}" hint-size="0,0"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1320},&quot;showFeatured&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;תצוגה&quot;}}">
+const REGIONS = [
+  { name: 'גוש דן', slug: 'dan', cities: ['תל אביב–יפו', 'רמת גן', 'גבעתיים', 'פתח תקווה', 'חולון', 'ראשון לציון'] },
+  { name: 'שרון', slug: 'sharon', cities: ['נתניה', 'רעננה', 'כפר סבא', 'הרצליה'] },
+  { name: 'חיפה', slug: 'haifa', cities: ['חיפה', 'קריית ביאליק', 'חדרה'] },
+  { name: 'ירושלים', slug: 'jerusalem', cities: ['ירושלים', 'בית שמש', 'מבשרת ציון'] },
+  { name: 'שפלה', slug: 'shfela', cities: ['רחובות', 'נס ציונה', 'מודיעין'] },
+  { name: 'צפון', slug: 'north', cities: ['נהריה', 'עכו', 'כרמיאל', 'טבריה'] },
+  { name: 'דרום', slug: 'south', cities: ['אשדוד', 'אשקלון', 'באר שבע', 'אילת'] }
+];
+const SERVICE_GROUPS = [
+  { name: 'פנים ועור', items: [['קוסמטיקה וטיפולי פנים', 'facials'], ['אסתטיקה רפואית', 'medical-aesthetics']] },
+  { name: 'רפואה ואסתטיקה', items: [['כירורגיה פלסטית', 'plastic-surgery'], ['אסתטיקה דנטלית', 'dental-aesthetics'], ['השתלות שיער וטיפול בנשירה', 'hair-restoration']] },
+  { name: 'שיער', items: [['מספרות ועיצוב שיער', 'hair-salons'], ['הסרת שיער', 'hair-removal']] },
+  { name: 'יופי ואיפור', items: [['גבות וריסים', 'brows-lashes'], ['איפור מקצועי', 'makeup'], ['איפור קבוע', 'permanent-makeup'], ['ציפורניים, מניקור ופדיקור', 'nails']] },
+  { name: 'גוף ורוגע', items: [['ספא ועיסויים', 'spa-massage'], ['עיצוב וחיטוב הגוף', 'body-contouring'], ['שיזוף', 'tanning']] }
+];
+const IMGS = ['assets/art-prices.jpg', 'assets/art-questions.jpg', 'assets/art-choose.jpg', 'assets/biz-laser.jpg', 'assets/biz-facial.jpg', 'assets/biz-medical.jpg', 'assets/hero-skin.jpg', 'assets/biz-spa.jpg', 'assets/biz-nails.jpg', 'assets/biz-hair.jpg', 'assets/hero-consult.jpg', 'assets/hero-clinic.jpg'];
+/* [title, excerpt, iso, location, service, minutes, author, views] */
+const POSTS = [
+  ['מה באמת עולה הסרת שיער בלייזר, מפגש אחרי מפגש', 'גוון העור, עובי השיער ואזור הטיפול משנים את התשובה. מה מכונים בתל אביב מצטטים בפועל, ואיפה מסתתרות העלויות הנוספות.', '2026-09-08', 'תל אביב–יפו', 'הסרת שיער', 9, 'נועה ברקוביץ׳', 4120],
+  ['מחירי בוטוקס: לפי יחידה או לפי אזור', 'שתי קליניקות יכולות לצטט את אותו טיפול בשלוש דרכים שונות. פירוק בשפה פשוטה של מה בדיוק אתם משלמים עליו.', '2026-08-24', 'תל אביב–יפו', 'אסתטיקה רפואית', 7, 'ד״ר יעל אברהמי', 6840],
+  ['הסרת שיער בלייזר על עור כהה: איזה אורך גל חשוב', 'לא כל מכשיר מתאים לכל גוון עור. מה לשאול לפני המפגש הראשון, ומתי כדאי לוותר.', '2026-08-18', 'באר שבע', 'הסרת שיער', 8, 'ד״ר ס׳ אלמוג', 3910],
+  ['מי מורשה להזריק בישראל, ואיך בודקים', 'הזרקות הן פעולה רפואית. איך לאמת מי אחראי על הטיפול שלכם לפני שאתם מגיעים.', '2026-08-04', 'ירושלים', 'אסתטיקה רפואית', 6, 'ד״ר מ׳ רוזנברג', 5230],
+  ['ניקוי פנים עמוק: מה קורה בכל שלב', 'מהקיטור ועד המסכה. סדר הפעולות בטיפול קוסמטי מקצועי, ומה לא אמור לקרות.', '2026-07-28', 'נתניה', 'קוסמטיקה וטיפולי פנים', 6, 'שירה מזרחי', 2870],
+  ['חומרי מילוי: כמה זמן זה מחזיק באמת', 'טווחי החזקה לפי אזור ולפי סוג החומר, ולמה ההבדל בין המכונים גדול יותר ממה שנראה.', '2026-07-15', 'רמת גן', 'אסתטיקה רפואית', 8, 'ד״ר ל׳ גולן', 4460],
+  ['הידרו־פייסיאל מול פילינג כימי: מה מתאים למה', 'שני טיפולים פופולריים עם מטרות שונות לגמרי. מתי לבחור כל אחד מהם.', '2026-07-02', 'חיפה', 'קוסמטיקה וטיפולי פנים', 7, 'ד״ר א׳ חלבי', 3180],
+  ['חיטוב הגוף ללא ניתוח: מה הטכנולוגיות עושות', 'קריולפוליזה, HIFU ורדיו־פריקוונסי. מה כל אחת מהן מיועדת לו, ומה היא לא.', '2026-06-20', 'תל אביב–יפו', 'עיצוב וחיטוב הגוף', 10, 'נועה ברקוביץ׳', 2640],
+  ['הרמת ריסים או תוספות: מה להעדיף', 'עמידות, תחזוקה ועלות לטווח ארוך. השוואה מעשית בין שתי השיטות.', '2026-06-08', 'נתניה', 'גבות וריסים', 5, 'ר׳ בנימין', 2210],
+  ['לק ג׳ל וציפורניים: איך מונעים נזק לטווח ארוך', 'הסרה נכונה, הפסקות ומה לבקש מהמעצבת. מה שחשוב יותר מהמוצר עצמו.', '2026-05-26', 'גבעתיים', 'ציפורניים, מניקור ופדיקור', 5, 'מ׳ פרץ', 1980],
+  ['עיסוי רקמות עמוקות מול שוודי: מה לבחור', 'לחץ, מטרה ותחושה למחרת. איך לבחור את הטיפול שמתאים לכם באמת.', '2026-05-14', 'טבריה', 'ספא ועיסויים', 6, 'ט׳ רון', 1740],
+  ['סיכון לכתמים אחרי פילינג בעור ים־תיכוני', 'הכנה, בחירת חומצה וטיפול אחרי. ההבדלים שמפרידים בין פילינג בטוח לשנה של תיקונים.', '2026-05-02', 'ירושלים', 'קוסמטיקה וטיפולי פנים', 9, 'ד״ר יעל אברהמי', 3520]
+].map((p, i) => ({ title: p[0], excerpt: p[1], iso: p[2], location: p[3], service: p[4], minutes: p[5], author: p[6], views: p[7], img: IMGS[i % IMGS.length] }));
+const LOCS = ['תל אביב–יפו', 'חיפה', 'ירושלים', 'נתניה', 'רמת גן', 'באר שבע', 'גבעתיים', 'טבריה'];
+const SVCS = ['אסתטיקה רפואית', 'קוסמטיקה וטיפולי פנים', 'הסרת שיער', 'עיצוב וחיטוב הגוף', 'גבות וריסים', 'ציפורניים, מניקור ופדיקור', 'ספא ועיסויים'];
+const CITY_PATH = { 'תל אביב–יפו': '/dan/tel-aviv', 'רמת גן': '/dan/ramat-gan', 'גבעתיים': '/dan/givatayim', 'חיפה': '/haifa/haifa', 'ירושלים': '/jerusalem/jerusalem', 'נתניה': '/sharon/netanya', 'באר שבע': '/south/beer-sheva', 'טבריה': '/north/tiberias' };
+const SVC_PATH = { 'אסתטיקה רפואית': 'medical-aesthetics', 'קוסמטיקה וטיפולי פנים': 'facials', 'הסרת שיער': 'hair-removal', 'עיצוב וחיטוב הגוף': 'body-contouring', 'גבות וריסים': 'brows-lashes', 'ציפורניים, מניקור ופדיקור': 'nails', 'ספא ועיסויים': 'spa-massage' };
+const MONTHS = ['בינואר', 'בפברואר', 'במרץ', 'באפריל', 'במאי', 'ביוני', 'ביולי', 'באוגוסט', 'בספטמבר', 'באוקטובר', 'בנובמבר', 'בדצמבר'];
+const heDate = iso => { const d = new Date(iso); return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`; };
+
+class Component extends DCLogic {
+  /* matchMedia, not width measurement: an iframe resized by the host fires neither
+     resize nor a post-resize load, so a seeded pixel width never gets superseded. */
+  static MQ = { desk: '(min-width:1000px)' };
+  readMQ() {
+    const out = {};
+    for (const k in Component.MQ) out[k] = typeof window !== 'undefined' ? window.matchMedia(Component.MQ[k]).matches : true;
+    return out;
+  }
+  state = { mq: this.readMQ(), menu: null, megaIndex: 0, mobileOpen: false,
+    query: '', loc: null, svc: null, sort: 'recent', shown: 6, sortMenu: false };
+  componentDidMount() {
+    this._sync = () => {
+      const next = this.readMQ(), cur = this.state.mq;
+      if (Object.keys(next).some(k => next[k] !== cur[k])) this.setState({ mq: next });
+    };
+    this._mqls = Object.values(Component.MQ).map(qy => {
+      const m = window.matchMedia(qy);
+      if (m.addEventListener) m.addEventListener('change', this._sync); else m.addListener(this._sync);
+      return m;
+    });
+    this._sync();
+  }
+  componentWillUnmount() {
+    (this._mqls || []).forEach(m => { if (m.removeEventListener) m.removeEventListener('change', this._sync); else m.removeListener(this._sync); });
+  }
+  renderVals() {
+    const s = this.state;
+    const desk = s.mq.desk;
+    const ql = s.query.trim();
+    const locOpen = s.menu === 'loc', svcOpen = s.menu === 'svc';
+
+    const passes = (p, skip) =>
+      (skip === 'loc' || !s.loc || p.location === s.loc) &&
+      (skip === 'svc' || !s.svc || p.service === s.svc) &&
+      (!ql || p.title.includes(ql) || p.excerpt.includes(ql) || p.location.includes(ql) || p.service.includes(ql));
+
+    const matched = POSTS.filter(p => passes(p));
+    const sorted = s.sort === 'read' ? [...matched].sort((a, b) => b.views - a.views)
+      : s.sort === 'short' ? [...matched].sort((a, b) => a.minutes - b.minutes)
+      : [...matched].sort((a, b) => b.iso.localeCompare(a.iso));
+    const visible = sorted.slice(0, s.shown);
+    const feat = POSTS[0];
+
+    const leftItems = (locOpen ? REGIONS.map(r => r.name) : SERVICE_GROUPS.map(g => g.name)).map((name, i) => {
+      const on = i === s.megaIndex;
+      return { name, bg: on ? '#F0FAFB' : 'transparent', bar: on ? '#14B3C6' : 'transparent', weight: on ? 700 : 500, select: () => { if (s.megaIndex !== i) this.setState({ megaIndex: i }); } };
+    });
+    const mi = Math.min(s.megaIndex, leftItems.length - 1);
+    const region = REGIONS[mi] || REGIONS[0];
+    const group = SERVICE_GROUPS[mi] || SERVICE_GROUPS[0];
+    const tagStyle = on => ({ border: on ? '#14B3C6' : '#E6E6E6', bg: on ? '#F0FAFB' : '#ffffff',
+      color: on ? '#0B7A87' : '#3E4F62', weight: on ? 700 : 500, countColor: on ? '#0B7A87' : '#8A96A3' });
+
+    const mk = p => ({
+      title: p.title, excerpt: p.excerpt, iso: p.iso, date: heDate(p.iso),
+      location: p.location, service: p.service, author: p.author,
+      read: `${p.minutes} דק׳ קריאה`, reviewed: true, img: p.img,
+      href: `/magazine/${p.iso}`, locHref: `/magazine/location/${(CITY_PATH[p.location] || '').split('/').pop()}`,
+      svcHref: `/magazine/treatment/${SVC_PATH[p.service] || ''}`
+    });
+
+    return {
+      go: e => { if (e) e.preventDefault(); },
+      onKey: e => { if (e.key === 'Escape') this.setState({ menu: null, mobileOpen: false, sortMenu: false }); },
+      onSearch: e => { e.preventDefault(); this.setState({ shown: 6 }); },
+      query: s.query, onQuery: e => this.setState({ query: e.target.value, shown: 6 }),
+      suggestions: ['מחירי בוטוקס', 'לייזר על עור כהה', 'מי מורשה להזריק', 'פילינג כימי'].map(name => ({
+        name, pick: () => this.setState({ query: name, shown: 6 }) })),
+      introCopy: 'מדריכים שנכתבים כדי לענות על שאלה אחת עד הסוף: מה הטיפול עושה, מה הוא עולה בישראל, ומה לשאול לפני שקובעים תור. כל מדריך מתויג לעיר ולתחום טיפול, כדי שתגיעו ממנו ישר לעסקים הרלוונטיים.',
+
+      showMega: desk && !!s.menu,
+      locOpen, svcOpen,
+      locBg: locOpen ? '#F0FAFB' : 'transparent', svcBg: svcOpen ? '#F0FAFB' : 'transparent',
+      locColor: locOpen ? '#0B7A87' : '#0C243E', svcColor: svcOpen ? '#0B7A87' : '#0C243E',
+      locBorder: locOpen ? '#14B3C6' : '#E6E6E6', svcBorder: svcOpen ? '#14B3C6' : '#E6E6E6',
+      locChipBg: locOpen ? '#F0FAFB' : '#ffffff', svcChipBg: svcOpen ? '#F0FAFB' : '#ffffff',
+      toggleLocations: () => this.setState(st => ({ menu: st.menu === 'loc' ? null : 'loc', megaIndex: 0 })),
+      toggleServices: () => this.setState(st => ({ menu: st.menu === 'svc' ? null : 'svc', megaIndex: 0 })),
+      mobileOpen: !desk && s.mobileOpen,
+      toggleMobile: () => this.setState(st => ({ mobileOpen: !st.mobileOpen, menu: st.mobileOpen ? null : 'loc', megaIndex: 0 })),
+      leftLabel: locOpen ? 'אזורים' : 'קטגוריות',
+      leftItems,
+      rightTitle: locOpen ? `ערים באזור ${region.name}` : group.name,
+      rightAllHref: locOpen ? `/${region.slug}` : '/treatments',
+      rightAllLabel: locOpen ? 'כל האזור' : 'כל התחומים',
+      rightLinks: locOpen
+        ? region.cities.map(c => ({ name: c, href: CITY_PATH[c] || `/${region.slug}` }))
+        : group.items.map(([n, sl]) => ({ name: n, href: `/treatments/${sl}` })),
+
+      showFeatured: this.props.showFeatured ?? true,
+      feature: { ...mk(feat), facts: [
+        { label: 'מחיר חציוני למפגש', value: '₪150' },
+        { label: 'מפגשים אופייניים', value: '6–8' }
+      ] },
+
+      listHeading: s.loc || s.svc || ql ? 'מדריכים מסוננים' : 'כל המדריכים',
+      resultCount: `${matched.length} מתוך ${POSTS.length} מדריכים`,
+      matchLine: s.loc || s.svc ? `${matched.length} תוצאות מסוננות` : 'כל התוצאות',
+      locTags: [{ name: 'כל המקומות', v: null }, ...LOCS.map(l => ({ name: l, v: l }))].map(t => {
+        const on = s.loc === t.v;
+        const n = t.v ? POSTS.filter(p => passes(p, 'loc') && p.location === t.v).length : POSTS.filter(p => passes(p, 'loc')).length;
+        return { name: t.name, on, count: String(n), ...tagStyle(on), pick: () => this.setState({ loc: t.v, shown: 6 }) };
+      }),
+      svcTags: [{ name: 'כל התחומים', v: null }, ...SVCS.map(v => ({ name: v, v }))].map(t => {
+        const on = s.svc === t.v;
+        const n = t.v ? POSTS.filter(p => passes(p, 'svc') && p.service === t.v).length : POSTS.filter(p => passes(p, 'svc')).length;
+        return { name: t.name, on, count: String(n), ...tagStyle(on), pick: () => this.setState({ svc: t.v, shown: 6 }) };
+      }),
+      hasFilters: !!(s.loc || s.svc || ql),
+      clearAll: () => this.setState({ loc: null, svc: null, query: '', shown: 6 }),
+      sortMenuOpen: s.sortMenu, toggleSortMenu: () => this.setState(st => ({ sortMenu: !st.sortMenu })),
+      sortLabel: ({ recent: 'החדשים', read: 'הנקראים', short: 'הקצרים' })[s.sort],
+      sorts: [['recent', 'החדשים ביותר'], ['read', 'הנקראים ביותר'], ['short', 'הקצרים ביותר']].map(([k, name]) => {
+        const on = s.sort === k;
+        return { name, on, tick: on ? '✓' : '', bg: on ? '#F0FAFB' : 'transparent', weight: on ? 700 : 500,
+          select: () => this.setState({ sort: k, sortMenu: false }) };
+      }),
+      noResults: matched.length === 0,
+      posts: visible.map((p, i) => ({ ...mk(p), delay: `${i * 45}ms` })),
+      moreToShow: s.shown < sorted.length,
+      loadMoreLabel: `הצגת ${Math.min(6, sorted.length - s.shown)} מדריכים נוספים`,
+      loadMore: () => this.setState(st => ({ shown: st.shown + 6 })),
+      shownPct: `${Math.round(Math.min(1, visible.length / Math.max(1, sorted.length)) * 100)}%`,
+
+      locLinks: LOCS.map(l => ({ name: l, count: String(POSTS.filter(p => p.location === l).length),
+        href: `/magazine/location/${(CITY_PATH[l] || '').split('/').pop()}` })),
+      svcLinks: SVCS.map(v => ({ name: v, count: String(POSTS.filter(p => p.service === v).length),
+        href: `/magazine/treatment/${SVC_PATH[v]}` })),
+
+      standards: [
+        { title: 'נבדק מקצועית', body: 'תוכן רפואי נבדק על ידי רופאה מוסמכת לפני הפרסום, ושמה מופיע על המדריך.' },
+        { title: 'מחירים עם תאריך', body: 'כל טווח מחירים הוא חציון מתוך העסקים באינדקס, עם התאריך שבו נמדד.' },
+        { title: 'בלי קישורים בתשלום', body: 'איננו מוכרים קישורים או אזכורים בתוך כתבות. עסק שמוזכר מוזכר מסיבה עיתונאית.' },
+        { title: 'תיקונים בגלוי', body: 'כשמתקנים נתון, התיקון והתאריך שלו מופיעים בתחתית המדריך.' }
+      ],
+      footGroups: [
+        { name: 'אזורים', links: REGIONS.slice(0, 5).map(r => ({ name: r.name, href: `/${r.slug}` })) },
+        { name: 'תחומי טיפול', links: SVCS.slice(0, 5).map(v => ({ name: v, href: `/treatments/${SVC_PATH[v]}` })) },
+        { name: 'המגזין', links: [{ name: 'כל המדריכים', href: '/magazine' }, { name: 'לפי מקום', href: '/magazine/location' }, { name: 'לפי תחום טיפול', href: '/magazine/treatment' }, { name: 'מדיניות עריכה', href: '/about/editorial' }] },
+        { name: 'החברה', links: [{ name: 'אודות', href: '/about' }, { name: 'מרכז עזרה', href: '/help' }, { name: 'צור קשר', href: '/contact' }, { name: 'רישום עסק', href: '/for-business' }, { name: 'הצהרת נגישות', href: '/accessibility' }] }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

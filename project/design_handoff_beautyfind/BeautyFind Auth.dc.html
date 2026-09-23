@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="כניסה והרשמה ל־BeautyFind — אימות בוואטסאפ, כניסה לעסקים וללקוחות, ואיפוס סיסמה.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#F6F8F9}
+  *{box-sizing:border-box}
+  :root{--au-shell:minmax(0,1fr);--au-pad:16px;--au-otp:repeat(6,minmax(0,44px))}
+  @media (min-width:560px){:root{--au-pad:24px}}
+  @media (min-width:960px){:root{--au-shell:minmax(0,1fr) minmax(0,420px)}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes auFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes auPop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#F6F8F9;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+  <div style="min-height:100vh;display:grid;grid-template-columns:var(--au-shell)">
+
+    <main style="min-width:0;display:flex;flex-direction:column;justify-content:center;padding:clamp(22px,4vw,52px) var(--au-pad)">
+      <div style="width:100%;max-width:440px;margin:0 auto">
+
+        <a href="./BeautyFind Homepage.dc.html" dir="ltr" style="display:inline-block;margin-bottom:clamp(20px,3vw,32px);font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:25px;letter-spacing:-0.01em;color:#0C243E;text-decoration:none">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6">.</span></a>
+
+        <sc-if value="{{ showRoleTabs }}" hint-placeholder-val="{{ true }}">
+          <div role="group" aria-label="סוג חשבון" style="display:flex;gap:7px;padding:5px;margin-bottom:18px;background:#EDEFF2;border-radius:13px">
+            <sc-for list="{{ roleTabs }}" as="rt" hint-placeholder-count="2">
+              <button type="button" aria-pressed="{{ rt.on }}" onClick="{{ rt.pick }}" style="flex:1;min-height:42px;padding:0 12px;border:0;border-radius:9px;background:{{ rt.bg }};font:inherit;font-size:14px;font-weight:700;color:{{ rt.color }};cursor:pointer;box-shadow:{{ rt.shadow }}">{{ rt.name }}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <h1 style="margin:0 0 5px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(25px,3.4vw,33px);font-weight:500;line-height:1.15;letter-spacing:-0.015em">{{ title }}</h1>
+        <p style="margin:0 0 clamp(18px,2.4vw,24px);font-size:15px;color:#3E4F62;text-wrap:pretty">{{ subtitle }}</p>
+
+        <sc-if value="{{ isSignin }}" hint-placeholder-val="{{ true }}">
+          <form onSubmit="{{ submitSignin }}" style="display:flex;flex-direction:column;gap:12px;animation:auFade .22s ease both">
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">{{ idLabel }}
+              <input value="{{ f.ident }}" onChange="{{ onIdent }}" dir="ltr" autocomplete="username" placeholder="{{ idPlaceholder }}" style="min-height:48px;padding:0 13px;border:1px solid {{ errIdent }};border-radius:12px;font:inherit;font-size:15.5px;color:#0C243E;background:#fff;outline:none;text-align:right">
+            </label>
+
+            <sc-if value="{{ usePassword }}" hint-placeholder-val="{{ true }}">
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">סיסמה
+                <span style="position:relative;display:flex">
+                  <input value="{{ f.pass }}" onChange="{{ onPass }}" type="{{ passType }}" autocomplete="current-password" style="flex:1;min-width:0;min-height:48px;padding:0 13px;padding-left:62px;border:1px solid {{ errPass }};border-radius:12px;font:inherit;font-size:15.5px;color:#0C243E;background:#fff;outline:none">
+                  <button type="button" onClick="{{ togglePass }}" style="position:absolute;left:6px;top:6px;min-height:36px;padding:0 11px;border:0;border-radius:9px;background:#F6F8F9;font:inherit;font-size:12.5px;font-weight:700;color:#5B6B7B;cursor:pointer">{{ passToggleLabel }}</button>
+                </span>
+              </label>
+            </sc-if>
+
+            <div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap">
+              <button type="button" role="checkbox" aria-checked="{{ rememberOn }}" onClick="{{ toggleRemember }}" style="display:flex;align-items:center;gap:9px;padding:0;border:0;background:transparent;font:inherit;cursor:pointer">
+                <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border:1.5px solid {{ rememberBorder }};border-radius:6px;background:{{ rememberBg }};color:#fff">
+                  <sc-if value="{{ rememberChecked }}" hint-placeholder-val="{{ true }}"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg></sc-if>
+                </span>
+                <span style="font-size:13.5px;font-weight:600;color:#3E4F62">זכרו אותי במכשיר הזה</span>
+              </button>
+              <button type="button" onClick="{{ goReset }}" style="margin-right:auto;min-height:38px;padding:0 6px;border:0;background:transparent;font:inherit;font-size:13.5px;font-weight:700;color:#0B7A87;cursor:pointer">שכחתי סיסמה</button>
+            </div>
+
+            <sc-if value="{{ errorOn }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0;padding:11px 13px;border:1px solid #F0C9C4;border-radius:11px;background:#FDEDEC;font-size:13.5px;font-weight:700;color:#A33A31;text-wrap:pretty">{{ errorText }}</p>
+            </sc-if>
+
+            <button type="submit" style="min-height:50px;margin-top:2px;padding:0 18px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:16px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#0C243E">{{ primaryLabel }}</button>
+
+            <div style="display:flex;align-items:center;gap:11px;margin:4px 0">
+              <span aria-hidden="true" style="flex:1;height:1px;background:#E6E6E6"></span>
+              <span style="flex:none;font-size:12.5px;color:#8A96A3">או</span>
+              <span aria-hidden="true" style="flex:1;height:1px;background:#E6E6E6"></span>
+            </div>
+
+            <button type="button" onClick="{{ switchMethod }}" style="display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:0 16px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font:inherit;font-size:15px;font-weight:700;color:#0C243E;cursor:pointer" style-hover="border-color:#0C243E">
+              <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:7px;background:#EAF3EA;color:#3B6B3F">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.6a6.4 6.4 0 0 0-5.5 9.7L1.6 14.4l3.2-.85A6.4 6.4 0 1 0 8 1.6Z"></path></svg>
+              </span>
+              <span>{{ methodLabel }}</span>
+            </button>
+
+            <p style="margin:9px 0 0;font-size:14px;color:#5B6B7B;text-wrap:pretty">{{ switchPrompt }}
+              <button type="button" onClick="{{ goSignup }}" style="padding:0;border:0;background:transparent;font:inherit;font-size:14px;font-weight:700;color:#0B7A87;cursor:pointer">{{ switchCta }}</button>
+            </p>
+          </form>
+        </sc-if>
+
+        <sc-if value="{{ isSignup }}" hint-placeholder-val="{{ false }}">
+          <form onSubmit="{{ submitSignup }}" style="display:flex;flex-direction:column;gap:12px;animation:auFade .22s ease both">
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">שם מלא
+              <input value="{{ f.name }}" onChange="{{ onName }}" autocomplete="name" style="min-height:48px;padding:0 13px;border:1px solid {{ errName }};border-radius:12px;font:inherit;font-size:15.5px;color:#0C243E;background:#fff;outline:none">
+            </label>
+            <sc-if value="{{ isBiz }}" hint-placeholder-val="{{ false }}">
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">שם העסק
+                <input value="{{ f.biz }}" onChange="{{ onBiz }}" autocomplete="organization" style="min-height:48px;padding:0 13px;border:1px solid {{ errBiz }};border-radius:12px;font:inherit;font-size:15.5px;color:#0C243E;background:#fff;outline:none">
+              </label>
+            </sc-if>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">טלפון נייד
+              <input value="{{ f.phone }}" onChange="{{ onPhone }}" dir="ltr" inputMode="tel" autocomplete="tel" placeholder="052-000-0000" style="min-height:48px;padding:0 13px;border:1px solid {{ errPhone }};border-radius:12px;font:inherit;font-size:15.5px;color:#0C243E;background:#fff;outline:none;text-align:right">
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">דוא״ל
+              <input value="{{ f.email }}" onChange="{{ onEmail }}" dir="ltr" inputMode="email" autocomplete="email" style="min-height:48px;padding:0 13px;border:1px solid {{ errEmail }};border-radius:12px;font:inherit;font-size:15.5px;color:#0C243E;background:#fff;outline:none;text-align:right">
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">סיסמה
+              <input value="{{ f.pass }}" onChange="{{ onPass }}" type="password" autocomplete="new-password" style="min-height:48px;padding:0 13px;border:1px solid {{ errPass }};border-radius:12px;font:inherit;font-size:15.5px;color:#0C243E;background:#fff;outline:none">
+            </label>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span aria-hidden="true" style="flex:1;height:6px;border-radius:3px;background:#EDEFF2;overflow:hidden">
+                <span style="display:block;height:100%;width:{{ pwWidth }};background:{{ pwColor }};transition:width .18s"></span>
+              </span>
+              <span style="flex:none;font-size:12.5px;font-weight:700;color:{{ pwColor }}">{{ pwLabel }}</span>
+            </div>
+
+            <ul style="list-style:none;margin:2px 0 0;padding:0;display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ terms }}" as="tm" hint-placeholder-count="2">
+                <li>
+                  <button type="button" role="checkbox" aria-checked="{{ tm.on }}" onClick="{{ tm.toggle }}" style="width:100%;display:flex;align-items:flex-start;gap:10px;padding:0;border:0;background:transparent;font:inherit;text-align:right;cursor:pointer">
+                    <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;margin-top:1px;border:1.5px solid {{ tm.border }};border-radius:7px;background:{{ tm.bg }};color:#fff">
+                      <sc-if value="{{ tm.checked }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg></sc-if>
+                    </span>
+                    <span style="flex:1;min-width:0;font-size:13.5px;color:#3E4F62;text-wrap:pretty">{{ tm.label }}</span>
+                  </button>
+                </li>
+              </sc-for>
+            </ul>
+
+            <sc-if value="{{ errorOn }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0;padding:11px 13px;border:1px solid #F0C9C4;border-radius:11px;background:#FDEDEC;font-size:13.5px;font-weight:700;color:#A33A31;text-wrap:pretty">{{ errorText }}</p>
+            </sc-if>
+
+            <button type="submit" style="min-height:50px;margin-top:2px;padding:0 18px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:16px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#0C243E">{{ primaryLabel }}</button>
+            <p style="margin:6px 0 0;font-size:14px;color:#5B6B7B">{{ switchPrompt }}
+              <button type="button" onClick="{{ goSignin }}" style="padding:0;border:0;background:transparent;font:inherit;font-size:14px;font-weight:700;color:#0B7A87;cursor:pointer">{{ switchCta }}</button>
+            </p>
+          </form>
+        </sc-if>
+
+        <sc-if value="{{ isOtp }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:14px;animation:auFade .22s ease both">
+            <div style="padding:13px 15px;border:1px solid #CDEFF3;border-radius:12px;background:#F0FAFB">
+              <p style="margin:0;font-size:14px;color:#3E4F62;text-wrap:pretty">שלחנו קוד בן <span dir="ltr">6</span> ספרות בוואטסאפ למספר <span dir="ltr" style="font-weight:700">{{ otpTarget }}</span>.
+                <button type="button" onClick="{{ editTarget }}" style="padding:0;border:0;background:transparent;font:inherit;font-size:14px;font-weight:700;color:#0B7A87;cursor:pointer">שינוי מספר</button>
+              </p>
+            </div>
+
+            <div dir="ltr" role="group" aria-label="קוד אימות" style="display:grid;grid-template-columns:var(--au-otp);gap:8px;justify-content:center">
+              <sc-for list="{{ otpCells }}" as="oc" hint-placeholder-count="6">
+                <input value="{{ oc.v }}" onChange="{{ oc.onChange }}" inputMode="numeric" maxLength="1" aria-label="{{ oc.label }}" style="min-height:56px;border:1px solid {{ oc.border }};border-radius:12px;font:inherit;font-size:22px;font-weight:700;color:#0C243E;background:#fff;outline:none;text-align:center;font-variant-numeric:tabular-nums">
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ errorOn }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0;padding:11px 13px;border:1px solid #F0C9C4;border-radius:11px;background:#FDEDEC;font-size:13.5px;font-weight:700;color:#A33A31;text-wrap:pretty">{{ errorText }}</p>
+            </sc-if>
+
+            <button type="button" onClick="{{ submitOtp }}" style="min-height:50px;padding:0 18px;border:0;border-radius:12px;background:{{ otpBtnBg }};font:inherit;font-size:16px;font-weight:700;color:{{ otpBtnColor }};cursor:{{ otpBtnCursor }}">אימות והמשך</button>
+
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <button type="button" onClick="{{ resend }}" disabled="{{ resendBlocked }}" style="min-height:42px;padding:0 13px;border:1px solid #E6E6E6;border-radius:11px;background:#fff;font:inherit;font-size:13.5px;font-weight:700;color:{{ resendColor }};cursor:{{ resendCursor }}">{{ resendLabel }}</button>
+              <button type="button" onClick="{{ smsInstead }}" style="min-height:42px;padding:0 13px;border:0;border-radius:11px;background:transparent;font:inherit;font-size:13.5px;font-weight:700;color:#0B7A87;cursor:pointer">שליחה ב־SMS במקום</button>
+            </div>
+            <p style="margin:0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">הקוד תקף <span dir="ltr">10</span> דקות. אם לא קיבלתם, בדקו שהמספר נכון ושוואטסאפ מותקן במכשיר.</p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isReset }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:12px;animation:auFade .22s ease both">
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">דוא״ל או טלפון
+              <input value="{{ f.ident }}" onChange="{{ onIdent }}" dir="ltr" style="min-height:48px;padding:0 13px;border:1px solid {{ errIdent }};border-radius:12px;font:inherit;font-size:15.5px;color:#0C243E;background:#fff;outline:none;text-align:right">
+            </label>
+            <sc-if value="{{ errorOn }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0;padding:11px 13px;border:1px solid #F0C9C4;border-radius:11px;background:#FDEDEC;font-size:13.5px;font-weight:700;color:#A33A31;text-wrap:pretty">{{ errorText }}</p>
+            </sc-if>
+            <button type="button" onClick="{{ submitReset }}" style="min-height:50px;padding:0 18px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:16px;font-weight:700;color:#fff;cursor:pointer">שליחת קישור לאיפוס</button>
+            <button type="button" onClick="{{ goSignin }}" style="min-height:44px;padding:0 13px;border:0;border-radius:11px;background:transparent;font:inherit;font-size:14px;font-weight:700;color:#0B7A87;cursor:pointer">חזרה לכניסה</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isSent }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:13px;animation:auPop .2s ease both">
+            <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:#F0FAFB;color:#0B7A87">
+              <svg width="25" height="25" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg>
+            </span>
+            <p style="margin:0;font-size:15px;color:#3E4F62;text-wrap:pretty">{{ sentBody }}</p>
+            <button type="button" onClick="{{ goSignin }}" style="align-self:flex-start;min-height:46px;padding:0 16px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:15px;font-weight:700;color:#fff;cursor:pointer">חזרה לכניסה</button>
+          </div>
+        </sc-if>
+
+        <p style="margin:clamp(22px,3vw,32px) 0 0;padding-top:16px;border-top:1px solid #E6E6E6;font-size:12.5px;color:#8A96A3;text-wrap:pretty">
+          בכניסה אתם מאשרים את <a href="./BeautyFind Legal.dc.html">התקנון ומדיניות הפרטיות</a>. לשאלות — <a href="./BeautyFind Contact.dc.html">צרו קשר</a> · <a href="./BeautyFind Legal.dc.html">הצהרת נגישות</a>
+        </p>
+      </div>
+    </main>
+
+    <aside style="min-width:0;display:{{ asideDisplay }};flex-direction:column;justify-content:center;gap:18px;padding:clamp(24px,3vw,44px);background:#0C243E;color:#fff">
+      <h2 style="margin:0;max-width:22ch;font-family:'Frank Ruhl Libre',serif;font-size:clamp(23px,2.6vw,30px);font-weight:500;line-height:1.25;letter-spacing:-0.014em;color:#fff">{{ asideTitle }}</h2>
+      <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px">
+        <sc-for list="{{ asidePoints }}" as="ap" hint-placeholder-count="3">
+          <li style="display:flex;align-items:flex-start;gap:11px">
+            <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-top:1px;border-radius:8px;background:rgba(126,215,225,.16);color:#7ED7E1">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg>
+            </span>
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:15px;font-weight:700;color:#fff">{{ ap.name }}</span>
+              <span style="font-size:13.5px;color:rgba(255,255,255,.78);text-wrap:pretty">{{ ap.note }}</span>
+            </span>
+          </li>
+        </sc-for>
+      </ul>
+      <dl style="margin:0;padding-top:18px;border-top:1px solid rgba(255,255,255,.16);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+        <sc-for list="{{ asideStats }}" as="as2" hint-placeholder-count="3">
+          <div style="min-width:0;display:flex;flex-direction:column;gap:2px">
+            <dd dir="ltr" style="margin:0;font-size:22px;font-weight:700;color:#7ED7E1;text-align:right;font-variant-numeric:tabular-nums">{{ as2.n }}</dd>
+            <dt style="font-size:12.5px;color:rgba(255,255,255,.72);text-wrap:pretty">{{ as2.label }}</dt>
+          </div>
+        </sc-for>
+      </dl>
+    </aside>
+  </div>
+
+  <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:fixed;bottom:18px;right:50%;transform:translateX(50%);z-index:40;max-width:min(90vw,420px);padding:12px 17px;border-radius:13px;background:#0C243E;color:#fff;font-size:14px;font-weight:600;box-shadow:0 12px 30px rgba(12,36,62,.28);animation:auPop .16s ease both;text-wrap:pretty">{{ toastText }}</div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180,&quot;height&quot;:840}}">
+const ASIDE = {
+  client: {
+    title: 'תור אצל מטפלת מאומתת — בלי טלפונים ובלי לחכות',
+    points: [
+      { name: 'יומן אמיתי', note: 'רואים את השעות הפנויות בפועל וקובעים בשלוש נקישות' },
+      { name: 'התורים שלך במקום אחד', note: 'שינוי או ביטול עד 24 שעות לפני, בלי שיחה' },
+      { name: 'ביקורות מאומתות בלבד', note: 'רק מי שהיתה בטיפול יכולה לכתוב' }
+    ],
+    stats: [{ n: '2,181', label: 'עסקים' }, { n: '7', label: 'אזורים' }, { n: '14', label: 'קטגוריות' }]
+  },
+  biz: {
+    title: 'הפרופיל, היומן והלקוחות — במערכת אחת',
+    points: [
+      { name: 'פניות ישר ל־CRM', note: 'כל פנייה מהפרופיל נכנסת לניהול הלקוחות עם מקור' },
+      { name: 'יומן, מלאי ואוטומציות', note: 'תזכורות בוואטסאפ, ניכוי מלאי לכל טיפול' },
+      { name: 'הרשאות לפי תפקיד', note: 'מזכירה, קוסמטיקאית והנהלת חשבונות רואות רק את שלהן' }
+    ],
+    stats: [{ n: '86%', label: 'פניות נענות' }, { n: '4.8', label: 'דירוג ממוצע' }, { n: '18%', label: 'צמיחה' }]
+  }
+};
+
+const TERMS_CLIENT = [
+  ['tos', 'קראתי ואני מאשרת את התקנון ומדיניות הפרטיות'],
+  ['marketing', 'אשמח לקבל עדכונים ומבצעים בוואטסאפ — לא חובה']
+];
+const TERMS_BIZ = [
+  ['tos', 'קראתי ואני מאשר/ת את התקנון, מדיניות הפרטיות ותקן הרישום'],
+  ['owner', 'אני בעל/ת העסק או מוסמך/ת לפעול בשמו'],
+  ['marketing', 'אשמח לקבל עדכונים מקצועיים בדוא״ל — לא חובה']
+];
+
+class Component extends DCLogic {
+  static MQ = { wide: '(min-width:960px)' };
+
+  state = {
+    view: 'signin', role: 'client', method: 'password',
+    f: { ident: '', pass: '', name: '', biz: '', phone: '', email: '' },
+    otp: ['', '', '', '', '', ''],
+    remember: true, terms: {}, showPass: false,
+    tried: false, cooldown: 0, toast: '', mq: { wide: false }
+  };
+
+  componentDidMount() { this.readMQ(); }
+  componentWillUnmount() {
+    (this._mqls || []).forEach(x => x.mql.removeEventListener('change', x.fn));
+    clearTimeout(this._t); clearInterval(this._ci);
+  }
+
+  readMQ() {
+    this._mqls = Object.keys(Component.MQ).map(k => {
+      const mql = window.matchMedia(Component.MQ[k]);
+      const fn = () => this.setState(s => ({ mq: Object.assign({}, s.mq, { [k]: mql.matches }) }));
+      mql.addEventListener('change', fn);
+      return { mql, fn, k };
+    });
+    const mq = {};
+    this._mqls.forEach(x => { mq[x.k] = x.mql.matches; });
+    this.setState({ mq });
+  }
+
+  flash(t) { clearTimeout(this._t); this.setState({ toast: t }); this._t = setTimeout(() => this.setState({ toast: '' }), 3000); }
+
+  startCooldown() {
+    clearInterval(this._ci);
+    this.setState({ cooldown: 30 });
+    this._ci = setInterval(() => this.setState(s => {
+      if (s.cooldown <= 1) { clearInterval(this._ci); return { cooldown: 0 }; }
+      return { cooldown: s.cooldown - 1 };
+    }), 1000);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const biz = s.role === 'biz';
+    const teal = '#0B7A87';
+    const line = '#D4D4D4';
+    const bad = '#D98A80';
+    const setF = k => e => { const v = e.target.value; this.setState(st => ({ f: Object.assign({}, st.f, { [k]: v }) })); };
+
+    const phoneOk = /^0\d{1,2}[- ]?\d{3}[- ]?\d{4}$/.test(s.f.phone.trim());
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s.f.email.trim());
+    const identOk = s.f.ident.trim().length > 5;
+    const nameOk = s.f.name.trim().length >= 2;
+    const bizOk = !biz || s.f.biz.trim().length >= 2;
+    const passScore = (() => {
+      const p = s.f.pass;
+      let n = 0;
+      if (p.length >= 8) n++;
+      if (/[A-Z\u0590-\u05FF]/.test(p)) n++;
+      if (/\d/.test(p)) n++;
+      if (/[^\w\s]/.test(p)) n++;
+      return p.length ? n : 0;
+    })();
+    const passOk = s.f.pass.length >= 8;
+    const termDefs = biz ? TERMS_BIZ : TERMS_CLIENT;
+    const required = termDefs.filter(t => t[0] !== 'marketing');
+    const termsOk = required.every(t => s.terms[t[0]]);
+    const otpFull = s.otp.every(x => x !== '');
+
+    const err = (() => {
+      if (!s.tried) return '';
+      if (s.view === 'signin') {
+        if (!identOk) return s.method === 'password' ? 'הזינו דוא״ל או טלפון תקין' : 'הזינו מספר טלפון נייד תקין';
+        if (s.method === 'password' && !passOk) return 'הסיסמה חייבת להכיל לפחות 8 תווים';
+        return '';
+      }
+      if (s.view === 'signup') {
+        if (!nameOk) return 'נדרש שם מלא';
+        if (!bizOk) return 'נדרש שם העסק';
+        if (!phoneOk) return 'מספר טלפון נייד אינו תקין';
+        if (!emailOk) return 'כתובת הדוא״ל אינה תקינה';
+        if (!passOk) return 'הסיסמה חייבת להכיל לפחות 8 תווים';
+        if (!termsOk) return biz ? 'יש לאשר את התקנון ואת ההצהרה על בעלות בעסק' : 'יש לאשר את התקנון ומדיניות הפרטיות';
+        return '';
+      }
+      if (s.view === 'otp' && !otpFull) return 'הזינו את שש ספרות הקוד';
+      if (s.view === 'reset' && !identOk) return 'הזינו דוא״ל או טלפון תקין';
+      return '';
+    })();
+
+    const go = v => () => this.setState({ view: v, tried: false });
+
+    const titles = {
+      signin: biz ? 'כניסה לעסקים' : 'כניסה לחשבון',
+      signup: biz ? 'פתיחת חשבון עסקי' : 'הרשמה',
+      otp: 'אימות בוואטסאפ',
+      reset: 'איפוס סיסמה',
+      sent: 'הקישור נשלח'
+    };
+    const subs = {
+      signin: biz ? 'לניהול הפרופיל, היומן והלקוחות של העסק.' : 'לצפייה בתורים, בעסקים השמורים ובביקורות שכתבתם.',
+      signup: biz ? 'אחרי ההרשמה נאמת את הבעלות על העסק ונפתח את לוח הבקרה.' : 'הרשמה לוקחת פחות מדקה ומאפשרת לקבוע תור בנקישה.',
+      otp: 'הקוד נשלח להודעה בוואטסאפ — אין צורך בסיסמה.',
+      reset: 'נשלח קישור לאיפוס לכתובת או למספר שרשומים בחשבון.',
+      sent: ''
+    };
+
+    return {
+      showRoleTabs: s.view === 'signin' || s.view === 'signup',
+      roleTabs: [['client', 'לקוחות'], ['biz', 'עסקים']].map(r => {
+        const on = s.role === r[0];
+        return { name: r[1], on: on ? 'true' : 'false',
+          bg: on ? '#fff' : 'transparent', color: on ? '#0C243E' : '#5B6B7B',
+          shadow: on ? '0 1px 4px rgba(12,36,62,.12)' : 'none',
+          pick: () => this.setState({ role: r[0], tried: false, terms: {} }) };
+      }),
+
+      title: titles[s.view], subtitle: subs[s.view],
+      isSignin: s.view === 'signin', isSignup: s.view === 'signup',
+      isOtp: s.view === 'otp', isReset: s.view === 'reset', isSent: s.view === 'sent',
+      isBiz: biz,
+
+      f: s.f,
+      onIdent: setF('ident'), onPass: setF('pass'), onName: setF('name'),
+      onBiz: setF('biz'), onPhone: setF('phone'), onEmail: setF('email'),
+      errIdent: s.tried && !identOk ? bad : line,
+      errPass: s.tried && !passOk ? bad : line,
+      errName: s.tried && !nameOk ? bad : line,
+      errBiz: s.tried && !bizOk ? bad : line,
+      errPhone: s.tried && !phoneOk ? bad : line,
+      errEmail: s.tried && !emailOk ? bad : line,
+      errorOn: !!err, errorText: err,
+
+      usePassword: s.method === 'password',
+      idLabel: s.method === 'password' ? 'דוא״ל או טלפון' : 'טלפון נייד',
+      idPlaceholder: s.method === 'password' ? 'hello@noaclinic.co.il' : '052-000-0000',
+      passType: s.showPass ? 'text' : 'password',
+      passToggleLabel: s.showPass ? 'הסתרה' : 'הצגה',
+      togglePass: () => this.setState(st => ({ showPass: !st.showPass })),
+      methodLabel: s.method === 'password' ? 'כניסה עם קוד בוואטסאפ' : 'כניסה עם סיסמה',
+      switchMethod: () => this.setState(st => ({ method: st.method === 'password' ? 'otp' : 'password', tried: false })),
+
+      rememberOn: s.remember ? 'true' : 'false',
+      rememberChecked: s.remember,
+      rememberBg: s.remember ? teal : '#fff',
+      rememberBorder: s.remember ? teal : '#C9CFD6',
+      toggleRemember: () => this.setState(st => ({ remember: !st.remember })),
+
+      primaryLabel: s.view === 'signup'
+        ? (biz ? 'פתיחת חשבון עסקי' : 'יצירת חשבון')
+        : (s.method === 'password' ? 'כניסה' : 'שליחת קוד בוואטסאפ'),
+
+      submitSignin: e => {
+        e.preventDefault();
+        const ok = s.method === 'password' ? (identOk && passOk) : identOk;
+        if (!ok) { this.setState({ tried: true }); return; }
+        if (s.method === 'otp') { this.setState({ view: 'otp', tried: false }); this.startCooldown(); this.flash('קוד נשלח בוואטסאפ'); return; }
+        this.flash(biz ? 'מתחברים ללוח הבקרה של העסק' : 'מתחברים לחשבון שלך');
+      },
+      submitSignup: e => {
+        e.preventDefault();
+        if (!(nameOk && bizOk && phoneOk && emailOk && passOk && termsOk)) { this.setState({ tried: true }); return; }
+        this.setState({ view: 'otp', tried: false, f: Object.assign({}, s.f, { ident: s.f.phone }) });
+        this.startCooldown();
+        this.flash('שלחנו קוד אימות בוואטסאפ');
+      },
+
+      pwWidth: (passScore / 4 * 100) + '%',
+      pwColor: passScore <= 1 ? '#A33A31' : passScore === 2 ? '#9A5B15' : passScore === 3 ? '#0B7A87' : '#3B6B3F',
+      pwLabel: !s.f.pass ? 'לפחות 8 תווים' : passScore <= 1 ? 'חלשה' : passScore === 2 ? 'בינונית' : passScore === 3 ? 'טובה' : 'חזקה',
+
+      terms: termDefs.map(t => {
+        const on = !!s.terms[t[0]];
+        return { label: t[1], on: on ? 'true' : 'false', checked: on,
+          bg: on ? teal : '#fff', border: on ? teal : '#C9CFD6',
+          toggle: () => this.setState(st => ({ terms: Object.assign({}, st.terms, { [t[0]]: !st.terms[t[0]] }) })) };
+      }),
+
+      otpTarget: s.f.ident.trim() || s.f.phone.trim() || '052-441-9930',
+      editTarget: () => this.setState({ view: 'signin', method: 'otp', tried: false }),
+      otpCells: s.otp.map((v, i) => ({
+        v, label: 'ספרה ' + (i + 1),
+        border: s.tried && v === '' ? bad : line,
+        onChange: e => {
+          const digit = (e.target.value || '').replace(/\D/g, '').slice(-1);
+          this.setState(st => ({ otp: st.otp.map((x, j) => j === i ? digit : x) }));
+        }
+      })),
+      otpBtnBg: otpFull ? teal : '#EDEFF2',
+      otpBtnColor: otpFull ? '#fff' : '#8A96A3',
+      otpBtnCursor: otpFull ? 'pointer' : 'default',
+      submitOtp: () => {
+        if (!otpFull) { this.setState({ tried: true }); return; }
+        this.flash(biz ? 'אומת — נכנסים ללוח הבקרה' : 'אומת — נכנסים לחשבון');
+      },
+      resendBlocked: s.cooldown > 0,
+      resendLabel: s.cooldown > 0 ? 'שליחה חוזרת בעוד ' + s.cooldown + ' שנ׳' : 'שליחה חוזרת של הקוד',
+      resendColor: s.cooldown > 0 ? '#8A96A3' : '#0C243E',
+      resendCursor: s.cooldown > 0 ? 'default' : 'pointer',
+      resend: () => { if (s.cooldown === 0) { this.startCooldown(); this.flash('קוד חדש נשלח בוואטסאפ'); } },
+      smsInstead: () => { this.startCooldown(); this.flash('הקוד נשלח ב־SMS'); },
+
+      submitReset: () => {
+        if (!identOk) { this.setState({ tried: true }); return; }
+        this.setState({ view: 'sent', tried: false });
+      },
+      sentBody: 'שלחנו קישור לאיפוס סיסמה ל־' + (s.f.ident.trim() || 'החשבון שלך') + '. הקישור תקף שעה אחת. אם לא הגיע, בדקו בתיקיית הספאם או נסו שוב.',
+
+      goSignin: go('signin'), goSignup: go('signup'), goReset: go('reset'),
+      switchPrompt: s.view === 'signup' ? 'יש לכם כבר חשבון?' : 'אין לכם חשבון?',
+      switchCta: s.view === 'signup' ? 'כניסה' : (biz ? 'פתיחת חשבון עסקי' : 'הרשמה'),
+
+      asideDisplay: s.mq.wide ? 'flex' : 'none',
+      asideTitle: ASIDE[biz ? 'biz' : 'client'].title,
+      asidePoints: ASIDE[biz ? 'biz' : 'client'].points,
+      asideStats: ASIDE[biz ? 'biz' : 'client'].stats,
+
+      toastOn: !!s.toast, toastText: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

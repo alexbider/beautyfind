@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>html,body{margin:0;background:#F6F8F9}a{color:#0C243E;text-decoration:none}a:hover{color:#0B7A87}:focus-visible{outline:2px solid #14B3C6;outline-offset:2px}</style>
+</helmet>
+<div style="font-family:'Figtree',system-ui,sans-serif;color:#0C243E;font-size:16px;line-height:1.5;max-width:1120px;margin:0 auto;padding:clamp(32px,5vw,64px) clamp(20px,4vw,32px);display:flex;flex-direction:column;gap:56px">
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <img src="assets/medspafind-logo.webp" alt="MedSpaFind" style="height:30px;width:auto;align-self:flex-start">
+    <h1 style="margin:8px 0 0;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(34px,4vw,52px);line-height:1.05;letter-spacing:-0.02em">Homepage design system</h1>
+    <p style="margin:0;max-width:60ch;color:#5B6B7B">The rules used across <a href="MedSpaFind Homepage.dc.html" style="font-weight:600;color:#0B7A87">the global homepage</a>. Brand colours are preserved exactly; the type system, components, and spacing are new.</p>
+  </div>
+
+  <section style="display:flex;flex-direction:column;gap:18px">
+    <h2 style="margin:0;font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5B6B7B">Colour</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px">
+      <div style="background:#fff;border:1px solid #E6E6E6;border-radius:12px;overflow:hidden"><div style="height:72px;background:#0C243E"></div><div style="padding:10px 12px;font-size:13px"><strong>Deep navy</strong><br><span style="color:#5B6B7B">#0C243E · ink, primary buttons, footer</span></div></div>
+      <div style="background:#fff;border:1px solid #E6E6E6;border-radius:12px;overflow:hidden"><div style="height:72px;background:#14B3C6"></div><div style="padding:10px 12px;font-size:13px"><strong>Turquoise</strong><br><span style="color:#5B6B7B">#14B3C6 · accents, focus ring, hover fills</span></div></div>
+      <div style="background:#fff;border:1px solid #E6E6E6;border-radius:12px;overflow:hidden"><div style="height:72px;background:#0B7A87"></div><div style="padding:10px 12px;font-size:13px"><strong>Turquoise text</strong><br><span style="color:#5B6B7B">#0B7A87 · links on white (4.6:1)</span></div></div>
+      <div style="background:#fff;border:1px solid #E6E6E6;border-radius:12px;overflow:hidden"><div style="height:72px;background:#EF6350"></div><div style="padding:10px 12px;font-size:13px"><strong>Coral</strong><br><span style="color:#5B6B7B">#EF6350 · reserved for errors/alerts</span></div></div>
+      <div style="background:#fff;border:1px solid #E6E6E6;border-radius:12px;overflow:hidden"><div style="height:72px;background:#3E4F62"></div><div style="padding:10px 12px;font-size:13px"><strong>Body secondary</strong><br><span style="color:#5B6B7B">#3E4F62 · supporting paragraphs</span></div></div>
+      <div style="background:#fff;border:1px solid #E6E6E6;border-radius:12px;overflow:hidden"><div style="height:72px;background:#5B6B7B"></div><div style="padding:10px 12px;font-size:13px"><strong>Muted</strong><br><span style="color:#5B6B7B">#5B6B7B · labels, meta (5.9:1)</span></div></div>
+      <div style="background:#fff;border:1px solid #E6E6E6;border-radius:12px;overflow:hidden"><div style="height:72px;background:#F6F8F9;border-bottom:1px solid #E6E6E6"></div><div style="padding:10px 12px;font-size:13px"><strong>Surface</strong><br><span style="color:#5B6B7B">#F6F8F9 · alternating bands</span></div></div>
+      <div style="background:#fff;border:1px solid #E6E6E6;border-radius:12px;overflow:hidden"><div style="height:72px;background:#F3F6F8;border-bottom:1px solid #E6E6E6"></div><div style="padding:10px 12px;font-size:13px"><strong>Hover</strong><br><span style="color:#5B6B7B">#F3F6F8 · menu &amp; field hover/focus</span></div></div>
+      <div style="background:#fff;border:1px solid #E6E6E6;border-radius:12px;overflow:hidden"><div style="height:72px;background:#E6E6E6"></div><div style="padding:10px 12px;font-size:13px"><strong>Border</strong><br><span style="color:#5B6B7B">#E6E6E6 · 1px hairlines</span></div></div>
+      <div style="background:#fff;border:1px solid #E6E6E6;border-radius:12px;overflow:hidden"><div style="height:72px;background:#D4D4D4"></div><div style="padding:10px 12px;font-size:13px"><strong>Light grey</strong><br><span style="color:#5B6B7B">#D4D4D4 · chip borders, dividers on surface</span></div></div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:18px">
+    <h2 style="margin:0;font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5B6B7B">Typography</h2>
+    <div style="background:#fff;border:1px solid #E6E6E6;border-radius:16px;padding:28px;display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:20px 32px;align-items:baseline">
+      <div style="font-family:'Newsreader',serif;font-size:clamp(40px,5vw,72px);line-height:1;letter-spacing:-0.025em">Display <span style="font-style:italic;color:#0B7A87">italic accent</span></div><div style="font-size:13px;color:#5B6B7B">Newsreader 400 · clamp(42px, 5.4vw, 80px) · H1 only</div>
+      <div style="font-family:'Newsreader',serif;font-size:44px;line-height:1.05;letter-spacing:-0.02em">Section heading</div><div style="font-size:13px;color:#5B6B7B">Newsreader 400 · clamp(32px, 3.8vw, 52px) · H2</div>
+      <div style="font-family:'Newsreader',serif;font-size:26px;font-weight:500;line-height:1.1">Card title serif</div><div style="font-size:13px;color:#5B6B7B">Newsreader 500 · 24–28px · countries, articles</div>
+      <div style="font-size:19px;font-weight:600;letter-spacing:-0.01em">Card title sans</div><div style="font-size:13px;color:#5B6B7B">Figtree 600 · 19px · H3 in tiles and clinic cards</div>
+      <div style="font-size:17px;color:#3E4F62">Body large — comfortable reading in hero and intros.</div><div style="font-size:13px;color:#5B6B7B">Figtree 400 · 17–19px / 1.55</div>
+      <div style="font-size:16px">Body — the default for everything else. Never below 16px for paragraphs.</div><div style="font-size:13px;color:#5B6B7B">Figtree 400 · 16px / 1.5</div>
+      <div style="font-size:15px;font-weight:500">Interface — nav, links, buttons, tags</div><div style="font-size:13px;color:#5B6B7B">Figtree 500–600 · 14–15px</div>
+      <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5B6B7B">Eyebrow label</div><div style="font-size:13px;color:#5B6B7B">Figtree 600 · 12px · tracking .12em</div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:18px">
+    <h2 style="margin:0;font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5B6B7B">Spacing &amp; shape</h2>
+    <div style="background:#fff;border:1px solid #E6E6E6;border-radius:16px;padding:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;font-size:15px">
+      <div><strong>Grid</strong><br><span style="color:#5B6B7B">Max content 1280px · gutter clamp(20px, 4vw, 32px) · 24px card gaps</span></div>
+      <div><strong>Section rhythm</strong><br><span style="color:#5B6B7B">clamp(56px, 7vw, 96px) vertical · alternate white / #F6F8F9 bands</span></div>
+      <div><strong>Scale</strong><br><span style="color:#5B6B7B">4 · 8 · 12 · 16 · 20 · 24 · 32 · 44 · 64</span></div>
+      <div><strong>Radii</strong><br><span style="color:#5B6B7B">Controls 10px · cards 16–18px · panels 20–22px · tags 7px</span></div>
+      <div><strong>Elevation</strong><br><span style="color:#5B6B7B">Hairline default; hover 0 12px 32px rgba(12,36,62,.08); menus 0 24px 48px rgba(12,36,62,.10)</span></div>
+      <div><strong>Motion</strong><br><span style="color:#5B6B7B">150–220ms ease · drop/rise 6–8px · honours prefers-reduced-motion</span></div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:18px">
+    <h2 style="margin:0;font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5B6B7B">Buttons</h2>
+    <div style="background:#fff;border:1px solid #E6E6E6;border-radius:16px;padding:28px;display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+      <button type="button" style="min-height:48px;padding:0 22px;border:0;border-radius:10px;background:#0C243E;color:#fff;font:inherit;font-size:16px;font-weight:600;cursor:pointer" style-hover="background:#14B3C6;color:#0C243E">Primary</button>
+      <button type="button" style="min-height:48px;padding:0 22px;border:0;border-radius:10px;background:#14B3C6;color:#0C243E;font:inherit;font-size:16px;font-weight:600;cursor:pointer" style-hover="background:#fff">Primary on navy</button>
+      <button type="button" style="min-height:48px;padding:0 20px;border:1px solid #0C243E;border-radius:10px;background:#fff;color:#0C243E;font:inherit;font-size:15px;font-weight:600;cursor:pointer" style-hover="background:#0C243E;color:#fff">Outline</button>
+      <button type="button" style="min-height:44px;padding:0 16px;border:1px solid #E6E6E6;border-radius:10px;background:#fff;color:#0C243E;font:inherit;font-size:15px;font-weight:600;cursor:pointer" style-hover="border-color:#0C243E">Secondary</button>
+      <button type="button" style="min-height:44px;padding:0 14px;border:0;border-radius:10px;background:transparent;color:#0C243E;font:inherit;font-size:15px;font-weight:500;cursor:pointer" style-hover="background:#F3F6F8">Ghost / nav</button>
+      <button type="button" style="min-height:36px;padding:0 4px;border:0;border-bottom:1px solid #D4D4D4;background:transparent;color:#0C243E;font:inherit;font-size:15px;font-weight:600;cursor:pointer" style-hover="color:#0B7A87;border-color:#14B3C6">Text link</button>
+      <button type="button" style="min-height:44px;padding:0 16px;border:1px solid #14B3C6;border-radius:10px;background:#F0FAFB;color:#0C243E;font:inherit;font-size:15px;font-weight:600;cursor:pointer">Chip · selected</button>
+      <button type="button" style="min-height:44px;padding:0 16px;border:1px solid #D4D4D4;border-radius:10px;background:#fff;color:#0C243E;font:inherit;font-size:15px;font-weight:500;cursor:pointer">Chip</button>
+      <span style="font-size:13px;color:#5B6B7B;flex-basis:100%">Hover: navy → turquoise with navy text. Focus: 2px turquoise ring, 2px offset. Min touch target 44px; hero submit 56px.</span>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:18px">
+    <h2 style="margin:0;font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5B6B7B">Inputs</h2>
+    <div style="background:#fff;border:1px solid #E6E6E6;border-radius:16px;padding:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+      <div style="display:flex;flex-direction:column;gap:2px;padding:10px 14px 8px;border:1px solid #E6E6E6;border-radius:10px"><label style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5B6B7B">Default</label><input type="text" placeholder="Persistent label above, helpful placeholder" style="height:28px;border:0;font:inherit;font-size:16px;outline:none;padding:0;color:#0C243E;background:transparent"></div>
+      <div style="display:flex;flex-direction:column;gap:2px;padding:10px 14px 8px;border:1px solid #E6E6E6;border-radius:10px;background:#F3F6F8;outline:2px solid #14B3C6;outline-offset:2px"><label style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5B6B7B">Focused</label><input type="text" value="Tor" readOnly style="height:28px;border:0;font:inherit;font-size:16px;outline:none;padding:0;color:#0C243E;background:transparent"></div>
+      <div style="display:flex;flex-direction:column;gap:2px;padding:10px 14px 8px;border:1px solid #EF6350;border-radius:10px"><label style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#B23A2B">Error</label><input type="text" value="Parizz" readOnly style="height:28px;border:0;font:inherit;font-size:16px;outline:none;padding:0;color:#0C243E;background:transparent"><span style="font-size:13px;color:#B23A2B;margin-top:4px">We don’t cover this location yet.</span></div>
+      <span style="font-size:13px;color:#5B6B7B;grid-column:1 / -1">Suggestions open in a 14px-radius panel, grouped under uppercase headers (Treatments / Clinics / Locations). Location rows always state their country.</span>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:18px">
+    <h2 style="margin:0;font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5B6B7B">Cards &amp; states</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+      <article style="background:#fff;border:1px solid #E6E6E6;border-radius:16px;overflow:hidden"><div style="aspect-ratio:4/3;background:repeating-linear-gradient(135deg,#E9EEF1 0 12px,#F4F7F8 12px 24px);position:relative"><span style="position:absolute;right:12px;top:12px;height:26px;padding:0 8px;display:inline-flex;align-items:center;background:#fff;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase">Sponsored</span><span style="position:absolute;left:12px;bottom:10px;font-size:11px;font-family:monospace;color:#5B6B7B">image · 4:3 · saturate(.85)</span></div><div style="padding:18px 20px;display:flex;flex-direction:column;gap:10px"><div><div style="font-size:19px;font-weight:600">Clinic card</div><div style="font-size:14px;color:#5B6B7B">City, Country</div></div><div style="display:flex;gap:6px"><span style="height:28px;padding:0 10px;display:inline-flex;align-items:center;border:1px solid #E6E6E6;border-radius:7px;font-size:13px;background:#FAFBFB">Tag</span><span style="height:28px;padding:0 10px;display:inline-flex;align-items:center;border:1px solid #E6E6E6;border-radius:7px;font-size:13px;background:#FAFBFB">Tag</span></div><div style="font-size:14px;color:#8A96A3">No reviews listed yet</div></div></article>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="border:1px solid #E6E6E6;border-radius:14px;padding:16px 18px;background:#FAFBFB;display:flex;align-items:center;gap:12px;font-size:15px;color:#5B6B7B"><span style="width:18px;height:18px;border:2px solid #D4D4D4;border-top-color:#14B3C6;border-radius:50%;display:inline-block"></span>Loading state</div>
+        <div style="border:1px solid #E6E6E6;border-radius:14px;padding:16px 18px;background:#FAFBFB;font-size:15px"><strong>No results.</strong> <span style="color:#3E4F62">Always followed by recovery chips.</span></div>
+        <div style="border:1px solid #E6E6E6;border-radius:14px;padding:16px 18px;background:#FAFBFB;font-size:14px;color:#8A96A3">Missing data: “No reviews listed yet”, “Ask clinic” — never a 0-star score.</div>
+      </div>
+      <div style="background:#0C243E;color:#fff;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:10px"><div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#7ED7E1">Dark panel</div><div style="font-family:'Newsreader',serif;font-size:26px;line-height:1.1">Guided discovery</div><p style="margin:0;font-size:15px;color:rgba(255,255,255,.82)">Navy ground, turquoise primary, #7ED7E1 for small text (7.9:1).</p></div>
+    </div>
+  </section>
+</div>
+</x-dc>
+</body>
+</html>

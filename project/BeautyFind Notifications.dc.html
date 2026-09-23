@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="תבניות ההודעות של BeautyFind — וואטסאפ, SMS ודוא״ל לאישור תור, תזכורת, טיפול־אחרי, בקשת ביקורת ואישור בעלות.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#F6F8F9}
+  *{box-sizing:border-box}
+  :root{--nt-shell:minmax(0,1fr);--nt-pad:16px;--nt-side:none}
+  @media (min-width:560px){:root{--nt-pad:22px}}
+  @media (min-width:1000px){:root{--nt-shell:264px minmax(0,1fr);--nt-side:block}}
+  @media (min-width:1000px) and (min-height:700px){[data-nt-side]{position:sticky;top:18px}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes ntFade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  @keyframes ntPop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#F6F8F9;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+
+  <header style="background:#fff;border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1220px;margin:0 auto;padding:12px var(--nt-pad);display:flex;align-items:center;gap:13px;flex-wrap:wrap">
+      <a href="./BeautyFind Homepage.dc.html" dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:21px;letter-spacing:-0.01em;color:#0C243E;text-decoration:none">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6">.</span></a>
+      <span style="flex:none;display:inline-flex;align-items:center;height:25px;padding:0 9px;border-radius:7px;background:#F0FAFB;font-size:11.5px;font-weight:700;color:#0B7A87">תבניות הודעות</span>
+      <span style="flex:1;min-width:0"></span>
+      <a href="./Noa Clinic.dc.html" style="flex:none;min-height:42px;display:inline-flex;align-items:center;padding:0 13px;border:1px solid #E6E6E6;border-radius:11px;background:#fff;font-size:14px;font-weight:700;color:#0C243E;text-decoration:none" style-hover="border-color:#0C243E">לאוטומציות בקליניקה</a>
+    </div>
+  </header>
+
+  <div style="max-width:1220px;margin:0 auto;padding:clamp(16px,2.4vw,28px) var(--nt-pad) 60px">
+
+    <div style="margin-bottom:15px">
+      <h1 style="margin:0 0 4px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(24px,3.2vw,33px);font-weight:500;letter-spacing:-0.015em">תבניות ההודעות</h1>
+      <p style="margin:0;max-width:64ch;font-size:15.5px;color:#3E4F62;text-wrap:pretty">כל הודעה שהמערכת שולחת בשם הקליניקה. הודעות שירות נשלחות תמיד; הודעה שיווקית נשלחת רק למי שסימנה הסכמה לדיוור, וכוללת דרך לבטל.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:var(--nt-shell);gap:clamp(14px,1.8vw,20px);align-items:start">
+
+      <nav data-nt-side aria-label="רשימת התבניות" style="min-width:0">
+        <div style="background:#fff;border:1px solid #E6E6E6;border-radius:15px;padding:9px;display:var(--nt-side)">
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ list }}" as="li2" hint-placeholder-count="7">
+              <li>
+                <button type="button" aria-current="{{ li2.current }}" onClick="{{ li2.pick }}" style="width:100%;display:flex;align-items:flex-start;gap:9px;min-height:52px;padding:9px 11px;border:0;border-radius:11px;background:{{ li2.bg }};font:inherit;text-align:right;cursor:pointer">
+                  <span aria-hidden="true" style="flex:none;width:7px;height:7px;margin-top:7px;border-radius:50%;background:{{ li2.dot }}"></span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                    <span style="font-size:13.5px;font-weight:700;color:{{ li2.color }}">{{ li2.name }}</span>
+                    <span style="font-size:11.5px;color:#8A96A3">{{ li2.kind }}</span>
+                  </span>
+                </button>
+              </li>
+            </sc-for>
+          </ul>
+        </div>
+        <div style="display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;display:{{ tabsDisplay }}">
+          <sc-for list="{{ list }}" as="lt" hint-placeholder-count="7">
+            <button type="button" onClick="{{ lt.pick }}" style="flex:none;min-height:42px;padding:0 13px;border:1px solid {{ lt.tabBorder }};border-radius:11px;background:{{ lt.tabBg }};font:inherit;font-size:13.5px;font-weight:700;color:{{ lt.tabColor }};cursor:pointer">{{ lt.name }}</button>
+          </sc-for>
+        </div>
+      </nav>
+
+      <main style="min-width:0;display:flex;flex-direction:column;gap:13px;animation:ntFade .22s ease both">
+
+        <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px)">
+          <div style="display:flex;align-items:flex-start;gap:11px;flex-wrap:wrap;margin-bottom:11px">
+            <div style="flex:1;min-width:200px">
+              <h2 style="margin:0 0 3px;font-size:18px;font-weight:700">{{ t.name }}</h2>
+              <p style="margin:0;font-size:13.5px;color:#5B6B7B;text-wrap:pretty">{{ t.purpose }}</p>
+            </div>
+            <span style="flex:none;display:inline-flex;align-items:center;height:26px;padding:0 10px;border:1px solid {{ t.kindBorder }};border-radius:8px;background:{{ t.kindBg }};font-size:11.5px;font-weight:700;color:{{ t.kindColor }}">{{ t.kindLabel }}</span>
+          </div>
+
+          <dl style="margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:11px">
+            <sc-for list="{{ t.facts }}" as="ft" hint-placeholder-count="4">
+              <div style="min-width:0;display:flex;flex-direction:column;gap:2px;padding:11px 13px;background:#FAFBFB;border:1px solid #EDEFF2;border-radius:12px">
+                <dt style="font-size:12px;font-weight:600;color:#8A96A3">{{ ft.label }}</dt>
+                <dd dir="{{ ft.dir }}" style="margin:0;font-size:14px;font-weight:700;text-align:right;text-wrap:pretty">{{ ft.value }}</dd>
+              </div>
+            </sc-for>
+          </dl>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+          <div role="group" aria-label="ערוץ" style="display:flex;gap:7px;flex-wrap:wrap">
+            <sc-for list="{{ channels }}" as="ch" hint-placeholder-count="3">
+              <button type="button" aria-pressed="{{ ch.on }}" onClick="{{ ch.pick }}" disabled="{{ ch.off }}" style="min-height:40px;padding:0 14px;border:1px solid {{ ch.border }};border-radius:11px;background:{{ ch.bg }};font:inherit;font-size:14px;font-weight:700;color:{{ ch.color }};cursor:{{ ch.cursor }}">{{ ch.name }}</button>
+            </sc-for>
+          </div>
+          <button type="button" onClick="{{ toggleFilled }}" style="margin-right:auto;min-height:40px;padding:0 13px;border:1px solid #E6E6E6;border-radius:11px;background:#fff;font:inherit;font-size:13.5px;font-weight:700;color:#3E4F62;cursor:pointer">{{ filledLabel }}</button>
+          <button type="button" onClick="{{ copy }}" style="min-height:40px;padding:0 13px;border:0;border-radius:11px;background:#F0FAFB;font:inherit;font-size:13.5px;font-weight:700;color:#0B7A87;cursor:pointer">העתקת התבנית</button>
+        </div>
+
+        <sc-if value="{{ isChat }}" hint-placeholder-val="{{ true }}">
+          <div style="background:#EAE6DF;border:1px solid #DCD6CC;border-radius:17px;padding:clamp(14px,1.8vw,20px)">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px;padding-bottom:11px;border-bottom:1px solid rgba(12,36,62,.1)">
+              <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:11px;background:#0B7A87;color:#fff;font-size:13px;font-weight:700">נ</span>
+              <span style="flex:1;min-width:0;display:flex;flex-direction:column">
+                <span style="font-size:14px;font-weight:700">קליניקת נועה</span>
+                <span style="font-size:11.5px;color:#5B6B7B">{{ chatMeta }}</span>
+              </span>
+              <span style="flex:none;display:inline-flex;align-items:center;height:23px;padding:0 8px;border-radius:7px;background:rgba(11,122,135,.12);font-size:11px;font-weight:700;color:#0B7A87">{{ senderTag }}</span>
+            </div>
+
+            <div style="max-width:480px;margin-right:auto;padding:12px 14px;background:#DCF8C6;border-radius:15px 15px 15px 5px;box-shadow:0 1px 2px rgba(12,36,62,.12)">
+              <p style="margin:0;font-size:15px;line-height:1.6;color:#0C243E;white-space:pre-wrap;text-wrap:pretty">{{ bodyText }}</p>
+              <sc-if value="{{ hasButtons }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:6px;margin-top:11px;padding-top:11px;border-top:1px solid rgba(12,36,62,.1)">
+                  <sc-for list="{{ t.buttons }}" as="bt" hint-placeholder-count="2">
+                    <span style="display:block;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.75);font-size:14px;font-weight:700;color:#0B7A87;text-align:center">{{ bt }}</span>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <span dir="ltr" style="display:block;margin-top:7px;font-size:11px;color:#5B6B7B;text-align:left">09:14 ✓✓</span>
+            </div>
+
+            <sc-if value="{{ hasReply }}" hint-placeholder-val="{{ false }}">
+              <div style="max-width:400px;margin-top:9px;padding:11px 13px;background:#fff;border-radius:15px 15px 5px 15px;box-shadow:0 1px 2px rgba(12,36,62,.1)">
+                <p style="margin:0;font-size:14.5px;color:#3E4F62">{{ t.reply }}</p>
+                <span dir="ltr" style="display:block;margin-top:5px;font-size:11px;color:#8A96A3;text-align:left">09:15</span>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isSms }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px)">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px">
+              <span style="flex:1;min-width:0;font-size:13.5px;font-weight:700">שולח: <span dir="ltr">NoaClinic</span></span>
+              <span dir="ltr" style="flex:none;font-size:12.5px;font-weight:700;color:{{ smsColor }};font-variant-numeric:tabular-nums">{{ smsCount }}</span>
+            </div>
+            <p style="margin:0;padding:14px 15px;background:#F6F8F9;border:1px solid #EDEFF2;border-radius:13px;font-size:15px;line-height:1.6;white-space:pre-wrap;text-wrap:pretty">{{ smsText }}</p>
+            <p style="margin:11px 0 0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">{{ smsNote }}</p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isEmail }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;overflow:hidden">
+            <dl style="margin:0;padding:14px 17px;border-bottom:1px solid #EDEFF2;background:#FAFBFB;display:grid;grid-template-columns:58px minmax(0,1fr);gap:7px 11px;font-size:13.5px">
+              <dt style="color:#8A96A3">מאת</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:600">קליניקת נועה &lt;hello@noaclinic.co.il&gt;</dd>
+              <dt style="color:#8A96A3">אל</dt><dd dir="ltr" style="margin:0;text-align:right">shira@example.co.il</dd>
+              <dt style="color:#8A96A3">נושא</dt><dd style="margin:0;font-weight:700">{{ emailSubject }}</dd>
+            </dl>
+            <div style="padding:clamp(16px,2vw,26px);background:#F6F8F9">
+              <div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid #E6E6E6;border-radius:15px;overflow:hidden">
+                <div style="padding:16px 18px;background:#0C243E">
+                  <span dir="ltr" style="font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:19px;color:#fff">beauty<span style="color:#7ED7E1">find</span><span style="color:#7ED7E1">.</span></span>
+                </div>
+                <div style="padding:20px 18px">
+                  <h3 style="margin:0 0 9px;font-family:'Frank Ruhl Libre',serif;font-size:21px;font-weight:500;letter-spacing:-0.014em">{{ emailHeading }}</h3>
+                  <p style="margin:0 0 15px;font-size:15px;line-height:1.65;color:#3E4F62;white-space:pre-wrap;text-wrap:pretty">{{ bodyText }}</p>
+                  <sc-if value="{{ hasEmailRows }}" hint-placeholder-val="{{ false }}">
+                    <dl style="margin:0 0 16px;padding:13px 15px;background:#FAFBFB;border:1px solid #EDEFF2;border-radius:12px;display:grid;grid-template-columns:74px minmax(0,1fr);gap:8px 11px;font-size:14px">
+                      <sc-for list="{{ t.emailRows }}" as="er" hint-placeholder-count="3">
+                        <dt style="color:#8A96A3">{{ er.label }}</dt>
+                        <dd dir="{{ er.dir }}" style="margin:0;text-align:right;font-weight:600">{{ er.value }}</dd>
+                      </sc-for>
+                    </dl>
+                  </sc-if>
+                  <sc-if value="{{ hasButtons }}" hint-placeholder-val="{{ false }}">
+                    <span style="display:inline-flex;align-items:center;min-height:46px;padding:0 20px;border-radius:12px;background:#0B7A87;font-size:15px;font-weight:700;color:#fff">{{ emailCta }}</span>
+                  </sc-if>
+                </div>
+                <div style="padding:14px 18px;border-top:1px solid #EDEFF2;background:#FAFBFB">
+                  <p style="margin:0;font-size:12px;color:#8A96A3;text-wrap:pretty">{{ emailFooter }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px)">
+          <h2 style="margin:0 0 10px;font-size:16px;font-weight:700">משתנים בתבנית</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px">
+            <sc-for list="{{ t.vars }}" as="vr" hint-placeholder-count="4">
+              <span style="display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:0 11px;border:1px solid #EDEFF2;border-radius:9px;background:#FAFBFB;font-size:13px">
+                <span dir="ltr" style="font-weight:700;color:#0B7A87;unicode-bidi:isolate">{{ vr.key }}</span>
+                <span style="color:#5B6B7B">{{ vr.desc }}</span>
+              </span>
+            </sc-for>
+          </div>
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px">
+            <sc-for list="{{ t.rules }}" as="rl" hint-placeholder-count="3">
+              <li style="display:flex;align-items:flex-start;gap:10px;padding-top:9px;border-top:1px solid #EDEFF2">
+                <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-top:1px;border-radius:7px;background:{{ rl.bg }};color:{{ rl.color }};font-size:12.5px;font-weight:700">{{ rl.mark }}</span>
+                <span style="flex:1;min-width:0;font-size:13.5px;color:#3E4F62;text-wrap:pretty">{{ rl.text }}</span>
+              </li>
+            </sc-for>
+          </ul>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:fixed;bottom:18px;right:50%;transform:translateX(50%);z-index:40;max-width:min(90vw,440px);padding:12px 17px;border-radius:13px;background:#0C243E;color:#fff;font-size:14px;font-weight:600;box-shadow:0 12px 30px rgba(12,36,62,.28);animation:ntPop .16s ease both;text-wrap:pretty">{{ toastText }}</div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1220,&quot;height&quot;:920}}">
+const SAMPLE = {
+  '{שם}': 'שירה',
+  '{קליניקה}': 'קליניקת נועה',
+  '{טיפול}': 'טיפול פנים עמוק',
+  '{מטפלת}': 'מאיה כהן',
+  '{תאריך}': '28/09/2026',
+  '{שעה}': '11:00',
+  '{כתובת}': 'אחוזה 128, רעננה',
+  '{מחיר}': '₪380',
+  '{קדימה}': '₪500',
+  '{אסמכתא}': 'BF-4417',
+  '{שעות}': '24',
+  '{קישור}': 'beautyfind.co.il/a/BF-4417',
+  '{עסק}': 'קליניקת נועה',
+  '{חשבונית}': '2026-1211',
+  '{סכום}': '₪1,240'
+};
+
+const TEMPLATES = [
+  {
+    id: 'confirm', name: 'אישור תור', kind: 'שירות', dot: '#3B6B3F',
+    purpose: 'נשלח מיד עם קביעת התור. ההודעה הראשונה שהלקוחה מקבלת מהקליניקה.',
+    facts: [['טריגר', 'תור נקבע', 'rtl'], ['תזמון', 'מיד', 'rtl'], ['ערוץ ראשי', 'WhatsApp', 'ltr'], ['שיעור קריאה', '97%', 'ltr']],
+    channels: ['whatsapp', 'sms', 'email'],
+    whatsapp: 'שלום {שם}, התור שלך ב{קליניקה} נקבע.\n\n{טיפול}\n{תאריך} בשעה {שעה}\nעם {מטפלת}\n{כתובת}\n\nמחיר הטיפול: {מחיר}\nאסמכתא: {אסמכתא}\n\nאפשר לשנות או לבטל עד {שעות} שעות לפני התור ללא חיוב.',
+    sms: '{קליניקה}: התור שלך ל{טיפול} נקבע ל־{תאריך} {שעה}. אסמכתא {אסמכתא}. לשינוי או ביטול: {קישור}',
+    emailSubject: 'התור שלך ב{קליניקה} — {תאריך} בשעה {שעה}',
+    emailHeading: 'התור שלך נקבע',
+    email: 'שלום {שם},\n\nשמרנו לך את המועד. מתחת לזה כל הפרטים, ואפשר להוסיף את התור ליומן בנקישה אחת.',
+    emailRows: [['טיפול', '{טיפול}', 'rtl'], ['מועד', '{תאריך} · {שעה}', 'rtl'], ['מטפלת', '{מטפלת}', 'rtl'], ['כתובת', '{כתובת}', 'rtl'], ['אסמכתא', '{אסמכתא}', 'ltr']],
+    buttons: ['הוספה ליומן', 'שינוי או ביטול'],
+    emailCta: 'הוספה ליומן',
+    reply: '', vars: ['{שם}', '{טיפול}', '{תאריך}', '{שעה}', '{מטפלת}', '{מחיר}', '{אסמכתא}'],
+    rules: [
+      ['+', 'האסמכתא מופיעה בכל ערוץ — היא מה שהלקוחה מצטטת בטלפון', true],
+      ['+', 'חלון הביטול נאמר במפורש כבר באישור, לא רק בתקנון', true],
+      ['×', 'אין קידום טיפולים נוספים בהודעת שירות', false]
+    ]
+  },
+  {
+    id: 'reminder', name: 'תזכורת תור', kind: 'שירות', dot: '#3B6B3F',
+    purpose: 'נשלחת 24 שעות לפני. מפחיתה אי־הגעה ומאפשרת פינוי מועד בזמן.',
+    facts: [['טריגר', 'תור מאושר', 'rtl'], ['תזמון', '24 שעות לפני', 'rtl'], ['ערוץ ראשי', 'WhatsApp', 'ltr'], ['הרצות ב־30 יום', '412', 'ltr']],
+    channels: ['whatsapp', 'sms'],
+    whatsapp: 'שלום {שם}, תזכורת לתור מחר ב{קליניקה}.\n\n{טיפול}\n{תאריך} בשעה {שעה}\n{כתובת}\n\nלאישור הגעה השיבו 1. לשינוי מועד השיבו 2.\nביטול מעכשיו עשוי להיות מחויב לפי מדיניות הקליניקה.',
+    sms: '{קליניקה}: תזכורת לתור מחר {תאריך} בשעה {שעה}. לאישור השיבו 1, לשינוי 2.',
+    emailSubject: '', emailHeading: '', email: '', emailRows: [],
+    buttons: ['אישור הגעה', 'שינוי מועד'],
+    emailCta: '',
+    reply: '1', vars: ['{שם}', '{טיפול}', '{תאריך}', '{שעה}', '{כתובת}', '{שעות}'],
+    rules: [
+      ['+', 'תשובה במספר בודד — הלקוחה לא צריכה להקליד', true],
+      ['+', 'הזכרת חלון הביטול דווקא כאן חוסכת מחלוקות', true],
+      ['×', 'לא נשלחת אחרי 21:00 — נדחית לבוקר', false]
+    ]
+  },
+  {
+    id: 'aftercare', name: 'הנחיות טיפול־אחרי', kind: 'שירות', dot: '#3B6B3F',
+    purpose: 'נשלחות שעה לאחר סיום הטיפול, כשהלקוחה כבר בבית ומתחילה להרגיש.',
+    facts: [['טריגר', 'טיפול הסתיים', 'rtl'], ['תזמון', 'שעה לאחר מכן', 'rtl'], ['ערוץ ראשי', 'WhatsApp', 'ltr'], ['הרצות ב־30 יום', '176', 'ltr']],
+    channels: ['whatsapp', 'email'],
+    whatsapp: 'שלום {שם}, תודה שהגעת ל{קליניקה}.\n\nאחרי {טיפול} מומלץ:\n· להימנע מחשיפה לשמש 48 שעות ולהשתמש במקדם 50\n· לא לגעת באזור המטופל בשעות הקרובות\n· לא לחמם: סאונה, ג׳קוזי או אימון מאומץ ל־24 שעות\n\nאדמומיות קלה או נפיחות בימים הראשונים הן תגובה מצופה.\nאם מופיעים כאב חריג, חום או הפרשה — התקשרו אלינו מיד: 09-774-1180.',
+    sms: '', emailSubject: 'ההנחיות שלך אחרי {טיפול}',
+    emailHeading: 'מה חשוב בימים הקרובים',
+    email: 'שלום {שם},\n\nתודה שהגעת. ריכזנו את ההנחיות במקום אחד כדי שיהיה קל לחזור אליהן. אם משהו מרגיש לא תקין — אל תחכו, התקשרו.',
+    emailRows: [['טיפול', '{טיפול}', 'rtl'], ['מטפלת', '{מטפלת}', 'rtl'], ['טלפון דחוף', '09-774-1180', 'ltr']],
+    buttons: ['צפייה בהנחיות המלאות'],
+    emailCta: 'צפייה בהנחיות המלאות',
+    reply: '', vars: ['{שם}', '{טיפול}', '{מטפלת}', '{קליניקה}'],
+    rules: [
+      ['+', 'סימני אזהרה מופיעים במפורש עם טלפון — לא רק "פנו לרופא"', true],
+      ['+', 'מבחין בין תגובה מצופה לתגובה שמחייבת פנייה', true],
+      ['×', 'אין אבחנה או ייעוץ רפואי בהודעה — רק הנחיות ופנייה לקליניקה', false]
+    ]
+  },
+  {
+    id: 'review', name: 'בקשת ביקורת', kind: 'שירות', dot: '#0B7A87',
+    purpose: 'נשלחת שבוע לאחר הטיפול, כשיש כבר תוצאה להתייחס אליה. הודעה אחת בלבד.',
+    facts: [['טריגר', 'טיפול הסתיים', 'rtl'], ['תזמון', 'שבוע אחרי', 'rtl'], ['ערוץ ראשי', 'דוא״ל', 'rtl'], ['שיעור מענה', '31%', 'ltr']],
+    channels: ['whatsapp', 'email'],
+    whatsapp: 'שלום {שם}, עבר שבוע מ{טיפול} ב{קליניקה}.\n\nאם יש לך דקה — נשמח לביקורת קצרה בפרופיל שלנו. היא עוזרת ללקוחות הבאות להחליט, וגם לנו לשפר.\n\n{קישור}\n\nזו הודעה אחת בלבד — לא נשלח תזכורות.',
+    sms: '', emailSubject: 'איך היה {טיפול}?',
+    emailHeading: 'נשמח לשמוע איך היה',
+    email: 'שלום {שם},\n\nעבר שבוע מהטיפול, וזה בדיוק הזמן שבו אפשר לראות תוצאה. ביקורת קצרה שלך עוזרת ללקוחות הבאות לבחור נכון.\n\nהביקורת מסומנת כ"ביקור אומת" כי הטיפול קיים ביומן, ואפשר לכתוב בראשי תיבות או אנונימית.',
+    emailRows: [['טיפול', '{טיפול}', 'rtl'], ['תאריך', '{תאריך}', 'ltr'], ['מטפלת', '{מטפלת}', 'rtl']],
+    buttons: ['כתיבת ביקורת'],
+    emailCta: 'כתיבת ביקורת',
+    reply: '', vars: ['{שם}', '{טיפול}', '{תאריך}', '{קישור}'],
+    rules: [
+      ['+', 'הודעה אחת, ונאמר שזו אחת — בלי רדיפה', true],
+      ['+', 'מוסבר שאפשר לכתוב אנונימית, זה מעלה מענה', true],
+      ['×', 'אסור להציע הנחה או הטבה בעד ביקורת — עילה להסרה', false]
+    ]
+  },
+  {
+    id: 'cancel', name: 'אישור ביטול', kind: 'שירות', dot: '#9A5B15',
+    purpose: 'נשלח מיד עם ביטול, מהלקוחה או מהקליניקה, וכולל את מצב החיוב וההחזר.',
+    facts: [['טריגר', 'תור בוטל', 'rtl'], ['תזמון', 'מיד', 'rtl'], ['ערוץ ראשי', 'WhatsApp', 'ltr'], ['כולל החזר', 'כן', 'rtl']],
+    channels: ['whatsapp', 'sms', 'email'],
+    whatsapp: 'שלום {שם}, התור שלך ב{קליניקה} בוטל.\n\n{טיפול}\n{תאריך} בשעה {שעה}\nאסמכתא: {אסמכתא}\n\nהביטול בוצע יותר מ־{שעות} שעות לפני התור — ללא חיוב. דמי הקדימה בסך {קדימה} יוחזרו לאמצעי התשלום בתוך 5 ימי עסקים.\n\nנשמח לראותך בפעם אחרת.',
+    sms: '{קליניקה}: התור ב־{תאריך} {שעה} בוטל. ללא חיוב. אסמכתא {אסמכתא}.',
+    emailSubject: 'התור שלך ב{תאריך} בוטל',
+    emailHeading: 'אישור ביטול',
+    email: 'שלום {שם},\n\nהתור בוטל ואין צורך בשום פעולה נוספת. מתחת לזה הפרטים למקרה שתצטרכי אותם.',
+    emailRows: [['טיפול', '{טיפול}', 'rtl'], ['מועד שבוטל', '{תאריך} · {שעה}', 'rtl'], ['חיוב', 'ללא חיוב', 'rtl'], ['החזר', '{קדימה} · עד 5 ימי עסקים', 'rtl']],
+    buttons: ['קביעת תור חדש'],
+    emailCta: 'קביעת תור חדש',
+    reply: '', vars: ['{שם}', '{טיפול}', '{תאריך}', '{שעה}', '{קדימה}', '{שעות}', '{אסמכתא}'],
+    rules: [
+      ['+', 'מצב החיוב נאמר במשפט אחד, בלי לשלוח לתקנון', true],
+      ['+', 'מועד ההחזר בפועל מופיע — 5 ימי עסקים', true],
+      ['×', 'אין ניסיון לשכנע לא לבטל בתוך אישור הביטול', false]
+    ]
+  },
+  {
+    id: 'claim', name: 'אישור בעלות על כרטיס', kind: 'מערכת', dot: '#4450A8',
+    purpose: 'נשלח מ־BeautyFind, לא מהקליניקה, כשבקשת בעלות אושרה במודרציה.',
+    facts: [['טריגר', 'בקשת בעלות אושרה', 'rtl'], ['תזמון', 'מיד', 'rtl'], ['ערוץ ראשי', 'דוא״ל', 'rtl'], ['שולח', 'BeautyFind', 'ltr']],
+    channels: ['email', 'whatsapp'],
+    whatsapp: 'שלום {שם}, בקשת הבעלות על {עסק} אושרה.\n\nהכרטיס עבר לניהול שלך, ואפשר להיכנס ללוח הבקרה כדי לעדכן טיפולים, שעות ותמונות.\n\n{קישור}',
+    sms: '', emailSubject: 'בקשת הבעלות על {עסק} אושרה',
+    emailHeading: 'הכרטיס שלך',
+    email: 'שלום {שם},\n\nאימתנו את הבעלות על {עסק} והכרטיס עבר לניהולך. מכאן אפשר לעדכן את כל התוכן, לצפות בפניות ולנהל את היומן.\n\nשלושה דברים שכדאי לעשות קודם: להשלים תמונות, לאשר את שעות הפעילות, ולציין מי אחראי רפואית על טיפולי הזרקה.',
+    emailRows: [['עסק', '{עסק}', 'rtl'], ['תפקיד', 'מנהל ראשי (בעלים)', 'rtl'], ['אושר בתאריך', '{תאריך}', 'ltr']],
+    buttons: ['כניסה ללוח הבקרה'],
+    emailCta: 'כניסה ללוח הבקרה',
+    reply: '', vars: ['{שם}', '{עסק}', '{תאריך}', '{קישור}'],
+    rules: [
+      ['+', 'השולח הוא BeautyFind — ההודעה לא מתחזה לקליניקה', true],
+      ['+', 'שלוש פעולות ראשונות מוגדרות, לא "התחילו לעבוד"', true],
+      ['×', 'אין סיסמה או קוד בגוף ההודעה — רק קישור לכניסה', false]
+    ]
+  },
+  {
+    id: 'promo', name: 'מבצע או עדכון', kind: 'שיווקי', dot: '#8A96A3',
+    purpose: 'ההודעה היחידה שמחייבת הסכמה מוקדמת לדיוור. נשלחת רק ללקוחות של אותה קליניקה.',
+    facts: [['טריגר', 'יזום על ידי הקליניקה', 'rtl'], ['תזמון', 'לפי בחירה', 'rtl'], ['נדרשת הסכמה', 'כן', 'rtl'], ['תדירות מקסימלית', 'פעם בחודש', 'rtl']],
+    channels: ['whatsapp', 'email'],
+    whatsapp: 'שלום {שם}, ב{קליניקה} נפתחו מועדים לחודש הבא לטיפולי פנים, כולל שעות אחר הצהריים.\n\nללקוחות קיימות שמרנו עדיפות בשבוע הראשון.\n\n{קישור}\n\nלהסרה מרשימת הדיוור השיבו "הסר".',
+    sms: '', emailSubject: 'מועדים חדשים ב{קליניקה}',
+    emailHeading: 'נפתחו מועדים לחודש הבא',
+    email: 'שלום {שם},\n\nפתחנו את היומן לחודש הבא, כולל שעות אחר הצהריים שהתבקשו הרבה. ללקוחות קיימות יש עדיפות בשבוע הראשון.',
+    emailRows: [],
+    buttons: ['בחירת מועד'],
+    emailCta: 'בחירת מועד',
+    reply: '', vars: ['{שם}', '{קליניקה}', '{קישור}'],
+    rules: [
+      ['+', 'דרך הסרה בכל הודעה — חובה לפי חוק הספאם', true],
+      ['+', 'נשלחת רק למי שסימנה הסכמה לדיוור בטופס', true],
+      ['×', 'אין הבטחת תוצאה, ואין הנחה בעד ביקורת', false]
+    ]
+  }
+];
+
+const CH_META = { whatsapp: 'WhatsApp', sms: 'SMS', email: 'דוא״ל' };
+const KIND_META = {
+  'שירות': { bg: '#EAF3EA', color: '#3B6B3F', border: '#CFE3CF', label: 'הודעת שירות · נשלחת תמיד' },
+  'מערכת': { bg: '#EAECF9', color: '#4450A8', border: '#D3D8F2', label: 'הודעת מערכת · מ־BeautyFind' },
+  'שיווקי': { bg: '#FDF1E7', color: '#9A5B15', border: '#F3D9BE', label: 'שיווקי · מחייב הסכמה' }
+};
+
+class Component extends DCLogic {
+  static MQ = { wide: '(min-width:1000px)' };
+
+  state = { id: 'confirm', ch: 'whatsapp', filled: true, toast: '', mq: { wide: false } };
+
+  componentDidMount() { this.readMQ(); }
+  componentWillUnmount() { (this._mqls || []).forEach(x => x.mql.removeEventListener('change', x.fn)); clearTimeout(this._t); }
+
+  readMQ() {
+    this._mqls = Object.keys(Component.MQ).map(k => {
+      const mql = window.matchMedia(Component.MQ[k]);
+      const fn = () => this.setState(s => ({ mq: Object.assign({}, s.mq, { [k]: mql.matches }) }));
+      mql.addEventListener('change', fn);
+      return { mql, fn, k };
+    });
+    const mq = {};
+    this._mqls.forEach(x => { mq[x.k] = x.mql.matches; });
+    this.setState({ mq });
+  }
+
+  flash(t) { clearTimeout(this._t); this.setState({ toast: t }); this._t = setTimeout(() => this.setState({ toast: '' }), 2600); }
+
+  fill(text) {
+    if (!this.state.filled) return text;
+    let out = text;
+    Object.keys(SAMPLE).forEach(k => { out = out.split(k).join(SAMPLE[k]); });
+    return out;
+  }
+
+  renderVals() {
+    const s = this.state;
+    const teal = '#0B7A87';
+    const line = '#E6E6E6';
+    const t = TEMPLATES.filter(x => x.id === s.id)[0] || TEMPLATES[0];
+    const ch = t.channels.indexOf(s.ch) > -1 ? s.ch : t.channels[0];
+    const km = KIND_META[t.kind];
+    const raw = ch === 'whatsapp' ? t.whatsapp : ch === 'sms' ? t.sms : t.email;
+    const smsLen = this.fill(t.sms).length;
+
+    return {
+      tabsDisplay: s.mq.wide ? 'none' : 'flex',
+      list: TEMPLATES.map(x => {
+        const cur = s.id === x.id;
+        return { name: x.name, kind: KIND_META[x.kind].label.split(' · ')[0], dot: x.dot,
+          current: cur ? 'true' : 'false',
+          bg: cur ? '#F0FAFB' : 'transparent', color: cur ? teal : '#0C243E',
+          tabBg: cur ? teal : '#fff', tabColor: cur ? '#fff' : '#3E4F62', tabBorder: cur ? teal : line,
+          pick: () => this.setState({ id: x.id, ch: x.channels[0] }) };
+      }),
+
+      t: {
+        name: t.name, purpose: t.purpose,
+        kindLabel: km.label, kindBg: km.bg, kindColor: km.color, kindBorder: km.border,
+        facts: t.facts.map(f => ({ label: f[0], value: f[1], dir: f[2] })),
+        buttons: t.buttons,
+        reply: t.reply,
+        emailRows: (t.emailRows || []).map(r => ({ label: r[0], value: this.fill(r[1]), dir: r[2] })),
+        vars: t.vars.map(v => ({ key: v, desc: (SAMPLE[v] || '').slice(0, 18) })),
+        rules: t.rules.map(r => ({ mark: r[0], text: r[1],
+          bg: r[2] ? '#EAF3EA' : '#FDEDEC', color: r[2] ? '#3B6B3F' : '#A33A31' }))
+      },
+
+      channels: ['whatsapp', 'sms', 'email'].map(c => {
+        const avail = t.channels.indexOf(c) > -1;
+        const on = avail && ch === c;
+        return { name: CH_META[c], on: on ? 'true' : 'false', off: !avail,
+          bg: on ? teal : '#fff', color: on ? '#fff' : (avail ? '#3E4F62' : '#8A96A3'),
+          border: on ? teal : line, cursor: avail ? 'pointer' : 'default',
+          pick: () => { if (avail) this.setState({ ch: c }); } };
+      }),
+
+      filledLabel: s.filled ? 'הצגת המשתנים' : 'הצגה עם נתונים',
+      toggleFilled: () => this.setState(st => ({ filled: !st.filled })),
+      copy: () => this.flash('התבנית הועתקה — ' + t.name + ' · ' + CH_META[ch]),
+
+      isChat: ch === 'whatsapp', isSms: ch === 'sms', isEmail: ch === 'email',
+      bodyText: this.fill(raw),
+      chatMeta: t.kind === 'מערכת' ? 'חשבון BeautyFind מאומת' : 'חשבון עסקי מאומת · WhatsApp Business',
+      senderTag: t.kind === 'מערכת' ? 'BeautyFind' : 'הקליניקה',
+      hasButtons: (t.buttons || []).length > 0,
+      hasReply: !!t.reply,
+      hasEmailRows: (t.emailRows || []).length > 0,
+
+      smsText: this.fill(t.sms),
+      smsCount: smsLen + ' תווים · ' + Math.max(1, Math.ceil(smsLen / 70)) + ' הודעות',
+      smsColor: smsLen > 140 ? '#9A5B15' : '#3B6B3F',
+      smsNote: 'עברית נספרת 70 תווים להודעה. קישור מקוצר חוסך הודעה שלמה, ו־SMS משמש כגיבוי כשוואטסאפ נכשל.',
+
+      emailSubject: this.fill(t.emailSubject),
+      emailHeading: t.emailHeading,
+      emailCta: t.emailCta,
+      emailFooter: t.kind === 'שיווקי'
+        ? 'קיבלת את ההודעה כי סימנת הסכמה לדיוור מקליניקת נועה. להסרה מהרשימה — קישור בתחתית ההודעה. BeautyFind · הצהרת נגישות ותקנון.'
+        : 'הודעת שירות בנוגע לתור שלך. BeautyFind · הצהרת נגישות ותקנון · 09-774-1180.',
+
+      toastOn: !!s.toast, toastText: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin:0; padding:0; }
+  body { background:#f8f8f8; -webkit-font-smoothing:antialiased; }
+  a { color:#0c243e; text-decoration:none; }
+  a:hover { color:#16b3c6; }
+  @keyframes gwRise { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+  @keyframes gwFade { from { opacity:0; } to { opacity:1; } }
+</style>
+</helmet>
+<main style="min-height:100vh;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:64px 24px;font-family:'Instrument Sans',system-ui,sans-serif;color:#0c243e;background:radial-gradient(120% 90% at 50% -10%, #ffffff 0%, #f8f8f8 46%, #f1f4f6 100%);position:relative;overflow:hidden">
+
+  <div style="position:absolute;top:-220px;left:50%;width:900px;height:900px;margin-left:-450px;border-radius:50%;background:radial-gradient(circle, rgba(22,179,198,0.10) 0%, rgba(22,179,198,0) 62%);pointer-events:none;animation:gwFade 1.2s ease both"></div>
+
+  <div style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;max-width:920px">
+
+    <h1 style="margin:0;font-family:'Bricolage Grotesque','Instrument Sans',sans-serif;font-weight:700;font-size:clamp(46px,8.2vw,104px);line-height:0.94;letter-spacing:-0.045em;text-align:center;animation:gwRise 0.8s cubic-bezier(.2,.7,.2,1) both">Medspa<span style="color:#16b3c6">Find</span></h1>
+
+    <p style="margin:22px 0 0;max-width:30ch;text-align:center;text-wrap:pretty;font-size:clamp(15px,1.5vw,18px);line-height:1.55;color:rgba(12,36,62,0.72);animation:gwRise 0.8s cubic-bezier(.2,.7,.2,1) 0.12s both">Find trusted medspas near you — start by selecting your country.</p>
+
+    <div style="display:flex;align-items:center;gap:14px;margin:46px 0 22px;width:100%;max-width:560px;animation:gwFade 0.9s ease 0.3s both">
+      <div style="flex:1;height:1px;background:#e7e7e7"></div>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(12,36,62,0.5)">Choose your country</span>
+      <div style="flex:1;height:1px;background:#e7e7e7"></div>
+    </div>
+
+    <nav style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;width:100%;max-width:860px">
+
+      <a href="/ca" style="display:flex;flex-direction:column;gap:18px;padding:26px 26px 22px;min-height:132px;box-sizing:border-box;background:#ffffff;border:1px solid #e7e7e7;border-radius:14px;transition:transform .22s cubic-bezier(.2,.7,.2,1), border-color .22s ease, box-shadow .22s ease;animation:gwRise 0.7s cubic-bezier(.2,.7,.2,1) 0.34s both;outline-offset:3px" style-hover="transform:translateY(-4px);border-color:#16b3c6;box-shadow:0 14px 34px rgba(12,36,62,0.10)" style-focus="border-color:#16b3c6;outline:2px solid #16b3c6">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:30px;border-radius:5px;background:#f8f8f8;border:1px solid #e7e7e7;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.08em;color:#0c243e">CA</span>
+        <span style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+          <span style="font-size:19px;font-weight:600;letter-spacing:-0.01em">Canada</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(12,36,62,0.45)">/ca</span>
+        </span>
+      </a>
+
+      <a href="/us" style="display:flex;flex-direction:column;gap:18px;padding:26px 26px 22px;min-height:132px;box-sizing:border-box;background:#ffffff;border:1px solid #e7e7e7;border-radius:14px;transition:transform .22s cubic-bezier(.2,.7,.2,1), border-color .22s ease, box-shadow .22s ease;animation:gwRise 0.7s cubic-bezier(.2,.7,.2,1) 0.44s both;outline-offset:3px" style-hover="transform:translateY(-4px);border-color:#16b3c6;box-shadow:0 14px 34px rgba(12,36,62,0.10)" style-focus="border-color:#16b3c6;outline:2px solid #16b3c6">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:30px;border-radius:5px;background:#f8f8f8;border:1px solid #e7e7e7;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.08em;color:#0c243e">US</span>
+        <span style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+          <span style="font-size:19px;font-weight:600;letter-spacing:-0.01em">United States</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(12,36,62,0.45)">/us</span>
+        </span>
+      </a>
+
+      <a href="/ae" style="display:flex;flex-direction:column;gap:18px;padding:26px 26px 22px;min-height:132px;box-sizing:border-box;background:#ffffff;border:1px solid #e7e7e7;border-radius:14px;transition:transform .22s cubic-bezier(.2,.7,.2,1), border-color .22s ease, box-shadow .22s ease;animation:gwRise 0.7s cubic-bezier(.2,.7,.2,1) 0.54s both;outline-offset:3px" style-hover="transform:translateY(-4px);border-color:#16b3c6;box-shadow:0 14px 34px rgba(12,36,62,0.10)" style-focus="border-color:#16b3c6;outline:2px solid #16b3c6">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:30px;border-radius:5px;background:#f8f8f8;border:1px solid #e7e7e7;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.08em;color:#0c243e">AE</span>
+        <span style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+          <span style="font-size:19px;font-weight:600;letter-spacing:-0.01em">United Arab Emirates</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(12,36,62,0.45)">/ae</span>
+        </span>
+      </a>
+
+    </nav>
+  </div>
+</main>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}"></script>
+</body>
+</html>

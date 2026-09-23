@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="תור אימות של BeautyFind — בדיקת רישיונות רופאים ואחיות, תעודות קוסמטיקאיות ובקשות בעלות על עסק. החלטות מתועדות ואינן ניתנות לעריכה.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#F6F8F9}
+  *{box-sizing:border-box}
+  :root{--vf-pad:16px;--vf-shell:minmax(0,1fr);--vf-cmp:minmax(0,1fr)}
+  @media (min-width:640px){:root{--vf-pad:22px;--vf-cmp:repeat(2,minmax(0,1fr))}}
+  @media (min-width:960px){:root{--vf-shell:340px minmax(0,1fr)}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes vfFade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  @keyframes vfPop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#F6F8F9;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+
+  <header style="background:#0C243E;color:#fff">
+    <div style="max-width:1200px;margin:0 auto;padding:12px var(--vf-pad);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <a href="./BeautyFind Admin.dc.html" dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:20px;color:#fff;text-decoration:none">beauty<span style="color:#7ED7E1">find.</span></a>
+      <nav aria-label="צוות BeautyFind" style="flex:1;min-width:0;display:flex;gap:4px;flex-wrap:wrap">
+        <a href="./BeautyFind Admin.dc.html" style="min-height:38px;display:inline-flex;align-items:center;padding:0 11px;border-radius:9px;font-size:14px;font-weight:700;color:rgba(255,255,255,.75);text-decoration:none">ניהול</a>
+        <a href="./BeautyFind Moderation.dc.html" style="min-height:38px;display:inline-flex;align-items:center;padding:0 11px;border-radius:9px;font-size:14px;font-weight:700;color:rgba(255,255,255,.75);text-decoration:none">ביקורות</a>
+        <span aria-current="page" style="min-height:38px;display:inline-flex;align-items:center;padding:0 11px;border-radius:9px;background:rgba(255,255,255,.12);font-size:14px;font-weight:700;color:#fff">אימות</span>
+      </nav>
+      <span style="flex:none;font-size:13px;font-weight:600;color:rgba(255,255,255,.75)">{{ reviewerName }}</span>
+    </div>
+  </header>
+
+  <div style="max-width:1200px;margin:0 auto;padding:clamp(16px,2.4vw,26px) var(--vf-pad) 60px">
+    <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+      <h1 style="flex:1;min-width:0;margin:0;font-family:'Frank Ruhl Libre',serif;font-size:clamp(26px,3.2vw,34px);font-weight:500;letter-spacing:-0.015em">תור אימות</h1>
+      <div role="tablist" aria-label="סוג" style="flex:none;display:flex;gap:3px;padding:3px;border-radius:11px;background:#E9EEF1">
+        <sc-for list="{{ kinds }}" as="k" hint-placeholder-count="3"><button type="button" role="tab" aria-selected="{{ k.on }}" onClick="{{ k.pick }}" style="min-height:38px;padding:0 12px;border:0;border-radius:9px;background:{{ k.bg }};box-shadow:{{ k.sh }};font:inherit;font-size:13.5px;font-weight:700;color:{{ k.color }};cursor:pointer">{{ k.name }} <span dir="ltr" style="unicode-bidi:isolate;opacity:.7">{{ k.n }}</span></button></sc-for>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:var(--vf-shell);gap:clamp(12px,1.6vw,18px);align-items:start">
+      <ul aria-label="בקשות" style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;min-width:0">
+        <sc-for list="{{ items }}" as="it" hint-placeholder-count="5"><li><button type="button" aria-current="{{ it.cur }}" onClick="{{ it.pick }}" style="width:100%;display:flex;flex-direction:column;gap:4px;padding:12px 14px;border:1px solid {{ it.border }};border-radius:14px;background:{{ it.bg }};font:inherit;text-align:right;cursor:pointer"><span style="display:flex;align-items:center;gap:8px"><span style="flex:1;min-width:0;font-size:15px;font-weight:700;color:#0C243E">{{ it.who }}</span><span style="flex:none;font-size:12px;font-weight:700;color:{{ it.slaColor }}">{{ it.sla }}</span></span><span style="font-size:13px;color:#3E4F62">{{ it.what }} · {{ it.biz }}</span><span style="display:flex;gap:6px;flex-wrap:wrap"><span style="height:24px;display:inline-flex;align-items:center;padding:0 8px;border-radius:7px;background:{{ it.stBg }};font-size:12px;font-weight:700;color:{{ it.stColor }}">{{ it.st }}</span><sc-if value="{{ it.risk }}" hint-placeholder-val="{{ false }}"><span style="height:24px;display:inline-flex;align-items:center;padding:0 8px;border-radius:7px;background:#FFF8EC;font-size:12px;font-weight:700;color:#9A5B15">{{ it.riskTxt }}</span></sc-if></span></button></li></sc-for>
+      </ul>
+
+      <section aria-labelledby="vf-dt" style="min-width:0;background:#fff;border:1px solid #E6E6E6;border-radius:17px;overflow:hidden;animation:vfFade .2s ease both">
+        <div style="padding:clamp(15px,1.8vw,21px);border-bottom:1px solid #EDEFF2;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+          <div style="flex:1;min-width:0">
+            <span style="display:block;font-size:12.5px;font-weight:700;color:#5B6B7B">{{ sel.what }} · <span dir="ltr" style="unicode-bidi:isolate">{{ sel.id }}</span></span>
+            <h2 id="vf-dt" style="margin:2px 0 0;font-size:20px;font-weight:700">{{ sel.who }}</h2>
+            <span style="font-size:13.5px;color:#5B6B7B">{{ sel.biz }} · הוגשה {{ sel.when }}</span>
+          </div>
+          <span style="flex:none;height:28px;display:inline-flex;align-items:center;padding:0 10px;border-radius:8px;background:{{ sel.stBg }};font-size:12.5px;font-weight:700;color:{{ sel.stColor }}">{{ sel.st }}</span>
+        </div>
+
+        <div style="padding:clamp(15px,1.8vw,21px);display:flex;flex-direction:column;gap:14px">
+          <div style="display:grid;grid-template-columns:var(--vf-cmp);gap:10px">
+            <div style="min-width:0;padding:13px 14px;border:1px solid #E6E6E6;border-radius:13px">
+              <span style="display:block;margin-bottom:8px;font-size:12.5px;font-weight:700;color:#5B6B7B">מה הוגש</span>
+              <dl style="margin:0;display:grid;grid-template-columns:90px minmax(0,1fr);gap:7px 10px;font-size:14px">
+                <sc-for list="{{ sel.submitted }}" as="r" hint-placeholder-count="4"><dt style="color:#8A96A3">{{ r.k }}</dt><dd style="margin:0;font-weight:600;text-wrap:pretty">{{ r.v }}</dd></sc-for>
+              </dl>
+            </div>
+            <div style="min-width:0;padding:13px 14px;border:1px solid {{ sel.srcBorder }};border-radius:13px;background:{{ sel.srcBg }}">
+              <span style="display:block;margin-bottom:8px;font-size:12.5px;font-weight:700;color:{{ sel.srcColor }}">{{ sel.srcName }}</span>
+              <dl style="margin:0;display:grid;grid-template-columns:90px minmax(0,1fr);gap:7px 10px;font-size:14px">
+                <sc-for list="{{ sel.source }}" as="r" hint-placeholder-count="4"><dt style="color:#8A96A3">{{ r.k }}</dt><dd style="margin:0;font-weight:600;color:{{ r.color }};text-wrap:pretty">{{ r.v }}</dd></sc-for>
+              </dl>
+            </div>
+          </div>
+
+          <sc-if value="{{ sel.hasDoc }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <span style="display:block;margin-bottom:7px;font-size:13px;font-weight:700">מסמך שהועלה</span>
+              <div style="position:relative;max-width:420px;aspect-ratio:1.414/1;border:1px dashed #D4D4D4;border-radius:12px;overflow:hidden;background:#FAFBFB"><image-slot id="{{ sel.docSlot }}" shape="rounded" radius="11" placeholder="{{ sel.docPh }}"></image-slot></div>
+            </div>
+          </sc-if>
+
+          <div>
+            <span style="display:block;margin-bottom:8px;font-size:13px;font-weight:700">בדיקות</span>
+            <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px">
+              <sc-for list="{{ sel.checks }}" as="c" hint-placeholder-count="4"><li style="display:flex;align-items:flex-start;gap:9px;font-size:14px"><span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-top:1px;border-radius:7px;background:{{ c.bg }};color:{{ c.color }};font-size:12px;font-weight:800">{{ c.mark }}</span><span style="flex:1;min-width:0;text-wrap:pretty">{{ c.t }}</span></li></sc-for>
+            </ul>
+          </div>
+
+          <sc-if value="{{ sel.decided }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:0;padding:12px 14px;border:1px solid #E6E6E6;border-radius:12px;background:#FAFBFB;font-size:13.5px;color:#3E4F62;text-wrap:pretty">{{ sel.outcome }}</p>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ sel.open }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:14px clamp(15px,1.8vw,21px);border-top:1px solid #EDEFF2;background:#FAFBFB;display:flex;flex-direction:column;gap:10px">
+            <sc-if value="{{ rejecting }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <span style="font-size:13px;font-weight:700">סיבת הדחייה — תישלח לעסק</span>
+                <sc-for list="{{ reasons }}" as="r" hint-placeholder-count="3"><button type="button" aria-pressed="{{ r.on }}" onClick="{{ r.pick }}" style="min-height:44px;padding:0 13px;border:1px solid {{ r.border }};border-radius:11px;background:{{ r.bg }};font:inherit;font-size:14px;font-weight:600;color:#0C243E;text-align:right;cursor:pointer">{{ r.name }}</button></sc-for>
+              </div>
+            </sc-if>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <sc-if value="{{ notRejecting }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ approve }}" style="min-height:46px;padding:0 17px;border:0;border-radius:11px;background:#0B7A87;font:inherit;font-size:14.5px;font-weight:700;color:#fff;cursor:pointer">{{ approveLabel }}</button></sc-if>
+              <sc-if value="{{ notRejecting }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ askMore }}" style="min-height:46px;padding:0 14px;border:1px solid #E6E6E6;border-radius:11px;background:#fff;font:inherit;font-size:14.5px;font-weight:600;color:#3E4F62;cursor:pointer">בקשת מסמך נוסף</button></sc-if>
+              <sc-if value="{{ notRejecting }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ toReject }}" style="min-height:46px;padding:0 14px;border:1px solid #F0C9C4;border-radius:11px;background:#fff;font:inherit;font-size:14.5px;font-weight:700;color:#A33A31;cursor:pointer">דחייה</button></sc-if>
+              <sc-if value="{{ rejecting }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ confirmReject }}" style="min-height:46px;padding:0 17px;border:0;border-radius:11px;background:{{ rejectBg }};font:inherit;font-size:14.5px;font-weight:700;color:#fff;cursor:pointer">אישור הדחייה</button></sc-if>
+              <sc-if value="{{ rejecting }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ cancelReject }}" style="min-height:46px;padding:0 14px;border:0;border-radius:11px;background:transparent;font:inherit;font-size:14.5px;font-weight:600;color:#5B6B7B;cursor:pointer">ביטול</button></sc-if>
+            </div>
+            <p style="margin:0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">ההחלטה נרשמת עם שמך ושעת ההחלטה, ואינה ניתנת לעריכה. תיקון — רק בהחלטה חדשה שמפנה לקודמת.</p>
+          </div>
+        </sc-if>
+      </section>
+    </div>
+  </div>
+
+  <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:fixed;bottom:18px;right:50%;transform:translateX(50%);z-index:40;max-width:min(90vw,460px);padding:12px 17px;border-radius:13px;background:#0C243E;color:#fff;font-size:14px;font-weight:600;box-shadow:0 12px 30px rgba(12,36,62,.28);animation:vfPop .16s ease both">{{ toastText }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1200,&quot;height&quot;:960},&quot;reviewer&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;עומר דגן&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const OK = '#3B6B3F', WARN = '#9A5B15', BAD = '#A33A31';
+const ITEMS = [
+  { id: 'LIC-2291', kind: 'license', what: 'רישיון רופא', who: 'ד״ר יואב שמיר', biz: 'קליניקת נועה · תל אביב', when: 'היום 08:12', slaH: 20, st: 'open',
+    submitted: [['מספר', '34-90417'], ['שם', 'יואב שמיר'], ['תפקיד', 'רופא · אחריות רפואית'], ['הוזמן ע״י', 'רותם אלון (מנהל)']],
+    srcName: 'פנקס הרופאים · משרד הבריאות', source: [['מספר', '34-90417', OK], ['שם', 'שמיר יואב', OK], ['מומחיות', 'רפואת עור ומין', OK], ['סטטוס', 'רישיון בתוקף', OK]], srcState: 'ok',
+    checks: [['✓', 'המספר קיים בפנקס ומשויך לשם שהוזן', 'ok'], ['✓', 'הרישיון בתוקף, ללא השעיה', 'ok'], ['✓', 'השם לא מופיע כאחראי רפואי בעסק אחר', 'ok']] },
+  { id: 'LIC-2290', kind: 'license', what: 'רישיון אחות', who: 'אורנה ביטון', biz: 'אגם אסתטיקה · ירושלים', when: 'אתמול 17:40', slaH: 4, st: 'open', risk: 'השם לא תואם',
+    submitted: [['מספר', '71-40932'], ['שם', 'אורנה ביטון'], ['תפקיד', 'אחות מוסמכת'], ['הוזמן ע״י', 'ד״ר רחל אמסלם']],
+    srcName: 'פנקס האחיות · משרד הבריאות', source: [['מספר', '71-40932', OK], ['שם', 'ביטון־לוי אורנה', WARN], ['סטטוס', 'רישיון בתוקף', OK]], srcState: 'warn',
+    checks: [['✓', 'המספר קיים ובתוקף', 'ok'], ['!', 'שם המשפחה בפנקס שונה — ייתכן שם נישואין. לבקש תעודת זהות או אישור שינוי שם', 'warn'], ['✓', 'עסק עם רופא/ה אחראי/ת מאומת/ת — הזרקה בפיקוח מותרת', 'ok']] },
+  { id: 'CRT-0418', kind: 'cert', what: 'תעודת קוסמטיקאית', who: 'לינוי אברהם', biz: 'סקין סטודיו · כפר סבא', when: 'יום ב׳', slaH: 30, st: 'open', doc: true,
+    submitted: [['מוסד', 'בית ספר לקוסמטיקה'], ['שנה', '2019'], ['מספר תעודה', 'C-20417'], ['תחומים', 'טיפולי פנים, פילינג']],
+    srcName: 'אין מאגר ציבורי', source: [['בדיקה', 'ידנית מול המסמך', WARN], ['מוסד', 'מוכר — ברשימת המוסדות שלנו', OK]], srcState: 'warn',
+    checks: [['✓', 'שם בתעודה תואם לשם בחשבון', 'ok'], ['✓', 'לא הוצע טיפול בהזרקה בתפריט', 'ok'], ['·', 'לבדוק שהתעודה אינה ערוכה — חותמת וחתימה', 'todo']] },
+  { id: 'CLM-1107', kind: 'claim', what: 'בקשת בעלות', who: 'אבי כהן', biz: 'ביוטי לאב · חיפה', when: 'יום א׳', slaH: 2, st: 'open', risk: 'בקשה שנייה על העסק',
+    submitted: [['שיטה', 'שיחה למספר הרשום'], ['טלפון בכרטיס', '04-866-2210'], ['תפקיד', 'בעלים'], ['ח.פ. / ע.מ.', '038812907']],
+    srcName: 'רשם החברות ו־Google Business', source: [['ע.מ.', 'רשום על שם מאיה כהן', WARN], ['Google', 'מנוהל ע״י maya@beautylove.co.il', WARN], ['בקשה קודמת', 'מאיה כהן · אושרה 03/2026', BAD]], srcState: 'bad',
+    checks: [['×', 'לעסק כבר יש בעלים מאומתת — העברת בעלות רק באישורה', 'bad'], ['!', 'ייתכן בן משפחה או שותף. להציע הזמנה לצוות במקום בעלות', 'warn']] },
+  { id: 'LIC-2284', kind: 'license', what: 'רישיון רופא', who: 'ד״ר נועה לוי', biz: 'קליניקת נועה · רעננה', when: '14/09', slaH: 0, st: 'approved',
+    submitted: [['מספר', '34-82115'], ['שם', 'נועה לוי']], srcName: 'פנקס הרופאים · משרד הבריאות', source: [['סטטוס', 'רישיון בתוקף', OK]], srcState: 'ok',
+    checks: [['✓', 'אומת מול הפנקס', 'ok']], outcome: 'אושר ע״י עומר דגן · 14/09/2026 10:02 · בדיקה חוזרת אוטומטית כל 90 יום.' }
+];
+const REASONS = {
+  license: ['המספר לא נמצא בפנקס', 'הרישיון אינו בתוקף או מושעה', 'השם אינו תואם ולא הומצא אישור'],
+  cert: ['המסמך אינו קריא או חתוך', 'המוסד אינו מוכר', 'חשש לזיוף — הועבר לבדיקה'],
+  claim: ['לעסק יש בעלים מאומת/ת', 'לא ניתן לאמת קשר לעסק', 'מסמכי העסק על שם אחר']
+};
+const STM = { open: ['ממתין', '#F0FAFB', '#0B7A87'], more: ['ממתין למסמך', '#FFF8EC', WARN], approved: ['אושר', '#EAF3EA', OK], rejected: ['נדחה', '#FDEDEC', BAD] };
+const CHK = { ok: ['#EAF3EA', OK], warn: ['#FFF8EC', WARN], bad: ['#FDEDEC', BAD], todo: ['#F0F3F5', '#5B6B7B'] };
+const SRC = { ok: ['#F4FAF4', '#CFE3CF', OK], warn: ['#FFFBF3', '#F1DDB5', WARN], bad: ['#FDF4F3', '#F0C9C4', BAD] };
+
+class Component extends DCLogic {
+  state = { kind: 'all', items: ITEMS, sel: 'LIC-2291', rejecting: false, reason: null, toast: '' };
+  componentWillUnmount() { clearTimeout(this._t); }
+  flash(t) { clearTimeout(this._t); this.setState({ toast: t }); this._t = setTimeout(() => this.setState({ toast: '' }), 3400); }
+  decide(id, st, outcome) { this.setState(s => ({ items: s.items.map(x => x.id === id ? Object.assign({}, x, { st, outcome }) : x), rejecting: false, reason: null })); }
+
+  renderVals() {
+    const s = this.state, teal = '#0B7A87', line = '#E6E6E6';
+    const who = this.props.reviewer || 'עומר דגן';
+    const list = s.items.filter(x => s.kind === 'all' || (s.kind === 'license' ? x.kind !== 'claim' : x.kind === 'claim'));
+    const cur = s.items.find(x => x.id === s.sel) || list[0];
+    const openN = k => s.items.filter(x => (x.st === 'open' || x.st === 'more') && (k === 'all' || (k === 'license' ? x.kind !== 'claim' : x.kind === 'claim'))).length;
+    const now = () => { const d = new Date(); return '23/09/2026 ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+    const deco = x => { const m = STM[x.st]; return { st: m[0], stBg: m[1], stColor: m[2] }; };
+    const src = SRC[cur.srcState];
+    return {
+      reviewerName: who + ' · צוות אימות',
+      kinds: [['all', 'הכל'], ['license', 'רישיונות ותעודות'], ['claim', 'בעלות']].map(k => { const on = s.kind === k[0]; return { name: k[1], n: String(openN(k[0])), on: on ? 'true' : 'false', bg: on ? '#fff' : 'transparent', sh: on ? '0 1px 3px rgba(12,36,62,.12)' : 'none', color: on ? '#0C243E' : '#5B6B7B', pick: () => this.setState({ kind: k[0] }) }; }),
+      items: list.map(x => { const on = x.id === cur.id, open = x.st === 'open' || x.st === 'more'; return Object.assign({ who: x.who, what: x.what, biz: x.biz, cur: on ? 'true' : 'false', bg: on ? '#F0FAFB' : '#fff', border: on ? '#7ED7E1' : line,
+        risk: !!x.risk, riskTxt: x.risk || '',
+        sla: open ? (x.slaH <= 4 ? 'SLA · ' + x.slaH + ' ש׳' : 'SLA · ' + x.slaH + ' ש׳') : x.when, slaColor: open && x.slaH <= 4 ? BAD : '#8A96A3',
+        pick: () => this.setState({ sel: x.id, rejecting: false, reason: null }) }, deco(x)); }),
+      sel: Object.assign({ id: cur.id, who: cur.who, what: cur.what, biz: cur.biz, when: cur.when,
+        submitted: cur.submitted.map(r => ({ k: r[0], v: r[1] })),
+        srcName: cur.srcName, source: cur.source.map(r => ({ k: r[0], v: r[1], color: r[2] })),
+        srcBg: src[0], srcBorder: src[1], srcColor: src[2],
+        hasDoc: !!cur.doc, docSlot: 'vf-doc-' + cur.id, docPh: 'סריקת ' + cur.what,
+        checks: cur.checks.map(c => ({ mark: c[0], t: c[1], bg: CHK[c[2]][0], color: CHK[c[2]][1] })),
+        open: cur.st === 'open' || cur.st === 'more', decided: !!cur.outcome, outcome: cur.outcome || '' }, deco(cur)),
+      rejecting: s.rejecting, notRejecting: !s.rejecting,
+      approveLabel: cur.kind === 'claim' ? 'אישור בעלות' : cur.kind === 'cert' ? 'אישור תעודה' : 'אישור רישיון',
+      approve: () => { this.decide(cur.id, 'approved', 'אושר ע״י ' + who + ' · ' + now() + '.' + (cur.kind === 'license' ? ' השם יופיע בפרופיל כאחריות רפואית. בדיקה חוזרת אוטומטית כל 90 יום.' : cur.kind === 'claim' ? ' הבעלות הועברה והודעה נשלחה לבעלים הקודמים.' : ' ההסמכה תוצג בעמוד איש המקצוע.')); this.flash('אושר · הודעה נשלחה לעסק'); },
+      askMore: () => { this.decide(cur.id, 'more', 'נשלחה בקשה למסמך נוסף ע״י ' + who + ' · ' + now() + '. השעון של ה־SLA מושהה עד לתשובה.'); this.flash('הבקשה נשלחה לעסק במייל'); },
+      toReject: () => this.setState({ rejecting: true }),
+      cancelReject: () => this.setState({ rejecting: false, reason: null }),
+      reasons: (REASONS[cur.kind] || []).map(r => { const on = s.reason === r; return { name: r, on: on ? 'true' : 'false', bg: on ? '#FDF4F3' : '#fff', border: on ? '#E8A9A1' : line, pick: () => this.setState({ reason: r }) }; }),
+      rejectBg: s.reason ? BAD : '#D9B5B1',
+      confirmReject: () => { if (!s.reason) return; this.decide(cur.id, 'rejected', 'נדחה ע״י ' + who + ' · ' + now() + ' — ' + s.reason + '. העסק קיבל הסבר ואפשרות להגיש מחדש.'); this.flash('נדחה · הסבר נשלח לעסק'); },
+      toastOn: !!s.toast, toastText: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

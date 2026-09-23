@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="ניהול BeautyFind — עסקים, מנויים וחשבוניות, חיובים שנכשלו, מחלוקות על מקדמות ואישור מקומות ממומנים.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#F6F8F9}
+  *{box-sizing:border-box}
+  :root{--ad-pad:16px;--ad-kpi:repeat(2,minmax(0,1fr));--ad-split:minmax(0,1fr)}
+  @media (min-width:640px){:root{--ad-pad:22px;--ad-kpi:repeat(4,minmax(0,1fr))}}
+  @media (min-width:1000px){:root{--ad-split:minmax(0,1fr) minmax(0,1fr)}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes adFade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  @keyframes adPop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#F6F8F9;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+
+  <header style="background:#0C243E;color:#fff">
+    <div style="max-width:1240px;margin:0 auto;padding:12px var(--ad-pad);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:20px">beauty<span style="color:#7ED7E1">find.</span></span>
+      <nav aria-label="צוות BeautyFind" style="flex:1;min-width:0;display:flex;gap:4px;flex-wrap:wrap">
+        <span aria-current="page" style="min-height:38px;display:inline-flex;align-items:center;padding:0 11px;border-radius:9px;background:rgba(255,255,255,.12);font-size:14px;font-weight:700">ניהול</span>
+        <a href="./BeautyFind Moderation.dc.html" style="min-height:38px;display:inline-flex;align-items:center;padding:0 11px;border-radius:9px;font-size:14px;font-weight:700;color:rgba(255,255,255,.75);text-decoration:none">ביקורות</a>
+        <a href="./BeautyFind Verification.dc.html" style="min-height:38px;display:inline-flex;align-items:center;padding:0 11px;border-radius:9px;font-size:14px;font-weight:700;color:rgba(255,255,255,.75);text-decoration:none">אימות</a>
+      </nav>
+      <span style="flex:none;font-size:13px;font-weight:600;color:rgba(255,255,255,.75)">{{ roleName }}</span>
+    </div>
+  </header>
+
+  <div style="max-width:1240px;margin:0 auto;padding:clamp(16px,2.4vw,26px) var(--ad-pad) 60px">
+    <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+      <h1 style="flex:1;min-width:0;margin:0;font-family:'Frank Ruhl Libre',serif;font-size:clamp(26px,3.2vw,34px);font-weight:500;letter-spacing:-0.015em">{{ title }}</h1>
+      <div role="tablist" aria-label="אזור" style="flex:none;display:flex;gap:3px;padding:3px;border-radius:11px;background:#E9EEF1;flex-wrap:wrap">
+        <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="4"><button type="button" role="tab" aria-selected="{{ tb.on }}" onClick="{{ tb.pick }}" style="min-height:38px;padding:0 12px;border:0;border-radius:9px;background:{{ tb.bg }};box-shadow:{{ tb.sh }};font:inherit;font-size:13.5px;font-weight:700;color:{{ tb.color }};cursor:pointer">{{ tb.name }}<sc-if value="{{ tb.hasN }}" hint-placeholder-val="{{ false }}"> <span dir="ltr" style="unicode-bidi:isolate;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#A33A31;color:#fff;font-size:11.5px">{{ tb.n }}</span></sc-if></button></sc-for>
+      </div>
+    </div>
+
+    <sc-if value="{{ isBiz }}" hint-placeholder-val="{{ true }}">
+      <div style="animation:adFade .2s ease both">
+        <dl style="margin:0 0 14px;display:grid;grid-template-columns:var(--ad-kpi);gap:10px">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4"><div style="min-width:0;padding:13px 15px;background:#fff;border:1px solid #E6E6E6;border-radius:15px"><dt style="font-size:12.5px;font-weight:700;color:#8A96A3">{{ k.name }}</dt><dd dir="ltr" style="margin:2px 0 0;text-align:right;font-size:22px;font-weight:800;font-variant-numeric:tabular-nums">{{ k.v }}</dd><span style="font-size:12px;color:#5B6B7B">{{ k.note }}</span></div></sc-for>
+        </dl>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+          <input type="search" value="{{ q }}" onChange="{{ onQ }}" placeholder="חיפוש לפי שם, עיר או ע.מ." aria-label="חיפוש עסק" style="flex:1 1 240px;min-width:0;min-height:44px;padding:0 13px;border:1px solid #D4D4D4;border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none">
+          <sc-for list="{{ bizFilters }}" as="f" hint-placeholder-count="4"><button type="button" aria-pressed="{{ f.on }}" onClick="{{ f.pick }}" style="min-height:40px;padding:0 12px;border:1px solid {{ f.border }};border-radius:10px;background:{{ f.bg }};font:inherit;font-size:13.5px;font-weight:600;color:{{ f.color }};cursor:pointer">{{ f.name }}</button></sc-for>
+        </div>
+        <div style="overflow-x:auto;background:#fff;border:1px solid #E6E6E6;border-radius:17px">
+          <table style="width:100%;min-width:820px;border-collapse:collapse;font-size:14px">
+            <thead><tr style="background:#FAFBFB"><sc-for list="{{ bizCols }}" as="h" hint-placeholder-count="7"><th scope="col" style="padding:11px 14px;text-align:right;font-size:12.5px;font-weight:700;color:#5B6B7B">{{ h }}</th></sc-for></tr></thead>
+            <tbody>
+              <sc-for list="{{ biz }}" as="b" hint-placeholder-count="6"><tr style="border-top:1px solid #EDEFF2"><td style="padding:11px 14px"><span style="display:block;font-weight:700">{{ b.name }}</span><span style="display:block;font-size:12.5px;color:#5B6B7B">{{ b.city }} · ע.מ. <span dir="ltr" style="unicode-bidi:isolate">{{ b.vat }}</span></span></td><td style="padding:11px 14px">{{ b.cat }}</td><td dir="ltr" style="padding:11px 14px;text-align:right;font-variant-numeric:tabular-nums">{{ b.branches }}</td><td style="padding:11px 14px;font-weight:600">{{ b.plan }}</td><td style="padding:11px 14px">{{ b.resp }}</td><td style="padding:11px 14px"><span style="height:24px;display:inline-flex;align-items:center;padding:0 8px;border-radius:7px;background:{{ b.stBg }};font-size:12px;font-weight:700;color:{{ b.stColor }}">{{ b.st }}</span></td><td style="padding:11px 14px;white-space:nowrap"><button type="button" onClick="{{ b.act }}" style="min-height:36px;padding:0 11px;border:1px solid #E6E6E6;border-radius:9px;background:#fff;font:inherit;font-size:13px;font-weight:700;color:#3E4F62;cursor:pointer">{{ b.actLabel }}</button></td></tr></sc-for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isBilling }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid;grid-template-columns:var(--ad-split);gap:14px;align-items:start;animation:adFade .2s ease both">
+        <section aria-labelledby="ad-fail" style="min-width:0;background:#fff;border:1px solid #F0C9C4;border-radius:17px;overflow:hidden">
+          <div style="padding:13px 16px;background:#FDF4F3;border-bottom:1px solid #F0C9C4"><h2 id="ad-fail" style="margin:0;font-size:16px;font-weight:700;color:#A33A31">חיובים שנכשלו</h2><span style="font-size:12.5px;color:#5B6B7B">ניסיון חוזר אוטומטי אחרי 3 ו־7 ימים. אחרי 14 ימים הפרופיל מוסתר, לא נמחק.</span></div>
+          <ul style="list-style:none;margin:0;padding:0">
+            <sc-for list="{{ failed }}" as="f" hint-placeholder-count="3"><li style="padding:12px 16px;border-top:1px solid #EDEFF2;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="flex:1 1 180px;min-width:0;display:flex;flex-direction:column"><span style="font-size:14.5px;font-weight:700">{{ f.name }}</span><span style="font-size:12.5px;color:#5B6B7B">{{ f.why }} · {{ f.day }}</span></span><span style="flex:none;font-weight:700">{{ f.amt }}</span><button type="button" onClick="{{ f.retry }}" disabled="{{ f.done }}" style="flex:none;min-height:36px;padding:0 11px;border:0;border-radius:9px;background:{{ f.btnBg }};font:inherit;font-size:13px;font-weight:700;color:#fff;cursor:pointer">{{ f.btn }}</button></li></sc-for>
+          </ul>
+        </section>
+        <section aria-labelledby="ad-inv" style="min-width:0;background:#fff;border:1px solid #E6E6E6;border-radius:17px;overflow:hidden">
+          <div style="padding:13px 16px;border-bottom:1px solid #EDEFF2"><h2 id="ad-inv" style="margin:0;font-size:16px;font-weight:700">חשבוניות מס של BeautyFind</h2><span style="font-size:12.5px;color:#5B6B7B">מנוי, סניפים ומקומות ממומנים · מופקות אוטומטית בכל חיוב</span></div>
+          <ul style="list-style:none;margin:0;padding:0">
+            <sc-for list="{{ invoices }}" as="i" hint-placeholder-count="5"><li style="padding:11px 16px;border-top:1px solid #EDEFF2;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px"><span dir="ltr" style="flex:none;width:64px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">{{ i.no }}</span><span style="flex:1 1 160px;min-width:0"><span style="display:block;font-weight:600">{{ i.name }}</span><span style="display:block;font-size:12.5px;color:#5B6B7B">{{ i.what }}</span></span><span style="flex:none;font-weight:700">{{ i.amt }}</span><span style="flex:none;height:22px;display:inline-flex;align-items:center;padding:0 7px;border-radius:6px;background:{{ i.stBg }};font-size:11.5px;font-weight:700;color:{{ i.stColor }}">{{ i.st }}</span></li></sc-for>
+          </ul>
+        </section>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isDisputes }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:12px;animation:adFade .2s ease both">
+        <p style="margin:0;max-width:78ch;font-size:14px;color:#3E4F62;text-wrap:pretty">מחלוקות על מקדמות ושוברים. BeautyFind אינה מחזיקה את הכסף — הקליניקה מחליטה על ההחזר. התפקיד שלנו: לבדוק שהמדיניות שהוצגה ללקוחה נאכפה כפי שנכתבה, ולתעד.</p>
+        <sc-for list="{{ disputes }}" as="d" hint-placeholder-count="3"><article style="background:#fff;border:1px solid {{ d.border }};border-radius:16px;overflow:hidden"><div style="padding:13px 16px;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap"><span style="flex:1 1 280px;min-width:0"><span style="display:block;font-size:15.5px;font-weight:700">{{ d.title }}</span><span style="display:block;font-size:13px;color:#5B6B7B">{{ d.who }} מול {{ d.biz }} · {{ d.amt }} · נפתח {{ d.day }}</span></span><span style="flex:none;height:26px;display:inline-flex;align-items:center;padding:0 9px;border-radius:7px;background:{{ d.stBg }};font-size:12.5px;font-weight:700;color:{{ d.stColor }}">{{ d.st }}</span></div><dl style="margin:0;padding:0 16px 13px;display:grid;grid-template-columns:120px minmax(0,1fr);gap:6px 12px;font-size:13.5px"><dt style="color:#8A96A3">טענת הלקוחה</dt><dd style="margin:0;color:#3E4F62;text-wrap:pretty">{{ d.claim }}</dd><dt style="color:#8A96A3">מה המערכת מראה</dt><dd style="margin:0;color:#3E4F62;text-wrap:pretty">{{ d.facts }}</dd><dt style="color:#8A96A3">מדיניות שהוצגה</dt><dd style="margin:0;font-weight:600;text-wrap:pretty">{{ d.policy }}</dd></dl><sc-if value="{{ d.open }}" hint-placeholder-val="{{ true }}"><div style="padding:11px 16px;border-top:1px solid #EDEFF2;background:#FAFBFB;display:flex;gap:8px;flex-wrap:wrap"><button type="button" onClick="{{ d.forClient }}" style="min-height:40px;padding:0 13px;border:0;border-radius:10px;background:#0B7A87;font:inherit;font-size:13.5px;font-weight:700;color:#fff;cursor:pointer">המלצה לקליניקה: להחזיר</button><button type="button" onClick="{{ d.forBiz }}" style="min-height:40px;padding:0 13px;border:1px solid #E6E6E6;border-radius:10px;background:#fff;font:inherit;font-size:13.5px;font-weight:700;color:#3E4F62;cursor:pointer">המדיניות נאכפה כנדרש</button><button type="button" onClick="{{ d.escalate }}" style="min-height:40px;padding:0 13px;border:0;border-radius:10px;background:transparent;font:inherit;font-size:13.5px;font-weight:700;color:#A33A31;cursor:pointer">העברה ליועמ״ש</button></div></sc-if><sc-if value="{{ d.closed }}" hint-placeholder-val="{{ false }}"><p style="margin:0;padding:11px 16px;border-top:1px solid #EDEFF2;background:#FAFBFB;font-size:13px;color:#3E4F62;text-wrap:pretty">{{ d.outcome }}</p></sc-if></article></sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isAds }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:12px;animation:adFade .2s ease both">
+        <p style="margin:0;max-width:78ch;font-size:14px;color:#3E4F62;text-wrap:pretty">כל מקום ממומן נבדק לפני שהוא עולה ולפני שהעסק מחויב. אסור: הבטחת תוצאה, ״ללא סיכון״, טענת עליונות, מחיר רפואי ״חינם״, ותמונות לפני/אחרי בטיפול רפואי.</p>
+        <sc-for list="{{ ads }}" as="a" hint-placeholder-count="3"><article style="background:#fff;border:1px solid {{ a.border }};border-radius:16px;padding:14px 16px;display:grid;grid-template-columns:var(--ad-split);gap:14px"><div style="min-width:0"><span style="display:block;font-size:12.5px;font-weight:700;color:#5B6B7B">{{ a.list }} · {{ a.weeks }}</span><span style="display:block;font-size:16px;font-weight:700">{{ a.biz }}</span><p style="margin:6px 0 0;padding:10px 12px;border-radius:11px;background:#F6F8F9;font-size:14.5px;font-weight:600;text-wrap:pretty">״{{ a.line }}״</p><span style="display:block;margin-top:6px;font-size:13px;color:#5B6B7B">מבליט: {{ a.feature }} · {{ a.amt }}</span></div><div style="min-width:0;display:flex;flex-direction:column;gap:8px"><ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px"><sc-for list="{{ a.checks }}" as="c" hint-placeholder-count="3"><li style="display:flex;align-items:flex-start;gap:8px;font-size:13.5px"><span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:6px;background:{{ c.bg }};color:{{ c.color }};font-size:11.5px;font-weight:800">{{ c.mark }}</span><span style="flex:1;min-width:0;text-wrap:pretty">{{ c.t }}</span></li></sc-for></ul><sc-if value="{{ a.open }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:auto"><button type="button" onClick="{{ a.approve }}" style="min-height:40px;padding:0 13px;border:0;border-radius:10px;background:#0B7A87;font:inherit;font-size:13.5px;font-weight:700;color:#fff;cursor:pointer">אישור וחיוב</button><button type="button" onClick="{{ a.reject }}" style="min-height:40px;padding:0 13px;border:1px solid #F0C9C4;border-radius:10px;background:#fff;font:inherit;font-size:13.5px;font-weight:700;color:#A33A31;cursor:pointer">דחייה עם הסבר</button></div></sc-if><sc-if value="{{ a.closed }}" hint-placeholder-val="{{ false }}"><p style="margin:auto 0 0;font-size:13px;font-weight:700;color:{{ a.outColor }}">{{ a.outcome }}</p></sc-if></div></article></sc-for>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:fixed;bottom:18px;right:50%;transform:translateX(50%);z-index:40;max-width:min(90vw,460px);padding:12px 17px;border-radius:13px;background:#0C243E;color:#fff;font-size:14px;font-weight:600;box-shadow:0 12px 30px rgba(12,36,62,.28);animation:adPop .16s ease both">{{ toastText }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1240,&quot;height&quot;:960},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;biz&quot;,&quot;billing&quot;,&quot;disputes&quot;,&quot;ads&quot;],&quot;default&quot;:&quot;biz&quot;,&quot;tsType&quot;:&quot;'biz'|'billing'|'disputes'|'ads'&quot;}}">
+const OK = '#3B6B3F', WARN = '#9A5B15', BAD = '#A33A31', TEAL = '#0B7A87';
+const nis = n => '₪' + n.toLocaleString('he-IL');
+const BIZ = [
+  ['קליניקת נועה', 'רעננה', '515123456', 'אסתטיקה רפואית', 3, 'live', 'ד״ר נועה לוי ✓'],
+  ['דרמה קליניק', 'תל אביב', '514887210', 'אסתטיקה רפואית', 1, 'live', 'ד״ר יואב שמיר ✓'],
+  ['ביוטי לאב', 'חיפה', '038812907', 'לייזר וקוסמטיקה', 1, 'past_due', 'מאיה כהן'],
+  ['אגם אסתטיקה', 'ירושלים', '516002331', 'אסתטיקה רפואית', 2, 'pending', 'ממתין לאימות רישיון'],
+  ['סקין סטודיו', 'כפר סבא', '205544781', 'טיפולי פנים', 1, 'live', 'לינוי אברהם'],
+  ['ציפורן', 'באר שבע', '031177420', 'ציפורניים', 1, 'hidden', '—']
+];
+const BST = { live: ['פעיל', '#EAF3EA', OK], past_due: ['חוב פתוח', '#FDEDEC', BAD], pending: ['ממתין לאימות', '#FFF8EC', WARN], hidden: ['מוסתר · ללא מנוי', '#F0F3F5', '#5B6B7B'] };
+const FAILED = [['ביוטי לאב', 'כרטיס נדחה — אין מסגרת', 'לפני 5 ימים', 149], ['מכון שלי', 'כרטיס פג תוקף', 'לפני יומיים', 298], ['הדר ביוטי', 'שגיאת תקשורת מול הסולק', 'היום', 149]];
+const INV = [['10482', 'קליניקת נועה', 'מנוי ספטמבר · 3 סניפים', 447 * 1.18, 'paid'], ['10481', 'דרמה קליניק', 'מקום ממומן · 2 שבועות', 728 * 1.18, 'paid'], ['10480', 'אגם אסתטיקה', 'מנוי ספטמבר · 2 סניפים', 298 * 1.18, 'paid'], ['10479', 'ביוטי לאב', 'מנוי ספטמבר', 149 * 1.18, 'open'], ['90006', 'דרמה קליניק', 'זיכוי · מקום ממומן שנדחה', -364 * 1.18, 'credit']];
+const IST = { paid: ['שולם', '#EAF3EA', OK], open: ['פתוח', '#FDEDEC', BAD], credit: ['חשבונית זיכוי', '#FFF8EC', WARN] };
+const DISPUTES = [
+  { id: 'D-41', title: 'מקדמה לא הוחזרה אחרי ביטול', who: 'ליאת מ.', biz: 'דרמה קליניק', amt: '₪280', day: 'יום ב׳',
+    claim: 'ביטלתי 30 שעות לפני התור ולא קיבלתי את המקדמה.', facts: 'ביטול נרשם 26 שעות לפני התור, דרך קישור ניהול התור. לא הופקה חשבונית זיכוי.', policy: 'החזר מלא עד 48 שעות לפני התור' },
+  { id: 'D-40', title: 'שובר נדחה בקבלה', who: 'נגה א.', biz: 'סקין סטודיו', amt: '₪500', day: 'לפני שבוע',
+    claim: 'אמרו לי שהשובר לא תקף לטיפול לייזר.', facts: 'השובר נקנה ״לפי סכום״, ללא הגבלת טיפול. סקין סטודיו אינה מציעה לייזר בתפריט.', policy: 'שובר לפי סכום — לכל טיפול בקליניקה' }
+];
+const ADS = [
+  { id: 'AD-88', biz: 'דרמה קליניק', list: 'אסתטיקה רפואית · גוש דן', weeks: '04/10–17/10', line: 'בוטוקס טבעי, ייעוץ עם רופא עור', feature: 'ייעוץ רפואי', amt: nis(952), checks: [['✓', 'ללא הבטחת תוצאה או טענת עליונות', 'ok'], ['✓', 'הרופא האחראי מאומת', 'ok'], ['✓', 'יש מקום פנוי — 1 מתוך 2', 'ok']] },
+  { id: 'AD-87', biz: 'ביוטי לאב', list: 'הסרת שיער · חיפה', weeks: '27/09–03/10', line: 'לייזר ללא כאב — התוצאה מובטחת', feature: 'לייזר רגליים', amt: nis(220), checks: [['×', '״ללא כאב״ — הבטחה רפואית', 'bad'], ['×', '״מובטחת״ — הבטחת תוצאה', 'bad'], ['!', 'לעסק חוב פתוח — לא ניתן לחייב עד הסדרה', 'warn']] }
+];
+const CK = { ok: ['#EAF3EA', OK], bad: ['#FDEDEC', BAD], warn: ['#FFF8EC', WARN] };
+
+class Component extends DCLogic {
+  state = { tab: null, q: '', bf: 'all', retried: {}, dOut: {}, aOut: {}, toast: '' };
+  componentWillUnmount() { clearTimeout(this._t); }
+  flash(t) { clearTimeout(this._t); this.setState({ toast: t }); this._t = setTimeout(() => this.setState({ toast: '' }), 3400); }
+  renderVals() {
+    const s = this.state, line = '#E6E6E6';
+    const tab = s.tab || this.props.view || 'biz';
+    const who = 'עומר דגן';
+    const chip = on => ({ on: on ? 'true' : 'false', bg: on ? TEAL : '#fff', color: on ? '#fff' : '#3E4F62', border: on ? TEAL : line });
+    const openD = DISPUTES.filter(d => !s.dOut[d.id]).length, openA = ADS.filter(a => !s.aOut[a.id]).length, openF = FAILED.filter(f => !s.retried[f[0]]).length;
+    const TABS = [['biz', 'עסקים', 0], ['billing', 'חיובים', openF], ['disputes', 'מחלוקות', openD], ['ads', 'ממומן', openA]];
+    const bq = s.q.trim();
+    const bizRows = BIZ.filter(b => (s.bf === 'all' || b[5] === s.bf) && (!bq || (b[0] + b[1] + b[2]).includes(bq)));
+    const liveBranches = BIZ.filter(b => b[5] === 'live' || b[5] === 'past_due').reduce((a, b) => a + b[4], 0);
+    return {
+      roleName: who + ' · תפעול',
+      title: ({ biz: 'עסקים', billing: 'חיובים וחשבוניות', disputes: 'מחלוקות', ads: 'אישור מקומות ממומנים' })[tab],
+      tabs: TABS.map(t => { const on = tab === t[0]; return { name: t[1], n: String(t[2]), hasN: t[2] > 0, on: on ? 'true' : 'false', bg: on ? '#fff' : 'transparent', sh: on ? '0 1px 3px rgba(12,36,62,.12)' : 'none', color: on ? '#0C243E' : '#5B6B7B', pick: () => this.setState({ tab: t[0] }) }; }),
+      isBiz: tab === 'biz', isBilling: tab === 'billing', isDisputes: tab === 'disputes', isAds: tab === 'ads',
+      kpis: [{ name: 'עסקים פעילים', v: '1,284', note: '+38 החודש' }, { name: 'סניפים בחיוב', v: '1,611', note: 'ממוצע 1.25 לעסק' }, { name: 'הכנסה חודשית', v: nis(240039), note: 'לא כולל מע״מ' }, { name: 'נטישה · 30 יום', v: '1.9%', note: '24 עסקים' }],
+      q: s.q, onQ: e => this.setState({ q: e.target.value }),
+      bizFilters: [['all', 'הכל'], ['live', 'פעילים'], ['past_due', 'חוב'], ['pending', 'ממתינים']].map(f => Object.assign({ name: f[1], pick: () => this.setState({ bf: f[0] }) }, chip(s.bf === f[0]))),
+      bizCols: ['עסק', 'תחום', 'סניפים', 'חיוב חודשי', 'אחריות', 'מצב', ''],
+      biz: bizRows.map(b => { const st = BST[b[5]]; return { name: b[0], city: b[1], vat: b[2], cat: b[3], branches: String(b[4]), plan: b[5] === 'hidden' ? '—' : nis(149 * b[4]), resp: b[6], st: st[0], stBg: st[1], stColor: st[2],
+        actLabel: b[5] === 'past_due' ? 'שליחת תזכורת' : b[5] === 'pending' ? 'לתור האימות' : 'כניסה כתמיכה',
+        act: () => { if (b[5] === 'pending') { window.location.href = './BeautyFind Verification.dc.html'; return; } this.flash(b[5] === 'past_due' ? 'תזכורת תשלום נשלחה ל' + b[0] : 'כניסה לחשבון ' + b[0] + ' במצב צפייה בלבד · הפעולה נרשמה ביומן'); } }; }),
+      failed: FAILED.map(f => { const done = !!s.retried[f[0]]; return { name: f[0], why: f[1], day: f[2], amt: nis(f[3] * 1.18), done, btn: done ? 'נשלח קישור' : 'קישור לעדכון כרטיס', btnBg: done ? '#AFC4C8' : TEAL,
+        retry: () => { this.setState(st => ({ retried: Object.assign({}, st.retried, { [f[0]]: true }) })); this.flash('קישור לעדכון אמצעי תשלום נשלח ל' + f[0]); } }; }),
+      invoices: INV.map(i => { const st = IST[i[4]]; return { no: i[0], name: i[1], what: i[2], amt: (i[3] < 0 ? '−' : '') + nis(Math.abs(Math.round(i[3]))), st: st[0], stBg: st[1], stColor: st[2] }; }),
+      disputes: DISPUTES.map(d => { const out = s.dOut[d.id]; const set = (t, msg) => { this.setState(st => ({ dOut: Object.assign({}, st.dOut, { [d.id]: t }) })); this.flash(msg); };
+        const m = { client: ['הומלץ להחזיר', '#F0FAFB', TEAL], biz: ['נסגר · המדיניות נאכפה', '#EAF3EA', OK], legal: ['הועבר ליועמ״ש', '#FDEDEC', BAD] }[out] || ['פתוח', '#FFF8EC', WARN];
+        return Object.assign({}, d, { open: !out, closed: !!out, st: m[0], stBg: m[1], stColor: m[2], border: out ? line : '#F1DDB5',
+          outcome: ({ client: 'נשלחה לקליניקה המלצה להחזיר ' + d.amt + ' עם חשבונית זיכוי, בנימוק שהמדיניות שהוצגה לא נאכפה. ', biz: 'נסגר — הביטול היה מחוץ לחלון ההחזר. ', legal: 'הועבר ליועץ המשפטי. ' })[out] + 'נרשם ע״י ' + who + ', אינו ניתן לעריכה.',
+          forClient: () => set('client', 'ההמלצה נשלחה לקליניקה וללקוחה'), forBiz: () => set('biz', 'המחלוקת נסגרה'), escalate: () => set('legal', 'הועבר ליועמ״ש') }); }),
+      ads: ADS.map(a => { const out = s.aOut[a.id]; const bad = a.checks.some(c => c[2] === 'bad');
+        return Object.assign({}, a, { border: out ? line : bad ? '#F0C9C4' : '#CDEFF3', checks: a.checks.map(c => ({ mark: c[0], t: c[1], bg: CK[c[2]][0], color: CK[c[2]][1] })),
+          open: !out, closed: !!out, outcome: out === 'ok' ? 'אושר · חויב ' + a.amt + ' + מע״מ · עולה ב־' + a.weeks.split('–')[0] : 'נדחה · לא חויב · הסבר נשלח לעסק', outColor: out === 'ok' ? OK : BAD,
+          approve: () => { if (bad) { this.flash('אי אפשר לאשר — יש ממצאים חוסמים'); return; } this.setState(st => ({ aOut: Object.assign({}, st.aOut, { [a.id]: 'ok' }) })); this.flash('אושר · חשבונית נשלחה'); },
+          reject: () => { this.setState(st => ({ aOut: Object.assign({}, st.aOut, { [a.id]: 'no' }) })); this.flash('נדחה · השבועות שוחררו'); } }); }),
+      toastOn: !!s.toast, toastText: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

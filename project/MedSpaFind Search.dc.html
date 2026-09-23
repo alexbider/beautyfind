@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="Search verified medical spas across Canada, the United States and the UAE. Filter by country, city, treatment, rating, price and availability.">
+<link rel="canonical" href="https://medspafind.com/search">
+<meta name="robots" content="noindex,follow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0;background:#ffffff}
+body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:#0C243E;text-decoration:none}
+a:hover{color:#0B7A87}
+:focus-visible{outline:2px solid #14B3C6;outline-offset:2px;border-radius:6px}
+@keyframes msfRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes msfDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes msfCard{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes msfSheet{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes msfPing{0%{box-shadow:0 0 0 4px rgba(20,179,198,.18)}50%{box-shadow:0 0 0 12px rgba(20,179,198,0)}100%{box-shadow:0 0 0 4px rgba(20,179,198,.18)}}
+::selection{background:rgba(20,179,198,.25)}
+/* app-feel */
+*{-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{overscroll-behavior-y:contain}
+button,a[href],[role="button"],summary,label{touch-action:manipulation}
+button:not(:disabled):active,a[href]:active,[role="button"]:active{transform:scale(.985)}
+[data-rail],[data-rvrail],[data-scroller]{-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+img,svg,video{max-width:100%}
+@media (max-width:760px){input,select,textarea{font-size:16px}}
+@supports (padding:env(safe-area-inset-bottom)){[data-panel][data-open="1"],[role="dialog"]{padding-bottom:max(18px,env(safe-area-inset-bottom))}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+[data-desktop-only]{display:none}
+[data-shell]{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+[data-panel]{display:none;flex-direction:column;min-width:0;padding:18px;background:#ffffff;border:1px solid #E6E6E6;border-radius:18px;overflow:auto}
+[data-panel][data-open="1"]{display:flex;position:fixed;inset:0 12px 12px;z-index:60;box-shadow:0 30px 70px rgba(12,36,62,.28);animation:msfSheet .22s cubic-bezier(.2,.7,.2,1) both}
+[data-results]{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+[data-results][data-view="grid"]{grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}
+[data-card]{display:flex;flex-wrap:wrap;gap:16px;padding:16px;background:#ffffff;border:1px solid #E6E6E6;border-radius:16px;transition:border-color .22s,box-shadow .22s,transform .22s cubic-bezier(.2,.7,.2,1);animation:msfCard .4s cubic-bezier(.2,.7,.2,1) both}
+[data-card]:hover{border-color:#D4D4D4;box-shadow:0 18px 44px rgba(12,36,62,.10);transform:translateY(-2px)}
+[data-card][data-ad="1"]{border-color:#CDEFF3}
+[data-photo]{position:relative;display:block;flex:1 1 100%;height:180px;border-radius:12px;overflow:hidden;background:repeating-linear-gradient(135deg,#E9EEF1 0 12px,#F4F7F8 12px 24px)}
+[data-body]{flex:1 1 262px;min-width:0;display:flex;flex-direction:column;gap:9px}
+[data-map]{height:260px}
+@media (min-width:700px){
+[data-results][data-view="list"] [data-photo]{flex:0 0 190px;height:172px}
+[data-map]{height:360px}
+}
+@media (min-width:1040px){
+[data-desktop-only]{display:flex}
+[data-mobile-only]{display:none!important}
+[data-shell]{grid-template-columns:306px minmax(0,1fr);gap:clamp(22px,2.2vw,32px)}
+[data-panel],[data-panel][data-open="1"]{display:flex;position:sticky;inset:auto;top:88px;z-index:1;max-height:calc(100dvh - 108px);border-radius:20px;box-shadow:none;animation:none}
+}
+</style>
+</helmet>
+<div onKeyDown="{{ onKey }}" style="font-family:'Figtree',system-ui,sans-serif;font-size:16px;line-height:1.5;color:#0C243E;background:#ffffff;min-height:100dvh;overflow-x:hidden">
+
+  <header style="position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:saturate(1.2) blur(8px);border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1440px;margin:0 auto;padding:0 clamp(16px,3vw,28px);height:72px;display:flex;align-items:center;gap:18px">
+      <a href="/" onClick="{{ go }}" aria-label="MedSpaFind home" style="flex:none;display:flex;align-items:center"><img src="assets/medspafind-logo.webp" alt="MedSpaFind" style="height:28px;width:auto;display:block"></a>
+
+      <form onSubmit="{{ onSubmit }}" role="search" style="flex:1;min-width:0;display:flex;align-items:center;gap:0;height:50px;padding:0 4px 0 0;background:#ffffff;border:1px solid #E6E6E6;border-radius:13px;box-shadow:0 1px 2px rgba(12,36,62,.04)">
+        <label for="q-what" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Treatment or clinic</label>
+        <span style="display:flex;align-items:center;gap:8px;flex:1.2;min-width:0;padding:0 12px 0 14px">
+          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="#8A96A3" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" style="flex:none"><circle cx="8" cy="8" r="5.4"></circle><path d="M12 12l3.4 3.4"></path></svg>
+          <input id="q-what" type="search" value="{{ q }}" onChange="{{ onQ }}" placeholder="Botox, laser, clinic name" style="flex:1;min-width:0;height:42px;border:0;outline:none;background:transparent;font:inherit;font-size:15.5px;color:#0C243E">
+        </span>
+        <span aria-hidden="true" style="width:1px;height:26px;background:#E6E6E6;flex:none"></span>
+        <label for="q-where" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Location</label>
+        <span style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;padding:0 12px 0 14px">
+          <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="#8A96A3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M7 12.5S2.4 8.9 2.4 6a4.6 4.6 0 1 1 9.2 0c0 2.9-4.6 6.5-4.6 6.5Z"></path><circle cx="7" cy="5.9" r="1.5"></circle></svg>
+          <input id="q-where" type="search" value="{{ where }}" onChange="{{ onWhere }}" placeholder="City or region" style="flex:1;min-width:0;height:42px;border:0;outline:none;background:transparent;font:inherit;font-size:15.5px;color:#0C243E">
+        </span>
+        <button type="submit" style="flex:none;display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;border:0;border-radius:10px;background:#0C243E;font:inherit;font-size:15px;font-weight:600;color:#ffffff;cursor:pointer;transition:background .18s,color .18s" style-hover="background:#14B3C6;color:#0C243E">Search</button>
+      </form>
+
+      <nav aria-label="Primary" data-desktop-only style="flex:none;align-items:center;gap:10px">
+          <a href="/blog" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 12px;border-radius:10px;font-size:15px;font-weight:500;transition:background .18s" style-hover="background:#F6F8F9">Blog</a>
+          <a href="/ca/get-listed" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 16px;border-radius:11px;background:#0C243E;color:#ffffff;font-size:15px;font-weight:600;transition:background .18s,color .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateY(-1px)">Get listed</a>
+      </nav>
+    </div>
+  </header>
+
+  <main style="max-width:1440px;margin:0 auto;padding:clamp(18px,2.2vw,28px) clamp(16px,3vw,28px) clamp(56px,6vw,92px)">
+
+    <nav aria-label="Breadcrumb" style="margin-bottom:14px">
+      <ol style="list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0;padding:0;font-size:13.5px;color:#5B6B7B">
+        <li><a href="/" onClick="{{ go }}" style="color:#5B6B7B" style-hover="color:#0B7A87">MedSpaFind</a></li>
+        <li aria-hidden="true" style="color:#C6CDD4">/</li>
+        <li aria-current="page" style="font-weight:600;color:#0C243E">Search</li>
+      </ol>
+    </nav>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:clamp(18px,2.2vw,26px)">
+      <div style="min-width:0">
+        <span style="display:flex;align-items:center;gap:12px;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5B6B7B;margin-bottom:10px"><span aria-hidden="true" style="width:24px;height:1px;background:#14B3C6;display:inline-block"></span>Global search</span>
+        <h1 style="margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(30px,3.4vw,46px);line-height:1.02;letter-spacing:-0.026em;text-wrap:balance;animation:msfRise .5s cubic-bezier(.2,.7,.2,1) both">{{ headline }}<span style="color:#14B3C6">.</span></h1>
+        <p style="margin:10px 0 0;font-size:16.5px;line-height:1.6;color:#3E4F62;max-width:72ch;text-wrap:pretty">{{ answerLine }}</p>
+      </div>
+      <p style="margin:0;flex:none;font-size:13px;color:#8A96A3;font-variant-numeric:tabular-nums">{{ queryPath }}</p>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:18px">
+      <span style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#8A96A3;margin-right:4px">Popular</span>
+      <sc-for list="{{ presets }}" as="p" hint-placeholder-count="5">
+        <button type="button" onClick="{{ p.pick }}" style="display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:0 13px;border:1px solid #E6E6E6;border-radius:999px;background:#ffffff;font:inherit;font-size:14px;font-weight:500;color:#3E4F62;cursor:pointer;transition:border-color .18s,background .18s,color .18s" style-hover="border-color:#14B3C6;background:#F0FAFB;color:#0B7A87">{{ p.name }}</button>
+      </sc-for>
+    </div>
+
+    <div data-shell>
+
+      <aside aria-label="Filters" data-panel data-open="{{ panelOpen }}">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:12px;border-bottom:1px solid #E6E6E6">
+          <span style="font-size:15.5px;font-weight:600">Filters</span>
+          <sc-if value="{{ hasFilters }}" hint-placeholder-val="{{ false }}">
+            <button type="button" onClick="{{ clearAll }}" style="min-height:36px;padding:0 4px;border:0;background:transparent;font:inherit;font-size:13.5px;font-weight:600;color:#0B7A87;cursor:pointer">Reset all</button>
+          </sc-if>
+            <button type="button" data-mobile-only onClick="{{ closePanel }}" aria-label="Close filters" style="width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #E6E6E6;border-radius:10px;background:#ffffff;cursor:pointer"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#0C243E" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8"></path></svg></button>
+        </div>
+
+        <fieldset style="margin:0;padding:16px 0;border:0;border-bottom:1px solid #E6E6E6">
+          <legend style="padding:0;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#8A96A3">Country</legend>
+          <div style="display:flex;gap:6px;margin-top:10px">
+            <sc-for list="{{ countries }}" as="c" hint-placeholder-count="3">
+              <button type="button" onClick="{{ c.pick }}" aria-pressed="{{ c.on }}" style="flex:1;min-width:0;min-height:44px;padding:0 8px;border:1px solid {{ c.border }};border-radius:11px;background:{{ c.bg }};font:inherit;font-size:14px;font-weight:{{ c.weight }};color:{{ c.color }};cursor:pointer;transition:border-color .18s,background .18s">{{ c.code }}<span style="display:block;font-size:11px;font-weight:500;color:{{ c.subColor }}">{{ c.count }}</span></button>
+            </sc-for>
+          </div>
+        </fieldset>
+
+        <fieldset style="margin:0;padding:16px 0;border:0;border-bottom:1px solid #E6E6E6">
+          <legend style="padding:0;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#8A96A3">{{ regionLabel }}</legend>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+            <sc-for list="{{ regions }}" as="r" hint-placeholder-count="4">
+              <button type="button" onClick="{{ r.pick }}" aria-pressed="{{ r.on }}" style="display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 12px;border:1px solid {{ r.border }};border-radius:999px;background:{{ r.bg }};font:inherit;font-size:13.5px;font-weight:{{ r.weight }};color:{{ r.color }};cursor:pointer;transition:border-color .18s,background .18s">{{ r.name }}<span style="font-size:12px;color:{{ r.subColor }}">{{ r.count }}</span></button>
+            </sc-for>
+          </div>
+        </fieldset>
+
+        <fieldset style="margin:0;padding:16px 0;border:0;border-bottom:1px solid #E6E6E6">
+          <legend style="padding:0;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#8A96A3">City</legend>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+            <sc-for list="{{ cities }}" as="c" hint-placeholder-count="6">
+              <button type="button" onClick="{{ c.pick }}" aria-pressed="{{ c.on }}" style="display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 12px;border:1px solid {{ c.border }};border-radius:999px;background:{{ c.bg }};font:inherit;font-size:13.5px;font-weight:{{ c.weight }};color:{{ c.color }};cursor:pointer;transition:border-color .18s,background .18s">{{ c.name }}<span style="font-size:12px;color:{{ c.subColor }}">{{ c.count }}</span></button>
+            </sc-for>
+          </div>
+        </fieldset>
+
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="4">
+          <fieldset style="margin:0;padding:14px 0;border:0;border-bottom:1px solid #E6E6E6">
+            <legend style="width:100%;padding:0">
+              <button type="button" onClick="{{ g.toggle }}" aria-expanded="{{ g.open }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:40px;padding:0;border:0;background:transparent;font:inherit;cursor:pointer;text-align:left">
+                <span style="font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#8A96A3">{{ g.name }}</span>
+                <span style="display:inline-flex;align-items:center;gap:8px">
+                  <sc-if value="{{ g.hasPicks }}" hint-placeholder-val="{{ false }}">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:#14B3C6;font-size:11.5px;font-weight:700;color:#0C243E">{{ g.picks }}</span>
+                  </sc-if>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#5B6B7B" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:rotate({{ g.rot }});transition:transform .2s"><path d="M2.5 4.5 6 8l3.5-3.5"></path></svg>
+                </span>
+              </button>
+            </legend>
+            <sc-if value="{{ g.open }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:2px;margin-top:6px">
+                <sc-for list="{{ g.options }}" as="o" hint-placeholder-count="5">
+                  <button type="button" onClick="{{ o.toggle }}" aria-pressed="{{ o.on }}" style="display:flex;align-items:center;gap:10px;width:100%;min-height:42px;padding:0 8px;border:0;border-radius:9px;background:transparent;font:inherit;font-size:14.5px;color:#0C243E;text-align:left;cursor:pointer;opacity:{{ o.opacity }};transition:background .15s" style-hover="background:#F6F8F9">
+                    <span aria-hidden="true" style="flex:none;width:18px;height:18px;border:1px solid {{ o.boxBorder }};border-radius:{{ o.boxRadius }};background:{{ o.boxBg }};display:inline-flex;align-items:center;justify-content:center;color:#ffffff;font-size:11px">{{ o.tick }}</span>
+                    <span style="flex:1;min-width:0">{{ o.name }}</span>
+                    <span style="font-size:12.5px;color:#8A96A3;font-variant-numeric:tabular-nums">{{ o.count }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </fieldset>
+        </sc-for>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0 4px">
+          <span style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:14.5px;font-weight:600">Open now</span>
+            <span style="font-size:12.5px;color:#8A96A3">{{ localTimeLabel }}</span>
+          </span>
+          <button type="button" onClick="{{ toggleOpenNow }}" role="switch" aria-checked="{{ openNow }}" aria-label="Open now" style="flex:none;width:52px;height:30px;padding:3px;border:1px solid {{ switchBorder }};border-radius:999px;background:{{ switchBg }};cursor:pointer;transition:background .2s,border-color .2s">
+            <span aria-hidden="true" style="display:block;width:22px;height:22px;border-radius:50%;background:#ffffff;box-shadow:0 1px 3px rgba(12,36,62,.28);transform:translateX({{ switchX }});transition:transform .2s cubic-bezier(.2,.7,.2,1)"></span>
+          </button>
+        </div>
+
+        <button type="button" data-mobile-only onClick="{{ closePanel }}" style="position:sticky;bottom:0;margin-top:16px;min-height:52px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:13px;background:#0C243E;font:inherit;font-size:15.5px;font-weight:600;color:#ffffff;cursor:pointer">{{ showLabel }}</button>
+      </aside>
+
+      <section aria-labelledby="h-results" style="min-width:0">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px">
+          <h2 id="h-results" style="margin:0;font-size:16px;font-weight:600">{{ resultHeading }}</h2>
+            <button type="button" data-mobile-only onClick="{{ openPanel }}" style="display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 14px;border:1px solid {{ filterBtnBorder }};border-radius:11px;background:#ffffff;font:inherit;font-size:14.5px;font-weight:600;color:#0C243E;cursor:pointer">Filters<sc-if value="{{ hasFilters }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:#14B3C6;font-size:11.5px;font-weight:700;color:#0C243E">{{ filterCount }}</span></sc-if></button>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+            <div data-menu="sort" style="position:relative">
+              <button type="button" onClick="{{ toggleSort }}" aria-expanded="{{ sortOpen }}" style="display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 14px;border:1px solid #E6E6E6;border-radius:11px;background:#ffffff;font:inherit;font-size:14px;color:#0C243E;cursor:pointer;transition:border-color .18s" style-hover="border-color:#14B3C6"><span style="color:#8A96A3">Sort</span><span style="font-weight:600">{{ sortLabel }}</span><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity:.6"><path d="M2.5 4.5 6 8l3.5-3.5"></path></svg></button>
+              <sc-if value="{{ sortOpen }}" hint-placeholder-val="{{ false }}">
+                <div role="group" aria-label="Sort results" style="position:absolute;right:0;top:calc(100% + 8px);z-index:20;width:214px;padding:8px;background:#ffffff;border:1px solid #E6E6E6;border-radius:14px;box-shadow:0 20px 48px rgba(12,36,62,.16);animation:msfDrop .16s ease both">
+                  <sc-for list="{{ sorts }}" as="o" hint-placeholder-count="4">
+                    <button type="button" onClick="{{ o.select }}" aria-pressed="{{ o.on }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:42px;padding:0 10px;border:0;border-radius:9px;background:{{ o.bg }};font:inherit;font-size:14.5px;font-weight:{{ o.weight }};color:#0C243E;text-align:left;cursor:pointer;transition:background .15s" style-hover="background:#F6F8F9"><span>{{ o.name }}</span><span aria-hidden="true" style="color:#0B7A87;font-size:13px">{{ o.tick }}</span></button>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+            <div role="group" aria-label="Result layout" style="display:flex;gap:4px;padding:4px;border:1px solid #E6E6E6;border-radius:12px;background:#ffffff">
+              <sc-for list="{{ views }}" as="v" hint-placeholder-count="3">
+                <button type="button" onClick="{{ v.pick }}" aria-pressed="{{ v.on }}" aria-label="{{ v.label }}" title="{{ v.label }}" style="width:38px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:9px;background:{{ v.bg }};color:{{ v.color }};cursor:pointer;transition:background .18s">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><sc-for list="{{ v.icon }}" as="d" hint-placeholder-count="2"><path d="{{ d }}"></path></sc-for></svg>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <sc-if value="{{ hasFilters }}" hint-placeholder-val="{{ false }}">
+          <div role="group" aria-label="Active filters" style="display:flex;flex-wrap:wrap;align-items:center;gap:7px;padding:12px 14px;margin-bottom:14px;background:#F0FAFB;border:1px solid #CDEFF3;border-radius:14px;animation:msfDrop .18s ease both">
+            <span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#0B7A87;margin-right:2px">Applied</span>
+            <sc-for list="{{ chips }}" as="c" hint-placeholder-count="3">
+              <button type="button" onClick="{{ c.remove }}" aria-label="Remove filter {{ c.name }}" style="display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 10px 0 12px;border:1px solid #9FDDE6;border-radius:999px;background:#ffffff;font:inherit;font-size:13.5px;font-weight:500;color:#0C243E;cursor:pointer;transition:border-color .18s" style-hover="border-color:#0B7A87">{{ c.name }}<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#5B6B7B" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"></path></svg></button>
+            </sc-for>
+            <button type="button" onClick="{{ clearAll }}" style="margin-left:auto;min-height:36px;padding:0 6px;border:0;background:transparent;font:inherit;font-size:13.5px;font-weight:600;color:#0B7A87;cursor:pointer">Clear all</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ mapOn }}" hint-placeholder-val="{{ false }}">
+          <figure data-map style="margin:0 0 16px;position:relative;border:1px solid #E6E6E6;border-radius:18px;overflow:hidden;background:repeating-linear-gradient(135deg,#E9EEF1 0 12px,#F4F7F8 12px 24px)">
+            <figcaption style="position:absolute;left:16px;top:14px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8A96A3">Map view placeholder</figcaption>
+            <sc-for list="{{ pins }}" as="p" hint-placeholder-count="6">
+              <span aria-hidden="true" style="position:absolute;left:{{ p.x }};top:{{ p.y }};display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:30px;padding:0 10px;border-radius:999px;background:#ffffff;border:1px solid #D4D4D4;box-shadow:0 6px 18px rgba(12,36,62,.14);font-size:12.5px;font-weight:700;color:#0C243E">{{ p.rating }}</span>
+            </sc-for>
+            <span aria-hidden="true" style="position:absolute;right:18px;bottom:18px;width:12px;height:12px;border-radius:50%;background:#14B3C6;animation:msfPing 3.4s ease-out infinite"></span>
+          </figure>
+        </sc-if>
+
+        <sc-if value="{{ hasAd }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;border:1px solid #E6E6E6;border-radius:5px;background:#FAFBFB;font-size:11px;font-weight:700;letter-spacing:.06em;color:#5B6B7B">AD</span>
+            <span style="font-size:13px;color:#8A96A3">Paid placement. It never changes the order of the results below.</span>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:34px 26px;border:1px dashed #D4D4D4;border-radius:18px;background:#FAFBFB">
+            <span style="font-family:'Newsreader',serif;font-size:24px;line-height:1.2">No clinics match all of that</span>
+            <span style="font-size:15px;line-height:1.55;color:#5B6B7B;max-width:50ch;text-wrap:pretty">{{ suggestLine }}</span>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+              <sc-for list="{{ rescues }}" as="r" hint-placeholder-count="2">
+                <button type="button" onClick="{{ r.act }}" style="min-height:44px;padding:0 16px;border:1px solid #0C243E;border-radius:11px;background:transparent;font:inherit;font-size:14px;font-weight:600;color:#0C243E;cursor:pointer;transition:background .18s,color .18s" style-hover="background:#0C243E;color:#ffffff">{{ r.name }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <ol data-results data-view="{{ viewMode }}">
+          <sc-for list="{{ results }}" as="c" hint-placeholder-count="6">
+            <li data-card data-ad="{{ c.adFlag }}" style="animation-delay:{{ c.delay }}">
+              <a href="{{ c.href }}" onClick="{{ go }}" tabIndex="-1" aria-hidden="true" data-photo>
+                <span style="position:absolute;left:11px;top:10px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8A96A3">Clinic photo</span>
+              </a>
+              <div data-body>
+                <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                  <h3 style="margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:23px;line-height:1.1;letter-spacing:-0.015em"><a href="{{ c.href }}" onClick="{{ go }}" style="color:#0C243E" style-hover="color:#0B7A87">{{ c.name }}</a></h3>
+                  <sc-if value="{{ c.ad }}" hint-placeholder-val="{{ false }}">
+                    <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;border:1px solid #E6E6E6;border-radius:5px;background:#FAFBFB;font-size:11px;font-weight:700;letter-spacing:.06em;color:#5B6B7B">AD</span>
+                  </sc-if>
+                  <sc-if value="{{ c.verified }}" hint-placeholder-val="{{ true }}">
+                    <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:6px;background:#F0FAFB;font-size:11.5px;font-weight:600;letter-spacing:.04em;color:#0B7A87"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.4 5.4 10.3 11.5 4"></path></svg>Verified</span>
+                  </sc-if>
+                  <sc-if value="{{ c.open }}" hint-placeholder-val="{{ true }}">
+                    <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:6px;background:#F1F8F2;font-size:11.5px;font-weight:600;color:#1F6B3B"><span aria-hidden="true" style="width:6px;height:6px;border-radius:50%;background:#2E9E57"></span>Open now</span>
+                  </sc-if>
+                </div>
+                <address style="font-style:normal;font-size:14px;color:#5B6B7B">{{ c.address }}</address>
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                  <span role="img" aria-label="{{ c.ratingAria }}" style="position:relative;display:inline-block;width:85px;height:16px;flex:none">
+                    <svg width="85" height="16" viewBox="0 0 85 16" fill="#DADCE0" aria-hidden="true" style="display:block"><path d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(17,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(34,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(51,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(68,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path></svg>
+                    <span style="position:absolute;left:0;top:0;height:16px;overflow:hidden;width:{{ c.starPct }}">
+                      <svg width="85" height="16" viewBox="0 0 85 16" fill="#FBBC04" aria-hidden="true" style="display:block"><path d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(17,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(34,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(51,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(68,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path></svg>
+                    </span>
+                  </span>
+                  <span style="font-size:14px;font-weight:700;color:#0C243E;font-variant-numeric:tabular-nums">{{ c.rating }}</span>
+                  <span style="font-size:13px;color:#8A96A3;white-space:nowrap">({{ c.reviews }})</span>
+                  <span aria-hidden="true" style="width:4px;height:4px;border-radius:50%;background:#C6CDD4"></span>
+                  <span style="font-size:13.5px;color:#5B6B7B">{{ c.priceLabel }}</span>
+                </div>
+                <div style="font-size:13.5px;color:#5B6B7B">{{ c.directorLine }}</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:2px">
+                  <sc-for list="{{ c.tags }}" as="t" hint-placeholder-count="3">
+                    <span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;border:1px solid {{ t.border }};border-radius:7px;background:{{ t.bg }};font-size:13px;font-weight:500;color:{{ t.color }}">{{ t.name }}</span>
+                  </sc-for>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:auto;padding-top:8px">
+                  <span style="font-size:13px;color:#8A96A3">{{ c.from }}</span>
+                  <a href="{{ c.href }}" onClick="{{ go }}" aria-label="View {{ c.name }}" style="margin-left:auto;display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 15px;border-radius:11px;background:#F6F8F9;font-size:14px;font-weight:600;color:#0C243E;transition:background .18s,color .18s" style-hover="background:#0C243E;color:#ffffff"><span>View clinic</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></a>
+                </div>
+              </div>
+            </li>
+          </sc-for>
+        </ol>
+
+        <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:22px">
+          <sc-if value="{{ moreToShow }}" hint-placeholder-val="{{ true }}">
+            <button type="button" onClick="{{ loadMore }}" style="min-height:48px;padding:0 24px;border:1px solid #0C243E;border-radius:12px;background:transparent;font:inherit;font-size:15px;font-weight:600;color:#0C243E;cursor:pointer;transition:background .18s,color .18s" style-hover="background:#0C243E;color:#ffffff">{{ loadMoreLabel }}</button>
+          </sc-if>
+          <div role="presentation" style="flex:1;min-width:160px;height:3px;border-radius:2px;background:#E6E6E6;overflow:hidden"><span style="display:block;height:100%;width:{{ shownPct }};background:#14B3C6;border-radius:2px;transition:width .3s ease"></span></div>
+          <span style="font-size:13.5px;color:#8A96A3">{{ shownLine }}</span>
+        </div>
+
+        <section aria-labelledby="h-related" style="margin-top:clamp(34px,4vw,52px);padding-top:clamp(24px,3vw,34px);border-top:1px solid #E6E6E6">
+          <h2 id="h-related" style="margin:0 0 4px;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(22px,2vw,28px);line-height:1.1;letter-spacing:-0.02em">Indexed pages for this search</h2>
+          <p style="margin:0 0 14px;font-size:14px;color:#5B6B7B;max-width:70ch;text-wrap:pretty">Search results are not indexed. These are the crawlable directory pages that cover the same ground, so links and rankings stay on one canonical URL per city and treatment.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ related }}" as="l" hint-placeholder-count="6">
+              <a href="{{ l.href }}" onClick="{{ go }}" style="display:inline-flex;flex-direction:column;gap:2px;min-height:52px;justify-content:center;padding:8px 14px;border:1px solid #E6E6E6;border-radius:12px;background:#ffffff;transition:border-color .18s,background .18s" style-hover="border-color:#14B3C6;background:#F0FAFB">
+                <span style="font-size:14.5px;font-weight:600">{{ l.name }}</span>
+                <span style="font-size:12px;color:#8A96A3">{{ l.href }}</span>
+              </a>
+            </sc-for>
+          </div>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <footer style="background:#0C243E;color:#ffffff">
+    <div style="max-width:1440px;margin:0 auto;padding:clamp(44px,5vw,72px) clamp(16px,3vw,28px) 26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:clamp(24px,3vw,40px)">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <img src="assets/medspafind-logo.webp" alt="MedSpaFind" style="height:26px;width:auto;display:block;align-self:flex-start;filter:brightness(0) invert(1)">
+        <p style="margin:0;max-width:32ch;font-size:14.5px;line-height:1.6;color:rgba(255,255,255,.78);text-wrap:pretty">A directory for medical aesthetics: verified clinics, real reviews, and treatment menus you can compare.</p>
+      </div>
+      <sc-for list="{{ footGroups }}" as="g" hint-placeholder-count="4">
+        <nav aria-label="{{ g.name }}" style="display:flex;flex-direction:column;gap:12px">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#7ED7E1">{{ g.name }}</div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <sc-for list="{{ g.links }}" as="l" hint-placeholder-count="4">
+              <a href="{{ l.href }}" onClick="{{ go }}" style="min-height:28px;display:flex;align-items:center;font-size:14.5px;color:rgba(255,255,255,.82)" style-hover="color:#7ED7E1">{{ l.name }}</a>
+            </sc-for>
+          </div>
+        </nav>
+      </sc-for>
+    </div>
+    <div style="max-width:1440px;margin:0 auto;padding:20px clamp(16px,3vw,28px) 34px;border-top:1px solid rgba(255,255,255,.14);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px">
+      <span style="font-size:13px;color:rgba(255,255,255,.66)">© 2026 MedSpaFind</span>
+      <span style="font-size:13px;color:rgba(255,255,255,.66)">Sample listings shown for design review</span>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;mapView&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;perLoad&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:6,&quot;min&quot;:3,&quot;max&quot;:12,&quot;step&quot;:3,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Layout&quot;}}">
+const COUNTRIES = [
+  { code: 'Canada', short: 'CA', slug: 'ca', regionLabel: 'Province', cur: 'CAD' },
+  { code: 'United States', short: 'US', slug: 'us', regionLabel: 'State', cur: 'USD' },
+  { code: 'UAE', short: 'AE', slug: 'ae', regionLabel: 'Emirate', cur: 'AED' }
+];
+const GEO = {
+  ca: [
+    { name: 'Ontario', slug: 'on', cities: ['Toronto', 'Ottawa', 'Mississauga'] },
+    { name: 'British Columbia', slug: 'bc', cities: ['Vancouver', 'Victoria'] },
+    { name: 'Alberta', slug: 'ab', cities: ['Calgary', 'Edmonton'] },
+    { name: 'Quebec', slug: 'qc', cities: ['Montreal'] }
+  ],
+  us: [
+    { name: 'Florida', slug: 'fl', cities: ['Miami', 'Orlando'] },
+    { name: 'California', slug: 'ca', cities: ['Los Angeles', 'San Diego'] },
+    { name: 'New York', slug: 'ny', cities: ['New York City'] },
+    { name: 'Texas', slug: 'tx', cities: ['Austin', 'Dallas'] }
+  ],
+  ae: [
+    { name: 'Dubai', slug: 'dubai', cities: ['Dubai Marina', 'Jumeirah', 'Downtown Dubai'] },
+    { name: 'Abu Dhabi', slug: 'abu-dhabi', cities: ['Al Reem Island', 'Khalifa City'] },
+    { name: 'Sharjah', slug: 'sharjah', cities: ['Al Majaz'] }
+  ]
+};
+const TREATMENTS = ['Botox', 'Dermal Fillers', 'Laser Hair Removal', 'Tattoo Removal', 'CoolSculpting', 'Hydrafacial', 'Microneedling', 'Chemical Peels'];
+const FEATURES = ['Free consultation', 'Physician on site', 'Nurse injectors', 'Evening hours', 'Weekend hours', 'Parking', 'Wheelchair access'];
+const PRICES = [['$', 'Budget'], ['$$', 'Mid range'], ['$$$', 'Premium']];
+const LANGS = ['English', 'French', 'Arabic', 'Mandarin', 'Spanish'];
+
+// name, country, region, city, address, rating, reviews, treatments, price, features, langs, director, openNow, from
+const CLINICS = [
+  ['Lumière Aesthetics', 'ca', 'Ontario', 'Toronto', '112 Cumberland St, Yorkville', 4.9, 312, ['Botox', 'Dermal Fillers', 'Hydrafacial'], '$$$', ['Free consultation', 'Physician on site', 'Parking'], ['English', 'French'], 'Dr. R. Mehta, MD', true, 'From $340'],
+  ['Bayview Skin & Laser', 'ca', 'Ontario', 'Toronto', '2901 Bayview Ave, North York', 4.8, 204, ['Laser Hair Removal', 'Tattoo Removal', 'Microneedling'], '$$', ['Evening hours', 'Parking', 'Wheelchair access'], ['English', 'Mandarin'], 'Dr. S. Lau, MD', true, 'From $95'],
+  ['Rideau Injectables', 'ca', 'Ontario', 'Ottawa', '221 Rideau St, Lowertown', 4.7, 128, ['Botox', 'Dermal Fillers'], '$$', ['Free consultation', 'Nurse injectors'], ['English', 'French'], 'Dr. P. Njoroge, MD', false, 'From $290'],
+  ['Seawall Skin Co.', 'ca', 'British Columbia', 'Vancouver', '1050 Beach Ave, West End', 4.8, 186, ['Tattoo Removal', 'Chemical Peels', 'Microneedling'], '$$$', ['Physician on site', 'Weekend hours'], ['English'], 'Dr. K. Osei, MD', true, 'From $210'],
+  ['Granville Laser Studio', 'ca', 'British Columbia', 'Vancouver', '2280 Granville St, South Granville', 4.5, 92, ['Laser Hair Removal', 'Hydrafacial'], '$', ['Free consultation', 'Evening hours'], ['English', 'Mandarin'], 'Dr. M. Trinh, MD', true, 'From $79'],
+  ['Bow River Aesthetics', 'ca', 'Alberta', 'Calgary', '735 8 Ave SW, Downtown', 4.6, 143, ['CoolSculpting', 'Botox', 'Hydrafacial'], '$$', ['Parking', 'Free consultation'], ['English'], 'Dr. J. Whitfield, MD', false, 'From $600'],
+  ['Clinique Mont-Royal', 'ca', 'Quebec', 'Montreal', '4200 Av du Parc, Le Plateau', 4.7, 167, ['Chemical Peels', 'Dermal Fillers', 'Microneedling'], '$$', ['Free consultation', 'Wheelchair access'], ['French', 'English'], 'Dr. L. Farhadi, MD', true, 'From $260'],
+  ['Brickell Skin Institute', 'us', 'Florida', 'Miami', '1101 Brickell Ave, Brickell', 4.8, 421, ['Dermal Fillers', 'Botox', 'Hydrafacial'], '$$$', ['Physician on site', 'Weekend hours', 'Parking'], ['English', 'Spanish'], 'Dr. E. Vasquez, MD', true, 'From $420'],
+  ['South Beach Laser', 'us', 'Florida', 'Miami', '840 Collins Ave, South Beach', 4.4, 158, ['Laser Hair Removal', 'Tattoo Removal'], '$', ['Evening hours', 'Free consultation'], ['English', 'Spanish'], 'Dr. C. Rowan, MD', true, 'From $70'],
+  ['Sunset Aesthetics Group', 'us', 'California', 'Los Angeles', '8200 Sunset Blvd, West Hollywood', 4.9, 507, ['Botox', 'CoolSculpting', 'Microneedling'], '$$$', ['Physician on site', 'Nurse injectors', 'Parking'], ['English', 'Spanish'], 'Dr. H. Park, MD', false, 'From $475'],
+  ['Silver Lake Skin Lab', 'us', 'California', 'Los Angeles', '2711 Sunset Blvd, Silver Lake', 4.6, 213, ['Chemical Peels', 'Hydrafacial', 'Microneedling'], '$$', ['Free consultation', 'Weekend hours'], ['English'], 'Dr. N. Abara, MD', true, 'From $180'],
+  ['Madison Avenue Dermatology', 'us', 'New York', 'New York City', '760 Madison Ave, Upper East Side', 4.7, 388, ['Botox', 'Dermal Fillers', 'Chemical Peels'], '$$$', ['Physician on site', 'Wheelchair access'], ['English', 'Mandarin'], 'Dr. A. Bianchi, MD', true, 'From $520'],
+  ['Congress Body Contour', 'us', 'Texas', 'Austin', '1400 Congress Ave, Downtown', 4.5, 119, ['CoolSculpting', 'Laser Hair Removal'], '$$', ['Parking', 'Evening hours', 'Free consultation'], ['English', 'Spanish'], 'Dr. T. Oyelaran, MD', false, 'From $550'],
+  ['Marina Medical Aesthetics', 'ae', 'Dubai', 'Dubai Marina', 'Marina Plaza, Dubai Marina', 4.9, 276, ['Laser Hair Removal', 'Hydrafacial', 'Botox'], '$$$', ['Physician on site', 'Free consultation', 'Parking'], ['Arabic', 'English'], 'Dr. Y. Al Mansoori, MD', true, 'From AED 950'],
+  ['Jumeirah Skin Clinic', 'ae', 'Dubai', 'Jumeirah', 'Beach Rd, Jumeirah 1', 4.7, 194, ['Chemical Peels', 'Microneedling', 'Dermal Fillers'], '$$', ['Nurse injectors', 'Weekend hours'], ['Arabic', 'English', 'French'], 'Dr. S. Haddad, MD', true, 'From AED 700'],
+  ['Reem Laser Centre', 'ae', 'Abu Dhabi', 'Al Reem Island', 'Shams Boutik, Al Reem Island', 4.6, 132, ['Tattoo Removal', 'Laser Hair Removal'], '$$', ['Free consultation', 'Wheelchair access', 'Parking'], ['Arabic', 'English'], 'Dr. F. Khoury, MD', false, 'From AED 620'],
+  ['Al Majaz Aesthetics', 'ae', 'Sharjah', 'Al Majaz', 'Al Majaz Waterfront, Sharjah', 4.4, 88, ['Hydrafacial', 'Botox'], '$', ['Evening hours', 'Free consultation'], ['Arabic', 'English'], 'Dr. R. Nasser, MD', true, 'From AED 450']
+];
+
+class Component extends DCLogic {
+  state = {
+    country: 0, region: null, city: null,
+    treatments: [], features: [], prices: [], langs: [],
+    minRating: null, openNow: false,
+    q: '', where: '', sort: 0, view: 0, shown: 6,
+    panel: false, sortOpen: false,
+    groups: { Treatment: true, Rating: true, Price: true, Features: false, Language: false }
+  };
+  componentDidMount() {
+    this._away = e => { if (!e.target.closest || !e.target.closest('[data-menu]')) this.setState({ sortOpen: false }); };
+    document.addEventListener('pointerdown', this._away, true);
+  }
+  componentWillUnmount() {
+    if (this._raf) cancelAnimationFrame(this._raf);
+    if (this._r) window.removeEventListener('load', this._r);
+    if (this._onResize) window.removeEventListener('load', this._onResize); document.removeEventListener('pointerdown', this._away, true); }
+  plural(n, word) { return `${n} ${word}${n === 1 ? '' : 's'}`; }
+  slug(s) { return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
+  onKey = e => { if (e.key === 'Escape') this.setState({ panel: false, sortOpen: false }); };
+  multi(key, value) {
+    this.setState(st => {
+      const list = st[key];
+      return { [key]: list.includes(value) ? list.filter(x => x !== value) : list.concat(value), shown: 6 };
+    });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const country = COUNTRIES[s.country];
+    const regions = GEO[country.slug];
+    const perLoad = this.props.perLoad || 6;
+    const mapAllowed = this.props.mapView !== false;
+
+    const inCountry = CLINICS.filter(c => c[1] === country.slug);
+    const base = inCountry.filter(c =>
+      (s.region === null || c[2] === s.region) &&
+      (s.city === null || c[3] === s.city)
+    );
+    const q = s.q.trim().toLowerCase();
+    const where = s.where.trim().toLowerCase();
+    const pass = (c, skip) => {
+      if (skip !== 'treatments' && s.treatments.length && !s.treatments.every(t => c[7].includes(t))) return false;
+      if (skip !== 'prices' && s.prices.length && !s.prices.includes(c[8])) return false;
+      if (skip !== 'features' && s.features.length && !s.features.every(f => c[9].includes(f))) return false;
+      if (skip !== 'langs' && s.langs.length && !s.langs.some(l => c[10].includes(l))) return false;
+      if (skip !== 'minRating' && s.minRating !== null && c[5] < s.minRating) return false;
+      if (s.openNow && !c[12]) return false;
+      if (q && !(c[0] + ' ' + c[7].join(' ')).toLowerCase().includes(q)) return false;
+      if (where && !(c[3] + ' ' + c[2] + ' ' + c[4]).toLowerCase().includes(where)) return false;
+      return true;
+    };
+    const matched = base.filter(c => pass(c));
+    const SORTS = [
+      ['Best match', (a, b) => (b[5] * Math.log(b[6] + 10)) - (a[5] * Math.log(a[6] + 10))],
+      ['Top rated', (a, b) => b[5] - a[5]],
+      ['Most reviewed', (a, b) => b[6] - a[6]],
+      ['Name A to Z', (a, b) => a[0].localeCompare(b[0])]
+    ];
+    matched.sort(SORTS[s.sort][1]);
+    const shownList = matched.slice(0, s.shown);
+
+    const countOpt = (key, val) => base.filter(c => {
+      if (!pass(c, key)) return false;
+      if (key === 'treatments') return c[7].includes(val);
+      if (key === 'prices') return c[8] === val;
+      if (key === 'features') return c[9].includes(val);
+      if (key === 'langs') return c[10].includes(val);
+      if (key === 'minRating') return c[5] >= val;
+      return true;
+    }).length;
+
+    const box = (on, radio) => ({
+      on, tick: on ? (radio ? '●' : '✓') : '',
+      boxBg: on ? '#0C243E' : '#ffffff',
+      boxBorder: on ? '#0C243E' : '#D4D4D4',
+      boxRadius: radio ? '50%' : '5px'
+    });
+    const chipStyle = (on) => ({
+      on, weight: on ? 600 : 500,
+      bg: on ? '#0C243E' : '#ffffff',
+      color: on ? '#ffffff' : '#0C243E',
+      border: on ? '#0C243E' : '#E6E6E6',
+      subColor: on ? 'rgba(255,255,255,.66)' : '#8A96A3'
+    });
+
+    const group = (name, key, items, radio) => {
+      const picks = key === 'minRating' ? (s.minRating !== null ? 1 : 0) : s[key].length;
+      return {
+        name, open: s.groups[name] !== false, rot: s.groups[name] !== false ? '180deg' : '0deg',
+        picks: String(picks), hasPicks: picks > 0,
+        toggle: () => this.setState(st => ({ groups: Object.assign({}, st.groups, { [name]: st.groups[name] === false }) })),
+        options: items.map(it => {
+          const n = countOpt(key, it.value);
+          const on = key === 'minRating' ? s.minRating === it.value : s[key].includes(it.value);
+          return Object.assign({
+            name: it.name, count: String(n), opacity: (!on && n === 0) ? 0.45 : 1,
+            toggle: key === 'minRating'
+              ? () => this.setState(st => ({ minRating: st.minRating === it.value ? null : it.value, shown: perLoad }))
+              : () => this.multi(key, it.value)
+          }, box(on, radio));
+        })
+      };
+    };
+
+    const chips = []
+      .concat(s.region ? [{ name: s.region, remove: () => this.setState({ region: null, city: null, shown: perLoad }) }] : [])
+      .concat(s.city ? [{ name: s.city, remove: () => this.setState({ city: null, shown: perLoad }) }] : [])
+      .concat(s.treatments.map(t => ({ name: t, remove: () => this.multi('treatments', t) })))
+      .concat(s.minRating !== null ? [{ name: `${s.minRating.toFixed(1)}+ rating`, remove: () => this.setState({ minRating: null }) }] : [])
+      .concat(s.prices.map(p => ({ name: `Price ${p}`, remove: () => this.multi('prices', p) })))
+      .concat(s.features.map(f => ({ name: f, remove: () => this.multi('features', f) })))
+      .concat(s.langs.map(l => ({ name: l, remove: () => this.multi('langs', l) })))
+      .concat(s.openNow ? [{ name: 'Open now', remove: () => this.setState({ openNow: false }) }] : [])
+      .concat(q ? [{ name: `"${s.q.trim()}"`, remove: () => this.setState({ q: '', shown: perLoad }) }] : [])
+      .concat(where ? [{ name: `near ${s.where.trim()}`, remove: () => this.setState({ where: '', shown: perLoad }) }] : []);
+
+    const place = s.city || s.region || country.code;
+    const treatWord = s.treatments.length === 1 ? s.treatments[0] : 'Med spas';
+    const paramBits = ['country=' + country.slug]
+      .concat(s.region ? ['region=' + this.slug(s.region)] : [])
+      .concat(s.city ? ['city=' + this.slug(s.city)] : [])
+      .concat(s.treatments.length ? ['treatment=' + s.treatments.map(t => this.slug(t)).join(',')] : [])
+      .concat(s.minRating !== null ? ['rating=' + s.minRating] : [])
+      .concat(s.prices.length ? ['price=' + s.prices.join(',')] : [])
+      .concat(s.openNow ? ['open=now'] : []);
+
+    const VIEWS = [
+      { label: 'List view', icon: ['M2 4h12', 'M2 8h12', 'M2 12h12'] },
+      { label: 'Grid view', icon: ['M2.5 2.5h4.5v4.5h-4.5z', 'M9 2.5h4.5v4.5H9z', 'M2.5 9h4.5v4.5h-4.5z', 'M9 9h4.5v4.5H9z'] }
+    ].concat(mapAllowed ? [{ label: 'Map view', icon: ['M6 2.5 2.5 4v9.5L6 12l4 1.5 3.5-1.5V2.5L10 4z', 'M6 2.5V12', 'M10 4v9.5'] }] : []);
+    const viewIdx = Math.min(s.view, VIEWS.length - 1);
+    const listMode = viewIdx !== 1;
+
+    return {
+      go: e => { if (e) e.preventDefault(); },
+      onKey: this.onKey,
+      q: s.q, where: s.where,
+      onQ: e => this.setState({ q: e.target.value, shown: perLoad }),
+      onWhere: e => this.setState({ where: e.target.value, shown: perLoad }),
+      onSubmit: e => { e.preventDefault(); },
+
+      headline: s.treatments.length === 1 ? `${s.treatments[0]} in ${place}` : `Med spas in ${place}`,
+      answerLine: `${matched.length} of ${inCountry.length} verified clinics in ${place} match your filters. Every result shows a named medical director, a real Google rating, and a starting price in ${country.cur}. Paid placements are labelled AD and never reorder the list.`,
+      queryPath: '/search?' + paramBits.join('&'),
+      localTimeLabel: 'Local time ' + (country.slug === 'ae' ? '16:40 GST' : '08:40 EST'),
+
+      presets: [
+        { name: 'Botox in Toronto', pick: () => this.setState({ country: 0, region: 'Ontario', city: 'Toronto', treatments: ['Botox'], shown: perLoad }) },
+        { name: 'Laser hair removal in Dubai', pick: () => this.setState({ country: 2, region: 'Dubai', city: null, treatments: ['Laser Hair Removal'], shown: perLoad }) },
+        { name: 'Fillers in Miami', pick: () => this.setState({ country: 1, region: 'Florida', city: 'Miami', treatments: ['Dermal Fillers'], shown: perLoad }) },
+        { name: 'Top rated in Vancouver', pick: () => this.setState({ country: 0, region: 'British Columbia', city: 'Vancouver', treatments: [], minRating: 4.5, sort: 1, shown: perLoad }) },
+        { name: 'Open now near me', pick: () => this.setState({ openNow: true, shown: perLoad }) }
+      ],
+
+      panelOpen: s.panel ? '1' : '0',
+      openPanel: () => this.setState({ panel: true }),
+      closePanel: () => this.setState({ panel: false }),
+
+      countries: COUNTRIES.map((c, i) => Object.assign({
+        code: c.short, count: `${CLINICS.filter(x => x[1] === c.slug).length} clinics`,
+        pick: () => this.setState({ country: i, region: null, city: null, shown: perLoad })
+      }, chipStyle(i === s.country))),
+      regionLabel: country.regionLabel,
+      regions: [Object.assign({ name: `All ${country.regionLabel.toLowerCase()}s`, count: String(inCountry.length), pick: () => this.setState({ region: null, city: null, shown: perLoad }) }, chipStyle(s.region === null))]
+        .concat(regions.map(r => Object.assign({
+          name: r.name, count: String(inCountry.filter(c => c[2] === r.name).length),
+          pick: () => this.setState(st => ({ region: st.region === r.name ? null : r.name, city: null, shown: perLoad }))
+        }, chipStyle(s.region === r.name)))),
+      cities: [Object.assign({ name: 'All cities', count: String(base.length), pick: () => this.setState({ city: null, shown: perLoad }) }, chipStyle(s.city === null))]
+        .concat((s.region ? regions.filter(r => r.name === s.region) : regions).flatMap(r => r.cities).map(city => Object.assign({
+          name: city, count: String(inCountry.filter(c => c[3] === city).length),
+          pick: () => this.setState(st => ({ city: st.city === city ? null : city, shown: perLoad }))
+        }, chipStyle(s.city === city)))),
+
+      groups: [
+        group('Treatment', 'treatments', TREATMENTS.map(t => ({ name: t, value: t }))),
+        group('Rating', 'minRating', [{ name: '4.8 and up', value: 4.8 }, { name: '4.5 and up', value: 4.5 }, { name: '4.0 and up', value: 4.0 }], true),
+        group('Price', 'prices', PRICES.map(([sym, label]) => ({ name: `${sym} · ${label}`, value: sym }))),
+        group('Features', 'features', FEATURES.map(f => ({ name: f, value: f }))),
+        group('Language spoken', 'langs', LANGS.map(l => ({ name: l, value: l })))
+      ],
+
+      openNow: s.openNow,
+      toggleOpenNow: () => this.setState(st => ({ openNow: !st.openNow, shown: perLoad })),
+      switchBg: s.openNow ? '#14B3C6' : '#EDEFF1',
+      switchBorder: s.openNow ? '#0B7A87' : '#D4D4D4',
+      switchX: s.openNow ? '22px' : '0px',
+
+      hasFilters: chips.length > 0,
+      filterCount: String(chips.length),
+      filterBtnBorder: chips.length ? '#14B3C6' : '#E6E6E6',
+      chips,
+      clearAll: () => this.setState({ region: null, city: null, treatments: [], features: [], prices: [], langs: [], minRating: null, openNow: false, q: '', where: '', shown: perLoad }),
+
+      resultHeading: `${this.plural(matched.length, 'clinic')}${s.city ? ' in ' + s.city : s.region ? ' in ' + s.region : ''}`,
+      matchCount: String(matched.length),
+      matchLabel: this.plural(matched.length, 'clinic'),
+      showLabel: 'Show ' + this.plural(matched.length, 'clinic'),
+      sorts: SORTS.map(([name], i) => ({ name, on: s.sort === i, tick: s.sort === i ? '✓' : '', weight: s.sort === i ? 600 : 400, bg: s.sort === i ? '#F0FAFB' : 'transparent', select: () => this.setState({ sort: i, sortOpen: false }) })),
+      sortLabel: SORTS[s.sort][0],
+      sortOpen: s.sortOpen,
+      toggleSort: () => this.setState(st => ({ sortOpen: !st.sortOpen })),
+      views: VIEWS.map((v, i) => ({ label: v.label, icon: v.icon, on: i === viewIdx, bg: i === viewIdx ? '#0C243E' : 'transparent', color: i === viewIdx ? '#ffffff' : '#5B6B7B', pick: () => this.setState({ view: i }) })),
+
+      mapOn: mapAllowed && viewIdx === 2,
+      pins: shownList.slice(0, 6).map((c, i) => ({ rating: c[5].toFixed(1), x: `${12 + (i * 13) % 74}%`, y: `${22 + ((i * 29) % 52)}%` })),
+
+      viewMode: listMode ? 'list' : 'grid',
+      results: shownList.map((c, i) => ({
+        name: c[0], address: `${c[4]}, ${c[3]}`, rating: c[5].toFixed(1), reviews: String(c[6]),
+        starPct: `${Math.round((c[5] / 5) * 100)}%`,
+        ratingAria: `${c[5].toFixed(1)} out of 5 on Google from ${c[6]} reviews`,
+        director: c[11], directorLine: 'Medical director: ' + c[11], open: c[12], from: c[13],
+        priceLabel: `${c[8]} · ${(PRICES.find(p => p[0] === c[8]) || [])[1]}`,
+        verified: true,
+        ad: i === 0 && s.sort === 0 && !chips.length,
+        adFlag: (i === 0 && s.sort === 0 && !chips.length) ? '1' : '0',
+        href: `/${c[1]}/${this.slug(c[2])}/${this.slug(c[3])}/clinic/${this.slug(c[0])}`,
+        delay: `${Math.min(i, 5) * 50}ms`,
+        tags: c[7].slice(0, 3).map(t => ({
+          name: t,
+          on: s.treatments.includes(t),
+          bg: s.treatments.includes(t) ? '#F0FAFB' : '#FAFBFB',
+          border: s.treatments.includes(t) ? '#9FDDE6' : '#E6E6E6',
+          color: s.treatments.includes(t) ? '#0B7A87' : '#3E4F62'
+        })).concat(c[9].slice(0, 2).map(f => ({ name: f, on: false, bg: '#FAFBFB', border: '#E6E6E6', color: '#3E4F62' })))
+      })),
+      hasAd: !chips.length && s.sort === 0 && matched.length > 0,
+
+      noResults: matched.length === 0,
+      suggestLine: s.treatments.length > 1
+        ? 'You are asking for several treatments at one clinic. Try one treatment at a time, or widen the city.'
+        : 'Try widening the area, dropping the rating floor, or turning off Open now.',
+      rescues: [
+        { name: 'Drop the rating filter', act: () => this.setState({ minRating: null }) },
+        { name: `Search all of ${country.code}`, act: () => this.setState({ region: null, city: null, shown: perLoad }) },
+        { name: 'Reset everything', act: () => this.setState({ region: null, city: null, treatments: [], features: [], prices: [], langs: [], minRating: null, openNow: false, q: '', where: '', shown: perLoad }) }
+      ],
+
+      moreToShow: matched.length > s.shown,
+      loadMore: () => this.setState(st => ({ shown: Math.min(st.shown + perLoad, matched.length) })),
+      loadMoreLabel: `Show ${this.plural(Math.min(perLoad, matched.length - s.shown), 'more clinic')}`,
+      shownPct: `${matched.length ? Math.round((Math.min(s.shown, matched.length) / matched.length) * 100) : 100}%`,
+      shownLine: `Showing ${Math.min(s.shown, matched.length)} of ${matched.length}`,
+
+      related: [].concat(
+        s.city ? [{ name: `Med spas in ${s.city}`, href: `/${country.slug}/${this.slug(s.region || '')}/${this.slug(s.city)}` }] : [],
+        s.region ? [{ name: `Med spas in ${s.region}`, href: `/${country.slug}/${this.slug(s.region)}` }] : [],
+        [{ name: `Med spas in ${country.code}`, href: `/${country.slug}` }],
+        (s.treatments.length ? s.treatments : TREATMENTS.slice(0, 3)).map(t => ({
+          name: s.city ? `${t} in ${s.city}` : `${t} clinics`,
+          href: s.city ? `/${country.slug}/${this.slug(s.region || '')}/${this.slug(s.city)}/${this.slug(t)}` : `/${country.slug}/${this.slug(t)}`
+        })),
+        [{ name: 'Treatment guides', href: '/blog' }]
+      ),
+
+      footGroups: [
+        { name: 'Countries', links: COUNTRIES.map(c => ({ name: c.code, href: `/${c.slug}` })) },
+        { name: 'Treatments', links: TREATMENTS.slice(0, 5).map(t => ({ name: t, href: `/${country.slug}/${this.slug(t)}` })) },
+        { name: 'Company', links: [{ name: 'About us', href: '/about' }, { name: 'Methodology', href: '/about/methodology' }, { name: 'Editorial policy', href: '/about/editorial' }, { name: 'Get listed', href: '/get-listed' }] },
+        { name: 'Legal', links: [{ name: 'Privacy', href: '/privacy' }, { name: 'Terms', href: '/terms' }, { name: 'Change country', href: '/' }] }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

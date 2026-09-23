@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="Claim your medical spa on MedSpaFind. Verified listing, full treatment menu with pricing, Google reviews and a direct booking link. One membership, billed per location.">
+<link rel="canonical" href="https://medspafind.com/business">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0;background:#ffffff}
+body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:#0C243E;text-decoration:none}
+a:hover{color:#0B7A87}
+:focus-visible{outline:2px solid #14B3C6;outline-offset:2px;border-radius:6px}
+@keyframes msfFade{from{opacity:0}to{opacity:1}}
+@keyframes msfRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes msfWord{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes msfLine{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes msfDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes msfCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes msfPop{from{opacity:0;transform:scale(.6)}to{opacity:.92;transform:scale(1)}}
+@keyframes msfDrift{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+::selection{background:rgba(20,179,198,.25)}
+/* app-feel */
+*{-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{overscroll-behavior-y:contain}
+button,a[href],[role="button"],summary,label{touch-action:manipulation}
+button:not(:disabled):active,a[href]:active,[role="button"]:active{transform:scale(.985)}
+[data-rail],[data-rvrail],[data-scroller]{-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+img,svg,video{max-width:100%}
+@media (max-width:760px){input,select,textarea{font-size:16px}}
+@supports (padding:env(safe-area-inset-bottom)){[data-panel][data-open="1"],[role="dialog"]{padding-bottom:max(18px,env(safe-area-inset-bottom))}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"WebPage","@id":"https://medspafind.com/business","name":"Get listed on MedSpaFind","description":"Claim your medical spa on MedSpaFind: verified listing, treatment menu with pricing, Google reviews and a direct booking link.","dateModified":"2026-09-16"},
+{"@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Do I need an existing listing to claim?","acceptedAnswer":{"@type":"Answer","text":"No. If your clinic is already in our directory you can claim the existing page; if it is not, you add it during signup and it goes live once verification clears."}},
+{"@type":"Question","name":"How does verification work?","acceptedAnswer":{"@type":"Answer","text":"We confirm ownership through your Google Business profile or a phone or postal verification to the address on file. Most clinics clear the same business day."}},
+{"@type":"Question","name":"Can I manage multiple locations?","acceptedAnswer":{"@type":"Answer","text":"Yes. One member account manages every clinic you operate, each with its own profile, hours and treatment menu. The subscription quantity matches your number of claimed locations."}},
+{"@type":"Question","name":"How does billing work per location?","acceptedAnswer":{"@type":"Answer","text":"One subscription, quantity equal to your claimed locations. Add a location and it appears on the next billing cycle. Cancel anytime, access ends when you cancel."}}]}]}
+</script>
+</helmet>
+<div ref="{{ rootRef }}" style="font-family:'Figtree',system-ui,sans-serif;font-size:16px;line-height:1.5;color:#0C243E;background:#ffffff;min-height:100dvh;overflow-x:clip">
+
+  <header data-menu="nav" style="position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:saturate(1.2) blur(8px);border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1280px;margin:0 auto;padding:0 clamp(20px,4vw,32px);height:72px;display:flex;align-items:center;gap:26px">
+      <a href="/ca" onClick="{{ go }}" aria-label="MedSpaFind home" style="flex:none;display:flex;align-items:center;gap:12px"><img src="assets/medspafind-logo.webp" alt="MedSpaFind" style="height:28px;width:auto;display:block"><span style="font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8A96A3">for clinics</span></a>
+      <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+        <nav aria-label="Primary" style="display:flex;align-items:center;gap:2px;flex:1">
+          <button type="button" onClick="{{ toggleLocations }}" aria-expanded="{{ locOpen }}" style="display:flex;align-items:center;gap:7px;height:44px;padding:0 14px;border:0;border-radius:10px;background:{{ locBg }};font:inherit;font-size:15px;font-weight:500;color:{{ locColor }};cursor:pointer;transition:background .18s" style-hover="background:#F6F8F9">Locations<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"></path></svg></button>
+          <button type="button" onClick="{{ toggleServices }}" aria-expanded="{{ svcOpen }}" style="display:flex;align-items:center;gap:7px;height:44px;padding:0 14px;border:0;border-radius:10px;background:{{ svcBg }};font:inherit;font-size:15px;font-weight:500;color:{{ svcColor }};cursor:pointer;transition:background .18s" style-hover="background:#F6F8F9">Services<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"></path></svg></button>
+          <a href="/ca/about" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 14px;border-radius:10px;font-size:15px;font-weight:500;transition:background .18s" style-hover="background:#F6F8F9">About us</a>
+          <a href="/blog" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 14px;border-radius:10px;font-size:15px;font-weight:500;transition:background .18s" style-hover="background:#F6F8F9">Blog</a>
+        </nav>
+        <div style="display:flex;align-items:center;gap:14px;flex:none">
+          <a href="https://members.medspafind.com/login" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;font-size:15px;font-weight:600;color:#0B7A87">Member log in</a>
+          <a href="https://members.medspafind.com/claim" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 18px;border-radius:11px;background:#0C243E;color:#ffffff;font-size:15px;font-weight:600;transition:background .18s,color .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateY(-1px)">Claim your clinic</a>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{ toggleMobile }}" aria-label="Menu" aria-expanded="{{ mobileOpen }}" style="margin-left:auto;width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px solid #E6E6E6;border-radius:10px;background:#ffffff;cursor:pointer">
+          <span style="display:block;width:18px;height:1.5px;background:#0C243E"></span>
+          <span style="display:block;width:18px;height:1.5px;background:#0C243E"></span>
+        </button>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{ showMega }}" hint-placeholder-val="{{ false }}">
+      <div style="border-top:1px solid #E6E6E6;background:#ffffff;box-shadow:0 24px 48px rgba(12,36,62,.10);animation:msfDrop .2s ease both">
+        <div style="max-width:1280px;margin:0 auto;padding:26px clamp(20px,4vw,32px) 30px;display:grid;grid-template-columns:minmax(220px,32%) minmax(0,1fr);gap:34px">
+          <div style="border-right:1px solid #E6E6E6;padding-right:24px;max-height:340px;overflow:auto">
+            <div style="font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#8A96A3;margin-bottom:12px">{{ leftLabel }}</div>
+            <sc-for list="{{ leftItems }}" as="item" hint-placeholder-count="5">
+              <button type="button" onClick="{{ item.select }}" onMouseEnter="{{ item.select }}" style="display:block;width:100%;min-height:44px;text-align:left;padding:10px 12px;margin-bottom:2px;border:0;border-left:2px solid {{ item.bar }};border-radius:0 8px 8px 0;background:{{ item.bg }};font:inherit;font-size:15px;font-weight:{{ item.weight }};color:#0C243E;cursor:pointer;transition:background .18s">{{ item.name }}</button>
+            </sc-for>
+          </div>
+          <div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:14px">
+              <div style="font-size:17px;font-weight:600">{{ rightTitle }}</div>
+              <a href="{{ rightAllHref }}" onClick="{{ go }}" style="font-size:14px;font-weight:600;color:#0B7A87">{{ rightAllLabel }}</a>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:2px">
+              <sc-for list="{{ rightLinks }}" as="link" hint-placeholder-count="9">
+                <a href="{{ link.href }}" onClick="{{ go }}" style="display:flex;flex-direction:column;gap:2px;min-height:48px;justify-content:center;padding:8px 12px;border-radius:9px;transition:background .18s" style-hover="background:#F6F8F9;color:#0B7A87">
+                  <span style="font-size:15px;font-weight:500">{{ link.name }}</span>
+                  <span style="font-size:12px;color:#8A96A3">{{ link.href }}</span>
+                </a>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </header>
+
+  <sc-if value="{{ mobileOpen }}" hint-placeholder-val="{{ false }}">
+    <div role="dialog" aria-label="Menu" style="position:fixed;inset:72px 0 0;z-index:45;background:#ffffff;overflow:auto;padding:20px clamp(20px,4vw,32px) 48px;animation:msfDrop .2s ease both">
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button type="button" onClick="{{ toggleLocations }}" style="flex:1;min-height:48px;border:1px solid {{ locBorder }};border-radius:11px;background:{{ locChipBg }};font:inherit;font-size:15px;font-weight:600;color:#0C243E;cursor:pointer">Locations</button>
+        <button type="button" onClick="{{ toggleServices }}" style="flex:1;min-height:48px;border:1px solid {{ svcBorder }};border-radius:11px;background:{{ svcChipBg }};font:inherit;font-size:15px;font-weight:600;color:#0C243E;cursor:pointer">Services</button>
+      </div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#8A96A3;margin-bottom:10px">{{ leftLabel }}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px">
+        <sc-for list="{{ leftItems }}" as="item" hint-placeholder-count="5">
+          <button type="button" onClick="{{ item.select }}" style="min-height:44px;padding:0 14px;border:1px solid {{ item.chipBorder }};border-radius:999px;background:{{ item.bg }};font:inherit;font-size:14px;font-weight:{{ item.weight }};color:#0C243E;cursor:pointer">{{ item.name }}</button>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;border-top:1px solid #E6E6E6;margin-bottom:24px">
+        <sc-for list="{{ rightLinks }}" as="link" hint-placeholder-count="6">
+          <a href="{{ link.href }}" onClick="{{ go }}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;padding:12px 2px;border-bottom:1px solid #E6E6E6;font-size:16px;font-weight:500">{{ link.name }}<span style="font-size:12px;color:#8A96A3">{{ link.href }}</span></a>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <a href="/ca/about" onClick="{{ go }}" style="min-height:48px;display:flex;align-items:center;font-size:16px;font-weight:500">About us</a>
+        <a href="/blog" onClick="{{ go }}" style="min-height:48px;display:flex;align-items:center;font-size:16px;font-weight:500">Blog</a>
+        <a href="https://members.medspafind.com/claim" onClick="{{ go }}" style="min-height:52px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:#0C243E;color:#ffffff;font-size:16px;font-weight:600">Claim your clinic</a>
+        <a href="https://members.medspafind.com/login" onClick="{{ go }}" style="min-height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#0B7A87">Already a member? Log in</a>
+      </div>
+    </div>
+  </sc-if>
+
+  <main>
+    <section aria-labelledby="hero-h1" style="position:relative;background:#FAFBFB;border-bottom:1px solid #E6E6E6;overflow:hidden">
+      <span aria-hidden="true" style="position:absolute;right:-8%;top:-30%;width:46vw;height:46vw;border-radius:50%;background:radial-gradient(circle,rgba(20,179,198,.11),transparent 68%);pointer-events:none"></span>
+      <div style="position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:clamp(44px,5.6vw,88px) clamp(20px,4vw,32px);display:grid;grid-template-columns:{{ heroCols }};gap:clamp(32px,5vw,72px);align-items:center">
+        <div style="min-width:0;display:flex;flex-direction:column;gap:clamp(20px,2.4vw,28px)">
+          <div style="display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5B6B7B;animation:msfFade .6s ease both"><span aria-hidden="true" style="width:26px;height:1px;background:#14B3C6;display:inline-block;transform-origin:left;animation:msfLine .7s cubic-bezier(.2,.7,.2,1) .2s both"></span>For clinic owners</div>
+          <h1 id="hero-h1" style="margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(40px,5.2vw,78px);line-height:.98;letter-spacing:-0.03em;text-wrap:balance">
+            <span style="display:inline-block;animation:msfWord .8s cubic-bezier(.2,.7,.2,1) .05s both">Get your medspa</span><br><span style="display:inline-block;animation:msfWord .8s cubic-bezier(.2,.7,.2,1) .2s both">in front of</span><br><span style="display:inline-block;animation:msfWord .8s cubic-bezier(.2,.7,.2,1) .35s both">patients<span style="color:#14B3C6">.</span></span>
+          </h1>
+          <p style="margin:0;max-width:50ch;font-size:clamp(17px,1.3vw,19px);line-height:1.55;color:#3E4F62;text-wrap:pretty;animation:msfFade .8s ease .5s both">Patients search by city and treatment: Botox in Toronto, laser hair removal in Dubai. A verified profile puts your clinic in those results at the moment they are choosing.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;animation:msfRise .8s cubic-bezier(.2,.7,.2,1) .55s both">
+            <a href="https://members.medspafind.com/claim" onClick="{{ go }}" style="display:inline-flex;align-items:center;gap:9px;min-height:56px;padding:0 28px;border-radius:13px;background:#0C243E;color:#ffffff;font-size:16.5px;font-weight:600;transition:background .18s,color .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateY(-2px)"><span>Claim your clinic</span><svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></a>
+            <a href="#pricing" style="display:inline-flex;align-items:center;min-height:56px;padding:0 26px;border:1px solid #0C243E;border-radius:13px;font-size:16.5px;font-weight:600;color:#0C243E;transition:border-color .18s,color .18s" style-hover="border-color:#14B3C6;color:#0B7A87">See pricing</a>
+          </div>
+          <p style="margin:0;font-size:14.5px;color:#5B6B7B">Already a member? <a href="https://members.medspafind.com/login" onClick="{{ go }}" style="font-weight:600;color:#0B7A87;border-bottom:1px solid #D4D4D4">Log in</a></p>
+        </div>
+
+        <div style="position:relative;max-width:520px;width:100%;justify-self:center;display:{{ heroArtDisplay }}">
+          <div style="position:relative;z-index:2;display:flex;flex-direction:column;gap:14px">
+            <figure style="margin:0;border-radius:20px;background:#ffffff;padding:8px;box-shadow:0 24px 52px rgba(12,36,62,.14);animation:msfCard .9s cubic-bezier(.2,.7,.2,1) .45s both,msfDrift 14s ease-in-out .45s infinite">
+              <span style="position:relative;display:flex;align-items:center;justify-content:center;aspect-ratio:16/10;min-height:190px;border-radius:14px;overflow:hidden;background:repeating-linear-gradient(135deg,#E9EEF1 0 12px,#F4F7F8 12px 24px)"><span style="font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:#8A96A3">Clinic interior photography</span></span>
+            </figure>
+            <div style="display:flex;flex-direction:column;gap:9px;padding:20px;border:1px solid #E6E6E6;border-radius:18px;background:#ffffff;box-shadow:0 18px 44px rgba(12,36,62,.1);animation:msfCard .9s cubic-bezier(.2,.7,.2,1) .7s both,msfDrift 16s ease-in-out .7s infinite">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="font-family:'Newsreader',serif;font-size:22px;line-height:1.1">Your Clinic Name</span>
+                <span style="display:inline-flex;align-items:center;gap:5px;height:23px;padding:0 9px;border-radius:6px;background:#F0FAFB;font-size:11.5px;font-weight:600;color:#0B7A87"><svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.4 5.4 10.3 11.5 4"></path></svg>Verified</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:7px">
+                <span aria-hidden="true" style="display:inline-block;width:85px;height:16px;flex:none"><svg width="85" height="16" viewBox="0 0 85 16" fill="#FBBC04" aria-hidden="true" style="display:block"><path d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(17,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(34,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(51,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(68,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path></svg></span>
+                <span style="font-size:14px;font-weight:700">4.9</span>
+                <span style="font-size:13px;color:#8A96A3">(312)</span>
+              </div>
+              <span style="font-size:14px;color:#5B6B7B">12 photos · 24 treatments priced · online booking</span>
+            </div>
+          </div>
+          <span aria-hidden="true" style="position:absolute;left:-44px;bottom:-32px;z-index:1;width:104px;height:104px;border-radius:50%;background:#14B3C6;opacity:.92;animation:msfPop .9s cubic-bezier(.2,.7,.2,1) .5s both"></span>
+        </div>
+      </div>
+    </section>
+
+    <section aria-label="Directory facts" style="border-bottom:1px solid #E6E6E6;background:#ffffff">
+      <ul style="list-style:none;max-width:1280px;margin:0 auto;padding:22px clamp(20px,4vw,32px);display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px clamp(20px,4vw,52px);font-size:14.5px;color:#5B6B7B">
+        <sc-for list="{{ proof }}" as="p" hint-placeholder-count="3">
+          <li style="display:inline-flex;align-items:center;gap:9px;animation:msfRise .6s cubic-bezier(.2,.7,.2,1) both;animation-delay:{{ p.rev }}"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#0B7A87" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M2.6 8.4 6 11.8 13.4 4"></path></svg><span>{{ p.pre }}<strong style="font-weight:600;color:#0C243E">{{ p.strong }}</strong>{{ p.post }}</span></li>
+        </sc-for>
+      </ul>
+    </section>
+
+    <section aria-labelledby="h-features" style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,100px) clamp(20px,4vw,32px) 0">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:clamp(26px,3vw,40px)">
+        <div style="min-width:0;max-width:56ch">
+          <h2 id="h-features" style="margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(32px,3.8vw,52px);line-height:1.02;letter-spacing:-0.024em;text-wrap:balance">Claim once. Your profile does the rest<span style="color:#14B3C6">.</span></h2>
+          <p style="margin:16px 0 0;max-width:52ch;font-size:17px;line-height:1.6;color:#3E4F62;text-wrap:pretty">Verification takes a few minutes. After that you control everything patients see: photos, treatment menu, pricing, team and hours.</p>
+        </div>
+      </div>
+      <ol style="list-style:none;margin:0;padding:0;display:grid;grid-template-columns:{{ featureCols }};gap:clamp(14px,1.8vw,20px)">
+        <sc-for list="{{ features }}" as="f" hint-placeholder-count="6">
+          <li style="position:relative;display:flex;flex-direction:column;gap:12px;padding:26px 24px 28px;background:#ffffff;border:1px solid #E6E6E6;border-radius:18px;overflow:hidden;transition:border-color .25s,box-shadow .25s,transform .25s;animation:msfCard .6s cubic-bezier(.2,.7,.2,1) both;animation-delay:{{ f.rev }}" style-hover="border-color:#D4D4D4;box-shadow:0 20px 48px rgba(12,36,62,.10);transform:translateY(-3px)">
+            <span aria-hidden="true" style="position:absolute;left:0;top:0;right:0;height:3px;background:#14B3C6"></span>
+            <span aria-hidden="true" style="position:absolute;right:-24px;bottom:-46px;font-family:'Newsreader',serif;font-size:140px;line-height:1;color:#F0FAFB;pointer-events:none">{{ f.num }}</span>
+            <span aria-hidden="true" style="position:relative;width:42px;height:42px;border-radius:12px;background:#F0FAFB;display:flex;align-items:center;justify-content:center"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0B7A87" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><sc-for list="{{ f.icon }}" as="d" hint-placeholder-count="0"><path d="{{ d }}"></path></sc-for></svg></span>
+            <h3 style="position:relative;margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:24px;line-height:1.12;letter-spacing:-0.015em">{{ f.title }}</h3>
+            <p style="position:relative;margin:0;font-size:15.5px;line-height:1.6;color:#5B6B7B;text-wrap:pretty">{{ f.body }}</p>
+          </li>
+        </sc-for>
+      </ol>
+    </section>
+
+    <section id="pricing" aria-labelledby="h-pricing" style="scroll-margin-top:92px;margin-top:clamp(56px,7vw,100px);background:#F6F8F9;border-top:1px solid #E6E6E6;border-bottom:1px solid #E6E6E6">
+      <div style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,100px) clamp(20px,4vw,32px);display:grid;grid-template-columns:{{ pricingCols }};gap:clamp(28px,4vw,64px);align-items:start">
+        <div style="min-width:0;animation:msfCard .6s cubic-bezier(.2,.7,.2,1) both">
+          <span style="display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5B6B7B"><span aria-hidden="true" style="width:26px;height:1px;background:#14B3C6;display:inline-block"></span>Membership</span>
+          <h2 id="h-pricing" style="margin:14px 0 0;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(32px,3.8vw,52px);line-height:1.02;letter-spacing:-0.024em;text-wrap:balance">One plan, billed per location<span style="color:#14B3C6">.</span></h2>
+          <p style="margin:16px 0 0;max-width:46ch;font-size:17px;line-height:1.6;color:#3E4F62;text-wrap:pretty">There is a single MedSpaFind membership. The quantity on your subscription is simply the number of locations you have claimed.</p>
+          <ul style="list-style:none;margin:26px 0 0;padding:0;display:flex;flex-direction:column;gap:14px">
+            <sc-for list="{{ pricingNotes }}" as="n" hint-placeholder-count="4">
+              <li style="display:grid;grid-template-columns:20px minmax(0,1fr);gap:12px;font-size:15.5px;line-height:1.6;color:#3E4F62;text-wrap:pretty"><span aria-hidden="true" style="margin-top:8px;width:7px;height:7px;border-radius:50%;background:#14B3C6"></span>{{ n }}</li>
+            </sc-for>
+          </ul>
+        </div>
+
+        <div style="min-width:0;padding:clamp(24px,2.6vw,32px);background:#ffffff;border:1px solid #E6E6E6;border-radius:22px;box-shadow:0 24px 60px rgba(12,36,62,.10);animation:msfCard .6s cubic-bezier(.2,.7,.2,1) .12s both">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <span style="font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#0B7A87">MedSpaFind membership</span>
+            <span style="display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:7px;background:#F0FAFB;font-size:11.5px;font-weight:600;color:#0B7A87">No commission</span>
+          </div>
+          <div style="margin-top:16px;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap">
+            <span style="font-family:'Newsreader',serif;font-weight:400;font-size:clamp(48px,5.4vw,68px);line-height:1;letter-spacing:-0.03em">{{ price }}</span>
+            <span style="font-size:16px;color:#5B6B7B">{{ priceUnit }}</span>
+          </div>
+          <ul style="list-style:none;margin:22px 0 0;padding:20px 0 0;border-top:1px solid #EDEFF2;display:flex;flex-direction:column;gap:12px">
+            <sc-for list="{{ planIncludes }}" as="p" hint-placeholder-count="6">
+              <li style="display:grid;grid-template-columns:20px minmax(0,1fr);gap:11px;font-size:15px;line-height:1.55;color:#3E4F62;text-wrap:pretty"><svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="#0B7A87" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-top:2px"><path d="M4 10.5 8 14.5l8-9"></path></svg>{{ p }}</li>
+            </sc-for>
+          </ul>
+          <a href="https://members.medspafind.com/claim" onClick="{{ go }}" style="display:flex;align-items:center;justify-content:center;gap:9px;min-height:56px;margin-top:26px;border-radius:13px;background:#0C243E;color:#ffffff;font-size:16.5px;font-weight:600;transition:background .18s,color .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateY(-2px)"><span>Get listed</span><svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></a>
+          <p style="margin:12px 0 0;text-align:center;font-size:13.5px;line-height:1.5;color:#8A96A3">Cancel anytime. Access ends immediately on cancellation.</p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-outcome" style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,100px) clamp(20px,4vw,32px) 0">
+      <div style="display:grid;grid-template-columns:{{ outcomeCols }};gap:clamp(28px,4vw,60px);align-items:center">
+        <div style="min-width:0">
+          <h2 id="h-outcome" style="margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(30px,3.4vw,46px);line-height:1.04;letter-spacing:-0.024em;text-wrap:balance">Built for clinics that want to be chosen, not just found<span style="color:#14B3C6">.</span></h2>
+          <div style="margin-top:26px;display:flex;flex-direction:column">
+            <sc-for list="{{ outcomes }}" as="o" hint-placeholder-count="3">
+              <div style="display:grid;grid-template-columns:20px minmax(0,1fr);gap:14px;padding:18px 0;border-top:1px solid #E6E6E6;animation:msfRise .6s cubic-bezier(.2,.7,.2,1) both;animation-delay:{{ o.rev }}">
+                <span aria-hidden="true" style="margin-top:7px;width:8px;height:8px;border-radius:50%;background:#14B3C6"></span>
+                <span style="display:flex;flex-direction:column;gap:6px;min-width:0">
+                  <span style="font-size:17.5px;font-weight:600;letter-spacing:-0.012em">{{ o.title }}</span>
+                  <span style="font-size:15.5px;line-height:1.6;color:#5B6B7B;text-wrap:pretty">{{ o.body }}</span>
+                </span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="min-width:0;display:flex;flex-direction:column;gap:12px">
+          <div style="padding:18px 20px;border:1px solid #E6E6E6;border-radius:16px;background:#FAFBFB;animation:msfCard .6s cubic-bezier(.2,.7,.2,1) both">
+            <div style="font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#8A96A3;margin-bottom:10px">Unclaimed</div>
+            <div style="font-family:'Newsreader',serif;font-size:21px;line-height:1.15;color:#8A96A3">Your Clinic Name</div>
+            <div style="margin-top:6px;font-size:14px;color:#8A96A3">Toronto, ON · no photos · no treatment menu</div>
+          </div>
+          <div aria-hidden="true" style="display:flex;justify-content:center;color:#14B3C6"><svg width="20" height="20" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2v10M3 8l4 4 4-4"></path></svg></div>
+          <div style="padding:20px;border:1px solid #14B3C6;border-radius:16px;background:#ffffff;box-shadow:0 18px 44px rgba(12,36,62,.10);animation:msfCard .6s cubic-bezier(.2,.7,.2,1) .16s both">
+            <div style="font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#0B7A87;margin-bottom:10px">Claimed and verified</div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <span style="font-family:'Newsreader',serif;font-size:23px;line-height:1.1">Your Clinic Name</span>
+              <span style="display:inline-flex;align-items:center;gap:5px;height:23px;padding:0 9px;border-radius:6px;background:#F0FAFB;font-size:11.5px;font-weight:600;color:#0B7A87"><svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.4 5.4 10.3 11.5 4"></path></svg>Verified</span>
+            </div>
+            <div style="margin-top:8px;display:flex;align-items:center;gap:7px">
+              <span aria-hidden="true" style="display:inline-block;width:80px;height:15px;flex:none"><svg width="80" height="15" viewBox="0 0 85 16" fill="#FBBC04" aria-hidden="true" style="display:block"><path d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(17,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(34,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(51,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(68,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path></svg></span>
+              <span style="font-size:14px;font-weight:700">4.9</span>
+              <span style="font-size:13px;color:#8A96A3">312 Google reviews</span>
+            </div>
+            <div style="margin-top:8px;font-size:14px;color:#3E4F62">12 photos · 24 treatments priced · online booking</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-faq" style="max-width:920px;margin:0 auto;padding:clamp(56px,7vw,100px) clamp(20px,4vw,32px) 0">
+      <h2 id="h-faq" style="margin:0 0 20px;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(30px,3.4vw,46px);line-height:1.02;letter-spacing:-0.024em">Questions from clinic owners<span style="color:#14B3C6">.</span></h2>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="6">
+          <div style="background:{{ f.bg }};border:1px solid {{ f.border }};border-radius:14px;overflow:hidden;transition:background .22s,border-color .22s;animation:msfRise .55s cubic-bezier(.2,.7,.2,1) both;animation-delay:{{ f.rev }}">
+            <h3 style="margin:0;font-size:17px;font-weight:600"><button type="button" onClick="{{ f.toggle }}" aria-expanded="{{ f.open }}" style="display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;min-height:64px;padding:14px 18px;border:0;background:transparent;font:inherit;font-size:17px;font-weight:600;line-height:1.4;color:#0C243E;text-align:left;cursor:pointer"><span>{{ f.q }}</span><span aria-hidden="true" style="flex:none;width:34px;height:34px;border:1px solid #D4D4D4;border-radius:50%;background:#ffffff;display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:#0C243E;transform:rotate({{ f.rot }});transition:transform .25s">+</span></button></h3>
+            <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0;padding:0 18px 18px;font-size:16px;line-height:1.62;color:#3E4F62;text-wrap:pretty;animation:msfFade .25s ease both">{{ f.a }}</p>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-cta" style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,100px) clamp(20px,4vw,32px)">
+      <div style="position:relative;isolation:isolate;overflow:hidden;animation:msfCard .7s cubic-bezier(.2,.7,.2,1) both;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:28px;padding:clamp(34px,5vw,64px);border-radius:24px;background:#0C243E;color:#ffffff">
+        <span aria-hidden="true" style="position:absolute;inset:0;z-index:-1;background:repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 14px,rgba(255,255,255,.02) 14px 28px)"></span>
+        <span aria-hidden="true" style="position:absolute;right:-80px;top:-160px;z-index:-1;width:440px;height:440px;border-radius:50%;background:radial-gradient(circle,rgba(20,179,198,.32),transparent 66%)"></span>
+        <div style="min-width:0;max-width:36ch">
+          <h2 id="h-cta" style="margin:0;font-family:'Newsreader',serif;font-weight:400;font-size:clamp(28px,3.2vw,44px);line-height:1.06;letter-spacing:-0.024em;text-wrap:balance">Ready to get your clinic in front of patients<span style="color:#7ED7E1">?</span></h2>
+          <p style="margin:14px 0 0;font-size:16.5px;line-height:1.6;color:rgba(255,255,255,.82);text-wrap:pretty">Claim your location today. Verification usually clears the same business day.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start">
+          <a href="https://members.medspafind.com/claim" onClick="{{ go }}" style="display:inline-flex;align-items:center;gap:9px;min-height:58px;padding:0 32px;border-radius:13px;background:#ffffff;color:#0C243E;font-size:17px;font-weight:600;transition:background .18s,transform .18s" style-hover="background:#14B3C6;transform:translateY(-2px)"><span>Get listed</span><svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></a>
+          <a href="https://members.medspafind.com/login" onClick="{{ go }}" style="min-height:40px;display:inline-flex;align-items:center;font-size:15px;font-weight:600;color:#7ED7E1">Member log in</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer style="background:#0C243E;color:#ffffff">
+    <div style="max-width:1280px;margin:0 auto;padding:clamp(44px,5vw,72px) clamp(20px,4vw,32px) 26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:clamp(24px,3vw,40px)">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <img src="assets/medspafind-logo.webp" alt="MedSpaFind" style="height:26px;width:auto;display:block;align-self:flex-start;filter:brightness(0) invert(1)">
+        <p style="margin:0;max-width:32ch;font-size:14.5px;line-height:1.6;color:rgba(255,255,255,.78);text-wrap:pretty">A directory for medical aesthetics: verified clinics, real reviews, and treatment menus you can compare.</p>
+      </div>
+      <sc-for list="{{ footGroups }}" as="g" hint-placeholder-count="4">
+        <nav aria-label="{{ g.name }}" style="display:flex;flex-direction:column;gap:12px">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#7ED7E1">{{ g.name }}</div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <sc-for list="{{ g.links }}" as="l" hint-placeholder-count="4">
+              <a href="{{ l.href }}" onClick="{{ go }}" style="min-height:28px;display:flex;align-items:center;font-size:14.5px;color:rgba(255,255,255,.82)" style-hover="color:#7ED7E1">{{ l.name }}</a>
+            </sc-for>
+          </div>
+        </nav>
+      </sc-for>
+    </div>
+    <div style="max-width:1280px;margin:0 auto;padding:20px clamp(20px,4vw,32px) 34px;border-top:1px solid rgba(255,255,255,.14);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px">
+      <span style="font-size:13px;color:rgba(255,255,255,.66)">© 2026 MedSpaFind</span>
+      <span style="font-size:13px;color:rgba(255,255,255,.66)">Sample listings shown for design review</span>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;price&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:89,&quot;min&quot;:19,&quot;max&quot;:499,&quot;step&quot;:10,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Pricing&quot;},&quot;currency&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;CAD&quot;,&quot;USD&quot;,&quot;AED&quot;],&quot;default&quot;:&quot;CAD&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Pricing&quot;}}">
+const REGIONS = [
+  { name: 'Ontario', slug: 'on', cities: ['Toronto', 'Ottawa', 'Mississauga', 'Hamilton', 'London', 'Markham', 'Vaughan', 'Oakville', 'Kitchener'] },
+  { name: 'British Columbia', slug: 'bc', cities: ['Vancouver', 'Victoria', 'Surrey', 'Burnaby', 'Kelowna'] },
+  { name: 'Alberta', slug: 'ab', cities: ['Calgary', 'Edmonton', 'Red Deer'] },
+  { name: 'Quebec', slug: 'qc', cities: ['Montreal', 'Quebec City', 'Laval'] }
+];
+const SERVICES = [
+  { name: 'Tattoo Removal', slug: 'tattoo-removal' },
+  { name: 'Botox', slug: 'botox' },
+  { name: 'Laser Hair Removal', slug: 'laser-hair-removal' },
+  { name: 'CoolSculpting', slug: 'coolsculpting' },
+  { name: 'Hydrafacial', slug: 'hydrafacial' },
+  { name: 'Dermal Fillers', slug: 'dermal-fillers' }
+];
+
+const FEATURES = [
+  { num: '1', title: 'Claim your location', body: 'Verify ownership of an existing listing, or add a clinic that is not on MedSpaFind yet, and take control of the page.',
+    icon: ['M12 3.2 4.6 6.1v5.3c0 4.6 3.1 7.9 7.4 9.3 4.3-1.4 7.4-4.7 7.4-9.3V6.1z', 'M8.8 11.8 11 14l4-4.2'] },
+  { num: '2', title: 'Verified listing', body: 'Verified clinics carry a badge and rank above unclaimed pages in city and treatment searches.',
+    icon: ['M12 3.4 14 7l4 .6-2.9 2.8.7 4L12 12.5 8.2 14.4l.7-4L6 7.6 10 7z', 'M8.6 15.8 7 21l5-2.2L17 21l-1.6-5.2'] },
+  { num: '3', title: 'Rich profile', body: 'Photo gallery, priced treatment menu, staff bios, hours, FAQs and before-and-after results, all editable by you.',
+    icon: ['M3.6 5.4h16.8v13.2H3.6z', 'M3.6 15.2 8.4 10.6l4 3.8 3.2-2.6 3.8 3.4', 'M15.4 9.2a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4'] },
+  { num: '4', title: 'Google reviews', body: 'Your rating and review count are pulled from your Google Business profile and refreshed weekly, with an optional review prompt.',
+    icon: ['M12 3.6l2.5 5.1 5.6.8-4.1 3.9 1 5.6L12 16.3 6.9 19l1-5.6-4.1-3.9 5.6-.8z'] },
+  { num: '5', title: 'Online booking link', body: 'Send patients straight into your own booking flow. We never sit between you and the appointment.',
+    icon: ['M4.2 5.6h15.6v14.2H4.2z', 'M4.2 10h15.6', 'M8.4 3.4v3.6', 'M15.6 3.4v3.6', 'M9.4 14.6l1.9 1.9 3.6-3.8'] },
+  { num: '6', title: 'Multi-location', body: 'Claim as many clinics as you operate. Billing is per location on one subscription.',
+    icon: ['M8.4 21c-2.7-3.2-4.2-5.5-4.2-7.8a4.2 4.2 0 0 1 8.4 0c0 2.3-1.5 4.6-4.2 7.8z', 'M8.4 12.2a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2', 'M15.6 3.2c2.3 2.8 3.6 4.7 3.6 6.7a3.6 3.6 0 0 1-7.2 0c0-2 1.3-3.9 3.6-6.7z'] }
+];
+
+const FAQS = [
+  ['Do I need an existing listing to claim?', 'No. If your clinic is already in our directory you can claim the existing page; if it is not, you add it during signup and it goes live once verification clears.'],
+  ['How does verification work?', 'We confirm ownership through your Google Business profile, or by a phone or postal verification to the address on file. Most clinics clear the same business day.'],
+  ['Can I manage multiple locations?', 'Yes. One member account manages every clinic you operate, each with its own profile, hours and treatment menu. The subscription quantity matches your number of claimed locations.'],
+  ['What appears on my public profile?', 'Everything you publish: gallery, description, services with prices, staff, videos, working hours, FAQs, before-and-after images, map and contact links, plus your Google rating.'],
+  ['How do Google reviews work?', 'We display your public Google rating and review count and link to your profile. We cannot edit, filter or reorder reviews, and neither can you through MedSpaFind.'],
+  ['How does billing work per location?', 'One subscription, quantity equal to your claimed locations. Add a location and it appears on the next billing cycle. Cancel anytime, and access ends when you cancel.']
+];
+
+const OUTCOMES = [
+  ['Appear in local searches', 'Botox in Toronto and medspa near me are how patients actually shop. City and treatment pages put your clinic in those results.'],
+  ['Control your story', 'Unclaimed listings show a name and an address. A claimed profile shows your rooms, your team, your prices and your standards.'],
+  ['Convert browsers to bookings', 'Patients comparing three clinics pick the one that answered their questions before they called. Your booking link is one tap away.']
+];
+
+class Component extends DCLogic {
+  state = { menu: null, region: 0, service: 0, faq: 0, mobileOpen: false, vw: typeof window !== 'undefined' ? window.innerWidth : 1440 };
+
+  _apply = w => { if (w && Math.abs(w - this.state.vw) > 0.5) this.setState({ vw: Math.round(w) }); };
+  _r = () => {
+    const el = this._root;
+    const w = el ? (el.getBoundingClientRect().width || el.clientWidth) : 0;
+    this._apply(w || window.innerWidth);
+  };
+
+  componentDidMount() {
+    window.addEventListener('resize', this._r);
+    this._r();
+    requestAnimationFrame(this._r);
+    setTimeout(this._r, 60);
+    setTimeout(this._r, 300);
+    if (typeof ResizeObserver !== 'undefined') {
+      this._ro = new ResizeObserver(entries => {
+        for (const e of entries) { if (e.contentRect && e.contentRect.width) { this._apply(e.contentRect.width); return; } }
+        this._r();
+      });
+      if (this._root) this._ro.observe(this._root);
+      this._ro.observe(document.body);
+    }
+    this._away = e => { if (!e.target.closest || !e.target.closest('[data-menu]')) this.setState({ menu: null }); };
+    this._esc = e => { if (e.key === 'Escape') this.setState({ menu: null, mobileOpen: false }); };
+    document.addEventListener('pointerdown', this._away, true);
+    document.addEventListener('keydown', this._esc);
+  }
+  componentWillUnmount() {
+    (this._timers || []).forEach(clearTimeout);
+    if (this._rvAnim) clearInterval(this._rvAnim);
+    if (this._r) window.removeEventListener('load', this._r);
+    if (this._onResize) window.removeEventListener('load', this._onResize);
+    window.removeEventListener('resize', this._r);
+    document.removeEventListener('pointerdown', this._away, true);
+    document.removeEventListener('keydown', this._esc);
+    if (this._ro) this._ro.disconnect();
+  }
+  slug(s) { return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
+
+  renderVals() {
+    const s = this.state;
+    const isMobile = s.vw < 1000;
+    const isNarrow = s.vw < 700;
+    const menu = s.menu;
+    const region = REGIONS[s.region];
+    const service = SERVICES[s.service];
+
+    const leftItems = (menu === 'services' ? SERVICES : REGIONS).map((it, i) => {
+      const active = menu === 'services' ? i === s.service : i === s.region;
+      return {
+        name: it.name,
+        bar: active ? '#14B3C6' : 'transparent',
+        chipBorder: active ? '#14B3C6' : '#E6E6E6',
+        bg: active ? '#F0FAFB' : 'transparent',
+        weight: active ? 600 : 400,
+        select: () => menu === 'services' ? this.setState({ service: i }) : this.setState({ region: i })
+      };
+    });
+
+    const amount = this.props.price ?? 89;
+    const currency = this.props.currency ?? 'CAD';
+
+    return {
+      rootRef: el => { if (el && el !== this._root) { this._root = el; if (this._ro) this._ro.observe(el); this._r(); } },
+      go: e => { if (e) e.preventDefault(); },
+      isMobile, isDesktop: !isMobile,
+      showMega: !isMobile && !!menu,
+      leftLabel: menu === 'services' ? 'Services' : 'Provinces',
+      leftItems,
+      rightLinks: menu === 'services'
+        ? REGIONS.flatMap(r => r.cities.slice(0, 3).map(c => ({ name: c, href: `/ca/${r.slug}/${this.slug(c)}/${service.slug}` }))).slice(0, 12)
+        : region.cities.map(c => ({ name: c, href: `/ca/${region.slug}/${this.slug(c)}` })),
+      rightTitle: menu === 'services' ? `${service.name}: cities with listings` : `Cities in ${region.name}`,
+      rightAllLabel: menu === 'services' ? `All ${service.name} clinics` : `View all in ${region.name}`,
+      rightAllHref: menu === 'services' ? `/ca/${service.slug}` : `/ca/${region.slug}`,
+      locOpen: menu === 'locations', svcOpen: menu === 'services',
+      locColor: menu === 'locations' ? '#0B7A87' : '#0C243E',
+      svcColor: menu === 'services' ? '#0B7A87' : '#0C243E',
+      locBg: menu === 'locations' ? '#F0FAFB' : 'transparent',
+      svcBg: menu === 'services' ? '#F0FAFB' : 'transparent',
+      locBorder: menu === 'locations' ? '#14B3C6' : '#E6E6E6',
+      svcBorder: menu === 'services' ? '#14B3C6' : '#E6E6E6',
+      locChipBg: menu === 'locations' ? '#F0FAFB' : '#ffffff',
+      svcChipBg: menu === 'services' ? '#F0FAFB' : '#ffffff',
+      mobileOpen: isMobile && s.mobileOpen,
+      toggleMobile: () => this.setState(st => ({ mobileOpen: !st.mobileOpen, menu: st.menu || 'locations' })),
+      toggleLocations: () => this.setState(st => ({ menu: st.menu === 'locations' ? (isMobile ? 'locations' : null) : 'locations' })),
+      toggleServices: () => this.setState(st => ({ menu: st.menu === 'services' ? (isMobile ? 'services' : null) : 'services' })),
+
+      heroCols: isMobile ? 'minmax(0,1fr)' : 'minmax(0,1.08fr) minmax(0,1fr)',
+      heroArtDisplay: isNarrow ? 'none' : 'block',
+      featureCols: isNarrow ? 'minmax(0,1fr)' : isMobile ? 'repeat(2,minmax(0,1fr))' : 'repeat(3,minmax(0,1fr))',
+      pricingCols: isMobile ? 'minmax(0,1fr)' : 'minmax(0,1fr) minmax(360px,.85fr)',
+      outcomeCols: isMobile ? 'minmax(0,1fr)' : 'minmax(0,1.15fr) minmax(0,1fr)',
+
+      proof: [
+        { pre: 'Clinics listed across ', strong: 'Canada, the US and the UAE', post: '', rev: '0s' },
+        { pre: 'Ratings pulled from ', strong: 'verified Google profiles', post: '', rev: '.08s' },
+        { pre: '', strong: 'Ownership-verified', post: ' listings only', rev: '.16s' }
+      ],
+      features: FEATURES.map((f, i) => ({ ...f, rev: `${(i % 3) * 0.08}s` })),
+      outcomes: OUTCOMES.map((o, i) => ({ title: o[0], body: o[1], rev: `${i * 0.08}s` })),
+
+      price: `$${amount}`,
+      priceUnit: `${currency} / location / month`,
+      pricingNotes: [
+        'One subscription per member account. The quantity equals the number of locations you have claimed.',
+        'Add a location and it is billed from the next cycle. No mid-cycle surprises.',
+        'Cancel anytime. Access ends when you cancel, and your listing reverts to an unclaimed page.',
+        'No commission, no lead fees, no charge per booking.'
+      ],
+      planIncludes: [
+        'Verified badge and priority placement in city and treatment searches',
+        'Full profile: gallery, services with pricing, staff, hours, FAQs',
+        'Before-and-after gallery and video embeds',
+        'Google rating and review count, refreshed weekly',
+        'Direct online booking link and click-to-call',
+        'Profile analytics: views, calls and booking clicks'
+      ],
+
+      faqs: FAQS.map((f, i) => {
+        const open = s.faq === i;
+        return { q: f[0], a: f[1], open, rev: `${Math.min(i, 3) * 0.06}s`, rot: open ? '45deg' : '0deg', bg: open ? '#FAFBFB' : '#ffffff', border: open ? '#14B3C6' : '#E6E6E6', toggle: () => this.setState(st => ({ faq: st.faq === i ? -1 : i })) };
+      }),
+
+      footGroups: [
+        { name: 'Provinces', links: REGIONS.map(r => ({ name: r.name, href: `/ca/${r.slug}` })) },
+        { name: 'Services', links: SERVICES.slice(0, 5).map(x => ({ name: x.name, href: `/ca/${x.slug}` })) },
+        { name: 'Company', links: [{ name: 'About us', href: '/ca/about' }, { name: 'Blog', href: '/blog' }, { name: 'Get listed', href: '/business' }, { name: 'Member log in', href: 'https://members.medspafind.com/login' }] },
+        { name: 'Legal', links: [{ name: 'Privacy', href: '/privacy' }, { name: 'Terms', href: '/terms' }, { name: 'Change country', href: '/' }] }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

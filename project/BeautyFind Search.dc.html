@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="חיפוש מכוני יופי, אסתטיקה וקוסמטיקה מאומתים בכל רחבי ישראל. סינון לפי אזור, עיר, תחום טיפול, דירוג, מחיר וזמינות.">
+<link rel="canonical" href="https://beautyfind.co.il/search">
+<meta name="robots" content="noindex,follow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Assistant:wght@400;500;600;700&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0;background:#ffffff}
+body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:#0C243E;text-decoration:none}
+a:hover{color:#0B7A87}
+:focus-visible{outline:2px solid #14B3C6;outline-offset:2px;border-radius:6px}
+@keyframes bfRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes bfDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes bfCard{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes bfSheet{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes bfPing{0%{box-shadow:0 0 0 4px rgba(20,179,198,.18)}50%{box-shadow:0 0 0 12px rgba(20,179,198,0)}100%{box-shadow:0 0 0 4px rgba(20,179,198,.18)}}
+::selection{background:rgba(20,179,198,.25)}
+*{-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{overscroll-behavior-y:contain}
+button,a[href],[role="button"],summary,label{touch-action:manipulation}
+button:not(:disabled):active,a[href]:active,[role="button"]:active{transform:scale(.985)}
+img,svg,video{max-width:100%}
+@media (max-width:760px){input,select,textarea{font-size:16px}}
+@supports (padding:env(safe-area-inset-bottom)){[data-panel][data-open="1"]{padding-bottom:max(18px,env(safe-area-inset-bottom))}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+[data-desktop-only]{display:none}
+[data-shell]{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+[data-panel]{display:none;flex-direction:column;min-width:0;padding:18px;background:#ffffff;border:1px solid #E6E6E6;border-radius:18px;overflow:auto}
+[data-panel][data-open="1"]{display:flex;position:fixed;inset:0 12px 12px;z-index:60;box-shadow:0 30px 70px rgba(12,36,62,.28);animation:bfSheet .22s cubic-bezier(.2,.7,.2,1) both}
+[data-results]{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+[data-results][data-view="grid"]{grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}
+[data-card]{display:flex;flex-wrap:wrap;gap:16px;padding:16px;background:#ffffff;border:1px solid #E6E6E6;border-radius:16px;transition:border-color .22s,box-shadow .22s,transform .22s cubic-bezier(.2,.7,.2,1);animation:bfCard .4s cubic-bezier(.2,.7,.2,1) both}
+[data-card]:hover{border-color:#D4D4D4;box-shadow:0 18px 44px rgba(12,36,62,.10);transform:translateY(-2px)}
+[data-card][data-ad="1"]{border-color:#CDEFF3}
+[data-photo]{position:relative;display:block;flex:1 1 100%;height:180px;border-radius:12px;overflow:hidden;background:#EDF1F3}
+[data-body]{flex:1 1 262px;min-width:0;display:flex;flex-direction:column;gap:9px}
+[data-map]{height:260px}
+@media (min-width:700px){
+[data-results][data-view="list"] [data-photo]{flex:0 0 190px;height:172px}
+[data-map]{height:360px}
+}
+@media (min-width:1040px){
+[data-desktop-only]{display:flex}
+[data-mobile-only]{display:none!important}
+[data-shell]{grid-template-columns:306px minmax(0,1fr);gap:clamp(22px,2.2vw,32px)}
+[data-panel],[data-panel][data-open="1"]{display:flex;position:sticky;inset:auto;top:88px;z-index:1;max-height:calc(100dvh - 108px);border-radius:20px;box-shadow:none;animation:none}
+}
+</style>
+</helmet>
+<div dir="rtl" onKeyDown="{{ onKey }}" style="font-family:'Assistant',system-ui,sans-serif;font-size:16px;line-height:1.55;color:#0C243E;background:#ffffff;min-height:100dvh;overflow-x:clip">
+
+  <header style="position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:saturate(1.2) blur(8px);border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1440px;margin:0 auto;padding:0 clamp(16px,3vw,28px);height:72px;display:flex;align-items:center;gap:18px">
+      <a href="/" onClick="{{ go }}" aria-label="BeautyFind — לדף הבית" style="flex:none;display:flex;align-items:center"><span dir="ltr" style="font-family:'Jost',sans-serif;font-weight:300;font-size:27px;line-height:1;color:#0C243E;white-space:nowrap">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6;font-weight:400">.</span></span></a>
+
+      <form onSubmit="{{ onSubmit }}" role="search" style="flex:1;min-width:0;display:flex;align-items:center;gap:0;height:50px;padding:0 0 0 4px;background:#ffffff;border:1px solid #E6E6E6;border-radius:13px;box-shadow:0 1px 2px rgba(12,36,62,.04)">
+        <label for="q-what" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">טיפול או שם עסק</label>
+        <span style="display:flex;align-items:center;gap:8px;flex:1.2;min-width:0;padding:0 14px 0 12px">
+          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="#8A96A3" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" style="flex:none"><circle cx="8" cy="8" r="5.4"></circle><path d="M12 12l3.4 3.4"></path></svg>
+          <input id="q-what" type="search" value="{{ q }}" onChange="{{ onQ }}" placeholder="בוטוקס, לייזר, שם מכון" style="flex:1;min-width:0;height:42px;border:0;outline:none;background:transparent;font:inherit;font-size:15.5px;color:#0C243E">
+        </span>
+        <span aria-hidden="true" style="width:1px;height:26px;background:#E6E6E6;flex:none"></span>
+        <label for="q-where" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">מקום</label>
+        <span style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;padding:0 14px 0 12px">
+          <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="#8A96A3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M7 12.5S2.4 8.9 2.4 6a4.6 4.6 0 1 1 9.2 0c0 2.9-4.6 6.5-4.6 6.5Z"></path><circle cx="7" cy="5.9" r="1.5"></circle></svg>
+          <input id="q-where" type="search" value="{{ where }}" onChange="{{ onWhere }}" placeholder="עיר או אזור" style="flex:1;min-width:0;height:42px;border:0;outline:none;background:transparent;font:inherit;font-size:15.5px;color:#0C243E">
+        </span>
+        <button type="submit" style="flex:none;display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;border:0;border-radius:10px;background:#0C243E;font:inherit;font-size:15px;font-weight:700;color:#ffffff;cursor:pointer;transition:background .18s,color .18s" style-hover="background:#14B3C6;color:#0C243E">חיפוש</button>
+      </form>
+
+      <nav aria-label="ראשי" data-desktop-only style="flex:none;align-items:center;gap:10px">
+        <a href="/magazine" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 12px;border-radius:10px;font-size:15px;font-weight:500;transition:background .18s" style-hover="background:#F6F8F9">מדריכים</a>
+        <a href="/for-business" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 16px;border-radius:11px;background:#0C243E;color:#ffffff;font-size:15px;font-weight:700;transition:background .18s,color .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateY(-1px)">רישום עסק</a>
+      </nav>
+    </div>
+  </header>
+
+  <main style="max-width:1440px;margin:0 auto;padding:clamp(18px,2.2vw,28px) clamp(16px,3vw,28px) clamp(56px,6vw,92px)">
+
+    <nav aria-label="נתיב ניווט" style="margin-bottom:14px">
+      <ol style="list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0;padding:0;font-size:13.5px;color:#5B6B7B">
+        <li><a href="/" onClick="{{ go }}" style="color:#5B6B7B" style-hover="color:#0B7A87">BeautyFind</a></li>
+        <li aria-hidden="true" style="color:#C6CDD4">/</li>
+        <li aria-current="page" style="font-weight:700;color:#0C243E">חיפוש</li>
+      </ol>
+    </nav>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:clamp(18px,2.2vw,26px)">
+      <div style="min-width:0">
+        <span style="display:flex;align-items:center;gap:12px;font-size:13px;font-weight:700;color:#5B6B7B;margin-bottom:10px"><span aria-hidden="true" style="width:24px;height:1px;background:#14B3C6;display:inline-block"></span>חיפוש בכל הארץ</span>
+        <h1 style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(28px,3.2vw,44px);line-height:1.15;letter-spacing:-0.014em;text-wrap:balance;animation:bfRise .5s cubic-bezier(.2,.7,.2,1) both">{{ headline }}<span style="color:#14B3C6">.</span></h1>
+        <p style="margin:10px 0 0;font-size:16.5px;line-height:1.65;color:#3E4F62;max-width:72ch;text-wrap:pretty">{{ answerLine }}</p>
+      </div>
+      <p dir="ltr" style="margin:0;flex:none;font-size:13px;color:#8A96A3;font-variant-numeric:tabular-nums">{{ queryPath }}</p>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:18px">
+      <span style="font-size:13px;font-weight:700;color:#8A96A3;margin-left:4px">מבוקש</span>
+      <sc-for list="{{ presets }}" as="p" hint-placeholder-count="5">
+        <button type="button" onClick="{{ p.pick }}" style="display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:0 13px;border:1px solid #E6E6E6;border-radius:999px;background:#ffffff;font:inherit;font-size:14px;font-weight:500;color:#3E4F62;cursor:pointer;transition:border-color .18s,background .18s,color .18s" style-hover="border-color:#14B3C6;background:#F0FAFB;color:#0B7A87">{{ p.name }}</button>
+      </sc-for>
+    </div>
+
+    <div data-shell>
+
+      <aside aria-label="סינון" data-panel data-open="{{ panelOpen }}">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:12px;border-bottom:1px solid #E6E6E6">
+          <span style="font-size:15.5px;font-weight:700">סינון</span>
+          <sc-if value="{{ hasFilters }}" hint-placeholder-val="{{ false }}">
+            <button type="button" onClick="{{ clearAll }}" style="min-height:36px;padding:0 4px;border:0;background:transparent;font:inherit;font-size:13.5px;font-weight:700;color:#0B7A87;cursor:pointer">איפוס הכול</button>
+          </sc-if>
+          <button type="button" data-mobile-only onClick="{{ closePanel }}" aria-label="סגירת הסינון" style="width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #E6E6E6;border-radius:10px;background:#ffffff;cursor:pointer"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#0C243E" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8"></path></svg></button>
+        </div>
+
+        <fieldset style="margin:0;padding:16px 0;border:0;border-bottom:1px solid #E6E6E6">
+          <legend style="padding:0;font-size:12px;font-weight:700;color:#8A96A3">אזור</legend>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px">
+            <sc-for list="{{ regionBtns }}" as="c" hint-placeholder-count="8">
+              <button type="button" onClick="{{ c.pick }}" aria-pressed="{{ c.on }}" style="min-width:0;min-height:46px;padding:0 8px;border:1px solid {{ c.border }};border-radius:11px;background:{{ c.bg }};font:inherit;font-size:14px;font-weight:{{ c.weight }};color:{{ c.color }};cursor:pointer;transition:border-color .18s,background .18s">{{ c.name }}<span style="display:block;font-size:11px;font-weight:500;color:{{ c.subColor }}">{{ c.count }}</span></button>
+            </sc-for>
+          </div>
+        </fieldset>
+
+        <fieldset style="margin:0;padding:16px 0;border:0;border-bottom:1px solid #E6E6E6">
+          <legend style="padding:0;font-size:12px;font-weight:700;color:#8A96A3">עיר</legend>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+            <sc-for list="{{ cities }}" as="c" hint-placeholder-count="6">
+              <button type="button" onClick="{{ c.pick }}" aria-pressed="{{ c.on }}" style="display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 12px;border:1px solid {{ c.border }};border-radius:999px;background:{{ c.bg }};font:inherit;font-size:13.5px;font-weight:{{ c.weight }};color:{{ c.color }};cursor:pointer;transition:border-color .18s,background .18s">{{ c.name }}<span style="font-size:12px;color:{{ c.subColor }}">{{ c.count }}</span></button>
+            </sc-for>
+          </div>
+        </fieldset>
+
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="4">
+          <fieldset style="margin:0;padding:14px 0;border:0;border-bottom:1px solid #E6E6E6">
+            <legend style="width:100%;padding:0">
+              <button type="button" onClick="{{ g.toggle }}" aria-expanded="{{ g.open }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:40px;padding:0;border:0;background:transparent;font:inherit;cursor:pointer;text-align:right">
+                <span style="font-size:12px;font-weight:700;color:#8A96A3">{{ g.name }}</span>
+                <span style="display:inline-flex;align-items:center;gap:8px">
+                  <sc-if value="{{ g.hasPicks }}" hint-placeholder-val="{{ false }}">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:#14B3C6;font-size:11.5px;font-weight:700;color:#0C243E">{{ g.picks }}</span>
+                  </sc-if>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#5B6B7B" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:rotate({{ g.rot }});transition:transform .2s"><path d="M2.5 4.5 6 8l3.5-3.5"></path></svg>
+                </span>
+              </button>
+            </legend>
+            <sc-if value="{{ g.open }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:2px;margin-top:6px">
+                <sc-for list="{{ g.options }}" as="o" hint-placeholder-count="5">
+                  <button type="button" onClick="{{ o.toggle }}" aria-pressed="{{ o.on }}" style="display:flex;align-items:center;gap:10px;width:100%;min-height:42px;padding:0 8px;border:0;border-radius:9px;background:transparent;font:inherit;font-size:14.5px;color:#0C243E;text-align:right;cursor:pointer;opacity:{{ o.opacity }};transition:background .15s" style-hover="background:#F6F8F9">
+                    <span aria-hidden="true" style="flex:none;width:18px;height:18px;border:1px solid {{ o.boxBorder }};border-radius:{{ o.boxRadius }};background:{{ o.boxBg }};display:inline-flex;align-items:center;justify-content:center;color:#ffffff;font-size:11px">{{ o.tick }}</span>
+                    <span style="flex:1;min-width:0">{{ o.name }}</span>
+                    <span style="font-size:12.5px;color:#8A96A3;font-variant-numeric:tabular-nums">{{ o.count }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </fieldset>
+        </sc-for>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0 4px">
+          <span style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:14.5px;font-weight:700">פתוח כרגע</span>
+            <span style="font-size:12.5px;color:#8A96A3">{{ localTimeLabel }}</span>
+          </span>
+          <button type="button" onClick="{{ toggleOpenNow }}" role="switch" aria-checked="{{ openNow }}" aria-label="פתוח כרגע" style="flex:none;width:52px;height:30px;padding:3px;border:1px solid {{ switchBorder }};border-radius:999px;background:{{ switchBg }};cursor:pointer;transition:background .2s,border-color .2s">
+            <span aria-hidden="true" style="display:block;width:22px;height:22px;border-radius:50%;background:#ffffff;box-shadow:0 1px 3px rgba(12,36,62,.28);transform:translateX({{ switchX }});transition:transform .2s cubic-bezier(.2,.7,.2,1)"></span>
+          </button>
+        </div>
+
+        <button type="button" data-mobile-only onClick="{{ closePanel }}" style="position:sticky;bottom:0;margin-top:16px;min-height:52px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:13px;background:#0C243E;font:inherit;font-size:15.5px;font-weight:700;color:#ffffff;cursor:pointer">{{ showLabel }}</button>
+      </aside>
+
+      <section aria-labelledby="h-results" style="min-width:0">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px">
+          <h2 id="h-results" style="margin:0;font-size:16px;font-weight:700">{{ resultHeading }}</h2>
+          <button type="button" data-mobile-only onClick="{{ openPanel }}" style="display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 14px;border:1px solid {{ filterBtnBorder }};border-radius:11px;background:#ffffff;font:inherit;font-size:14.5px;font-weight:700;color:#0C243E;cursor:pointer">סינון<sc-if value="{{ hasFilters }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:#14B3C6;font-size:11.5px;font-weight:700;color:#0C243E">{{ filterCount }}</span></sc-if></button>
+          <div style="margin-right:auto;display:flex;align-items:center;gap:8px">
+            <div style="position:relative">
+              <button type="button" onClick="{{ toggleSort }}" aria-expanded="{{ sortOpen }}" style="display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 14px;border:1px solid #E6E6E6;border-radius:11px;background:#ffffff;font:inherit;font-size:14px;color:#0C243E;cursor:pointer;transition:border-color .18s" style-hover="border-color:#14B3C6"><span style="color:#8A96A3">מיון</span><span style="font-weight:700">{{ sortLabel }}</span><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity:.6"><path d="M2.5 4.5 6 8l3.5-3.5"></path></svg></button>
+              <sc-if value="{{ sortOpen }}" hint-placeholder-val="{{ false }}">
+                <div role="group" aria-label="מיון תוצאות" style="position:absolute;left:0;top:calc(100% + 8px);z-index:20;width:224px;padding:8px;background:#ffffff;border:1px solid #E6E6E6;border-radius:14px;box-shadow:0 20px 48px rgba(12,36,62,.16);animation:bfDrop .16s ease both">
+                  <sc-for list="{{ sorts }}" as="o" hint-placeholder-count="4">
+                    <button type="button" onClick="{{ o.select }}" aria-pressed="{{ o.on }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:42px;padding:0 10px;border:0;border-radius:9px;background:{{ o.bg }};font:inherit;font-size:14.5px;font-weight:{{ o.weight }};color:#0C243E;text-align:right;cursor:pointer;transition:background .15s" style-hover="background:#F6F8F9"><span>{{ o.name }}</span><span aria-hidden="true" style="color:#0B7A87;font-size:13px">{{ o.tick }}</span></button>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+            <div role="group" aria-label="תצוגת תוצאות" style="display:flex;gap:4px;padding:4px;border:1px solid #E6E6E6;border-radius:12px;background:#ffffff">
+              <sc-for list="{{ views }}" as="v" hint-placeholder-count="3">
+                <button type="button" onClick="{{ v.pick }}" aria-pressed="{{ v.on }}" aria-label="{{ v.label }}" title="{{ v.label }}" style="width:38px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:9px;background:{{ v.bg }};color:{{ v.color }};cursor:pointer;transition:background .18s">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><sc-for list="{{ v.icon }}" as="d" hint-placeholder-count="2"><path d="{{ d }}"></path></sc-for></svg>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <sc-if value="{{ hasFilters }}" hint-placeholder-val="{{ false }}">
+          <div role="group" aria-label="סינונים פעילים" style="display:flex;flex-wrap:wrap;align-items:center;gap:7px;padding:12px 14px;margin-bottom:14px;background:#F0FAFB;border:1px solid #CDEFF3;border-radius:14px;animation:bfDrop .18s ease both">
+            <span style="font-size:12.5px;font-weight:700;color:#0B7A87;margin-left:2px">מסונן לפי</span>
+            <sc-for list="{{ chips }}" as="c" hint-placeholder-count="3">
+              <button type="button" onClick="{{ c.remove }}" aria-label="הסרת הסינון {{ c.name }}" style="display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 12px 0 10px;border:1px solid #9FDDE6;border-radius:999px;background:#ffffff;font:inherit;font-size:13.5px;font-weight:500;color:#0C243E;cursor:pointer;transition:border-color .18s" style-hover="border-color:#0B7A87">{{ c.name }}<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#5B6B7B" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"></path></svg></button>
+            </sc-for>
+            <button type="button" onClick="{{ clearAll }}" style="margin-right:auto;min-height:36px;padding:0 6px;border:0;background:transparent;font:inherit;font-size:13.5px;font-weight:700;color:#0B7A87;cursor:pointer">נקו הכול</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ mapOn }}" hint-placeholder-val="{{ false }}">
+          <figure data-map style="margin:0 0 16px;position:relative;border:1px solid #E6E6E6;border-radius:18px;overflow:hidden;background:linear-gradient(#F4F7F8,#E9EFF1)">
+            <span aria-hidden="true" style="position:absolute;inset:0;background-image:linear-gradient(rgba(12,36,62,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(12,36,62,.05) 1px,transparent 1px);background-size:52px 52px"></span>
+            <figcaption style="position:absolute;right:16px;top:14px;font-size:12px;font-weight:700;color:#8A96A3">תצוגת מפה · {{ pinCount }} עסקים</figcaption>
+            <sc-for list="{{ pins }}" as="p" hint-placeholder-count="6">
+              <span aria-hidden="true" style="position:absolute;right:{{ p.x }};top:{{ p.y }};display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:30px;padding:0 10px;border-radius:999px;background:#ffffff;border:1px solid #D4D4D4;box-shadow:0 6px 18px rgba(12,36,62,.14);font-size:12.5px;font-weight:700;color:#0C243E">{{ p.rating }}</span>
+            </sc-for>
+            <span aria-hidden="true" style="position:absolute;left:18px;bottom:18px;width:12px;height:12px;border-radius:50%;background:#14B3C6;animation:bfPing 3.4s ease-out infinite"></span>
+          </figure>
+        </sc-if>
+
+        <sc-if value="{{ hasAd }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;border:1px solid #E6E6E6;border-radius:5px;background:#FAFBFB;font-size:11px;font-weight:700;color:#5B6B7B">ממומן</span>
+            <span style="font-size:13px;color:#8A96A3">מקום בתשלום. הוא לעולם אינו משנה את סדר התוצאות שמתחת.</span>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:34px 26px;border:1px dashed #D4D4D4;border-radius:18px;background:#FAFBFB">
+            <span style="font-family:'Frank Ruhl Libre',serif;font-size:24px;line-height:1.3">אין עסקים שעומדים בכל התנאים</span>
+            <span style="font-size:15px;line-height:1.6;color:#5B6B7B;max-width:50ch;text-wrap:pretty">{{ suggestLine }}</span>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+              <sc-for list="{{ rescues }}" as="r" hint-placeholder-count="2">
+                <button type="button" onClick="{{ r.act }}" style="min-height:44px;padding:0 16px;border:1px solid #0C243E;border-radius:11px;background:transparent;font:inherit;font-size:14px;font-weight:700;color:#0C243E;cursor:pointer;transition:background .18s,color .18s" style-hover="background:#0C243E;color:#ffffff">{{ r.name }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <ol data-results data-view="{{ viewMode }}">
+          <sc-for list="{{ results }}" as="c" hint-placeholder-count="6">
+            <li data-card data-ad="{{ c.adFlag }}" style="position:relative;animation-delay:{{ c.delay }}">
+              <a href="{{ c.href }}" onClick="{{ go }}" tabIndex="-1" aria-hidden="true" data-photo>
+                <img src="{{ c.img }}" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+              </a>
+              <button type="button" aria-label="{{ c.heart.label }}" aria-pressed="{{ c.heart.on }}" onClick="{{ c.heart.toggle }}" style="position:absolute;top:26px;left:26px;z-index:2;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;padding:0;border:1px solid {{ c.heart.ring }};border-radius:50%;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);box-shadow:0 4px 14px rgba(12,36,62,.16);color:{{ c.heart.color }};cursor:pointer;transition:transform .15s ease,background .15s ease" style-hover="transform:scale(1.06);background:#fff" style-active="transform:scale(.94)"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.3s-7.3-4.4-9.2-9.1C1.5 7.9 3.6 4.5 7 4.5c2 0 3.5 1.1 5 3 1.5-1.9 3-3 5-3 3.4 0 5.5 3.4 4.2 6.7-1.9 4.7-9.2 9.1-9.2 9.1z" fill="{{ c.heart.fill }}" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path></svg></button>
+              <div data-body>
+                <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                  <h3 style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:23px;line-height:1.2"><a href="{{ c.href }}" onClick="{{ go }}" style="color:#0C243E" style-hover="color:#0B7A87">{{ c.name }}</a></h3>
+                  <sc-if value="{{ c.ad }}" hint-placeholder-val="{{ false }}">
+                    <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;border:1px solid #E6E6E6;border-radius:5px;background:#FAFBFB;font-size:11px;font-weight:700;color:#5B6B7B">ממומן</span>
+                  </sc-if>
+                  <sc-if value="{{ c.verified }}" hint-placeholder-val="{{ true }}">
+                    <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:6px;background:#F0FAFB;font-size:11.5px;font-weight:700;color:#0B7A87"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.4 5.4 10.3 11.5 4"></path></svg>מאומת</span>
+                  </sc-if>
+                  <sc-if value="{{ c.open }}" hint-placeholder-val="{{ true }}">
+                    <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:6px;background:#F1F8F2;font-size:11.5px;font-weight:700;color:#1F6B3B"><span aria-hidden="true" style="width:6px;height:6px;border-radius:50%;background:#2E9E57"></span>פתוח כרגע</span>
+                  </sc-if>
+                </div>
+                <address style="font-style:normal;font-size:14px;color:#5B6B7B">{{ c.address }}</address>
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                  <span dir="ltr" role="img" aria-label="{{ c.ratingAria }}" style="position:relative;display:inline-block;width:85px;height:16px;flex:none">
+                    <svg width="85" height="16" viewBox="0 0 85 16" fill="#DADCE0" aria-hidden="true" style="display:block"><path d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(17,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(34,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(51,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(68,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path></svg>
+                    <span style="position:absolute;left:0;top:0;height:16px;overflow:hidden;width:{{ c.starPct }}">
+                      <svg width="85" height="16" viewBox="0 0 85 16" fill="#FBBC04" aria-hidden="true" style="display:block"><path d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(17,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(34,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(51,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(68,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path></svg>
+                    </span>
+                  </span>
+                  <span style="font-size:14px;font-weight:700;color:#0C243E;font-variant-numeric:tabular-nums">{{ c.rating }}</span>
+                  <span style="font-size:13px;color:#8A96A3;white-space:nowrap">({{ c.reviews }})</span>
+                  <span aria-hidden="true" style="width:4px;height:4px;border-radius:50%;background:#C6CDD4"></span>
+                  <span style="font-size:13.5px;color:#5B6B7B">{{ c.priceLabel }}</span>
+                </div>
+                <div style="font-size:13.5px;color:#5B6B7B">{{ c.directorLine }}</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:2px">
+                  <sc-for list="{{ c.tags }}" as="t" hint-placeholder-count="3">
+                    <span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;border:1px solid {{ t.border }};border-radius:7px;background:{{ t.bg }};font-size:13px;font-weight:500;color:{{ t.color }}">{{ t.name }}</span>
+                  </sc-for>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:auto;padding-top:8px">
+                  <span style="font-size:13px;color:#8A96A3">{{ c.from }}</span>
+                  <a href="{{ c.wa }}" onClick="{{ go }}" aria-label="וואטסאפ אל {{ c.name }}" style="margin-right:auto;display:inline-flex;align-items:center;justify-content:center;gap:8px;width:42px;height:42px;padding:0;border-radius:11px;font:inherit;font-size:14.5px;font-weight:700;text-decoration:none;cursor:pointer;transition:background .15s,border-color .15s;border:1px solid #BFE6CC;background:#EAF7EF;color:#0E6B3A;" style-hover="background:#DDF2E5;border-color:#9ED9B3"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="flex:none;color:#1DA851"><path fill="currentColor" d="M12 2.2A9.7 9.7 0 0 0 3.6 16.8L2.3 21.7l5-1.3A9.7 9.7 0 1 0 12 2.2zm0 17.7c-1.5 0-2.9-.4-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 19.9zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.3.9 2.5c.1.2 1.6 2.5 4 3.5 1.5.6 2 .7 2.8.6.4-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1z"></path></svg></a>
+                  <a href="{{ c.href }}" onClick="{{ go }}" aria-label="לצפייה בעסק {{ c.name }}" style="display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 15px;border-radius:11px;background:#F6F8F9;font-size:14px;font-weight:700;color:#0C243E;transition:background .18s,color .18s" style-hover="background:#0C243E;color:#ffffff"><span>לעסק</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></a>
+                </div>
+              </div>
+            </li>
+          </sc-for>
+        </ol>
+
+        <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:22px">
+          <sc-if value="{{ moreToShow }}" hint-placeholder-val="{{ true }}">
+            <button type="button" onClick="{{ loadMore }}" style="min-height:48px;padding:0 24px;border:1px solid #0C243E;border-radius:12px;background:transparent;font:inherit;font-size:15px;font-weight:700;color:#0C243E;cursor:pointer;transition:background .18s,color .18s" style-hover="background:#0C243E;color:#ffffff">{{ loadMoreLabel }}</button>
+          </sc-if>
+          <div role="presentation" style="flex:1;min-width:160px;height:3px;border-radius:2px;background:#E6E6E6;overflow:hidden"><span style="display:block;height:100%;width:{{ shownPct }};background:#14B3C6;border-radius:2px;transition:width .3s ease"></span></div>
+          <span style="font-size:13.5px;color:#8A96A3">{{ shownLine }}</span>
+        </div>
+
+        <section aria-labelledby="h-related" style="margin-top:clamp(34px,4vw,52px);padding-top:clamp(24px,3vw,34px);border-top:1px solid #E6E6E6">
+          <h2 id="h-related" style="margin:0 0 4px;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(21px,1.9vw,27px);line-height:1.2;letter-spacing:-0.012em">דפים מאונדקסים לחיפוש הזה</h2>
+          <p style="margin:0 0 14px;font-size:14px;color:#5B6B7B;max-width:70ch;text-wrap:pretty">דפי חיפוש אינם מאונדקסים. אלה דפי האינדקס שמכסים את אותו תחום, כך שהקישורים והדירוג נשארים על כתובת קנונית אחת לכל עיר ולכל תחום טיפול.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ related }}" as="l" hint-placeholder-count="6">
+              <a href="{{ l.href }}" onClick="{{ go }}" style="display:inline-flex;flex-direction:column;gap:2px;min-height:52px;justify-content:center;padding:8px 14px;border:1px solid #E6E6E6;border-radius:12px;background:#ffffff;transition:border-color .18s,background .18s" style-hover="border-color:#14B3C6;background:#F0FAFB">
+                <span style="font-size:14.5px;font-weight:700">{{ l.name }}</span>
+                <span dir="ltr" style="font-size:12px;color:#8A96A3;text-align:right">{{ l.href }}</span>
+              </a>
+            </sc-for>
+          </div>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <footer style="background:#0C243E;color:#ffffff">
+    <div style="max-width:1440px;margin:0 auto;padding:clamp(44px,5vw,72px) clamp(16px,3vw,28px) 26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:clamp(24px,3vw,40px)">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <span dir="ltr" style="font-family:'Jost',sans-serif;font-weight:300;font-size:26px;line-height:1;color:#ffffff;align-self:flex-start">beauty<span style="color:#7ED7E1">find</span><span style="color:#7ED7E1;font-weight:400">.</span></span>
+        <p style="margin:0;max-width:32ch;font-size:14.5px;line-height:1.7;color:rgba(255,255,255,.78);text-wrap:pretty">אינדקס היופי והאסתטיקה של ישראל: עסקים מאומתים, ביקורות אמיתיות ותפריטי טיפולים שאפשר להשוות.</p>
+      </div>
+      <sc-for list="{{ footGroups }}" as="g" hint-placeholder-count="4">
+        <nav aria-label="{{ g.name }}" style="display:flex;flex-direction:column;gap:12px">
+          <div style="font-size:12.5px;font-weight:700;color:#7ED7E1">{{ g.name }}</div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <sc-for list="{{ g.links }}" as="l" hint-placeholder-count="4">
+              <a href="{{ l.href }}" onClick="{{ go }}" style="min-height:28px;display:flex;align-items:center;font-size:14.5px;color:rgba(255,255,255,.82)" style-hover="color:#7ED7E1">{{ l.name }}</a>
+            </sc-for>
+          </div>
+        </nav>
+      </sc-for>
+    </div>
+    <div style="max-width:1440px;margin:0 auto;padding:20px clamp(16px,3vw,28px) 34px;border-top:1px solid rgba(255,255,255,.14);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px">
+      <span style="font-size:13px;color:rgba(255,255,255,.66)">© 2026 BeautyFind</span>
+      <span style="font-size:13px;color:rgba(255,255,255,.66)">רישומים לדוגמה לצורך בדיקת עיצוב</span>
+    </div>
+  </footer>
+  <dc-import name="BeautyFind Cookie Consent" embedded="{{ true }}" hint-size="0,0"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440},&quot;mapView&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;תצוגה&quot;},&quot;perLoad&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:6,&quot;min&quot;:3,&quot;max&quot;:12,&quot;step&quot;:3,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;תצוגה&quot;}}">
+const GEO = [
+  { name: 'צפון', slug: 'north', cities: ['נהריה', 'עכו', 'כרמיאל', 'טבריה', 'עפולה'] },
+  { name: 'חיפה', slug: 'haifa', cities: ['חיפה', 'קריית ביאליק', 'חדרה', 'זכרון יעקב'] },
+  { name: 'שרון', slug: 'sharon', cities: ['נתניה', 'רעננה', 'כפר סבא', 'הרצליה', 'הוד השרון'] },
+  { name: 'גוש דן', slug: 'dan', cities: ['תל אביב–יפו', 'רמת גן', 'גבעתיים', 'פתח תקווה', 'חולון', 'ראשון לציון'] },
+  { name: 'ירושלים', slug: 'jerusalem', cities: ['ירושלים', 'בית שמש', 'מבשרת ציון'] },
+  { name: 'שפלה', slug: 'shfela', cities: ['רחובות', 'נס ציונה', 'מודיעין', 'רמלה', 'יבנה'] },
+  { name: 'דרום', slug: 'south', cities: ['אשדוד', 'אשקלון', 'באר שבע', 'ערד', 'אילת'] }
+];
+const TREATMENTS = ['אסתטיקה רפואית', 'קוסמטיקה וטיפולי פנים', 'הסרת שיער', 'מספרות ועיצוב שיער', 'ציפורניים, מניקור ופדיקור', 'גבות וריסים', 'עיצוב וחיטוב הגוף', 'ספא ועיסויים'];
+const FEATURES = ['ייעוץ ללא עלות', 'רופא/ה במקום', 'אחיות מזריקות', 'שעות ערב', 'פתוח בשישי', 'חניה במקום', 'נגיש לכיסא גלגלים'];
+const PRICES = [['₪', 'חסכוני'], ['₪₪', 'בינוני'], ['₪₪₪', 'פרימיום']];
+const LANGS = ['עברית', 'אנגלית', 'רוסית', 'ערבית', 'צרפתית'];
+const IMGS = ['assets/biz-medical.jpg', 'assets/biz-facial.jpg', 'assets/biz-laser.jpg', 'assets/biz-nails.jpg', 'assets/biz-spa.jpg', 'assets/biz-hair.jpg', 'assets/hero-clinic.jpg', 'assets/hero-consult.jpg'];
+/* name, region, city, address, rating, reviews, treatments, price, features, langs, responsible, openNow, from */
+const BIZ = [
+  ['רוטשילד אסתטיקה', 'dan', 'תל אביב–יפו', 'שדרות רוטשילד 42, לב תל אביב', 4.9, 412, ['אסתטיקה רפואית', 'קוסמטיקה וטיפולי פנים'], '₪₪₪', ['ייעוץ ללא עלות', 'רופא/ה במקום', 'חניה במקום'], ['עברית', 'אנגלית', 'רוסית'], 'ד״ר יעל אברהמי, MD', true, 'מ־₪900', true],
+  ['לייזר האוס רמת אביב', 'dan', 'תל אביב–יפו', 'איינשטיין 40, רמת אביב', 4.7, 331, ['הסרת שיער', 'עיצוב וחיטוב הגוף'], '₪₪', ['שעות ערב', 'חניה במקום', 'נגיש לכיסא גלגלים'], ['עברית', 'אנגלית'], 'ד״ר נ׳ שגב, MD', true, 'מ־₪150'],
+  ['כרמל אסתטיקה', 'haifa', 'חיפה', 'שדרות מוריה 61, הדר הכרמל', 4.9, 287, ['אסתטיקה רפואית', 'קוסמטיקה וטיפולי פנים'], '₪₪₪', ['ייעוץ ללא עלות', 'רופא/ה במקום'], ['עברית', 'אנגלית', 'רוסית', 'ערבית'], 'ד״ר א׳ חלבי, MD', false, 'מ־₪850'],
+  ['שרון קליניק', 'sharon', 'רעננה', 'אחוזה 112, מרכז רעננה', 4.9, 204, ['אסתטיקה רפואית', 'גבות וריסים'], '₪₪₪', ['רופא/ה במקום', 'ייעוץ ללא עלות', 'חניה במקום'], ['עברית', 'אנגלית'], 'ד״ר ל׳ גולן, MD', true, 'מ־₪950'],
+  ['סטודיו שינקין קוסמטיקס', 'dan', 'תל אביב–יפו', 'שינקין 31, לב תל אביב', 4.8, 268, ['קוסמטיקה וטיפולי פנים', 'גבות וריסים'], '₪₪', ['שעות ערב'], ['עברית', 'אנגלית'], 'שירה מזרחי, קוסמטיקאית פרא־רפואית', true, 'מ־₪350'],
+  ['מרכז אסתטיקה ירושלים', 'jerusalem', 'ירושלים', 'המלך ג׳ורג׳ 33, מרכז העיר', 4.8, 176, ['אסתטיקה רפואית'], '₪₪₪', ['רופא/ה במקום', 'נגיש לכיסא גלגלים', 'חניה במקום'], ['עברית', 'אנגלית', 'צרפתית'], 'ד״ר מ׳ רוזנברג, MD', false, 'מ־₪1,000'],
+  ['נגב אסתטיקה', 'south', 'באר שבע', 'רגר 38, מרכז באר שבע', 4.8, 198, ['אסתטיקה רפואית', 'הסרת שיער'], '₪₪', ['ייעוץ ללא עלות', 'חניה במקום', 'פתוח בשישי'], ['עברית', 'ערבית', 'רוסית'], 'ד״ר ס׳ אלמוג, MD', true, 'מ־₪700'],
+  ['נתניה ביוטי לאב', 'sharon', 'נתניה', 'הרצל 24, מרכז נתניה', 4.7, 152, ['קוסמטיקה וטיפולי פנים', 'ציפורניים, מניקור ופדיקור'], '₪₪', ['שעות ערב', 'פתוח בשישי'], ['עברית', 'אנגלית', 'רוסית'], 'ר׳ בנימין, קוסמטיקאית מוסמכת', true, 'מ־₪320'],
+  ['רחובות ביוטי קליניק', 'shfela', 'רחובות', 'הרצל 178, מרכז רחובות', 4.8, 164, ['קוסמטיקה וטיפולי פנים', 'אסתטיקה רפואית'], '₪₪', ['ייעוץ ללא עלות', 'חניה במקום'], ['עברית', 'אנגלית'], 'ד״ר ט׳ אשכנזי, MD', true, 'מ־₪400'],
+  ['ספא כנרת', 'north', 'טבריה', 'טיילת יגאל אלון 8, טבריה', 4.9, 167, ['ספא ועיסויים'], '₪₪₪', ['פתוח בשישי', 'חניה במקום', 'נגיש לכיסא גלגלים'], ['עברית', 'אנגלית', 'רוסית'], 'ט׳ רון, מעסה מוסמכת', false, 'מ־₪380'],
+  ['נייל סטודיו גבעתיים', 'dan', 'גבעתיים', 'כצנלסון 62, גבעתיים', 4.8, 196, ['ציפורניים, מניקור ופדיקור'], '₪', ['שעות ערב'], ['עברית'], 'מ׳ פרץ, מעצבת ציפורניים', true, 'מ־₪120'],
+  ['מספרת דיזנגוף', 'dan', 'תל אביב–יפו', 'דיזנגוף 182, הצפון הישן', 4.7, 233, ['מספרות ועיצוב שיער'], '₪₪', ['שעות ערב', 'פתוח בשישי'], ['עברית', 'אנגלית'], 'ע׳ דהן, מעצב שיער', true, 'מ־₪180']
+].map((b, i) => ({
+  name: b[0], region: b[1], city: b[2], address: b[3], rating: b[4], reviews: b[5],
+  treatments: b[6], price: b[7], features: b[8], langs: b[9], responsible: b[10],
+  openNow: b[11], from: b[12], ad: !!b[13], img: IMGS[i % IMGS.length]
+}));
+
+class Component extends DCLogic {
+  savedInit = (() => { try { return JSON.parse(localStorage.getItem('bf-saved') || '[]'); } catch (e) { return []; } })();
+  readSaved() { try { return JSON.parse(localStorage.getItem('bf-saved') || '[]'); } catch (e) { return []; } }
+  heartFor(name) {
+    const saved = this.state.savedList || [];
+    const on = saved.includes(name);
+    return { on: on ? 'true' : 'false', label: on ? 'הסרת ' + name + ' מהשמורות' : 'שמירת ' + name,
+      fill: on ? 'currentColor' : 'none', color: on ? '#0B7A87' : '#0C243E', ring: on ? '#CDEFF3' : 'rgba(255,255,255,.7)',
+      toggle: e => { if (e) { e.preventDefault(); e.stopPropagation(); }
+        const next = on ? saved.filter(x => x !== name) : saved.concat([name]);
+        try { localStorage.setItem('bf-saved', JSON.stringify(next)); } catch (err) {}
+        this.setState({ savedList: next }); } };
+  }
+
+  /* matchMedia, not width measurement: an iframe resized by the host fires neither
+     resize nor a post-resize load, so a seeded pixel width never gets superseded. */
+  static MQ = { desk: '(min-width:1040px)' };
+  readMQ() {
+    const out = {};
+    for (const k in Component.MQ) out[k] = typeof window !== 'undefined' ? window.matchMedia(Component.MQ[k]).matches : true;
+    return out;
+  }
+  state = {
+    mq: this.readMQ(), savedList: this.savedInit, q: '', where: '',
+    region: null, city: null, treatments: [], features: [], price: null, langs: [],
+    openNow: false, sort: 'relevance', view: 'list', shown: 6,
+    panel: false, sortOpen: false,
+    groupsOpen: { treat: true, feat: true, price: true, lang: false }
+  };
+  componentDidMount() {
+    this._sync = () => {
+      const next = this.readMQ(), cur = this.state.mq;
+      if (Object.keys(next).some(k => next[k] !== cur[k])) this.setState({ mq: next });
+    };
+    this._mqls = Object.values(Component.MQ).map(qy => {
+      const m = window.matchMedia(qy);
+      if (m.addEventListener) m.addEventListener('change', this._sync); else m.addListener(this._sync);
+      return m;
+    });
+    this._sync();
+  }
+  componentWillUnmount() {
+    (this._mqls || []).forEach(m => { if (m.removeEventListener) m.removeEventListener('change', this._sync); else m.removeListener(this._sync); });
+  }
+  toggleIn(key, val) {
+    this.setState(s => {
+      const arr = s[key];
+      return { [key]: arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val], shown: 6 };
+    });
+  }
+  renderVals() {
+    const s = this.state;
+    const desk = s.mq.desk;
+    const ql = s.q.trim(), wl = s.where.trim();
+
+    /* narrowing helper: count a facet as if only the *other* facets were applied */
+    const passes = (b, skip) =>
+      (skip === 'region' || !s.region || b.region === s.region) &&
+      (skip === 'city' || !s.city || b.city === s.city) &&
+      (skip === 'treatments' || s.treatments.every(t => b.treatments.includes(t))) &&
+      (skip === 'features' || s.features.every(f => b.features.includes(f))) &&
+      (skip === 'price' || !s.price || b.price === s.price) &&
+      (skip === 'langs' || s.langs.every(l => b.langs.includes(l))) &&
+      (skip === 'openNow' || !s.openNow || b.openNow) &&
+      (!ql || b.name.includes(ql) || b.treatments.some(t => t.includes(ql))) &&
+      (!wl || b.city.includes(wl) || b.address.includes(wl) || (GEO.find(g => g.slug === b.region) || {}).name.includes(wl));
+
+    const matched = BIZ.filter(b => passes(b));
+    const sorted = s.sort === 'rating' ? [...matched].sort((a, b) => b.rating - a.rating)
+      : s.sort === 'reviews' ? [...matched].sort((a, b) => b.reviews - a.reviews)
+      : s.sort === 'price' ? [...matched].sort((a, b) => a.price.length - b.price.length)
+      : [...matched].sort((a, b) => (b.ad ? 1 : 0) - (a.ad ? 1 : 0));
+    const visible = sorted.slice(0, s.shown);
+
+    const cityPool = GEO.filter(g => !s.region || g.slug === s.region).flatMap(g => g.cities);
+    const chipStyle = on => ({
+      border: on ? '#14B3C6' : '#E6E6E6', bg: on ? '#F0FAFB' : '#ffffff',
+      color: on ? '#0B7A87' : '#3E4F62', weight: on ? 700 : 500, subColor: on ? '#0B7A87' : '#8A96A3'
+    });
+    const box = (on, round) => ({
+      tick: on ? '✓' : '', boxBorder: on ? '#14B3C6' : '#D4D4D4',
+      boxBg: on ? '#14B3C6' : '#ffffff', boxRadius: round ? '50%' : '5px'
+    });
+
+    const groupDefs = [
+      { key: 'treat', name: 'תחום טיפול', picks: s.treatments.length,
+        options: TREATMENTS.map(t => {
+          const on = s.treatments.includes(t);
+          const n = BIZ.filter(b => passes(b, 'treatments') && b.treatments.includes(t)).length;
+          return { name: t, on, count: String(n), opacity: n ? 1 : .45, ...box(on), toggle: () => this.toggleIn('treatments', t) };
+        }) },
+      { key: 'feat', name: 'מאפיינים', picks: s.features.length,
+        options: FEATURES.map(f => {
+          const on = s.features.includes(f);
+          const n = BIZ.filter(b => passes(b, 'features') && b.features.includes(f)).length;
+          return { name: f, on, count: String(n), opacity: n ? 1 : .45, ...box(on), toggle: () => this.toggleIn('features', f) };
+        }) },
+      { key: 'price', name: 'טווח מחירים', picks: s.price ? 1 : 0,
+        options: PRICES.map(([sym, label]) => {
+          const on = s.price === sym;
+          const n = BIZ.filter(b => passes(b, 'price') && b.price === sym).length;
+          return { name: `${sym} · ${label}`, on, count: String(n), opacity: n ? 1 : .45, ...box(on, true),
+            toggle: () => this.setState({ price: on ? null : sym, shown: 6 }) };
+        }) },
+      { key: 'lang', name: 'שפות', picks: s.langs.length,
+        options: LANGS.map(l => {
+          const on = s.langs.includes(l);
+          const n = BIZ.filter(b => passes(b, 'langs') && b.langs.includes(l)).length;
+          return { name: l, on, count: String(n), opacity: n ? 1 : .45, ...box(on), toggle: () => this.toggleIn('langs', l) };
+        }) }
+    ];
+
+    const chips = [
+      ...(s.region ? [{ name: (GEO.find(g => g.slug === s.region) || {}).name, remove: () => this.setState({ region: null, city: null, shown: 6 }) }] : []),
+      ...(s.city ? [{ name: s.city, remove: () => this.setState({ city: null, shown: 6 }) }] : []),
+      ...s.treatments.map(t => ({ name: t, remove: () => this.toggleIn('treatments', t) })),
+      ...s.features.map(f => ({ name: f, remove: () => this.toggleIn('features', f) })),
+      ...(s.price ? [{ name: s.price, remove: () => this.setState({ price: null, shown: 6 }) }] : []),
+      ...s.langs.map(l => ({ name: l, remove: () => this.toggleIn('langs', l) })),
+      ...(s.openNow ? [{ name: 'פתוח כרגע', remove: () => this.setState({ openNow: false, shown: 6 }) }] : [])
+    ];
+
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0'), mm = String(now.getMinutes()).padStart(2, '0');
+    const perLoad = this.props.perLoad ?? 6;
+    const regionName = s.region ? (GEO.find(g => g.slug === s.region) || {}).name : null;
+    const place = s.city || regionName || 'ישראל';
+
+    return {
+      go: e => { if (e) e.preventDefault(); },
+      onKey: e => { if (e.key === 'Escape') this.setState({ panel: false, sortOpen: false }); },
+      onSubmit: e => { e.preventDefault(); this.setState({ shown: 6 }); },
+      q: s.q, where: s.where,
+      onQ: e => this.setState({ q: e.target.value, shown: 6 }),
+      onWhere: e => this.setState({ where: e.target.value, shown: 6 }),
+
+      headline: ql ? `${ql} ב${place}` : `מכוני יופי ואסתטיקה ב${place}`,
+      answerLine: `${matched.length} עסקים מאומתים עומדים בחיפוש הזה, מתוך ${BIZ.length} באינדקס. הסדר נקבע לפי התאמה, דירוג גוגל ומספר הביקורות — לא לפי תשלום.`,
+      queryPath: `/search?q=${encodeURIComponent(ql || '')}&loc=${encodeURIComponent(wl || '')}`,
+      presets: ['בוטוקס בתל אביב', 'הסרת שיער בחיפה', 'ניקוי פנים בשרון', 'ספא בצפון', 'מניקור בגוש דן'].map(name => ({
+        name, pick: () => { const [t, , ...rest] = name.split(' '); this.setState({ q: t, where: rest.join(' '), shown: 6 }); }
+      })),
+
+      panelOpen: !desk && s.panel ? '1' : '0',
+      openPanel: () => this.setState({ panel: true }), closePanel: () => this.setState({ panel: false }),
+      showLabel: `הצגת ${matched.length} תוצאות`,
+
+      regionBtns: [{ name: 'כל הארץ', slug: null }, ...GEO].map(g => {
+        const on = s.region === g.slug;
+        const n = g.slug ? BIZ.filter(b => passes(b, 'region') && b.region === g.slug).length : BIZ.filter(b => passes(b, 'region')).length;
+        return { name: g.name, on, count: `${n} עסקים`, ...chipStyle(on),
+          pick: () => this.setState({ region: g.slug, city: null, shown: 6 }) };
+      }),
+      cities: cityPool.map(c => {
+        const on = s.city === c;
+        const n = BIZ.filter(b => passes(b, 'city') && b.city === c).length;
+        return { name: c, on, count: String(n), ...chipStyle(on),
+          pick: () => this.setState({ city: on ? null : c, shown: 6 }) };
+      }),
+      groups: groupDefs.map(g => ({
+        name: g.name, options: g.options, open: !!s.groupsOpen[g.key],
+        hasPicks: g.picks > 0, picks: String(g.picks), rot: s.groupsOpen[g.key] ? '180deg' : '0deg',
+        toggle: () => this.setState(st => ({ groupsOpen: { ...st.groupsOpen, [g.key]: !st.groupsOpen[g.key] } }))
+      })),
+      openNow: s.openNow, toggleOpenNow: () => this.setState(st => ({ openNow: !st.openNow, shown: 6 })),
+      switchBg: s.openNow ? '#14B3C6' : '#EDEFF1', switchBorder: s.openNow ? '#14B3C6' : '#D4D4D4',
+      switchX: s.openNow ? '-22px' : '0px',
+      localTimeLabel: `שעה מקומית בישראל ${hh}:${mm}`,
+
+      resultHeading: `${matched.length} תוצאות`,
+      hasFilters: chips.length > 0, filterCount: String(chips.length), chips,
+      filterBtnBorder: chips.length ? '#14B3C6' : '#E6E6E6',
+      clearAll: () => this.setState({ region: null, city: null, treatments: [], features: [], price: null, langs: [], openNow: false, shown: 6 }),
+
+      sortOpen: s.sortOpen, toggleSort: () => this.setState(st => ({ sortOpen: !st.sortOpen })),
+      sortLabel: ({ relevance: 'התאמה', rating: 'דירוג', reviews: 'ביקורות', price: 'מחיר' })[s.sort],
+      sorts: [['relevance', 'התאמה'], ['rating', 'דירוג גבוה'], ['reviews', 'הכי מבוקרים'], ['price', 'מחיר מהזול']].map(([k, name]) => {
+        const on = s.sort === k;
+        return { name, on, tick: on ? '✓' : '', bg: on ? '#F0FAFB' : 'transparent', weight: on ? 700 : 500,
+          select: () => this.setState({ sort: k, sortOpen: false }) };
+      }),
+      viewMode: s.view,
+      views: [
+        { key: 'list', label: 'רשימה', icon: ['M2.5 4h11', 'M2.5 8h11', 'M2.5 12h11'] },
+        { key: 'grid', label: 'רשת', icon: ['M2.5 2.5h4.5v4.5h-4.5z', 'M9 2.5h4.5v4.5H9z', 'M2.5 9h4.5v4.5h-4.5z', 'M9 9h4.5v4.5H9z'] },
+        { key: 'map', label: 'מפה', icon: ['M8 14.5s4.8-4.2 4.8-7.7A4.8 4.8 0 0 0 3.2 6.8C3.2 10.3 8 14.5 8 14.5Z', 'M8 8.6a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6'] }
+      ].map(v => {
+        const on = s.view === v.key;
+        return { label: v.label, icon: v.icon, on, bg: on ? '#0C243E' : 'transparent', color: on ? '#ffffff' : '#5B6B7B',
+          pick: () => this.setState({ view: v.key }) };
+      }),
+
+      mapOn: (this.props.mapView ?? true) && s.view === 'map',
+      pinCount: String(matched.length),
+      pins: visible.slice(0, 6).map((b, i) => ({ rating: b.rating.toFixed(1),
+        x: `${[18, 34, 52, 27, 66, 44][i]}%`, y: `${[24, 58, 33, 76, 62, 44][i]}%` })),
+
+      hasAd: visible.some(b => b.ad),
+      noResults: matched.length === 0,
+      suggestLine: 'נסו להסיר סינון אחד, להרחיב לאזור שלם, או לכבות את ״פתוח כרגע״.',
+      rescues: [
+        { name: 'נקו את כל הסינונים', act: () => this.setState({ region: null, city: null, treatments: [], features: [], price: null, langs: [], openNow: false, shown: 6 }) },
+        { name: 'חפשו בכל הארץ', act: () => this.setState({ region: null, city: null, where: '', shown: 6 }) }
+      ],
+
+      results: visible.map((b, i) => ({
+        name: b.name, address: `${b.address} · ${b.city}`, rating: b.rating.toFixed(1), reviews: String(b.reviews),
+        starPct: `${(b.rating / 5 * 100).toFixed(0)}%`,
+        ratingAria: `${b.rating} מתוך 5 מתוך ${b.reviews} ביקורות`,
+        priceLabel: `${b.price} · ${(PRICES.find(p => p[0] === b.price) || [])[1]}`,
+        directorLine: /^ד״ר/.test(b.responsible) ? `אחריות רפואית: ${b.responsible}` : `איש מקצוע אחראי: ${b.responsible}`,
+        tags: [...b.treatments.slice(0, 2).map(t => ({ name: t, border: '#CDEFF3', bg: '#F0FAFB', color: '#0B7A87' })),
+               ...b.features.slice(0, 2).map(f => ({ name: f, border: '#E6E6E6', bg: '#FAFBFB', color: '#3E4F62' }))],
+        from: b.from, open: b.openNow, verified: true, ad: b.ad, adFlag: b.ad ? '1' : '0',
+        img: b.img, href: `/${b.region}/biz/${i}`, wa: 'https://wa.me/97235550142',
+        delay: `${i * 45}ms`, heart: this.heartFor(b.name)
+      })),
+      moreToShow: s.shown < sorted.length,
+      loadMoreLabel: `הצגת ${Math.min(perLoad, sorted.length - s.shown)} תוצאות נוספות`,
+      loadMore: () => this.setState(st => ({ shown: st.shown + perLoad })),
+      shownPct: `${Math.round(Math.min(1, visible.length / Math.max(1, sorted.length)) * 100)}%`,
+      shownLine: `${visible.length} מתוך ${sorted.length}`,
+
+      related: [
+        { name: `מכוני יופי ב${place}`, href: s.city ? `/${s.region || 'dan'}/city` : `/${s.region || 'dan'}` },
+        ...TREATMENTS.slice(0, 4).map((t, i) => ({ name: `${t} ב${place}`, href: `/${s.region || 'dan'}/t/${i}` })),
+        { name: 'כל תחומי הטיפול', href: '/treatments' }
+      ],
+      footGroups: [
+        { name: 'אזורים', links: GEO.slice(0, 5).map(g => ({ name: g.name, href: `/${g.slug}` })) },
+        { name: 'תחומי טיפול', links: TREATMENTS.slice(0, 5).map((t, i) => ({ name: t, href: `/treatments/${i}` })) },
+        { name: 'לעסקים', links: [{ name: 'רישום עסק', href: '/for-business' }, { name: 'אישור בעלות', href: '/for-business/claim' }, { name: 'מחירים', href: '/for-business#pricing' }, { name: 'תקן הרישום', href: '/listing-standards' }] },
+        { name: 'החברה', links: [{ name: 'אודות', href: '/about' }, { name: 'מרכז עזרה', href: '/help' }, { name: 'צור קשר', href: '/contact' }, { name: 'מדיניות פרטיות', href: '/privacy' }, { name: 'הצהרת נגישות', href: '/accessibility' }] }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

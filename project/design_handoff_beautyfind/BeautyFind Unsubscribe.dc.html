@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="הסרה מרשימת דיוור — בחירה לפי קליניקה וערוץ. הודעות על תורים ממשיכות להגיע.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#F6F8F9}
+  *{box-sizing:border-box}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes usFade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  @keyframes usPop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#F6F8F9;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+  <header style="background:#fff;border-bottom:1px solid #E6E6E6">
+    <div style="max-width:640px;margin:0 auto;padding:12px 18px;display:flex;align-items:center">
+      <a href="./BeautyFind Homepage.dc.html" dir="ltr" style="font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:21px;letter-spacing:-0.01em;color:#0C243E;text-decoration:none">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6">.</span></a>
+    </div>
+  </header>
+
+  <div style="max-width:640px;margin:0 auto;padding:clamp(20px,4vw,40px) 18px 60px">
+    <sc-if value="{{ isForm }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:14px;animation:usFade .22s ease both">
+        <div>
+          <h1 style="margin:0 0 5px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(26px,4vw,34px);font-weight:500;letter-spacing:-0.015em">הסרה מדיוור</h1>
+          <p style="margin:0;font-size:15.5px;color:#3E4F62;text-wrap:pretty">הגעת מהודעה של <strong>{{ source }}</strong> אל <span dir="ltr" style="unicode-bidi:isolate;font-weight:700">{{ masked }}</span>. בחרי מה להפסיק לקבל.</p>
+        </div>
+
+        <section aria-labelledby="us-h1" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,2vw,21px)">
+          <h2 id="us-h1" style="margin:0 0 11px;font-size:16px;font-weight:700">ממי</h2>
+          <div role="radiogroup" aria-label="היקף ההסרה" style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ scopes }}" as="sc" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{ sc.on }}" onClick="{{ sc.pick }}" style="display:flex;align-items:flex-start;gap:11px;padding:12px 13px;border:1px solid {{ sc.border }};border-radius:12px;background:{{ sc.bg }};font:inherit;text-align:right;cursor:pointer"><span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;margin-top:2px;border:1.5px solid {{ sc.dot }};border-radius:50%;background:#fff"><span style="display:block;width:11px;height:11px;border-radius:50%;background:{{ sc.fill }}"></span></span><span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-size:15px;font-weight:700">{{ sc.name }}</span><span style="font-size:13px;color:#5B6B7B;text-wrap:pretty">{{ sc.note }}</span></span></button></sc-for>
+          </div>
+        </section>
+
+        <section aria-labelledby="us-h2" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,2vw,21px)">
+          <h2 id="us-h2" style="margin:0 0 4px;font-size:16px;font-weight:700">באילו ערוצים</h2>
+          <p style="margin:0 0 6px;font-size:13px;color:#5B6B7B">מבצעים, עדכונים וניוזלטר.</p>
+          <ul style="list-style:none;margin:0;padding:0">
+            <sc-for list="{{ channels }}" as="c" hint-placeholder-count="3"><li style="padding:12px 0;border-top:1px solid #EDEFF2;display:flex;align-items:center;gap:14px"><span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">{{ c.name }}</span><span style="font-size:13px;color:#5B6B7B">{{ c.state }}</span></span><button type="button" role="switch" aria-checked="{{ c.on }}" aria-label="{{ c.aria }}" onClick="{{ c.toggle }}" style="flex:none;position:relative;width:50px;height:30px;border:0;border-radius:15px;background:{{ c.track }};cursor:pointer;padding:0"><span aria-hidden="true" style="position:absolute;top:3px;right:{{ c.knob }};width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(12,36,62,.25);transition:right .16s"></span></button></li></sc-for>
+          </ul>
+        </section>
+
+        <div style="padding:13px 15px;border:1px solid #CDEFF3;border-radius:14px;background:#F0FAFB;font-size:13.5px;color:#3E4F62;text-wrap:pretty"><strong style="color:#0B7A87">ימשיכו להגיע:</strong> אישורי תור, תזכורות, הנחיות אחרי טיפול, קבלות וחשבוניות. אלה הודעות שירות ולא דיוור.</div>
+
+        <sc-if value="{{ errOn }}" hint-placeholder-val="{{ false }}">
+          <p role="alert" style="margin:0;font-size:14px;font-weight:700;color:#A33A31">כל הערוצים עדיין פעילים — כבי לפחות אחד, או חזרי מאוחר יותר.</p>
+        </sc-if>
+        <button type="button" onClick="{{ save }}" style="min-height:52px;padding:0 18px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:16px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#0C243E">שמירת ההעדפות</button>
+        <p style="margin:0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">ההסרה נכנסת לתוקף מיד, ובכל מקרה תוך 3 ימי עסקים. אפשר גם לשלוח ״הסר״ בתשובה לכל הודעה. <a href="./BeautyFind Legal.dc.html">מדיניות הפרטיות</a></p>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#fff;border:1px solid #CDEFF3;border-radius:18px;padding:clamp(20px,3vw,30px);animation:usPop .2s ease both">
+        <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:54px;height:54px;margin-bottom:12px;border-radius:50%;background:#F0FAFB;color:#0B7A87"><svg width="26" height="26" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg></span>
+        <h1 style="margin:0 0 5px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(22px,3vw,28px);font-weight:500;letter-spacing:-0.014em">ההעדפות נשמרו</h1>
+        <p style="margin:0 0 16px;font-size:15px;color:#3E4F62;text-wrap:pretty">{{ doneBody }}</p>
+        <div style="display:flex;gap:9px;flex-wrap:wrap">
+          <button type="button" onClick="{{ undo }}" style="min-height:46px;padding:0 15px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font:inherit;font-size:15px;font-weight:600;color:#3E4F62;cursor:pointer">טעות — להחזיר</button>
+          <a href="./BeautyFind Account.dc.html" style="min-height:46px;display:inline-flex;align-items:center;padding:0 15px;border-radius:12px;background:#0B7A87;font-size:15px;font-weight:700;color:#fff;text-decoration:none">כל ההעדפות בחשבון</a>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:640,&quot;height&quot;:880},&quot;from&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;wa&quot;,&quot;email&quot;,&quot;sms&quot;],&quot;default&quot;:&quot;wa&quot;,&quot;tsType&quot;:&quot;'wa'|'email'|'sms'&quot;},&quot;source&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;קליניקת נועה&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const CH = [['wa', 'וואטסאפ'], ['email', 'מייל'], ['sms', 'SMS']];
+
+class Component extends DCLogic {
+  state = { scope: 'clinic', off: {}, done: false, tried: false };
+  renderVals() {
+    const s = this.state, teal = '#0B7A87';
+    const from = this.props.from || 'wa';
+    const off = Object.keys(s.off).length ? s.off : { [from]: true };
+    const source = this.props.source || 'קליניקת נועה';
+    const anyOff = CH.some(c => off[c[0]]);
+    const offNames = CH.filter(c => off[c[0]]).map(c => c[1]);
+    return {
+      isForm: !s.done, isDone: s.done, source,
+      masked: from === 'email' ? 'sh•••@gmail.com' : '054-•••-2290',
+      scopes: [['clinic', 'רק מ' + source, 'הודעות שיווק מקליניקות אחרות וממגזין BeautyFind ימשיכו'], ['all', 'מכל הקליניקות ומ־BeautyFind', 'לא תקבלי דיוור מאף עסק דרכנו']].map(x => { const on = s.scope === x[0]; return { name: x[1], note: x[2], on: on ? 'true' : 'false', bg: on ? '#F0FAFB' : '#fff', border: on ? '#7ED7E1' : '#E6E6E6', dot: on ? teal : '#C9CFD6', fill: on ? teal : 'transparent', pick: () => this.setState({ scope: x[0] }) }; }),
+      channels: CH.map(c => { const stopped = !!off[c[0]]; return { name: c[1], state: stopped ? 'יופסק' : 'ימשיך', on: stopped ? 'false' : 'true', aria: c[1] + ' — דיוור', track: stopped ? '#C9CFD6' : teal, knob: stopped ? '3px' : '23px',
+        toggle: () => this.setState(st => { const base = Object.keys(st.off).length ? st.off : { [from]: true }; return { off: Object.assign({}, base, { [c[0]]: !base[c[0]] }) }; }) }; }),
+      errOn: s.tried && !anyOff,
+      save: () => { if (!anyOff) { this.setState({ tried: true }); return; } this.setState({ done: true, off }); },
+      doneBody: 'הפסקנו דיוור ב' + offNames.join(', ') + (s.scope === 'all' ? ' מכל העסקים ב־BeautyFind.' : ' מ' + source + '.') + ' הודעות על תורים ימשיכו להגיע כרגיל.',
+      undo: () => this.setState({ done: false, off: {}, tried: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

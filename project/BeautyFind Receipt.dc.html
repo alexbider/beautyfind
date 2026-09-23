@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="קבלה וחשבונית מס על מקדמה ותשלום טיפול, ומעקב החזר עם חשבונית זיכוי אחרי ביטול.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#F6F8F9}
+  *{box-sizing:border-box}
+  :root{--rc-pad:16px;--rc-meta:minmax(0,1fr)}
+  @media (min-width:560px){:root{--rc-pad:22px;--rc-meta:repeat(2,minmax(0,1fr))}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes rcFade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  @keyframes rcPop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+  @media print{[data-rc-noprint]{display:none!important}body{background:#fff}}
+</style>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#F6F8F9;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+
+  <header data-rc-noprint style="background:#fff;border-bottom:1px solid #E6E6E6">
+    <div style="max-width:760px;margin:0 auto;padding:12px var(--rc-pad);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <a href="./BeautyFind Homepage.dc.html" dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:21px;letter-spacing:-0.01em;color:#0C243E;text-decoration:none">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6">.</span></a>
+      <span style="flex:1;min-width:0"></span>
+      <button type="button" onClick="{{ print }}" style="flex:none;min-height:40px;padding:0 13px;border:1px solid #E6E6E6;border-radius:10px;background:#fff;font:inherit;font-size:14px;font-weight:700;color:#3E4F62;cursor:pointer">הדפסה / PDF</button>
+      <a href="./BeautyFind Account.dc.html" style="flex:none;min-height:40px;display:inline-flex;align-items:center;padding:0 13px;border-radius:10px;background:#F0FAFB;font-size:14px;font-weight:700;color:#0B7A87;text-decoration:none">לחשבון שלי</a>
+    </div>
+  </header>
+
+  <div style="max-width:760px;margin:0 auto;padding:clamp(18px,3vw,32px) var(--rc-pad) 60px;display:flex;flex-direction:column;gap:14px">
+
+    <sc-if value="{{ showRefund }}" hint-placeholder-val="{{ false }}">
+      <section data-rc-noprint aria-labelledby="rc-rf" style="background:#fff;border:1px solid #CDEFF3;border-radius:17px;padding:16px 18px;animation:rcFade .22s ease both">
+        <h2 id="rc-rf" style="margin:0 0 3px;font-size:16px;font-weight:700">החזר המקדמה</h2>
+        <p style="margin:0 0 14px;font-size:14px;color:#5B6B7B;text-wrap:pretty">התור בוטל ב־<span dir="ltr" style="unicode-bidi:isolate;font-variant-numeric:tabular-nums">24/09/2026</span>, יותר מ־24 שעות לפני המועד — ללא חיוב.</p>
+        <ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0">
+          <sc-for list="{{ track }}" as="tr" hint-placeholder-count="3"><li style="display:flex;gap:12px;min-height:52px"><span style="flex:none;display:flex;flex-direction:column;align-items:center"><span aria-hidden="true" style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:{{ tr.dot }};color:#fff;font-size:12px;font-weight:800">{{ tr.mark }}</span><span aria-hidden="true" style="flex:1;width:2px;background:{{ tr.line }}"></span></span><span style="flex:1;min-width:0;padding-bottom:10px"><span style="display:block;font-size:14.5px;font-weight:700;color:{{ tr.color }}">{{ tr.name }}</span><span style="display:block;font-size:13px;color:#5B6B7B">{{ tr.note }}</span></span></li></sc-for>
+        </ol>
+      </section>
+    </sc-if>
+
+    <article aria-labelledby="rc-h" style="background:#fff;border:1px solid #E6E6E6;border-radius:18px;overflow:hidden;animation:rcPop .2s ease both">
+      <div style="padding:clamp(18px,2.6vw,28px);border-bottom:1px solid #EDEFF2;display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <div style="flex:1 1 240px;min-width:0">
+          <span style="display:block;font-size:13px;font-weight:700;color:{{ doc.kColor }}">{{ doc.kicker }}</span>
+          <h1 id="rc-h" style="margin:3px 0 0;font-family:'Frank Ruhl Libre',serif;font-size:clamp(24px,3.2vw,32px);font-weight:500;letter-spacing:-0.015em">{{ doc.title }} <span dir="ltr" style="unicode-bidi:isolate;font-variant-numeric:tabular-nums">{{ doc.no }}</span></h1>
+          <span style="display:block;margin-top:2px;font-size:13.5px;color:#5B6B7B">מקור · הופקה <span dir="ltr" style="unicode-bidi:isolate;font-variant-numeric:tabular-nums">{{ doc.date }}</span></span>
+        </div>
+        <div style="flex:none;text-align:left">
+          <span style="display:block;font-size:15px;font-weight:700">קליניקת נועה בע״מ</span>
+          <span style="display:block;font-size:13px;color:#5B6B7B">ח.פ. <span dir="ltr" style="unicode-bidi:isolate;font-variant-numeric:tabular-nums">515123456</span></span>
+          <span style="display:block;font-size:13px;color:#5B6B7B">אחוזה 128, רעננה</span>
+        </div>
+      </div>
+
+      <div style="padding:14px clamp(18px,2.6vw,28px);display:grid;grid-template-columns:var(--rc-meta);gap:8px 20px;font-size:14px;border-bottom:1px solid #EDEFF2">
+        <span><span style="color:#8A96A3">לכבוד: </span><strong>שירה כהן</strong></span>
+        <span><span style="color:#8A96A3">אסמכתת תור: </span><strong dir="ltr" style="unicode-bidi:isolate;font-variant-numeric:tabular-nums">BF-5102</strong></span>
+        <span><span style="color:#8A96A3">טיפול: </span><strong>בוטוקס — מצח וקמטי הבעה</strong></span>
+        <span><span style="color:#8A96A3">מועד: </span><strong dir="ltr" style="unicode-bidi:isolate;font-variant-numeric:tabular-nums">28/09/2026 10:30</strong></span>
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;font-size:14.5px">
+        <thead><tr style="background:#FAFBFB"><th scope="col" style="padding:10px clamp(18px,2.6vw,28px);text-align:right;font-size:12.5px;font-weight:700;color:#5B6B7B">פריט</th><th scope="col" style="padding:10px clamp(18px,2.6vw,28px);text-align:left;font-size:12.5px;font-weight:700;color:#5B6B7B">סכום</th></tr></thead>
+        <tbody>
+          <sc-for list="{{ doc.lines }}" as="ln" hint-placeholder-count="3"><tr style="border-top:1px solid #EDEFF2"><td style="padding:11px clamp(18px,2.6vw,28px);font-weight:{{ ln.w }};color:{{ ln.color }}">{{ ln.name }}</td><td dir="ltr" style="padding:11px clamp(18px,2.6vw,28px);text-align:left;font-weight:{{ ln.w }};color:{{ ln.color }};font-variant-numeric:tabular-nums">{{ ln.amt }}</td></tr></sc-for>
+        </tbody>
+      </table>
+
+      <div style="padding:14px clamp(18px,2.6vw,28px);border-top:1px solid #EDEFF2;background:#FAFBFB;display:flex;flex-direction:column;gap:5px;font-size:13.5px;color:#3E4F62">
+        <span><span style="color:#8A96A3">אמצעי תשלום: </span>{{ doc.method }}</span>
+        <span style="text-wrap:pretty">{{ doc.foot }}</span>
+      </div>
+    </article>
+
+    <p data-rc-noprint style="margin:0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">המסמך הופק על ידי הקליניקה דרך BeautyFind. BeautyFind אינה גובה עמלה מהתשלום. טיפולים אסתטיים אינם בסל הבריאות. שאלות על החיוב — לקליניקה, <a href="tel:+972977411180" dir="ltr" style="unicode-bidi:isolate">09-774-1180</a>.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:900},&quot;status&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;deposit&quot;,&quot;paid&quot;,&quot;refunding&quot;,&quot;refunded&quot;],&quot;default&quot;:&quot;deposit&quot;,&quot;tsType&quot;:&quot;'deposit'|'paid'|'refunding'|'refunded'&quot;},&quot;depositAmount&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:150,&quot;min&quot;:0,&quot;max&quot;:2000,&quot;unit&quot;:&quot;₪&quot;,&quot;tsType&quot;:&quot;number&quot;}}">
+const nis = n => '₪' + n.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const status = p.status || 'deposit';
+    const dep = p.depositAmount ?? 150;
+    const vatRate = 0.18;
+    const net = +(dep / (1 + vatRate)).toFixed(2);
+    const vat = +(dep - net).toFixed(2);
+    const price = 1200, fullVat = +(price * vatRate).toFixed(2), balance = +(price + fullVat - dep).toFixed(2);
+
+    const docs = {
+      deposit: { kicker: 'חשבונית מס / קבלה', kColor: '#0B7A87', title: 'מס׳', no: '40211', date: '21/09/2026',
+        lines: [['מקדמה לטיפול — מתקזזת מהתשלום בקליניקה', nis(net), 600], ['מע״מ 18%', nis(vat), 500], ['סה״כ שולם', nis(dep), 800]],
+        method: 'כרטיס אשראי •••• 4821 · תשלום אחד', foot: 'ביטול עד 24 שעות לפני התור — המקדמה מוחזרת במלואה עם חשבונית זיכוי.' },
+      paid: { kicker: 'חשבונית מס / קבלה', kColor: '#0B7A87', title: 'מס׳', no: '40388', date: '28/09/2026',
+        lines: [['בוטוקס — מצח וקמטי הבעה', nis(price), 600], ['מע״מ 18%', nis(fullVat), 500], ['קיזוז מקדמה · קבלה 40211', '−' + nis(dep), 500], ['סה״כ שולם בקליניקה', nis(balance), 800]],
+        method: 'כרטיס אשראי •••• 4821 · 3 תשלומים ללא ריבית של ' + nis(+(balance / 3).toFixed(2)), foot: 'ביקורת מעקב אחרי 14 ימים כלולה במחיר.' },
+      refunding: { kicker: 'חשבונית זיכוי', kColor: '#9A5B15', title: 'מס׳', no: '90017', date: '24/09/2026',
+        lines: [['זיכוי מקדמה · מבטל חשבונית 40211', '−' + nis(net), 600], ['מע״מ 18%', '−' + nis(vat), 500], ['סה״כ זיכוי', '−' + nis(dep), 800]],
+        method: 'החזר לכרטיס אשראי •••• 4821', foot: 'ההחזר מופיע בפירוט הכרטיס תוך 7–10 ימי עסקים, לפי חברת האשראי.' }
+    };
+    docs.refunded = Object.assign({}, docs.refunding);
+    const d = docs[status] || docs.deposit;
+    const refundDone = status === 'refunded';
+    const TRACK = [
+      ['התור בוטל', '24/09 · 09:12', true],
+      ['חשבונית זיכוי הופקה', 'מס׳ 90017 · נשלחה למייל', true],
+      ['ההחזר בדרך לכרטיס', refundDone ? 'אושר על ידי חברת האשראי · 29/09' : 'צפוי עד 08/10', refundDone],
+      ['ההחזר התקבל', refundDone ? '₪' + dep + ' הוחזרו ל־•••• 4821' : 'נעדכן בוואטסאפ', refundDone]
+    ];
+    const firstOpen = TRACK.findIndex(t => !t[2]);
+
+    return {
+      doc: Object.assign({}, d, { lines: d.lines.map(l => ({ name: l[0], amt: l[1], w: l[2], color: l[2] === 800 ? '#0C243E' : '#3E4F62' })) }),
+      showRefund: status === 'refunding' || status === 'refunded',
+      track: TRACK.map((t, i) => {
+        const cur = i === firstOpen;
+        return { name: t[0], note: t[1], mark: t[2] ? '✓' : String(i + 1), dot: t[2] ? '#3B6B3F' : cur ? '#0B7A87' : '#C9CFD6',
+          line: i === TRACK.length - 1 ? 'transparent' : t[2] ? '#CFE3CF' : '#E6E6E6', color: t[2] || cur ? '#0C243E' : '#8A96A3' };
+      }),
+      print: () => window.print()
+    };
+  }
+}
+</script>
+</body>
+</html>

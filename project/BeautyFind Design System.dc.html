@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="מערכת העיצוב של BeautyFind — צבעים, טיפוגרפיה עברית, רכיבים, כללי RTL ומדיניות תוכן עבור מדריך העסקים בתחום האסתטיקה בישראל.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#FAFBFB}
+  *{box-sizing:border-box}
+  :root{
+    --ds-swatch:repeat(2,minmax(0,1fr));
+    --ds-two:minmax(0,1fr);
+    --ds-three:minmax(0,1fr);
+    --ds-type:minmax(0,1fr);
+    --ds-pad:16px;
+    --ds-nav:none;
+    --ds-nav-cols:minmax(0,1fr);
+  }
+  @media (min-width:520px){:root{--ds-swatch:repeat(3,minmax(0,1fr));--ds-two:repeat(2,minmax(0,1fr));--ds-pad:22px}}
+  @media (min-width:820px){:root{--ds-swatch:repeat(4,minmax(0,1fr));--ds-three:repeat(3,minmax(0,1fr));--ds-type:minmax(0,1fr) 210px}}
+  @media (min-width:1100px){:root{--ds-swatch:repeat(6,minmax(0,1fr));--ds-nav:block;--ds-nav-cols:minmax(0,1fr) 212px}}
+  @media (min-width:1100px) and (min-height:700px){[data-ds-nav]{position:sticky;top:20px}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+</style>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#FAFBFB;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+  <div style="max-width:1220px;margin:0 auto;padding:clamp(22px,3vw,40px) var(--ds-pad) 70px;display:grid;grid-template-columns:var(--ds-nav-cols,minmax(0,1fr));gap:clamp(18px,2.4vw,32px);align-items:start">
+
+    <div style="min-width:0;display:flex;flex-direction:column;gap:clamp(26px,3vw,42px)">
+
+      <header style="display:flex;flex-direction:column;gap:13px">
+        <span dir="ltr" style="align-self:flex-start;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:26px;letter-spacing:-0.01em;color:#0C243E">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6">.</span></span>
+        <h1 style="margin:0;font-family:'Frank Ruhl Libre',serif;font-size:clamp(30px,4.2vw,46px);font-weight:500;line-height:1.1;letter-spacing:-0.015em">מערכת העיצוב</h1>
+        <p style="margin:0;max-width:62ch;font-size:16px;color:#3E4F62;text-wrap:pretty">הכללים שמשותפים ל־<a href="./BeautyFind Homepage.dc.html">שמונה־עשר המסכים</a> של BeautyFind — מדריך עסקי האסתטיקה בישראל. הדף הזה הוא מקור האמת: צבע, טיפוגרפיה עברית, רכיבים, התנהגות RTL ומדיניות התוכן שמחייבת את השוק הישראלי.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:3px">
+          <sc-for list="{{ heroFacts }}" as="hf" hint-placeholder-count="4">
+            <span style="display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:0 12px;border:1px solid #E6E6E6;border-radius:9px;background:#fff;font-size:13px;font-weight:600;color:#3E4F62">
+              <span dir="{{ hf.dir }}" style="font-weight:700;color:#0B7A87">{{ hf.n }}</span>
+              <span>{{ hf.label }}</span>
+            </span>
+          </sc-for>
+        </div>
+      </header>
+
+      <section id="ds-color" aria-labelledby="h-color" style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <h2 id="h-color" style="margin:0 0 3px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(21px,2.4vw,27px);font-weight:500;letter-spacing:-0.014em">צבע</h2>
+          <p style="margin:0;max-width:60ch;font-size:14.5px;color:#5B6B7B;text-wrap:pretty">נייבי לטקסט ולכפתור הראשי, טרקיז לאקצנט ולמצב נבחר, גוני טרקיז בהירים לרקעים. לא יותר משני צבעי רקע במסך.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:var(--ds-swatch);gap:11px">
+          <sc-for list="{{ swatches }}" as="sw" hint-placeholder-count="6">
+            <div style="min-width:0;background:#fff;border:1px solid #E6E6E6;border-radius:13px;overflow:hidden">
+              <div style="height:70px;background:{{ sw.hex }};border-bottom:1px solid {{ sw.edge }}"></div>
+              <div style="padding:9px 11px;display:flex;flex-direction:column;gap:2px">
+                <span style="font-size:13px;font-weight:700">{{ sw.name }}</span>
+                <span dir="ltr" style="font-size:12px;color:#5B6B7B;text-align:right;font-variant-numeric:tabular-nums">{{ sw.hex }}</span>
+                <span style="font-size:11.5px;color:#8A96A3;text-wrap:pretty">{{ sw.use }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:var(--ds-three);gap:11px">
+          <sc-for list="{{ contrastRows }}" as="cr" hint-placeholder-count="3">
+            <div style="min-width:0;padding:14px 15px;border:1px solid {{ cr.border }};border-radius:13px;background:{{ cr.bg }}">
+              <p style="margin:0 0 5px;font-size:15px;font-weight:700;color:{{ cr.fg }}">{{ cr.sample }}</p>
+              <p style="margin:0;font-size:12.5px;color:{{ cr.sub }}">{{ cr.note }} · <span dir="ltr">{{ cr.ratio }}</span></p>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section id="ds-type" aria-labelledby="h-type" style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <h2 id="h-type" style="margin:0 0 3px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(21px,2.4vw,27px);font-weight:500;letter-spacing:-0.014em">טיפוגרפיה</h2>
+          <p style="margin:0;max-width:60ch;font-size:14.5px;color:#5B6B7B;text-wrap:pretty">פרנק רול ליברה 500 לכותרות תצוגה, אסיסטנט לכל השאר, ו־Jost 300 ללוגוטייפ הלטיני בלבד. אין אותיות רישיות ואין ריווח אותיות — שניהם לא קיימים בעברית.</p>
+        </div>
+        <div style="background:#fff;border:1px solid #E6E6E6;border-radius:16px;padding:clamp(16px,2vw,26px);display:grid;grid-template-columns:var(--ds-type);gap:18px 26px;align-items:baseline">
+          <sc-for list="{{ typeRows }}" as="tr" hint-placeholder-count="5">
+            <div style="min-width:0;font-family:{{ tr.family }};font-size:{{ tr.size }};font-weight:{{ tr.weight }};line-height:{{ tr.lh }};letter-spacing:{{ tr.ls }};text-wrap:pretty">{{ tr.sample }}</div>
+            <div style="min-width:0;display:flex;flex-direction:column;gap:2px;font-size:13px;color:#5B6B7B">
+              <span style="font-weight:700;color:#0C243E">{{ tr.name }}</span>
+              <span dir="ltr" style="text-align:right;font-variant-numeric:tabular-nums">{{ tr.spec }}</span>
+              <span style="font-size:12px;color:#8A96A3;text-wrap:pretty">{{ tr.use }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section id="ds-rtl" aria-labelledby="h-rtl" style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <h2 id="h-rtl" style="margin:0 0 3px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(21px,2.4vw,27px);font-weight:500;letter-spacing:-0.014em">התנהגות RTL</h2>
+          <p style="margin:0;max-width:60ch;font-size:14.5px;color:#5B6B7B;text-wrap:pretty">הכלל המרכזי: הטקסט בעברית, אבל מספרים, טלפון, דוא״ל, כתובות URL ושורות כוכבים נשארים בכיוון לטיני. כל אחד מהם נעטף ב־<span dir="ltr">dir="ltr"</span>.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:var(--ds-two);gap:11px">
+          <div style="min-width:0;background:#fff;border:1px solid #E6E6E6;border-radius:14px;padding:15px 17px">
+            <h3 style="margin:0 0 10px;font-size:15px;font-weight:700">מה נעטף ב־<span dir="ltr">dir="ltr"</span></h3>
+            <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px">
+              <sc-for list="{{ ltrRows }}" as="lr" hint-placeholder-count="5">
+                <li style="display:flex;align-items:center;gap:10px;padding-bottom:9px;border-bottom:1px solid #EDEFF2">
+                  <span style="flex:1;min-width:0;font-size:13.5px;color:#5B6B7B">{{ lr.label }}</span>
+                  <span dir="ltr" style="flex:none;font-size:14.5px;font-weight:700;font-variant-numeric:tabular-nums">{{ lr.sample }}</span>
+                </li>
+              </sc-for>
+            </ul>
+          </div>
+          <div style="min-width:0;background:#fff;border:1px solid #E6E6E6;border-radius:14px;padding:15px 17px">
+            <h3 style="margin:0 0 10px;font-size:15px;font-weight:700">מה מתהפך</h3>
+            <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ mirrorRows }}" as="mr" hint-placeholder-count="5">
+                <li style="display:flex;align-items:flex-start;gap:10px">
+                  <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-top:1px;border-radius:8px;background:#F0FAFB;color:#0B7A87">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg>
+                  </span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                    <span style="font-size:13.5px;font-weight:700">{{ mr.name }}</span>
+                    <span dir="ltr" style="font-size:12.5px;font-weight:600;color:#0B7A87;text-align:right;unicode-bidi:isolate;overflow-wrap:anywhere">{{ mr.code }}</span>
+                    <span style="font-size:12.5px;color:#5B6B7B;text-wrap:pretty">{{ mr.note }}</span>
+                  </span>
+                </li>
+              </sc-for>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="ds-buttons" aria-labelledby="h-buttons" style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <h2 id="h-buttons" style="margin:0 0 3px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(21px,2.4vw,27px);font-weight:500;letter-spacing:-0.014em">כפתורים ושבבים</h2>
+          <p style="margin:0;max-width:60ch;font-size:14.5px;color:#5B6B7B;text-wrap:pretty">גובה מינימלי <span dir="ltr">44px</span> לכל יעד לחיצה, <span dir="ltr">48px</span> לכפתור ראשי. חץ בכפתור "המשך" פונה שמאלה.</p>
+        </div>
+        <div style="background:#fff;border:1px solid #E6E6E6;border-radius:16px;padding:clamp(16px,2vw,24px);display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <button type="button" style="display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 20px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:15.5px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#0C243E">
+              <span>קביעת תור</span>
+              <svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg>
+            </button>
+            <button type="button" style="min-height:48px;padding:0 18px;border:1px solid #0C243E;border-radius:12px;background:#fff;font:inherit;font-size:15.5px;font-weight:700;color:#0C243E;cursor:pointer" style-hover="background:#F6F8F9">שמירה לרשימה</button>
+            <button type="button" style="min-height:44px;padding:0 15px;border:1px solid #E6E6E6;border-radius:11px;background:#fff;font:inherit;font-size:14.5px;font-weight:600;color:#3E4F62;cursor:pointer" style-hover="border-color:#0C243E">שלישוני</button>
+            <button type="button" style="min-height:44px;padding:0 14px;border:0;border-radius:11px;background:#F0FAFB;font:inherit;font-size:14.5px;font-weight:700;color:#0B7A87;cursor:pointer">טרקיז רך</button>
+            <button type="button" disabled="{{ true }}" style="min-height:44px;padding:0 15px;border:0;border-radius:11px;background:#EDEFF2;font:inherit;font-size:14.5px;font-weight:600;color:#8A96A3;cursor:default">חסום</button>
+            <button type="button" style="min-height:44px;padding:0 13px;border:0;border-radius:11px;background:transparent;font:inherit;font-size:14.5px;font-weight:700;color:#A33A31;cursor:pointer">מחיקה</button>
+          </div>
+          <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center;padding-top:15px;border-top:1px solid #EDEFF2">
+            <sc-for list="{{ chipRow }}" as="cp" hint-placeholder-count="5">
+              <button type="button" aria-pressed="{{ cp.on }}" onClick="{{ cp.pick }}" style="min-height:38px;padding:0 13px;border:1px solid {{ cp.border }};border-radius:10px;background:{{ cp.bg }};font:inherit;font-size:13.5px;font-weight:600;color:{{ cp.color }};cursor:pointer">{{ cp.name }}</button>
+            </sc-for>
+            <span style="font-size:12.5px;color:#8A96A3">שבב נבחר = רקע טרקיז מלא, לא מסגרת</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="ds-forms" aria-labelledby="h-forms" style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <h2 id="h-forms" style="margin:0 0 3px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(21px,2.4vw,27px);font-weight:500;letter-spacing:-0.014em">שדות ובקרות</h2>
+          <p style="margin:0;max-width:60ch;font-size:14.5px;color:#5B6B7B;text-wrap:pretty">תווית מעל השדה, לא בתוכו. שדות של מספרים וטלפון מקבלים <span dir="ltr">dir="ltr"</span> עם <span dir="ltr">text-align:right</span>, כדי שהספרות יישארו בסדר נכון והשדה יישאר מיושר לימין.</p>
+        </div>
+        <div style="background:#fff;border:1px solid #E6E6E6;border-radius:16px;padding:clamp(16px,2vw,24px);display:flex;flex-direction:column;gap:15px">
+          <div style="display:grid;grid-template-columns:var(--ds-two);gap:12px">
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">שם העסק
+              <input value="{{ demoName }}" onChange="{{ onDemoName }}" style="min-height:46px;padding:0 12px;border:1px solid #D4D4D4;border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none">
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">טלפון
+              <input value="{{ demoPhone }}" onChange="{{ onDemoPhone }}" dir="ltr" style="min-height:46px;padding:0 12px;border:1px solid #D4D4D4;border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none;text-align:right">
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">שדה שגוי
+              <input value="{{ demoBad }}" onChange="{{ onDemoBad }}" aria-invalid="true" style="min-height:46px;padding:0 12px;border:1px solid #D98A80;border-radius:11px;font:inherit;font-size:15px;color:#0C243E;background:#fff;outline:none">
+              <span style="font-size:12.5px;font-weight:700;color:#A33A31">מספר טלפון נייד אינו תקין</span>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700">שדה חסום
+              <input value="ח״פ 514773920" disabled="{{ true }}" dir="ltr" style="min-height:46px;padding:0 12px;border:1px solid #E6E6E6;border-radius:11px;font:inherit;font-size:15px;color:#8A96A3;background:#F6F8F9;outline:none;text-align:right">
+            </label>
+          </div>
+          <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:center;padding-top:15px;border-top:1px solid #EDEFF2">
+            <div style="display:flex;align-items:center;gap:10px">
+              <button type="button" role="switch" aria-checked="{{ swOn }}" aria-label="מתג לדוגמה" onClick="{{ toggleSw }}" style="flex:none;width:44px;height:26px;border:0;border-radius:13px;background:{{ swBg }};cursor:pointer;padding:0;position:relative;transition:background .16s">
+                <span aria-hidden="true" style="position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:#fff;transform:{{ swX }};transition:transform .16s"></span>
+              </button>
+              <span style="font-size:13.5px;font-weight:600;color:#3E4F62">מתג · הידית מתחילה בימין</span>
+            </div>
+            <button type="button" role="checkbox" aria-checked="{{ cbOn }}" onClick="{{ toggleCb }}" style="display:flex;align-items:center;gap:10px;padding:0;border:0;background:transparent;font:inherit;cursor:pointer">
+              <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:1.5px solid {{ cbBorder }};border-radius:7px;background:{{ cbBg }};color:#fff">
+                <sc-if value="{{ cbChecked }}" hint-placeholder-val="{{ true }}">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 4"></path></svg>
+                </sc-if>
+              </span>
+              <span style="font-size:13.5px;font-weight:600;color:#3E4F62">תיבת סימון · אישור הסכמה</span>
+            </button>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:13.5px;font-weight:600;color:#3E4F62">דירוג</span>
+              <span dir="ltr" style="display:inline-flex;align-items:center;gap:5px">
+                <span aria-hidden="true" style="font-size:16px;color:#0B7A87;letter-spacing:1px">★★★★★</span>
+                <span style="font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums">4.9</span>
+                <span style="font-size:12.5px;color:#8A96A3">(128)</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="ds-cards" aria-labelledby="h-cards" style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <h2 id="h-cards" style="margin:0 0 3px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(21px,2.4vw,27px);font-weight:500;letter-spacing:-0.014em">כרטיסים ותגים</h2>
+          <p style="margin:0;max-width:60ch;font-size:14.5px;color:#5B6B7B;text-wrap:pretty">כרטיס עסק במדריך, תגי סטטוס, ופאנל מדדים. כל תמונה מקבלת <span dir="ltr">loading="lazy"</span>.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:var(--ds-two);gap:12px;align-items:start">
+          <article style="min-width:0;background:#fff;border:1px solid #E6E6E6;border-radius:16px;overflow:hidden">
+            <div aria-hidden="true" style="aspect-ratio:16/9;background:repeating-linear-gradient(135deg,#EDEFF2 0 12px,#F6F8F9 12px 24px)"></div>
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:flex-start;gap:9px">
+                <h3 style="flex:1;min-width:0;margin:0;font-size:16.5px;font-weight:700;text-wrap:pretty">קליניקת נועה</h3>
+                <span style="flex:none;display:inline-flex;align-items:center;height:25px;padding:0 9px;border:1px solid #CDEFF3;border-radius:8px;background:#F0FAFB;font-size:11.5px;font-weight:700;color:#0B7A87">מאומת</span>
+              </div>
+              <p style="margin:0;font-size:13.5px;color:#5B6B7B">רעננה · שרון · אסתטיקה רפואית</p>
+              <div dir="ltr" style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
+                <span aria-hidden="true" style="font-size:15px;color:#0B7A87;letter-spacing:1px">★★★★★</span>
+                <span style="font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums">4.9</span>
+                <span style="font-size:12.5px;color:#8A96A3">(128)</span>
+              </div>
+              <p style="margin:0;padding-top:9px;border-top:1px solid #EDEFF2;font-size:13px;color:#5B6B7B">אחריות רפואית: ד״ר נועה לוי</p>
+            </div>
+          </article>
+          <div style="min-width:0;display:flex;flex-direction:column;gap:12px">
+            <div style="background:#fff;border:1px solid #E6E6E6;border-radius:16px;padding:15px 17px">
+              <h3 style="margin:0 0 10px;font-size:15px;font-weight:700">תגי סטטוס</h3>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <sc-for list="{{ badges }}" as="bd" hint-placeholder-count="6">
+                  <span style="display:inline-flex;align-items:center;height:26px;padding:0 9px;border:1px solid {{ bd.border }};border-radius:8px;background:{{ bd.bg }};font-size:11.5px;font-weight:700;color:{{ bd.color }}">{{ bd.name }}</span>
+                </sc-for>
+              </div>
+            </div>
+            <dl style="margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px">
+              <sc-for list="{{ kpis }}" as="kp" hint-placeholder-count="4">
+                <div style="min-width:0;display:flex;flex-direction:column;gap:3px;padding:13px 15px;background:#fff;border:1px solid #E6E6E6;border-radius:13px">
+                  <dt style="font-size:12.5px;font-weight:600;color:#5B6B7B">{{ kp.label }}</dt>
+                  <dd dir="{{ kp.dir }}" style="margin:0;font-size:22px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">{{ kp.value }}</dd>
+                  <span style="font-size:11.5px;color:#8A96A3;text-wrap:pretty">{{ kp.note }}</span>
+                </div>
+              </sc-for>
+            </dl>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <p style="margin:0;padding:11px 14px;background:#EDEFF2;border:1px solid #D4D4D4;border-radius:11px;font-size:13.5px;font-weight:600;color:#3E4F62;text-wrap:pretty">באנר צפייה בלבד — התצוגה הנוכחית היא מזכירה. מנהל ראשי יכול לערוך את המודול הזה.</p>
+          <p style="margin:0;padding:11px 14px;background:#FDF1E7;border:1px solid #F3D9BE;border-radius:11px;font-size:13.5px;font-weight:600;color:#9A5B15;text-wrap:pretty">אזהרה — הזרקות הן פעולה רפואית. קוסמטיקאית אינה מוסמכת להזריק.</p>
+          <p style="margin:0;padding:11px 14px;background:#FDEDEC;border:1px solid #F0C9C4;border-radius:11px;font-size:13.5px;font-weight:600;color:#A33A31;text-wrap:pretty">שגיאה — יש לאשר את הצהרת הבריאות ואת מדיניות הביטולים.</p>
+        </div>
+      </section>
+
+      <section id="ds-content" aria-labelledby="h-content" style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <h2 id="h-content" style="margin:0 0 3px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(21px,2.4vw,27px);font-weight:500;letter-spacing:-0.014em">מדיניות תוכן — השוק הישראלי</h2>
+          <p style="margin:0;max-width:60ch;font-size:14.5px;color:#5B6B7B;text-wrap:pretty">הכללים האלה אינם סטייל, הם תנאי לאמינות ולחוקיות המדריך.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:var(--ds-two);gap:11px">
+          <sc-for list="{{ policyRows }}" as="pr" hint-placeholder-count="6">
+            <div style="min-width:0;background:#fff;border:1px solid #E6E6E6;border-radius:14px;padding:15px 17px">
+              <h3 style="margin:0 0 5px;font-size:14.5px;font-weight:700">{{ pr.name }}</h3>
+              <p style="margin:0;font-size:13.5px;color:#3E4F62;text-wrap:pretty">
+                <sc-for list="{{ pr.body }}" as="sg"><span>{{ sg.t }}</span><span dir="ltr" style="font-weight:600;color:#0B7A87;unicode-bidi:isolate">{{ sg.c }}</span></sc-for>
+              </p>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section id="ds-geo" aria-labelledby="h-geo" style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <h2 id="h-geo" style="margin:0 0 3px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(21px,2.4vw,27px);font-weight:500;letter-spacing:-0.014em">גאוגרפיה וקטגוריות</h2>
+          <p style="margin:0;max-width:60ch;font-size:14.5px;color:#5B6B7B;text-wrap:pretty">שבעה אזורים ו־<span dir="ltr">14</span> קטגוריות טיפול. הסדר קבוע בכל המסכים — מצפון לדרום.</p>
+        </div>
+        <div style="background:#fff;border:1px solid #E6E6E6;border-radius:16px;padding:clamp(16px,2vw,22px);display:flex;flex-direction:column;gap:15px">
+          <div>
+            <h3 style="margin:0 0 9px;font-size:14px;font-weight:700">אזורים</h3>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <sc-for list="{{ regions }}" as="rg" hint-placeholder-count="7">
+                <span style="display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:0 12px;border:1px solid #E6E6E6;border-radius:9px;background:#FAFBFB;font-size:13.5px;font-weight:600">
+                  <span>{{ rg.name }}</span>
+                  <span dir="ltr" style="font-size:12px;color:#8A96A3;font-variant-numeric:tabular-nums">{{ rg.n }}</span>
+                </span>
+              </sc-for>
+            </div>
+          </div>
+          <div style="padding-top:15px;border-top:1px solid #EDEFF2">
+            <h3 style="margin:0 0 9px;font-size:14px;font-weight:700">קטגוריות טיפול</h3>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <sc-for list="{{ categories }}" as="ct" hint-placeholder-count="14">
+                <span style="display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:0 12px;border:1px solid {{ ct.border }};border-radius:9px;background:{{ ct.bg }};font-size:13.5px;font-weight:600;color:{{ ct.color }}">
+                  <span>{{ ct.name }}</span>
+                  <sc-if value="{{ ct.medical }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:11.5px;font-weight:700">רפואי</span>
+                  </sc-if>
+                </span>
+              </sc-for>
+            </div>
+            <p style="margin:10px 0 0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">קטגוריה המסומנת "רפואי" מחייבת אחריות רפואית של רופא/ה בכרטיס העסק ובעמוד הקטגוריה.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="ds-pages" aria-labelledby="h-pages" style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <h2 id="h-pages" style="margin:0 0 3px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(21px,2.4vw,27px);font-weight:500;letter-spacing:-0.014em">מסכי המערכת</h2>
+          <p style="margin:0;max-width:60ch;font-size:14.5px;color:#5B6B7B;text-wrap:pretty">שני הצדדים של המוצר: מה שהלקוחה רואה, ומה שהעסק מנהל.</p>
+        </div>
+        <div style="background:#fff;border:1px solid #E6E6E6;border-radius:16px;overflow:hidden">
+          <sc-for list="{{ pageGroups }}" as="pg" hint-placeholder-count="3">
+            <div style="border-bottom:1px solid #EDEFF2">
+              <div style="padding:12px 16px;background:#FAFBFB;border-bottom:1px solid #EDEFF2;display:flex;align-items:baseline;gap:9px">
+                <h3 style="flex:1;margin:0;font-size:14.5px;font-weight:700">{{ pg.name }}</h3>
+                <span dir="ltr" style="font-size:12.5px;color:#8A96A3;font-variant-numeric:tabular-nums">{{ pg.count }}</span>
+              </div>
+              <sc-for list="{{ pg.pages }}" as="pp" hint-placeholder-count="6">
+                <a href="{{ pp.href }}" style="display:flex;align-items:center;gap:11px;padding:12px 16px;border-bottom:1px solid #F3F5F6;text-decoration:none;color:inherit" style-hover="background:#FAFBFB">
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                    <span style="font-size:14.5px;font-weight:700;color:#0C243E">{{ pp.name }}</span>
+                    <span style="font-size:12.5px;color:#5B6B7B;text-wrap:pretty">{{ pp.note }}</span>
+                  </span>
+                  <svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="#0B7A87" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M12 7H2M6 3 2 7l4 4"></path></svg>
+                </a>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section id="ds-pitfalls" aria-labelledby="h-pitfalls" style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <h2 id="h-pitfalls" style="margin:0 0 3px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(21px,2.4vw,27px);font-weight:500;letter-spacing:-0.014em">מלכודות שנפלנו בהן</h2>
+          <p style="margin:0;max-width:60ch;font-size:14.5px;color:#5B6B7B;text-wrap:pretty">באגים שחזרו יותר מפעם אחת. הכללים כאן הם מסקנה, לא תיאוריה.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ pitfalls }}" as="pf" hint-placeholder-count="5">
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:#fff;border:1px solid #E6E6E6;border-radius:14px">
+              <span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:9px;background:#FDF1E7;color:#9A5B15;font-size:14px;font-weight:700">!</span>
+              <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                <span style="font-size:14.5px;font-weight:700;text-wrap:pretty">
+                  <sc-for list="{{ pf.title }}" as="tg"><span>{{ tg.t }}</span><span dir="ltr" style="color:#0B7A87;unicode-bidi:isolate">{{ tg.c }}</span></sc-for>
+                </span>
+                <span style="font-size:13.5px;color:#3E4F62;text-wrap:pretty">
+                  <sc-for list="{{ pf.body }}" as="bg"><span>{{ bg.t }}</span><span dir="ltr" style="font-weight:600;color:#0B7A87;unicode-bidi:isolate">{{ bg.c }}</span></sc-for>
+                </span>
+              </span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </div>
+
+    <nav data-ds-nav aria-label="ניווט בדף" style="display:var(--ds-nav);min-width:0;width:212px">
+      <div style="background:#fff;border:1px solid #E6E6E6;border-radius:15px;padding:13px 14px">
+        <h2 style="margin:0 0 9px;font-size:12.5px;font-weight:700;color:#8A96A3">בדף הזה</h2>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px">
+          <sc-for list="{{ toc }}" as="tc" hint-placeholder-count="8">
+            <li>
+              <a href="{{ tc.href }}" style="display:block;padding:8px 10px;border-radius:9px;font-size:13.5px;font-weight:600;color:#3E4F62;text-decoration:none" style-hover="background:#F0FAFB;color:#0B7A87">{{ tc.name }}</a>
+            </li>
+          </sc-for>
+        </ul>
+      </div>
+    </nav>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1220,&quot;height&quot;:1000}}">
+const SWATCHES = [
+  { name: 'נייבי', hex: '#0C243E', use: 'טקסט ראשי · כפתור כהה' },
+  { name: 'טרקיז', hex: '#14B3C6', use: 'אקצנט · נקודת הלוגו' },
+  { name: 'טרקיז עמוק', hex: '#0B7A87', use: 'כפתור ראשי · מצב נבחר · קישורים' },
+  { name: 'טרקיז בהיר', hex: '#7ED7E1', use: 'קווי הדגשה · גרפים' },
+  { name: 'גבול טרקיז', hex: '#CDEFF3', use: 'מסגרת על רקע טרקיז רך' },
+  { name: 'טרקיז רך', hex: '#F0FAFB', use: 'רקע מצב נבחר · באנר מידע' },
+  { name: 'לבן שבור', hex: '#FAFBFB', use: 'רקע דף · כותרת טבלה' },
+  { name: 'אפור קר', hex: '#F6F8F9', use: 'רקע משני · שדה חסום' },
+  { name: 'גבול', hex: '#E6E6E6', use: 'מסגרת כרטיס · מפריד' },
+  { name: 'גבול כהה', hex: '#D4D4D4', use: 'מסגרת שדה קלט' },
+  { name: 'טקסט גוף', hex: '#3E4F62', use: 'פסקאות · תיאורים' },
+  { name: 'טקסט מעומעם', hex: '#8A96A3', use: 'הערות · יחידות · placeholder' }
+];
+
+const TYPE_ROWS = [
+  { name: 'תצוגה', family: "'Frank Ruhl Libre',serif", size: 'clamp(30px,4.2vw,46px)', weight: '500', lh: '1.1', ls: '-0.015em',
+    spec: 'Frank Ruhl Libre 500 · -0.015em', use: 'כותרת עמוד אחת בלבד לכל מסך', sample: 'מטפלות מאומתות בכל הארץ' },
+  { name: 'כותרת מקטע', family: "'Frank Ruhl Libre',serif", size: 'clamp(21px,2.4vw,27px)', weight: '500', lh: '1.2', ls: '-0.014em',
+    spec: 'Frank Ruhl Libre 500 · -0.014em', use: 'ראש מקטע בדף ארוך', sample: 'איך בודקים אחריות רפואית' },
+  { name: 'כותרת כרטיס', family: 'Assistant,sans-serif', size: '16.5px', weight: '700', lh: '1.35', ls: '-0.012em',
+    spec: 'Assistant 700 · 16.5px', use: 'שם עסק · שם טיפול · שם פריט', sample: 'קליניקת נועה · רעננה' },
+  { name: 'גוף', family: 'Assistant,sans-serif', size: '15.5px', weight: '400', lh: '1.6', ls: 'normal',
+    spec: 'Assistant 400 · 15.5px / 1.6', use: 'פסקאות · תיאורי טיפול', sample: 'הקליניקה מתמחה באסתטיקה רפואית ובטיפולי פנים, באחריות רופאה מומחית.' },
+  { name: 'ממשק', family: 'Assistant,sans-serif', size: '13.5px', weight: '700', lh: '1.45', ls: 'normal',
+    spec: 'Assistant 600–700 · 13–14px', use: 'תוויות · כפתורים · תגים. בעברית משקל 700 במקום 600 באנגלית', sample: 'שמירת שינויים' },
+  { name: 'לוגוטייפ', family: 'Jost,sans-serif', size: '26px', weight: '300', lh: '1', ls: '-0.01em',
+    spec: 'Jost 300 · לטינית בלבד', use: 'הוורדמארק beautyfind. ולא לשום דבר אחר', sample: 'beautyfind.' }
+];
+
+const LTR_ROWS = [
+  { label: 'טלפון', sample: '09-774-1180' },
+  { label: 'מחיר', sample: '₪2,400' },
+  { label: 'דירוג ומספר ביקורות', sample: '★★★★★ 4.9 (128)' },
+  { label: 'תאריך ושעה', sample: '22/09/2026 · 14:30' },
+  { label: 'דוא״ל וכתובת אתר', sample: 'hello@noaclinic.co.il' }
+];
+
+const MIRROR_ROWS = [
+  { name: 'חצים פונים שמאלה', code: 'M12 7H2 M6 3 2 7l4 4', note: 'החץ מצביע לכיוון הקריאה' },
+  { name: 'דחיפה לקצה', code: 'margin-right:auto', note: 'במקום margin-left' },
+  { name: 'מפריד תפריט־מגה', code: 'border-left', note: 'ולא border-right' },
+  { name: 'תפריטים נפתחים', code: 'left:0', note: 'התפריט נפתח לכיוון פנים הדף' },
+  { name: 'ידית מתג', code: 'right:3px · translateX(-18px)', note: 'מתחילה בימין ונעה שמאלה' }
+];
+
+const BADGES = [
+  { name: 'מאומת', bg: '#F0FAFB', color: '#0B7A87', border: '#CDEFF3' },
+  { name: 'פתוח עכשיו', bg: '#EAF3EA', color: '#3B6B3F', border: '#CFE3CF' },
+  { name: 'ממתין לאישור', bg: '#FDF1E7', color: '#9A5B15', border: '#F3D9BE' },
+  { name: 'לא פעיל', bg: '#EDEFF2', color: '#5B6B7B', border: '#D4D4D4' },
+  { name: 'חסר מידע', bg: '#FDEDEC', color: '#A33A31', border: '#F0C9C4' },
+  { name: 'כרטיס מודגש', bg: '#EAECF9', color: '#4450A8', border: '#D3D8F2' }
+];
+
+const KPIS = [
+  { label: 'צפיות בפרופיל', value: '2,418', note: 'ב־30 יום · +12%', dir: 'ltr' },
+  { label: 'פניות', value: '96', note: 'וואטסאפ, טלפון וטופס', dir: 'ltr' },
+  { label: 'דירוג ממוצע', value: '4.9', note: '128 ביקורות מאומתות', dir: 'ltr' },
+  { label: 'שלמות הפרופיל', value: '86%', note: 'חסרות שתי תמונות', dir: 'ltr' }
+];
+
+const POLICY = [
+  { name: 'הזרקות הן פעולה רפואית',
+    body: [{ t: 'בוטוקס, מלאנים ומזותרפיה מחייבים רופא/ה. קוסמטיקאית אינה מוסמכת להזריק. כרטיס עסק מציג "אחריות רפואית" כשיש רופא/ה, ו"איש מקצוע אחראי" כשאין.' }] },
+  { name: 'מחירים בשקלים',
+    body: [{ t: 'תמיד ₪ עם פסיק לאלפים — ' }, { c: '₪2,400' }, { t: '. מציינים "לא כולל מע״מ" היכן שרלוונטי, ומזכירים חשבונית מס ותשלומים במסכי גבייה.' }] },
+  { name: 'אסתטיקה אינה בסל',
+    body: [{ t: 'בשאלות נפוצות על מחיר אומרים במפורש שטיפולי אסתטיקה אינם בסל הבריאות, כדי למנוע ציפייה שגויה.' }] },
+  { name: 'שעות ראשון–שישי',
+    body: [{ t: 'שבת סגור. "היום" ממופה כך שראשון הוא אינדקס ' }, { c: '0' }, { t: '. שישי מתקצר בדרך כלל עד ' }, { c: '13:00' }, { t: '.' }] },
+  { name: 'ערוצי יצירת קשר',
+    body: [{ t: 'וואטסאפ ולחיצה־להתקשרות עומדים לצד קביעת התור, ו־Waze לניווט. קישור ' }, { c: 'tel:' }, { t: ' ללא רווחים ובפורמט בינלאומי — ' }, { c: 'tel:+972977411180' }, { t: '.' }] },
+  { name: 'הצהרת נגישות',
+    body: [{ t: 'חובה חוקית, לא אופציה. מקושרת מכל עמוד ציבורי לצד התקנון.' }] }
+];
+
+const REGIONS = [
+  { name: 'צפון', n: 214 }, { name: 'חיפה', n: 186 }, { name: 'שרון', n: 402 },
+  { name: 'גוש דן', n: 721 }, { name: 'ירושלים', n: 268 }, { name: 'שפלה', n: 233 }, { name: 'דרום', n: 157 }
+];
+
+const CATEGORIES = [
+  ['בוטוקס', true], ['מלאנים וחומצה היאלורונית', true], ['מזותרפיה', true], ['הסרת נגעי עור', true],
+  ['הסרת שיער בלייזר', false], ['טיפולי פנים', false], ['פילינג כימי', false], ['מיקרוניידלינג', false],
+  ['מיצוק והידוק', false], ['טיפולי גוף', false], ['איפור קבוע', false], ['עיצוב גבות וריסים', false],
+  ['טיפולי שיער וקרקפת', false], ['ייעוץ אסתטי', false]
+];
+
+const PAGE_GROUPS = [
+  { name: 'צד הלקוחה', pages: [
+    { name: 'דף הבית', href: './BeautyFind Homepage.dc.html', note: 'חיפוש, אזורים, קטגוריות וביקורות' },
+    { name: 'מדריך העסקים', href: './BeautyFind Directory.dc.html', note: 'רשימה מסוננת עם מפה' },
+    { name: 'חיפוש', href: './BeautyFind Search.dc.html', note: 'תוצאות עם סינון מלא' },
+    { name: 'כרטיס עסק', href: './BeautyFind Business Profile.dc.html', note: 'טיפולים, צוות, ביקורות, שעות' },
+    { name: 'קביעת תור', href: './BeautyFind Booking.dc.html', note: 'ארבעה שלבים · יומן חי · אישורים' },
+    { name: 'טיפולים', href: './BeautyFind Treatments.dc.html', note: 'אינדקס כל הקטגוריות' },
+    { name: 'קטגוריית טיפול', href: './BeautyFind Treatment Category.dc.html', note: 'מה זה, למי מתאים, מחירים' },
+    { name: 'עמוד אזור', href: './BeautyFind Region.dc.html', note: 'עסקים ועיירות באזור' },
+    { name: 'בלוג', href: './BeautyFind Blog.dc.html', note: 'מדריכים עריכתיים' },
+    { name: 'כתבה', href: './BeautyFind Article.dc.html', note: 'מאמר עם בדיקה רפואית' },
+    { name: 'אודות', href: './BeautyFind About.dc.html', note: 'מתודולוגיה ומערכת' },
+    { name: 'תקן הרישום', href: './BeautyFind Standards.dc.html', note: 'קריטריונים וחסויות' },
+    { name: 'צור קשר', href: './BeautyFind Contact.dc.html', note: 'טופס ומענה' },
+    { name: 'מדיניות ותקנון', href: './BeautyFind Legal.dc.html', note: 'פרטיות, תנאים, נגישות' }
+  ]},
+  { name: 'צד העסק', pages: [
+    { name: 'רישום עסק', href: './BeautyFind Get Listed.dc.html', note: 'מסלולים ותהליך ההצטרפות' },
+    { name: 'בקשת בעלות', href: './BeautyFind Claim.dc.html', note: 'אימות בעלות על כרטיס קיים' },
+    { name: 'לוח הבקרה', href: './BeautyFind Dashboard.dc.html', note: 'סקירה, אנליטיקה, פרופיל, מנוי, הרשאות' },
+    { name: 'קליניקת נועה · ניהול', href: './Noa Clinic.dc.html', note: 'CRM, יומן, מלאי, אוטומציות, הגדרות' }
+  ]}
+];
+
+const PITFALLS = [
+  { title: [{ t: 'תמונה שה־' }, { c: 'src' }, { t: ' שלה הוא חור תבנית חייבת ' }, { c: 'loading="lazy"' }],
+    body: [{ t: 'בלי זה הדפדפן מנסה להביא את המחרוזת ' }, { c: '"{{ hole }}"' }, { t: ' כבר בזמן פענוח התבנית, וזורק שגיאת משאב. חזר שלוש פעמים.' }] },
+  { title: [{ t: 'נקודות שבירה מ־' }, { c: 'matchMedia' }, { t: ', לא ממדידת רוחב' }],
+    body: [{ t: 'איפרֵיים שהמאחסן משנה את גודלו לא מפעיל ' }, { c: 'resize' }, { t: ', כך שרוחב שנקבע בבנאי לעולם לא מתעדכן. משתמשים בתבנית ' }, { c: 'static MQ' }, { t: ' · ' }, { c: 'readMQ()' }, { t: ' · מאזין.' }] },
+  { title: [{ t: 'מספר עמודות מפורש ולא ' }, { c: 'auto-fit' }],
+    body: [{ t: 'ההגדרה ' }, { c: 'repeat(auto-fit,minmax(215px,1fr))' }, { t: ' התפרקה לשתי עמודות עבור שלושה פריטים, והשאירה תא ריק עם מסגרת.' }] },
+  { title: [{ c: 'overflow-x:clip' }, { t: ' ולא ' }, { c: 'hidden' }, { t: ' בשורש' }],
+    body: [{ c: 'hidden' }, { t: ' יוצר הקשר גלילה ומבטל בשקט כל ' }, { c: 'position:sticky' }, { t: ' של צאצא.' }] },
+  { title: [{ t: 'אלמנט דביק גבוה חייב להיכנס למסך' }],
+    body: [{ t: 'מגדירים ' }, { c: 'sticky' }, { t: ' מאחורי שאילתת ' }, { c: 'min-height' }, { t: ', או מדביקים את הכרטיס הפנימי ולא את כל ה־' }, { c: 'aside' }, { t: '.' }] },
+  { title: [{ t: 'רשימת אפשרויות בזרימה לא מתאימה ל־' }, { c: 'select' }],
+    body: [{ t: 'אופציות שמגיעות בהדרגה גורמות ל־' }, { c: 'select' }, { t: ' להציג את הראשונה במקום את הערך השמור. משתמשים בשורת שבבים או בשדה עם ' }, { c: 'datalist' }, { t: '.' }] }
+];
+
+const TOC = [
+  ['#ds-color', 'צבע'], ['#ds-type', 'טיפוגרפיה'], ['#ds-rtl', 'התנהגות RTL'],
+  ['#ds-buttons', 'כפתורים ושבבים'], ['#ds-forms', 'שדות ובקרות'], ['#ds-cards', 'כרטיסים ותגים'],
+  ['#ds-content', 'מדיניות תוכן'], ['#ds-geo', 'גאוגרפיה וקטגוריות'], ['#ds-pages', 'מסכי המערכת'],
+  ['#ds-pitfalls', 'מלכודות']
+];
+
+class Component extends DCLogic {
+  state = {
+    chip: 'בוטוקס', sw: true, cb: true,
+    demoName: 'קליניקת נועה', demoPhone: '09-774-1180', demoBad: '05-123'
+  };
+
+  renderVals() {
+    const s = this.state;
+    const teal = '#0B7A87';
+    return {
+      heroFacts: [
+        { n: '18', label: 'מסכים', dir: 'ltr' },
+        { n: '7', label: 'אזורים', dir: 'ltr' },
+        { n: '14', label: 'קטגוריות טיפול', dir: 'ltr' },
+        { n: '3', label: 'משפחות גופן', dir: 'ltr' }
+      ],
+      swatches: SWATCHES.map(x => Object.assign({}, x, {
+        edge: ['#FAFBFB', '#F6F8F9', '#F0FAFB'].indexOf(x.hex) > -1 ? '#E6E6E6' : 'transparent'
+      })),
+      contrastRows: [
+        { sample: 'טקסט נייבי על לבן', note: 'גוף ומדדים', ratio: '13.2:1', bg: '#fff', border: '#E6E6E6', fg: '#0C243E', sub: '#5B6B7B' },
+        { sample: 'לבן על טרקיז עמוק', note: 'כפתור ראשי ומצב נבחר', ratio: '4.7:1', bg: teal, border: teal, fg: '#fff', sub: 'rgba(255,255,255,.86)' },
+        { sample: 'טרקיז עמוק על טרקיז רך', note: 'באנר מידע ושבב נבחר', ratio: '4.6:1', bg: '#F0FAFB', border: '#CDEFF3', fg: teal, sub: '#5B6B7B' }
+      ],
+      typeRows: TYPE_ROWS,
+      ltrRows: LTR_ROWS,
+      mirrorRows: MIRROR_ROWS,
+      badges: BADGES,
+      kpis: KPIS,
+      policyRows: POLICY,
+      regions: REGIONS,
+      categories: CATEGORIES.map(c => ({
+        name: c[0], medical: c[1],
+        bg: c[1] ? '#F0FAFB' : '#FAFBFB',
+        border: c[1] ? '#CDEFF3' : '#E6E6E6',
+        color: c[1] ? teal : '#3E4F62'
+      })),
+      pageGroups: PAGE_GROUPS.map(g => ({ name: g.name, pages: g.pages, count: g.pages.length + ' מסכים' })),
+      pitfalls: PITFALLS,
+      toc: TOC.map(t => ({ href: t[0], name: t[1] })),
+
+      chipRow: ['בוטוקס', 'לייזר', 'טיפולי פנים', 'מיקרוניידלינג'].map(c => {
+        const on = s.chip === c;
+        return { name: c, on: on ? 'true' : 'false',
+          bg: on ? teal : '#fff', color: on ? '#fff' : '#3E4F62', border: on ? teal : '#E6E6E6',
+          pick: () => this.setState({ chip: c }) };
+      }),
+      swOn: s.sw ? 'true' : 'false',
+      swBg: s.sw ? teal : '#D4D4D4',
+      swX: s.sw ? 'translateX(-18px)' : 'translateX(0)',
+      toggleSw: () => this.setState(st => ({ sw: !st.sw })),
+      cbOn: s.cb ? 'true' : 'false',
+      cbChecked: s.cb,
+      cbBg: s.cb ? teal : '#fff',
+      cbBorder: s.cb ? teal : '#C9CFD6',
+      toggleCb: () => this.setState(st => ({ cb: !st.cb })),
+      demoName: s.demoName, demoPhone: s.demoPhone, demoBad: s.demoBad,
+      onDemoName: e => this.setState({ demoName: e.target.value }),
+      onDemoPhone: e => this.setState({ demoPhone: e.target.value }),
+      onDemoBad: e => this.setState({ demoBad: e.target.value })
+    };
+  }
+}
+</script>
+</body>
+</html>

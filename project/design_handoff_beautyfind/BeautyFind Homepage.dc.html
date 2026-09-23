@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Assistant:wght@400;500;600;700&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+<title>BeautyFind — אינדקס מכוני יופי, אסתטיקה ובריאות בישראל</title>
+<meta name="description" content="BeautyFind הוא אינדקס לאיתור מכוני יופי, אסתטיקה רפואית, קוסמטיקה, מספרות וספא בכל רחבי ישראל — מהצפון ועד אילת. השוו בין עסקים, גלו טיפולים וקבעו את הפגישה הבאה שלכם.">
+<link rel="canonical" href="https://beautyfind.co.il/">
+<style>
+@keyframes bfOrbit{to{transform:rotate(360deg)}}
+@keyframes bfRing{0%{transform:scale(.6);opacity:0}30%{opacity:.5}100%{transform:scale(1.6);opacity:0}}
+@keyframes bfFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes bfDrift{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-14px,0)}}
+@keyframes bfLine{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes bfDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes bfRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes bfFade{from{opacity:0}to{opacity:1}}
+@keyframes bfWord{from{opacity:0;transform:translateY(0.35em)}to{opacity:1;transform:none}}
+@keyframes bfPop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+@keyframes bfCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes bfSpin{to{transform:rotate(360deg)}}
+@keyframes bfGlobe{to{transform:translateX(50%)}}
+@keyframes bfSweep{0%,100%{transform:translateX(0) rotate(8deg);opacity:0}45%{opacity:.7}90%{transform:translateX(-260%) rotate(8deg);opacity:0}}
+@keyframes bfPing{0%{box-shadow:0 0 0 5px rgba(20,179,198,.18)}50%{box-shadow:0 0 0 14px rgba(20,179,198,0)}100%{box-shadow:0 0 0 5px rgba(20,179,198,.18)}}
+html,body{margin:0;padding:0;background:#ffffff}
+body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:#0C243E;text-decoration:none}
+a:hover{color:#0B7A87}
+:focus-visible{outline:2px solid #14B3C6;outline-offset:2px;border-radius:6px}
+input::placeholder{color:#8A96A3}
+html{scroll-behavior:smooth}
+::selection{background:rgba(20,179,198,.25)}
+*{-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{overscroll-behavior-y:contain}
+button,a[href],[role="button"],summary,label{touch-action:manipulation}
+button:not(:disabled):active,a[href]:active,[role="button"]:active{transform:scale(.985)}
+[data-rail]{-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+img,svg,video{max-width:100%}
+@media (max-width:760px){input,select,textarea{font-size:16px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+</helmet>
+<div dir="rtl" onKeyDown="{{ onKey }}" style="font-family:'Assistant',system-ui,sans-serif;font-size:16px;line-height:1.55;color:#0C243E;background:#ffffff;overflow-x:clip;min-height:100dvh">
+<a href="#main" style="position:absolute;right:16px;top:-48px;z-index:100;padding:10px 14px;background:#0C243E;color:#ffffff;border-radius:8px;font-size:14px;font-weight:600" style-focus="top:12px">דלגו לתוכן</a>
+<header style="position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:saturate(1.2) blur(8px);border-bottom:1px solid {{ headerLine }};transition:border-color .2s">
+  <div style="max-width:1280px;margin:0 auto;padding:0 clamp(20px,4vw,32px);height:72px;display:flex;align-items:center;gap:28px">
+    <a href="/" onClick="{{ go }}" aria-label="BeautyFind — לדף הבית" style="flex:none;display:flex;align-items:center"><span dir="ltr" style="font-family:'Jost',sans-serif;font-weight:300;font-size:28px;line-height:1;letter-spacing:-0.005em;color:#0C243E;white-space:nowrap">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6;font-weight:400">.</span></span></a>
+    <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+      <nav aria-label="ראשי" style="display:flex;align-items:center;gap:2px;flex:1">
+        <sc-if value="{{ scrolled }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ focusSearch }}" style="display:flex;align-items:center;gap:8px;height:40px;padding:0 12px 0 14px;margin-left:8px;border:1px solid #E6E6E6;border-radius:10px;background:#F6F8F9;font:inherit;font-size:14px;font-weight:500;color:#5B6B7B;cursor:pointer;animation:bfFade .2s ease both" style-hover="border-color:#0C243E;color:#0C243E"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="5.5"></circle><path d="m12.5 12.5 3.5 3.5"></path></svg>חיפוש עסקים</button></sc-if>
+        <button type="button" onClick="{{ toggleFind }}" aria-haspopup="true" aria-expanded="{{ findOpen }}" style="display:flex;align-items:center;gap:6px;height:44px;padding:0 14px;border:0;border-radius:10px;background:{{ findBg }};font:inherit;font-size:16px;font-weight:600;color:#0C243E;cursor:pointer;transition:background .18s" style-hover="background:#F3F6F8">איתור עסק<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"></path></svg></button>
+        <button type="button" onClick="{{ toggleTreat }}" aria-haspopup="true" aria-expanded="{{ treatOpen }}" style="display:flex;align-items:center;gap:6px;height:44px;padding:0 14px;border:0;border-radius:10px;background:{{ treatBg }};font:inherit;font-size:16px;font-weight:600;color:#0C243E;cursor:pointer;transition:background .18s" style-hover="background:#F3F6F8">תחומי טיפול<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"></path></svg></button>
+        <a href="/magazine" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 14px;border-radius:10px;font-size:16px;font-weight:500;transition:background .18s" style-hover="background:#F3F6F8;color:#0C243E">מדריכים</a>
+        <a href="/about" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 14px;border-radius:10px;font-size:16px;font-weight:500;transition:background .18s" style-hover="background:#F3F6F8;color:#0C243E">אודות</a>
+      </nav>
+      <div style="display:flex;align-items:center;gap:10px;flex:none">
+        <div style="position:relative">
+          <button type="button" onClick="{{ toggleRegion }}" aria-haspopup="listbox" aria-expanded="{{ regionOpen }}" aria-label="אזור נבחר: {{ regionName }}" style="display:flex;align-items:center;gap:8px;height:44px;padding:0 10px 0 12px;border:1px solid #E6E6E6;border-radius:10px;background:#ffffff;font:inherit;font-size:15px;font-weight:600;color:#0C243E;cursor:pointer;transition:border-color .18s" style-hover="border-color:#0C243E">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M8 14.5s5-4.2 5-8A5 5 0 0 0 3 6.5c0 3.8 5 8 5 8Z"></path><circle cx="8" cy="6.4" r="1.9"></circle></svg>
+            {{ regionName }}
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"></path></svg>
+          </button>
+          <sc-if value="{{ regionOpen }}" hint-placeholder-val="{{ false }}">
+            <ul role="listbox" aria-label="בחרו אזור" style="position:absolute;left:0;top:calc(100% + 8px);width:250px;margin:0;padding:6px;list-style:none;background:#ffffff;border:1px solid #E6E6E6;border-radius:12px;box-shadow:0 12px 32px rgba(12,36,62,0.12);animation:bfDrop .18s ease both;z-index:60;max-height:380px;overflow:auto">
+              <sc-for list="{{ regionOptions }}" as="c" hint-placeholder-count="8">
+                <li role="option" aria-selected="{{ c.selected }}">
+                  <button type="button" onClick="{{ c.pick }}" style="display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:8px 10px;border:0;border-radius:8px;background:{{ c.bg }};font:inherit;font-size:16px;font-weight:{{ c.weight }};color:#0C243E;text-align:right;cursor:pointer" style-hover="background:#F3F6F8">
+                    <span style="flex:1">{{ c.name }}</span>
+                    <span style="font-size:13px;color:#8A96A3">{{ c.count }}</span>
+                    <span style="color:#14B3C6;font-size:14px">{{ c.check }}</span>
+                  </button>
+                </li>
+              </sc-for>
+            </ul>
+          </sc-if>
+        </div>
+        <a href="/for-business" onClick="{{ go }}" style="display:flex;align-items:center;height:44px;padding:0 12px;font-size:15px;font-weight:600;color:#5B6B7B;border-radius:10px" style-hover="color:#0C243E;background:#F3F6F8">לעסקים</a>
+      </div>
+    </sc-if>
+    <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-right:auto;display:flex;align-items:center;gap:8px">
+        <button type="button" onClick="{{ toggleRegion }}" aria-label="אזור נבחר: {{ regionName }}" style="display:flex;align-items:center;gap:6px;height:44px;padding:0 10px;border:1px solid #E6E6E6;border-radius:10px;background:#ffffff;font:inherit;font-size:14px;font-weight:700;color:#0C243E;cursor:pointer">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M8 14.5s5-4.2 5-8A5 5 0 0 0 3 6.5c0 3.8 5 8 5 8Z"></path><circle cx="8" cy="6.4" r="1.9"></circle></svg>{{ regionName }}
+        </button>
+        <button type="button" onClick="{{ toggleMobile }}" aria-label="{{ mobileLabel }}" aria-expanded="{{ mobileOpen }}" style="width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px solid #E6E6E6;border-radius:10px;background:#ffffff;cursor:pointer">
+          <span style="display:block;width:18px;height:2px;background:#0C243E;border-radius:1px"></span>
+          <span style="display:block;width:18px;height:2px;background:#0C243E;border-radius:1px"></span>
+        </button>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ findOpen }}" hint-placeholder-val="{{ false }}">
+    <div onMouseLeave="{{ closeMenus }}" style="position:absolute;left:0;right:0;top:100%;background:#ffffff;border-top:1px solid #E6E6E6;border-bottom:1px solid #E6E6E6;box-shadow:0 24px 48px rgba(12,36,62,0.10);animation:bfDrop .18s ease both">
+      <div style="max-width:1280px;margin:0 auto;padding:32px clamp(20px,4vw,32px) 36px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px 32px">
+        <sc-for list="{{ megaRegions }}" as="c" hint-placeholder-count="7">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <a href="{{ c.href }}" onClick="{{ go }}" style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 0 12px;border-bottom:1px solid #E6E6E6;margin-bottom:8px" style-hover="color:#0B7A87">
+              <span style="font-family:'Frank Ruhl Libre',serif;font-size:24px;font-weight:500">{{ c.name }}</span>
+              <span style="font-size:13px;font-weight:700;color:#0B7A87;white-space:nowrap;display:inline-flex;align-items:center">לאזור<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-right:6px"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></span>
+            </a>
+            <sc-for list="{{ c.cities }}" as="ct" hint-placeholder-count="5">
+              <a href="{{ ct.href }}" onClick="{{ go }}" style="display:flex;align-items:center;min-height:38px;padding:0 10px;margin:0 -10px;border-radius:8px;font-size:15px" style-hover="background:#F3F6F8;color:#0C243E">{{ ct.name }}</a>
+            </sc-for>
+          </div>
+        </sc-for>
+        <div style="background:#F3F6F8;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:12px;align-self:start">
+          <div style="font-size:13px;font-weight:700;color:#5B6B7B">לא מצאתם את העיר שלכם?</div>
+          <p style="margin:0;font-size:15px;line-height:1.6;color:#0C243E;text-wrap:pretty">האינדקס מכסה מעל 60 ערים בכל שבעת האזורים. חפשו כל עיר או יישוב, או עברו לדף אזור לרשימה המלאה.</p>
+          <button type="button" onClick="{{ focusSearch }}" style="align-self:flex-start;height:40px;padding:0 14px;border:1px solid #0C243E;border-radius:9px;background:#ffffff;font:inherit;font-size:14px;font-weight:700;color:#0C243E;cursor:pointer" style-hover="background:#0C243E;color:#ffffff">חיפוש לפי מקום</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ treatOpen }}" hint-placeholder-val="{{ false }}">
+    <div onMouseLeave="{{ closeMenus }}" style="position:absolute;left:0;right:0;top:100%;background:#ffffff;border-top:1px solid #E6E6E6;border-bottom:1px solid #E6E6E6;box-shadow:0 24px 48px rgba(12,36,62,0.10);animation:bfDrop .18s ease both">
+      <div style="max-width:1280px;margin:0 auto;padding:32px clamp(20px,4vw,32px) 36px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:28px">
+        <sc-for list="{{ treatGroups }}" as="g" hint-placeholder-count="5">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="font-size:13px;font-weight:700;color:#5B6B7B;padding-bottom:10px;border-bottom:1px solid #E6E6E6;margin-bottom:6px">{{ g.name }}</div>
+            <sc-for list="{{ g.items }}" as="t" hint-placeholder-count="3">
+              <a href="{{ t.href }}" onClick="{{ go }}" style="display:flex;align-items:center;min-height:40px;padding:0 10px;margin:0 -10px;border-radius:8px;font-size:15px" style-hover="background:#F3F6F8;color:#0C243E">{{ t.name }}</a>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-top:1px solid #E6E6E6;background:#FAFBFB">
+        <div style="max-width:1280px;margin:0 auto;padding:14px clamp(20px,4vw,32px);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:14px;color:#5B6B7B">
+          <span>דפי הטיפולים הם מידע כללי בלבד. התאמת טיפול לגופכם צריכה להיבחן מול איש מקצוע מוסמך.</span>
+          <a href="/treatments" onClick="{{ go }}" style="font-weight:700;color:#0B7A87">כל תחומי הטיפול<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-right:6px"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></a>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</header>
+
+<sc-if value="{{ mobileOpen }}" hint-placeholder-val="{{ false }}">
+  <div role="dialog" aria-label="תפריט" style="position:fixed;inset:72px 0 0;z-index:45;background:#ffffff;overflow:auto;padding:16px 20px 40px;animation:bfDrop .2s ease both">
+    <div style="display:flex;flex-direction:column">
+      <sc-for list="{{ mobileSections }}" as="s" hint-placeholder-count="2">
+        <div style="border-bottom:1px solid #E6E6E6">
+          <button type="button" onClick="{{ s.toggle }}" aria-expanded="{{ s.open }}" style="display:flex;align-items:center;justify-content:space-between;width:100%;min-height:56px;padding:0;border:0;background:transparent;font:inherit;font-size:18px;font-weight:700;color:#0C243E;text-align:right;cursor:pointer">{{ s.name }}<span style="font-size:20px;color:#8A96A3;transform:rotate({{ s.rot }});transition:transform .2s;display:inline-block">+</span></button>
+          <sc-if value="{{ s.open }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:0 0 16px;display:flex;flex-direction:column;gap:14px">
+              <sc-for list="{{ s.groups }}" as="g" hint-placeholder-count="3">
+                <div>
+                  <a href="{{ g.href }}" onClick="{{ go }}" style="display:flex;align-items:center;justify-content:space-between;min-height:44px;font-size:16px;font-weight:700;color:#0C243E">{{ g.name }}<span style="font-size:13px;font-weight:700;color:#0B7A87">{{ g.cta }}</span></a>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:4px">
+                    <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+                      <a href="{{ it.href }}" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border:1px solid #E6E6E6;border-radius:10px;font-size:15px;color:#0C243E">{{ it.name }}</a>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+      <a href="/magazine" onClick="{{ go }}" style="display:flex;align-items:center;min-height:56px;border-bottom:1px solid #E6E6E6;font-size:18px;font-weight:700">מדריכים</a>
+      <a href="/about" onClick="{{ go }}" style="display:flex;align-items:center;min-height:56px;border-bottom:1px solid #E6E6E6;font-size:18px;font-weight:700">אודות</a>
+    </div>
+    <div style="margin-top:24px">
+      <div style="font-size:13px;font-weight:700;color:#5B6B7B;margin-bottom:10px">אזור</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <sc-for list="{{ regionOptions }}" as="c" hint-placeholder-count="8">
+          <button type="button" onClick="{{ c.pick }}" aria-pressed="{{ c.selected }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;padding:0 12px;border:1px solid {{ c.border }};border-radius:10px;background:{{ c.bg }};font:inherit;font-size:15px;font-weight:{{ c.weight }};color:#0C243E;text-align:right;cursor:pointer">
+            <span>{{ c.name }}</span><span style="font-size:12px;color:#8A96A3">{{ c.count }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+    <a href="/for-business" onClick="{{ go }}" style="display:flex;align-items:center;justify-content:center;min-height:52px;margin-top:24px;border:1px solid #E6E6E6;border-radius:12px;font-size:16px;font-weight:700;color:#0C243E">לעסקים</a>
+  </div>
+</sc-if>
+
+<sc-if value="{{ mobileRegionOpen }}" hint-placeholder-val="{{ false }}">
+  <div role="dialog" aria-label="בחרו אזור" style="position:fixed;inset:72px 0 auto;z-index:46;background:#ffffff;border-bottom:1px solid #E6E6E6;padding:16px 20px 20px;box-shadow:0 24px 48px rgba(12,36,62,0.12);animation:bfDrop .18s ease both;max-height:70vh;overflow:auto">
+    <div style="font-size:13px;font-weight:700;color:#5B6B7B;margin-bottom:10px">חיפוש עסקים באזור</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <sc-for list="{{ regionOptions }}" as="c" hint-placeholder-count="8">
+        <button type="button" onClick="{{ c.pick }}" aria-pressed="{{ c.selected }}" style="display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;border:1px solid {{ c.border }};border-radius:10px;background:{{ c.bg }};font:inherit;font-size:16px;font-weight:{{ c.weight }};color:#0C243E;text-align:right;cursor:pointer">
+          <span style="flex:1">{{ c.name }}</span><span style="font-size:13px;color:#8A96A3">{{ c.count }}</span><span style="color:#14B3C6">{{ c.check }}</span>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+</sc-if>
+
+<main id="main">
+<section aria-labelledby="hero-h1" style="position:relative;background:#FAFBFB;border-bottom:1px solid #E6E6E6;overflow:hidden">
+  <div style="position:absolute;left:-8%;top:-30%;width:46vw;height:46vw;border-radius:50%;background:radial-gradient(circle,rgba(20,179,198,.10),transparent 68%);pointer-events:none" aria-hidden="true"></div>
+  <div style="max-width:1280px;margin:0 auto;padding:clamp(36px,4.5vw,68px) clamp(20px,4vw,32px) clamp(48px,6vw,88px);display:grid;grid-template-columns:{{ heroCols }};gap:clamp(32px,5vw,72px);align-items:center;position:relative;z-index:1">
+    <div style="display:flex;flex-direction:column;gap:clamp(20px,2.4vw,30px)">
+      <div style="display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:#5B6B7B;animation:bfFade .6s ease both"><span style="width:26px;height:1px;background:#14B3C6;display:inline-block;transform-origin:right;animation:bfLine .7s cubic-bezier(.2,.7,.2,1) .2s both"></span>אינדקס היופי, האסתטיקה והבריאות של ישראל</div>
+      <h1 id="hero-h1" style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(42px,5.4vw,84px);line-height:1.06;letter-spacing:-0.015em;color:#0C243E;text-wrap:balance">
+        <span style="display:inline-block;animation:bfWord .8s cubic-bezier(.2,.7,.2,1) .05s both">מצאו את מיטב</span><br><span style="display:inline-block;animation:bfWord .8s cubic-bezier(.2,.7,.2,1) .2s both">מכוני היופי</span><br><span style="display:inline-block;animation:bfWord .8s cubic-bezier(.2,.7,.2,1) .35s both">שלידכם<span style="color:#14B3C6">.</span></span>
+      </h1>
+      <p style="margin:0;max-width:46ch;font-size:clamp(17px,1.3vw,20px);line-height:1.6;color:#3E4F62;text-wrap:pretty;animation:bfFade .8s ease .5s both">מכוני אסתטיקה רפואית, קוסמטיקה, מספרות, ספא ועיצוב הגוף — מקריית שמונה ועד אילת. גלו תחומי טיפול, השוו בין עסקים וקבעו את הפגישה הבאה שלכם.</p>
+      <div style="display:flex;flex-direction:column;gap:14px;animation:bfRise .8s cubic-bezier(.2,.7,.2,1) .55s both">
+        <form onSubmit="{{ submitSearch }}" role="search" aria-label="איתור עסקים" style="position:relative;background:#ffffff;border:1px solid #E6E6E6;border-radius:18px;box-shadow:0 24px 64px rgba(12,36,62,0.14);padding:8px;display:grid;grid-template-columns:{{ searchCols }};gap:8px;align-items:stretch">
+        <div style="position:relative;display:flex;flex-direction:column;gap:2px;padding:12px 16px 10px;border-radius:12px;background:{{ qBg }};transition:background .18s">
+          <label for="bf-q" style="font-size:13px;font-weight:700;color:#5B6B7B">טיפול או שם עסק</label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input id="bf-q" type="text" autoComplete="off" value="{{ q }}" onChange="{{ setQ }}" onFocus="{{ focusQ }}" onBlur="{{ blurQ }}" placeholder="בוטוקס, הסרת שיער בלייזר, שם מכון" aria-autocomplete="list" aria-expanded="{{ qOpen }}" style="flex:1;min-width:0;height:32px;border:0;background:transparent;font:inherit;font-size:17px;color:#0C243E;outline:none;padding:0">
+            <sc-if value="{{ hasTreat }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ clearQ }}" aria-label="נקו את שדה הטיפול" style="width:28px;height:28px;border:0;border-radius:50%;background:#F3F6F8;color:#5B6B7B;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">×</button></sc-if>
+          </div>
+          <sc-if value="{{ qOpen }}" hint-placeholder-val="{{ false }}">
+            <div role="listbox" onMouseDown="{{ keepFocus }}" style="position:absolute;right:0;top:calc(100% + 12px);width:min(440px,calc(100vw - 48px));background:#ffffff;border:1px solid #E6E6E6;border-radius:14px;box-shadow:0 16px 40px rgba(12,36,62,0.14);padding:8px;animation:bfDrop .16s ease both;z-index:40;max-height:380px;overflow:auto">
+              <sc-if value="{{ qEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:14px 12px;font-size:14px;color:#5B6B7B;line-height:1.6">לא נמצאו תוצאות ל״<strong style="color:#0C243E">{{ q }}</strong>״. נסו תחום טיפול כמו קוסמטיקה או הסרת שיער, או עיר כמו תל אביב.</div></sc-if>
+              <sc-for list="{{ qGroups }}" as="g" hint-placeholder-count="2">
+                <div style="padding:8px 12px 4px;font-size:12px;font-weight:700;color:#8A96A3">{{ g.name }}</div>
+                <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+                  <button type="button" role="option" onClick="{{ it.pick }}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:44px;padding:8px 12px;border:0;border-radius:8px;background:transparent;font:inherit;font-size:15px;color:#0C243E;text-align:right;cursor:pointer" style-hover="background:#F3F6F8"><span>{{ it.name }}</span><span style="font-size:13px;color:#8A96A3;white-space:nowrap">{{ it.meta }}</span></button>
+                </sc-for>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+        <div style="position:relative;display:flex;flex-direction:column;gap:2px;padding:12px 16px 10px;border-radius:12px;background:{{ locBg }};transition:background .18s;border-right:{{ searchDivider }}">
+          <label for="bf-loc" style="font-size:13px;font-weight:700;color:#5B6B7B">עיר או אזור</label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input id="bf-loc" type="text" autoComplete="off" value="{{ loc }}" onChange="{{ setLoc }}" onFocus="{{ focusLoc }}" onBlur="{{ blurLoc }}" placeholder="{{ locPlaceholder }}" aria-autocomplete="list" aria-expanded="{{ locOpen }}" style="flex:1;min-width:0;height:32px;border:0;background:transparent;font:inherit;font-size:17px;color:#0C243E;outline:none;padding:0">
+            <sc-if value="{{ hasLoc }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ clearLoc }}" aria-label="נקו את שדה המקום" style="width:28px;height:28px;border:0;border-radius:50%;background:#F3F6F8;color:#5B6B7B;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">×</button></sc-if>
+          </div>
+          <sc-if value="{{ locOpen }}" hint-placeholder-val="{{ false }}">
+            <div role="listbox" onMouseDown="{{ keepFocus }}" style="position:absolute;right:0;top:calc(100% + 12px);width:min(420px,calc(100vw - 48px));background:#ffffff;border:1px solid #E6E6E6;border-radius:14px;box-shadow:0 16px 40px rgba(12,36,62,0.14);padding:8px;animation:bfDrop .16s ease both;z-index:40;max-height:380px;overflow:auto">
+              <button type="button" onClick="{{ useMyLocation }}" style="display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:8px 12px;border:0;border-radius:8px;background:transparent;font:inherit;font-size:15px;font-weight:700;color:#0B7A87;text-align:right;cursor:pointer" style-hover="background:#F3F6F8"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="3"></circle><path d="M8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15"></path></svg>{{ geoLabel }}</button>
+              <sc-if value="{{ geoNote }}" hint-placeholder-val="{{ false }}"><div style="padding:0 12px 8px;font-size:13px;color:#5B6B7B">{{ geoNote }}</div></sc-if>
+              <sc-if value="{{ locEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:12px;font-size:14px;color:#5B6B7B;line-height:1.6">לא נמצא מקום בשם ״<strong style="color:#0C243E">{{ loc }}</strong>״. האינדקס מכסה שבעה אזורים ומעל 60 ערים בישראל.</div></sc-if>
+              <sc-for list="{{ locGroups }}" as="g" hint-placeholder-count="2">
+                <div style="padding:8px 12px 4px;font-size:12px;font-weight:700;color:#8A96A3">{{ g.name }}</div>
+                <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+                  <button type="button" role="option" onClick="{{ it.pick }}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:44px;padding:8px 12px;border:0;border-radius:8px;background:transparent;font:inherit;font-size:15px;color:#0C243E;text-align:right;cursor:pointer" style-hover="background:#F3F6F8"><span>{{ it.name }}</span><span style="font-size:13px;color:#8A96A3;white-space:nowrap">{{ it.meta }}</span></button>
+                </sc-for>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+        <button type="submit" style="min-height:60px;padding:0 26px;border:0;border-radius:12px;background:#0C243E;color:#ffffff;font:inherit;font-size:17px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .18s,color .18s" style-hover="background:#14B3C6;color:#0C243E">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="5.5"></circle><path d="m12.5 12.5 3.5 3.5"></path></svg>חפשו עסקים
+        </button>
+      </form>
+
+      <sc-if value="{{ result }}" hint-placeholder-val="{{ false }}">
+        <div role="status" aria-live="polite" style="border:1px solid #E6E6E6;border-radius:14px;padding:16px 18px;background:#ffffff;display:flex;flex-direction:column;gap:12px;animation:bfRise .2s ease both;box-shadow:0 12px 32px rgba(12,36,62,0.08)">
+          <sc-if value="{{ resLoading }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:12px;font-size:15px;color:#5B6B7B"><span style="width:18px;height:18px;border:2px solid #D4D4D4;border-top-color:#14B3C6;border-radius:50%;animation:bfSpin .8s linear infinite;display:inline-block"></span>מחפשים עסקים</div>
+          </sc-if>
+          <sc-if value="{{ resReady }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+              <div><div style="font-size:13px;font-weight:700;color:#5B6B7B">אינדקס העסקים</div><div style="font-family:'Frank Ruhl Libre',serif;font-size:22px;margin-top:2px">{{ resTitle }}</div><div dir="ltr" style="font-size:13px;color:#8A96A3;margin-top:2px;text-align:right">{{ resHref }}</div></div>
+              <a href="{{ resHref }}" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:10px;background:#0C243E;color:#ffffff;font-size:15px;font-weight:700" style-hover="background:#14B3C6;color:#0C243E">לפתיחת האינדקס<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-right:6px"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></a>
+            </div>
+          </sc-if>
+          <sc-if value="{{ resNeedLoc }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:15px;line-height:1.6">איפה תרצו למצוא <strong>{{ resTreat }}</strong>? בחרו אזור או עיר כדי להמשיך.</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{ locChips }}" as="c" hint-placeholder-count="6"><button type="button" onClick="{{ c.pick }}" style="min-height:40px;padding:0 14px;border:1px solid #D4D4D4;border-radius:10px;background:#ffffff;font:inherit;font-size:14px;font-weight:{{ c.weight }};color:#0C243E;cursor:pointer;transition:border-color .18s" style-hover="border-color:#0C243E">{{ c.name }}</button></sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ resNone }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:15px;line-height:1.6"><strong>לא נמצאו תוצאות לחיפוש הזה.</strong> נסו שם של תחום טיפול, שם עסק, או אחת מהערים באינדקס — או עברו לעיון לפי אזור.</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{ noneChips }}" as="c" hint-placeholder-count="5"><button type="button" onClick="{{ c.pick }}" style="min-height:40px;padding:0 14px;border:1px solid #D4D4D4;border-radius:10px;background:#ffffff;font:inherit;font-size:14px;color:#0C243E;cursor:pointer" style-hover="border-color:#0C243E">{{ c.name }}</button></sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ resHint }}" hint-placeholder-val="{{ false }}"><div style="font-size:15px;color:#3E4F62">הזינו תחום טיפול, שם עסק או מקום כדי להתחיל.</div></sc-if>
+        </div>
+      </sc-if>
+
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;font-size:15px;color:#5B6B7B">
+          <span style="font-weight:700;color:#0C243E">הטיפולים המבוקשים</span>
+          <sc-for list="{{ shortcuts }}" as="s" hint-placeholder-count="4">
+            <button type="button" onClick="{{ s.pick }}" style="min-height:36px;padding:0 4px;border:0;border-bottom:1px solid #D4D4D4;background:transparent;font:inherit;font-size:15px;color:#0C243E;cursor:pointer;transition:border-color .18s,color .18s" style-hover="border-color:#14B3C6;color:#0B7A87">{{ s.name }}</button>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{ heroRegions }}" as="c" hint-placeholder-count="7">
+            <button type="button" onClick="{{ c.pick }}" aria-pressed="{{ c.on }}" style="display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0 16px;border:1px solid {{ c.border }};border-radius:12px;background:#ffffff;font:inherit;font-size:15px;font-weight:700;color:#0C243E;cursor:pointer;transition:border-color .18s,transform .18s" style-hover="border-color:#0C243E;transform:translateY(-2px)"><span style="width:8px;height:8px;border-radius:50%;background:{{ c.dot }};transition:background .18s"></span>{{ c.name }}</button>
+          </sc-for>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:14px;color:#8A96A3"><span>צפון · חיפה · שרון · גוש דן · ירושלים · שפלה · דרום</span><button type="button" onClick="{{ openPrototype }}" style="border:0;background:transparent;font:inherit;font-size:14px;color:#8A96A3;cursor:pointer;text-decoration:underline;min-height:32px;padding:0" style-hover="color:#0C243E">על אב־הטיפוס הזה</button></div>
+      </div>
+    </div>
+
+    <div style="position:relative;max-width:540px;width:100%;justify-self:center;display:{{ orbDisplay }}">
+      <div style="position:relative;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:16px;z-index:2">
+        <figure style="grid-column:1 / -1;margin:0;border-radius:20px;overflow:hidden;background:#ffffff;padding:8px;box-shadow:0 24px 52px rgba(12,36,62,.14);animation:bfCard .9s cubic-bezier(.2,.7,.2,1) .5s both,bfDrift 13s ease-in-out .5s infinite;transition:box-shadow .3s" style-hover="box-shadow:0 32px 66px rgba(12,36,62,.2)">
+          <span style="position:relative;display:block;aspect-ratio:16/10;border-radius:14px;overflow:hidden;background:#EDF1F3;min-height:210px">
+            <img src="assets/hero-clinic.jpg" alt="חלל טיפולים במכון אסתטיקה בתל אביב" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">
+          </span>
+        </figure>
+        <figure style="margin:0;border-radius:18px;overflow:hidden;background:#ffffff;padding:8px;box-shadow:0 20px 44px rgba(12,36,62,.12);animation:bfCard .9s cubic-bezier(.2,.7,.2,1) .7s both,bfDrift 15s ease-in-out .7s infinite;transition:box-shadow .3s" style-hover="box-shadow:0 28px 58px rgba(12,36,62,.18)">
+          <span style="position:relative;display:block;aspect-ratio:1/1;border-radius:12px;overflow:hidden;background:#EDF1F3"><img src="assets/hero-skin.jpg" alt="סטיל־לייף טיפוח עור" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;"></span>
+        </figure>
+        <figure style="margin:0;border-radius:18px;overflow:hidden;background:#ffffff;padding:8px;box-shadow:0 20px 44px rgba(12,36,62,.12);animation:bfCard .9s cubic-bezier(.2,.7,.2,1) .9s both,bfDrift 17s ease-in-out .9s infinite;transition:box-shadow .3s" style-hover="box-shadow:0 28px 58px rgba(12,36,62,.18)">
+          <span style="position:relative;display:block;aspect-ratio:1/1;border-radius:12px;overflow:hidden;background:#EDF1F3"><img src="assets/hero-consult.jpg" alt="פינת ייעוץ בקליניקה" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;"></span>
+        </figure>
+      </div>
+      <div aria-hidden="true" style="position:absolute;right:-46px;bottom:-34px;width:112px;height:112px;border-radius:50%;background:#14B3C6;opacity:.92;animation:bfPop .9s cubic-bezier(.2,.7,.2,1) .5s both;z-index:1"></div>
+      <p style="margin:14px 0 0;font-size:12px;color:#8A96A3;text-align:left">תמונות ממלאות מקום. צילומים בפועל יסופקו על ידי העסקים.</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-clinics" style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,104px) clamp(20px,4vw,32px) clamp(40px,5vw,72px)">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:20px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <h2 id="h-clinics" style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(32px,3.8vw,54px);line-height:1.1;letter-spacing:-0.012em">מכוני יופי באזור שלכם<span style="color:#14B3C6">.</span></h2>
+      <p style="margin:0;max-width:52ch;font-size:17px;line-height:1.6;color:#3E4F62;text-wrap:pretty">העסקים המדורגים ביותר בכל אזור בישראל</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;position:relative">
+      <button type="button" onClick="{{ toggleAds }}" aria-expanded="{{ adsOpen }}" style="display:inline-flex;align-items:center;gap:5px;height:36px;padding:0 12px;border:1px solid #E6E6E6;border-radius:10px;background:#ffffff;font:inherit;font-size:13px;font-weight:700;color:#5B6B7B;cursor:pointer;transition:border-color .18s,color .18s" style-hover="border-color:#0C243E;color:#0C243E"><span>פרסום</span><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" style="flex:none"><circle cx="8" cy="8" r="6.4"></circle><path d="M8 7.2v4" stroke-linecap="round"></path><circle cx="8" cy="4.9" r=".75" fill="currentColor" stroke="none"></circle></svg></button>
+      <sc-if value="{{ adsOpen }}" hint-placeholder-val="{{ false }}">
+        <div role="note" onClick="{{ stop }}" style="position:absolute;left:0;top:calc(100% + 10px);z-index:20;width:300px;max-width:calc(100vw - 48px);padding:20px;background:#ffffff;border:1px solid #EDEFF2;border-radius:16px;box-shadow:0 22px 52px rgba(12,36,62,.18);text-align:right;animation:bfDrop .16s ease both">
+          <div style="font-size:16px;font-weight:700;color:#0C243E;margin-bottom:8px">גילוי נאות על פרסום</div>
+          <p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:#3E4F62;text-wrap:pretty">האתר נתמך כלכלית על ידי מפרסמים שמשלמים עבור מקומות מסומנים בבירור.</p>
+          <button type="button" onClick="{{ openSponsored }}" style="display:inline-flex;align-items:center;gap:6px;border:0;padding:0;background:transparent;font:inherit;font-size:14px;font-weight:700;color:#0B7A87;cursor:pointer" style-hover="color:#0C243E"><span>מידע נוסף</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></button>
+        </div>
+      </sc-if>
+      <button type="button" onClick="{{ clinicPrev }}" aria-label="גלילה אחורה" style="width:44px;height:44px;border:1px solid #E6E6E6;border-radius:50%;background:#ffffff;color:#0C243E;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:border-color .18s,background .18s" style-hover="border-color:#0C243E;background:#F6F8F9"><svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h10M8 3l4 4-4 4"></path></svg></button>
+      <button type="button" onClick="{{ clinicNext }}" aria-label="גלילה קדימה" style="width:44px;height:44px;border:1px solid #E6E6E6;border-radius:50%;background:#ffffff;color:#0C243E;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:border-color .18s,background .18s" style-hover="border-color:#0C243E;background:#F6F8F9"><svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></button>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid #E6E6E6;margin-bottom:clamp(20px,2.5vw,28px)">
+    <div role="tablist" aria-label="אזור" style="display:flex;gap:4px;overflow-x:auto;scrollbar-width:none">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="7"><button type="button" role="tab" aria-selected="{{ t.on }}" onClick="{{ t.pick }}" style="flex:none;min-height:48px;padding:0 16px;border:0;border-bottom:2px solid {{ t.line }};margin-bottom:-1px;background:transparent;font:inherit;font-size:16px;font-weight:{{ t.weight }};color:{{ t.color }};cursor:pointer;transition:color .18s,border-color .18s;white-space:nowrap" style-hover="color:#0C243E">{{ t.name }}</button></sc-for>
+    </div>
+    <a href="{{ tabHref }}" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:44px;font-size:15px;font-weight:700;color:#0B7A87"><span>כל העסקים ב{{ tabName }}</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-right:6px"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></a>
+  </div>
+  <div style="position:relative">
+    <span aria-hidden="true" style="position:absolute;left:0;top:0;bottom:14px;width:96px;background:linear-gradient(to right,#ffffff 20%,rgba(255,255,255,0));pointer-events:none;z-index:2"></span>
+    <div ref="{{ clinicRef }}" data-rail="1" onScroll="{{ clinicScroll }}" role="tabpanel" style="display:grid;grid-auto-flow:column;grid-auto-columns:{{ clinicAutoCols }};gap:clamp(16px,2vw,24px);overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding:4px {{ clinicPadX }} 12px;margin:0 {{ clinicBleed }};scrollbar-width:none">
+    <sc-for list="{{ clinics }}" as="c" hint-placeholder-count="0">
+      <article style="position:relative;display:flex;flex-direction:column;border:1px solid #E6E6E6;border-radius:18px;background:#ffffff;transition:box-shadow .25s,border-color .25s;scroll-snap-align:start;animation:bfCard .4s cubic-bezier(.2,.7,.2,1) both;animation-delay:{{ c.delay }}" style-hover="box-shadow:0 20px 48px rgba(12,36,62,0.10);border-color:#D4D4D4">
+        <a href="{{ c.href }}" onClick="{{ go }}" tabIndex="-1" aria-hidden="true" style="position:relative;display:block;aspect-ratio:16/10;overflow:hidden;border-radius:17px 17px 0 0;background:#EDF1F3;isolation:isolate">
+          <img src="{{ c.img }}" alt="{{ c.imgAlt }}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s cubic-bezier(.2,.8,.2,1)" style-hover="transform:scale(1.04)">
+          <sc-if value="{{ c.sponsored }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:12px;left:12px;display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:7px;background:rgba(12,36,62,.88);color:#ffffff;font-size:12px;font-weight:700">ממומן</span></sc-if>
+        </a>
+        <div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1">
+          <div>
+            <h3 style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:24px;line-height:1.2">{{ c.name }}</h3>
+            <div style="font-size:14px;color:#5B6B7B;margin-top:3px">{{ c.place }}</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+              <sc-if value="{{ c.hasReview }}" hint-placeholder-val="{{ true }}">
+                <span dir="ltr" aria-label="{{ c.reviewAria }}" role="img" style="position:relative;display:inline-block;width:85px;height:16px;flex:none">
+                  <svg width="85" height="16" viewBox="0 0 85 16" fill="#DADCE0" aria-hidden="true" style="display:block"><path d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(17,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(34,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(51,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(68,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path></svg>
+                  <span style="position:absolute;left:0;top:0;height:16px;overflow:hidden;width:{{ c.starPct }}">
+                    <svg width="85" height="16" viewBox="0 0 85 16" fill="#FBBC04" aria-hidden="true" style="display:block"><path d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(17,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(34,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(51,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path><path transform="translate(68,0)" d="M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z"></path></svg>
+                  </span>
+                </span>
+                <span style="font-size:14px;font-weight:700;color:#0C243E">{{ c.score }}</span>
+                <span style="font-size:13px;color:#8A96A3;white-space:nowrap">({{ c.count }})</span>
+              </sc-if>
+              <sc-if value="{{ c.noReview }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:13px;color:#8A96A3">אין עדיין חוות דעת</span>
+              </sc-if>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <sc-for list="{{ c.tags }}" as="tg" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;border:1px solid #E6E6E6;border-radius:7px;background:#FAFBFB;font-size:13px;font-weight:500;color:#3E4F62">{{ tg }}</span></sc-for>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:auto;padding-top:4px">
+            <a href="{{ c.href }}" onClick="{{ go }}" aria-label="לצפייה בעסק {{ c.name }}" style="flex:none;display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border-radius:10px;background:#F6F8F9;font-size:14px;font-weight:700;color:#0C243E;transition:background .18s,color .18s" style-hover="background:#0C243E;color:#ffffff"><span>לעסק</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></a>
+          </div>
+        </div>
+      </article>
+    </sc-for>
+    </div>
+  </div>
+  <div style="margin-top:16px;display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+    <div role="presentation" style="flex:1;min-width:200px;height:3px;border-radius:2px;background:#E6E6E6;overflow:hidden"><span style="display:block;height:100%;width:{{ clinicProgress }};min-width:18%;background:#14B3C6;border-radius:2px;transition:width .25s ease"></span></div>
+    <button type="button" onClick="{{ openSponsored }}" style="border:0;background:transparent;font:inherit;font-size:13px;color:#5B6B7B;cursor:pointer;text-decoration:underline;min-height:32px;padding:0" style-hover="color:#0C243E">איך עובדים מקומות ממומנים</button>
+  </div>
+</section>
+
+<section aria-labelledby="h-what" style="position:relative;background:#ffffff">
+  <div style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,110px) clamp(20px,4vw,32px);display:grid;grid-template-columns:{{ whatCols }};gap:clamp(36px,5vw,80px);align-items:center">
+    <div style="display:flex;flex-direction:column;gap:clamp(22px,2.6vw,32px);min-width:0">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <span style="display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:#5B6B7B"><span style="width:26px;height:1px;background:#14B3C6;display:inline-block"></span>על הפלטפורמה</span>
+        <h2 id="h-what" style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(34px,4.2vw,58px);line-height:1.08;letter-spacing:-0.014em;text-wrap:balance">מה זה BeautyFind<span style="color:#14B3C6">?</span></h2>
+        <p style="margin:0;font-size:clamp(17px,1.25vw,20px);line-height:1.6;color:#3E4F62;text-wrap:pretty;max-width:52ch">פלטפורמת גילוי לעולם היופי, האסתטיקה והבריאות בישראל: פרופילי עסקים, מידע על תחומי טיפול ואינדקסים לפי אזור ועיר — הכול במקום אחד.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column">
+        <sc-for list="{{ whatRows }}" as="r" hint-placeholder-count="3">
+          <div style="display:grid;grid-template-columns:{{ whatRowCols }};gap:8px 24px;padding:18px 0;border-top:1px solid #E6E6E6">
+            <span style="display:flex;align-items:center;gap:9px;font-size:13px;font-weight:700;color:#5B6B7B"><span style="width:7px;height:7px;border-radius:50%;background:{{ r.dot }};display:block;flex:none"></span>{{ r.label }}</span>
+            <span style="font-size:16.5px;line-height:1.6;color:{{ r.color }};text-wrap:pretty">{{ r.value }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px">
+        <a href="/about" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:48px;padding:0 20px;border-radius:12px;background:#0C243E;color:#ffffff;font-size:15px;font-weight:700;transition:background .18s,color .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateY(-2px)"><span>אודות BeautyFind</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-right:8px"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></a>
+        <button type="button" onClick="{{ openListings }}" style="min-height:48px;padding:0;border:0;border-bottom:1px solid #D4D4D4;background:transparent;font:inherit;font-size:15px;font-weight:700;color:#0C243E;cursor:pointer;transition:border-color .18s,color .18s" style-hover="border-color:#14B3C6;color:#0B7A87">איך הרישום באינדקס עובד</button>
+      </div>
+    </div>
+
+    <div style="position:relative;width:100%;display:flex;justify-content:{{ mapAlign }}">
+      <x-import component-from-global-scope="israel-map" from="./israel-map.js" hint-size="440px,420px"></x-import>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-region" style="border-top:1px solid #E6E6E6;border-bottom:1px solid #E6E6E6;background:#F6F8F9">
+  <div style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,104px) clamp(20px,4vw,32px)">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:clamp(24px,3vw,40px)">
+      <h2 id="h-region" style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(32px,3.8vw,54px);line-height:1.1;letter-spacing:-0.012em">מצאו טיפול קרוב לבית<span style="color:#14B3C6">.</span></h2>
+      <p style="margin:0;max-width:38ch;font-size:16px;color:#5B6B7B;text-wrap:pretty">שבעה אזורים, מעל 60 ערים — לכל אזור אינדקס עסקים משלו.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;border-top:1px solid #D4D4D4">
+      <sc-for list="{{ regionCards }}" as="c" hint-placeholder-count="0">
+        <article style="display:grid;grid-template-columns:{{ rowCols }};gap:clamp(16px,3vw,44px);align-items:center;padding:clamp(20px,2.6vw,34px) clamp(0px,1.5vw,20px);margin:0 clamp(0px,-1.5vw,-20px);border-bottom:1px solid #D4D4D4;border-radius:18px;transition:background .25s" style-hover="background:#ffffff">
+          <a href="{{ c.href }}" onClick="{{ go }}" tabIndex="-1" aria-hidden="true" style="position:relative;display:block;aspect-ratio:4/3;border-radius:16px;overflow:hidden;background:#EDF1F3;isolation:isolate">
+            <img src="{{ c.img }}" alt="נוף אזור {{ c.name }}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.2,.8,.2,1)" style-hover="transform:scale(1.05)">
+          </a>
+          <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+            <div style="display:flex;align-items:center;gap:12px"><span style="display:inline-flex;align-items:center;height:26px;padding:0 10px;border:1px solid #D4D4D4;border-radius:7px;font-size:12px;font-weight:700;color:#5B6B7B;background:#ffffff">{{ c.count }} ערים</span><span dir="ltr" style="font-size:13px;color:#8A96A3">{{ c.href }}</span></div>
+            <h3 style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(28px,3vw,42px);line-height:1.1"><a href="{{ c.href }}" onClick="{{ go }}" style="color:#0C243E" style-hover="color:#0B7A87">{{ c.name }}</a></h3>
+            <div style="display:flex;flex-wrap:wrap;gap:6px 16px;font-size:15px">
+              <sc-for list="{{ c.cities }}" as="ct" hint-placeholder-count="4"><a href="{{ ct.href }}" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:32px;color:#3E4F62;border-bottom:1px solid transparent;transition:color .18s,border-color .18s" style-hover="color:#0B7A87;border-bottom-color:#14B3C6">{{ ct.name }}</a></sc-for>
+            </div>
+          </div>
+          <a href="{{ c.href }}" onClick="{{ go }}" aria-label="לעיון באזור {{ c.name }}" style="justify-self:{{ rowBtnAlign }};display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:#0C243E;color:#ffffff;transition:background .18s,color .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateX(-4px)"><svg width="20" height="20" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></a>
+        </article>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-treat" style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,104px) clamp(20px,4vw,32px)">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:clamp(24px,3vw,40px)">
+    <div>
+      <h2 id="h-treat" style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(32px,3.8vw,54px);line-height:1.1;letter-spacing:-0.012em">14 תחומי טיפול<span style="color:#14B3C6">.</span></h2>
+      <p style="margin:14px 0 0;max-width:46ch;font-size:17px;color:#3E4F62;text-wrap:pretty">התחילו מתחום שאתם מכירים, או גלו תחום שתרצו ללמוד עליו יותר.</p>
+    </div>
+    <a href="/treatments" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1px solid #E6E6E6;border-radius:10px;font-size:15px;font-weight:700;color:#0C243E;transition:border-color .18s" style-hover="border-color:#0C243E;color:#0C243E"><span>כל תחומי הטיפול</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-right:6px"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></a>
+  </div>
+  <div style="display:grid;grid-template-columns:{{ bentoCols }};grid-auto-rows:minmax(150px,auto);gap:clamp(12px,1.6vw,18px)">
+    <article style="grid-column:{{ bentoFeatCol }};grid-row:{{ bentoFeatRow }};position:relative;border-radius:20px;overflow:hidden;background:#0C243E;color:#ffffff;min-height:340px;display:flex;flex-direction:column;justify-content:flex-end;padding:24px;isolation:isolate">
+      <span style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 14px,rgba(255,255,255,.02) 14px 28px);z-index:-1"></span>
+      <span style="position:absolute;left:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(20,179,198,.35),transparent 68%);z-index:-1"></span>
+      <span aria-hidden="true" style="position:absolute;right:24px;top:24px;width:60px;height:60px;border-radius:18px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#7ED7E1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><sc-for list="{{ featured.icon }}" as="d" hint-placeholder-count="0"><path d="{{ d }}"></path></sc-for></svg>
+      </span>
+      <span style="font-size:13px;font-weight:700;color:#7ED7E1">התחום המבוקש ביותר</span>
+      <h3 style="margin:8px 0 6px;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(28px,2.8vw,40px);line-height:1.12"><a href="{{ featured.href }}" onClick="{{ go }}" style="color:#ffffff" style-hover="color:#7ED7E1">{{ featured.name }}</a></h3>
+      <p style="margin:0 0 16px;max-width:44ch;font-size:15px;line-height:1.6;color:rgba(255,255,255,.82)">{{ featured.short }}</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" onClick="{{ featured.find }}" style="display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border:0;border-radius:10px;background:#ffffff;font:inherit;font-size:14px;font-weight:700;color:#0C243E;cursor:pointer;transition:background .18s" style-hover="background:#14B3C6;color:#0C243E">מצאו עסקים</button>
+      </div>
+    </article>
+    <sc-for list="{{ restTrending }}" as="t" hint-placeholder-count="0">
+      <article style="position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:12px;padding:18px;border:1px solid #E6E6E6;border-radius:18px;background:#ffffff;transition:box-shadow .25s,border-color .25s,transform .25s;overflow:hidden" style-hover="box-shadow:0 20px 48px rgba(12,36,62,0.10);border-color:#D4D4D4;transform:translateY(-3px)">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <span style="font-size:12px;font-weight:700;color:#5B6B7B">{{ t.group }}</span>
+          <span aria-hidden="true" style="width:44px;height:44px;border-radius:12px;background:#F0FAFB;flex:none;display:flex;align-items:center;justify-content:center;transition:background .25s" style-hover="background:#D9F2F5"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0B7A87" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><sc-for list="{{ t.icon }}" as="d" hint-placeholder-count="0"><path d="{{ d }}"></path></sc-for></svg></span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <h3 style="margin:0;font-size:19px;font-weight:700;line-height:1.3"><a href="{{ t.href }}" onClick="{{ go }}" style="color:#0C243E" style-hover="color:#0B7A87">{{ t.name }}</a></h3>
+          <p style="margin:0;font-size:14px;line-height:1.55;color:#5B6B7B;text-wrap:pretty">{{ t.short }}</p>
+        </div>
+        <div style="display:flex;gap:14px;font-size:14px;font-weight:700">
+          <button type="button" onClick="{{ t.find }}" style="display:inline-flex;align-items:center;min-height:36px;padding:0;border:0;border-bottom:1px solid transparent;background:transparent;font:inherit;font-size:14px;font-weight:700;color:#0B7A87;cursor:pointer" style-hover="border-color:#14B3C6">מצאו עסקים</button>
+        </div>
+      </article>
+    </sc-for>
+  </div>
+</section>
+
+<section aria-labelledby="h-how" style="background:#F6F8F9;border-top:1px solid #E6E6E6;border-bottom:1px solid #E6E6E6">
+  <div style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,104px) clamp(20px,4vw,32px)">
+    <div style="display:grid;grid-template-columns:{{ splitCols }};gap:clamp(24px,4vw,64px);align-items:end;margin-bottom:clamp(28px,3.5vw,48px)">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <span style="display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:#5B6B7B"><span style="width:26px;height:1px;background:#14B3C6;display:inline-block"></span>שקיפות</span>
+        <h2 id="h-how" style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(32px,3.8vw,54px);line-height:1.1;letter-spacing:-0.012em">איך הרישום באינדקס עובד<span style="color:#14B3C6">.</span></h2>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <p style="margin:0;max-width:46ch;font-size:17px;line-height:1.6;color:#3E4F62;text-wrap:pretty">כל פרופיל עסק בנוי באותו מבנה, כדי שתוכלו להשוות תפוחים לתפוחים. הנה מה שכולל פרופיל ומאיפה המידע מגיע.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <a href="/listing-standards" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:46px;padding:0 18px;border-radius:12px;background:#0C243E;color:#ffffff;font-size:15px;font-weight:700;transition:background .18s,color .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateY(-2px)"><span>תקן הרישום שלנו</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-right:6px"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></a>
+          <button type="button" onClick="{{ openSponsored }}" style="display:inline-flex;align-items:center;min-height:46px;padding:0 18px;border:1px solid #D4D4D4;border-radius:12px;background:#ffffff;font:inherit;font-size:15px;font-weight:700;color:#0C243E;cursor:pointer;transition:border-color .18s" style-hover="border-color:#0C243E">איך עובד פרסום ממומן</button>
+        </div>
+      </div>
+    </div>
+    <ol style="margin:0;padding:0;list-style:none;display:grid;grid-template-columns:{{ stdCols }};gap:clamp(14px,1.8vw,20px)">
+      <sc-for list="{{ standards }}" as="st" hint-placeholder-count="4">
+        <li style="position:relative;display:flex;flex-direction:column;gap:14px;padding:26px 24px 28px;background:#ffffff;border:1px solid #E6E6E6;border-radius:18px;overflow:hidden;transition:border-color .25s,box-shadow .25s,transform .25s" style-hover="border-color:#D4D4D4;box-shadow:0 20px 48px rgba(12,36,62,0.10);transform:translateY(-3px)">
+          <span aria-hidden="true" style="position:absolute;left:0;top:0;right:0;height:3px;background:#14B3C6"></span>
+          <span aria-hidden="true" style="position:absolute;left:-26px;bottom:-46px;font-family:'Frank Ruhl Libre',serif;font-size:140px;line-height:1;color:#F0FAFB;pointer-events:none">{{ st.n }}</span>
+          <span style="position:relative;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:#0B7A87"><span style="width:7px;height:7px;border-radius:50%;background:#14B3C6;display:block"></span>{{ st.tag }}</span>
+          <h3 style="position:relative;margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:23px;line-height:1.25">{{ st.title }}</h3>
+          <p style="position:relative;margin:0;font-size:15.5px;line-height:1.6;color:#5B6B7B;text-wrap:pretty">{{ st.body }}</p>
+        </li>
+      </sc-for>
+    </ol>
+  </div>
+</section>
+
+<section aria-labelledby="h-faq" style="background:#ffffff;color:#0C243E;margin-top:clamp(48px,6vw,88px)">
+  <div style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,104px) clamp(20px,4vw,32px);display:grid;grid-template-columns:{{ splitCols }};gap:clamp(28px,4vw,64px);align-items:start">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <span style="display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:#5B6B7B"><span style="width:26px;height:1px;background:#14B3C6;display:inline-block"></span>שאלות נפוצות</span>
+      <h2 id="h-faq" style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(32px,3.8vw,54px);line-height:1.1;letter-spacing:-0.012em;color:#0C243E">מה שואלים אותנו<span style="color:#14B3C6">.</span></h2>
+      <p style="margin:0;max-width:40ch;font-size:16px;color:#3E4F62;text-wrap:pretty">תשובות קצרות וישירות על מה זה BeautyFind ואיך משתמשים בו.</p>
+      <a href="/about" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:44px;font-size:15px;font-weight:700;color:#0B7A87" style-hover="color:#0C243E"><span>עוד על הפלטפורמה</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-right:6px"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></a>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="5">
+        <div style="border:1px solid {{ f.border }};background:{{ f.bg }};transition:background .25s,border-color .25s;padding:0 18px;border-radius:14px">
+          <h3 style="margin:0;font-size:17px;font-weight:700"><button type="button" onClick="{{ f.toggle }}" aria-expanded="{{ f.open }}" style="display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;min-height:60px;padding:0;border:0;background:transparent;font:inherit;font-size:17px;font-weight:700;color:#0C243E;text-align:right;cursor:pointer"><span>{{ f.q }}</span><span style="flex:none;width:34px;height:34px;border:1px solid #D4D4D4;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:18px;font-weight:400;color:#0C243E;background:#ffffff;transform:rotate({{ f.rot }});transition:transform .25s,border-color .2s">+</span></button></h3>
+          <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}"><p style="margin:0;padding:0 0 20px 48px;font-size:16px;line-height:1.7;color:#3E4F62;text-wrap:pretty;animation:bfFade .25s ease both">{{ f.a }}</p></sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-res" style="background:#F6F8F9;border-top:1px solid #E6E6E6">
+  <div style="max-width:1280px;margin:0 auto;padding:clamp(56px,7vw,104px) clamp(20px,4vw,32px)">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:clamp(24px,3vw,40px)">
+      <h2 id="h-res" style="margin:0;max-width:18ch;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(32px,3.8vw,54px);line-height:1.1;letter-spacing:-0.012em;text-wrap:balance">קצת ידע. החלטה מושכלת יותר<span style="color:#14B3C6">.</span></h2>
+      <a href="/magazine" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1px solid #D4D4D4;border-radius:10px;font-size:15px;font-weight:700;color:#0C243E;background:#ffffff;transition:border-color .18s" style-hover="border-color:#0C243E;color:#0C243E"><span>לכל המדריכים</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-right:6px"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:clamp(16px,2vw,24px)">
+      <sc-for list="{{ resources }}" as="a" hint-placeholder-count="0">
+        <article style="display:flex;flex-direction:column;gap:14px;background:#ffffff;border:1px solid #E6E6E6;border-radius:18px;padding:10px 10px 18px;transition:box-shadow .25s,transform .25s" style-hover="box-shadow:0 20px 48px rgba(12,36,62,0.10);transform:translateY(-3px)">
+          <a href="{{ a.href }}" onClick="{{ go }}" tabIndex="-1" aria-hidden="true" style="position:relative;display:block;aspect-ratio:16/10;border-radius:12px;overflow:hidden;background:#EDF1F3"><img src="{{ a.img }}" alt="{{ a.title }}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"></a>
+          <div style="display:flex;flex-direction:column;gap:8px;padding:0 8px">
+            <span style="font-size:13px;font-weight:700;color:#0B7A87">{{ a.kind }}</span>
+            <h3 style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:23px;line-height:1.3"><a href="{{ a.href }}" onClick="{{ go }}" style="color:#0C243E" style-hover="color:#0B7A87">{{ a.title }}</a></h3>
+            <p style="margin:0;font-size:15px;color:#5B6B7B;line-height:1.6;text-wrap:pretty">{{ a.desc }}</p>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:6px;padding-top:12px;border-top:1px solid #E6E6E6;font-size:13px;color:#5B6B7B"><span style="width:28px;height:28px;border-radius:50%;background:#D9E6EA;display:block;flex:none"></span><span>שם הכותב והבודק המקצועי יוצגו כשיסופקו</span></div>
+          </div>
+        </article>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-prov" style="max-width:1280px;margin:0 auto;padding:clamp(72px,9vw,140px) clamp(20px,4vw,32px) clamp(64px,8vw,120px)">
+  <div style="position:relative;border-radius:26px;overflow:hidden;background:#F6F8F9;border:1px solid #E6E6E6;padding:clamp(30px,3.6vw,56px);display:grid;grid-template-columns:{{ provCols }};gap:clamp(28px,4vw,56px);align-items:center">
+    <span aria-hidden="true" style="position:absolute;left:-90px;top:-90px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(20,179,198,.18),transparent 66%);pointer-events:none"></span>
+    <span aria-hidden="true" style="position:absolute;right:-70px;bottom:-90px;width:230px;height:230px;border-radius:50%;border:1px solid #E6E6E6;pointer-events:none"></span>
+    <div style="position:relative;display:flex;flex-direction:column;gap:18px">
+      <span style="display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:#5B6B7B"><span style="width:26px;height:1px;background:#14B3C6;display:inline-block"></span>לבעלי עסקים</span>
+      <h2 id="h-prov" style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:clamp(30px,3.4vw,48px);line-height:1.12;letter-spacing:-0.012em;text-wrap:balance">עזרו ללקוחות למצוא את העסק שלכם<span style="color:#14B3C6">.</span></h2>
+      <p style="margin:0;max-width:48ch;font-size:17px;line-height:1.6;color:#3E4F62;text-wrap:pretty">הציגו את השירותים שלכם, הכירו את הצוות ושמרו על פרטי העסק מעודכנים — בעברית, לקהל הישראלי.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;padding-top:4px">
+        <a href="/for-business/claim" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:52px;padding:0 22px;border-radius:12px;background:#0C243E;color:#ffffff;font-size:16px;font-weight:700;transition:background .18s,color .18s,transform .18s" style-hover="background:#14B3C6;color:#0C243E;transform:translateY(-2px)"><span>אישור בעלות על העסק</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-right:6px"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></a>
+        <a href="/for-business" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:52px;padding:0 22px;border:1px solid #D4D4D4;border-radius:12px;background:#ffffff;font-size:16px;font-weight:700;color:#0C243E;transition:border-color .18s,transform .18s" style-hover="border-color:#0C243E;transform:translateY(-2px)">מסלולי רישום</a>
+      </div>
+    </div>
+    <ul style="position:relative;margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px">
+      <sc-for list="{{ provPoints }}" as="p" hint-placeholder-count="3">
+        <li style="display:grid;grid-template-columns:40px 1fr;gap:14px;align-items:center;padding:18px 20px;background:#ffffff;border:1px solid #E6E6E6;border-radius:14px;transition:border-color .2s,transform .2s" style-hover="border-color:#14B3C6;transform:translateX(-3px)">
+          <span style="width:40px;height:40px;border-radius:50%;background:#F0FAFB;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#0B7A87" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5 7 13l7.5-8"></path></svg></span>
+          <span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:700">{{ p.title }}</span><span style="font-size:14.5px;line-height:1.55;color:#5B6B7B">{{ p.body }}</span></span>
+        </li>
+      </sc-for>
+    </ul>
+  </div>
+</section>
+</main>
+<footer style="background:#0C243E;color:#ffffff;overflow:hidden">
+  <div style="max-width:1280px;margin:0 auto;padding:clamp(48px,6vw,80px) clamp(20px,4vw,32px) 32px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;padding-bottom:clamp(32px,4vw,56px);margin-bottom:clamp(32px,4vw,56px);border-bottom:1px solid rgba(255,255,255,.14)">
+      <p style="margin:0;font-family:'Frank Ruhl Libre',serif;font-size:clamp(28px,3.4vw,48px);line-height:1.15;letter-spacing:-0.012em;max-width:24ch;text-wrap:balance">התחילו מטיפול או ממקום<span style="color:#14B3C6">.</span> אנחנו נראה לכם את העסקים.</p>
+      <button type="button" onClick="{{ focusSearch }}" style="display:inline-flex;align-items:center;gap:10px;min-height:52px;padding:0 22px;border:0;border-radius:12px;background:#14B3C6;color:#0C243E;font:inherit;font-size:16px;font-weight:700;cursor:pointer;transition:background .18s" style-hover="background:#ffffff">חזרה לחיפוש<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 12V2M3 6l4-4 4 4"></path></svg></button>
+    </div>
+    <div style="display:grid;grid-template-columns:{{ footCols }};gap:40px clamp(24px,3vw,48px)">
+      <div style="display:flex;flex-direction:column;gap:16px;grid-column:{{ footBrandSpan }}">
+        <span dir="ltr" style="font-family:'Jost',sans-serif;font-weight:300;font-size:26px;line-height:1;color:#ffffff;align-self:flex-start">beauty<span style="color:#7ED7E1">find</span><span style="color:#7ED7E1;font-weight:400">.</span></span>
+        <p style="margin:0;max-width:34ch;font-size:15px;line-height:1.7;color:rgba(255,255,255,.72);text-wrap:pretty">אינדקס לאיתור מכוני יופי, אסתטיקה רפואית, קוסמטיקה, מספרות וספא בכל רחבי ישראל.</p>
+      </div>
+      <sc-for list="{{ footGroups }}" as="g" hint-placeholder-count="4">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#7ED7E1;margin-bottom:14px">{{ g.name }}</div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ g.links }}" as="l" hint-placeholder-count="4">
+              <a href="{{ l.href }}" onClick="{{ go }}" style="display:inline-flex;align-items:center;min-height:36px;font-size:15px;color:rgba(255,255,255,.85)" style-hover="color:#7ED7E1">{{ l.name }}</a>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="margin-top:clamp(40px,5vw,64px);padding-top:24px;border-top:1px solid rgba(255,255,255,.14);display:flex;flex-direction:column;gap:18px">
+      <p style="margin:0;max-width:90ch;font-size:14px;line-height:1.7;color:rgba(255,255,255,.62);text-wrap:pretty">BeautyFind הוא אינדקס גילוי. אנחנו מציגים עסקים ומידע על תחומי טיפול כדי לעזור לכם לבדוק את האפשרויות; איננו נותנים ייעוץ רפואי. התאמת טיפול לגופכם צריכה להיבחן מול איש מקצוע מוסמך.</p>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;font-size:14px;color:rgba(255,255,255,.62)">
+        <span>© 2026 BeautyFind</span>
+        <div style="display:flex;flex-wrap:wrap;gap:4px 20px">
+          <a href="/privacy" onClick="{{ go }}" style="color:rgba(255,255,255,.75);min-height:36px;display:inline-flex;align-items:center" style-hover="color:#7ED7E1">מדיניות פרטיות</a>
+          <a href="/terms" onClick="{{ go }}" style="color:rgba(255,255,255,.75);min-height:36px;display:inline-flex;align-items:center" style-hover="color:#7ED7E1">תקנון</a>
+          <a href="/listing-standards" onClick="{{ go }}" style="color:rgba(255,255,255,.75);min-height:36px;display:inline-flex;align-items:center" style-hover="color:#7ED7E1">תקן הרישום</a>
+          <a href="/accessibility" onClick="{{ go }}" style="color:rgba(255,255,255,.75);min-height:36px;display:inline-flex;align-items:center" style-hover="color:#7ED7E1">הצהרת נגישות</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<sc-if value="{{ dialog }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeDialog }}" style="position:fixed;inset:0;z-index:80;background:rgba(12,36,62,0.45);display:flex;align-items:center;justify-content:center;padding:20px;animation:bfRise .18s ease both">
+    <div role="dialog" aria-modal="true" aria-labelledby="dlg-title" onClick="{{ stop }}" style="width:100%;max-width:520px;background:#ffffff;border-radius:18px;padding:28px;box-shadow:0 32px 80px rgba(12,36,62,0.3);display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+        <h2 id="dlg-title" style="margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:500;font-size:27px;line-height:1.2">{{ dialogTitle }}</h2>
+        <button type="button" onClick="{{ closeDialog }}" aria-label="סגירה" style="flex:none;width:40px;height:40px;border:1px solid #E6E6E6;border-radius:10px;background:#ffffff;font-size:18px;color:#0C243E;cursor:pointer" style-hover="border-color:#0C243E">×</button>
+      </div>
+      <sc-for list="{{ dialogParas }}" as="p" hint-placeholder-count="2"><p style="margin:0;font-size:16px;line-height:1.7;color:#3E4F62;text-wrap:pretty">{{ p }}</p></sc-for>
+      <sc-if value="{{ dialogLocPick }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{ locChips }}" as="c" hint-placeholder-count="6">
+            <button type="button" onClick="{{ c.pickDialog }}" style="min-height:44px;padding:0 14px;border:1px solid #D4D4D4;border-radius:10px;background:#ffffff;font:inherit;font-size:15px;font-weight:{{ c.weight }};color:#0C243E;cursor:pointer" style-hover="border-color:#0C243E">{{ c.name }}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ dialogLink }}" hint-placeholder-val="{{ false }}">
+        <a href="{{ dialogLink }}" onClick="{{ go }}" style="align-self:flex-start;font-size:15px;font-weight:700;color:#0B7A87">{{ dialogLinkLabel }}<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;vertical-align:-2px;margin-right:6px"><path d="M12 7H2M6 3 2 7l4 4"></path></svg></a>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ route }}" hint-placeholder-val="{{ false }}">
+  <div role="status" style="position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:90;max-width:calc(100vw - 40px);display:flex;align-items:center;gap:14px;padding:10px 16px 10px 12px;background:#0C243E;color:#ffffff;border-radius:12px;box-shadow:0 16px 40px rgba(12,36,62,0.3);font-size:14px;animation:bfRise .18s ease both">
+    <span style="color:#7ED7E1;font-weight:700;white-space:nowrap">אב־טיפוס</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">היה נפתח <strong dir="ltr">{{ route }}</strong></span>
+    <button type="button" onClick="{{ closeRoute }}" aria-label="סגירה" style="width:32px;height:32px;border:0;border-radius:8px;background:rgba(255,255,255,.1);color:#ffffff;cursor:pointer;font-size:16px;flex:none">×</button>
+  </div>
+</sc-if>
+  <dc-import name="BeautyFind Cookie Consent" embedded="{{ true }}" hint-size="0,0"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultRegion&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;all&quot;,&quot;options&quot;:[&quot;all&quot;,&quot;north&quot;,&quot;haifa&quot;,&quot;sharon&quot;,&quot;dan&quot;,&quot;jerusalem&quot;,&quot;shfela&quot;,&quot;south&quot;],&quot;tsType&quot;:&quot;'all'|'north'|'haifa'|'sharon'|'dan'|'jerusalem'|'shfela'|'south'&quot;,&quot;section&quot;:&quot;התנהגות&quot;},&quot;showSponsoredExample&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;התנהגות&quot;}}">
+const REGIONS = [
+  { rs: 'north', name: 'צפון' },
+  { rs: 'haifa', name: 'חיפה' },
+  { rs: 'sharon', name: 'שרון' },
+  { rs: 'dan', name: 'גוש דן' },
+  { rs: 'jerusalem', name: 'ירושלים' },
+  { rs: 'shfela', name: 'שפלה' },
+  { rs: 'south', name: 'דרום' }
+];
+const RNAME = Object.fromEntries(REGIONS.map(r => [r.rs, r.name]));
+const C = (name, rs, sl) => ({ name, rs, sl });
+const CITIES = [
+  C('נהריה','north','nahariya'), C('עכו','north','akko'), C('כרמיאל','north','karmiel'), C('צפת','north','tzfat'), C('טבריה','north','tiberias'), C('קריית שמונה','north','kiryat-shmona'), C('נצרת','north','nazareth'), C('עפולה','north','afula'), C('מגדל העמק','north','migdal-haemek'), C('בית שאן','north','beit-shean'), C('יקנעם','north','yokneam'),
+  C('חיפה','haifa','haifa'), C('קריית ביאליק','haifa','kiryat-bialik'), C('קריית מוצקין','haifa','kiryat-motzkin'), C('קריית אתא','haifa','kiryat-ata'), C('קריית ים','haifa','kiryat-yam'), C('נשר','haifa','nesher'), C('טירת כרמל','haifa','tirat-carmel'), C('חדרה','haifa','hadera'), C('זכרון יעקב','haifa','zichron-yaakov'), C('פרדס חנה־כרכור','haifa','pardes-hanna'), C('בנימינה','haifa','binyamina'),
+  C('נתניה','sharon','netanya'), C('רעננה','sharon','raanana'), C('כפר סבא','sharon','kfar-saba'), C('הרצליה','sharon','herzliya'), C('הוד השרון','sharon','hod-hasharon'), C('רמת השרון','sharon','ramat-hasharon'), C('אבן יהודה','sharon','even-yehuda'), C('כפר יונה','sharon','kfar-yona'), C('תל מונד','sharon','tel-mond'),
+  C('תל אביב–יפו','dan','tel-aviv'), C('רמת גן','dan','ramat-gan'), C('גבעתיים','dan','givatayim'), C('בני ברק','dan','bnei-brak'), C('פתח תקווה','dan','petah-tikva'), C('חולון','dan','holon'), C('בת ים','dan','bat-yam'), C('ראשון לציון','dan','rishon-lezion'), C('ראש העין','dan','rosh-haayin'), C('אור יהודה','dan','or-yehuda'), C('קריית אונו','dan','kiryat-ono'), C('גבעת שמואל','dan','givat-shmuel'),
+  C('ירושלים','jerusalem','jerusalem'), C('בית שמש','jerusalem','beit-shemesh'), C('מעלה אדומים','jerusalem','maale-adumim'), C('מבשרת ציון','jerusalem','mevaseret-zion'), C('ביתר עילית','jerusalem','beitar-illit'), C('גבעת זאב','jerusalem','givat-zeev'),
+  C('רחובות','shfela','rehovot'), C('נס ציונה','shfela','ness-ziona'), C('מודיעין','shfela','modiin'), C('לוד','shfela','lod'), C('רמלה','shfela','ramla'), C('יבנה','shfela','yavne'), C('גדרה','shfela','gedera'), C('שוהם','shfela','shoham'),
+  C('אשדוד','south','ashdod'), C('אשקלון','south','ashkelon'), C('קריית גת','south','kiryat-gat'), C('באר שבע','south','beer-sheva'), C('אופקים','south','ofakim'), C('נתיבות','south','netivot'), C('שדרות','south','sderot'), C('דימונה','south','dimona'), C('ערד','south','arad'), C('אילת','south','eilat'), C('מצפה רמון','south','mitzpe-ramon'), C('להבים','south','lehavim')
+];
+const cityHref = c => `/${c.rs}/${c.sl}`;
+const CAT = (name, sl, group, short, icon) => ({ name, sl, group, short, icon });
+const G_MED = 'רפואה ואסתטיקה', G_SKIN = 'פנים ועור', G_HAIR = 'שיער', G_BEAUTY = 'יופי ואיפור', G_BODY = 'גוף ורוגע';
+const CATEGORIES = [
+  CAT('אסתטיקה רפואית','medical-aesthetics',G_MED,'בוטוקס, חומרי מילוי וטיפולי מחט בליווי רפואי.',["M13.8 3.6l6.6 6.6","M11.7 5.7l6.6 6.6","M16.4 8.1l-8.6 8.6L3.6 20.4l3.7-4.2 8.6-8.6","M9.2 11.3l3.5 3.5"]),
+  CAT('כירורגיה פלסטית','plastic-surgery',G_MED,'ניתוחים אסתטיקיים ומשחזרים אצל מנתחים מוסמכים.',["M7.5 3.4v6.2a4.5 4.5 0 0 0 9 0V3.4","M12 14.1v6.5","M9.2 18.4h5.6"]),
+  CAT('אסתטיקה דנטלית','dental-aesthetics',G_MED,'הלבנות, ציפויי חרסינה ועיצוב חיוך.',["M12 3.8c-3.4 0-5.6 2-5.6 5 0 3.6 1.2 5.2 1.9 8.5.5 2.3 2.2 2.6 2.7.4l1-4.3 1 4.3c.5 2.2 2.2 1.9 2.7-.4.7-3.3 1.9-4.9 1.9-8.5 0-3-2.2-5-5.6-5Z"]),
+  CAT('השתלות שיער וטיפול בנשירה','hair-restoration',G_MED,'FUE, FUT ומענה רפואי לנשירת שיער.',["M12 4.2a7.8 7.8 0 1 0 0 15.6 7.8 7.8 0 0 0 0-15.6","M8.4 14.6c1.2-3.4 2.6-5.4 4.6-6.8","M10.6 15.4c.6-2.4 1.8-4 3.6-5.1"]),
+  CAT('קוסמטיקה וטיפולי פנים','facials',G_SKIN,'ניקוי עמוק, פילינג, מזותרפיה והידרו־פייסיאל.',["M12 4.2c4 4.6 6 7.4 6 10a6 6 0 0 1-12 0c0-2.6 2-5.4 6-10z","M9.4 14.8a2.6 2.6 0 0 0 2.6 2.6"]),
+  CAT('הסרת שיער','hair-removal',G_HAIR,'לייזר דיודה, אלכסנדריט, IPL וחשמלית.',["M9.2 3.6h5.6l-1.1 5.6h-3.4z","M12 9.2v3.4","M8.8 16.4c.9-1.1 2-1.7 3.2-1.7s2.3.6 3.2 1.7","M5.4 20.4h13.2","M6.6 12.4 4.4 14.6","M17.4 12.4l2.2 2.2"]),
+  CAT('מספרות ועיצוב שיער','hair-salons',G_HAIR,'תספורות, צבע, החלקות ועיצוב לאירועים.',["M6.2 4.6 14 14.4","M17.8 4.6 10 14.4","M7 20.2a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2","M17 20.2a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2"]),
+  CAT('גבות וריסים','brows-lashes',G_BEAUTY,'שיפוץ גבות, הרמת ריסים ותוספות שיער לריסים.',["M3.4 12.6c3-4.4 14.2-4.4 17.2 0","M6.2 9.6 4.8 7.4","M12 8.2V5.6","M17.8 9.6l1.4-2.2","M9.6 16.6h4.8"]),
+  CAT('איפור מקצועי','makeup',G_BEAUTY,'איפור כלות, אירועים וצילומים.',["M9.4 3.6h5.2l-1 5.2H10.4z","M8.6 8.8h6.8v11.6H8.6z","M8.6 13.4h6.8"]),
+  CAT('איפור קבוע','permanent-makeup',G_BEAUTY,'מיקרובליידינג, פאודר ברוז ושפתיים.',["M4 20l2.2-5.2L16.4 4.6l3 3L9.2 17.8z","M14.6 6.4l3 3","M4 20l5.2-2.2"]),
+  CAT('ציפורניים, מניקור ופדיקור','nails',G_BEAUTY,'לק ג׳ל, בניית ציפורניים וטיפולי כף רגל.',["M8 4.6a4 4 0 0 1 8 0v8.2a4 4 0 0 1-8 0z","M8 13.8h8v4.2a4 4 0 0 1-8 0z"]),
+  CAT('ספא ועיסויים','spa-massage',G_BODY,'עיסוי שוודי, רקמות עמוקות, אבנים חמות וזוגי.',["M12 4.2c-2.4 2.8-3.6 4.8-3.6 6.6a3.6 3.6 0 0 0 7.2 0c0-1.8-1.2-3.8-3.6-6.6z","M3.8 15.6c3-1.6 5.6.8 8.2.8s5.2-2.4 8.2-.8","M3.8 19.4c3-1.6 5.6.8 8.2.8s5.2-2.4 8.2-.8"]),
+  CAT('עיצוב וחיטוב הגוף','body-contouring',G_BODY,'קריולפוליזה, HIFU, רדיו־פריקוונסי וחיטוב שרירים.',["M7.4 3.6c1.9 3.1 1.9 5.3 0 8.4s-1.9 5.3 0 8.4","M16.6 3.6c-1.9 3.1-1.9 5.3 0 8.4s1.9 5.3 0 8.4","M9.6 12h4.8"]),
+  CAT('שיזוף','tanning',G_BODY,'שיזוף בהתזה, מיטות שיזוף וטיפוח לאחר שמש.',["M15.4 12a3.4 3.4 0 1 1-6.8 0 3.4 3.4 0 0 1 6.8 0","M12 2.6v2.4","M12 19v2.4","M2.6 12H5","M19 12h2.4","M5.5 5.5 7.2 7.2","M16.8 16.8l1.7 1.7","M5.5 18.5l1.7-1.7","M16.8 7.2l1.7-1.7"])
+];
+const GROUP_ORDER = [G_SKIN, G_MED, G_HAIR, G_BEAUTY, G_BODY];
+const B = (n, c, t, score, count, sp) => ({ n, c, t, score, count, sp });
+const BIZ = {
+  north: [
+    B('סטודיו אור כרמיאל','כרמיאל',['קוסמטיקה וטיפולי פנים','הסרת שיער'],'4.8',146,true),
+    B('מרפאת גליל אסתטיק','נהריה',['אסתטיקה רפואית','עיצוב וחיטוב הגוף'],'4.7',92),
+    B('ספא כנרת','טבריה',['ספא ועיסויים'],null,0),
+    B('שיער בעמק','עפולה',['מספרות ועיצוב שיער','איפור מקצועי'],'4.9',118),
+    B('נייל בר עכו','עכו',['ציפורניים, מניקור ופדיקור','גבות וריסים'],'4.6',64)
+  ],
+  haifa: [
+    B('כרמל אסתטיקה','חיפה',['אסתטיקה רפואית','אסתטיקה דנטלית'],'4.9',287,true),
+    B('לייזר סנטר קריות','קריית ביאליק',['הסרת שיער'],'4.7',131),
+    B('סטודיו גבות חדרה','חדרה',['גבות וריסים','איפור קבוע'],'4.8',96),
+    B('הדר ספא בוטיק','זכרון יעקב',['ספא ועיסויים','שיזוף'],null,0),
+    B('מספרת בת גלים','חיפה',['מספרות ועיצוב שיער'],'4.5',58)
+  ],
+  sharon: [
+    B('שרון קליניק','רעננה',['אסתטיקה רפואית','כירורגיה פלסטית'],'4.9',204),
+    B('נתניה ביוטי לאב','נתניה',['קוסמטיקה וטיפולי פנים','איפור מקצועי'],'4.7',152,true),
+    B('סטודיו ריסים הרצליה','הרצליה',['גבות וריסים'],'4.8',88),
+    B('בודי שייפ כפר סבא','כפר סבא',['עיצוב וחיטוב הגוף','הסרת שיער'],'4.6',73),
+    B('הוד ספא','הוד השרון',['ספא ועיסויים'],null,0)
+  ],
+  dan: [
+    B('רוטשילד אסתטיקה','תל אביב–יפו',['אסתטיקה רפואית','קוסמטיקה וטיפולי פנים'],'4.9',412,true),
+    B('נייל סטודיו גבעתיים','גבעתיים',['ציפורניים, מניקור ופדיקור'],'4.8',196),
+    B('מספרת דיזנגוף','תל אביב–יפו',['מספרות ועיצוב שיער','איפור מקצועי'],'4.7',233),
+    B('קליניקת חיוך רמת גן','רמת גן',['אסתטיקה דנטלית'],'4.9',158),
+    B('לייזר האוס פתח תקווה','פתח תקווה',['הסרת שיער','שיזוף'],'4.6',104),
+    B('השתלות שיער חולון','חולון',['השתלות שיער וטיפול בנשירה'],null,0)
+  ],
+  jerusalem: [
+    B('מרכז אסתטיקה ירושלים','ירושלים',['אסתטיקה רפואית','כירורגיה פלסטית'],'4.8',176,true),
+    B('סטודיו לק בית שמש','בית שמש',['ציפורניים, מניקור ופדיקור','גבות וריסים'],'4.7',82),
+    B('ספא הרי יהודה','מבשרת ציון',['ספא ועיסויים'],'4.9',121),
+    B('איפור קבוע ירושלים','ירושלים',['איפור קבוע','איפור מקצועי'],'4.6',59),
+    B('מספרת רחביה','ירושלים',['מספרות ועיצוב שיער'],null,0)
+  ],
+  shfela: [
+    B('רחובות ביוטי קליניק','רחובות',['קוסמטיקה וטיפולי פנים','אסתטיקה רפואית'],'4.8',164),
+    B('מודיעין לייזר','מודיעין',['הסרת שיער'],'4.7',97,true),
+    B('נס ציונה נייל ארט','נס ציונה',['ציפורניים, מניקור ופדיקור'],'4.9',73),
+    B('שפלה בודי סטודיו','רמלה',['עיצוב וחיטוב הגוף'],'4.5',46),
+    B('יבנה ספא','יבנה',['ספא ועיסויים','שיזוף'],null,0)
+  ],
+  south: [
+    B('נגב אסתטיקה','באר שבע',['אסתטיקה רפואית','אסתטיקה דנטלית'],'4.8',198,true),
+    B('אשדוד ביוטי האוס','אשדוד',['קוסמטיקה וטיפולי פנים','גבות וריסים'],'4.7',142),
+    B('ספא ים המלח','ערד',['ספא ועיסויים'],'4.9',167),
+    B('אילת סאן סטודיו','אילת',['שיזוף','הסרת שיער'],'4.6',88),
+    B('מספרת אשקלון','אשקלון',['מספרות ועיצוב שיער','איפור מקצועי'],null,0)
+  ]
+};
+const BIZIMG = {
+  'אסתטיקה רפואית':'biz-medical', 'כירורגיה פלסטית':'biz-medical', 'אסתטיקה דנטלית':'biz-medical',
+  'השתלות שיער וטיפול בנשירה':'biz-medical', 'קוסמטיקה וטיפולי פנים':'biz-facial',
+  'גבות וריסים':'biz-facial', 'איפור מקצועי':'biz-facial', 'איפור קבוע':'biz-facial',
+  'הסרת שיער':'biz-laser', 'מספרות ועיצוב שיער':'biz-hair', 'ציפורניים, מניקור ופדיקור':'biz-nails',
+  'ספא ועיסויים':'biz-spa', 'עיצוב וחיטוב הגוף':'biz-spa', 'שיזוף':'biz-spa'
+};
+const ARTICLES = [
+  { kind: 'צ׳קליסט', title: 'שאלות לשאול לפני פגישת הייעוץ הראשונה', desc: 'רשימה קצרה לקחת איתכם — על איש המקצוע, על התוכנית ועל הטיפול שאחרי.', href: '/magazine/questions-before-first-consultation', img: 'assets/art-questions.jpg' },
+  { kind: 'הסבר', title: 'איך להבין מחירי טיפולים בישראל', desc: 'למה הצעות מחיר משתנות לפי יחידה, אזור ומספר מפגשים — ואיך להשוות נכון.', href: '/magazine/understanding-treatment-prices', img: 'assets/art-prices.jpg' }
+];
+const DIALOGS = {
+  prototype: { title: 'על אב־הטיפוס הזה', paras: ['שמות העסקים, הדירוגים, הכתבות והמחירים המוצגים כאן הם תוכן לדוגמה לצורך בדיקת עיצוב; אף אחד מהם אינו מתייחס לעסק אמיתי. התמונות הן ממלאות מקום ואינן מציגות את החלל או הצוות של עסק מסוים.', 'מספרי עסקים ודירוגים יופיעו רק לאחר חיבור נתונים אמיתיים.'], link: null },
+  sponsored: { title: 'גילוי נאות על פרסום', paras: ['האתר נתמך כלכלית על ידי מפרסמים שמשלמים עבור מקומות מסומנים בבירור. מקום ממומן משפיע על היכן שהעסק מופיע; הוא אינו משנה את המידע בפרופיל ואינו המלצה או אישור מקצועי.', 'כל מקום ממומן מסומן בתג ״ממומן״ על גבי הכרטיס, כדי שתוכלו להבחין בינו לבין שאר התוצאות.'], link: '/sponsorship', linkLabel: 'למידע המלא על פרסום באתר' },
+  listings: { title: 'איך הרישום באינדקס עובד', paras: ['פרופיל עסק מאגד את המידע שהעסק מספק (שירותים, צוות, תמונות ופרטי קשר) יחד עם מבנה האזורים ותחומי הטיפול של האינדקס, כדי שתוכלו להשוות בין עסקים זה מול זה.', 'BeautyFind הוא אינדקס גילוי. הרישום אינו ייעוץ רפואי, והתאמת טיפול לגופכם צריכה להיבחן מול איש מקצוע מוסמך.'], link: '/listing-standards', linkLabel: 'לקריאת תקן הרישום שלנו' }
+};
+const SHORTCUTS = ['קוסמטיקה וטיפולי פנים', 'הסרת שיער', 'אסתטיקה רפואית', 'ספא ועיסויים'];
+
+class Component extends DCLogic {
+  clinicRef = React.createRef();
+  scrollClinics(dir) {
+    const el = this.clinicRef.current;
+    if (!el) return;
+    const card = el.firstElementChild;
+    const w = card ? card.getBoundingClientRect().width + 20 : 320;
+    const step = w * (this.state.mq.wide ? 2 : 1);
+    const min = -(el.scrollWidth - el.clientWidth);
+    const from = el.scrollLeft;
+    const to = Math.min(0, Math.max(min, from - dir * step));
+    if (to === from) return;
+    if (this._railAnim) clearInterval(this._railAnim);
+    const t0 = Date.now();
+    const ease = p => 1 - Math.pow(1 - p, 3);
+    this._railAnim = setInterval(() => {
+      const p = Math.min(1, (Date.now() - t0) / 320);
+      el.scrollLeft = from + (to - from) * ease(p);
+      if (p >= 1) { el.scrollLeft = to; clearInterval(this._railAnim); this._railAnim = null; }
+    }, 16);
+  }
+  /* Breakpoints the layout branches on. matchMedia fires reliably when a host
+     resizes the iframe, unlike resize/load/ResizeObserver in this embedding. */
+  static MQ = { mid: '(min-width:760px)', search: '(min-width:900px)', wide: '(min-width:1000px)' };
+  readMQ() {
+    const out = {};
+    for (const k in Component.MQ) out[k] = typeof window !== 'undefined' ? window.matchMedia(Component.MQ[k]).matches : true;
+    return out;
+  }
+  state = { mq: this.readMQ(), adsCard: null, menu: null, regionOpen: false, region: 'all', q: '', qFocus: false, loc: '', locFocus: false, selTreat: null, selLoc: null, result: null, tab: 'dan', dialog: null, pendingCat: null, mobileOpen: false, mobileSection: null, route: null, geo: null, scrolled: false, faq: 0, clinicProg: 0 };
+  componentDidMount() {
+    this._sync = () => {
+      const next = this.readMQ();
+      const cur = this.state.mq;
+      if (Object.keys(next).some(k => next[k] !== cur[k])) this.setState({ mq: next });
+    };
+    this._mqls = Object.values(Component.MQ).map(q => {
+      const m = window.matchMedia(q);
+      if (m.addEventListener) m.addEventListener('change', this._sync); else m.addListener(this._sync);
+      return m;
+    });
+    this._sync();
+    this._onScroll = () => { const sc = window.scrollY > 560; if (sc !== this.state.scrolled) this.setState({ scrolled: sc }); };
+    window.addEventListener('scroll', this._onScroll, { passive: true });
+    const d = this.props.defaultRegion ?? 'all';
+    if (d !== 'all') this.setState({ region: d, tab: d });
+  }
+  componentWillUnmount() {
+    if (this._railAnim) clearInterval(this._railAnim);
+    (this._mqls || []).forEach(m => { if (m.removeEventListener) m.removeEventListener('change', this._sync); else m.removeListener(this._sync); });
+    window.removeEventListener('scroll', this._onScroll);
+    clearTimeout(this._t); clearTimeout(this._rt);
+  }
+  go = e => {
+    e.preventDefault();
+    const href = e.currentTarget.getAttribute('href');
+    this.setState({ route: href, menu: null, mobileOpen: false });
+    clearTimeout(this._rt); this._rt = setTimeout(() => this.setState({ route: null }), 3500);
+  };
+  setRegion(rs) {
+    this.setState(s => {
+      const keep = s.selLoc && (rs === 'all' || s.selLoc.rs === rs);
+      return { region: rs, regionOpen: false, mobileOpen: false, selLoc: keep ? s.selLoc : null, loc: keep ? s.loc : '', tab: rs === 'all' ? s.tab : rs, result: keep ? s.result : null };
+    });
+  }
+  pickLoc(c, extra) {
+    this.setState({ selLoc: c, loc: c.name, region: c.rs, locFocus: false, geo: null, ...(extra || {}) });
+  }
+  runSearch(treat, locObj) {
+    clearTimeout(this._t);
+    this.setState({ result: { status: 'loading' } });
+    this._t = setTimeout(() => {
+      const place = locObj.kind === 'region' ? `אזור ${locObj.name}` : `${locObj.name}, אזור ${RNAME[locObj.rs]}`;
+      const base = locObj.kind === 'region' ? `/${locObj.rs}` : cityHref(locObj);
+      const href = treat ? `${base}/${treat.sl}` : base;
+      this.setState({ result: { status: 'ready', title: treat ? `${treat.name} · ${place}` : place, href } });
+    }, 900);
+  }
+  submitSearch = e => {
+    e.preventDefault();
+    const { q, loc, selTreat, selLoc } = this.state;
+    let treat = selTreat, locObj = selLoc;
+    const qt = q.trim(), lt = loc.trim();
+    if (!treat && qt) treat = CATEGORIES.find(t => t.name === qt) || null;
+    if (!locObj && lt) {
+      const city = CITIES.find(c => c.name === lt);
+      const reg = REGIONS.find(r => r.name === lt || `אזור ${r.name}` === lt);
+      locObj = city ? { ...city, kind: 'city' } : reg ? { name: reg.name, rs: reg.rs, kind: 'region' } : null;
+      if (locObj) this.setState({ selLoc: locObj, region: locObj.rs });
+    }
+    if (!qt && !lt) return this.setState({ result: { status: 'hint' } });
+    if (qt && !treat && !BIZ[this.state.tab].some(b => b.n.includes(qt))) return this.setState({ result: { status: 'none' } });
+    if (lt && !locObj) return this.setState({ result: { status: 'none' } });
+    if (!locObj && this.state.region !== 'all') locObj = { name: RNAME[this.state.region], rs: this.state.region, kind: 'region' };
+    if (treat && !locObj) return this.setState({ result: { status: 'needloc', treat }, qFocus: false });
+    this.runSearch(treat, locObj);
+  };
+  onKey = e => { if (e.key === 'Escape') this.setState({ menu: null, regionOpen: false, dialog: null, adsCard: null, qFocus: false, locFocus: false, mobileOpen: false }); };
+  renderVals() {
+    const s = this.state;
+    const { mid, wide, search } = s.mq;
+    const isMobile = !mid, isDesktop = mid;
+    const region = s.region;
+    const showSponsored = this.props.showSponsoredExample ?? true;
+    const qt = s.q.trim(), lt = s.loc.trim();
+    const tMatch = qt ? CATEGORIES.filter(t => t.name.includes(qt)) : CATEGORIES.slice(0, 4);
+    const allBiz = Object.entries(BIZ).flatMap(([rs, arr]) => arr.map(b => ({ ...b, rs })));
+    const bMatch = qt ? allBiz.filter(b => b.n.includes(qt) && (region === 'all' || b.rs === region)) : [];
+    const lMatch = qt ? CITIES.filter(c => c.name.includes(qt)) : [];
+    const qGroups = [];
+    if (tMatch.length) qGroups.push({ name: qt ? 'תחומי טיפול' : 'תחומים מבוקשים', items: tMatch.slice(0, 5).map(t => ({ name: t.name, meta: t.group, pick: () => this.setState({ selTreat: t, q: t.name, qFocus: false, result: null }) })) });
+    if (bMatch.length) qGroups.push({ name: 'עסקים', items: bMatch.slice(0, 3).map(b => ({ name: b.n, meta: `${b.c}, ${RNAME[b.rs]}`, pick: () => { const ct = CITIES.find(x => x.name === b.c); this.setState({ q: b.n, qFocus: false, route: `/${b.rs}/${ct ? ct.sl : ''}/biz` }); clearTimeout(this._rt); this._rt = setTimeout(() => this.setState({ route: null }), 3500); } })) });
+    if (lMatch.length) qGroups.push({ name: 'מקומות', items: lMatch.slice(0, 3).map(c => ({ name: c.name, meta: RNAME[c.rs], pick: () => this.pickLoc({ ...c, kind: 'city' }, { q: '', qFocus: false }) })) });
+    const qOpen = s.qFocus;
+    const qEmpty = qOpen && !!qt && qGroups.length === 0;
+    const inScope = CITIES.filter(c => region === 'all' || c.rs === region);
+    const locCities = lt ? CITIES.filter(c => c.name.includes(lt)) : inScope;
+    const locRegions = REGIONS.filter(r => !lt || r.name.includes(lt));
+    const locGroups = [];
+    if (locRegions.length) locGroups.push({ name: 'אזורים', items: locRegions.map(r => ({ name: r.name, meta: `${CITIES.filter(c => c.rs === r.rs).length} ערים`, pick: () => this.pickLoc({ name: r.name, rs: r.rs, kind: 'region' }) })) });
+    if (locCities.length) locGroups.push({ name: lt ? 'ערים' : (region === 'all' ? 'ערים מבוקשות' : `ערים באזור ${RNAME[region]}`), items: locCities.slice(0, 8).map(c => ({ name: c.name, meta: RNAME[c.rs], pick: () => this.pickLoc({ ...c, kind: 'city' }) })) });
+    const locOpen = s.locFocus;
+    const locEmpty = locOpen && !!lt && locGroups.length === 0;
+    const geoLabel = s.geo === 'asking' ? 'מבקשים את המיקום שלכם…' : s.geo === 'ok' ? 'משתמשים במיקום הנוכחי שלכם' : 'השתמשו במיקום שלי';
+    const geoNote = s.geo === 'denied' ? 'לא התקבלה הרשאת מיקום. הקלידו עיר במקום.' : s.geo === 'ok' ? 'המיקום משמש רק להצעת ערים קרובות; לא נשמר שום מידע.' : false;
+    const mkChips = pickFn => [
+      ...REGIONS.map(r => ({ name: r.name, weight: 700, pick: () => pickFn({ name: r.name, rs: r.rs, kind: 'region' }) })),
+      ...(region === 'all' ? ['dan', 'haifa', 'jerusalem', 'south'].map(rs => CITIES.find(c => c.rs === rs)) : inScope.slice(0, 5)).map(c => ({ name: c.name, weight: 400, pick: () => pickFn({ ...c, kind: 'city' }) }))
+    ];
+    const locChips = mkChips(l => { this.pickLoc(l); this.runSearch(s.result && s.result.treat ? s.result.treat : s.selTreat, l); }).map(c => ({ ...c, pickDialog: () => { this.setState({ dialog: null }); c.pick(); } }));
+    const catChips = mkChips(l => { const cat = s.pendingCat; this.pickLoc(l, { dialog: null }); this.setState({ route: `/${l.rs}${l.kind === 'city' ? `/${l.sl}` : ''}/${cat}` }); clearTimeout(this._rt); this._rt = setTimeout(() => this.setState({ route: null }), 3500); }).map(c => ({ ...c, pickDialog: c.pick }));
+    const r = s.result || {};
+    const megaRegions = REGIONS.map(rg => ({ name: rg.name, href: `/${rg.rs}`, cities: CITIES.filter(c => c.rs === rg.rs).slice(0, 5).map(c => ({ name: c.name, href: cityHref(c) })) }));
+    const treatGroups = GROUP_ORDER.map(g => ({ name: g, items: CATEGORIES.filter(t => t.group === g).map(t => ({ name: t.name, href: `/treatments/${t.sl}` })) }));
+    const regionOptions = [{ rs: 'all', name: 'כל הארץ' }, ...REGIONS].map(rg => {
+      const on = rg.rs === region;
+      return { name: rg.name, selected: on, weight: on ? 700 : 400, bg: on ? 'rgba(20,179,198,0.10)' : 'transparent', border: on ? '#14B3C6' : '#E6E6E6', check: on ? '✓' : '', count: rg.rs === 'all' ? `${CITIES.length} ערים` : `${CITIES.filter(c => c.rs === rg.rs).length}`, pick: () => this.setRegion(rg.rs) };
+    });
+    const catFind = cat => () => {
+      const l = s.selLoc || (region !== 'all' ? { name: RNAME[region], rs: region, kind: 'region' } : null);
+      if (l) { this.setState({ route: `/${l.rs}${l.kind === 'city' ? `/${l.sl}` : ''}/${cat.sl}` }); clearTimeout(this._rt); this._rt = setTimeout(() => this.setState({ route: null }), 3500); }
+      else this.setState({ dialog: 'locpick', pendingCat: cat.sl, pendingName: cat.name });
+    };
+    const dlg = s.dialog === 'locpick' ? { title: `איפה תרצו למצוא עסקים בתחום ${s.pendingName || 'הזה'}?`, paras: ['בחרו אזור או עיר. תמיד אפשר לשנות דרך בוחר האזור בראש העמוד.'], link: null } : DIALOGS[s.dialog];
+    const tabRS = s.tab;
+    const bizTab = BIZ[tabRS].map((b, i) => ({
+      name: b.n, tags: b.t, delay: `${i * 60}ms`, place: `${b.c}, אזור ${RNAME[tabRS]}`,
+      img: `assets/${BIZIMG[b.t[0]] || 'biz-facial'}.jpg`, imgAlt: `${b.n} — ${b.t[0]}`,
+      href: `/${tabRS}/${(CITIES.find(x => x.name === b.c) || { sl: '' }).sl}/biz`,
+      sponsored: showSponsored && !!b.sp, hasReview: !!b.score, noReview: !b.score,
+      score: b.score || '', count: b.score ? String(b.count) : '',
+      starPct: b.score ? `${Math.round((parseFloat(b.score) / 5) * 100)}%` : '0%',
+      reviewAria: b.score ? `${b.score} מתוך 5 בגוגל מתוך ${b.count} חוות דעת` : ''
+    }));
+    const catsAll = CATEGORIES.map(c => ({ ...c, href: `/treatments/${c.sl}`, find: catFind(c) }));
+    const featured = catsAll.find(c => c.sl === 'facials');
+    const footGroups = [
+      { name: 'אזורים', links: REGIONS.map(rg => ({ name: rg.name, href: `/${rg.rs}` })) },
+      { name: 'תחומי טיפול', links: [...CATEGORIES.slice(0, 5).map(c => ({ name: c.name, href: `/treatments/${c.sl}` })), { name: 'כל תחומי הטיפול', href: '/treatments' }] },
+      { name: 'מדריכים', links: [{ name: 'איך לבחור מכון יופי', href: '/magazine/how-to-choose' }, { name: 'שאלות לפגישת ייעוץ', href: ARTICLES[0].href }, { name: 'להבין מחירי טיפולים', href: ARTICLES[1].href }, { name: 'כל המדריכים', href: '/magazine' }] },
+      { name: 'החברה', links: [{ name: 'אודות', href: '/about' }, { name: 'מרכז עזרה', href: '/help' }, { name: 'צור קשר', href: '/contact' }, { name: 'לעסקים', href: '/for-business' }, { name: 'תקן הרישום', href: '/listing-standards' }, { name: 'מידע על פרסום', href: '/sponsorship' }] }
+    ];
+    const FAQS = [
+      { q: 'מה זה BeautyFind?', a: 'BeautyFind הוא אינדקס גילוי שמרכז מכוני יופי, אסתטיקה רפואית, קוסמטיקה, מספרות, ספא ועיצוב הגוף בכל רחבי ישראל, יחד עם מידע על תחומי הטיפול שיעזור לכם לבדוק את האפשרויות.' },
+      { q: 'אילו אזורים האינדקס מכסה?', a: 'שבעה אזורים — צפון, חיפה, שרון, גוש דן, ירושלים, שפלה ודרום — ומעל 60 ערים ויישובים, מקריית שמונה ועד אילת. לכל אזור ולכל עיר יש דף אינדקס משלהם.' },
+      { q: 'האם BeautyFind נותן ייעוץ רפואי?', a: 'לא. דפי הטיפולים הם מידע כללי בלבד. התאמת טיפול לגופכם צריכה להיבחן מול איש מקצוע מוסמך.' },
+      { q: 'מה המשמעות של תג ״ממומן״?', a: 'עסקים יכולים לשלם עבור מקום מודגש. מקום ממומן משפיע על היכן שהעסק מופיע; הוא אינו משנה את המידע בפרופיל ואינו המלצה.' },
+      { q: 'אפשר לקבוע תור דרך BeautyFind?', a: 'BeautyFind עוזר לכם למצוא ולהשוות עסקים. את התור קובעים ישירות מול העסק — בטלפון, בוואטסאפ או באתר שלו, דרך פרופיל העסק.' }
+    ];
+    const globeDots = [['34%','52%','0.2s'],['41%','61%','1.1s'],['26%','44%','1.7s'],['58%','58%','2.3s'],['66%','40%','0.7s'],['49%','70%','1.5s']].map(([x,y,delay]) => ({ x, y, delay }));
+    const globePins = [
+      { name: 'צפון', x: '32%', y: '28%', dur: '8s', delay: '0s', size: '40px', fs: '14px', stem: '24px' },
+      { name: 'גוש דן', x: '58%', y: '48%', dur: '6.5s', delay: '1.2s', size: '38px', fs: '13px', stem: '18px' },
+      { name: 'דרום', x: '36%', y: '74%', dur: '7s', delay: '2.1s', size: '38px', fs: '13px', stem: '18px' }
+    ];
+    return {
+      isMobile, isDesktop, wide, go: this.go, onKey: this.onKey, stop: e => e.stopPropagation(),
+      scrolled: s.scrolled, headerLine: s.scrolled ? '#E6E6E6' : 'transparent',
+      heroCols: wide ? 'minmax(0,7fr) minmax(0,5fr)' : 'minmax(0,1fr)',
+      searchCols: search ? 'minmax(0,1.15fr) minmax(0,1fr) auto' : 'minmax(0,1fr)',
+      searchDivider: search ? '1px solid #E6E6E6' : '0',
+      orbDisplay: wide ? 'block' : 'none',
+      whatCols: wide ? 'minmax(0,6fr) minmax(0,6fr)' : 'minmax(0,1fr)', mapAlign: wide ? 'flex-start' : 'center',
+      whatRowCols: wide ? '170px minmax(0,1fr)' : 'minmax(0,1fr)',
+      whatRows: [
+        { label: 'איפה אנחנו מכסים', value: 'שבעה אזורים בישראל ומעל 60 ערים, לעיון לפי אזור, עיר ועסק.', dot: '#14B3C6', color: '#3E4F62' },
+        { label: 'מה אפשר לעשות', value: 'לחפש לפי תחום טיפול או שם עסק, להשוות שירותים ומחירים, ואז ליצור קשר ישירות עם העסק.', dot: '#14B3C6', color: '#3E4F62' },
+        { label: 'מה זה לא', value: 'לא סוכנות זימון תורים, לא ייעוץ רפואי, ולא דירוג של איכות קלינית.', dot: '#D4D4D4', color: '#5B6B7B' }
+      ],
+      globeDots, globePins,
+      rowCols: mid ? 'minmax(0,3fr) minmax(0,6fr) auto' : 'minmax(0,1fr)', rowBtnAlign: mid ? 'end' : 'start',
+      regionCards: REGIONS.map(rg => ({ name: rg.name, href: `/${rg.rs}`, img: `assets/region-${rg.rs}.jpg`, count: CITIES.filter(c => c.rs === rg.rs).length, cities: CITIES.filter(c => c.rs === rg.rs).slice(0, 4).map(c => ({ name: c.name, href: cityHref(c) })) })),
+      bentoCols: wide ? 'repeat(4,minmax(0,1fr))' : mid ? 'repeat(2,minmax(0,1fr))' : 'minmax(0,1fr)',
+      bentoFeatCol: mid ? 'span 2' : 'auto', bentoFeatRow: wide ? 'span 2' : 'auto',
+      featured, restTrending: catsAll.filter(c => c.sl !== 'facials'),
+      stdCols: wide ? 'repeat(4,minmax(0,1fr))' : mid ? 'repeat(2,minmax(0,1fr))' : 'minmax(0,1fr)',
+      standards: [
+        { n: '1', tag: 'מקור המידע', title: 'המידע מגיע מהעסק עצמו', body: 'שירותים, צוות, תמונות, מחירים ופרטי קשר נמסרים על ידי העסק ומוצגים כפי שסופקו. אנחנו לא מוסיפים הבטחות שהעסק לא נתן.' },
+        { n: '2', tag: 'מבנה אחיד', title: 'לכל פרופיל אותו מבנה', body: 'תפריט הטיפולים, הצוות, התמונות, שעות הפעילות ודרכי ההתקשרות מופיעים באותו סדר — כדי שההשוואה תהיה מהירה והוגנת.' },
+        { n: '3', tag: 'חוות דעת', title: 'חוות דעת עם מקור גלוי', body: 'כשלעסק יש חוות דעת, אנחנו מציגים את הפלטפורמה, הדירוג ומספר הביקורות יחד. עסק בלי חוות דעת יקבל ״אין עדיין חוות דעת״ — לעולם לא דירוג אפס.' },
+        { n: '4', tag: 'פרסום', title: 'מקום ממומן מסומן תמיד', body: 'מקומות בתשלום נושאים תג ״ממומן״ על גבי הכרטיס. המקום לא משנה שום פרט במידע של העסק.' }
+      ],
+      splitCols: mid ? 'minmax(0,1fr) minmax(0,1fr)' : 'minmax(0,1fr)',
+      faqs: FAQS.map((f, i) => ({ ...f, open: s.faq === i, toggle: () => this.setState({ faq: s.faq === i ? -1 : i }), rot: s.faq === i ? '45deg' : '0deg', bg: s.faq === i ? '#FAFBFB' : 'transparent', border: s.faq === i ? '#14B3C6' : '#E6E6E6' })),
+      resources: [{ kind: 'מדריך', title: 'איך לבחור מכון יופי או קליניקה', desc: 'על מה להסתכל בצוות, בתפריט הטיפולים ובתהליך הייעוץ.', href: '/magazine/how-to-choose', img: 'assets/art-choose.jpg' }, ...ARTICLES],
+      provCols: mid ? 'minmax(0,6fr) minmax(0,5fr)' : 'minmax(0,1fr)',
+      provPoints: [
+        { title: 'המידע שלכם, תמיד מעודכן', body: 'עדכנו שירותים, צוות, תמונות ופרטי קשר מפרופיל אחד.' },
+        { title: 'נמצאים לפי טיפול ולפי עיר', body: 'הופיעו באינדקסים שהלקוחות באמת מחפשים בהם.' },
+        { title: 'מבנה אחד, ברור וקריא', body: 'הפרופיל שלכם מוצג באותו פורמט מסודר כמו כל עסק אחר.' }
+      ],
+      footCols: wide ? '1.4fr repeat(4,minmax(0,1fr))' : mid ? 'repeat(2,minmax(0,1fr))' : 'minmax(0,1fr)',
+      footBrandSpan: wide ? 'auto' : '1 / -1', footGroups,
+      findOpen: isDesktop && s.menu === 'find', treatOpen: isDesktop && s.menu === 'treat',
+      findBg: s.menu === 'find' ? '#F3F6F8' : 'transparent', treatBg: s.menu === 'treat' ? '#F3F6F8' : 'transparent',
+      toggleFind: () => this.setState(st => ({ menu: st.menu === 'find' ? null : 'find', regionOpen: false })),
+      toggleTreat: () => this.setState(st => ({ menu: st.menu === 'treat' ? null : 'treat', regionOpen: false })),
+      closeMenus: () => this.setState({ menu: null }),
+      megaRegions, treatGroups,
+      regionOpen: isDesktop && s.regionOpen, mobileRegionOpen: isMobile && s.regionOpen,
+      toggleRegion: () => this.setState(st => ({ regionOpen: !st.regionOpen, menu: null, mobileOpen: false })),
+      regionName: region === 'all' ? 'כל הארץ' : RNAME[region], regionOptions,
+      mobileOpen: isMobile && s.mobileOpen, mobileLabel: s.mobileOpen ? 'סגירת התפריט' : 'פתיחת התפריט',
+      toggleMobile: () => this.setState(st => ({ mobileOpen: !st.mobileOpen, regionOpen: false })),
+      mobileSections: [
+        { name: 'איתור עסק', key: 'find', groups: megaRegions.map(c => ({ name: c.name, href: c.href, cta: 'לאזור', items: c.cities.slice(0, 3) })) },
+        { name: 'תחומי טיפול', key: 'treat', groups: treatGroups.map(g => ({ name: g.name, href: '/treatments', cta: '', items: g.items })) }
+      ].map(sec => ({ ...sec, open: s.mobileSection === sec.key, rot: s.mobileSection === sec.key ? '45deg' : '0deg', toggle: () => this.setState(st => ({ mobileSection: st.mobileSection === sec.key ? null : sec.key })) })),
+      focusSearch: () => { this.setState({ menu: null, mobileOpen: false }); window.scrollTo(0, 0); setTimeout(() => { const el = document.getElementById('bf-q'); if (el) el.focus({ preventScroll: true }); }, 450); },
+      q: s.q, setQ: e => this.setState({ q: e.target.value, selTreat: null, qFocus: true, result: null }),
+      focusQ: () => this.setState({ qFocus: true, locFocus: false, menu: null, regionOpen: false }), blurQ: () => this.setState({ qFocus: false }),
+      clearQ: () => this.setState({ q: '', selTreat: null, result: null }),
+      hasTreat: !!s.q, qOpen, qEmpty, qGroups, qBg: s.qFocus ? '#F3F6F8' : 'transparent', keepFocus: e => e.preventDefault(),
+      loc: s.loc, setLoc: e => this.setState({ loc: e.target.value, selLoc: null, locFocus: true, result: null }),
+      focusLoc: () => this.setState({ locFocus: true, qFocus: false, menu: null, regionOpen: false }), blurLoc: () => this.setState({ locFocus: false }),
+      clearLoc: () => this.setState({ loc: '', selLoc: null, result: null, geo: null }),
+      hasLoc: !!s.loc, locOpen, locEmpty, locGroups, locBg: s.locFocus ? '#F3F6F8' : 'transparent',
+      locPlaceholder: region === 'all' ? 'תל אביב, חיפה, באר שבע…' : `כל עיר באזור ${RNAME[region]}`,
+      geoLabel, geoNote, useMyLocation: () => {
+        if (!navigator.geolocation) return this.setState({ geo: 'denied' });
+        this.setState({ geo: 'asking' });
+        navigator.geolocation.getCurrentPosition(() => this.setState({ geo: 'ok', loc: 'קרוב אליי', selLoc: { name: 'קרוב אליי', rs: region === 'all' ? 'dan' : region, kind: 'region' }, locFocus: false }), () => this.setState({ geo: 'denied' }), { timeout: 8000 });
+      },
+      submitSearch: this.submitSearch,
+      result: !!s.result, resLoading: r.status === 'loading', resReady: r.status === 'ready', resNeedLoc: r.status === 'needloc', resNone: r.status === 'none', resHint: r.status === 'hint',
+      resTitle: r.title || '', resHref: r.href || '/', resTreat: r.treat ? r.treat.name : '',
+      noneChips: [...SHORTCUTS.map(n => ({ name: n, pick: () => { const t = CATEGORIES.find(x => x.name === n); this.setState({ q: n, selTreat: t, result: null }); } })), ...REGIONS.slice(0, 3).map(rg => ({ name: `לעיון ב${rg.name}`, pick: () => this.pickLoc({ name: rg.name, rs: rg.rs, kind: 'region' }, { q: '', selTreat: null, result: null }) }))],
+      shortcuts: SHORTCUTS.map(n => ({ name: n, pick: () => { const t = CATEGORIES.find(x => x.name === n); this.setState({ q: n, selTreat: t, result: null }); const el = document.getElementById('bf-loc'); if (el && !s.selLoc) el.focus(); } })),
+      heroRegions: REGIONS.map(rg => { const on = region === rg.rs; return { name: rg.name, on, border: on ? '#14B3C6' : '#E6E6E6', dot: on ? '#14B3C6' : '#D4D4D4', pick: () => this.setRegion(rg.rs) }; }),
+      tabs: REGIONS.map(rg => { const on = tabRS === rg.rs; return { name: rg.name, on, weight: on ? 700 : 500, color: on ? '#0C243E' : '#5B6B7B', line: on ? '#0C243E' : 'transparent', pick: () => { this.setState({ tab: rg.rs, clinicProg: 0 }); const el = this.clinicRef.current; if (el) el.scrollTo({ left: 0 }); } }; }),
+      tabName: RNAME[tabRS], tabHref: `/${tabRS}`, clinics: bizTab,
+      clinicRef: this.clinicRef, clinicPrev: () => this.scrollClinics(-1), clinicNext: () => this.scrollClinics(1),
+      clinicProgress: s.clinicProg + '%',
+      clinicScroll: e => { const el = e.currentTarget; const max = el.scrollWidth - el.clientWidth; const p = max > 0 ? Math.round((Math.abs(el.scrollLeft) / max) * 100) : 0; if (p !== s.clinicProg) this.setState({ clinicProg: p }); },
+      clinicAutoCols: wide ? 'calc((100% - 3.5 * clamp(16px,2vw,24px)) / 4.5)' : mid ? 'calc((100% - 1.5 * clamp(16px,2vw,24px)) / 2.5)' : '78%',
+      clinicBleed: mid ? '0' : 'calc(-1 * clamp(20px,4vw,32px))', clinicPadX: mid ? '0' : 'clamp(20px,4vw,32px)',
+      adsOpen: !!s.adsCard, toggleAds: e => { e.preventDefault(); e.stopPropagation(); this.setState(st => ({ adsCard: !st.adsCard })); },
+      openSponsored: e => { if (e && e.preventDefault) { e.preventDefault(); e.stopPropagation(); } this.setState({ dialog: 'sponsored' }); },
+      openListings: () => this.setState({ dialog: 'listings' }), openPrototype: () => this.setState({ dialog: 'prototype' }),
+      closeDialog: () => this.setState({ dialog: null }),
+      dialog: !!s.dialog, dialogTitle: dlg ? dlg.title : '', dialogParas: dlg ? dlg.paras : [],
+      dialogLink: dlg && dlg.link ? dlg.link : false, dialogLinkLabel: dlg && dlg.linkLabel ? dlg.linkLabel : '',
+      dialogLocPick: s.dialog === 'locpick', locChips: s.dialog === 'locpick' ? catChips : locChips,
+      route: s.route || false, closeRoute: () => this.setState({ route: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

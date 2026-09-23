@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="הנחיות אחרי טיפול — מה לעשות ומה להימנע ממנו לפי שלבים, מתי לפנות לקליניקה, וביקורת מעקב.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#FAFBFB}
+  *{box-sizing:border-box}
+  :root{--ac-pad:16px;--ac-dd:minmax(0,1fr)}
+  @media (min-width:560px){:root{--ac-pad:22px;--ac-dd:repeat(2,minmax(0,1fr))}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes acFade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#FAFBFB;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+
+  <header style="background:#fff;border-bottom:1px solid #E6E6E6">
+    <div style="max-width:760px;margin:0 auto;padding:12px var(--ac-pad);display:flex;align-items:center;gap:13px">
+      <a href="./BeautyFind Homepage.dc.html" dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:21px;letter-spacing:-0.01em;color:#0C243E;text-decoration:none">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6">.</span></a>
+      <span style="flex:1;min-width:0;text-align:left;font-size:13.5px;font-weight:700;color:#5B6B7B">קליניקת נועה</span>
+    </div>
+  </header>
+
+  <div style="max-width:760px;margin:0 auto;padding:clamp(18px,3vw,32px) var(--ac-pad) 60px;display:flex;flex-direction:column;gap:clamp(16px,2vw,22px)">
+    <div style="animation:acFade .22s ease both">
+      <span style="display:block;font-size:13.5px;font-weight:700;color:#0B7A87">הנחיות אחרי {{ t.name }}</span>
+      <h1 style="margin:4px 0 6px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(28px,4vw,40px);font-weight:500;line-height:1.14;letter-spacing:-0.015em">{{ phaseTitle }}</h1>
+      <p style="margin:0;font-size:15.5px;color:#3E4F62;text-wrap:pretty">{{ t.who }} · <span dir="ltr" style="unicode-bidi:isolate;font-variant-numeric:tabular-nums">28/09/2026 10:40</span></p>
+    </div>
+
+    <div role="tablist" aria-label="שלב" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px">
+      <sc-for list="{{ phases }}" as="ph" hint-placeholder-count="3"><button type="button" role="tab" aria-selected="{{ ph.on }}" onClick="{{ ph.pick }}" style="flex:none;min-height:44px;padding:0 15px;border:1px solid {{ ph.border }};border-radius:12px;background:{{ ph.bg }};font:inherit;font-size:14px;font-weight:700;color:{{ ph.color }};cursor:pointer">{{ ph.name }}<sc-if value="{{ ph.now }}" hint-placeholder-val="{{ false }}"><span style="margin-right:6px;font-size:12px;font-weight:700;opacity:.85">· עכשיו</span></sc-if></button></sc-for>
+    </div>
+
+    <div style="display:grid;grid-template-columns:var(--ac-dd);gap:12px">
+      <section aria-labelledby="ac-do" style="min-width:0;background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:16px 18px">
+        <h2 id="ac-do" style="margin:0 0 10px;font-size:16px;font-weight:700;color:#3B6B3F">כן</h2>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px">
+          <sc-for list="{{ phase.dos }}" as="d" hint-placeholder-count="3"><li style="display:flex;align-items:flex-start;gap:9px;font-size:14.5px;text-wrap:pretty"><span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin-top:2px;border-radius:6px;background:#EAF3EA;color:#3B6B3F;font-size:12px;font-weight:800">✓</span><span style="flex:1;min-width:0">{{ d }}</span></li></sc-for>
+        </ul>
+      </section>
+      <section aria-labelledby="ac-dont" style="min-width:0;background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:16px 18px">
+        <h2 id="ac-dont" style="margin:0 0 10px;font-size:16px;font-weight:700;color:#A33A31">להימנע</h2>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px">
+          <sc-for list="{{ phase.donts }}" as="d" hint-placeholder-count="3"><li style="display:flex;align-items:flex-start;gap:9px;font-size:14.5px;text-wrap:pretty"><span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin-top:2px;border-radius:6px;background:#FDEDEC;color:#A33A31;font-size:12px;font-weight:800">×</span><span style="flex:1;min-width:0">{{ d }}</span></li></sc-for>
+        </ul>
+      </section>
+    </div>
+
+    <section aria-labelledby="ac-norm" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:16px 18px">
+      <h2 id="ac-norm" style="margin:0 0 6px;font-size:16px;font-weight:700">מה נורמלי</h2>
+      <p style="margin:0;font-size:14.5px;color:#3E4F62;text-wrap:pretty">{{ t.normal }}</p>
+    </section>
+
+    <section aria-labelledby="ac-red" style="background:#FDF4F3;border:1px solid #F0C9C4;border-radius:17px;padding:16px 18px">
+      <h2 id="ac-red" style="margin:0 0 8px;font-size:16px;font-weight:700;color:#A33A31">פני לקליניקה מיד אם</h2>
+      <ul style="list-style:none;margin:0 0 12px;padding:0;display:flex;flex-direction:column;gap:7px">
+        <sc-for list="{{ t.red }}" as="r" hint-placeholder-count="3"><li style="display:flex;align-items:flex-start;gap:9px;font-size:14.5px;color:#3E4F62;text-wrap:pretty"><span aria-hidden="true" style="flex:none;width:7px;height:7px;margin-top:8px;border-radius:50%;background:#A33A31"></span><span style="flex:1;min-width:0">{{ r }}</span></li></sc-for>
+      </ul>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a href="tel:+972977411180" style="gap:8px;min-height:46px;display:inline-flex;align-items:center;gap:7px;padding:0 16px;border-radius:12px;background:#A33A31;font-size:15px;font-weight:700;color:#fff;text-decoration:none"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;color:#fff"><path d="M5 3.5h3.2l1.6 4-2 1.3a11 11 0 0 0 5.4 5.4l1.3-2 4 1.6V17a2.5 2.5 0 0 1-2.7 2.5A15.5 15.5 0 0 1 2.5 6.2 2.5 2.5 0 0 1 5 3.5z"></path></svg>חיוג לקליניקה <span dir="ltr" style="unicode-bidi:isolate;font-weight:600">09-774-1180</span></a>
+        <a href="https://wa.me/972977411180" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 15px;border-radius:12px;font:inherit;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;transition:background .15s,border-color .15s;border:1px solid #BFE6CC;background:#EAF7EF;color:#0E6B3A;" style-hover="background:#DDF2E5;border-color:#9ED9B3"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="flex:none;color:#1DA851"><path fill="currentColor" d="M12 2.2A9.7 9.7 0 0 0 3.6 16.8L2.3 21.7l5-1.3A9.7 9.7 0 1 0 12 2.2zm0 17.7c-1.5 0-2.9-.4-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 19.9zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.3.9 2.5c.1.2 1.6 2.5 4 3.5 1.5.6 2 .7 2.8.6.4-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1z"></path></svg><span style="display:inline-flex;align-items:center;gap:6px">וואטסאפ עם תמונה</span></a>
+      </div>
+      <p style="margin:10px 0 0;font-size:12.5px;color:#5B6B7B;text-wrap:pretty">מחוץ לשעות הפעילות ובשבת: {{ t.after }} בקושי בנשימה או בבליעה — חייגי <span dir="ltr" style="unicode-bidi:isolate;font-weight:700">101</span>.</p>
+    </section>
+
+    <sc-if value="{{ t.hasFollow }}" hint-placeholder-val="{{ true }}">
+      <section aria-labelledby="ac-fu" style="background:#fff;border:1px solid #CDEFF3;border-radius:17px;padding:16px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="flex:1 1 260px;min-width:0">
+          <h2 id="ac-fu" style="margin:0 0 3px;font-size:16px;font-weight:700">{{ t.followTitle }}</h2>
+          <p style="margin:0;font-size:14px;color:#5B6B7B;text-wrap:pretty">{{ t.followBody }}</p>
+        </div>
+        <a href="./BeautyFind Booking.dc.html" style="flex:none;min-height:46px;display:inline-flex;align-items:center;padding:0 16px;border-radius:12px;background:#0B7A87;font-size:15px;font-weight:700;color:#fff;text-decoration:none">קביעת ביקורת</a>
+      </section>
+    </sc-if>
+
+    <p style="margin:0;font-size:12.5px;color:#8A96A3;text-wrap:pretty">ההנחיות נכתבו על ידי {{ t.author }} ואינן מחליפות ייעוץ רפואי אישי. בעוד 3 ימים נשלח לך בקשה לכתוב <a href="./BeautyFind Review.dc.html">ביקורת</a>.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:1000},&quot;treatment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;botox&quot;,&quot;laser&quot;,&quot;facial&quot;],&quot;default&quot;:&quot;botox&quot;,&quot;tsType&quot;:&quot;'botox'|'laser'|'facial'&quot;},&quot;phaseNow&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:0,&quot;min&quot;:0,&quot;max&quot;:2,&quot;tsType&quot;:&quot;number&quot;}}">
+const T = {
+  botox: {
+    name: 'בוטוקס', who: 'ד״ר נועה לוי · מצח וקמטי הבעה', author: 'ד״ר נועה לוי, רישיון 34-82115',
+    phases: [
+      ['first', '4 השעות הראשונות', { dos: ['להישאר זקופה — לא לשכב', 'לכווץ ולהרפות את אזור הטיפול בעדינות מדי פעם'], donts: ['לגעת, לעסות או ללחוץ על האזור', 'להתכופף ממושכות או להרים משקל', 'איפור על נקודות ההזרקה'] }],
+      ['day', 'היום הראשון', { dos: ['לשתות מים כרגיל', 'אקמול לכאב קל, אם צריך'], donts: ['אימון, סאונה או ג׳קוזי', 'אלכוהול', 'אספירין ונורופן — מגבירים שטף דם'] }],
+      ['weeks', 'שבועיים', { dos: ['לצלם באותה תאורה ביום 3, 7 ו־14 להשוואה', 'לחכות: ההשפעה המלאה מגיעה אחרי 10–14 ימים'], donts: ['טיפול פנים, לייזר או פילינג באזור', 'הזרקה נוספת לפני ביקורת'] }]
+    ],
+    normal: 'אדמומיות ובליטות קטנות בנקודות ההזרקה בשעה הראשונה, כאב ראש קל ביום הראשון, וכחול קטן שעובר תוך שבוע. ההשפעה מתחילה אחרי 3–5 ימים.',
+    red: ['צניחה של העפעף או הגבה', 'ראייה כפולה או מטושטשת', 'נפיחות שמתגברת אחרי 48 שעות', 'חולשה בבליעה, בדיבור או בנשימה'],
+    after: 'השאירי הודעה — ד״ר לוי עונה גם בערב.',
+    hasFollow: true, followTitle: 'ביקורת בעוד 14 ימים — ללא תשלום', followBody: 'בודקים שהתוצאה אחידה, ומתקנים אם צריך.'
+  },
+  laser: {
+    name: 'הסרת שיער בלייזר', who: 'שירן אבוטבול · רגליים', author: 'שירן אבוטבול, קוסמטיקאית מוסמכת',
+    phases: [
+      ['first', 'היום הראשון', { dos: ['קירור עם מגבת לחה וקרירה', 'קרם הרגעה ללא בישום'], donts: ['מקלחת חמה, סאונה או בריכה', 'בגדים צמודים על האזור'] }],
+      ['day', 'השבוע הראשון', { dos: ['מקדם הגנה 50 בכל יציאה', 'לחות פעמיים ביום'], donts: ['שיזוף או מיטת שיזוף', 'שעווה, פינצטה או אפילציה — רק גילוח', 'פילינג באזור'] }],
+      ['weeks', 'עד הטיפול הבא', { dos: ['גילוח יום לפני הטיפול הבא', 'שיער שנושר בשבועיים הראשונים — תקין'], donts: ['שיזוף 4 שבועות לפני הטיפול הבא'] }]
+    ],
+    normal: 'אדמומיות ונפיחות קלה סביב זקיקי השיער, שעוברות בדרך כלל תוך 24–48 שעות. תחושה של כוויית שמש קלה.',
+    red: ['שלפוחיות או קרום על העור', 'כאב שמתגבר ולא עובר', 'שינוי צבע עור כהה או בהיר'],
+    after: 'שלחי תמונה בוואטסאפ ונחזור בבוקר.',
+    hasFollow: true, followTitle: 'הטיפול הבא בעוד 6 שבועות', followBody: 'הסדרה שלך: טיפול 2 מתוך 6.'
+  },
+  facial: {
+    name: 'טיפול פנים', who: 'שירן אבוטבול · ניקוי עמוק', author: 'שירן אבוטבול, קוסמטיקאית מוסמכת',
+    phases: [
+      ['first', 'הלילה', { dos: ['שטיפה במים פושרים בלבד', 'קרם לחות עדין'], donts: ['איפור עד מחר בבוקר', 'חומצות, רטינול או קרצוף'] }],
+      ['day', '3 הימים הקרובים', { dos: ['מקדם הגנה כל בוקר', 'להחליף ציפית'], donts: ['סאונה ואימון מזיע ביום הראשון', 'לסחוט פצעונים'] }],
+      ['weeks', 'שבועיים', { dos: ['לחזור לשגרה הרגילה בהדרגה'], donts: ['פילינג ביתי לפני שעברו 7 ימים'] }]
+    ],
+    normal: 'אדמומיות קלה עד כמה שעות, ולפעמים פצעון או שניים ביומיים הראשונים כשהעור מתנקה.',
+    red: ['פריחה מגרדת או נפיחות', 'צריבה שלא עוברת אחרי יום'],
+    after: 'שלחי הודעה ונחזור בבוקר.',
+    hasFollow: false, followTitle: '', followBody: ''
+  }
+};
+
+class Component extends DCLogic {
+  state = { phase: null };
+  renderVals() {
+    const t = T[this.props.treatment] || T.botox;
+    const nowIdx = Math.max(0, Math.min(2, this.props.phaseNow ?? 0));
+    const idx = this.state.phase ?? nowIdx;
+    const ph = t.phases[idx];
+    return {
+      t,
+      phase: ph[2],
+      phaseTitle: idx === nowIdx ? 'עכשיו: ' + ph[1] : ph[1],
+      phases: t.phases.map((x, i) => {
+        const on = i === idx;
+        return { name: x[1], now: i === nowIdx, on: on ? 'true' : 'false', bg: on ? '#0B7A87' : '#fff', color: on ? '#fff' : '#3E4F62', border: on ? '#0B7A87' : '#E6E6E6',
+          pick: () => this.setState({ phase: i }) };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

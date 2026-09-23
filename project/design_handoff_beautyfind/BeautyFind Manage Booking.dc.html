@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="ניהול תור מקישור בהודעה — צפייה בפרטים, העברת מועד, ביטול לפי מדיניות הקליניקה, בלי צורך בהתחברות.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Frank+Ruhl+Libre:wght@400;500;700&family=Jost:wght@300&display=swap">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#F6F8F9}
+  *{box-sizing:border-box}
+  :root{--mb-shell:minmax(0,1fr);--mb-pad:16px;--mb-act:minmax(0,1fr)}
+  @media (min-width:560px){:root{--mb-pad:22px;--mb-act:repeat(3,minmax(0,1fr))}}
+  @media (min-width:1000px){:root{--mb-shell:minmax(0,1fr) 320px}}
+  @media (min-width:1000px) and (min-height:700px){[data-mb-side]{position:sticky;top:18px}}
+  a{color:#0B7A87}
+  a:hover{color:#0C243E}
+  @keyframes mbFade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  @keyframes mbPop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div dir="rtl" lang="he" style="min-height:100vh;overflow-x:clip;background:#F6F8F9;font-family:Assistant,system-ui,sans-serif;color:#0C243E;line-height:1.55">
+
+  <header style="background:#fff;border-bottom:1px solid #E6E6E6">
+    <div style="max-width:1000px;margin:0 auto;padding:12px var(--mb-pad);display:flex;align-items:center;gap:13px;flex-wrap:wrap">
+      <a href="./BeautyFind Homepage.dc.html" dir="ltr" style="flex:none;font-family:Jost,system-ui,sans-serif;font-weight:300;font-size:21px;letter-spacing:-0.01em;color:#0C243E;text-decoration:none">beauty<span style="color:#14B3C6">find</span><span style="color:#14B3C6">.</span></a>
+      <span style="flex:1;min-width:0"></span>
+      <a href="./BeautyFind Auth.dc.html" style="flex:none;min-height:42px;display:inline-flex;align-items:center;padding:0 12px;border-radius:11px;font-size:14px;font-weight:700;color:#5B6B7B;text-decoration:none" style-hover="background:#F6F8F9">יש לך חשבון? כניסה</a>
+    </div>
+  </header>
+
+  <div style="max-width:1000px;margin:0 auto;padding:clamp(16px,2.4vw,28px) var(--mb-pad) 60px">
+    <div style="display:grid;grid-template-columns:var(--mb-shell);gap:clamp(14px,1.8vw,20px);align-items:start">
+      <main style="min-width:0;display:flex;flex-direction:column;gap:13px">
+
+        <sc-if value="{{ isView }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:13px;animation:mbFade .22s ease both">
+            <div>
+              <span style="display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px;border-radius:9px;background:#EAF3EA;font-size:13px;font-weight:700;color:#3B6B3F"><span aria-hidden="true" style="width:7px;height:7px;border-radius:50%;background:#3B6B3F"></span>התור מאושר</span>
+              <h1 style="margin:10px 0 3px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(26px,3.6vw,36px);font-weight:500;letter-spacing:-0.015em">{{ cur.long }}, <span dir="ltr" style="unicode-bidi:isolate;font-variant-numeric:tabular-nums">{{ cur.time }}</span></h1>
+              <p style="margin:0;font-size:15.5px;color:#3E4F62">{{ cur.rel }}</p>
+            </div>
+
+            <section aria-label="פרטי התור" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;overflow:hidden">
+              <dl style="margin:0;padding:clamp(15px,1.8vw,21px);display:grid;grid-template-columns:86px minmax(0,1fr);gap:10px 12px;font-size:15px">
+                <dt style="color:#8A96A3">טיפול</dt><dd style="margin:0;font-weight:700">בוטוקס — מצח וקמטי הבעה</dd>
+                <dt style="color:#8A96A3">משך</dt><dd style="margin:0;font-weight:600">כ־30 דקות</dd>
+                <dt style="color:#8A96A3">רופאה</dt><dd style="margin:0;font-weight:600">ד״ר נועה לוי</dd>
+                <dt style="color:#8A96A3">כתובת</dt><dd style="margin:0;font-weight:600">רחוב אחוזה 128, קומה 2, רעננה</dd>
+                <dt style="color:#8A96A3">אסמכתא</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums">BF-5102</dd>
+              </dl>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;padding:12px clamp(15px,1.8vw,21px);border-top:1px solid #EDEFF2;background:#FAFBFB">
+                <a href="https://wa.me/972977411180" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 15px;border-radius:11px;font:inherit;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;transition:background .15s,border-color .15s;border:1px solid #BFE6CC;background:#EAF7EF;color:#0E6B3A;" style-hover="background:#DDF2E5;border-color:#9ED9B3"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="flex:none;color:#1DA851"><path fill="currentColor" d="M12 2.2A9.7 9.7 0 0 0 3.6 16.8L2.3 21.7l5-1.3A9.7 9.7 0 1 0 12 2.2zm0 17.7c-1.5 0-2.9-.4-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 19.9zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.3.9 2.5c.1.2 1.6 2.5 4 3.5 1.5.6 2 .7 2.8.6.4-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1z"></path></svg><span style="display:inline-flex;align-items:center;gap:6px">וואטסאפ</span></a>
+                <a href="tel:+972977411180" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 15px;border-radius:11px;font:inherit;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;transition:background .15s,border-color .15s;border:1px solid #D4D4D4;background:#fff;color:#0C243E;" style-hover="background:#F0FAFB;border-color:#7ED7E1"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;color:#0B7A87"><path d="M5 3.5h3.2l1.6 4-2 1.3a11 11 0 0 0 5.4 5.4l1.3-2 4 1.6V17a2.5 2.5 0 0 1-2.7 2.5A15.5 15.5 0 0 1 2.5 6.2 2.5 2.5 0 0 1 5 3.5z"></path></svg><span style="display:inline-flex;align-items:center;gap:6px">חיוג <span dir="ltr" style="unicode-bidi:isolate;font-weight:600;opacity:.75;font-variant-numeric:tabular-nums">09-774-1180</span></span></a>
+                <a href="https://waze.com/ul?q=%D7%90%D7%97%D7%95%D7%96%D7%94%20128%20%D7%A8%D7%A2%D7%A0%D7%A0%D7%94&navigate=yes" target="_blank" rel="noopener" style="min-height:44px;display:inline-flex;align-items:center;gap:7px;padding:0 14px;border-radius:11px;background:#fff;border:1px solid #E6E6E6;font-size:14px;font-weight:700;color:#0C243E;text-decoration:none">ניווט ב־Waze</a>
+              </div>
+            </section>
+
+            <section aria-labelledby="mb-h-prep" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px)">
+              <h2 id="mb-h-prep" style="margin:0 0 11px;font-size:16.5px;font-weight:700">לפני שמגיעים</h2>
+              <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+                <sc-for list="{{ prep }}" as="pp" hint-placeholder-count="3"><li style="display:flex;align-items:flex-start;gap:11px"><span aria-hidden="true" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-top:1px;border-radius:8px;background:{{ pp.bg }};color:{{ pp.color }};font-size:13px;font-weight:800">{{ pp.mark }}</span><span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-size:14.5px;font-weight:700">{{ pp.name }}</span><span style="font-size:13px;color:#5B6B7B;text-wrap:pretty">{{ pp.note }}</span></span><sc-if value="{{ pp.hasLink }}" hint-placeholder-val="{{ false }}"><a href="{{ pp.href }}" style="flex:none;min-height:38px;display:inline-flex;align-items:center;padding:0 12px;border-radius:10px;background:#0B7A87;font-size:13.5px;font-weight:700;color:#fff;text-decoration:none">{{ pp.cta }}</a></sc-if></li></sc-for>
+              </ul>
+            </section>
+
+            <div style="display:grid;grid-template-columns:var(--mb-act);gap:9px">
+              <button type="button" onClick="{{ toResched }}" style="min-height:50px;padding:0 16px;border:0;border-radius:12px;background:#0B7A87;font:inherit;font-size:15.5px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#0C243E">העברת מועד</button>
+              <button type="button" onClick="{{ addCal }}" style="min-height:50px;padding:0 16px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font:inherit;font-size:15px;font-weight:600;color:#3E4F62;cursor:pointer">הוספה ליומן</button>
+              <button type="button" onClick="{{ toCancel }}" style="min-height:50px;padding:0 16px;border:1px solid #F0C9C4;border-radius:12px;background:#fff;font:inherit;font-size:15px;font-weight:700;color:#A33A31;cursor:pointer" style-hover="background:#FDEDEC">ביטול התור</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isResched }}" hint-placeholder-val="{{ false }}">
+          <section aria-labelledby="mb-h-rs" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px);animation:mbFade .2s ease both">
+            <button type="button" onClick="{{ back }}" style="display:inline-flex;align-items:center;gap:6px;min-height:36px;margin:-4px 0 8px;padding:0 8px 0 10px;border:0;border-radius:9px;background:transparent;font:inherit;font-size:13.5px;font-weight:700;color:#5B6B7B;cursor:pointer"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:scaleX(-1)"><path d="M12 7H2M6 3 2 7l4 4"></path></svg>חזרה לפרטי התור</button>
+            <h1 id="mb-h-rs" style="margin:0 0 3px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(23px,3vw,30px);font-weight:500;letter-spacing:-0.014em">העברת מועד</h1>
+            <p style="margin:0 0 14px;font-size:14.5px;color:#5B6B7B;text-wrap:pretty">אותו טיפול ואותה רופאה. {{ reschedNote }}</p>
+            <div role="listbox" aria-label="בחירת יום" style="display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px">
+              <sc-for list="{{ days }}" as="d" hint-placeholder-count="8"><button type="button" role="option" aria-selected="{{ d.on }}" onClick="{{ d.pick }}" disabled="{{ d.full }}" style="flex:none;min-width:74px;min-height:66px;padding:7px 9px;border:1px solid {{ d.border }};border-radius:12px;background:{{ d.bg }};font:inherit;color:{{ d.color }};cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;opacity:{{ d.op }}"><span style="font-size:13px;font-weight:700">{{ d.dow }}</span><span dir="ltr" style="font-size:15px;font-weight:700;font-variant-numeric:tabular-nums">{{ d.dm }}</span><span style="font-size:11.5px;font-weight:600;opacity:.85">{{ d.count }}</span></button></sc-for>
+            </div>
+            <div role="listbox" aria-label="בחירת שעה" style="display:flex;flex-wrap:wrap;gap:7px">
+              <sc-for list="{{ slots }}" as="sl" hint-placeholder-count="6"><button type="button" role="option" aria-selected="{{ sl.on }}" onClick="{{ sl.pick }}" dir="ltr" style="min-width:74px;min-height:44px;padding:0 12px;border:1px solid {{ sl.border }};border-radius:10px;background:{{ sl.bg }};font:inherit;font-size:14.5px;font-weight:700;color:{{ sl.color }};font-variant-numeric:tabular-nums;cursor:pointer">{{ sl.t }}</button></sc-for>
+            </div>
+            <button type="button" onClick="{{ confirmResched }}" disabled="{{ noPick }}" style="width:100%;margin-top:16px;min-height:50px;padding:0 18px;border:0;border-radius:12px;background:{{ confirmBg }};font:inherit;font-size:16px;font-weight:700;color:#fff;cursor:pointer">{{ confirmLabel }}</button>
+          </section>
+        </sc-if>
+
+        <sc-if value="{{ isCancel }}" hint-placeholder-val="{{ false }}">
+          <section aria-labelledby="mb-h-cx" style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:clamp(15px,1.8vw,21px);animation:mbFade .2s ease both">
+            <button type="button" onClick="{{ back }}" style="display:inline-flex;align-items:center;gap:6px;min-height:36px;margin:-4px 0 8px;padding:0 8px 0 10px;border:0;border-radius:9px;background:transparent;font:inherit;font-size:13.5px;font-weight:700;color:#5B6B7B;cursor:pointer"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:scaleX(-1)"><path d="M12 7H2M6 3 2 7l4 4"></path></svg>חזרה לפרטי התור</button>
+            <h1 id="mb-h-cx" style="margin:0 0 12px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(23px,3vw,30px);font-weight:500;letter-spacing:-0.014em">ביטול התור</h1>
+            <div style="padding:13px 15px;border:1px solid {{ pol.border }};border-radius:13px;background:{{ pol.bg }};margin-bottom:15px">
+              <span style="display:block;margin-bottom:3px;font-size:14.5px;font-weight:700;color:{{ pol.color }}">{{ pol.title }}</span>
+              <p style="margin:0;font-size:13.5px;color:#3E4F62;text-wrap:pretty">{{ pol.body }}</p>
+            </div>
+            <h2 style="margin:0 0 9px;font-size:14.5px;font-weight:700">מה הסיבה? <span style="font-size:12.5px;font-weight:600;color:#8A96A3">· לא חובה, עוזר לקליניקה</span></h2>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+              <sc-for list="{{ reasons }}" as="r" hint-placeholder-count="5"><button type="button" aria-pressed="{{ r.on }}" onClick="{{ r.pick }}" style="min-height:38px;padding:0 13px;border:1px solid {{ r.border }};border-radius:10px;background:{{ r.bg }};font:inherit;font-size:13.5px;font-weight:600;color:{{ r.color }};cursor:pointer">{{ r.name }}</button></sc-for>
+            </div>
+            <div style="display:flex;gap:9px;flex-wrap:wrap">
+              <button type="button" onClick="{{ confirmCancel }}" style="flex:1;min-width:180px;min-height:50px;padding:0 18px;border:0;border-radius:12px;background:#A33A31;font:inherit;font-size:16px;font-weight:700;color:#fff;cursor:pointer">אישור הביטול</button>
+              <button type="button" onClick="{{ toResched }}" style="flex:none;min-height:50px;padding:0 16px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font:inherit;font-size:15px;font-weight:600;color:#3E4F62;cursor:pointer">להעביר מועד במקום</button>
+            </div>
+          </section>
+        </sc-if>
+
+        <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid {{ done.border }};border-radius:18px;padding:clamp(20px,2.6vw,30px);animation:mbPop .2s ease both">
+            <h1 style="margin:0 0 5px;font-family:'Frank Ruhl Libre',serif;font-size:clamp(22px,2.8vw,28px);font-weight:500;letter-spacing:-0.014em">{{ done.title }}</h1>
+            <p style="margin:0 0 16px;font-size:15px;color:#3E4F62;text-wrap:pretty">{{ done.body }}</p>
+            <div style="display:flex;gap:9px;flex-wrap:wrap">
+              <a href="{{ done.href }}" style="min-height:46px;display:inline-flex;align-items:center;padding:0 16px;border-radius:12px;background:#0B7A87;font-size:15px;font-weight:700;color:#fff;text-decoration:none">{{ done.cta }}</a>
+              <a href="./BeautyFind Business Profile.dc.html" style="min-height:46px;display:inline-flex;align-items:center;padding:0 14px;border:1px solid #E6E6E6;border-radius:12px;background:#fff;font-size:15px;font-weight:600;color:#3E4F62;text-decoration:none">לפרופיל הקליניקה</a>
+            </div>
+          </div>
+        </sc-if>
+      </main>
+
+      <aside data-mb-side style="min-width:0;display:flex;flex-direction:column;gap:12px">
+        <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:14px 16px">
+          <span style="display:block;font-size:12.5px;font-weight:700;color:#5B6B7B">הקליניקה</span>
+          <span style="display:block;margin-bottom:10px;font-size:16px;font-weight:700">קליניקת נועה · רעננה</span>
+          <dl style="margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 12px;font-size:13.5px">
+            <dt style="color:#8A96A3">ראשון–חמישי</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums">09:00–20:00</dd>
+            <dt style="color:#8A96A3">שישי</dt><dd dir="ltr" style="margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums">08:30–13:00</dd>
+            <dt style="color:#8A96A3">שבת</dt><dd style="margin:0;font-weight:600">סגור</dd>
+          </dl>
+        </div>
+        <div style="background:#fff;border:1px solid #E6E6E6;border-radius:17px;padding:14px 16px">
+          <h2 style="margin:0 0 8px;font-size:15px;font-weight:700">מדיניות ביטול</h2>
+          <p style="margin:0;font-size:13px;color:#3E4F62;text-wrap:pretty">{{ policyText }}</p>
+          <p style="margin:10px 0 0;font-size:13px;display:flex;gap:12px;flex-wrap:wrap"><a href="./BeautyFind Receipt.dc.html" style="font-weight:700">קבלה על המקדמה</a><a href="./BeautyFind Aftercare.dc.html" style="font-weight:700">הנחיות אחרי הטיפול</a></p>
+          <p style="margin:10px 0 0;padding-top:10px;border-top:1px solid #EDEFF2;font-size:12.5px;color:#8A96A3;text-wrap:pretty">הקישור הזה אישי ונשלח רק אלייך. אל תעבירי אותו הלאה.</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:fixed;bottom:18px;right:50%;transform:translateX(50%);z-index:40;max-width:min(90vw,440px);padding:12px 17px;border-radius:13px;background:#0C243E;color:#fff;font-size:14px;font-weight:600;box-shadow:0 12px 30px rgba(12,36,62,.28);animation:mbPop .16s ease both;text-wrap:pretty">{{ toastText }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1000,&quot;height&quot;:900},&quot;hoursUntil&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:116,&quot;min&quot;:1,&quot;max&quot;:400,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;תרחיש&quot;},&quot;healthSigned&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;תרחיש&quot;},&quot;cancelWindow&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:24,&quot;min&quot;:2,&quot;max&quot;:72,&quot;unit&quot;:&quot;שעות&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;מדיניות הקליניקה&quot;},&quot;depositOn&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;מדיניות הקליניקה&quot;},&quot;depositAmount&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:150,&quot;min&quot;:0,&quot;max&quot;:2000,&quot;unit&quot;:&quot;₪&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;מדיניות הקליניקה&quot;}}">
+const DOW = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
+const DOW_LONG = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי', 'שבת'];
+const MONTHS = ['בינואר', 'בפברואר', 'במרץ', 'באפריל', 'במאי', 'ביוני', 'ביולי', 'באוגוסט', 'בספטמבר', 'באוקטובר', 'בנובמבר', 'בדצמבר'];
+const pad = n => String(n).padStart(2, '0');
+const WEEK_SLOTS = ['09:00', '09:30', '10:00', '11:00', '11:30', '12:30', '14:00', '15:30', '16:00', '17:30', '18:00', '19:00'];
+const FRI_SLOTS = ['08:30', '09:00', '10:00', '11:00', '12:00'];
+const plFree = n => n === 0 ? 'מלא' : n === 1 ? 'פנויה אחת' : n === 2 ? 'שתיים פנויות' : n + ' פנויות';
+const plHours = n => n === 1 ? 'שעה' : n === 2 ? 'שעתיים' : n + ' שעות';
+const plDays = n => n === 1 ? 'יום' : n === 2 ? 'יומיים' : n + ' ימים';
+
+const DAYS = (() => {
+  const out = [];
+  const d = new Date(2026, 8, 24);
+  let i = 0;
+  while (out.length < 8) {
+    const wd = d.getDay();
+    if (wd !== 6) {
+      const base = wd === 5 ? FRI_SLOTS : WEEK_SLOTS;
+      const slots = i === 3 ? [] : base.filter((t, j) => (i * 7 + j * 3) % 5 < 2);
+      out.push({ key: d.toISOString().slice(0, 10), dow: DOW[wd], dm: pad(d.getDate()) + '/' + pad(d.getMonth() + 1),
+        long: DOW_LONG[wd] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()], slots });
+      i++;
+    }
+    d.setDate(d.getDate() + 1);
+  }
+  return out;
+})();
+const REASONS = ['לא מתאים לי המועד', 'לא מרגישה טוב', 'מצאתי מקום אחר', 'שיקולי מחיר', 'אחר'];
+
+class Component extends DCLogic {
+  state = { view: 'view', day: 0, slot: null, reason: null, cur: { long: 'יום שני, 28 בספטמבר', time: '10:30' }, doneKind: null, toast: '' };
+
+  componentWillUnmount() { clearTimeout(this._t); }
+  flash(t) { clearTimeout(this._t); this.setState({ toast: t }); this._t = setTimeout(() => this.setState({ toast: '' }), 3200); }
+
+  renderVals() {
+    const s = this.state, p = this.props;
+    const teal = '#0B7A87', line = '#E6E6E6';
+    const hours = p.hoursUntil ?? 116;
+    const win = p.cancelWindow ?? 24;
+    const depOn = p.depositOn ?? true;
+    const dep = p.depositAmount ?? 150;
+    const signed = p.healthSigned ?? false;
+    const late = hours < win;
+    const relTxt = hours < 24 ? 'בעוד ' + plHours(hours) : 'בעוד ' + plDays(Math.round(hours / 24));
+
+    const day = DAYS[s.day];
+    const pol = late
+      ? { title: 'ביטול מאוחר — פחות מ־' + plHours(win) + ' לפני התור', body: depOn ? 'המקדמה בסך ₪' + dep + ' לא מוחזרת לפי מדיניות הקליניקה. מסיבה רפואית? כתבי לקליניקה בוואטסאפ לפני הביטול.' : 'הקליניקה רשאית לחייב דמי ביטול מאוחר. מסיבה רפואית? כתבי לקליניקה בוואטסאפ לפני הביטול.', bg: '#FFF8EC', border: '#F1DDB5', color: '#9A5B15' }
+      : { title: 'ביטול ללא חיוב', body: depOn ? 'המקדמה בסך ₪' + dep + ' תוחזר לאמצעי התשלום המקורי תוך 7–10 ימי עסקים, עם חשבונית זיכוי.' : 'לא נגבה תשלום על התור הזה, ואין דמי ביטול.', bg: '#F0FAFB', border: '#CDEFF3', color: teal };
+
+    const prep = [
+      signed
+        ? { mark: '✓', name: 'הצהרת בריאות נחתמה', note: 'אפשר לעדכן עד תחילת הטיפול', bg: '#EAF3EA', color: '#3B6B3F', hasLink: false }
+        : { mark: '!', name: 'הצהרת בריאות ממתינה לחתימה', note: 'חובה לפני טיפול בהזרקה · כ־3 דקות', bg: '#FFF8EC', color: '#9A5B15', hasLink: true, href: './BeautyFind Health Declaration.dc.html', cta: 'למילוי' },
+      depOn
+        ? { mark: '₪', name: 'שולמה מקדמה ₪' + dep, note: 'מתקזזת מהתשלום בקליניקה · חשבונית מס נשלחה למייל', bg: '#F0FAFB', color: teal, hasLink: false }
+        : { mark: '₪', name: 'תשלום בקליניקה', note: 'אשראי, ביט או מזומן · אפשר בתשלומים', bg: '#F0FAFB', color: teal, hasLink: false },
+      { mark: '10', name: 'להגיע 10 דקות לפני', note: 'בלי איפור באזור הטיפול · חניון אחוזה בחינם לשעתיים', bg: '#F6F8F9', color: '#5B6B7B', hasLink: false }
+    ];
+
+    const done = s.doneKind === 'resched'
+      ? { title: 'התור הועבר', body: 'המועד החדש: ' + s.cur.long + ' בשעה ' + s.cur.time + '. אישור נשלח בוואטסאפ, והמקדמה והצהרת הבריאות עוברות איתך.', cta: 'לפרטי התור', href: './BeautyFind Manage Booking.dc.html', border: '#CDEFF3' }
+      : { title: 'התור בוטל', body: (late ? (depOn ? 'המקדמה לא מוחזרת לפי מדיניות הביטול.' : 'הקליניקה עודכנה על הביטול.') : (depOn ? 'המקדמה בסך ₪' + dep + ' תוחזר תוך 7–10 ימי עסקים.' : 'לא בוצע חיוב.')) + ' אישור ביטול נשלח בוואטסאפ ובמייל.', cta: 'לקביעת תור חדש', href: './BeautyFind Booking.dc.html', border: '#E6E6E6' };
+
+    return {
+      isView: s.view === 'view', isResched: s.view === 'resched', isCancel: s.view === 'cancel', isDone: s.view === 'done',
+      cur: Object.assign({}, s.cur, { rel: relTxt + ' · קליניקת נועה' }),
+      prep,
+      toResched: () => this.setState({ view: 'resched', slot: null }),
+      toCancel: () => this.setState({ view: 'cancel' }),
+      back: () => this.setState({ view: 'view' }),
+      addCal: () => this.flash('קובץ יומן הורד — מתאים ל־Google, Outlook ו־iPhone'),
+      reschedNote: late ? 'העברה פחות מ־' + plHours(win) + ' לפני התור נחשבת כביטול מאוחר.' : 'העברה עכשיו — ללא חיוב.',
+      days: DAYS.map((d, i) => {
+        const on = i === s.day, full = d.slots.length === 0;
+        return { dow: d.dow, dm: d.dm, count: plFree(d.slots.length), on: on ? 'true' : 'false', full,
+          bg: on ? teal : '#fff', color: on ? '#fff' : '#0C243E', border: on ? teal : line, op: full ? '.45' : '1',
+          pick: () => this.setState({ day: i, slot: null }) };
+      }),
+      slots: day.slots.map(t => {
+        const on = s.slot === t;
+        return { t, on: on ? 'true' : 'false', bg: on ? teal : '#fff', color: on ? '#fff' : '#0C243E', border: on ? teal : line,
+          pick: () => this.setState({ slot: t }) };
+      }),
+      noPick: !s.slot,
+      confirmBg: s.slot ? teal : '#AFC4C8',
+      confirmLabel: s.slot ? 'העברה ל' + day.long + ', ' + s.slot : 'בחרי שעה',
+      confirmResched: () => { if (!s.slot) return; this.setState({ view: 'done', doneKind: 'resched', cur: { long: day.long, time: s.slot } }); },
+      pol,
+      reasons: REASONS.map(r => {
+        const on = s.reason === r;
+        return { name: r, on: on ? 'true' : 'false', bg: on ? teal : '#fff', color: on ? '#fff' : '#3E4F62', border: on ? teal : line,
+          pick: () => this.setState({ reason: on ? null : r }) };
+      }),
+      confirmCancel: () => this.setState({ view: 'done', doneKind: 'cancel' }),
+      done,
+      policyText: 'ביטול או העברה עד ' + plHours(win) + ' לפני התור — ללא חיוב' + (depOn ? ', והמקדמה מוחזרת.' : '.') + ' מתחת ל־' + plHours(win) + (depOn ? ' המקדמה לא מוחזרת.' : ' הקליניקה רשאית לחייב.') + ' המדיניות נקבעת על ידי הקליניקה.',
+      toastOn: !!s.toast, toastText: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>
