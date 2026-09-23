@@ -7,7 +7,6 @@
   flex: none; display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 12px; border-radius: 10px;
   background: var(--tint); font-size: 14px; font-weight: 700; color: var(--teal-deep);
 }
-.back:hover { color: var(--navy); }
 .contextLine { flex: 1; min-width: 0; font-size: 14px; font-weight: 700; color: var(--muted); }
 
 .titleRow { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
@@ -22,10 +21,8 @@
 }
 .wa { border: 1px solid var(--wa-line); background: var(--wa-bg); color: var(--wa-text); }
 .wa svg { flex: none; color: var(--wa-glyph); }
-.wa:hover { background: #DDF2E5; border-color: #9ED9B3; color: var(--wa-text); }
 .tel { border: 1px solid var(--line-strong); background: #fff; color: var(--navy); }
 .tel svg { flex: none; color: var(--teal-deep); }
-.tel:hover { background: var(--tint); border-color: var(--teal-light); color: var(--navy); }
 .telNum { font-weight: 600; opacity: .75; }
 
 .steps { list-style: none; margin: 0 0 16px; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
@@ -110,13 +107,11 @@
   min-height: 48px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--teal-deep);
   font-size: 15.5px; font-weight: 700; color: #fff;
 }
-.primary:hover:not(:disabled), .primaryLink:hover { background: var(--navy); color: #fff; }
 .primary:disabled { background: var(--disabled); cursor: not-allowed; }
 .danger {
   min-height: 48px; padding: 0 15px; border: 1px solid var(--bad-line); border-radius: 12px; background: #fff;
   font-size: 14.5px; font-weight: 700; color: var(--bad-text);
 }
-.danger:hover:not(:disabled) { background: var(--bad-bg); }
 .danger:disabled { opacity: .55; cursor: not-allowed; }
 .secondary {
   min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 11px; background: #fff;
@@ -126,13 +121,11 @@
   min-height: 44px; padding: 0 14px; border: 0; border-radius: 11px; background: var(--teal-deep);
   font-size: 14px; font-weight: 700; color: #fff;
 }
-.small:hover:not(:disabled) { background: var(--navy); }
 .small:disabled { background: var(--disabled); }
 .smallSecondary {
   min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 11px; background: #fff;
   font-size: 14px; font-weight: 600; color: var(--text);
 }
-.smallSecondary:hover { border-color: var(--teal-light); color: var(--navy); }
 .hint { margin: 8px 0 0; font-size: 12.5px; color: var(--subtle); }
 .blockMsg { margin: 10px 0 0; font-size: 13.5px; font-weight: 700; color: var(--warn-text); }
 .inlineErr { flex-basis: 100%; margin: 8px 0 0; font-size: 13.5px; font-weight: 700; color: var(--bad-text); }
@@ -140,12 +133,10 @@
   display: inline-flex; align-items: center; min-height: 44px; padding: 0; border: 0; background: transparent;
   font: inherit; font-size: 13.5px; font-weight: 700; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
 }
-.linkBtn:hover { color: var(--bad-text); }
 .cancel { margin-top: 14px; padding-top: 6px; border-top: 1px solid var(--divider); }
 .cancelBody { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
 .clinical { margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--divider); }
 .textLink { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin-top: 4px; font-size: 14px; font-weight: 700; color: var(--teal-deep); }
-.textLink:hover { color: var(--navy); }
 
 /* Log */
 .log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
@@ -169,8 +160,63 @@
 .upgrade { max-width: 640px; }
 .upgradeTitle { margin: 0 0 6px; font-family: var(--font-display); font-size: clamp(22px, 2.8vw, 28px); font-weight: 500; letter-spacing: -0.014em; line-height: 1.25; }
 
+/* Sheets: full-width buttons, confirm rows. */
+.block { width: 100%; min-height: 52px; }
+.dangerSolid {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px; border: 0; border-radius: 12px;
+  background: var(--bad-text); font: inherit; font-size: 15px; font-weight: 700; color: #fff; cursor: pointer;
+}
+.dangerSolid:disabled { opacity: .6; cursor: default; }
+.sheetBtns { display: flex; gap: 10px; }
+.sheetBtns > :last-child { flex: 1; }
+.sheetBtns > * { min-height: 48px; }
+.sheetErr { margin: 0 0 8px; font-size: 13.5px; font-weight: 700; color: var(--bad-text); }
+
+/* Toasts sit above the tab bar and the action bar. */
 .toast {
-  position: fixed; bottom: calc(18px + var(--bf-bottom-bar)); right: 50%; transform: translateX(50%); z-index: 40;
+  position: fixed; bottom: calc(var(--bf-float-bottom) + 18px); right: 50%; transform: translateX(50%); z-index: 60;
   max-width: min(90vw, 440px); padding: 12px 17px; border-radius: 13px; background: var(--navy); color: #fff;
   font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(12, 36, 62, .28); text-wrap: pretty;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .back:hover { color: var(--navy); }
+  .wa:hover { background: #DDF2E5; border-color: #9ED9B3; color: var(--wa-text); }
+  .tel:hover { background: var(--tint); border-color: var(--teal-light); color: var(--navy); }
+  .primary:hover:not(:disabled), .primaryLink:hover { background: var(--navy); color: #fff; }
+  .danger:hover:not(:disabled) { background: var(--bad-bg); }
+  .small:hover:not(:disabled) { background: var(--navy); }
+  .smallSecondary:hover { border-color: var(--teal-light); color: var(--navy); }
+  .linkBtn:hover { color: var(--bad-text); }
+  .textLink:hover { color: var(--navy); }
+}
+
+/* ---------- App shell (phones, touch tablets) ----------
+   The top bar replaces the back link, the status stepper becomes a thin progress bar with labels,
+   and the primary action lives in the sticky action bar. */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .page { padding-top: 8px; }
+  .context { margin-bottom: 4px; }
+  .contextLine { font-size: 13px; }
+  .titleRow { margin-bottom: 12px; }
+  .contact { width: 100%; }
+  .contact > * { flex: 1 1 0; min-height: 48px; }
+
+  .steps { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-bottom: 14px; }
+  .steps li {
+    flex-direction: column; align-items: stretch; gap: 6px; padding: 0; border: 0; border-radius: 0; background: none;
+    font-size: 12px; text-align: center;
+  }
+  .steps li > span:first-child {
+    width: auto; height: 5px; border-radius: 3px; background: var(--divider); font-size: 0; color: transparent;
+  }
+  .steps li[data-cur] { background: none; }
+  .steps li[data-cur] > span:first-child { background: var(--teal); }
+  .steps li[data-done] > span:first-child { background: var(--teal-deep); }
+  .steps li[data-cur] > span:last-child { color: var(--teal-deep); font-weight: 800; }
+
+  .card, .hd { border-radius: 16px; }
+  .primary, .danger { min-height: 48px; }
+  .bar .primary { font-size: 16px; }
+  .bar .danger { flex: none; padding: 0 14px; }
 }

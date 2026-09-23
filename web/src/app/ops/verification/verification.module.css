@@ -79,7 +79,6 @@
   cursor: pointer;
   transition: background-color .15s ease, color .15s ease;
 }
-.segBtn:hover { color: #0C243E; }
 .segBtn[aria-pressed='true'] {
   background: #fff;
   box-shadow: 0 1px 3px rgba(12, 36, 62, .12);
@@ -130,7 +129,6 @@
   cursor: pointer;
   transition: border-color .15s ease, background-color .15s ease;
 }
-.item:hover { border-color: #CDEFF3; }
 .item[data-on] { background: #F0FAFB; border-color: #7ED7E1; }
 
 .itemTop { display: flex; align-items: center; gap: 8px; }
@@ -180,7 +178,7 @@
   border: 1px solid #E6E6E6;
   border-radius: 17px;
   overflow: hidden;
-  animation: vfFade .2s ease both;
+  animation: vfFade .2s ease backwards; /* not `both`: a kept transform would trap the fixed action bar */
 }
 
 .head {
@@ -264,7 +262,6 @@
   text-underline-offset: 3px;
   cursor: pointer;
 }
-.refLink:hover { color: #0C243E; }
 
 .label { display: block; margin-bottom: 7px; font-size: 13px; font-weight: 700; }
 .muted { margin: 0; font-size: 13.5px; color: #5B6B7B; }
@@ -291,7 +288,6 @@
   color: #0B7A87;
   text-decoration: none;
 }
-.docFile:hover { color: #0C243E; }
 
 .checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
 .check { display: flex; align-items: flex-start; gap: 9px; font-size: 14px; }
@@ -381,7 +377,6 @@
   cursor: pointer;
   transition: border-color .15s ease, background-color .15s ease;
 }
-.reason:hover { border-color: #D4D4D4; }
 .reason[aria-pressed='true'] { background: #FDF4F3; border-color: #E8A9A1; }
 .reason[data-mode='request_document'][aria-pressed='true'] { background: #F0FAFB; border-color: #7ED7E1; }
 
@@ -428,17 +423,13 @@
   transition: background-color .15s ease, border-color .15s ease, color .15s ease;
 }
 .approve { padding: 0 17px; border: 0; background: #0B7A87; font-weight: 700; color: #fff; }
-.approve:hover:not(:disabled) { background: #0C243E; }
 .ghost { padding: 0 14px; border: 1px solid #E6E6E6; background: #fff; font-weight: 600; color: #3E4F62; }
-.ghost:hover:not(:disabled) { border-color: #D4D4D4; color: #0C243E; }
 .reject { padding: 0 14px; border: 1px solid #F0C9C4; background: #fff; font-weight: 700; color: #A33A31; }
-.reject:hover:not(:disabled) { background: #FDF4F3; }
 .confirmReject { padding: 0 17px; border: 0; background: #D9B5B1; font-weight: 700; color: #fff; }
 .confirmReject[data-ready] { background: #A33A31; }
 .confirmDoc { padding: 0 17px; border: 0; background: #AFC4C8; font-weight: 700; color: #fff; }
 .confirmDoc[data-ready] { background: #0B7A87; }
 .cancel { padding: 0 14px; border: 0; background: transparent; font-weight: 600; color: #5B6B7B; }
-.cancel:hover { color: #0C243E; }
 .approve:disabled,
 .ghost:disabled,
 .reject:disabled,
@@ -456,7 +447,7 @@
 
 /* ---------- Toast ---------- */
 
-.toastRegion { position: fixed; bottom: 18px; right: 50%; transform: translateX(50%); z-index: 40; }
+.toastRegion { position: fixed; bottom: calc(var(--bf-float-bottom) + 18px); right: 50%; transform: translateX(50%); z-index: 60; }
 .toast {
   max-width: min(90vw, 460px);
   padding: 12px 17px;
@@ -467,4 +458,63 @@
   font-weight: 600;
   box-shadow: 0 12px 30px rgba(12, 36, 62, .28);
   animation: vfPop .16s ease both;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .segBtn:hover { color: #0C243E; }
+  .item:hover { border-color: #CDEFF3; }
+  .refLink:hover { color: #0C243E; }
+  .docFile:hover { color: #0C243E; }
+  .reason:hover { border-color: #D4D4D4; }
+  .approve:hover:not(:disabled) { background: #0C243E; }
+  .ghost:hover:not(:disabled) { border-color: #D4D4D4; color: #0C243E; }
+  .reject:hover:not(:disabled) { background: #FDF4F3; }
+  .cancel:hover { color: #0C243E; }
+}
+
+/* ---------- Phones (app shell) ----------
+   Desktop-first screen. Phones get list → detail (from ?id= in the URL), full-bleed rows, a
+   "best on a computer" note and decisions in the action bar, each confirmed in a sheet. */
+.listPane { min-width: 0; }
+.deskNote {
+  margin: 0 16px 12px; padding: 10px 12px; border: 1px solid #F1DDB5; border-radius: 12px; background: #FFF8EC;
+  font-size: 13px; color: #3E4F62; text-wrap: pretty;
+}
+.deskNote strong { color: var(--warn); }
+.deskNoteWho { display: block; margin-top: 4px; font-size: 12px; font-weight: 700; color: #8A96A3; }
+.phoneFilters { margin-bottom: 8px; background: #fff; border-block: 1px solid #E6E6E6; }
+.bar { min-width: 0; }
+.sheetList { display: flex; flex-direction: column; gap: 8px; }
+.sheetRow {
+  min-height: 52px; padding: 0 14px; border: 1px solid #E6E6E6; border-radius: 12px; background: #fff;
+  font: inherit; font-size: 15px; font-weight: 700; color: #0C243E; text-align: right; cursor: pointer;
+}
+.sheetBtns { display: flex; gap: 10px; }
+.sheetBtns > :last-child { flex: 1; }
+.sheetBtns > * { min-height: 48px; }
+.sheetText { margin: 0 0 10px; font-size: 15px; color: #3E4F62; text-wrap: pretty; }
+
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .page { padding: 0 0 24px; }
+  .page[data-view='detail'] .listPane { display: none; }
+  .page[data-view='list'] .detail { display: none; }
+  .shell { gap: 0; }
+
+  .queue { gap: 0; background: #fff; border-bottom: 1px solid #E6E6E6; }
+  .queue > li + li {
+    background-image: linear-gradient(#EDEFF2, #EDEFF2); background-size: calc(100% - 16px) 1px;
+    background-position: top left; background-repeat: no-repeat;
+  }
+  .queueEmpty { margin: 12px 16px; }
+  .item { min-height: 72px; padding: 12px 16px; border: 0; border-radius: 0; background: transparent; }
+  .item[data-on] { background: transparent; border: 0; }
+  .item:active { background: #FAFBFB; }
+
+  .detail { border-radius: 0; border-inline: 0; }
+  .head, .body { padding: 16px; }
+  .dl { grid-template-columns: 96px minmax(0, 1fr); }
+  .reason { min-height: 48px; }
+  .refLink { display: inline-flex; align-items: center; min-height: 44px; margin-block: -10px; }
+  .bar .approve, .bar .ghost, .bar .reject { min-height: 48px; padding: 0 14px; }
+  .bar .ghost, .bar .reject { flex: none; }
 }

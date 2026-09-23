@@ -18,7 +18,7 @@ export default async function VerificationPage() {
   return (
     <div dir="rtl" lang="he" className={styles.root}>
       <OpsHeader current="verification" who={`${reviewer} · ${OPS_ROLE_NAMES[user.opsRole!]}`} />
-      <VerificationConsole items={items} />
+      <VerificationConsole items={items} who={`${reviewer} · ${OPS_ROLE_NAMES[user.opsRole!]}`} />
     </div>
   );
 }

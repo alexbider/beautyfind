@@ -9,7 +9,7 @@ import styles from './layout.module.css';
 
 // Shared chrome for /clinic/* (the clinic system). Kept minimal: every page renders its own
 // content and gates itself through clinicContext(); this only shows who and where you are.
-// Visual language: the navy bar of BeautyFind Clinic Booking.dc.html.
+// Visual language: the navy bar of BeautyFind Clinic Booking.dc.html (desktop only).
 
 export const metadata: Metadata = {
   title: { default: 'מערכת הקליניקה', template: '%s | מערכת הקליניקה' },
@@ -24,7 +24,9 @@ export default async function ClinicLayout({ children }: { children: React.React
 
   return (
     <div className={styles.root} dir="rtl" lang="he">
-      <header className={styles.header}>
+      {/* Phones and touch tablets: each screen renders the app shell top bar instead, and the tab bar
+          (root layout) replaces the nav. The dashboard link lives under "עוד". */}
+      <header className={`${styles.header} bf-desk-only`}>
         <div className={styles.bar}>
           <Link href="/clinic" aria-label="מערכת הקליניקה" className={styles.brand}>
             <Wordmark size={21} onDark />

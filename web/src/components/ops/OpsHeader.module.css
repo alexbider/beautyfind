@@ -25,7 +25,6 @@
   color: #fff;
   text-decoration: none;
 }
-.mark:hover { color: #fff; }
 .markFind { color: #7ED7E1; }
 
 .nav {
@@ -48,7 +47,9 @@
   text-decoration: none;
   transition: background-color .15s ease, color .15s ease;
 }
-a.link:hover { color: #fff; background: rgba(255, 255, 255, .07); }
+@media (hover: hover) and (pointer: fine) {
+  a.link:hover { color: #fff; background: rgba(255, 255, 255, .07); }
+}
 
 .on {
   background: rgba(255, 255, 255, .12);

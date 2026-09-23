@@ -1,0 +1,98 @@
+/* Clinic gift cards: page column and the phone list → card screens (responsive spec §6 Gift card desk).
+   gift.module.css keeps the design's desktop values; this file only adds to it. */
+
+.wrap { max-width: 1160px; margin: 0 auto; padding: clamp(16px, 2.4vw, 28px) 16px 60px; }
+@media (min-width: 480px) { .wrap { padding-inline: 22px; } }
+.screen { min-width: 0; }
+.listPane { min-width: 0; }
+.tableOnly { min-width: 0; }
+.seg { margin-bottom: 10px; }
+
+/* Code field (phones) */
+.lookup { margin-bottom: 14px; padding: 14px 16px; background: #fff; border: 1px solid var(--teal-border); border-radius: 15px; display: flex; flex-direction: column; gap: 8px; }
+.lookupLabel { font-size: 14.5px; font-weight: 700; }
+.lookupRow { display: flex; gap: 8px; }
+.lookupInput {
+  flex: 1; min-width: 0; min-height: 48px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 12px; background: #fff; outline: none;
+  font: inherit; font-size: 16px; font-weight: 700; letter-spacing: .05em; text-align: center; color: var(--navy); text-transform: uppercase;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+.lookupInput::placeholder { text-transform: none; color: var(--subtle); }
+.lookupInput:focus { border-color: var(--teal); }
+.lookupInput[aria-invalid] { border-color: var(--bad-input); }
+.lookupBtn {
+  flex: none; min-height: 48px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--teal-deep);
+  font: inherit; font-size: 15.5px; font-weight: 700; color: #fff; cursor: pointer; touch-action: manipulation;
+}
+.lookupBtn:disabled { background: var(--disabled); }
+
+/* Ledger as stacked cards (phones) */
+.ledger { list-style: none; margin: 0; padding: 0; background: #fff; border-block: 1px solid var(--line); }
+.ledger > li + li {
+  background-image: linear-gradient(var(--divider), var(--divider)); background-size: calc(100% - 16px) 1px;
+  background-position: top left; background-repeat: no-repeat;
+}
+.ledgerEmpty { margin: 0; padding: 22px 16px; background: #fff; border-block: 1px solid var(--line); text-align: center; font-size: 14px; color: var(--muted); }
+.row {
+  width: 100%; min-height: 72px; display: flex; flex-direction: column; gap: 3px; padding: 12px 16px;
+  border: 0; background: transparent; font: inherit; color: var(--navy); text-align: right; cursor: pointer; touch-action: manipulation;
+}
+.row:active { background: var(--bg-soft); }
+.rowTop { display: flex; align-items: center; gap: 10px; }
+.balance { flex: 1; min-width: 0; font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.of { font-size: 12.5px; font-weight: 600; color: var(--subtle); }
+.rowName { font-size: 15px; font-weight: 700; }
+.rowSub { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+
+/* One card (phones) */
+.detail { background: #fff; border-block: 1px solid var(--line); animation: bfPush .2s var(--ease-out) backwards; }
+.detailHead { padding: 18px 16px 14px; background: var(--tint); border-bottom: 1px solid var(--teal-border); display: flex; flex-direction: column; }
+.detailLabel { font-size: 13px; font-weight: 700; color: var(--teal-deep); }
+.detailValue { margin: 0; font-family: var(--font-display); font-size: 36px; font-weight: 500; line-height: 1.2; }
+.detailSub { font-size: 14px; color: var(--text); }
+.detailBody { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.fields { display: flex; flex-direction: column; gap: 12px; padding-top: 12px; border-top: 1px solid var(--divider); }
+.field { display: flex; flex-direction: column; gap: 5px; font-size: 13.5px; font-weight: 700; }
+.optional { font-weight: 500; color: var(--subtle); }
+.amountWrap { display: block; }
+.input { width: 100%; min-height: 48px; font-size: 16px; }
+.inset { margin: 0 16px 16px; }
+.skel { display: block; height: 16px; border-radius: 8px; background: linear-gradient(90deg, #EEF1F3 0%, #F6F8F9 45%, #EEF1F3 90%); background-size: 200% 100%; animation: giftSkel 1.2s ease-in-out infinite; }
+@keyframes giftSkel { from { background-position: 100% 0 } to { background-position: -100% 0 } }
+
+/* Action bar and sheet buttons */
+.barPrimary, .barDanger, .barGhost, .barDangerSolid {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px; border-radius: 12px;
+  font: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; touch-action: manipulation;
+}
+.barPrimary { border: 0; background: var(--teal-deep); color: #fff; }
+.barPrimary:disabled { background: var(--disabled); cursor: default; }
+.barDanger { flex: none; border: 1px solid var(--bad-line); background: #fff; color: var(--bad-text); }
+.barGhost { flex: none; border: 1px solid var(--line); background: #fff; font-weight: 600; color: var(--text); }
+.barDangerSolid { border: 0; background: var(--bad-text); color: #fff; }
+.barDanger:disabled, .barDangerSolid:disabled { opacity: .6; cursor: default; }
+.sheetBtns { display: flex; gap: 10px; }
+.sheetBtns > :last-child { flex: 1; }
+.sheetText { margin: 0; font-size: 15px; color: var(--text); text-wrap: pretty; }
+
+.toast {
+  position: fixed; bottom: calc(var(--bf-float-bottom) + 18px); right: 50%; transform: translateX(50%); z-index: 60;
+  max-width: min(90vw, 440px); padding: 12px 17px; border-radius: 13px; background: var(--navy); color: #fff;
+  font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(12, 36, 62, .28); text-wrap: pretty; animation: bfFade .16s ease both;
+}
+
+/* ---------- App shell (phones, touch tablets) ---------- */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .wrap { padding: 0 0 24px; }
+  .inner { padding: 0 16px; }
+  .screen[data-view='detail'] .listPane { display: none; }
+  .foot { padding: 0 16px; }
+  .seg { margin-inline: -16px; background: #fff; border-block: 1px solid var(--line); }
+  .inlineLink { display: inline-flex; align-items: center; min-height: 44px; margin-block: -12px; }
+}
+.inlineLink { color: var(--teal-deep); }
+@media (prefers-reduced-motion: reduce) {
+  .detail { animation: none; }
+}
+.inner { min-width: 0; }
+.foot { min-width: 0; }
