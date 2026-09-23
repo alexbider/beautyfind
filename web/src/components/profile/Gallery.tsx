@@ -29,31 +29,71 @@ function useLightbox() {
 /**
  * Photo grid: the cover spans two rows, up to four tiles beside it; the last tile opens "all photos".
  * Layout adapts to how many photos exist (0, 1, 2 or 4 tiles) so no empty bordered cell is left.
+ * In the app shell (phones) the same tiles become a full-bleed swipeable strip with a counter pill;
+ * photos beyond the desktop grid are rendered as extra slides that the grid hides.
  */
 export function Gallery({ photos }: { photos: Photo[] }) {
   const lb = useLightbox();
+  const strip = useRef<HTMLDivElement>(null);
+  const [cur, setCur] = useState(0);
+
+  useEffect(() => {
+    const el = strip.current;
+    if (!el) return;
+    let raf = 0;
+    const on = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        // RTL scrollLeft is 0 at the start and negative towards the end.
+        if (!el.clientWidth) return;
+        setCur(Math.round(Math.abs(el.scrollLeft) / el.clientWidth));
+      });
+    };
+    el.addEventListener('scroll', on, { passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      el.removeEventListener('scroll', on);
+    };
+  }, []);
+
   if (photos.length === 0) return null;
   const rest = photos.slice(1);
   const tiles = rest.length >= 4 ? 4 : rest.length >= 2 ? 2 : rest.length;
-  const shown = rest.slice(0, tiles);
+  const n = photos.length;
   return (
-    <>
-      <div className={styles.grid} data-tiles={tiles}>
+    <div className={styles.frame}>
+      <div ref={strip} className={styles.grid} data-tiles={tiles}>
         <button type="button" className={`${styles.tile} ${styles.primary}`} onClick={() => lb.open(0)} aria-label={`פתיחת גלריית התמונות, ${photos[0].alt}`}>
           <img src={photos[0].url} alt={photos[0].alt} fetchPriority="high" />
         </button>
-        {shown.map((p, i) => {
-          const isLast = i === shown.length - 1 && tiles >= 2;
+        {rest.map((p, j) => {
+          const i = j + 1;
+          const extra = j >= tiles;
+          const isLast = j === tiles - 1 && tiles >= 2;
           return (
-            <button key={p.url + i} type="button" className={styles.tile} onClick={() => lb.open(i + 1)} aria-label={isLast ? `כל ${photos.length} התמונות` : `פתיחת הגלריה, ${p.alt}`}>
+            <button
+              key={p.url + i}
+              type="button"
+              className={styles.tile}
+              data-extra={extra || undefined}
+              onClick={() => lb.open(i)}
+              aria-label={isLast ? `כל ${n} התמונות` : `פתיחת הגלריה, ${p.alt}`}
+            >
               <img src={p.url} alt={p.alt} loading="lazy" />
-              {isLast && <span className={styles.more}>כל {photos.length} התמונות</span>}
+              {isLast && <span className={styles.more}>כל {n} התמונות</span>}
             </button>
           );
         })}
       </div>
+      {n > 1 && (
+        <span className={styles.counter} aria-hidden="true">
+          <span className="ltr tnum">
+            {Math.min(cur, n - 1) + 1} / {n}
+          </span>
+        </span>
+      )}
       {lb.index >= 0 && <Lightbox photos={photos} index={lb.index} onIndex={lb.setIndex} onClose={lb.close} label="גלריית תמונות" />}
-    </>
+    </div>
   );
 }
 
@@ -122,6 +162,20 @@ function Lightbox({ photos, index, onIndex, onClose, label }: { photos: Photo[];
     thumbs.current?.querySelector<HTMLElement>('[aria-current="true"]')?.scrollIntoView({ block: 'nearest', inline: 'center' });
   }, [index]);
 
+  // Swipe between photos on touch screens. RTL: the next photo sits to the left, so a drag to the right brings it in.
+  const touch = useRef<{ x: number; y: number } | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => {
+    touch.current = e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const t = touch.current;
+    touch.current = null;
+    if (!t || n < 2) return;
+    const dx = e.changedTouches[0].clientX - t.x;
+    const dy = e.changedTouches[0].clientY - t.y;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) step(dx > 0 ? 1 : -1);
+  };
+
   const p = photos[index];
   return (
     <div ref={root} role="dialog" aria-modal="true" aria-label={label} className={styles.lb} onClick={onClose}>
@@ -139,7 +193,7 @@ function Lightbox({ photos, index, onIndex, onClose, label }: { photos: Photo[];
             <ArrowBack size={18} />
           </button>
         )}
-        <div key={index} className={styles.lbStage} onClick={e => e.stopPropagation()}>
+        <div key={index} className={styles.lbStage} onClick={e => e.stopPropagation()} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
           <img src={p.url} alt={p.alt} />
         </div>
         {n > 1 && (

@@ -1,7 +1,6 @@
 /* Business Profile. Design: project/BeautyFind Business Profile.dc.html.
    Breakpoints mirror the design's MQ: mid 620, desk 760, twoStep 900, wide 1024, tall (sticky card). */
 .root { overflow-x: clip; background: #ffffff; min-height: 100dvh; }
-@media (max-width: 767px) { .root { padding-bottom: 84px; } }
 .wrap { max-width: 1280px; margin: 0 auto; padding-inline: var(--gutter); }
 
 /* Breadcrumbs */
@@ -11,7 +10,7 @@
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: var(--subtle);
 }
 .crumbs a { color: var(--muted); }
-.crumbs a:hover { color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) { .crumbs a:hover { color: var(--teal-deep); } }
 .crumbs [aria-current] { color: var(--navy); font-weight: 600; }
 
 .gallery { padding-top: clamp(18px, 2.4vw, 28px); animation: bfRise .6s var(--ease-out) both; }
@@ -77,7 +76,7 @@
 .factBody dt { font-size: 12.5px; font-weight: 700; color: var(--subtle); }
 .factBody dd { margin: 0; font-size: 15.5px; font-weight: 700; line-height: 1.4; color: var(--navy); text-wrap: pretty; }
 .factBody dd a { color: var(--navy); border-bottom: 1px solid var(--line-strong); }
-.factBody dd a:hover { color: var(--teal-deep); border-color: var(--teal); }
+@media (hover: hover) and (pointer: fine) { .factBody dd a:hover { color: var(--teal-deep); border-color: var(--teal); } }
 .factNote { font-size: 13px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
 
 /* Section heads */
@@ -98,7 +97,7 @@
   display: flex; flex-direction: column; gap: 12px; padding: 18px; border: 1px solid var(--line); border-radius: 18px; background: #ffffff;
   color: inherit; transition: border-color .22s, box-shadow .22s;
 }
-.person:hover { border-color: var(--line-strong); box-shadow: 0 16px 40px rgba(12, 36, 62, .08); color: inherit; }
+@media (hover: hover) and (pointer: fine) { .person:hover { border-color: var(--line-strong); box-shadow: 0 16px 40px rgba(12, 36, 62, .08); color: inherit; } }
 .personPic { width: 64px; height: 64px; border-radius: 50%; border: 1px solid var(--line); background: repeating-linear-gradient(135deg, #EEF2F4 0 7px, #F7F9FA 7px 14px); }
 .personText { display: flex; flex-direction: column; gap: 3px; }
 .personName { font-family: var(--font-display); font-size: 20px; line-height: 1.25; }
@@ -144,7 +143,7 @@
 @media (min-width: 480px) { .similar { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 768px) and (max-width: 1023px), (min-width: 1280px) { .similar[data-n="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .simCard { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: #ffffff; color: inherit; transition: border-color .22s, box-shadow .22s, transform .22s; }
-.simCard:hover { border-color: var(--line-strong); box-shadow: var(--shadow-card); transform: translateY(-3px); color: inherit; }
+@media (hover: hover) and (pointer: fine) { .simCard:hover { border-color: var(--line-strong); box-shadow: var(--shadow-card); transform: translateY(-3px); color: inherit; } }
 .simImg { position: relative; aspect-ratio: 16 / 10; background: #EDF1F3; }
 .simImg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .simBody { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px 16px; }
@@ -179,7 +178,7 @@
   display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; border: 1px solid var(--line); border-radius: 12px; color: var(--text);
   transition: border-color .18s, color .18s, background .18s;
 }
-.social:hover { border-color: var(--teal); color: var(--teal-deep); background: var(--tint); }
+@media (hover: hover) and (pointer: fine) { .social:hover { border-color: var(--teal); color: var(--teal-deep); background: var(--tint); } }
 .gRow { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
 .gNum { font-size: 16px; font-weight: 700; }
 .gCount { font-size: 13.5px; color: var(--muted); }
@@ -188,16 +187,79 @@
 .gLink svg { flex: none; }
 .gNote { margin: 12px 0 0; font-size: 12.5px; line-height: 1.6; color: var(--subtle); text-wrap: pretty; }
 
-/* Mobile CTA bar (design: mobileBar, below 760px). */
-.bar { display: none; }
-@media (max-width: 767px) {
-  .bar {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; gap: 10px;
-    padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); background: rgba(255, 255, 255, .96);
-    border-top: 1px solid var(--line); backdrop-filter: blur(8px);
-  }
-  .bar > a { flex: 0 0 32%; min-width: 0; padding: 0 10px; }
-  .bar > button { flex: 1; min-width: 0; }
+/* ---------- App shell (phones, touch tablets): responsive spec §6 "Business Profile" ---------- */
+.tabsSlot, .detailsM { display: none; }
+
+/* "פרטים" summary rows (phone) and sheet */
+.sumCard { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: #fff; }
+.sumRow {
+  width: 100%; display: flex; align-items: center; gap: 12px; min-height: 68px; padding: 10px 16px; border: 0; background: #fff;
+  font: inherit; color: var(--navy); text-align: right; cursor: pointer;
+}
+.sumRow + .sumRow { border-top: 1px solid var(--divider); }
+.sumRow:active { background: var(--bg-page); }
+.sumIcon { flex: none; width: 38px; height: 38px; border-radius: 11px; background: var(--tint); color: var(--teal-deep); display: grid; place-items: center; }
+.sumText { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sumLabel { font-size: 12.5px; font-weight: 700; color: var(--subtle); }
+.sumValue { font-size: 15px; font-weight: 700; line-height: 1.4; text-wrap: pretty; }
+.sumOpen { font-weight: 700; color: var(--teal-deep); }
+.sumOpen[data-closed] { color: var(--muted); }
+.sumChev { flex: none; color: var(--subtle); }
+
+.sheet { display: flex; flex-direction: column; gap: 22px; padding-bottom: 8px; }
+.sheetH { margin: 0 0 10px; font-size: 15px; font-weight: 800; }
+.sheet .hours th, .sheet .hours td { padding: 12px 14px; }
+.sheetAddr { font-style: normal; font-size: 15.5px; line-height: 1.5; color: var(--text); }
+.sheetNote { margin: 6px 0 0; font-size: 13.5px; color: var(--muted); }
+.sheetBtns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.sheetBtn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 48px; padding: 0 16px;
+  border-radius: 12px; background: var(--navy); color: #fff; font-size: 15px; font-weight: 700;
+}
+.sheetBtn:hover { color: #fff; }
+.sheetDl.sheetDl { margin: 0; padding: 0; border: 0; }
+.sheetDl dd a { display: inline-flex; align-items: center; min-height: 44px; }
+
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .root { --gutter: 16px; --shell-top: calc(var(--topbar-h) + var(--safe-t)); }
+  .gallery { padding: 0; max-width: none; animation: none; }
+  .main { padding-top: 18px; gap: 0; }
+  .col { gap: 34px; }
+  .identity { gap: 14px; }
+  .idRow { gap: 12px; flex-wrap: nowrap; align-items: flex-start; }
+  .logo { width: 52px; height: 52px; border-radius: 14px; font-size: 20px; }
+  .h1 { font-size: 30px; }
+  .metaRow { gap: 8px 14px; }
+
+  /* Sticky section tabs, full bleed under the top bar (Segmented reads --shell-top). */
+  .tabsSlot { display: contents; }
+  .tabsSlot [data-profile-tabs] > * { margin-inline: calc(-1 * var(--gutter)); border-bottom: 1px solid var(--line); }
+  .detailsM { display: block; }
+
+  /* Section order on phones: טיפולים · צוות · ביקורות · פרטים, then the rest. */
+  .col > * { order: 20; }
+  .identity { order: 0; }
+  .tabsSlot [data-profile-tabs] > * { order: 1; }
+  .oServices { order: 2; }
+  .oTeam { order: 3; }
+  .oReviews { order: 4; }
+  .oDetails { order: 5; }
+  .oAbout { order: 6; }
+  .oBa { order: 7; }
+  .oFaq { order: 8; }
+  .oSimilar { order: 9; }
+
+  /* Team as full-width rows. */
+  .team { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .person { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 12px 14px; border-radius: 14px; }
+  .personPic { width: 48px; height: 48px; flex: none; }
+  .personText { flex: 1; min-width: 0; }
+  .personName { font-size: 17px; }
+  .personMore { display: none; }
+  .personBadge { margin-inline-start: 60px; }
+  .person:active { background: var(--bg-page); }
+
+  .footGap { height: 40px; }
 }
 
 /* Footer spacing (design: margin-top clamp(56px,7vw,96px)). */

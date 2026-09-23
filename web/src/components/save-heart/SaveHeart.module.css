@@ -4,7 +4,22 @@
   background: rgba(255, 255, 255, .92); backdrop-filter: blur(6px);
   box-shadow: 0 2px 8px rgba(12, 36, 62, .12); transition: transform .16s, box-shadow .16s;
 }
-.heart:hover { transform: scale(1.06); }
+@media (hover: hover) and (pointer: fine) { .heart:hover { transform: scale(1.06); } }
+.heart:active { transform: scale(.9); transition-duration: 50ms; }
 .heart path { fill: none; stroke: var(--navy); stroke-width: 1.7; stroke-linejoin: round; transition: fill .16s, stroke .16s; }
 .heart[data-on] { box-shadow: 0 0 0 3px var(--teal-border); }
 .heart[data-on] path { fill: var(--teal); stroke: var(--teal); }
+
+/* Rollback toast, above the tab bar and any action bar. */
+.toastWrap {
+  position: fixed; z-index: 70; inset-inline: 0; bottom: calc(var(--bf-float-bottom, 0px) + 18px);
+  display: flex; justify-content: center; padding: 0 16px; pointer-events: none;
+}
+.toast {
+  max-width: min(90vw, 420px); padding: 12px 17px; border-radius: 13px; background: var(--navy); color: #fff;
+  font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(12, 36, 62, .28); animation: shToast .16s ease both;
+}
+@keyframes shToast { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .toastWrap { bottom: calc(var(--bf-float-bottom, 0px) + 12px); }
+}

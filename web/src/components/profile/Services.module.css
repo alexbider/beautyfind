@@ -3,7 +3,7 @@
   border: 1px solid var(--line); border-radius: 18px; background: #ffffff; overflow: hidden;
   transition: border-color .22s, box-shadow .22s;
 }
-.card:hover { border-color: var(--line-strong); box-shadow: 0 16px 40px rgba(12, 36, 62, .08); }
+@media (hover: hover) and (pointer: fine) { .card:hover { border-color: var(--line-strong); box-shadow: 0 16px 40px rgba(12, 36, 62, .08); } }
 .card[data-open] { border-color: var(--teal); }
 .h { margin: 0; font-size: 18px; font-weight: 700; }
 .toggle {
@@ -44,4 +44,4 @@
   display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 11px;
   background: #ffffff; font: inherit; font-size: 14px; font-weight: 700; color: var(--navy); cursor: pointer; transition: border-color .18s, color .18s;
 }
-.ask:hover { border-color: var(--teal); color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) { .ask:hover { border-color: var(--teal); color: var(--teal-deep); } }

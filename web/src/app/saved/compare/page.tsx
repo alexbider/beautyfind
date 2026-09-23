@@ -24,7 +24,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
 
   return (
     <div className={styles.page}>
-      <SiteHeader variant="public" />
+      <SiteHeader variant="public" title="השוואת קליניקות" backHref={ids.length ? `/saved?ids=${ids.join(',')}` : '/saved'} />
       <main className={styles.wrap}>
         <CompareView cols={cols} />
       </main>

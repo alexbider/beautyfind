@@ -30,7 +30,7 @@
   width: 100%; display: flex; align-items: center; gap: 9px; min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px;
   background: transparent; font: inherit; font-size: 14px; font-weight: 700; color: var(--text); text-align: right; cursor: pointer;
 }
-.navBtn:hover { background: var(--bg-page); }
+@media (hover: hover) and (pointer: fine) { .navBtn:hover { background: var(--bg-page); } }
 .navBtn[aria-current='page'] { background: var(--tint); color: var(--teal-deep); }
 .navName { flex: 1; min-width: 0; }
 .badge {
@@ -44,7 +44,7 @@
   width: 100%; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 11px; background: #fff;
   font: inherit; font-size: 14px; font-weight: 700; color: var(--text); cursor: pointer;
 }
-.logout:hover { border-color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .logout:hover { border-color: var(--navy); } }
 @media (min-width: 1024px) {
   .navCard { display: block; }
   .sideNote { display: block; }
@@ -109,17 +109,17 @@
   font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; text-decoration: none;
 }
 .btnPrimary { min-height: 48px; padding: 0 17px; border: 0; border-radius: 12px; background: var(--teal-deep); font-size: 15px; color: #fff; }
-.btnPrimary:hover:not(:disabled) { background: var(--navy); color: #fff; }
+@media (hover: hover) and (pointer: fine) { .btnPrimary:hover:not(:disabled) { background: var(--navy); color: #fff; } }
 .btnPrimary:disabled { background: var(--disabled); cursor: default; }
 .btnPrimarySm { border: 0; background: var(--teal-deep); color: #fff; }
-.btnPrimarySm:hover { background: var(--navy); color: #fff; }
+@media (hover: hover) and (pointer: fine) { .btnPrimarySm:hover { background: var(--navy); color: #fff; } }
 .btnGhost { border: 1px solid var(--line); background: #fff; color: var(--text); }
-.btnGhost:hover { border-color: var(--navy); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .btnGhost:hover { border-color: var(--navy); color: var(--navy); } }
 .btnTint { border: 0; background: var(--tint); color: var(--teal-deep); }
 .btnLink { border: 0; background: transparent; color: var(--teal-deep); padding: 0 10px; }
-.btnLink:hover { color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .btnLink:hover { color: var(--navy); } }
 .btnGhostLg { font-size: 14px; border: 1px solid var(--line); background: #fff; color: var(--text); }
-.btnGhostLg:hover { border-color: var(--navy); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .btnGhostLg:hover { border-color: var(--navy); color: var(--navy); } }
 .btnDangerSoft { font-size: 14px; border: 1px solid var(--bad-line); background: var(--bad-bg); color: var(--bad-text); }
 .btnLinkLg { font-size: 14px; border: 0; background: transparent; color: var(--teal-deep); padding: 0 12px; }
 
@@ -134,12 +134,12 @@
 .cardHead { display: flex; align-items: flex-start; gap: 9px; flex-wrap: wrap; }
 .cardTitle { flex: 1; min-width: 140px; margin: 0; font-size: 16px; font-weight: 700; text-wrap: pretty; }
 .cardTitle a { color: var(--navy); }
-.cardTitle a:hover { color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) { .cardTitle a:hover { color: var(--teal-deep); } }
 .x {
   flex: none; width: 44px; height: 44px; margin: -6px -6px -6px 0; border: 1px solid var(--line); border-radius: 10px; background: #fff;
   font: inherit; font-size: 17px; color: var(--muted); cursor: pointer;
 }
-.x:hover { border-color: var(--navy); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .x:hover { border-color: var(--navy); color: var(--navy); } }
 .ratings { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13.5px; font-weight: 700; color: var(--teal-deep); }
 .count { font-weight: 500; color: var(--subtle); }
 .resp { margin: 0; padding-top: 8px; border-top: 1px solid var(--divider); font-size: 12.5px; color: var(--muted); text-wrap: pretty; }
@@ -205,3 +205,35 @@
 .actionsWrap { display: flex; gap: 8px; flex-wrap: wrap; }
 
 @keyframes acFade { from { opacity: 0; transform: translateY(7px) } to { opacity: 1; transform: none } }
+
+/* Appointments: groups are transparent on desktop (one list); phones switch between them. */
+.segSlot { display: none; }
+.grpUp, .grpPast { display: contents; }
+.quick { display: flex; flex-direction: column; margin-top: 18px; background: #fff; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.quickRow {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 0 16px;
+  font-size: 15.5px; font-weight: 700; color: var(--navy);
+}
+.quickRow + .quickRow { border-top: 1px solid var(--divider); }
+.quickRow svg { flex: none; color: var(--subtle); }
+.quickRow:active { background: var(--bg-page); }
+
+/* ---------- App shell (phones, touch tablets): responsive spec §6 "Account" = the "התורים שלי" tab ---------- */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .page { --shell-top: calc(var(--topbar-h) + var(--safe-t)); background: #fff; }
+  .shell { padding: 0 16px 32px; }
+  .side, .tabs { display: none; }
+  .titleBlock .h1 { display: none; }
+  .titleBlock { margin: 6px 0 12px; }
+  .lead { font-size: 14px; color: var(--muted); }
+  .segSlot { display: contents; }
+  .segSlot > * { margin: 0 -16px; }
+  .stack[data-seg='up'] .grpPast, .stack[data-seg='past'] .grpUp { display: none; }
+  .grpPast .sectionHead { display: none; }
+  .stack { gap: 12px; }
+  .apptTop { padding: 14px; gap: 12px; }
+  .dateBox { width: 56px; min-height: 56px; }
+  .apptActions { padding: 10px 14px; gap: 8px; }
+  .apptActions > a { flex: 1 1 auto; min-height: 44px; }
+  .ref { flex-basis: 100%; margin: 0; }
+}

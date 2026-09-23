@@ -29,8 +29,10 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
 
   return (
     <div className={styles.page}>
-      <SiteHeader variant="public" />
-      <AccountView data={data} initialTab={tab} />
+      <div className="bf-desk-only">
+        <SiteHeader variant="public" />
+      </div>
+      <AccountView key={tab} data={data} initialTab={tab} />
       <SiteFooter wide note="מידע כללי בלבד, לא ייעוץ רפואי" />
     </div>
   );

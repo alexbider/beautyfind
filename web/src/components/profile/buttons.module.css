@@ -8,17 +8,19 @@
 .btn[data-size="lg"] { min-height: 52px; border-radius: 13px; font-size: 16px; }
 .btn[data-size="sm"] { min-height: 44px; padding: 0 14px; border-radius: 11px; font-size: 14.5px; }
 .btn svg { flex: none; }
+/* Icon-only square (sticky action bar on phones). */
+.btn[data-icon] { flex: none; width: 52px; min-width: 52px; padding: 0; }
 
 .wa { border-color: var(--wa-line); background: var(--wa-bg); color: var(--wa-text); }
 .wa svg { color: var(--wa-glyph); }
-.wa:hover { background: #DDF2E5; border-color: #9ED9B3; color: var(--wa-text); }
+@media (hover: hover) and (pointer: fine) { .wa:hover { background: #DDF2E5; border-color: #9ED9B3; color: var(--wa-text); } }
 
 .call { border-color: var(--line-strong); background: #ffffff; color: var(--navy); }
 .call svg { color: var(--teal-deep); }
-.call:hover { background: var(--tint); border-color: var(--teal-light); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .call:hover { background: var(--tint); border-color: var(--teal-light); color: var(--navy); } }
 
 .waze { border-color: var(--line); background: #ffffff; color: var(--navy); }
-.waze:hover { border-color: var(--teal); color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) { .waze:hover { border-color: var(--teal); color: var(--teal-deep); } }
 
 .num { font-weight: 600; opacity: .75; font-variant-numeric: tabular-nums; }
 
@@ -29,12 +31,12 @@
   font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;
   transition: background .18s, color .18s, transform .18s;
 }
-.primary:hover { background: var(--teal); color: var(--navy); transform: translateY(-2px); }
+@media (hover: hover) and (pointer: fine) { .primary:hover { background: var(--teal); color: var(--navy); transform: translateY(-2px); } }
 .primary svg { flex: none; }
 /* Second action next to a primary one (e.g. contact form under online booking). */
 .primary[data-tone="quiet"] { background: #ffffff; color: var(--navy); box-shadow: inset 0 0 0 1px var(--line-strong); }
-.primary[data-tone="quiet"]:hover { background: var(--bg-soft); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .primary[data-tone="quiet"]:hover { background: var(--bg-soft); color: var(--navy); } }
 .primary[data-size="lg"] { min-height: 52px; }
 .primary[data-size="lg"]:hover { transform: none; }
 .primary[data-tone="teal"] { width: auto; min-height: 48px; border-radius: 12px; background: var(--teal-deep); font-size: 15.5px; }
-.primary[data-tone="teal"]:hover { background: var(--navy); color: #ffffff; transform: none; }
+@media (hover: hover) and (pointer: fine) { .primary[data-tone="teal"]:hover { background: var(--navy); color: #ffffff; transform: none; } }

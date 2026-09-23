@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { createPortal } from 'react-dom';
+import { haptic } from '../shell/haptics';
 import { mergeLocalSaved, setSavedAction } from '../saved/actions';
 import styles from './SaveHeart.module.css';
 
@@ -130,34 +132,61 @@ export function useSavedIds(): SavedSnapshot {
   return s;
 }
 
+/** Toggle is optimistic (the store flips first); resolves false when the server refused and it rolled back. */
 export function useSaved(id: string) {
   const { ids } = useSavedIds();
   const saved = ids.includes(id);
-  return { saved, toggle: () => void setSaved(id, !saved) };
+  return { saved, toggle: () => setSaved(id, !saved) };
 }
 
 /**
  * Save heart (07-rules component spec): 44px circle, translucent white + blur, navy outline when off,
  * teal filled with a #CDEFF3 ring when on. Stops click propagation so it works inside a card link.
+ * Instant feedback (light haptic, optimistic fill); a refused write rolls back with a toast above the bars.
  */
 export function SaveHeart({ id, name, className }: { id: string; name: string; className?: string }) {
   const { saved, toggle } = useSaved(id);
+  const [toast, setToast] = useState<string | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (timer.current) clearTimeout(timer.current);
+  }, []);
+
+  const onClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    haptic('light');
+    const wasSaved = saved;
+    void toggle().then(ok => {
+      if (ok) return;
+      if (timer.current) clearTimeout(timer.current);
+      setToast(wasSaved ? 'לא הצלחנו להסיר מהשמורות. נסו שוב.' : 'לא הצלחנו לשמור. נסו שוב.');
+      timer.current = setTimeout(() => setToast(null), 3200);
+    });
+  };
+
   return (
-    <button
-      type="button"
-      className={`${styles.heart} ${className ?? ''}`}
-      data-on={saved || undefined}
-      aria-pressed={saved}
-      aria-label={saved ? `הסרה מהשמורים: ${name}` : `שמירה: ${name}`}
-      onClick={e => {
-        e.preventDefault();
-        e.stopPropagation();
-        toggle();
-      }}
-    >
-      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 20.3s-7.6-4.6-7.6-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.6 2.5c0 5.6-7.6 10.2-7.6 10.2z" />
-      </svg>
-    </button>
+    <>
+      <button
+        type="button"
+        className={`${styles.heart} ${className ?? ''}`}
+        data-on={saved || undefined}
+        aria-pressed={saved}
+        aria-label={saved ? `הסרה מהשמורים: ${name}` : `שמירה: ${name}`}
+        onClick={onClick}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 20.3s-7.6-4.6-7.6-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.6 2.5c0 5.6-7.6 10.2-7.6 10.2z" />
+        </svg>
+      </button>
+      {/* Portal: a heart inside a transformed card would otherwise position the toast against the card. */}
+      {toast &&
+        createPortal(
+          <div className={styles.toastWrap} role="status" aria-live="polite">
+            <div className={styles.toast}>{toast}</div>
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }

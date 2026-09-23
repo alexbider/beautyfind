@@ -5,6 +5,9 @@ import { useEffect, useState } from 'react';
 import { requestDeletionAction, setConsentAction, updateNameAction } from '@/app/account/actions';
 import { relHe } from '@/components/profile/format';
 import { setSaved } from '../save-heart/SaveHeart';
+import { PullToRefresh } from '../shell/PullToRefresh';
+import { Segmented } from '../shell/Segmented';
+import { SearchIcon, TopBar } from '../shell/TopBar';
 import { ratingText } from '../saved/types';
 import type { AccountData, ApptView, ConsentsView, Tone } from './data';
 import { ConfirmDialog, Switch, Toast, useToast } from './ui';
@@ -81,7 +84,17 @@ export function AccountView({ data, initialTab }: { data: AccountData; initialTa
     });
   };
 
+  // App shell: "התורים שלי" is a tab root; the other sections are pushed screens reached from "עוד".
+  const topBar =
+    tab === 'appts' ? (
+      <TopBar mode="root" largeTitle="התורים שלי" actions={[{ label: 'חיפוש', href: '/search', icon: SearchIcon }]} />
+    ) : (
+      <TopBar mode="pushed" title={META[tab][0]} backHref="/more" />
+    );
+
   return (
+    <>
+    {topBar}
     <div className={styles.shell}>
       <aside className={styles.side} aria-label="החשבון">
         <div className={styles.who}>
@@ -126,24 +139,7 @@ export function AccountView({ data, initialTab }: { data: AccountData; initialTa
           <p className={styles.lead}>{META[tab][1]}</p>
         </div>
 
-        {tab === 'appts' && (
-          <div className={styles.stack} key="appts">
-            {data.upcoming.map(a => <Appt key={a.id} a={a} />)}
-            {data.upcoming.length === 0 && (
-              <div className={styles.empty}>
-                <p className={styles.emptyTitle}>אין תורים עתידיים</p>
-                <p className={styles.emptyText}>מצאו קליניקה מאומתת באזור שלכם וקבעו תור.</p>
-                <Link href="/search" className={styles.btnPrimary}>חיפוש קליניקה</Link>
-              </div>
-            )}
-            {data.past.length > 0 && (
-              <>
-                <h2 className={styles.sectionHead}>תורים קודמים וביטולים</h2>
-                {data.past.map(a => <Appt key={a.id} a={a} />)}
-              </>
-            )}
-          </div>
-        )}
+        {tab === 'appts' && <Appointments key="appts" data={data} />}
 
         {tab === 'saved' && (
           <div key="saved">
@@ -219,6 +215,66 @@ export function AccountView({ data, initialTab }: { data: AccountData; initialTa
 
       <Toast toast={toast} onHide={hide} />
     </div>
+    </>
+  );
+}
+
+/** Appointments: both lists on desktop; on phones an upcoming / past segmented control, pull to refresh, quick links. */
+function Appointments({ data }: { data: AccountData }) {
+  const [seg, setSeg] = useState<'up' | 'past'>('up');
+  return (
+    <PullToRefresh>
+      <div className={styles.stack} data-seg={seg}>
+        <div className={styles.segSlot}>
+          <Segmented
+            sticky
+            label="התורים שלי"
+            value={seg}
+            onChange={k => setSeg(k as 'up' | 'past')}
+            items={[
+              { key: 'up', label: 'קרובים', count: data.upcoming.length },
+              { key: 'past', label: 'קודמים', count: data.past.length },
+            ]}
+          />
+        </div>
+        <div className={styles.grpUp}>
+          {data.upcoming.map(a => <Appt key={a.id} a={a} />)}
+          {data.upcoming.length === 0 && (
+            <div className={styles.empty}>
+              <p className={styles.emptyTitle}>אין תורים עתידיים</p>
+              <p className={styles.emptyText}>מצאו קליניקה מאומתת באזור שלכם וקבעו תור.</p>
+              <Link href="/search" className={styles.btnPrimary}>חיפוש קליניקה</Link>
+            </div>
+          )}
+        </div>
+        <div className={styles.grpPast}>
+          {data.past.length > 0 ? (
+            <>
+              <h2 className={styles.sectionHead}>תורים קודמים וביטולים</h2>
+              {data.past.map(a => <Appt key={a.id} a={a} />)}
+            </>
+          ) : (
+            <div className={`${styles.empty} bf-shell-only`}>
+              <p className={styles.emptyTitle}>אין עדיין תורים קודמים</p>
+              <p className={styles.emptyText}>טיפולים שהסתיימו ותורים שבוטלו יופיעו כאן.</p>
+            </div>
+          )}
+        </div>
+        <nav aria-label="עוד בחשבון" className={`${styles.quick} bf-shell-only`}>
+          <Link href="/saved" className={styles.quickRow}>קליניקות שמורות<QuickChevron /></Link>
+          <Link href="/account?tab=reviews" className={styles.quickRow}>הביקורות שלי<QuickChevron /></Link>
+          <Link href="/account?tab=settings" className={styles.quickRow}>הגדרות ופרטיות<QuickChevron /></Link>
+        </nav>
+      </div>
+    </PullToRefresh>
+  );
+}
+
+function QuickChevron() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M15 5l-7 7 7 7" />
+    </svg>
   );
 }
 

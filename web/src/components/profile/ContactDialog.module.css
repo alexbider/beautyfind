@@ -14,13 +14,17 @@
   @keyframes cdUp { from { opacity: 0; transform: translateY(24px) } to { opacity: 1; transform: none } }
 }
 
+/* Phone: the same content inside the shared BottomSheet (title and close come from the sheet). */
+.sheetBody { padding-bottom: 8px; }
+.sheetBody .sub { margin-bottom: 14px; }
+
 .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 6px; }
 .title { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 25px; line-height: 1.2; letter-spacing: -0.012em; text-wrap: balance; }
 .close {
   flex: none; width: 44px; height: 44px; margin: -6px 0 0 -6px; display: inline-flex; align-items: center; justify-content: center;
   border: 0; border-radius: 12px; background: var(--bg-page); color: var(--muted); cursor: pointer; transition: background .18s, color .18s;
 }
-.close:hover { background: var(--tint); color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) { .close:hover { background: var(--tint); color: var(--teal-deep); } }
 .sub { margin: 0 0 18px; font-size: 14.5px; line-height: 1.6; color: var(--muted); text-wrap: pretty; }
 
 .form { display: flex; flex-direction: column; gap: 14px; }
@@ -56,7 +60,7 @@
   display: flex; align-items: center; justify-content: center; width: 100%; min-height: 52px; border: 0; border-radius: 12px;
   background: var(--teal-deep); color: #ffffff; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; transition: background .18s;
 }
-.submit:hover { background: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .submit:hover { background: var(--navy); } }
 .submit:disabled { background: var(--disabled); cursor: default; }
 .fine { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--subtle); text-wrap: pretty; }
 .fine a { color: var(--teal-deep); font-weight: 700; }
@@ -76,4 +80,4 @@
   min-height: 48px; margin-top: 8px; padding: 0 22px; border: 1px solid var(--line); border-radius: 12px; background: #ffffff;
   font: inherit; font-size: 15px; font-weight: 700; color: var(--text); cursor: pointer; transition: border-color .18s;
 }
-.doneBtn:hover { border-color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .doneBtn:hover { border-color: var(--navy); } }
