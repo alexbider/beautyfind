@@ -3,7 +3,7 @@
 // Plans and sponsored rules follow 08-open-decisions.md A3 and 07-rules-and-tokens.md.
 
 import { nis } from '@/lib/format';
-import { PLAN_MONTHLY_NIS, YEARLY_MULTIPLIER } from '@/lib/pricing';
+import { PLAN_MONTHLY_NIS, YEARLY_MULTIPLIER, PLATFORM_BILLING_LINE } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
 import type { ContentView, Faq, Plan } from '../types';
 import { LIVE_COUNT } from './about';
@@ -28,7 +28,7 @@ export const PLANS: Plan[] = [
     tag: 'רישום',
     name: 'רישום בסיסי',
     price: basic,
-    unit: 'לסניף מפורסם, לחודש · לא כולל מע״מ',
+    unit: 'לסניף מפורסם, לחודש · ללא מע״מ ישראלי',
     items: [
       'פרופיל מאומת, גלריה ותפריט מחירים',
       'קביעת תור אונליין עם סנכרון יומן',
@@ -41,7 +41,7 @@ export const PLANS: Plan[] = [
     tag: 'רישום',
     name: 'רישום מתקדם + CRM',
     price: advanced,
-    unit: 'לסניף מפורסם, לחודש · לא כולל מע״מ',
+    unit: 'לסניף מפורסם, לחודש · ללא מע״מ ישראלי',
     items: [
       'כל מה שבמסלול הבסיסי',
       'יומן, CRM, הצהרות בריאות ורישום קליני',
@@ -54,7 +54,7 @@ export const PLANS: Plan[] = [
     tag: 'ממומן',
     name: 'מקום ממומן ברשימה',
     price: `${nis(SPONSORED_WEEK_NIS.from)}–${nis(SPONSORED_WEEK_NIS.to)}`,
-    unit: 'לשבוע · לפי אזור ותחום · לא כולל מע״מ',
+    unit: 'לשבוע · לפי אזור ותחום · ללא מע״מ ישראלי',
     sponsored: true,
     items: [
       'כרטיס ברשימת אזור ותחום, מסומן תמיד "ממומן"',
@@ -77,7 +77,7 @@ export const SPONSORSHIP_FAQS: Faq[] = [
   },
   {
     q: 'יש עמלה על תורים, מקדמות או שוברי מתנה?',
-    a: `לא. התשלום היחיד לרישום הוא המנוי החודשי לכל סניף מפורסם: ${basic} במסלול הבסיסי או ${advanced} במסלול המתקדם עם CRM, לא כולל מע״מ. מנוי שנתי עולה כמו ${YEARLY_MULTIPLIER} חודשים, וסניף בטיוטה אינו מחויב.`,
+    a: `לא. התשלום היחיד לרישום הוא המנוי החודשי לכל סניף מפורסם: ${basic} במסלול הבסיסי או ${advanced} במסלול המתקדם עם CRM, ללא מע״מ ישראלי. מנוי שנתי עולה כמו ${YEARLY_MULTIPLIER} חודשים, וסניף בטיוטה אינו מחויב.`,
   },
   {
     q: 'מה קורה אם אני משנה מחירים?',
@@ -114,7 +114,7 @@ export const STANDARDS_VIEWS: Record<StandardsKey, ContentView<StandardsKey>> = 
     },
     cta: {
       title: 'עומדים בתקן?',
-      body: `פרופיל מאומת עם תפריט טיפולים ומחירים, קביעת תור אונליין, WhatsApp וקישור Waze. ${basic} או ${advanced} לסניף לחודש, לא כולל מע״מ, בלי עמלות וללא התחייבות.`,
+      body: `פרופיל מאומת עם תפריט טיפולים ומחירים, קביעת תור אונליין, WhatsApp וקישור Waze. ${basic} או ${advanced} לסניף לחודש, ללא מע״מ ישראלי, בלי עמלות וללא התחייבות.`,
       primary: { label: 'רישום עסק', href: ROUTES.forBusiness },
       secondary: { label: 'דברו איתנו', href: ROUTES.contact },
     },
@@ -298,7 +298,7 @@ export const STANDARDS_VIEWS: Record<StandardsKey, ContentView<StandardsKey>> = 
           {
             kind: 'paras',
             paras: [
-              `כל המחירים בשקלים ולא כולל מע״מ, בלי עמלות על תורים, מקדמות או שוברי מתנה. רישום מחויב לכל סניף מפורסם לחודש, ומנוי שנתי עולה כמו ${YEARLY_MULTIPLIER} חודשים; סניף בטיוטה אינו מחויב. מקום ממומן מחויב לשבוע, בנפרד מהמנוי. חשבונית מס נשלחת אוטומטית בכל חיוב.`,
+              `כל המחירים בשקלים, בלי עמלות על תורים, מקדמות או שוברי מתנה. רישום מחויב לכל סניף מפורסם לחודש, ומנוי שנתי עולה כמו ${YEARLY_MULTIPLIER} חודשים; סניף בטיוטה אינו מחויב. מקום ממומן מחויב לשבוע, בנפרד מהמנוי. ${PLATFORM_BILLING_LINE}`,
             ],
           },
           { kind: 'plans', plans: PLANS },

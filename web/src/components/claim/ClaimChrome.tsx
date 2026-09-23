@@ -47,7 +47,7 @@ export function ClaimFooter() {
         <div className={styles.footerAbout}>
           <Wordmark size={26} onDark />
           <p>
-            אישור בעלות חינם. רישום מלא <span className="ltr">{nis(PLAN_MONTHLY_NIS.basic)}</span> לחודש, לא כולל מע״מ, ללא התחייבות.
+            אישור בעלות חינם. רישום מלא <span className="ltr">{nis(PLAN_MONTHLY_NIS.basic)}</span> לחודש, ללא מע״מ ישראלי וללא התחייבות.
           </p>
         </div>
         <nav aria-label="קישורים לעסקים" className={styles.footerNav}>

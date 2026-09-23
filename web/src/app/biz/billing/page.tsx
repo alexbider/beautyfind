@@ -8,7 +8,7 @@ import b from '@/components/dashboard/billing/billing.module.css';
 import { PlanPicker, type PlanCard } from '@/components/dashboard/billing/PlanPicker';
 import { tabGuard } from '@/components/dashboard/guard';
 import { ReadOnlyBanner } from '@/components/dashboard/ReadOnlyBanner';
-import { PLAN_MONTHLY_NIS, planPrice, VAT_RATE, YEARLY_MULTIPLIER, type PlanKey } from '@/lib/pricing';
+import { PLAN_MONTHLY_NIS, PLATFORM_BILLING_LINE, PLATFORM_PRICE_NOTE, planPrice, YEARLY_MULTIPLIER, type PlanKey } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
 
 // Design: project/BeautyFind Dashboard.dc.html (isBilling; PLANS, INVOICES, QUARTERS, SPEND)
@@ -57,17 +57,16 @@ export default async function BillingPage() {
   const nextPlan: PlanKey | null = sub ? (sub.pendingPlan ?? sub.plan) : null;
   const periodEnd = sub?.currentPeriodEnd ? dateIL(sub.currentPeriodEnd) : null;
   const unit = nextPlan ? planPrice(nextPlan, cycle) : 0;
+  // Israfind Group charges no Israeli VAT, so the plan total is the amount charged.
   const netAg = unit * 100 * billed;
-  const vatAg = Math.round(netAg * VAT_RATE);
-  const grossAg = netAg + vatAg;
-  const vatPct = Math.round(VAT_RATE * 100);
+  const grossAg = netAg;
   const nextName = PLANS.find(p => p.key === nextPlan)?.name ?? '';
 
   const cards: PlanCard[] = PLANS.map(p => ({
     ...p,
     rank: RANK[p.key],
     price: '₪' + nf(planPrice(p.key, cycle)),
-    per: cycle === 'yearly' ? 'לשנה לכל סניף · לא כולל מע״מ' : 'לחודש לכל סניף · לא כולל מע״מ',
+    per: `${cycle === 'yearly' ? 'לשנה' : 'לחודש'} לכל סניף · ${PLATFORM_PRICE_NOTE}`,
   }));
 
   const yearlyUnit = plan ? planPrice(sub?.pendingPlan ?? plan, 'yearly') : 0;
@@ -83,7 +82,7 @@ export default async function BillingPage() {
         <div style={{ marginBottom: 14 }}>
           <h1 id="h-bill" className={ui.h1}>מנוי וחשבונות<span>.</span></h1>
           <p className={ui.h1Sub}>
-            כל הסכומים בשקלים ואינם כוללים מע״מ. חשבונית מס נשלחת אוטומטית לדואר האלקטרוני ביום החיוב, ואפשר להפנות אותה ישירות למשרד ראיית החשבון.
+            כל הסכומים בשקלים. החשבונית נשלחת אוטומטית לדואר האלקטרוני ביום החיוב, ואפשר להפנות אותה ישירות למשרד ראיית החשבון. {PLATFORM_BILLING_LINE}
           </p>
         </div>
 
@@ -123,8 +122,6 @@ export default async function BillingPage() {
               <dl className={b.sum}>
                 <dt>{nextName || 'מנוי'} · <Count n={billed} one="סניף פעיל אחד" two="שני סניפים פעילים" many="סניפים פעילים" /></dt>
                 <dd>{money(netAg)}</dd>
-                <dt>מע״מ <span className="ltr">{vatPct}%</span></dt>
-                <dd>{money(vatAg)}</dd>
               </dl>
               <div className={b.total}>
                 <span className={b.totalLabel}>
@@ -170,7 +167,7 @@ export default async function BillingPage() {
           <div className={ui.cardHead}>
             <div style={{ minWidth: 0 }}>
               <h2 className={ui.h2Tight}>הנהלת חשבונות</h2>
-              <p className={ui.meta}>פרטי החשבונית וריכוז רבעוני לדיווח מע״מ</p>
+              <p className={ui.meta}>פרטי החשבונית וריכוז רבעוני לראיית החשבון</p>
             </div>
           </div>
           <BillingDetails
@@ -180,11 +177,11 @@ export default async function BillingPage() {
           <div className={b.table}>
             <div aria-hidden="true" className={b.qHead}>
               <span>רבעון</span>
-              <span>לפני מע״מ</span>
-              <span>מע״מ</span>
+              <span>חשבוניות</span>
+              <span>מסלול</span>
               <span>סה״כ</span>
             </div>
-            {/* TODO(payments): quarterly totals from BeautyFind tax invoices, with CSV export per quarter. */}
+            {/* TODO(payments): quarterly totals from Israfind Group invoices, with CSV export per quarter. */}
             <p className={ui.emptyRow}>הריכוז הרבעוני יופיע כאן אחרי החיוב הראשון.</p>
           </div>
           <p className={ui.insight} style={{ marginTop: 14, lineHeight: 1.7 }}>

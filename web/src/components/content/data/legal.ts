@@ -5,7 +5,7 @@
 // Generic text under Israeli law, approved by the company on 2026-09-23. Bump DOC_UPDATED on any material change.
 
 import { nis } from '@/lib/format';
-import { PLAN_MONTHLY_NIS, YEARLY_MULTIPLIER } from '@/lib/pricing';
+import { PLAN_MONTHLY_NIS, YEARLY_MULTIPLIER, PLATFORM_BILLING_LINE } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
 import { COMPANY, DOC_UPDATED, MAIL, PENDING, PENDING_REVIEW, formatDate, orPending } from '../meta';
 import type { ContentView, Table } from '../types';
@@ -404,7 +404,7 @@ export const LEGAL_VIEWS: Record<LegalKey, ContentView<LegalKey>> = {
             items: [
               {
                 name: 'מסלולים',
-                body: `רישום בסיסי ${nis(PLAN_MONTHLY_NIS.basic)} או רישום מתקדם + CRM ${nis(PLAN_MONTHLY_NIS.advanced)}, לכל סניף מפורסם לחודש, לא כולל מע״מ. מנוי שנתי עולה כמו ${YEARLY_MULTIPLIER} חודשים. סניף בטיוטה אינו מחויב, ואין עמלות על תורים, מקדמות או שוברי מתנה.`,
+                body: `רישום בסיסי ${nis(PLAN_MONTHLY_NIS.basic)} או רישום מתקדם + CRM ${nis(PLAN_MONTHLY_NIS.advanced)}, לכל סניף מפורסם לחודש. מנוי שנתי עולה כמו ${YEARLY_MULTIPLIER} חודשים. סניף בטיוטה אינו מחויב, ואין עמלות על תורים, מקדמות או שוברי מתנה. ${PLATFORM_BILLING_LINE}`,
               },
               {
                 name: 'שינוי מסלול',

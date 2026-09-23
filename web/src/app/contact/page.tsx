@@ -56,7 +56,7 @@ const STATS: Array<{ label: string; value: string }> = [
 const SHORTCUTS = [
   {
     q: 'איך רושמים עסק?',
-    a: `התהליך, מה נדרש, ומה זה עולה: ${nis(PLAN_MONTHLY_NIS.basic)} או ${nis(PLAN_MONTHLY_NIS.advanced)} לסניף לחודש, לפני מע״מ.`,
+    a: `התהליך, מה נדרש, ומה זה עולה: ${nis(PLAN_MONTHLY_NIS.basic)} או ${nis(PLAN_MONTHLY_NIS.advanced)} לסניף לחודש, ללא מע״מ ישראלי.`,
     label: 'לעמוד הרישום',
     href: ROUTES.forBusiness,
   },

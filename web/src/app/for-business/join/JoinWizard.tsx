@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition, type 
 import { Wordmark } from '@/components/Wordmark';
 import { CATEGORIES, CITIES, REGIONS, regionBySlug, type RegionSlug } from '@/lib/catalog';
 import { nis } from '@/lib/format';
-import { PLAN_MONTHLY_NIS, type PlanKey } from '@/lib/pricing';
+import { PLAN_MONTHLY_NIS, PLATFORM_PRICE_NOTE, type PlanKey } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
 import { PhotoSlot } from './PhotoSlot';
 import { submitJoin, uploadJoinFile } from './actions';
@@ -819,7 +819,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
                 </div>
                 <span className={styles.planName}>{PLAN_NAMES[plan]}</span>
                 <span className={styles.planPrice}>
-                  <span className="ltr">{nis(PLAN_MONTHLY_NIS[plan])}</span> לחודש לכל סניף, לא כולל מע״מ
+                  <span className="ltr">{nis(PLAN_MONTHLY_NIS[plan])}</span> לחודש לכל סניף, {PLATFORM_PRICE_NOTE}
                 </span>
                 <span className={styles.planNote}>סניף בטיוטה לא מחויב. החיוב מתחיל כשהכרטיס מתפרסם.</span>
               </div>

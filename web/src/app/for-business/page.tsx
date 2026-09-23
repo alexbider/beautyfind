@@ -6,7 +6,7 @@ import { ArrowForward, Check, PathIcon, Stars } from '@/components/icons';
 import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { nis } from '@/lib/format';
-import { PLAN_MONTHLY_NIS, type PlanKey } from '@/lib/pricing';
+import { PLAN_MONTHLY_NIS, PLATFORM_BILLING_LINE, PLATFORM_PRICE_NOTE, type PlanKey } from '@/lib/pricing';
 import { ROUTES, joinWithPlan } from '@/lib/routes';
 import styles from './page.module.css';
 
@@ -73,7 +73,7 @@ const PRICING_NOTES = [
   'בלי עמלות ובלי אחוזים על תורים. מה שהלקוח משלם לכם נשאר אצלכם.',
   'החיוב הוא לפי סניף מפורסם. סניף בטיוטה לא מחויב.',
   'אפשר לעבור בין המסלולים בכל חודש, והמידע נשמר.',
-  'חשבונית מס נשלחת אוטומטית בכל חיוב, לשם העוסק או החברה.',
+  'חשבונית נשלחת אוטומטית בכל חיוב, מ־Israfind Group (דלאוור, ארה״ב), בלי מע״מ ישראלי.',
   'ביטול בכל עת מתוך אזור בעלי העסקים, בלי שיחות ובלי התחייבות.',
 ];
 
@@ -132,7 +132,7 @@ const FAQS = [
   },
   {
     q: 'איך עובד החיוב והחשבונית?',
-    a: `מנוי אחד לכל העסק, לפי מספר הסניפים המפורסמים: ${nis(PLAN_MONTHLY_NIS.basic)} לסניף במסלול הבסיסי או ${nis(PLAN_MONTHLY_NIS.advanced)} לסניף במסלול המתקדם עם CRM, לא כולל מע״מ. סניף בטיוטה לא מחויב, וסניף חדש נכנס למחזור החיוב הבא. חשבונית מס אחת בכל חיוב. אין עמלות על תורים.`,
+    a: `מנוי אחד לכל העסק, לפי מספר הסניפים המפורסמים: ${nis(PLAN_MONTHLY_NIS.basic)} לסניף במסלול הבסיסי או ${nis(PLAN_MONTHLY_NIS.advanced)} לסניף במסלול המתקדם עם CRM. סניף בטיוטה לא מחויב, וסניף חדש נכנס למחזור החיוב הבא. חשבונית אחת בכל חיוב. אין עמלות על תורים. ${PLATFORM_BILLING_LINE}`,
   },
 ];
 
@@ -286,7 +286,7 @@ export default function GetListedPage() {
                     <span className={`${styles.planPrice} ltr`}>{nis(PLAN_MONTHLY_NIS[pl.key])}</span>
                     <span className={styles.planUnit}>לחודש, לכל סניף</span>
                   </div>
-                  <p className={styles.planVat}>לא כולל מע״מ · ללא התחייבות</p>
+                  <p className={styles.planVat}>{PLATFORM_PRICE_NOTE} · ללא התחייבות</p>
                   <p className={styles.planLine}>{pl.line}</p>
                   <ul className={styles.planFeats}>
                     {pl.feats.map(f => (

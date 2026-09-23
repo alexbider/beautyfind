@@ -22,7 +22,7 @@ export const TEAM: TeamMember[] = [
   { name: null, role: 'אימות ונתונים', bio: 'אימות הרישום העסקי, הכתובות, הטלפונים והרישיונות, ובדיקות איכות תקופתיות.' },
 ];
 
-const PLANS_LINE = `רישום בסיסי ב־₪${PLAN_MONTHLY_NIS.basic} או רישום מתקדם עם CRM ב־₪${PLAN_MONTHLY_NIS.advanced}, לכל סניף מפורסם לחודש, לא כולל מע״מ ובלי עמלות על תורים.`;
+const PLANS_LINE = `רישום בסיסי ב־₪${PLAN_MONTHLY_NIS.basic} או רישום מתקדם עם CRM ב־₪${PLAN_MONTHLY_NIS.advanced}, לכל סניף מפורסם לחודש, ללא מע״מ ישראלי ובלי עמלות על תורים.`;
 
 export const ABOUT_VIEWS: Record<AboutKey, ContentView<AboutKey>> = {
   about: {

@@ -3,7 +3,7 @@
 // contradicted them in the design was corrected here (see the report in the PR).
 
 import { nis } from '@/lib/format';
-import { PLAN_MONTHLY_NIS, YEARLY_MULTIPLIER } from '@/lib/pricing';
+import { PLAN_MONTHLY_NIS, YEARLY_MULTIPLIER, PLATFORM_BILLING_LINE } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
 
 export type Audience = 'client' | 'biz';
@@ -154,12 +154,12 @@ export const FAQS: Faq[] = [
   },
   {
     audience: 'biz', topic: 'billing', q: 'מה ההבדל בין בסיסי למתקדם?',
-    a: `בסיסי (${basic} לסניף לחודש): פרופיל מאומת, קביעת תור אונליין עם סנכרון יומן, אישורים ותזכורות בוואטסאפ, SMS ומייל, ביקורות Google וביקורות מאומתות, ולוח פניות. מתקדם + CRM (${advanced} לסניף לחודש): כל הבסיסי, ובנוסף מערכת ניהול הקליניקה: יומן מלא, כרטיסי לקוחות, הצהרות בריאות, צ׳ק־אין, מקדמות, שוברים, רשימת המתנה, בקשות ייעוץ, מלאי ואוטומציות. המחירים לפני מע״מ.`,
+    a: `בסיסי (${basic} לסניף לחודש): פרופיל מאומת, קביעת תור אונליין עם סנכרון יומן, אישורים ותזכורות בוואטסאפ, SMS ומייל, ביקורות Google וביקורות מאומתות, ולוח פניות. מתקדם + CRM (${advanced} לסניף לחודש): כל הבסיסי, ובנוסף מערכת ניהול הקליניקה: יומן מלא, כרטיסי לקוחות, הצהרות בריאות, צ׳ק־אין, מקדמות, שוברים, רשימת המתנה, בקשות ייעוץ, מלאי ואוטומציות. המחירים ללא מע״מ ישראלי.`,
     link: { label: 'להשוואת המסלולים', href: ROUTES.pricing },
   },
   {
     audience: 'biz', topic: 'billing', q: 'איך עובד החיוב על כמה סניפים?',
-    a: `מנוי אחד וחשבונית אחת. החיוב לפי מספר הסניפים המפורסמים: ${basic} לסניף בבסיסי או ${advanced} לסניף במתקדם עם CRM, לחודש ולפני מע״מ. בתשלום שנתי משלמים על ${YEARLY_MULTIPLIER} חודשים. סניף בטיוטה לא מחויב, וסניף חדש נכנס למחזור החיוב הבא.`,
+    a: `מנוי אחד וחשבונית אחת. החיוב לפי מספר הסניפים המפורסמים: ${basic} לסניף בבסיסי או ${advanced} לסניף במתקדם עם CRM, לחודש. ${PLATFORM_BILLING_LINE} בתשלום שנתי משלמים על ${YEARLY_MULTIPLIER} חודשים. סניף בטיוטה לא מחויב, וסניף חדש נכנס למחזור החיוב הבא.`,
     link: { label: 'לניהול סניפים', href: PATHS.branches },
   },
   {
