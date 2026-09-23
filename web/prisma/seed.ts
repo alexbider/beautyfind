@@ -15,14 +15,14 @@ const HOURS_DEFAULT = [
 
 // Existing listings a business can find and claim (the Claim design's sample set).
 // Fictional names and numbers.
-const LISTINGS: Array<{ name: string; slug: string; cat: string; city: string; phone: string; img: string; claimed: boolean }> = [
-  { name: 'שרון קליניק', slug: 'sharon-clinic', cat: 'medical-aesthetics', city: 'raanana', phone: '+97297482210', img: '/assets/biz-medical.jpg', claimed: false },
+const LISTINGS: Array<{ name: string; slug: string; cat: string; city: string; phone: string; img: string; claimed: boolean; email?: string }> = [
+  { name: 'שרון קליניק', slug: 'sharon-clinic', cat: 'medical-aesthetics', city: 'raanana', phone: '+97297482210', img: '/assets/biz-medical.jpg', claimed: false, email: 'info@sharon-clinic.co.il' },
   { name: 'סטודיו נחלת בנימין', slug: 'nachalat-binyamin-studio', cat: 'hair-salons', city: 'tel-aviv', phone: '+97235164420', img: '/assets/biz-hair.jpg', claimed: false },
   { name: 'פלורנטין סקין', slug: 'florentin-skin', cat: 'facials', city: 'tel-aviv', phone: '+97236827714', img: '/assets/biz-facial.jpg', claimed: true },
   { name: 'לייזר האוס פתח תקווה', slug: 'laser-house-petah-tikva', cat: 'hair-removal', city: 'petah-tikva', phone: '+97239305567', img: '/assets/biz-laser.jpg', claimed: false },
   { name: 'ניילס על הים', slug: 'nails-on-the-sea', cat: 'nails', city: 'tel-aviv', phone: '+97235279903', img: '/assets/biz-nails.jpg', claimed: false },
   { name: 'ספא הדרים', slug: 'hadarim-spa', cat: 'spa-massage', city: 'petah-tikva', phone: '+97239142288', img: '/assets/biz-spa.jpg', claimed: false },
-  { name: 'כרמל אסתטיקה', slug: 'carmel-aesthetics', cat: 'medical-aesthetics', city: 'haifa', phone: '+97248551190', img: '/assets/hero-clinic.jpg', claimed: false },
+  { name: 'כרמל אסתטיקה', slug: 'carmel-aesthetics', cat: 'medical-aesthetics', city: 'haifa', phone: '+97248551190', img: '/assets/hero-clinic.jpg', claimed: false, email: 'info@carmel-aesthetics.co.il' },
   { name: 'ביאליק ביוטי', slug: 'bialik-beauty', cat: 'facials', city: 'ramat-gan', phone: '+97236734401', img: '/assets/hero-skin.jpg', claimed: false },
 ];
 
@@ -45,7 +45,10 @@ async function main() {
   for (const l of LISTINGS) {
     const city = await db.city.findUniqueOrThrow({ where: { slug: l.city } });
     const existing = await db.branch.findUnique({ where: { slug: l.slug } });
-    if (existing) continue;
+    if (existing) {
+      if (l.email && !existing.email) await db.branch.update({ where: { id: existing.id }, data: { email: l.email } });
+      continue;
+    }
     const biz = await db.business.create({ data: { status: 'live', type: CATEGORIES.find(c => c.slug === l.cat)?.isMedical ? 'clinic' : 'salon' } });
     await db.branch.create({
       data: {
@@ -57,6 +60,7 @@ async function main() {
         cityName: city.name,
         address: city.name,
         phone: l.phone,
+        email: l.email,
         hours: HOURS_DEFAULT,
         status: 'live',
         isClaimed: l.claimed,

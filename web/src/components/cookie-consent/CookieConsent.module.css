@@ -13,7 +13,7 @@
 .bannerText p { margin: 0; font-size: 14px; color: var(--text); text-wrap: pretty; }
 .bannerText a { color: var(--teal-deep); }
 .bannerText a:hover { color: var(--navy); }
-.bannerBtns { flex: none; display: flex; gap: 8px; flex-wrap: wrap; }
+.bannerBtns { flex: 0 1 auto; min-width: 0; display: flex; gap: 8px; flex-wrap: wrap; }
 .primary {
   min-height: 46px; padding: 0 17px; border: 0; border-radius: 12px; background: var(--teal-deep);
   font: inherit; font-size: 15px; font-weight: 700; color: #ffffff; cursor: pointer;
