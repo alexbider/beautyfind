@@ -22,7 +22,7 @@ export default async function HelpPage({ searchParams }: { searchParams: Promise
 
   return (
     <div className={styles.root}>
-      <SiteHeader variant="public" />
+      <SiteHeader variant="public" title="מרכז עזרה" backHref="/more" />
       <HelpCenter key={audience} initialAudience={audience} initialQuery={q} />
       <SiteFooter wide note="מידע כללי בלבד, לא ייעוץ רפואי" />
     </div>

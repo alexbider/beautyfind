@@ -157,7 +157,8 @@ export function resolveWhere(text: string): { region: RegionSlug | null; city: s
 }
 
 /** Datalist options for the "where" box: regions first, then every city. */
-export const WHERE_OPTIONS = [...REGIONS.map(r => r.name), ...CITIES.map(c => c.name)];
+// Some cities share a name with their region (חיפה, ירושלים); each name is listed once.
+export const WHERE_OPTIONS = [...new Set([...REGIONS.map(r => r.name), ...CITIES.map(c => c.name)])];
 
 // ---------- Hebrew plurals (text form, for aria labels and titles) ----------
 

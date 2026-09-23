@@ -1,0 +1,22 @@
+/* Phone clinic card pieces (responsive spec §3.2). */
+
+.rating { flex: none; display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 700; color: var(--navy); white-space: nowrap; }
+.none { font-size: 12.5px; font-weight: 700; color: var(--teal-deep); }
+.star { flex: none; display: block; color: #FBBC04; }
+.star[data-src='bf'] { color: var(--teal); }
+.count { font-size: 12.5px; font-weight: 500; color: var(--subtle); }
+
+.actions { display: flex; align-items: center; gap: 8px; }
+.actions .icon {
+  flex: none; display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; padding: 0;
+  border-radius: 12px;
+}
+.actions .tel { border: 1px solid var(--line-strong); background: #ffffff; color: var(--teal-deep); }
+.primary {
+  flex: 1 1 auto; min-width: 0; display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px;
+  border-radius: 12px; background: var(--navy); font-size: 15px; font-weight: 700; color: #ffffff; white-space: nowrap;
+}
+.primary:active { background: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) {
+  a.primary:hover { color: #ffffff; }
+}

@@ -14,7 +14,9 @@
   display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 22px; border: 0; border-radius: 12px;
   background: var(--teal); color: var(--navy); font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; transition: background .18s;
 }
-.ctaBtn:hover { background: #ffffff; }
+@media (hover: hover) and (pointer: fine) {
+  .ctaBtn:hover { background: #ffffff; }
+}
 .ctaBtn:focus-visible { outline-color: #ffffff; }
 
 .grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 40px clamp(24px, 3vw, 48px); }
@@ -32,7 +34,9 @@
 .groupName { font-size: 13px; font-weight: 700; color: var(--teal-light); margin-bottom: 14px; }
 .links { display: flex; flex-direction: column; gap: 2px; }
 .link { display: inline-flex; align-items: center; min-height: 36px; font-size: 15px; color: rgba(255, 255, 255, .85); }
-.link:hover { color: var(--teal-light); }
+@media (hover: hover) and (pointer: fine) {
+  .link:hover { color: var(--teal-light); }
+}
 .footer :focus-visible { outline-color: var(--teal-light); }
 
 .bottom {
@@ -46,4 +50,16 @@
 }
 .legal { display: flex; flex-wrap: wrap; gap: 4px 20px; }
 .legal a { display: inline-flex; align-items: center; min-height: 44px; color: rgba(255, 255, 255, .75); }
-.legal a:hover { color: var(--teal-light); }
+@media (hover: hover) and (pointer: fine) {
+  .legal a:hover { color: var(--teal-light); }
+}
+
+/* App shell: no footer navigation (the "עוד" tab has it), only the disclaimer and the copyright line. */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .footer { background: var(--bg-page); color: var(--muted); border-top: 1px solid var(--line); }
+  .inner { padding: 18px 16px 20px; }
+  .cta, .grid, .legal { display: none; }
+  .bottom { margin-top: 0; padding-top: 0; border-top: 0; gap: 8px; }
+  .disclaimer { font-size: 12.5px; color: var(--muted); }
+  .legalRow { font-size: 12.5px; color: var(--subtle); }
+}

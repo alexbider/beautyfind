@@ -30,7 +30,7 @@ const POPULAR: Array<{ name: string; note: string; href: string }> = [
 export default function NotFound() {
   return (
     <div className={styles.root}>
-      <SiteHeader variant="public" />
+      <SiteHeader variant="public" title="העמוד לא נמצא" backHref="/" />
       <main className={styles.main}>
         <div className={styles.inner}>
           <span dir="ltr" aria-hidden="true" className={styles.code}>404</span>

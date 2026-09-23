@@ -36,7 +36,9 @@
   border-radius: 18px; overflow: hidden; background: var(--navy); color: #ffffff;
   transition: transform .25s var(--ease-out), box-shadow .25s;
 }
-.popCard:hover { color: #ffffff; transform: translateY(-3px); box-shadow: 0 22px 48px rgba(12, 36, 62, .20); }
+@media (hover: hover) and (pointer: fine) {
+  .popCard:hover { color: #ffffff; transform: translateY(-3px); box-shadow: 0 22px 48px rgba(12, 36, 62, .20); }
+}
 .popImg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: .55; }
 .popShade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(12, 36, 62, .92), rgba(12, 36, 62, .15)); }
 .popText { position: relative; display: flex; flex-direction: column; gap: 5px; }
@@ -51,3 +53,37 @@
 .regionsNote { font-size: 14px; color: var(--muted); }
 
 h2.faqH2 { margin-bottom: 10px; }
+
+/* ---------- App shell (phones, touch tablets): responsive spec §6 Treatments ---------- */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .intro { background: #ffffff; border-bottom: 0; }
+  .introInner { padding: 8px 16px 16px; gap: 14px; }
+  .h1 { font-size: 28px; line-height: 1.18; }
+  .lede { font-size: 16px; }
+  .metaRow { padding-top: 0; }
+
+  /* Stat chips row */
+  .stats {
+    display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 2px;
+    border: 0; border-radius: 0; background: transparent; animation: none;
+  }
+  .stats::-webkit-scrollbar { display: none; }
+  .stat { flex: none; flex-direction: row; align-items: baseline; gap: 6px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 20px; background: var(--bg-soft); }
+  .stat dt { order: 2; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .stat dd { order: 1; font-family: var(--font-ui); font-size: 15px; font-weight: 800; }
+
+  .main { padding: 16px 16px 40px; }
+  /* Popular categories: a scroll-snap carousel with the next card peeking (spec §3.2). */
+  .popular {
+    display: grid; grid-auto-flow: column; grid-auto-columns: 78%; grid-template-columns: none; gap: 12px;
+    overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain;
+    margin: 0 -16px; padding: 0 16px 4px; scroll-padding-inline: 16px;
+  }
+  .popular::-webkit-scrollbar { display: none; }
+  .popular > li { scroll-snap-align: start; }
+  .popCard { min-height: 170px; }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) and (hover: none) {
+  .popular { grid-auto-columns: 44%; }
+}

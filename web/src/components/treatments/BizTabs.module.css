@@ -17,7 +17,9 @@
 }
 .section[data-variant='category'] .tab { padding: 0 16px; font-size: 16px; }
 .tab[data-on] { font-weight: 700; color: var(--navy); border-bottom-color: var(--navy); }
-.tab:hover { color: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .tab:hover { color: var(--navy); }
+}
 
 .all { display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 700; color: var(--teal-deep); }
 .allArrow { flex: none; margin-right: 6px; }
@@ -38,3 +40,13 @@
   text-align: center; font-size: 15px; color: var(--muted);
 }
 .empty a { font-weight: 700; color: var(--teal-deep); border-bottom: 1px solid var(--line-strong); }
+
+/* App shell: phone clinic cards stack in one column (spec §3.2). */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .grid, .section[data-variant='region'] .grid, .section[data-variant='category'] .grid { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+}
+
+/* Touch tablets in the app shell: two cards per row. */
+@media (min-width: 768px) and (max-width: 1023px) and (hover: none) {
+  .grid, .section[data-variant='region'] .grid, .section[data-variant='category'] .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 16px; }
+}

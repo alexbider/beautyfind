@@ -53,7 +53,9 @@ ol.crumbs { font-size: 13px; }
   display: flex; flex-direction: column; gap: 2px; min-height: 76px; justify-content: center; padding: 12px 14px;
   border: 1px solid var(--line); border-radius: 13px; background: #ffffff; transition: border-color .2s, background .2s, transform .2s;
 }
-.cityCard:hover { border-color: var(--teal); background: var(--tint); transform: translateY(-2px); }
+@media (hover: hover) and (pointer: fine) {
+  .cityCard:hover { border-color: var(--teal); background: var(--tint); transform: translateY(-2px); }
+}
 .cityName { font-size: 15.5px; font-weight: 700; color: var(--navy); }
 .cityCount { font-size: 12.5px; color: var(--subtle); }
 
@@ -66,7 +68,9 @@ ol.crumbs { font-size: 13px; }
   display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 14px; border: 1px solid var(--line);
   border-radius: 15px; background: #ffffff; transition: border-color .22s, background .22s, box-shadow .22s;
 }
-.catRow:hover { border-color: var(--teal); background: var(--bg-soft); box-shadow: 0 14px 34px rgba(12, 36, 62, .08); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .catRow:hover { border-color: var(--teal); background: var(--bg-soft); box-shadow: 0 14px 34px rgba(12, 36, 62, .08); color: var(--navy); }
+}
 .cName { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 2px; }
 .cMedian { flex: none; width: 110px; text-align: right; }
 .cDelta { flex: none; width: 118px; }
@@ -102,3 +106,38 @@ p.faqLede { max-width: 42ch; }
 /* Nearby */
 .near { padding-top: clamp(24px, 2.8vw, 34px); border-top: 1px solid var(--line); }
 .near > div:first-child { margin-bottom: 14px; }
+
+/* ---------- App shell (phones, touch tablets): responsive spec §6 Region ---------- */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  /* Large title: the top bar has the back button and the region name. */
+  ol.crumbs { display: none; }
+  .hero { border-bottom: 0; }
+  .heroCopy { gap: 12px; padding: 8px 16px 14px; }
+  .h1 { font-size: 28px; line-height: 1.18; }
+  .lede { font-size: 16px; }
+  .heroCtas > * { flex: 1 1 auto; justify-content: center; min-height: 48px; }
+  .heroFig { display: none; }
+
+  /* Stat chips row */
+  .statsBand { background: transparent; border-bottom: 1px solid var(--line); }
+  .stats {
+    display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px 16px 14px;
+  }
+  .stats::-webkit-scrollbar { display: none; }
+  .stat {
+    flex: none; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 0 6px; padding: 8px 14px;
+    border: 1px solid var(--line); border-radius: 20px; background: var(--bg-soft);
+  }
+  .stat dt { order: 2; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .statValue { order: 1; font-family: var(--font-ui); font-size: 15px; font-weight: 800; color: var(--navy); }
+  .statNote { display: none; }
+
+  .main { padding: 20px 16px 40px; }
+  .block { margin-top: 36px; }
+  .cityCard { min-height: 64px; }
+  .catRow { gap: 4px 12px; }
+  .cName { flex-basis: 100%; min-width: 0; }
+  .cMedian, .cDelta, .cCount { width: auto; text-align: right; }
+  .cArrow { display: none; }
+  .para { font-size: 16.5px; }
+}

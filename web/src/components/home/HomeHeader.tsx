@@ -5,7 +5,9 @@ import { useEffect, useRef, useState } from 'react';
 import { CITIES, GROUP_ORDER, categoriesInGroup, categoryHref, type RegionSlug } from '@/lib/catalog';
 import { ROUTES } from '@/lib/routes';
 import { ArrowForward, Check, ChevronDown } from '../icons';
+import { SearchIcon as BarSearchIcon, TopBar } from '../shell/TopBar';
 import { Wordmark } from '../Wordmark';
+import { openPhoneSearch } from './PhoneSearch';
 import { focusHeroSearch, regionName, useRegion, type RegionChoice } from './regionStore';
 import styles from './HomeHeader.module.css';
 
@@ -13,6 +15,8 @@ import styles from './HomeHeader.module.css';
 // SiteHeader: /, /:region, /:region/:city, /treatments(/:category), /magazine, /about, /for-business.
 // Desktop from 760px (CSS only): "find" mega (regions with cities), treatments mega, region picker,
 // and a compact search button once the hero search has scrolled away. Below 760px: region button + sheet.
+// App shell (phones, touch tablets): the root top bar instead, whose search action opens the
+// full-screen search; the website header and its sheets are desktop only.
 
 export interface HeaderRegion {
   slug: RegionSlug;
@@ -121,7 +125,8 @@ export function HomeHeader({ regions, total }: { regions: HeaderRegion[]; total:
 
   return (
     <>
-      <header data-home-layer className={styles.header} data-scrolled={scrolled || undefined}>
+      <TopBar mode="root" actions={[{ label: 'חיפוש', onClick: openPhoneSearch, icon: BarSearchIcon }]} />
+      <header data-home-layer className={`${styles.header} bf-desk-only`} data-scrolled={scrolled || undefined}>
         <div className={styles.bar}>
           <Link href="/" aria-label="BeautyFind, לדף הבית" className={styles.brand} onClick={closeAll}>
             <Wordmark size={28} />
@@ -280,7 +285,7 @@ export function HomeHeader({ regions, total }: { regions: HeaderRegion[]; total:
       </header>
 
       {mobileOpen && (
-        <div id="home-mobile-menu" role="dialog" aria-label="תפריט" className={styles.sheet}>
+        <div id="home-mobile-menu" role="dialog" aria-label="תפריט" className={`${styles.sheet} bf-desk-only`}>
           <div className={styles.sheetList}>
             {(['find', 'treat'] as const).map(key => {
               const open = mobileSection === key;
@@ -342,7 +347,7 @@ export function HomeHeader({ regions, total }: { regions: HeaderRegion[]; total:
       )}
 
       {regionOpen && (
-        <div id="home-region-sheet" data-home-layer role="dialog" aria-label="בחרו אזור" className={styles.regionSheet}>
+        <div id="home-region-sheet" data-home-layer role="dialog" aria-label="בחרו אזור" className={`${styles.regionSheet} bf-desk-only`}>
           <div className={styles.sheetLabel}>חיפוש עסקים באזור</div>
           <div className={styles.regionSheetList}>
             {options.map(o => {

@@ -3,7 +3,7 @@ import type { CardExtra } from '@/components/search/ResultCard';
 import { db } from '@/lib/server/db';
 
 // Card fields the Search design shows that ListingCard does not carry yet: street address,
-// WhatsApp number, "open now" and the name behind אחריות רפואית. One extra read for the ids on
+// WhatsApp and phone numbers, "open now" and the name behind אחריות רפואית. One extra read for the ids on
 // screen. TODO: move these into ListingCard (lib/server/public.ts) and delete this file.
 
 const TZ = 'Asia/Jerusalem';
@@ -37,6 +37,7 @@ export async function cardExtras(ids: string[]): Promise<Record<string, CardExtr
       id: true,
       address: true,
       whatsapp: true,
+      phone: true,
       hours: true,
       medicalResponsible: { select: { displayName: true, license: { select: { status: true } } } },
     },
@@ -48,6 +49,7 @@ export async function cardExtras(ids: string[]): Promise<Record<string, CardExtr
       {
         address: r.address,
         whatsapp: r.whatsapp,
+        phone: r.phone,
         openNow: isOpenNow(r.hours, now),
         // Only a verified license is shown as אחריות רפואית (verification flow B3).
         medicalName: r.medicalResponsible?.license?.status === 'verified' ? r.medicalResponsible.displayName : null,

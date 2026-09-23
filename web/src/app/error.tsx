@@ -36,7 +36,7 @@ export default function ErrorPage({
 
   return (
     <div className={styles.root}>
-      <SiteHeader variant="public" />
+      <SiteHeader variant="public" title="תקלה" backHref="/" />
       <main className={styles.main}>
         <ErrorState
           headingLevel="h1"

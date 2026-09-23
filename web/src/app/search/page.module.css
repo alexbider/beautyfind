@@ -12,7 +12,9 @@
 .crumbs { margin-bottom: 14px; }
 .crumbs ol { list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; padding: 0; font-size: 13.5px; color: var(--muted); }
 .crumbs a { color: var(--muted); }
-.crumbs a:hover { color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) {
+  .crumbs a:hover { color: var(--teal-deep); }
+}
 .crumbs [aria-current] { font-weight: 700; color: var(--navy); }
 .crumbSep { color: #C6CDD4; }
 
@@ -41,7 +43,9 @@
   border: 1px solid var(--line); border-radius: 999px; background: #ffffff;
   font-size: 14px; font-weight: 500; color: var(--text); transition: border-color .18s, background .18s, color .18s;
 }
-.preset:hover { border-color: var(--teal); background: var(--tint); color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) {
+  .preset:hover { border-color: var(--teal); background: var(--tint); color: var(--teal-deep); }
+}
 
 .results { min-width: 0; }
 
@@ -58,7 +62,9 @@
   display: inline-flex; flex-direction: column; justify-content: center; gap: 2px; min-height: 52px; padding: 8px 14px;
   border: 1px solid var(--line); border-radius: 12px; background: #ffffff; transition: border-color .18s, background .18s;
 }
-.relatedLink:hover { border-color: var(--teal); background: var(--tint); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .relatedLink:hover { border-color: var(--teal); background: var(--tint); color: var(--navy); }
+}
 .relatedName { font-size: 14.5px; font-weight: 700; }
 .relatedHref { font-size: 12px; color: var(--subtle); text-align: right; }
 
@@ -67,3 +73,17 @@
 .skelHeaderBar { max-width: 1440px; height: 100%; margin: 0 auto; padding: 0 clamp(16px, 3vw, 28px); display: flex; align-items: center; gap: 18px; }
 .skelSearch { flex: 1; height: 50px; border: 1px solid var(--line); border-radius: 13px; background: var(--bg-soft); }
 .skelTitle { display: block; width: min(420px, 80%); height: 34px; margin: 6px 0 22px; border-radius: 8px; background: var(--divider); }
+
+/* App shell: the search field and filter chips carry the page; the long intro and the desktop
+   extras are left out, and the headline is sized for a phone. */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .main { padding: 14px 16px 32px; }
+  .crumbs, .eyebrow, .answer, .queryPath, .presets { display: none; }
+  .hero { margin-bottom: 12px; }
+  .h1 { font-size: 24px; line-height: 1.2; }
+  .related { margin-top: 32px; }
+  .relatedLinks { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 4px; }
+  .relatedLinks::-webkit-scrollbar { display: none; }
+  .relatedLink { flex: none; }
+  .skelHeader { display: none; }
+}

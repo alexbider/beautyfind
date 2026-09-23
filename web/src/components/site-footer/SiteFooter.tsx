@@ -31,7 +31,10 @@ const GROUPS: Array<{ name: string; links: Array<{ name: string; href: string }>
   },
 ];
 
-/** `note` is the right-hand line in the bottom bar (public pages: a medical disclaimer). `wide` = 1320px pages. */
+/**
+ * `note` is the right-hand line in the bottom bar (public pages: a medical disclaimer). `wide` = 1320px pages.
+ * In the app shell only the bottom line shows; the link columns are on the "עוד" tab (spec §2.1).
+ */
 export function SiteFooter({ note, wide = false }: { note?: string; wide?: boolean } = {}) {
   return (
     <footer className={styles.footer}>

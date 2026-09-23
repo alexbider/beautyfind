@@ -65,7 +65,7 @@ export default async function TreatmentsPage() {
     <div className={shared.root}>
       <JsonLd data={breadcrumbLd([{ name: 'ראשי', path: '/' }, { name: 'תחומי טיפול', path: '/treatments' }])} />
       <JsonLd data={faqLd(TREATMENTS_FAQS)} />
-      <SiteHeader variant="public" />
+      <SiteHeader variant="public" title="תחומי טיפול" backHref="/search" />
 
       <nav aria-label="נתיב ניווט" className={shared.crumbBar}>
         <ol className={shared.crumbs}>

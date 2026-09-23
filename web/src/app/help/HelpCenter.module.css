@@ -31,7 +31,9 @@
   font: inherit; text-align: right; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; gap: 6px;
   transition: border-color .16s, background .16s;
 }
-.topic:hover { border-color: var(--teal-light); }
+@media (hover: hover) and (pointer: fine) {
+  .topic:hover { border-color: var(--teal-light); }
+}
 .topic[data-on] { border-color: var(--teal-light); background: var(--tint); }
 .topicName { font-size: 15px; font-weight: 700; color: var(--navy); }
 .topicCount { font-size: 12.5px; font-weight: 600; color: var(--muted); }
@@ -51,7 +53,9 @@
 .noneTitle { margin: 0 0 4px; font-size: 16px; font-weight: 700; }
 .noneBody { margin: 0; font-size: 14.5px; color: var(--muted); }
 .noneBody a { color: var(--teal-deep); font-weight: 700; }
-.noneBody a:hover { color: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .noneBody a:hover { color: var(--navy); }
+}
 
 .list { background: #ffffff; border: 1px solid var(--line); border-radius: 17px; overflow: hidden; }
 .item { border-top: 1px solid var(--divider); }
@@ -72,7 +76,9 @@
 .answer { padding: 0 18px 16px; background: var(--bg-soft); }
 .answer > p { margin: 0; max-width: 70ch; font-size: 15px; line-height: 1.7; color: var(--text); text-wrap: pretty; }
 .answerLink { display: inline-flex; align-items: center; min-height: 44px; margin-top: 4px; font-size: 14px; font-weight: 700; color: var(--teal-deep); }
-.answerLink:hover { color: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .answerLink:hover { color: var(--navy); }
+}
 .vote { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
 .vote button {
   min-height: 44px; min-width: 44px; padding: 0 11px; border: 1px solid var(--line); border-radius: 9px; background: #ffffff; font: inherit;
@@ -90,12 +96,16 @@
   min-height: 44px; display: flex; align-items: center; padding: 0 13px; border: 1px solid var(--line); border-radius: 11px;
   font-size: 14px; font-weight: 700; color: var(--navy); transition: border-color .16s;
 }
-.sideLink:hover { border-color: var(--teal-light); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .sideLink:hover { border-color: var(--teal-light); color: var(--navy); }
+}
 .contactBtn {
   min-height: 44px; display: flex; align-items: center; padding: 0 13px; border-radius: 11px; background: var(--teal-deep);
   font-size: 14px; font-weight: 700; color: #ffffff;
 }
-.contactBtn:hover { background: var(--navy); color: #ffffff; }
+@media (hover: hover) and (pointer: fine) {
+  .contactBtn:hover { background: var(--navy); color: #ffffff; }
+}
 .cardNote { margin: 11px 0 0; padding-top: 10px; border-top: 1px solid var(--divider); font-size: 12.5px; color: var(--muted); text-wrap: pretty; }
 .cardNote a { font-weight: 700; color: var(--navy); }
 
@@ -106,4 +116,33 @@
 @media (min-width: 1024px) {
   .topics { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .shell { grid-template-columns: minmax(0, 1fr) 300px; }
+}
+
+/* ---------- App shell (phones, touch tablets): responsive spec §6 Help ---------- */
+.phoneSearch {
+  position: sticky; top: var(--shell-top); z-index: 45;
+  display: flex; align-items: center; gap: 10px; margin: 0; padding: 2px 16px 10px; background: #ffffff;
+  border-bottom: 1px solid var(--line);
+}
+.phoneSearch svg { position: absolute; right: 30px; top: 26px; transform: translateY(-50%); pointer-events: none; }
+.phoneSearch input {
+  flex: 1; min-width: 0; height: 48px; padding: 0 42px 0 14px; border: 1px solid transparent; border-radius: 14px;
+  background: var(--bg-page); font: inherit; font-size: 16px; color: var(--navy); outline: none;
+}
+.phoneSearch input:focus { border-color: var(--teal); background: #ffffff; }
+.phoneSearch input::placeholder { color: var(--subtle); }
+
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .hero { background: #ffffff; color: var(--navy); }
+  .heroInner { padding: 14px 16px 4px; text-align: right; }
+  .h1 { font-size: 28px; margin-bottom: 12px; }
+  .auds { display: flex; background: var(--bg-page); }
+  .aud { flex: 1; color: var(--navy); }
+  .aud[data-on] { background: var(--navy); color: #ffffff; }
+  .body { padding-top: 14px; }
+  .topics { gap: 8px; }
+  .topic { min-height: 76px; }
+  .list { border-radius: 16px; }
+  .q { min-height: 60px; padding: 12px 16px; }
+  .answer { padding: 0 16px 16px; }
 }

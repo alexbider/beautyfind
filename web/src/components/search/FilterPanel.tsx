@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import { BottomSheet } from '@/components/shell/BottomSheet';
 import { CATEGORIES, REGIONS, citiesOf } from '@/lib/catalog';
 import { BizCount, PriceOption, ResultCount } from './Plural';
 import { FEATURES, PRICE_TIERS, hasPanelFilters, type FeatureKey } from './params';
@@ -20,44 +21,59 @@ type GroupKey = 'treat' | 'feat' | 'price';
 // "פתוח כרגע" is left out too: listBranches cannot filter by opening hours yet.
 
 /**
- * Filter panel: a sticky sidebar from 1040px, a full-screen sheet below it.
+ * Filter panel: a sticky sidebar from 1024px; below it the same controls open in a bottom sheet
+ * (a centred dialog from 768px) with a sticky "הצגת N תוצאות" button (responsive spec §3).
  * Counts are live listing counts per region, city and category across the whole index.
  */
 export function FilterPanel({ counts }: { counts: FacetCounts }) {
-  const { state, total, update, panelOpen, setPanelOpen } = useSearch();
-  const [open, setOpen] = useState<Record<GroupKey, boolean>>({ treat: true, feat: true, price: true });
-  const closeRef = useRef<HTMLButtonElement>(null);
+  const { state, total, pending, update, panelOpen, setPanelOpen } = useSearch();
   const filtered = hasPanelFilters(state);
+  const clearAll = (focus?: 'results') => update({ region: null, city: null, t: null, f: [], price: null }, { focus });
 
-  // Sheet: move focus in on open, close on Escape, hand focus back to the "סינון" button on close.
-  useEffect(() => {
-    if (!panelOpen) return;
-    closeRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close();
-      // Keep Tab inside the sheet while it is open.
-      if (e.key === 'Tab') {
-        const els = document.getElementById('filters')?.querySelectorAll<HTMLElement>('button:not([disabled])');
-        if (!els?.length) return;
-        const first = els[0];
-        const last = els[els.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
+  return (
+    <>
+      <aside id="filters" aria-label="סינון" className={s.panel}>
+        <div className={s.panelHead}>
+          <span className={s.panelTitle}>סינון</span>
+          {filtered && (
+            <button type="button" className={s.linkBtn} onClick={() => clearAll('results')}>
+              איפוס הכול
+            </button>
+          )}
+        </div>
+        <FilterFields counts={counts} idPrefix="fp" />
+        <p className={s.fsHint} data-foot>לפי המחיר ההתחלתי שהעסק פרסם, לא כולל מע״מ.</p>
+      </aside>
+
+      <BottomSheet
+        open={panelOpen}
+        onClose={() => setPanelOpen(false)}
+        title="סינון"
+        size="full"
+        footer={
+          <div className={s.sheetFoot}>
+            {filtered && (
+              <button type="button" className={s.sheetReset} onClick={() => clearAll()}>
+                איפוס
+              </button>
+            )}
+            <button type="button" className={s.showBtn} aria-busy={pending || undefined} onClick={() => setPanelOpen(false)}>
+              {pending ? 'מעדכן תוצאות…' : total === 0 ? 'אין תוצאות, חזרה לרשימה' : <>הצגת <ResultCount n={total} /></>}
+            </button>
+          </div>
         }
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [panelOpen]);
+      >
+        <FilterFields counts={counts} idPrefix="fs" />
+        <p className={s.fsHint} data-foot>לפי המחיר ההתחלתי שהעסק פרסם, לא כולל מע״מ.</p>
+      </BottomSheet>
+    </>
+  );
+}
 
-  const close = () => {
-    setPanelOpen(false);
-    requestAnimationFrame(() => document.getElementById('open-filters')?.focus());
-  };
+/** Region, city, treatment, features and price. Rendered in the sidebar and in the sheet. */
+function FilterFields({ counts, idPrefix }: { counts: FacetCounts; idPrefix: string }) {
+  const { state, update } = useSearch();
+  const [open, setOpen] = useState<Record<GroupKey, boolean>>({ treat: true, feat: true, price: true });
 
   const toggleFeature = (k: FeatureKey) => update({ f: state.f.includes(k) ? state.f.filter(x => x !== k) : [...state.f, k] });
   const cities = state.region ? citiesOf(state.region) : [];
@@ -65,7 +81,7 @@ export function FilterPanel({ counts }: { counts: FacetCounts }) {
   const group = (key: GroupKey, name: string, picks: number, body: React.ReactNode) => (
     <fieldset className={s.group}>
       <legend className={s.groupLegend}>
-        <button type="button" className={s.groupToggle} aria-expanded={open[key]} aria-controls={`fg-${key}`} onClick={() => setOpen(o => ({ ...o, [key]: !o[key] }))}>
+        <button type="button" className={s.groupToggle} aria-expanded={open[key]} aria-controls={`${idPrefix}-${key}`} onClick={() => setOpen(o => ({ ...o, [key]: !o[key] }))}>
           <span className={s.fsLabel}>{name}</span>
           <span className={s.groupMeta}>
             {picks > 0 && <span className={`${s.badge} ltr`}>{picks}</span>}
@@ -76,7 +92,7 @@ export function FilterPanel({ counts }: { counts: FacetCounts }) {
         </button>
       </legend>
       {open[key] && (
-        <div id={`fg-${key}`} className={s.options}>
+        <div id={`${idPrefix}-${key}`} className={s.options}>
           {body}
         </div>
       )}
@@ -94,32 +110,7 @@ export function FilterPanel({ counts }: { counts: FacetCounts }) {
   );
 
   return (
-    <aside
-      id="filters"
-      aria-label="סינון"
-      className={s.panel}
-      data-open={panelOpen || undefined}
-      role={panelOpen ? 'dialog' : undefined}
-      aria-modal={panelOpen || undefined}
-    >
-      <div className={s.panelHead}>
-        <span className={s.panelTitle}>סינון</span>
-        {filtered && (
-          <button type="button" className={s.linkBtn} onClick={() => {
-              update({ region: null, city: null, t: null, f: [], price: null }, { focus: panelOpen ? undefined : 'results' });
-              // In the sheet this button disappears; keep focus inside the sheet.
-              if (panelOpen) closeRef.current?.focus();
-            }}>
-            איפוס הכול
-          </button>
-        )}
-        <button ref={closeRef} type="button" className={s.closeBtn} onClick={close} aria-label="סגירת הסינון">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#0C243E" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
-            <path d="M3 3l8 8M11 3l-8 8" />
-          </svg>
-        </button>
-      </div>
-
+    <>
       <fieldset className={s.fs}>
         <legend className={s.fsLabel}>אזור</legend>
         <div className={s.regionGrid}>
@@ -181,11 +172,6 @@ export function FilterPanel({ counts }: { counts: FacetCounts }) {
           option({ key: String(t.max), name: <PriceOption max={t.max} />, on: state.price === t.max, round: true, onClick: () => update({ price: state.price === t.max ? null : t.max }) }),
         ),
       )}
-      <p className={s.fsHint} data-foot>לפי המחיר ההתחלתי שהעסק פרסם, לא כולל מע״מ.</p>
-
-      <button type="button" className={s.showBtn} onClick={close}>
-        {total === 0 ? 'חזרה לתוצאות' : <>הצגת <ResultCount n={total} /></>}
-      </button>
-    </aside>
+    </>
   );
 }

@@ -8,6 +8,7 @@ import styles from './HomeFooter.module.css';
 
 // The homepage footer differs from the shared SiteFooter (closing search CTA, guides column,
 // full disclaimer and legal row), so it is built here from BeautyFind Homepage.dc.html.
+// In the app shell only the disclaimer and copyright show; the links are on the "עוד" tab.
 
 const GROUPS = [
   { name: 'אזורים', links: REGIONS.map(r => ({ name: r.name, href: `/${r.slug}` })) },

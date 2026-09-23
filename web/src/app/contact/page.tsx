@@ -87,7 +87,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
 
   return (
     <div className={styles.root}>
-      <SiteHeader variant="public" />
+      <SiteHeader variant="public" title="יצירת קשר" backHref="/more" />
 
       <nav aria-label="נתיב ניווט" className={styles.crumbs}>
         <ol>

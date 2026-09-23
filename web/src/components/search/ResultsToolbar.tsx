@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { BottomSheet } from '@/components/shell/BottomSheet';
+import { haptic } from '@/components/shell/haptics';
 import { PriceOption, ResultCount } from './Plural';
 import { FEATURES, MAP_VIEW, SORTS, categoryName, cityName, hasPanelFilters, priceOptionName, regionName, resultsText, type SearchState, type ViewKey } from './params';
 import { useSearch } from './SearchProvider';
@@ -23,10 +25,15 @@ function activeChips(st: SearchState): Array<{ key: string; name: string; label:
   return out;
 }
 
-/** Results heading (count, announced), mobile filter button, sort menu, view switch, active-filter chips. */
+/**
+ * Results heading (count, announced), mobile filter button, sort menu, view switch, active-filter chips.
+ * App shell: one scrollable chips row instead (סינון, sort, place, quick toggles); sort and the full
+ * filter panel open as bottom sheets.
+ */
 export function ResultsToolbar() {
   const { state, total, pending, update, view, setView, panelOpen, setPanelOpen } = useSearch();
   const [sortOpen, setSortOpen] = useState(false);
+  const [sortSheet, setSortSheet] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
   const chips = activeChips(state);
   const filtered = hasPanelFilters(state);
@@ -51,8 +58,80 @@ export function ResultsToolbar() {
     };
   }, [sortOpen]);
 
+  const place = cityName(state.city) ?? regionName(state.region);
+  const toggleFeature = (k: SearchState['f'][number]) => {
+    haptic('light');
+    update({ f: state.f.includes(k) ? state.f.filter(x => x !== k) : [...state.f, k] });
+  };
+
   return (
     <>
+      <div className={`${s.chipRowWrap} bf-shell-only`}>
+        <div role="group" aria-label="סינון ומיון" className={s.chipRow}>
+          <button type="button" className={s.qChip} data-strong aria-haspopup="dialog" aria-expanded={panelOpen} onClick={() => setPanelOpen(true)}>
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
+              <path d="M3 5.5h8M15 5.5h2M3 14.5h2M9 14.5h8" />
+              <circle cx="13" cy="5.5" r="2" />
+              <circle cx="7" cy="14.5" r="2" />
+            </svg>
+            סינון
+            {chips.length > 0 && <span className={`${s.badge} ltr`}>{chips.length}</span>}
+          </button>
+          <button type="button" className={s.qChip} aria-haspopup="dialog" aria-expanded={sortSheet} onClick={() => setSortSheet(true)}>
+            <span className={s.sortKey}>מיון</span> {sortLabel}
+            <Chevron />
+          </button>
+          <button type="button" className={s.qChip} data-on={place ? '' : undefined} aria-haspopup="dialog" onClick={() => setPanelOpen(true)}>
+            {place ?? 'כל הארץ'}
+            <Chevron />
+          </button>
+          {state.t && (
+            <button type="button" className={s.qChip} data-on="" aria-label={`הסרת הסינון ${categoryName(state.t)}`} onClick={() => update({ t: null })}>
+              {categoryName(state.t)}
+              <Cross />
+            </button>
+          )}
+          {state.price != null && (
+            <button type="button" className={s.qChip} data-on="" aria-label={`הסרת הסינון ${priceOptionName(state.price)}`} onClick={() => update({ price: null })}>
+              <PriceOption max={state.price} />
+              <Cross />
+            </button>
+          )}
+          {FEATURES.map(f => {
+            const on = state.f.includes(f.key);
+            return (
+              <button key={f.key} type="button" className={s.qChip} data-on={on ? '' : undefined} aria-pressed={on} onClick={() => toggleFeature(f.key)}>
+                {f.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <BottomSheet open={sortSheet} onClose={() => setSortSheet(false)} title="מיון תוצאות">
+        <div role="radiogroup" aria-label="מיון תוצאות" className={s.sheetList}>
+          {SORTS.map(o => {
+            const on = state.sort === o.key;
+            return (
+              <button
+                key={o.key}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                className={s.sheetOpt}
+                onClick={() => {
+                  setSortSheet(false);
+                  if (!on) update({ sort: o.key });
+                }}
+              >
+                <span>{o.name}</span>
+                <span aria-hidden="true" className={s.sheetTick}>{on ? '✓' : ''}</span>
+              </button>
+            );
+          })}
+        </div>
+      </BottomSheet>
+
       <div className={s.toolbar}>
         <h2 id="h-results" tabIndex={-1} className={s.resultsHeading}>
           <ResultCount n={total} />
@@ -61,11 +140,11 @@ export function ResultsToolbar() {
         <p role="status" aria-live="polite" className="sr-only">
           {pending ? 'טוען תוצאות' : `נמצאו ${resultsText(total)}`}
         </p>
-        <button type="button" id="open-filters" className={s.filterBtn} data-active={filtered || undefined} aria-controls="filters" aria-expanded={panelOpen} onClick={() => setPanelOpen(true)}>
+        <button type="button" id="open-filters" className={`${s.filterBtn} bf-desk-only`} data-active={filtered || undefined} aria-controls="filters" aria-expanded={panelOpen} onClick={() => setPanelOpen(true)}>
           סינון
           {chips.length > 0 && <span className={`${s.badge} ltr`}>{chips.length}</span>}
         </button>
-        <div className={s.toolbarEnd}>
+        <div className={`${s.toolbarEnd} bf-desk-only`}>
           <div ref={sortRef} className={s.sortWrap}>
             <button type="button" className={s.sortBtn} aria-expanded={sortOpen} aria-haspopup="true" onClick={() => setSortOpen(o => !o)}>
               <span className={s.sortKey}>מיון</span>
@@ -112,7 +191,7 @@ export function ResultsToolbar() {
       </div>
 
       {chips.length > 0 && (
-        <div role="group" aria-label="סינונים פעילים" className={s.activeRow}>
+        <div role="group" aria-label="סינונים פעילים" className={`${s.activeRow} bf-desk-only`}>
           <span className={s.activeLabel}>מסונן לפי</span>
           {chips.map(c => (
             <button key={c.key} type="button" className={s.activeChip} aria-label={`הסרת הסינון ${c.name}`} onClick={() => update(c.patch, { focus: 'results' })}>
@@ -130,3 +209,15 @@ export function ResultsToolbar() {
     </>
   );
 }
+
+const Chevron = () => (
+  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ opacity: 0.6 }}>
+    <path d="M2.5 4.5 6 8l3.5-3.5" />
+  </svg>
+);
+
+const Cross = () => (
+  <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+    <path d="M2.5 2.5l7 7M9.5 2.5l-7 7" />
+  </svg>
+);

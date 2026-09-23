@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { cardExtras } from '@/app/search/extras';
+import { ReadMore } from '@/components/content/ReadMore';
 import { REGION_CONTENT } from '@/components/region/content';
 import { ArrowForward } from '@/components/icons';
 import { SiteFooter } from '@/components/site-footer/SiteFooter';
@@ -83,6 +85,8 @@ export default async function TreatmentCategoryPage({ params }: Props) {
     count: regionCount(r),
   }));
 
+  // WhatsApp and phone for the phone card's contact buttons.
+  const contacts = await cardExtras([...top.items, ...regionTops.flatMap(r => r.items)].map(c => c.id));
   const tabs: BizTab[] = [
     {
       key: '',
@@ -90,7 +94,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
       inName: 'בכל הארץ',
       allHref: `/search?t=${cat.slug}`,
       total: top.total,
-      items: top.items.map(card => ({ card, meta: card.cityName })),
+      items: top.items.map(card => ({ card, meta: card.cityName, contact: contacts[card.id] })),
     },
     ...MENU_REGION_ORDER.map((r, i) => ({
       key: r,
@@ -98,7 +102,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
       inName: REGION_CONTENT[r].inName,
       allHref: `/search?region=${r}&t=${cat.slug}`,
       total: regionTops[i].total,
-      items: regionTops[i].items.map(card => ({ card, meta: card.cityName })),
+      items: regionTops[i].items.map(card => ({ card, meta: card.cityName, contact: contacts[card.id] })),
     })),
   ];
 
@@ -125,7 +129,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
         ])}
       />
       <JsonLd data={faqLd(faqs)} />
-      <SiteHeader variant="public" />
+      <SiteHeader variant="public" title={cat.name} backHref="/treatments" />
 
       <nav aria-label="נתיב ניווט" className={shared.crumbBar}>
         <ol className={shared.crumbs}>
@@ -206,9 +210,11 @@ export default async function TreatmentCategoryPage({ params }: Props) {
             <h2 id="h-what" className={`${shared.h2} ${shared.h2Lg} ${styles.whatH2}`}>
               מה התחום כולל<span className={shared.dot}>.</span>
             </h2>
-            {body.paras.map(p => (
-              <p key={p} className={styles.para}>{p}</p>
-            ))}
+            <ReadMore lineHeight="29px">
+              {body.paras.map(p => (
+                <p key={p} className={styles.para}>{p}</p>
+              ))}
+            </ReadMore>
             <div className={`${shared.infoBox} ${styles.reg}`}>
               <InfoGlyph />
               <p>

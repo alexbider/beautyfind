@@ -92,7 +92,9 @@ h2.whatH2 { margin-bottom: 14px; }
 .table tbody tr:last-child th, .table tbody tr:last-child td { border-bottom: 0; }
 .table tbody th { font-weight: 500; color: var(--navy); }
 .table tbody th a { display: inline-flex; align-items: center; min-height: 28px; color: var(--navy); border-bottom: 1px solid var(--line-strong); }
-.table tbody th a:hover { color: var(--teal-deep); border-color: var(--teal); }
+@media (hover: hover) and (pointer: fine) {
+  .table tbody th a:hover { color: var(--teal-deep); border-color: var(--teal); }
+}
 .totalRow th, .totalRow td { background: var(--tint); }
 .totalRow th { font-weight: 700; }
 .tdMedian { color: var(--navy); font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -107,7 +109,9 @@ h2.citiesH2 { margin-bottom: 16px; }
   display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border: 1px solid var(--line);
   border-radius: 999px; background: #ffffff; font-size: 14.5px; font-weight: 500; transition: border-color .18s, background .18s;
 }
-.pill:hover { border-color: var(--teal); background: var(--tint); color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) {
+  .pill:hover { border-color: var(--teal); background: var(--tint); color: var(--teal-deep); }
+}
 .pillCount { font-size: 12.5px; color: var(--subtle); }
 
 h2.faqH2 { margin-bottom: 10px; }
@@ -119,7 +123,43 @@ h2.faqH2 { margin-bottom: 10px; }
   height: 100%; display: flex; flex-direction: column; gap: 6px; padding: 18px; border: 1px solid var(--line); border-radius: 16px;
   background: #ffffff; transition: border-color .22s, box-shadow .22s, transform .22s;
 }
-.relCard:hover { border-color: var(--teal); box-shadow: 0 16px 40px rgba(12, 36, 62, .08); transform: translateY(-2px); }
+@media (hover: hover) and (pointer: fine) {
+  .relCard:hover { border-color: var(--teal); box-shadow: 0 16px 40px rgba(12, 36, 62, .08); transform: translateY(-2px); }
+}
 .relGroup { font-size: 12.5px; font-weight: 700; color: var(--subtle); }
 .relName { font-family: var(--font-display); font-size: 21px; line-height: 1.25; color: var(--navy); }
 .relMeta { font-size: 13.5px; color: var(--muted); }
+
+/* ---------- App shell (phones, touch tablets): responsive spec §6 Treatment Category ---------- */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .main { padding: 8px 16px 40px; }
+  .block { margin-top: 36px; }
+  .introCopy { gap: 12px; }
+  .h1 { font-size: 28px; line-height: 1.18; }
+  .answer { font-size: 16px; }
+  .metaRow { padding: 10px 0; }
+  .heroFig { display: none; }
+
+  /* Stat chips row */
+  .stats {
+    display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 2px;
+    border: 0; border-radius: 0; background: transparent;
+  }
+  .stats::-webkit-scrollbar { display: none; }
+  .stat {
+    flex: none; flex-direction: row; align-items: baseline; gap: 6px; padding: 8px 14px;
+    border: 1px solid var(--line); border-radius: 20px; box-shadow: none; background: var(--bg-soft);
+  }
+  .stat dt { order: 2; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .stat dd { order: 1; font-family: var(--font-ui); font-size: 15px; font-weight: 800; }
+  .ctas > * { flex: 1 1 auto; justify-content: center; min-height: 48px; }
+
+  /* The price table fits the width instead of scrolling sideways. */
+  .prices { padding: 18px 14px; border-radius: 16px; }
+  .table { min-width: 0; font-size: 14px; }
+  .table thead th { padding: 10px 8px; font-size: 12px; }
+  .table tbody th, .table tbody td { padding: 11px 8px; }
+  .pills { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 2px; }
+  .pills::-webkit-scrollbar { display: none; }
+  .pill { flex: none; }
+}
