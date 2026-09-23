@@ -10,11 +10,23 @@ export type MoreRow =
   | { kind: 'cookies' }
   | { kind: 'static'; label: string; note: string };
 
-export function MoreMenu({ title, intro, groups }: { title: string; intro?: React.ReactNode; groups: Array<{ name: string; rows: MoreRow[] }> }) {
+export function MoreMenu({
+  title,
+  intro,
+  groups,
+  nested = false,
+}: {
+  title: string;
+  intro?: React.ReactNode;
+  groups: Array<{ name: string; rows: MoreRow[] }>;
+  /** Inside a layout that already renders <main> (dashboard, clinic). */
+  nested?: boolean;
+}) {
+  const Root = nested ? 'div' : 'main';
   return (
     <>
       <TopBar mode="root" largeTitle={title} />
-      <main className={styles.root}>
+      <Root className={styles.root}>
         <h1 className={styles.deskTitle}>{title}</h1>
         {intro && <div className={styles.intro}>{intro}</div>}
         {groups.map(g => (
@@ -50,7 +62,7 @@ export function MoreMenu({ title, intro, groups }: { title: string; intro?: Reac
             </ul>
           </section>
         ))}
-      </main>
+      </Root>
     </>
   );
 }

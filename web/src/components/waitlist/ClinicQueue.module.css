@@ -56,7 +56,7 @@
 .toast {
   position: fixed; bottom: calc(var(--bf-float-bottom) + 18px); right: 50%; transform: translateX(50%); z-index: 60;
   max-width: min(90vw, 440px); padding: 12px 17px; border-radius: 13px; background: var(--navy); color: #fff;
-  font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(12, 36, 62, .28); text-wrap: pretty; animation: bfFade .16s ease both;
+  font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(12, 36, 62, .28); text-wrap: pretty; animation: bfFade .16s ease backwards;
 }
 
 @media (hover: hover) and (pointer: fine) {

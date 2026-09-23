@@ -108,6 +108,10 @@ How it fits together:
 - **Guest to account:** clients book as guests by phone. When the same phone is verified by OTP (sign-up or sign-in), its bookings, waitlist entries, consult requests and consents move to the account.
 - **Local payments:** the `sandbox` provider serves a fake checkout at `/pay/sandbox/[paymentId]`. Production builds refuse it unless `ALLOW_SANDBOX_PAYMENTS=1`. `SITE_URL` must match the address you open, or checkout redirects go elsewhere.
 
+### Phones: app shell
+
+On phones (and touch tablets under 1024px) the site runs as an app shell: top bar, bottom tab bar per area (client, business, clinic), sticky action bars, bottom sheets instead of popovers, step flows, pull to refresh and swipe rows. It installs as a PWA (manifest, service worker for public pages only, offline page). Spec: `docs/responsive-spec.md`; shared building blocks and rules: `docs/responsive-foundation.md`.
+
 ## Stubs until vendors are chosen
 
 - **Messaging** (`src/lib/vendors/messaging.ts`): WhatsApp BSP, SMS and email all go through one interface; only the console adapter exists. It prints codes and links, so it refuses to run in production unless `ALLOW_CONSOLE_MESSAGING=1` (local testing only).

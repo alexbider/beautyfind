@@ -31,7 +31,7 @@
 .eyebrow::before { content: ''; width: 24px; height: 1px; background: var(--teal); display: inline-block; flex: none; }
 .h1 {
   margin: 0; font-family: var(--font-display); font-weight: 500; font-size: clamp(34px, 4.1vw, 58px);
-  line-height: 1.08; letter-spacing: -0.015em; text-wrap: balance; animation: bfRise .6s var(--ease-out) both;
+  line-height: 1.08; letter-spacing: -0.015em; text-wrap: balance; animation: bfRise .6s var(--ease-out) backwards;
 }
 .dot { color: var(--teal); }
 .answer { margin: 0; font-size: clamp(17px, 1.2vw, 19.5px); line-height: 1.65; color: var(--text); text-wrap: pretty; max-width: 66ch; }
@@ -64,7 +64,7 @@
 
 .hero {
   margin: 0; position: relative; height: clamp(200px, 42vw, 300px); border-radius: 20px; overflow: hidden;
-  background: #EDF1F3; animation: bfRise .6s var(--ease-out) .08s both;
+  background: #EDF1F3; animation: bfRise .6s var(--ease-out) .08s backwards;
 }
 @media (min-width: 1024px) { .hero { height: auto; min-height: 300px; align-self: stretch; } }
 .hero img { object-fit: cover; }
@@ -105,7 +105,7 @@
 .panel {
   position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; width: 270px; padding: 8px;
   background: #ffffff; border: 1px solid var(--line); border-radius: 14px;
-  box-shadow: 0 20px 48px rgba(12, 36, 62, .16); animation: bfDrop .16s ease both;
+  box-shadow: 0 20px 48px rgba(12, 36, 62, .16); animation: bfDrop .16s ease backwards;
 }
 .panel[data-kind="sort"] { width: 210px; }
 .opt {
@@ -158,7 +158,7 @@
   position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 16px;
   background: #ffffff; border: 1px solid var(--line); border-radius: 16px;
   transition: border-color .22s, box-shadow .22s, transform .22s var(--ease-out);
-  animation: bfCard .4s var(--ease-out) both;
+  animation: bfCard .4s var(--ease-out) backwards;
 }
 @media (hover: hover) and (pointer: fine) {
   .card:hover { border-color: var(--line-strong); box-shadow: var(--shadow-card); transform: translateY(-2px); }
@@ -368,13 +368,13 @@
   display: inline-flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 400; color: var(--navy); transition: transform .25s;
 }
 .faqQ[aria-expanded="true"] .faqPlus { transform: rotate(45deg); }
-.faqA { margin: 0; padding: 0 0 14px; font-size: 14px; line-height: 1.65; color: var(--text); text-wrap: pretty; animation: bfFade .25s ease both; }
+.faqA { margin: 0; padding: 0 0 14px; font-size: 14px; line-height: 1.65; color: var(--text); text-wrap: pretty; animation: bfFade .25s ease backwards; }
 .disclaimer { margin: 2px 0 0; padding-top: 12px; border-top: 1px solid var(--divider); font-size: 12.5px; line-height: 1.6; color: var(--subtle); text-wrap: pretty; }
 
 .spacer { height: clamp(56px, 7vw, 96px); }
 
 /* ---------- empty city (States: "אזור ללא עסקים") ---------- */
-.empty { margin-top: clamp(28px, 3vw, 40px); animation: bfFade .22s ease both; }
+.empty { margin-top: clamp(28px, 3vw, 40px); animation: bfFade .22s ease backwards; }
 .emptyHead { max-width: 640px; margin: 0 auto 22px; text-align: center; }
 .building {
   display: inline-flex; align-items: center; height: 28px; padding: 0 11px; margin-bottom: 11px; border: 1px solid #F3D9BE;

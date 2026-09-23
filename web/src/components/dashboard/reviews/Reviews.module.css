@@ -1,6 +1,6 @@
 /* Design: BeautyFind Dashboard.dc.html, isReviews. The Google block is new (decision A4). */
 
-.section { animation: bfFade .25s ease both; }
+.section { animation: bfFade .25s ease backwards; }
 
 .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
 .headText { min-width: 0; }
@@ -73,7 +73,7 @@
 .replyLabel { display: block; font-size: 12.5px; font-weight: 700; color: var(--teal-deep); margin-bottom: 5px; }
 .reply > p { margin: 0; font-size: 15px; line-height: 1.7; color: var(--navy); text-wrap: pretty; white-space: pre-line; }
 
-.compose { display: flex; flex-direction: column; gap: 10px; animation: bfFade .2s ease both; }
+.compose { display: flex; flex-direction: column; gap: 10px; animation: bfFade .2s ease backwards; }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .label { font-size: 13.5px; font-weight: 700; }
 .textarea {

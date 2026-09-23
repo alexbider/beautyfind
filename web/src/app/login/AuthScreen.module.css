@@ -48,7 +48,7 @@
 @keyframes auPop { from { opacity: 0; transform: scale(.97) } to { opacity: 1; transform: none } }
 
 /* ---------- Forms ---------- */
-.form { display: flex; flex-direction: column; gap: 12px; animation: auFade .22s ease both; }
+.form { display: flex; flex-direction: column; gap: 12px; animation: auFade .22s ease backwards; }
 .otpWrap { gap: 14px; }
 
 .label { display: flex; flex-direction: column; gap: 5px; font-size: 13px; font-weight: 700; }
@@ -180,7 +180,7 @@
   min-height: 44px; padding: 0 13px; border: 0; border-radius: 11px; background: transparent;
   font: inherit; font-size: 14px; font-weight: 700; color: var(--teal-deep); cursor: pointer;
 }
-.sent { display: flex; flex-direction: column; gap: 13px; animation: auPop .2s ease both; }
+.sent { display: flex; flex-direction: column; gap: 13px; animation: auPop .2s ease backwards; }
 .sentIcon {
   display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%;
   background: var(--tint); color: var(--teal-deep);
@@ -246,5 +246,5 @@
 }
 .toast {
   width: max-content; max-width: min(90vw, 420px); padding: 12px 17px; border-radius: 13px; background: var(--navy); color: #ffffff;
-  font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(12, 36, 62, .28); animation: auPop .16s ease both; text-wrap: pretty;
+  font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(12, 36, 62, .28); animation: auPop .16s ease backwards; text-wrap: pretty;
 }

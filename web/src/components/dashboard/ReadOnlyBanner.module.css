@@ -1,6 +1,6 @@
 .banner {
   display: flex; align-items: flex-start; gap: 11px; padding: 14px 17px; border: 1px solid #E8D3B4;
-  border-radius: 14px; background: #FDF8EF; animation: bfFade .2s ease both;
+  border-radius: 14px; background: #FDF8EF; animation: bfFade .2s ease backwards;
 }
 .banner svg { flex: none; margin-top: 2px; }
 .banner p { margin: 0; font-size: 14.5px; line-height: 1.6; color: #6E4E17; text-wrap: pretty; }

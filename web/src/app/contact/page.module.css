@@ -24,7 +24,7 @@
 .eyebrow > span { width: 24px; height: 1px; background: var(--teal); display: inline-block; }
 .h1 {
   margin: 0; font-family: var(--font-display); font-weight: 500; font-size: clamp(32px, 3.7vw, 52px); line-height: 1.07;
-  letter-spacing: -0.016em; text-wrap: balance; animation: introRise .55s var(--ease-out) both;
+  letter-spacing: -0.016em; text-wrap: balance; animation: introRise .55s var(--ease-out) backwards;
 }
 @keyframes introRise { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
 .lede { margin: 0; font-size: clamp(16.5px, 1.15vw, 19px); line-height: 1.62; color: var(--text); text-wrap: pretty; max-width: 58ch; }

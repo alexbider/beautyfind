@@ -2,7 +2,7 @@
 .bg { background: var(--bg-page); padding: clamp(18px, 3vw, 34px) 0 clamp(40px, 6vw, 72px); }
 .wrap { max-width: 1160px; margin: 0 auto; padding-inline: 16px; }
 @media (min-width: 480px) { .wrap { padding-inline: 22px; } }
-.card { padding: clamp(18px, 3vw, 30px); border: 1px solid var(--line); border-radius: 20px; background: #ffffff; animation: unFade .22s ease both; }
+.card { padding: clamp(18px, 3vw, 30px); border: 1px solid var(--line); border-radius: 20px; background: #ffffff; animation: unFade .22s ease backwards; }
 @keyframes unFade { from { opacity: 0; transform: translateY(7px) } to { opacity: 1; transform: none } }
 
 .warn { margin: 0 0 18px; padding: 13px 15px; border: 1px solid #F3D9BE; border-radius: 13px; background: #FDF1E7; font-size: 14px; font-weight: 700; color: var(--warn-text); text-wrap: pretty; }

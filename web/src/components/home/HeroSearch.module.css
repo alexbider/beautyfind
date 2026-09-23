@@ -37,7 +37,7 @@
 .list {
   position: absolute; right: 0; top: calc(100% + 12px); z-index: 40; width: min(440px, calc(100vw - 48px));
   max-height: 380px; overflow: auto; padding: 8px; background: #ffffff; border: 1px solid var(--line); border-radius: 14px;
-  box-shadow: 0 16px 40px rgba(12, 36, 62, .14); animation: bfDrop .16s ease both;
+  box-shadow: 0 16px 40px rgba(12, 36, 62, .14); animation: bfDrop .16s ease backwards;
 }
 .groupName { padding: 8px 12px 4px; font-size: 12px; font-weight: 700; color: var(--subtle); }
 .opt {
@@ -75,7 +75,7 @@
 .result {
   display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; background: #ffffff;
   border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 12px 32px rgba(12, 36, 62, .08);
-  animation: bfRise .2s ease both;
+  animation: bfRise .2s ease backwards;
 }
 .result p { margin: 0; font-size: 15px; line-height: 1.6; color: var(--text); }
 .result strong { color: var(--navy); }

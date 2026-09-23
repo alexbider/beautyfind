@@ -1,7 +1,7 @@
 /* Bottom sheet below 768px, centred dialog above. */
 .root { position: fixed; inset: 0; z-index: 90; }
 
-.scrim { position: absolute; inset: 0; background: rgba(12, 36, 62, .42); animation: bfFade .2s ease both; }
+.scrim { position: absolute; inset: 0; background: rgba(12, 36, 62, .42); animation: bfFade .2s ease backwards; }
 
 .panel {
   position: absolute;
@@ -14,7 +14,7 @@
   border-radius: 20px 20px 0 0;
   box-shadow: var(--shadow-modal);
   outline: none;
-  animation: sheetUp .26s cubic-bezier(.2, .9, .25, 1.02) both;
+  animation: sheetUp .26s cubic-bezier(.2, .9, .25, 1.02) backwards;
   transition: height .26s var(--ease-out), transform .2s var(--ease-out);
 }
 .panel[data-dragging] { transition: none; }
@@ -56,7 +56,7 @@
     height: auto;
     border-radius: 18px;
     transform: translate(-50%, -50%);
-    animation: dialogIn .2s var(--ease-out) both;
+    animation: dialogIn .2s var(--ease-out) backwards;
   }
   .panel[data-size='half'], .panel[data-size='full'], .panel[data-expanded] { height: auto; }
   .handle { display: none; }
@@ -66,5 +66,5 @@
 @keyframes dialogIn { from { opacity: 0; transform: translate(-50%, -48%) } to { opacity: 1; transform: translate(-50%, -50%) } }
 
 @media (prefers-reduced-motion: reduce) {
-  .panel, .scrim { animation: bfFade .12s ease both !important; }
+  .panel, .scrim { animation: bfFade .12s ease backwards !important; }
 }

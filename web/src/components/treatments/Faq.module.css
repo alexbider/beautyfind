@@ -26,7 +26,7 @@
 .list[data-variant='rules'] .plus { width: 30px; height: 30px; }
 .item[data-open] .plus { transform: rotate(45deg); }
 
-.a { margin: 0; font-size: 15.5px; color: var(--text); text-wrap: pretty; animation: bfFade .25s ease both; }
+.a { margin: 0; font-size: 15.5px; color: var(--text); text-wrap: pretty; animation: bfFade .25s ease backwards; }
 .a[hidden] { display: none; }
 .list[data-variant='cards'] .a { padding: 0 18px 18px; line-height: 1.7; }
 .list[data-variant='rules'] .a { padding: 0 8px 18px; max-width: 64ch; line-height: 1.72; }

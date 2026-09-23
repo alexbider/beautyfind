@@ -1,7 +1,7 @@
 .list { display: flex; flex-direction: column; gap: 10px; }
 .item {
   background: #ffffff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
-  transition: background .22s, border-color .22s; animation: bfRise .55s var(--ease-out) both;
+  transition: background .22s, border-color .22s; animation: bfRise .55s var(--ease-out) backwards;
 }
 .item[data-open] { background: var(--bg-soft); border-color: var(--teal); }
 .h { margin: 0; font-size: 17px; font-weight: 700; }
@@ -16,4 +16,4 @@
   transition: transform .25s;
 }
 .item[data-open] .plus { transform: rotate(45deg); }
-.a { margin: 0; padding: 0 18px 18px; font-size: 16px; line-height: 1.7; color: var(--text); text-wrap: pretty; animation: bfFade .25s ease both; }
+.a { margin: 0; padding: 0 18px 18px; font-size: 16px; line-height: 1.7; color: var(--text); text-wrap: pretty; animation: bfFade .25s ease backwards; }

@@ -574,8 +574,7 @@
 /* ---------- App shell (phones, touch tablets): one step per screen (spec §3.4, §6 Booking) ---------- */
 @media (max-width: 767px), (max-width: 1023px) and (hover: none) {
   .root { --bk-slots: repeat(3, minmax(0, 1fr)); --bk-svc: minmax(0, 1fr); --bk-two: minmax(0, 1fr); --bk-pad: 16px; min-height: 0; background: #fff; }
-  /* The body already reserves 76px for the action bar; the hint line and 52px button need more. */
-  .wrap { padding: 8px var(--bk-pad) 64px; }
+  .wrap { padding: 8px var(--bk-pad) 16px; }
   /* The page title stays for screen readers; the top bar and step heading carry it visually. */
   .h1 { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .intro { display: none; }

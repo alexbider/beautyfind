@@ -2,7 +2,7 @@
 
 @keyframes pop { from { opacity: 0; transform: scale(.97) } to { opacity: 1; transform: none } }
 
-.section { animation: bfFade .25s ease both; }
+.section { animation: bfFade .25s ease backwards; }
 
 .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
 .headText { min-width: 0; }
@@ -13,7 +13,7 @@
 .h1 > span { color: var(--teal); }
 .sub { margin: 0; font-size: 14.5px; color: var(--muted); text-wrap: pretty; }
 
-.saveBar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; animation: pop .2s ease both; }
+.saveBar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; animation: pop .2s ease backwards; }
 .unsaved { font-size: 13.5px; font-weight: 700; color: #A8432C; }
 .ghostBtn {
   min-height: 46px; padding: 0 13px; border: 0; background: transparent; font: inherit; font-size: 14px;
@@ -27,7 +27,7 @@
 .primaryBtn:disabled { cursor: progress; opacity: .75; }
 .savedChip {
   display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 14px; border-radius: 12px;
-  background: var(--tint); font-size: 14px; font-weight: 700; color: var(--teal-deep); animation: pop .2s ease both;
+  background: var(--tint); font-size: 14px; font-weight: 700; color: var(--teal-deep); animation: pop .2s ease backwards;
 }
 
 .twoCols {
@@ -86,7 +86,7 @@
 
 .warnBox {
   margin: 4px 0 0; padding: 12px 14px; border: 1px solid var(--warn-line); border-radius: 12px; background: var(--warn-bg);
-  font-size: 13.5px; line-height: 1.6; color: var(--warn-text); text-wrap: pretty; animation: bfFade .2s ease both;
+  font-size: 13.5px; line-height: 1.6; color: var(--warn-text); text-wrap: pretty; animation: bfFade .2s ease backwards;
 }
 
 .readBox {
@@ -177,7 +177,7 @@
 @media (hover: hover) and (pointer: fine) { .dropRemove:hover { background: #A33A31; } }
 .dropProgress {
   position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 12px; background: rgba(255, 255, 255, .94);
-  display: flex; flex-direction: column; gap: 6px; animation: bfFade .15s ease both;
+  display: flex; flex-direction: column; gap: 6px; animation: bfFade .15s ease backwards;
 }
 .dropProgressText { font-size: 12.5px; font-weight: 700; color: var(--teal-deep); }
 .dropTrack { display: block; height: 6px; border-radius: 999px; background: var(--divider); overflow: hidden; }

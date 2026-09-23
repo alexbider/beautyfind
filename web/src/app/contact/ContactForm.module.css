@@ -60,7 +60,7 @@
 
 .formError {
   display: flex; align-items: flex-start; gap: 11px; padding: 14px 16px; border: 1px solid #F0C9BF; border-radius: 13px;
-  background: #FFF4F2; animation: bfFade .2s ease both;
+  background: #FFF4F2; animation: bfFade .2s ease backwards;
 }
 .formError svg { flex: none; margin-top: 2px; }
 .formError p { margin: 0; font-size: 15px; line-height: 1.65; color: var(--navy); text-wrap: pretty; }
@@ -68,7 +68,7 @@
 /* Success */
 .sent {
   padding: clamp(24px, 3vw, 40px); border: 1px solid var(--teal-border); border-radius: 20px; background: var(--tint);
-  animation: sentPop .3s var(--ease-out) both;
+  animation: sentPop .3s var(--ease-out) backwards;
 }
 @keyframes sentPop { from { opacity: 0; transform: scale(.97) } to { opacity: 1; transform: none } }
 .sentIcon {

@@ -204,8 +204,7 @@
 /* ---------- App shell (spec §3.3, §6 Health Declaration) ---------- */
 @media (max-width: 767px), (max-width: 1023px) and (hover: none) {
   .root { min-height: 0; background: #fff; --pad: 16px; }
-  /* The body reserves 76px for the action bar; the hint line and 52px button need more. */
-  .wrap { padding: 8px var(--pad) 64px; }
+  .wrap { padding: 8px var(--pad) 16px; }
   .off { display: none !important; }
   .shell { display: block; }
   .side { margin-top: 18px; }

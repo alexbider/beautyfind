@@ -13,7 +13,7 @@
 @media (hover: hover) and (pointer: fine) { .crumbs a:hover { color: var(--teal-deep); } }
 .crumbs [aria-current] { color: var(--navy); font-weight: 600; }
 
-.gallery { padding-top: clamp(18px, 2.4vw, 28px); animation: bfRise .6s var(--ease-out) both; }
+.gallery { padding-top: clamp(18px, 2.4vw, 28px); animation: bfRise .6s var(--ease-out) backwards; }
 
 /* Main grid: content + sidebar. Aside comes first below twoStep (design asideOrder). */
 .main {

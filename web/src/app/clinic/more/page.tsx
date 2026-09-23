@@ -15,6 +15,7 @@ export default async function ClinicMorePage() {
   ];
   return (
     <MoreMenu
+      nested
       title="עוד"
       intro={
         <>

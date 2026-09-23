@@ -2,7 +2,7 @@
    Suggestion grids: 1 track, 2 from 560px, 3 from 900px (fewer when there are fewer items).
    Card / KPI grids: 2 tracks, 4 from 900px. */
 
-.enter { animation: stFade .22s ease both; }
+.enter { animation: stFade .22s ease backwards; }
 @keyframes stFade { from { opacity: 0; transform: translateY(7px) } to { opacity: 1; transform: none } }
 @keyframes stSpin { to { transform: rotate(360deg) } }
 @keyframes stPulse { 0%, 100% { opacity: .55 } 50% { opacity: 1 } }

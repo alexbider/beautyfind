@@ -98,7 +98,7 @@
 .cArrow { flex: none; width: 16px; }
 
 .list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.list > li { animation: bfCard .38s var(--ease-out) both; }
+.list > li { animation: bfCard .38s var(--ease-out) backwards; }
 .row {
   display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 14px; border: 1px solid var(--line); border-radius: 16px;
   background: #ffffff; transition: border-color .22s, box-shadow .22s, background .22s;
@@ -118,7 +118,7 @@
 
 .empty {
   margin-top: 28px; padding: clamp(26px, 3.4vw, 44px); border: 1px dashed var(--line-strong); border-radius: 18px;
-  text-align: center; animation: bfFade .25s ease both;
+  text-align: center; animation: bfFade .25s ease backwards;
 }
 .emptyTitle { margin: 0 0 6px; font-family: var(--font-display); font-size: 23px; color: var(--navy); }
 .emptyBody { margin: 0 0 16px; font-size: 15px; color: var(--muted); }

@@ -39,7 +39,7 @@
 .topicCount { font-size: 12.5px; font-weight: 600; color: var(--muted); }
 
 .shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(16px, 2.4vw, 30px); align-items: start; }
-.main { min-width: 0; animation: hpFade .2s ease both; }
+.main { min-width: 0; animation: hpFade .2s ease backwards; }
 @keyframes hpFade { from { opacity: 0; transform: translateY(7px) } to { opacity: 1; transform: none } }
 
 .listHead { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }

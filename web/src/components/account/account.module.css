@@ -65,9 +65,9 @@
 .h1 { margin: 0 0 3px; font-family: var(--font-display); font-size: clamp(23px, 3vw, 31px); font-weight: 500; letter-spacing: -0.015em; line-height: 1.2; }
 .lead { margin: 0; max-width: 58ch; font-size: 15px; color: var(--text); text-wrap: pretty; }
 
-.stack { display: flex; flex-direction: column; gap: 11px; animation: acFade .22s ease both; }
+.stack { display: flex; flex-direction: column; gap: 11px; animation: acFade .22s ease backwards; }
 .sectionHead { margin: 12px 0 0; font-size: 14px; font-weight: 700; color: var(--muted); }
-.two { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; animation: acFade .22s ease both; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; animation: acFade .22s ease backwards; }
 @media (min-width: 480px) { .two { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .full { grid-column: 1 / -1; }
 .moreLink { margin: 12px 0 0; font-size: 14px; font-weight: 700; }

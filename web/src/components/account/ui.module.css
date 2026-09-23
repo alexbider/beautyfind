@@ -14,7 +14,7 @@
   pointer-events: auto; max-width: min(90vw, 440px); padding: 12px 17px; border-radius: 13px;
   background: var(--navy); color: #fff; font-size: 14px; font-weight: 600; text-wrap: pretty;
   box-shadow: 0 12px 30px rgba(12, 36, 62, .28); display: flex; align-items: center; gap: 12px;
-  animation: uiPop .16s ease both;
+  animation: uiPop .16s ease backwards;
 }
 .toastAction {
   flex: none; min-height: 44px; margin: -12px 0; border: 0; background: transparent; padding: 0 4px; cursor: pointer;
@@ -49,7 +49,7 @@
   box-shadow: var(--shadow-modal);
 }
 .dialog::backdrop { background: rgba(12, 36, 62, .45); }
-.dialog[open] { animation: uiPop .18s ease both; }
+.dialog[open] { animation: uiPop .18s ease backwards; }
 .dialogBody { padding: 22px; }
 .dialogTitle { margin: 0 0 8px; font-family: var(--font-display); font-size: 24px; font-weight: 500; letter-spacing: -0.014em; }
 .dialogText { font-size: 14.5px; color: var(--text); text-wrap: pretty; }

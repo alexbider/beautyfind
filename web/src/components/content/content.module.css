@@ -44,7 +44,7 @@
 .h1 {
   margin: 0; font-family: var(--font-display); font-weight: 500;
   font-size: clamp(32px, 3.7vw, 54px); line-height: 1.07; letter-spacing: -0.016em; text-wrap: balance;
-  animation: bfRise .55s cubic-bezier(.2, .7, .2, 1) both;
+  animation: bfRise .55s cubic-bezier(.2, .7, .2, 1) backwards;
 }
 .root[data-variant='legal'] .h1 { font-size: clamp(31px, 3.5vw, 50px); line-height: 1.08; }
 .dot { color: var(--teal); }
@@ -284,7 +284,7 @@
   transition: transform .25s;
 }
 .faqItem[data-open] .faqPlus { transform: rotate(45deg); }
-.faqA { margin: 0; padding: 0 8px 18px; max-width: 64ch; font-size: 15.5px; line-height: 1.72; color: var(--text); text-wrap: pretty; animation: bfFade .25s ease both; }
+.faqA { margin: 0; padding: 0 8px 18px; max-width: 64ch; font-size: 15.5px; line-height: 1.72; color: var(--text); text-wrap: pretty; animation: bfFade .25s ease backwards; }
 
 /* ---------- CTA band ---------- */
 .cta {

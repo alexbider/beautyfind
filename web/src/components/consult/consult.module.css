@@ -192,9 +192,8 @@
 /* ---------- App shell (spec §6 Consult Request): one step per screen ---------- */
 @media (max-width: 767px), (max-width: 1023px) and (hover: none) {
   .flowRoot { min-height: 0; background: #fff; --pad: 16px; }
-  /* The body reserves 76px for the action bar; the hint line and 52px button need more. */
   /* The flow top bar spans the full width, so the page padding moves to the body under it. */
-  .flowRoot .page { padding: 0 0 64px; animation: none; }
+  .flowRoot .page { padding: 0 0 16px; animation: none; }
   .flowRoot .flowBody { padding: 8px var(--pad) 0; }
   .flowRoot .off { display: none !important; }
   .flowRoot .shell { display: block; }

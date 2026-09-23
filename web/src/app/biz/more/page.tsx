@@ -26,6 +26,7 @@ export default async function BizMorePage() {
   return (
     <div className={s.bleed}>
       <MoreMenu
+      nested
         title="עוד"
         groups={[
           { name: 'ניהול', rows: manage },

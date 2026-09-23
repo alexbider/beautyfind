@@ -17,7 +17,7 @@
 }
 .toast {
   max-width: min(90vw, 420px); padding: 12px 17px; border-radius: 13px; background: var(--navy); color: #fff;
-  font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(12, 36, 62, .28); animation: shToast .16s ease both;
+  font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(12, 36, 62, .28); animation: shToast .16s ease backwards;
 }
 @keyframes shToast { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
 @media (max-width: 767px), (max-width: 1023px) and (hover: none) {

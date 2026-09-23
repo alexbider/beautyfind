@@ -61,7 +61,7 @@
 
 .card {
   background: #ffffff; border: 1px solid var(--line); border-radius: 17px; padding: clamp(15px, 1.8vw, 21px);
-  animation: obFade .22s ease both;
+  animation: obFade .22s ease backwards;
 }
 .two { display: grid; grid-template-columns: var(--ob-two); gap: 11px; }
 
@@ -310,7 +310,7 @@
 /* ---------- Done ---------- */
 .done {
   max-width: 640px; background: #ffffff; border: 1px solid var(--teal-border); border-radius: 18px;
-  padding: clamp(20px, 2.6vw, 32px); animation: obPop .2s ease both;
+  padding: clamp(20px, 2.6vw, 32px); animation: obPop .2s ease backwards;
 }
 .doneIcon {
   display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; margin-bottom: 14px;
@@ -348,7 +348,7 @@
 .toast {
   position: fixed; bottom: calc(var(--bf-float-bottom) + 18px); right: 50%; translate: 50% 0; z-index: 40; max-width: min(90vw, 440px);
   padding: 12px 17px; border-radius: 13px; background: var(--navy); color: #ffffff; font-size: 14px; font-weight: 600;
-  box-shadow: 0 12px 30px rgba(12, 36, 62, .28); animation: obPop .16s ease both; text-wrap: pretty;
+  box-shadow: 0 12px 30px rgba(12, 36, 62, .28); animation: obPop .16s ease backwards; text-wrap: pretty;
 }
 
 /* Keep 16px inputs on phones so iOS does not zoom on focus (matches globals.css). */
@@ -382,7 +382,7 @@
     max-width: none; min-height: calc(100dvh - var(--topbar-h) - var(--safe-t) - 32px);
     display: flex; flex-direction: column; border: 0; border-radius: 0; padding: 24px 0 8px; animation: none;
   }
-  .doneIcon { width: 72px; height: 72px; align-self: center; margin: 12px 0 18px; animation: obCheck .22s var(--ease-out) both; }
+  .doneIcon { width: 72px; height: 72px; align-self: center; margin: 12px 0 18px; animation: obCheck .22s var(--ease-out) backwards; }
   .doneIcon svg { width: 34px; height: 34px; }
   .doneH1 { text-align: center; }
   .doneBody { text-align: center; }

@@ -187,7 +187,7 @@
 .sortMenu {
   position: absolute; left: 0; top: calc(100% + 8px); z-index: 20; width: 224px; padding: 8px;
   background: #ffffff; border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 20px 48px rgba(12, 36, 62, .16);
-  animation: srDrop .16s ease both;
+  animation: srDrop .16s ease backwards;
 }
 .sortItem {
   display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 44px; padding: 0 10px;
@@ -211,7 +211,7 @@
 
 .activeRow {
   display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding: 12px 14px; margin-bottom: 14px;
-  background: var(--tint); border: 1px solid var(--teal-border); border-radius: 14px; animation: srDrop .18s ease both;
+  background: var(--tint); border: 1px solid var(--teal-border); border-radius: 14px; animation: srDrop .18s ease backwards;
 }
 .activeLabel { font-size: 12.5px; font-weight: 700; color: var(--teal-deep); margin-inline-end: 2px; }
 .activeChip {
@@ -252,7 +252,7 @@
   position: relative; min-width: 0; display: flex; flex-wrap: wrap; gap: 16px; padding: 16px;
   background: #ffffff; border: 1px solid var(--line); border-radius: 16px;
   transition: border-color .22s, box-shadow .22s, transform .22s var(--ease-out);
-  animation: srCard .4s var(--ease-out) both;
+  animation: srCard .4s var(--ease-out) backwards;
 }
 @media (hover: hover) and (pointer: fine) {
   .card:hover { border-color: var(--line-strong); box-shadow: var(--shadow-card); transform: translateY(-2px); }

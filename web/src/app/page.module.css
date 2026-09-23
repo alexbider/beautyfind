@@ -85,21 +85,21 @@
   display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(32px, 5vw, 72px); align-items: center;
 }
 .heroCopy { min-width: 0; display: flex; flex-direction: column; gap: clamp(20px, 2.4vw, 30px); }
-.eyebrow { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 700; color: var(--muted); animation: bfFade .6s ease both; }
+.eyebrow { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 700; color: var(--muted); animation: bfFade .6s ease backwards; }
 .eyebrowLineAnim {
   width: 26px; height: 1px; background: var(--teal); display: inline-block; flex: none; transform-origin: right;
-  animation: bfLine .7s var(--ease-out) .2s both;
+  animation: bfLine .7s var(--ease-out) .2s backwards;
 }
 .h1 {
   margin: 0; font-family: var(--font-display); font-weight: 500; font-size: clamp(42px, 5.4vw, 84px);
   line-height: 1.06; letter-spacing: -0.015em; color: var(--navy); text-wrap: balance;
 }
-.h1 > span { display: inline-block; animation: bfWord .8s var(--ease-out) both; }
+.h1 > span { display: inline-block; animation: bfWord .8s var(--ease-out) backwards; }
 .lede {
   margin: 0; max-width: 46ch; font-size: clamp(17px, 1.3vw, 20px); line-height: 1.6; color: var(--text);
-  text-wrap: pretty; animation: bfFade .8s ease .5s both;
+  text-wrap: pretty; animation: bfFade .8s ease .5s backwards;
 }
-.heroSearch { display: flex; flex-direction: column; gap: 14px; animation: bfRise .8s var(--ease-out) .55s both; position: relative; z-index: 3; }
+.heroSearch { display: flex; flex-direction: column; gap: 14px; animation: bfRise .8s var(--ease-out) .55s backwards; position: relative; z-index: 3; }
 .regionLine { font-size: 14px; color: var(--subtle); }
 
 .heroArt { position: relative; max-width: 540px; width: 100%; justify-self: center; display: none; }
@@ -111,14 +111,14 @@
 .fig { margin: 0; overflow: hidden; background: #ffffff; padding: 8px; transition: box-shadow .3s; }
 .figWide {
   grid-column: 1 / -1; border-radius: 20px; box-shadow: 0 24px 52px rgba(12, 36, 62, .14);
-  animation: bfCard .9s var(--ease-out) .5s both, heroDrift 13s ease-in-out .5s infinite;
+  animation: bfCard .9s var(--ease-out) .5s backwards, heroDrift 13s ease-in-out .5s infinite;
 }
 @media (hover: hover) and (pointer: fine) {
   .figWide:hover { box-shadow: 0 32px 66px rgba(12, 36, 62, .2); }
 }
 .figA, .figB { border-radius: 18px; box-shadow: 0 20px 44px rgba(12, 36, 62, .12); }
-.figA { animation: bfCard .9s var(--ease-out) .7s both, heroDrift 15s ease-in-out .7s infinite; }
-.figB { animation: bfCard .9s var(--ease-out) .9s both, heroDrift 17s ease-in-out .9s infinite; }
+.figA { animation: bfCard .9s var(--ease-out) .7s backwards, heroDrift 15s ease-in-out .7s infinite; }
+.figB { animation: bfCard .9s var(--ease-out) .9s backwards, heroDrift 17s ease-in-out .9s infinite; }
 @media (hover: hover) and (pointer: fine) {
   .figA:hover, .figB:hover { box-shadow: 0 28px 58px rgba(12, 36, 62, .18); }
 }
@@ -128,7 +128,7 @@
 @keyframes heroDrift { 0%, 100% { transform: translate3d(0, 0, 0) } 50% { transform: translate3d(0, -14px, 0) } }
 .heroDot {
   position: absolute; right: -46px; bottom: -34px; z-index: 1; width: 112px; height: 112px; border-radius: 50%;
-  background: var(--teal); opacity: .92; animation: bfPop .9s var(--ease-out) .5s both;
+  background: var(--teal); opacity: .92; animation: bfPop .9s var(--ease-out) .5s backwards;
 }
 
 /* ---------- Businesses carousel ---------- */

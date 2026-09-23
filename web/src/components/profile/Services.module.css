@@ -28,7 +28,7 @@
   .from { font-size: 14px; }
 }
 
-.panel { padding: 0 20px 18px; animation: bfFade .22s ease both; }
+.panel { padding: 0 20px 18px; animation: bfFade .22s ease backwards; }
 .rows { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
 .row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 11px 0; border-top: 1px solid var(--divider); }
 .rowName { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; min-width: 0; font-size: 15px; color: var(--text); }

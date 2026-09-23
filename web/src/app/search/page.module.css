@@ -27,7 +27,7 @@
 .eyebrowLine { display: inline-block; width: 24px; height: 1px; background: var(--teal); }
 .h1 {
   margin: 0; font-family: var(--font-display); font-weight: 500; font-size: clamp(28px, 3.2vw, 44px); line-height: 1.15;
-  letter-spacing: -0.014em; text-wrap: balance; animation: pgRise .5s var(--ease-out) both;
+  letter-spacing: -0.014em; text-wrap: balance; animation: pgRise .5s var(--ease-out) backwards;
 }
 .h1Dot { color: var(--teal); }
 .answer { margin: 10px 0 0; max-width: 72ch; font-size: 16.5px; line-height: 1.65; color: var(--text); text-wrap: pretty; }

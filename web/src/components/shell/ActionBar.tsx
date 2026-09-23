@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styles from './ActionBar.module.css';
 
 // Sticky action bar (spec §2.3). Sits above the tab bar, or at the very bottom when the tab bar is
@@ -40,8 +40,34 @@ export function ActionBar({
   className?: string;
 }) {
   const kb = useKeyboardInset();
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Publish the real height (hint and error lines make it taller than one button) so the page's
+  // bottom padding and floating UI (toasts, pills) clear it exactly. Only while the bar is fixed.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const root = document.documentElement;
+    const sync = () => {
+      const fixed = getComputedStyle(el).position === 'fixed';
+      const h = Math.ceil(el.getBoundingClientRect().height);
+      if (fixed && h > 0) root.style.setProperty('--bf-bottom-bar', `${h}px`);
+      else if (!fixed) root.style.removeProperty('--bf-bottom-bar');
+    };
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    window.addEventListener('resize', sync);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', sync);
+      root.style.removeProperty('--bf-bottom-bar');
+    };
+  }, []);
+
   return (
     <div
+      ref={ref}
       className={`${styles.bar} ${className ?? ''}`}
       data-bottom-bar
       data-mobile-only={mobileOnly || undefined}

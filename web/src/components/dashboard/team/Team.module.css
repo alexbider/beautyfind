@@ -1,6 +1,6 @@
 /* Design: project/BeautyFind Dashboard.dc.html (isTeam). Values copied from the prototype's inline styles. */
 
-.section { animation: fade .25s ease both; }
+.section { animation: fade .25s ease backwards; }
 .head { margin-bottom: 14px; }
 .h1 {
   margin: 0 0 4px; font-family: var(--font-display); font-weight: 500; font-size: clamp(25px, 2.3vw, 34px);
@@ -65,7 +65,7 @@
 /* ---------- Confirm ---------- */
 .confirm {
   margin: 0 18px 14px; padding: 15px 16px; border: 1px solid #E3B3AF; border-radius: 14px; background: #FDF5F4;
-  animation: pop .18s ease both;
+  animation: pop .18s ease backwards;
 }
 .confirmTitle { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: #8E2F28; }
 .confirmBody { margin: 0 0 13px; font-size: 13.5px; color: var(--muted); text-wrap: pretty; }

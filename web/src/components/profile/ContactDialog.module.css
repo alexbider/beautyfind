@@ -1,11 +1,11 @@
 .overlay {
   position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center;
-  padding: 16px; background: rgba(12, 36, 62, .55); animation: bfFade .2s ease both;
+  padding: 16px; background: rgba(12, 36, 62, .55); animation: bfFade .2s ease backwards;
 }
 .panel {
   position: relative; width: min(540px, 100%); max-height: calc(100dvh - 32px); overflow: auto; overscroll-behavior: contain;
   padding: 24px; border-radius: 20px; background: #ffffff; box-shadow: var(--shadow-modal);
-  text-align: right; animation: cdPop .2s var(--ease-out) both;
+  text-align: right; animation: cdPop .2s var(--ease-out) backwards;
 }
 @keyframes cdPop { from { opacity: 0; transform: scale(.97) } to { opacity: 1; transform: none } }
 @media (max-width: 479px) {
@@ -72,7 +72,7 @@
 .done { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 4px 6px; text-align: center; }
 .doneIcon {
   width: 58px; height: 58px; border-radius: 50%; background: var(--tint); color: var(--teal-deep); display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 0 6px rgba(20, 179, 198, .08); animation: bfPop .3s var(--ease-out) both;
+  box-shadow: 0 0 0 6px rgba(20, 179, 198, .08); animation: bfPop .3s var(--ease-out) backwards;
 }
 .doneTitle { margin: 6px 0 0; font-family: var(--font-display); font-weight: 500; font-size: 26px; line-height: 1.2; }
 .doneText { margin: 0; max-width: 40ch; font-size: 15px; line-height: 1.65; color: var(--text); text-wrap: pretty; }

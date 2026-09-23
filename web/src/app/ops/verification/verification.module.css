@@ -457,7 +457,7 @@
   font-size: 14px;
   font-weight: 600;
   box-shadow: 0 12px 30px rgba(12, 36, 62, .28);
-  animation: vfPop .16s ease both;
+  animation: vfPop .16s ease backwards;
 }
 
 @media (hover: hover) and (pointer: fine) {
