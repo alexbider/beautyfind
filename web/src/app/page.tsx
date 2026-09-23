@@ -12,13 +12,14 @@ import { HomeFooter } from '@/components/home/HomeFooter';
 import { HomeHeader, type HeaderRegion } from '@/components/home/HomeHeader';
 import { HeroSearch } from '@/components/home/HeroSearch';
 import { IsraelMap } from '@/components/home/IsraelMap';
-import { PhoneSearchField } from '@/components/home/PhoneSearch';
+import { PhoneHome, type PhoneCard, type PhoneReview } from '@/components/home/phone/PhoneHome';
 import type { RegionChoice } from '@/components/home/regionStore';
 import { ArrowForward, PathIcon } from '@/components/icons';
-import { CATEGORIES, CITIES, REGIONS, citiesOf, cityHref, type Category } from '@/lib/catalog';
+import { CATEGORY_IMAGE } from '@/components/home/content';
+import { CATEGORIES, CITIES, REGIONS, citiesOf, cityHref, type Category, type RegionSlug } from '@/lib/catalog';
 import { nis } from '@/lib/format';
 import { ROUTES } from '@/lib/routes';
-import { listBranches, listingCounts, medianPrices, type ListingCard } from '@/lib/server/public';
+import { listBranches, listingCounts, medianPrices, recentReviews, type ListingCard } from '@/lib/server/public';
 import styles from './page.module.css';
 
 // Design: project/BeautyFind Homepage.dc.html. Server component; the header, hero search,
@@ -92,9 +93,10 @@ function CatMeta({ n, median, onDark }: { n: number; median: number | null | und
 }
 
 export default async function HomePage() {
-  const [counts, medians, all, ...perRegion] = await Promise.all([
+  const [counts, medians, reviews, all, ...perRegion] = await Promise.all([
     listingCounts(),
     medianPrices(),
+    recentReviews(6),
     listBranches({ take: CARDS_PER_TAB }),
     ...REGIONS.map(r => listBranches({ region: r.slug, take: CARDS_PER_TAB })),
   ]);
@@ -116,6 +118,39 @@ export default async function HomePage() {
   const extras = await cardExtras([...new Set(Object.values(lists).flatMap(l => l.map(c => c.id)))]);
   const contacts = Object.fromEntries(Object.entries(extras).map(([id, e]) => [id, { whatsapp: e.whatsapp, phone: e.phone }]));
 
+  // Phones (app shell): the design's own layout, built from the same data.
+  const toPhone = (c: ListingCard): PhoneCard => ({
+    id: c.id,
+    name: c.name,
+    href: c.href,
+    tag: c.categories[0]?.name ?? '',
+    city: c.cityName,
+    img: c.coverUrl ?? CATEGORY_IMAGE[c.categories[0]?.slug ?? ''] ?? '/assets/biz-facial.jpg',
+    bf: c.beautyfind,
+    g: c.google,
+    from: c.priceFromShekels,
+    openNow: extras[c.id]?.openNow ?? false,
+    whatsapp: extras[c.id]?.whatsapp ?? null,
+    phone: extras[c.id]?.phone ?? null,
+  });
+  const phoneLists = Object.fromEntries(REGIONS.map(r => [r.slug, lists[r.slug].map(toPhone)])) as Record<RegionSlug, PhoneCard[]>;
+  const regionCities = Object.fromEntries(
+    REGIONS.map(r => [r.slug, topCities(r.slug, 2).map(c => ({ name: c.name, href: cityHref(c) }))]),
+  ) as Record<RegionSlug, Array<{ name: string; href: string }>>;
+  const monthYear = new Intl.DateTimeFormat('he-IL', { month: 'long', year: 'numeric', timeZone: 'Asia/Jerusalem' });
+  const phoneReviews: PhoneReview[] = reviews.map(r => ({
+    id: r.id,
+    initial: r.authorName.trim().charAt(0) || 'ל',
+    name: r.authorName,
+    date: monthYear.format(r.createdAt),
+    rating: r.rating,
+    text: r.body,
+    treat: r.treatmentName,
+    biz: r.branchName,
+    href: r.branchHref,
+    verified: r.verified,
+  }));
+
   const headerRegions: HeaderRegion[] = REGIONS.map(r => ({
     slug: r.slug,
     name: r.name,
@@ -130,327 +165,297 @@ export default async function HomePage() {
   return (
     <div className={styles.root}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
-      <a href="#main" className={styles.skip}>דלגו לתוכן</a>
-      <HomeHeader regions={headerRegions} total={counts.total} />
+      <div className="bf-shell-only">
+        <PhoneHome lists={phoneLists} reviews={phoneReviews} regionCities={regionCities} catCount={CATEGORIES.length} />
+      </div>
 
-      <main id="main" className={styles.main}>
-        {/* ---------- Hero ---------- */}
-        <section aria-labelledby="hero-h1" className={styles.hero}>
-          <div className={styles.heroClip} aria-hidden="true"><div className={styles.heroGlow} /></div>
-          <div className={styles.heroInner}>
-            <div className={styles.heroCopy}>
-              <div className={styles.eyebrow}>
-                <span className={styles.eyebrowLineAnim} aria-hidden="true" />
-                אינדקס היופי, האסתטיקה והבריאות של ישראל
+      <div className="bf-desk-only">
+        <a href="#main" className={styles.skip}>דלגו לתוכן</a>
+        <HomeHeader regions={headerRegions} total={counts.total} />
+
+        <main id="main">
+          {/* ---------- Hero ---------- */}
+          <section aria-labelledby="hero-h1" className={styles.hero}>
+            <div className={styles.heroClip} aria-hidden="true"><div className={styles.heroGlow} /></div>
+            <div className={styles.heroInner}>
+              <div className={styles.heroCopy}>
+                <div className={styles.eyebrow}>
+                  <span className={styles.eyebrowLineAnim} aria-hidden="true" />
+                  אינדקס היופי, האסתטיקה והבריאות של ישראל
+                </div>
+                <h1 id="hero-h1" className={styles.h1}>
+                  <span style={{ animationDelay: '.05s' }}>מצאו את מיטב</span>
+                  <br />
+                  <span style={{ animationDelay: '.2s' }}>מכוני היופי</span>
+                  <br />
+                  <span style={{ animationDelay: '.35s' }}>שלידכם<Dot /></span>
+                </h1>
+                <p className={styles.lede}>
+                  מכוני אסתטיקה רפואית, קוסמטיקה, מספרות, ספא ועיצוב הגוף, מקריית שמונה ועד אילת. גלו תחומי טיפול, השוו בין עסקים וקבעו את הפגישה הבאה שלכם.
+                </p>
+                <div className={styles.heroSearch}>
+                  <HeroSearch regionCounts={counts.region} cityCounts={counts.city} />
+                  <div className={styles.regionLine} aria-hidden="true">
+                    {REGIONS.map(r => r.name).join(' · ')}
+                  </div>
+                </div>
+
               </div>
-              <h1 id="hero-h1" className={styles.h1}>
-                <span style={{ animationDelay: '.05s' }}>מצאו את מיטב</span>
-                <br />
-                <span style={{ animationDelay: '.2s' }}>מכוני היופי</span>
-                <br />
-                <span style={{ animationDelay: '.35s' }}>שלידכם<Dot /></span>
-              </h1>
-              <p className={styles.lede}>
-                מכוני אסתטיקה רפואית, קוסמטיקה, מספרות, ספא ועיצוב הגוף, מקריית שמונה ועד אילת. גלו תחומי טיפול, השוו בין עסקים וקבעו את הפגישה הבאה שלכם.
-              </p>
-              <div className={`${styles.heroSearch} bf-desk-only`}>
-                <HeroSearch regionCounts={counts.region} cityCounts={counts.city} />
-                <div className={styles.regionLine} aria-hidden="true">
-                  {REGIONS.map(r => r.name).join(' · ')}
+
+              <div className={styles.heroArt} aria-hidden="true">
+                <div className={styles.heroGrid}>
+                  <figure className={`${styles.fig} ${styles.figWide}`}>
+                    <span className={styles.figImgWide}>
+                      {/* Hidden below 1000px, so small screens request only the smallest variant. */}
+                      <Image src="/assets/hero-clinic.jpg" alt="" fill preload fetchPriority="high" sizes="(min-width: 1000px) 524px, 1px" className={styles.cover} />
+                    </span>
+                  </figure>
+                  <figure className={`${styles.fig} ${styles.figA}`}>
+                    <span className={styles.figImgSq}>
+                      <Image src="/assets/hero-skin.jpg" alt="" fill sizes="(min-width: 1000px) 254px, 1px" className={styles.cover} />
+                    </span>
+                  </figure>
+                  <figure className={`${styles.fig} ${styles.figB}`}>
+                    <span className={styles.figImgSq}>
+                      <Image src="/assets/hero-consult.jpg" alt="" fill sizes="(min-width: 1000px) 254px, 1px" className={styles.cover} />
+                    </span>
+                  </figure>
+                </div>
+                <div className={styles.heroDot} />
+              </div>
+            </div>
+          </section>
+
+          {/* ---------- Businesses by region ---------- */}
+          <section aria-labelledby="h-clinics" className={styles.clinics}>
+            <ClinicRail
+              lists={lists}
+              totals={totals}
+              contacts={contacts}
+              heading={
+                <div className={styles.stack10}>
+                  <h2 id="h-clinics" className={styles.h2}>מכוני יופי באזור שלכם<Dot /></h2>
+                  <p className={styles.sub}>העסקים המדורגים ביותר בכל אזור בישראל</p>
+                </div>
+              }
+            />
+          </section>
+
+          {/* ---------- What is BeautyFind + region map ---------- */}
+          <section aria-labelledby="h-what" className={styles.what}>
+            <div className={styles.whatInner}>
+              <div className={styles.whatCopy}>
+                <div className={styles.stack16}>
+                  <span className={styles.kicker}><span className={styles.kickerLine} aria-hidden="true" />על הפלטפורמה</span>
+                  <h2 id="h-what" className={styles.h2What}>מה זה BeautyFind<Dot ch="?" /></h2>
+                  <p className={styles.whatLede}>
+                    פלטפורמת גילוי לעולם היופי, האסתטיקה והבריאות בישראל: פרופילי עסקים, מידע על תחומי טיפול ואינדקסים לפי אזור ועיר, הכול במקום אחד.
+                  </p>
+                </div>
+                <dl className={styles.whatRows}>
+                  <div className={styles.whatRow}>
+                    <dt><span className={styles.rowDot} aria-hidden="true" />איפה אנחנו מכסים</dt>
+                    <dd>
+                      שבעה אזורים בישראל ו־<span className="ltr">{CITIES.length}</span> ערים, לעיון לפי אזור, עיר ועסק. כרגע{' '}
+                      {counts.total === 1 ? 'עסק אחד' : <><span className="ltr">{counts.total}</span> עסקים</>} באינדקס.
+                    </dd>
+                  </div>
+                  {WHAT_ROWS.map(r => (
+                    <div key={r.label} className={styles.whatRow} data-muted={r.muted || undefined}>
+                      <dt><span className={styles.rowDot} aria-hidden="true" />{r.label}</dt>
+                      <dd>{r.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <div className={styles.whatCtas}>
+                  <Link href="/about" className={styles.btnNavy}><span>אודות BeautyFind</span><Arrow /></Link>
+                  <a href="#h-how" className={styles.underlineBtn}>איך הרישום באינדקס עובד</a>
                 </div>
               </div>
-
-              {/* Phones: a search field that opens the full-screen search, then the regions as a chips carousel. */}
-              <div className={`${styles.phoneSearch} bf-shell-only`}>
-                <PhoneSearchField />
+              <div className={styles.mapCol}>
+                <IsraelMap counts={counts.region} />
               </div>
-              <nav aria-label="אזורים" className={`${styles.regionChips} bf-shell-only`}>
-                {REGIONS.map(r => (
-                  <Link key={r.slug} href={`/${r.slug}`} className={styles.regionChip}>
-                    {r.name}
-                    <span className={`${styles.regionChipCount} ltr`}>{regionCount(r.slug)}</span>
-                  </Link>
-                ))}
-              </nav>
             </div>
+          </section>
 
-            <div className={styles.heroArt} aria-hidden="true">
-              <div className={styles.heroGrid}>
-                <figure className={`${styles.fig} ${styles.figWide}`}>
-                  <span className={styles.figImgWide}>
-                    {/* Hidden below 1000px, so small screens request only the smallest variant. */}
-                    <Image src="/assets/hero-clinic.jpg" alt="" fill preload fetchPriority="high" sizes="(min-width: 1000px) 524px, 1px" className={styles.cover} />
-                  </span>
-                </figure>
-                <figure className={`${styles.fig} ${styles.figA}`}>
-                  <span className={styles.figImgSq}>
-                    <Image src="/assets/hero-skin.jpg" alt="" fill sizes="(min-width: 1000px) 254px, 1px" className={styles.cover} />
-                  </span>
-                </figure>
-                <figure className={`${styles.fig} ${styles.figB}`}>
-                  <span className={styles.figImgSq}>
-                    <Image src="/assets/hero-consult.jpg" alt="" fill sizes="(min-width: 1000px) 254px, 1px" className={styles.cover} />
-                  </span>
-                </figure>
-              </div>
-              <div className={styles.heroDot} />
-            </div>
-          </div>
-        </section>
-
-        {/* ---------- Phones: treatment categories, 3 × n ---------- */}
-        <section aria-labelledby="h-cats-phone" className={`${styles.catsPhone} bf-shell-only`}>
-          <div className={styles.phoneHead}>
-            <h2 id="h-cats-phone" className={styles.phoneH2}>תחומי טיפול</h2>
-            <Link href="/treatments" className={styles.phoneAll}>הכול</Link>
-          </div>
-          <ul className={styles.catGrid}>
-            {CATEGORIES.map(c => (
-              <li key={c.slug}>
-                <FindBizLink category={c.slug} className={styles.catTile}>
-                  <span className={styles.catTileIcon} aria-hidden="true"><PathIcon paths={teaser(c).icon} size={24} /></span>
-                  <span className={styles.catTileName}>{c.name}</span>
-                </FindBizLink>
-              </li>
-            ))}
-            <li>
-              <Link href="/treatments" className={styles.catTile} data-all>
-                <span className={styles.catTileIcon} aria-hidden="true"><ArrowForward size={20} /></span>
-                <span className={styles.catTileName}>כל התחומים</span>
-              </Link>
-            </li>
-          </ul>
-        </section>
-
-        {/* ---------- Businesses by region ---------- */}
-        <section aria-labelledby="h-clinics" className={styles.clinics}>
-          <ClinicRail
-            lists={lists}
-            totals={totals}
-            contacts={contacts}
-            heading={
-              <div className={styles.stack10}>
-                <h2 id="h-clinics" className={styles.h2}>מכוני יופי באזור שלכם<Dot /></h2>
-                <p className={styles.sub}>העסקים המדורגים ביותר בכל אזור בישראל</p>
-              </div>
-            }
-          />
-        </section>
-
-        {/* ---------- What is BeautyFind + region map ---------- */}
-        <section aria-labelledby="h-what" className={styles.what}>
-          <div className={styles.whatInner}>
-            <div className={styles.whatCopy}>
-              <div className={styles.stack16}>
-                <span className={styles.kicker}><span className={styles.kickerLine} aria-hidden="true" />על הפלטפורמה</span>
-                <h2 id="h-what" className={styles.h2What}>מה זה BeautyFind<Dot ch="?" /></h2>
-                <p className={styles.whatLede}>
-                  פלטפורמת גילוי לעולם היופי, האסתטיקה והבריאות בישראל: פרופילי עסקים, מידע על תחומי טיפול ואינדקסים לפי אזור ועיר, הכול במקום אחד.
+          {/* ---------- Regions ---------- */}
+          <section aria-labelledby="h-region" className={styles.regions}>
+            <div className={styles.container}>
+              <div className={styles.sectionHead}>
+                <h2 id="h-region" className={styles.h2}>מצאו טיפול קרוב לבית<Dot /></h2>
+                <p className={styles.regionsLede}>
+                  שבעה אזורים ו־<span className="ltr">{CITIES.length}</span> ערים. לכל אזור אינדקס עסקים משלו.
                 </p>
               </div>
-              <dl className={styles.whatRows}>
-                <div className={styles.whatRow}>
-                  <dt><span className={styles.rowDot} aria-hidden="true" />איפה אנחנו מכסים</dt>
-                  <dd>
-                    שבעה אזורים בישראל ו־<span className="ltr">{CITIES.length}</span> ערים, לעיון לפי אזור, עיר ועסק. כרגע{' '}
-                    {counts.total === 1 ? 'עסק אחד' : <><span className="ltr">{counts.total}</span> עסקים</>} באינדקס.
-                  </dd>
-                </div>
-                {WHAT_ROWS.map(r => (
-                  <div key={r.label} className={styles.whatRow} data-muted={r.muted || undefined}>
-                    <dt><span className={styles.rowDot} aria-hidden="true" />{r.label}</dt>
-                    <dd>{r.value}</dd>
-                  </div>
+              <div className={styles.regionList}>
+                {REGIONS.map(r => (
+                  <article key={r.slug} className={styles.regionRow}>
+                    <Link href={`/${r.slug}`} tabIndex={-1} aria-hidden="true" className={styles.regionImg}>
+                      <Image src={REGION_IMAGE(r.slug)} alt="" fill sizes="(min-width: 760px) 30vw, 100vw" className={styles.cover} />
+                    </Link>
+                    <div className={styles.regionBody}>
+                      <div className={styles.regionMeta}>
+                        <span className={styles.pill}><CountBadge n={regionCount(r.slug)} /></span>
+                        <span dir="ltr" className={styles.path}>/{r.slug}</span>
+                      </div>
+                      <h3 className={styles.regionName}><Link href={`/${r.slug}`}>{r.name}</Link></h3>
+                      <div className={styles.regionCities}>
+                        {topCities(r.slug, 4).map(c => (
+                          <Link key={c.slug} href={cityHref(c)} className={styles.cityLink}>{c.name}</Link>
+                        ))}
+                      </div>
+                    </div>
+                    <Link href={`/${r.slug}`} className={styles.roundBtn} aria-label={`לעיון באזור ${r.name}, ${bizCountText(regionCount(r.slug))}`}>
+                      <ArrowForward size={20} />
+                    </Link>
+                  </article>
                 ))}
-              </dl>
-              <div className={styles.whatCtas}>
-                <Link href="/about" className={styles.btnNavy}><span>אודות BeautyFind</span><Arrow /></Link>
-                <a href="#h-how" className={styles.underlineBtn}>איך הרישום באינדקס עובד</a>
               </div>
             </div>
-            <div className={styles.mapCol}>
-              <IsraelMap counts={counts.region} />
-            </div>
-          </div>
-        </section>
+          </section>
 
-        {/* ---------- Regions ---------- */}
-        <section aria-labelledby="h-region" className={styles.regions}>
-          <div className={styles.container}>
+          {/* ---------- Treatments bento ---------- */}
+          <section aria-labelledby="h-treat" className={styles.treat}>
             <div className={styles.sectionHead}>
-              <h2 id="h-region" className={styles.h2}>מצאו טיפול קרוב לבית<Dot /></h2>
-              <p className={styles.regionsLede}>
-                שבעה אזורים ו־<span className="ltr">{CITIES.length}</span> ערים. לכל אזור אינדקס עסקים משלו.
-              </p>
-            </div>
-            <div className={styles.regionList}>
-              {REGIONS.map(r => (
-                <article key={r.slug} className={styles.regionRow}>
-                  <Link href={`/${r.slug}`} tabIndex={-1} aria-hidden="true" className={styles.regionImg}>
-                    <Image src={REGION_IMAGE(r.slug)} alt="" fill sizes="(min-width: 760px) 30vw, 100vw" className={styles.cover} />
-                  </Link>
-                  <div className={styles.regionBody}>
-                    <div className={styles.regionMeta}>
-                      <span className={styles.pill}><CountBadge n={regionCount(r.slug)} /></span>
-                      <span dir="ltr" className={styles.path}>/{r.slug}</span>
-                    </div>
-                    <h3 className={styles.regionName}><Link href={`/${r.slug}`}>{r.name}</Link></h3>
-                    <div className={styles.regionCities}>
-                      {topCities(r.slug, 4).map(c => (
-                        <Link key={c.slug} href={cityHref(c)} className={styles.cityLink}>{c.name}</Link>
-                      ))}
-                    </div>
-                  </div>
-                  <Link href={`/${r.slug}`} className={styles.roundBtn} aria-label={`לעיון באזור ${r.name}, ${bizCountText(regionCount(r.slug))}`}>
-                    <ArrowForward size={20} />
-                  </Link>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ---------- Treatments bento ---------- */}
-        <section aria-labelledby="h-treat" className={styles.treat}>
-          <div className={styles.sectionHead}>
-            <div>
-              <h2 id="h-treat" className={styles.h2}><span className="ltr">{CATEGORIES.length}</span> תחומי טיפול<Dot /></h2>
-              <p className={styles.treatLede}>התחילו מתחום שאתם מכירים, או גלו תחום שתרצו ללמוד עליו יותר.</p>
-            </div>
-            <Link href="/treatments" className={styles.btnGhost}><span>כל תחומי הטיפול</span><Arrow /></Link>
-          </div>
-          <div className={styles.bento}>
-            <article className={styles.feature}>
-              <span className={styles.featureStripes} aria-hidden="true" />
-              <span className={styles.featureGlow} aria-hidden="true" />
-              <span className={styles.featureIcon} aria-hidden="true">
-                <PathIcon paths={teaser(featured).icon} size={30} stroke="#7ED7E1" />
-              </span>
-              <span className={styles.featureKicker}>התחום המבוקש ביותר</span>
-              <h3 className={styles.featureName}><Link href={`/treatments/${featured.slug}`}>{featured.name}</Link></h3>
-              <p className={styles.featureText}>{teaser(featured).short}</p>
-              <CatMeta n={counts.category[featured.slug] ?? 0} median={medians[featured.slug]} onDark />
               <div>
-                <FindBizLink category={featured.slug} className={styles.featureBtn}>מצאו עסקים</FindBizLink>
+                <h2 id="h-treat" className={styles.h2}><span className="ltr">{CATEGORIES.length}</span> תחומי טיפול<Dot /></h2>
+                <p className={styles.treatLede}>התחילו מתחום שאתם מכירים, או גלו תחום שתרצו ללמוד עליו יותר.</p>
               </div>
-            </article>
-            {rest.map(c => (
-              <article key={c.slug} className={styles.tile}>
-                <div className={styles.tileTop}>
-                  <span className={styles.tileGroup}>{c.group}</span>
-                  <span className={styles.tileIcon} aria-hidden="true"><PathIcon paths={teaser(c).icon} size={22} /></span>
-                </div>
-                <div className={styles.tileBody}>
-                  <h3 className={styles.tileName}><Link href={`/treatments/${c.slug}`}>{c.name}</Link></h3>
-                  <p className={styles.tileText}>{teaser(c).short}</p>
-                  <CatMeta n={counts.category[c.slug] ?? 0} median={medians[c.slug]} />
-                </div>
+              <Link href="/treatments" className={styles.btnGhost}><span>כל תחומי הטיפול</span><Arrow /></Link>
+            </div>
+            <div className={styles.bento}>
+              <article className={styles.feature}>
+                <span className={styles.featureStripes} aria-hidden="true" />
+                <span className={styles.featureGlow} aria-hidden="true" />
+                <span className={styles.featureIcon} aria-hidden="true">
+                  <PathIcon paths={teaser(featured).icon} size={30} stroke="#7ED7E1" />
+                </span>
+                <span className={styles.featureKicker}>התחום המבוקש ביותר</span>
+                <h3 className={styles.featureName}><Link href={`/treatments/${featured.slug}`}>{featured.name}</Link></h3>
+                <p className={styles.featureText}>{teaser(featured).short}</p>
+                <CatMeta n={counts.category[featured.slug] ?? 0} median={medians[featured.slug]} onDark />
                 <div>
-                  <FindBizLink category={c.slug} className={styles.tileFind}>
-                    מצאו עסקים<span className="sr-only"> בתחום {c.name}</span>
-                  </FindBizLink>
+                  <FindBizLink category={featured.slug} className={styles.featureBtn}>מצאו עסקים</FindBizLink>
                 </div>
               </article>
-            ))}
-          </div>
-        </section>
-
-        {/* ---------- Listing standards ---------- */}
-        <section aria-labelledby="h-how" className={styles.how}>
-          <div className={styles.container}>
-            <div className={styles.split}>
-              <div className={styles.stack14}>
-                <span className={styles.kicker}><span className={styles.kickerLine} aria-hidden="true" />שקיפות</span>
-                <h2 id="h-how" className={styles.h2}>איך הרישום באינדקס עובד<Dot /></h2>
-              </div>
-              <div className={styles.stack16}>
-                <p className={styles.howLede}>כל פרופיל עסק בנוי באותו מבנה, כדי שתוכלו להשוות תפוחים לתפוחים. הנה מה שכולל פרופיל ומאיפה המידע מגיע.</p>
-                <div className={styles.row10}>
-                  <Link href={ROUTES.listingStandards} className={styles.btnNavySm}><span>תקן הרישום שלנו</span><Arrow /></Link>
-                  <Link href={ROUTES.sponsorship} className={styles.btnOutline}>איך עובד פרסום ממומן</Link>
-                </div>
-              </div>
-            </div>
-            <ol className={styles.standards}>
-              {STANDARDS.map(s => (
-                <li key={s.n} className={styles.std}>
-                  <span className={styles.stdBar} aria-hidden="true" />
-                  <span className={styles.stdNum} aria-hidden="true">{s.n}</span>
-                  <span className={styles.stdTag}><span className={styles.stdDot} aria-hidden="true" />{s.tag}</span>
-                  <h3 className={styles.stdTitle}>{s.title}</h3>
-                  <p className={styles.stdBody}>{s.body}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
-
-        {/* ---------- FAQ ---------- */}
-        <section aria-labelledby="h-faq" className={styles.faq}>
-          <div className={styles.faqInner}>
-            <div className={styles.stack14}>
-              <span className={styles.kicker}><span className={styles.kickerLine} aria-hidden="true" />שאלות נפוצות</span>
-              <h2 id="h-faq" className={styles.h2}>מה שואלים אותנו<Dot /></h2>
-              <p className={styles.faqLede}>תשובות קצרות וישירות על מה זה BeautyFind ואיך משתמשים בו.</p>
-              <Link href="/about" className={styles.textLink}><span>עוד על הפלטפורמה</span><Arrow /></Link>
-            </div>
-            <FaqAccordion items={FAQS} />
-          </div>
-        </section>
-
-        {/* ---------- Guides (TODO(cms)) ---------- */}
-        <section aria-labelledby="h-res" className={styles.res}>
-          <div className={styles.container}>
-            <div className={styles.sectionHead}>
-              <h2 id="h-res" className={styles.h2Res}>קצת ידע. החלטה מושכלת יותר<Dot /></h2>
-              <Link href="/magazine" className={styles.btnGhostWhite}><span>לכל המדריכים</span><Arrow /></Link>
-            </div>
-            <div className={styles.articles}>
-              {ARTICLES.map(a => (
-                <article key={a.title} className={styles.article}>
-                  <Link href={a.href} tabIndex={-1} aria-hidden="true" className={styles.articleImg}>
-                    <Image src={a.img} alt="" fill sizes="(min-width: 760px) 30vw, 100vw" className={styles.cover} />
-                  </Link>
-                  <div className={styles.articleBody}>
-                    <span className={styles.articleKind}>{a.kind}</span>
-                    <h3 className={styles.articleTitle}><Link href={a.href}>{a.title}</Link></h3>
-                    <p className={styles.articleDesc}>{a.desc}</p>
+              {rest.map(c => (
+                <article key={c.slug} className={styles.tile}>
+                  <div className={styles.tileTop}>
+                    <span className={styles.tileGroup}>{c.group}</span>
+                    <span className={styles.tileIcon} aria-hidden="true"><PathIcon paths={teaser(c).icon} size={22} /></span>
+                  </div>
+                  <div className={styles.tileBody}>
+                    <h3 className={styles.tileName}><Link href={`/treatments/${c.slug}`}>{c.name}</Link></h3>
+                    <p className={styles.tileText}>{teaser(c).short}</p>
+                    <CatMeta n={counts.category[c.slug] ?? 0} median={medians[c.slug]} />
+                  </div>
+                  <div>
+                    <FindBizLink category={c.slug} className={styles.tileFind}>
+                      מצאו עסקים<span className="sr-only"> בתחום {c.name}</span>
+                    </FindBizLink>
                   </div>
                 </article>
               ))}
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* ---------- For businesses ---------- */}
-        <section aria-labelledby="h-prov" className={styles.prov}>
-          <div className={styles.provCard}>
-            <span className={styles.provGlow} aria-hidden="true" />
-            <span className={styles.provRing} aria-hidden="true" />
-            <div className={styles.provCopy}>
-              <span className={styles.kicker}><span className={styles.kickerLine} aria-hidden="true" />לבעלי עסקים</span>
-              <h2 id="h-prov" className={styles.h2Prov}>עזרו ללקוחות למצוא את העסק שלכם<Dot /></h2>
-              <p className={styles.provLede}>הציגו את השירותים שלכם, הכירו את הצוות ושמרו על פרטי העסק מעודכנים, בעברית ולקהל הישראלי.</p>
-              <div className={styles.provCtas}>
-                <Link href={ROUTES.claim} className={styles.btnNavyLg}><span>אישור בעלות על העסק</span><Arrow /></Link>
-                <Link href={ROUTES.forBusiness} className={styles.btnOutlineLg}>מסלולי רישום</Link>
+          {/* ---------- Listing standards ---------- */}
+          <section aria-labelledby="h-how" className={styles.how}>
+            <div className={styles.container}>
+              <div className={styles.split}>
+                <div className={styles.stack14}>
+                  <span className={styles.kicker}><span className={styles.kickerLine} aria-hidden="true" />שקיפות</span>
+                  <h2 id="h-how" className={styles.h2}>איך הרישום באינדקס עובד<Dot /></h2>
+                </div>
+                <div className={styles.stack16}>
+                  <p className={styles.howLede}>כל פרופיל עסק בנוי באותו מבנה, כדי שתוכלו להשוות תפוחים לתפוחים. הנה מה שכולל פרופיל ומאיפה המידע מגיע.</p>
+                  <div className={styles.row10}>
+                    <Link href={ROUTES.listingStandards} className={styles.btnNavySm}><span>תקן הרישום שלנו</span><Arrow /></Link>
+                    <Link href={ROUTES.sponsorship} className={styles.btnOutline}>איך עובד פרסום ממומן</Link>
+                  </div>
+                </div>
+              </div>
+              <ol className={styles.standards}>
+                {STANDARDS.map(s => (
+                  <li key={s.n} className={styles.std}>
+                    <span className={styles.stdBar} aria-hidden="true" />
+                    <span className={styles.stdNum} aria-hidden="true">{s.n}</span>
+                    <span className={styles.stdTag}><span className={styles.stdDot} aria-hidden="true" />{s.tag}</span>
+                    <h3 className={styles.stdTitle}>{s.title}</h3>
+                    <p className={styles.stdBody}>{s.body}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </section>
+
+          {/* ---------- FAQ ---------- */}
+          <section aria-labelledby="h-faq" className={styles.faq}>
+            <div className={styles.faqInner}>
+              <div className={styles.stack14}>
+                <span className={styles.kicker}><span className={styles.kickerLine} aria-hidden="true" />שאלות נפוצות</span>
+                <h2 id="h-faq" className={styles.h2}>מה שואלים אותנו<Dot /></h2>
+                <p className={styles.faqLede}>תשובות קצרות וישירות על מה זה BeautyFind ואיך משתמשים בו.</p>
+                <Link href="/about" className={styles.textLink}><span>עוד על הפלטפורמה</span><Arrow /></Link>
+              </div>
+              <FaqAccordion items={FAQS} />
+            </div>
+          </section>
+
+          {/* ---------- Guides (TODO(cms)) ---------- */}
+          <section aria-labelledby="h-res" className={styles.res}>
+            <div className={styles.container}>
+              <div className={styles.sectionHead}>
+                <h2 id="h-res" className={styles.h2Res}>קצת ידע. החלטה מושכלת יותר<Dot /></h2>
+                <Link href="/magazine" className={styles.btnGhostWhite}><span>לכל המדריכים</span><Arrow /></Link>
+              </div>
+              <div className={styles.articles}>
+                {ARTICLES.map(a => (
+                  <article key={a.title} className={styles.article}>
+                    <Link href={a.href} tabIndex={-1} aria-hidden="true" className={styles.articleImg}>
+                      <Image src={a.img} alt="" fill sizes="(min-width: 760px) 30vw, 100vw" className={styles.cover} />
+                    </Link>
+                    <div className={styles.articleBody}>
+                      <span className={styles.articleKind}>{a.kind}</span>
+                      <h3 className={styles.articleTitle}><Link href={a.href}>{a.title}</Link></h3>
+                      <p className={styles.articleDesc}>{a.desc}</p>
+                    </div>
+                  </article>
+                ))}
               </div>
             </div>
-            <ul className={styles.provList}>
-              {PROV_POINTS.map(p => (
-                <li key={p.title} className={styles.provItem}>
-                  <span className={styles.provCheck} aria-hidden="true">
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#0B7A87" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3.5 9.5 7 13l7.5-8" /></svg>
-                  </span>
-                  <span className={styles.provText}><strong>{p.title}</strong><span>{p.body}</span></span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      </main>
+          </section>
 
-      <HomeFooter />
+          {/* ---------- For businesses ---------- */}
+          <section aria-labelledby="h-prov" className={styles.prov}>
+            <div className={styles.provCard}>
+              <span className={styles.provGlow} aria-hidden="true" />
+              <span className={styles.provRing} aria-hidden="true" />
+              <div className={styles.provCopy}>
+                <span className={styles.kicker}><span className={styles.kickerLine} aria-hidden="true" />לבעלי עסקים</span>
+                <h2 id="h-prov" className={styles.h2Prov}>עזרו ללקוחות למצוא את העסק שלכם<Dot /></h2>
+                <p className={styles.provLede}>הציגו את השירותים שלכם, הכירו את הצוות ושמרו על פרטי העסק מעודכנים, בעברית ולקהל הישראלי.</p>
+                <div className={styles.provCtas}>
+                  <Link href={ROUTES.claim} className={styles.btnNavyLg}><span>אישור בעלות על העסק</span><Arrow /></Link>
+                  <Link href={ROUTES.forBusiness} className={styles.btnOutlineLg}>מסלולי רישום</Link>
+                </div>
+              </div>
+              <ul className={styles.provList}>
+                {PROV_POINTS.map(p => (
+                  <li key={p.title} className={styles.provItem}>
+                    <span className={styles.provCheck} aria-hidden="true">
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#0B7A87" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3.5 9.5 7 13l7.5-8" /></svg>
+                    </span>
+                    <span className={styles.provText}><strong>{p.title}</strong><span>{p.body}</span></span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        </main>
+
+        <HomeFooter />
+      </div>
     </div>
   );
 }

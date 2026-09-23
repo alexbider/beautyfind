@@ -183,6 +183,42 @@ export async function medianPrices(region?: RegionSlug): Promise<Record<string, 
   return Object.fromEntries(rows.map(r => [r.slug, Number(r.n) >= 3 && r.median != null ? Math.round(Number(r.median) / 10) * 10 : null]));
 }
 
+export interface RecentReview {
+  id: string;
+  authorName: string;
+  rating: number;
+  body: string;
+  treatmentName: string | null;
+  createdAt: Date;
+  verified: boolean; // tied to a booking that took place
+  branchName: string;
+  branchHref: string;
+}
+
+/** Newest published reviews of live listings, for the homepage. No rating filter: low scores show too. */
+export async function recentReviews(take = 6): Promise<RecentReview[]> {
+  const rows = await db.review.findMany({
+    where: { status: 'published', branch: PUBLIC_WHERE },
+    orderBy: { createdAt: 'desc' },
+    take,
+    select: {
+      id: true, authorName: true, rating: true, body: true, treatmentName: true, createdAt: true, bookingId: true,
+      branch: { select: { name: true, slug: true, regionSlug: true } },
+    },
+  });
+  return rows.map(r => ({
+    id: r.id,
+    authorName: r.authorName,
+    rating: r.rating,
+    body: r.body,
+    treatmentName: r.treatmentName,
+    createdAt: r.createdAt,
+    verified: r.bookingId != null,
+    branchName: r.branch.name,
+    branchHref: profileHref(r.branch),
+  }));
+}
+
 /** Full public profile by region + slug, or null (render 404). */
 export const getProfile = cache(async (region: string, slug: string) => {
   const b = await db.branch.findFirst({
