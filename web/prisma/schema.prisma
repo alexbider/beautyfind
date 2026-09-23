@@ -83,6 +83,10 @@ model User {
 
   sessions     Session[]
   staff        StaffMember[]
+  bookings     Booking[]      @relation("ClientBookings")
+  declarations HealthDeclaration[]
+  saved        SavedClinic[]
+  consents     MessageConsent[]
   ownedBusinesses Business[] @relation("BusinessOwner")
   verificationRequests VerificationRequest[] @relation("Submitter")
 
@@ -178,6 +182,7 @@ model StaffMember {
   updatedAt   DateTime    @updatedAt @map("updated_at")
 
   medicalResponsibleFor Branch[] @relation("MedicalResponsible")
+  bookings    Booking[] @relation("PractitionerBookings")
 
   @@map("staff_members")
 }
@@ -250,6 +255,8 @@ model Business {
   depositPolicy  DepositPolicy?
   verificationRequests VerificationRequest[]
   invites        StaffInvite[]
+  providerConnections ProviderConnection[]
+  giftCards      GiftCard[]
 
   @@map("businesses")
 }
@@ -311,6 +318,11 @@ model Branch {
   leads       Lead[]
   reviews     Review[]
   events      ProfileEvent[]
+  bookings    Booking[]
+  consults    ConsultRequest[]
+  waitlist    WaitlistEntry[]
+  busyBlocks  BusyBlock[]
+  savedBy     SavedClinic[]
 
   @@index([regionSlug, status])
   @@map("branches")
@@ -350,6 +362,9 @@ model Treatment {
   onlineBookable      Boolean   @default(true) @map("online_bookable") // forced false when isMedical
   depositOverrideAgorot Int?    @map("deposit_override_agorot")
   isPublished         Boolean   @default(true) @map("is_published")
+  // Staff who perform it. Empty = any practitioner of the branch whose profession allows it.
+  practitionerIds     String[]  @map("practitioner_ids") @db.Uuid
+  bookings            Booking[]
   sortOrder           Int       @default(0) @map("sort_order")
   createdAt           DateTime  @default(now()) @map("created_at")
   updatedAt           DateTime  @updatedAt @map("updated_at")
@@ -593,7 +608,15 @@ model Review {
   id            String       @id @default(uuid()) @db.Uuid
   branchId      String       @map("branch_id") @db.Uuid
   branch        Branch       @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  bookingId     String?      @map("booking_id") @db.Uuid // required once bookings exist
+  bookingId     String?      @unique @map("booking_id") @db.Uuid // verified visit; null only for imported/demo reviews
+  booking       Booking?     @relation(fields: [bookingId], references: [id])
+  // { clean, explain, result, time, price, after } 1..5, optional
+  aspects       Json?
+  tags          String[]
+  // [{ url, kind: before|after|place }]; published only with photoConsent
+  photos        Json         @default("[]")
+  photoConsent  Boolean      @default(false) @map("photo_consent")
+  nameMode      String       @default("initial") @map("name_mode") // full | initial | anon
   authorName    String       @map("author_name") // already formatted per name_mode
   rating        Int
   title         String
@@ -689,4 +712,473 @@ model ContactMessage {
 
   @@index([reason, status])
   @@map("contact_messages")
+}
+
+// =====================================================================
+// Phase 4: booking, consults, declarations, waitlist, money, gift cards
+// =====================================================================
+
+enum BookingKind {
+  treatment
+  consult
+}
+
+enum BookingStatus {
+  pending_payment
+  abandoned
+  confirmed
+  checked_in
+  in_treatment
+  completed
+  cancelled_client
+  cancelled_clinic
+  no_show
+}
+
+enum BookingSource {
+  online
+  phone
+  walkin
+  waitlist
+  consult
+}
+
+model Booking {
+  id             String        @id @default(uuid()) @db.Uuid
+  ref            String        @unique // BF-4288
+  branchId       String        @map("branch_id") @db.Uuid
+  branch         Branch        @relation(fields: [branchId], references: [id])
+  treatmentId    String?       @map("treatment_id") @db.Uuid // null for consult bookings
+  treatment      Treatment?    @relation(fields: [treatmentId], references: [id])
+  practitionerId String?       @map("practitioner_id") @db.Uuid
+  practitioner   StaffMember?  @relation("PractitionerBookings", fields: [practitionerId], references: [id])
+  clientUserId   String?       @map("client_user_id") @db.Uuid
+  client         User?         @relation("ClientBookings", fields: [clientUserId], references: [id])
+  // Snapshot of who booked (guest or user), E.164 phone
+  clientName     String        @map("client_name")
+  clientPhone    String        @map("client_phone")
+  clientEmail    String?       @map("client_email")
+  kind           BookingKind   @default(treatment)
+  startsAt       DateTime      @map("starts_at")
+  durationMin    Int           @map("duration_min")
+  room           String?
+  status         BookingStatus
+  source         BookingSource @default(online)
+  // Price snapshot at booking time (agorot, before VAT) and the policy shown to the client
+  priceAgorot    Int?          @map("price_agorot")
+  depositAgorot  Int           @default(0) @map("deposit_agorot")
+  // Snapshot of DepositPolicy + cancellation window shown before payment (disputes read this)
+  policyShown    Json          @map("policy_shown")
+  holdUntil      DateTime?     @map("hold_until") // pending_payment slot hold (10 min)
+  requiresDeclaration Boolean  @default(false) @map("requires_declaration")
+  declarationId  String?       @map("declaration_id") @db.Uuid
+  declaration    HealthDeclaration? @relation(fields: [declarationId], references: [id])
+  consultRequestId String?     @unique @map("consult_request_id") @db.Uuid
+  checkedInAt    DateTime?     @map("checked_in_at")
+  startedAt      DateTime?     @map("started_at")
+  finishedAt     DateTime?     @map("finished_at")
+  // { productBatch, units, notes, recordedBy } encrypted at rest (treating staff only)
+  clinicalEnc    String?       @map("clinical_enc")
+  // { by: client|clinic, at, reason, late }
+  cancellation   Json?
+  consents       Json          @default("{}") // { policyAcceptedAt, marketingOptIn }
+  rescheduledFromId String?    @map("rescheduled_from_id") @db.Uuid
+  notes          String?
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  payments       Payment[]
+  review         Review?
+
+  @@index([branchId, startsAt])
+  @@index([practitionerId, startsAt])
+  @@index([clientUserId])
+  @@map("bookings")
+}
+
+// Busy time imported from connected calendars (Google / Microsoft / iCal / booking systems),
+// or blocked manually. Slots overlapping a block are not offered.
+model BusyBlock {
+  id             String   @id @default(uuid()) @db.Uuid
+  branchId       String   @map("branch_id") @db.Uuid
+  branch         Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  practitionerId String?  @map("practitioner_id") @db.Uuid // null = whole branch
+  startsAt       DateTime @map("starts_at")
+  endsAt         DateTime @map("ends_at")
+  source         String // manual | google | microsoft | ical | booking_system:<name>
+  externalId     String?  @map("external_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([branchId, startsAt])
+  @@map("busy_blocks")
+}
+
+enum ConsultStatus {
+  new
+  awaiting_client
+  consult_scheduled
+  closed_treatment_booked
+  closed_declined
+}
+
+model ConsultRequest {
+  id              String        @id @default(uuid()) @db.Uuid
+  ref             String        @unique // R-311
+  branchId        String        @map("branch_id") @db.Uuid
+  branch          Branch        @relation(fields: [branchId], references: [id])
+  clientUserId    String?       @map("client_user_id") @db.Uuid
+  clientName      String        @map("client_name")
+  clientPhone     String        @map("client_phone")
+  treatmentId     String?       @map("treatment_id") @db.Uuid
+  areas           String[]
+  goal            String
+  priorInjections String        @map("prior_injections") // never | over_year | within_year
+  format          String // clinic | video
+  chosenSlot      DateTime?     @map("chosen_slot")
+  preferredTimes  String[]      @map("preferred_times") // morning | noon | evening
+  preferredDays   Int[]         @map("preferred_days")
+  consentShareMedical Boolean   @default(false) @map("consent_share_medical")
+  medicalFlags    String[]      @map("medical_flags")
+  status          ConsultStatus
+  proposedSlot    DateTime?     @map("proposed_slot")
+  outcomeText     String?       @map("outcome_text")
+  decidedById     String?       @map("decided_by_id") @db.Uuid
+  declineReason   String?       @map("decline_reason") // medical | scope | duplicate
+  feeAgorot       Int           @default(0) @map("fee_agorot")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@index([branchId, status])
+  @@map("consult_requests")
+}
+
+enum DeclarationType {
+  medical
+  cosmetic
+}
+
+// Health declaration. Answers are encrypted at rest and readable only by the treating staff
+// of a linked booking and the branch's medical responsible doctor. Every read is audit-logged.
+model HealthDeclaration {
+  id                   String          @id @default(uuid()) @db.Uuid
+  clientUserId         String?         @map("client_user_id") @db.Uuid
+  client               User?           @relation(fields: [clientUserId], references: [id])
+  type                 DeclarationType
+  questionnaireVersion String          @map("questionnaire_version")
+  // AES-256-GCM of { answers: [{key, yes, detail}], medications, noMedications, birthDate, idLast4 }
+  answersEnc           String          @map("answers_enc")
+  flagged              Boolean // any "yes"
+  signedName           String          @map("signed_name")
+  signatureKey         String          @map("signature_key") // private MediaFile id of the PNG
+  signedAt             DateTime        @map("signed_at")
+  validUntil           DateTime        @map("valid_until") // signedAt + 12 months
+  physicianAckById     String?         @map("physician_ack_by_id") @db.Uuid
+  physicianAckAt       DateTime?       @map("physician_ack_at")
+  supersededById       String?         @map("superseded_by_id") @db.Uuid
+  createdAt            DateTime        @default(now()) @map("created_at")
+  updatedAt            DateTime        @updatedAt @map("updated_at")
+  bookings             Booking[]
+
+  @@map("health_declarations")
+}
+
+// Append-only log of sensitive reads and support logins.
+model AuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  actorId     String?  @map("actor_id") @db.Uuid
+  action      String // read_declaration | read_clinical | support_login | ...
+  subjectType String   @map("subject_type")
+  subjectId   String   @map("subject_id") @db.Uuid
+  businessId  String?  @map("business_id") @db.Uuid
+  meta        Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([subjectType, subjectId])
+  @@index([businessId, createdAt])
+  @@map("audit_logs")
+}
+
+enum WaitlistStatus {
+  active
+  offered
+  booked
+  expired
+  left
+}
+
+model WaitlistEntry {
+  id              String         @id @default(uuid()) @db.Uuid
+  branchId        String         @map("branch_id") @db.Uuid
+  branch          Branch         @relation(fields: [branchId], references: [id])
+  treatmentId     String         @map("treatment_id") @db.Uuid
+  practitionerId  String?        @map("practitioner_id") @db.Uuid // null = any
+  clientUserId    String?        @map("client_user_id") @db.Uuid
+  clientName      String         @map("client_name")
+  clientPhone     String         @map("client_phone")
+  days            Int[] // 0..5
+  timeRanges      String[]       @map("time_ranges") // morning | noon | evening
+  expiresAt       DateTime       @map("expires_at")
+  status          WaitlistStatus @default(active)
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  offers          WaitlistOffer[]
+
+  @@index([branchId, status])
+  @@map("waitlist_entries")
+}
+
+enum OfferStatus {
+  sent
+  accepted
+  passed
+  expired
+}
+
+model WaitlistOffer {
+  id             String        @id @default(uuid()) @db.Uuid
+  entryId        String        @map("entry_id") @db.Uuid
+  entry          WaitlistEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  slotStartsAt   DateTime      @map("slot_starts_at")
+  practitionerId String?       @map("practitioner_id") @db.Uuid
+  tokenHash      String        @unique @map("token_hash")
+  sentAt         DateTime      @default(now()) @map("sent_at")
+  holdUntil      DateTime      @map("hold_until")
+  status         OfferStatus   @default(sent)
+  bookingId      String?       @map("booking_id") @db.Uuid
+
+  @@map("waitlist_offers")
+}
+
+// ---------- Money ----------
+
+enum PaymentPurpose {
+  deposit
+  treatment
+  gift_card
+  consult
+  subscription
+  sponsored
+}
+
+enum PaymentStatus {
+  pending
+  succeeded
+  failed
+  refunded
+  partially_refunded
+  forfeited
+  applied
+}
+
+enum Payee {
+  business
+  platform // Israfind Group
+}
+
+model Payment {
+  id              String         @id @default(uuid()) @db.Uuid
+  payee           Payee
+  businessId      String?        @map("business_id") @db.Uuid
+  bookingId       String?        @map("booking_id") @db.Uuid
+  booking         Booking?       @relation(fields: [bookingId], references: [id])
+  giftCardId      String?        @map("gift_card_id") @db.Uuid
+  payerName       String         @map("payer_name")
+  payerPhone      String?        @map("payer_phone")
+  payerEmail      String?        @map("payer_email")
+  purpose         PaymentPurpose
+  netAgorot       Int            @map("net_agorot")
+  vatAgorot       Int            @map("vat_agorot")
+  grossAgorot     Int            @map("gross_agorot")
+  installments    Int            @default(1)
+  provider        String // cardcom | tranzila | grow | payplus | sandbox | ...
+  connectionId    String?        @map("connection_id") @db.Uuid
+  providerRef     String?        @map("provider_ref")
+  checkoutUrl     String?        @map("checkout_url")
+  cardBrand       String?        @map("card_brand")
+  cardLast4       String?        @map("card_last4")
+  status          PaymentStatus  @default(pending)
+  paidAt          DateTime?      @map("paid_at")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  documents       Document[]
+  refunds         Refund[]
+
+  @@index([businessId, createdAt])
+  @@index([provider, providerRef])
+  @@map("payments")
+}
+
+enum DocumentType {
+  tax_invoice_receipt // issued by a clinic through its invoicing provider
+  credit_note
+  platform_invoice // Israfind Group, no Israeli VAT
+}
+
+model Document {
+  id                   String       @id @default(uuid()) @db.Uuid
+  issuer               Payee
+  businessId           String?      @map("business_id") @db.Uuid
+  type                 DocumentType
+  number               String // provider's sequential number
+  paymentId            String?      @map("payment_id") @db.Uuid
+  payment              Payment?     @relation(fields: [paymentId], references: [id])
+  referencesDocumentId String?      @map("references_document_id") @db.Uuid
+  lines                Json // [{ description, qty, unitAgorot }]
+  netAgorot            Int          @map("net_agorot")
+  vatAgorot            Int          @map("vat_agorot")
+  grossAgorot          Int          @map("gross_agorot")
+  provider             String // green_invoice | icount | ezcount | sandbox | platform
+  providerRef          String?      @map("provider_ref")
+  pdfUrl               String?      @map("pdf_url")
+  sentTo               String?      @map("sent_to")
+  issuedAt             DateTime     @default(now()) @map("issued_at")
+  createdAt            DateTime     @default(now()) @map("created_at")
+  updatedAt            DateTime     @updatedAt @map("updated_at")
+
+  @@map("documents")
+}
+
+enum RefundStatus {
+  requested
+  issued
+  sent_to_card
+  received
+  failed
+}
+
+model Refund {
+  id           String       @id @default(uuid()) @db.Uuid
+  paymentId    String       @map("payment_id") @db.Uuid
+  payment      Payment      @relation(fields: [paymentId], references: [id])
+  amountAgorot Int          @map("amount_agorot")
+  reason       String
+  creditNoteId String?      @map("credit_note_id") @db.Uuid
+  providerRef  String?      @map("provider_ref")
+  status       RefundStatus @default(requested)
+  expectedBy   DateTime?    @map("expected_by") // 7 to 10 business days
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  @@map("refunds")
+}
+
+enum ProviderKind {
+  payments
+  invoicing
+  calendar
+}
+
+enum ConnectionStatus {
+  pending
+  connected
+  error
+  disabled
+}
+
+// A business's own account at a payment, invoicing or calendar provider.
+// Credentials are AES-256-GCM encrypted (lib/server/secure.ts) and never sent to the browser.
+model ProviderConnection {
+  id             String           @id @default(uuid()) @db.Uuid
+  businessId     String           @map("business_id") @db.Uuid
+  business       Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  kind           ProviderKind
+  provider       String // cardcom | tranzila | grow | payplus | green_invoice | icount | ezcount | sandbox ...
+  label          String?
+  credentialsEnc String           @map("credentials_enc")
+  settings       Json             @default("{}") // e.g. { maxInstallments, testMode }
+  status         ConnectionStatus @default(pending)
+  lastCheckedAt  DateTime?        @map("last_checked_at")
+  lastError      String?          @map("last_error")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  @@unique([businessId, kind, provider])
+  @@map("provider_connections")
+}
+
+enum GiftCardKind {
+  amount
+  treatment
+}
+
+enum GiftCardStatus {
+  pending_payment
+  scheduled
+  active
+  partially_redeemed
+  redeemed
+  refunded
+  expired
+}
+
+model GiftCard {
+  id              String         @id @default(uuid()) @db.Uuid
+  code            String         @unique // NOA-XXXX-XXXX (stored uppercase)
+  businessId      String         @map("business_id") @db.Uuid
+  business        Business       @relation(fields: [businessId], references: [id])
+  kind            GiftCardKind
+  treatmentId     String?        @map("treatment_id") @db.Uuid
+  valueAgorot     Int            @map("value_agorot")
+  balanceAgorot   Int            @map("balance_agorot")
+  buyerName       String         @map("buyer_name")
+  buyerPhone      String         @map("buyer_phone")
+  buyerEmail      String?        @map("buyer_email")
+  recipientName   String         @map("recipient_name")
+  recipientChannel String        @map("recipient_channel") // wa | email | self
+  recipientContact String?       @map("recipient_contact")
+  message         String?
+  sendAt          DateTime       @map("send_at")
+  expiresAt       DateTime       @map("expires_at") // >= purchase + 5 years
+  status          GiftCardStatus @default(pending_payment)
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  redemptions     GiftRedemption[]
+
+  @@index([businessId, status])
+  @@map("gift_cards")
+}
+
+model GiftRedemption {
+  id           String   @id @default(uuid()) @db.Uuid
+  giftCardId   String   @map("gift_card_id") @db.Uuid
+  giftCard     GiftCard @relation(fields: [giftCardId], references: [id])
+  amountAgorot Int      @map("amount_agorot")
+  bookingId    String?  @map("booking_id") @db.Uuid
+  branchId     String   @map("branch_id") @db.Uuid
+  documentId   String?  @map("document_id") @db.Uuid
+  byStaffId    String?  @map("by_staff_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("gift_redemptions")
+}
+
+// ---------- Client ----------
+
+model SavedClinic {
+  userId   String   @map("user_id") @db.Uuid
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branchId String   @map("branch_id") @db.Uuid
+  branch   Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  savedAt  DateTime @default(now()) @map("saved_at")
+
+  @@id([userId, branchId])
+  @@map("saved_clinics")
+}
+
+// Marketing consent per sender (business or all) and channel. Service messages ignore this table.
+model MessageConsent {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contact    String // E.164 or email, so guests can opt out too
+  scope      String // business id, or "all"
+  channel    String // wa | email | sms
+  marketing  Boolean
+  source     String // booking | unsubscribe | reply | account
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([contact, scope, channel])
+  @@map("message_consents")
 }

@@ -1,0 +1,10 @@
+.root { min-height: 100dvh; display: grid; place-items: center; padding: 16px; background: var(--bg-page); }
+.card { width: 100%; max-width: 420px; background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 28px; box-shadow: var(--shadow-card); text-align: center; }
+.badge { display: inline-block; margin: 0 0 14px; padding: 4px 10px; border-radius: 8px; background: var(--warn-bg); color: var(--warn-text); font-size: 13px; font-weight: 700; }
+.h1 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 28px; }
+.amount { margin: 8px 0 0; font-family: var(--font-display); font-size: 44px; }
+.meta { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+.actions { display: flex; flex-direction: column; gap: 10px; margin-top: 22px; }
+.pay { min-height: 52px; border: 0; border-radius: 12px; background: var(--teal-deep); color: #fff; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
+.pay:hover { background: var(--navy); }
+.fail { min-height: 46px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--bad-text); font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }

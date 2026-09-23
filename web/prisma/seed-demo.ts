@@ -3,6 +3,7 @@
 // Usage: npm run db:seed:demo   (after npm run db:seed)
 import { PrismaClient, type PriceType } from '@prisma/client';
 import { CATEGORIES, CITIES } from '../src/lib/catalog';
+import { seal } from '../src/lib/server/seal-core';
 
 if (process.env.NODE_ENV === 'production') {
   console.error('seed-demo refuses to run in production');
@@ -144,4 +145,66 @@ async function main() {
   console.log(`demo: ${created} businesses added`);
 }
 
-main().finally(() => db.$disconnect());
+
+// ---------- Phase 4 demo: practitioners, deposit policies, sandbox payments ----------
+// Every live demo business gets bookable staff and a sandbox payment + invoicing connection,
+// so booking, deposits, refunds and gift cards can be tried end to end without real providers.
+
+const PRACTITIONER_NAMES = ['מאיה כהן', 'רוני לוי', 'שירן אזולאי', 'דנה ברק', 'הילה מזרחי', 'נועם פרץ'];
+const DOCTOR_NAMES = ['ד״ר יעל שמיר', 'ד״ר אורי בן דוד', 'ד״ר מיכל רוזן'];
+
+async function phase4() {
+  const businesses = await db.business.findMany({
+    where: { status: 'live' },
+    include: { branches: { include: { categories: { include: { category: true } } } }, staff: true, depositPolicy: true },
+  });
+  let i = 0;
+  for (const biz of businesses) {
+    const branch = biz.branches[0];
+    if (!branch) continue;
+    const medical = branch.categories.some(c => c.category.isMedical);
+    const cosmetic = branch.categories.some(c => !c.category.isMedical);
+    const practitioners = biz.staff.filter(s => ['doctor', 'nurse', 'cosmetician', 'technician'].includes(s.profession) && s.status === 'active');
+
+    if (cosmetic && !practitioners.some(s => s.profession === 'cosmetician' || s.profession === 'technician')) {
+      for (let k = 0; k < 2; k++) {
+        await db.staffMember.create({ data: { businessId: biz.id, displayName: PRACTITIONER_NAMES[(i + k) % PRACTITIONER_NAMES.length], profession: 'cosmetician', preset: 'practitioner', branchIds: [branch.id] } });
+      }
+    }
+    if (medical && !branch.medicalResponsibleId) {
+      const license = await db.license.create({ data: { kind: 'doctor', number: String(30000 + i * 17), nameOnRecord: DOCTOR_NAMES[i % DOCTOR_NAMES.length].replace('ד״ר ', ''), status: 'verified', verifiedAt: new Date(), nextCheckAt: new Date(Date.now() + 90 * 86_400_000), source: 'moh_doctors' } });
+      const doc = await db.staffMember.create({ data: { businessId: biz.id, displayName: DOCTOR_NAMES[i % DOCTOR_NAMES.length], profession: 'doctor', preset: 'practitioner', branchIds: [branch.id], licenseId: license.id } });
+      await db.branch.update({ where: { id: branch.id }, data: { medicalResponsibleId: doc.id } });
+    }
+    if (!biz.depositPolicy) {
+      // Mix of policies so every deposit path is visible in the demo.
+      const variant = i % 3;
+      await db.depositPolicy.create({
+        data: variant === 0
+          ? { businessId: biz.id, enabled: false }
+          : variant === 1
+            ? { businessId: biz.id, enabled: true, mode: 'fixed', value: 10000, scope: 'all', refundWindowHours: 24 }
+            : { businessId: biz.id, enabled: true, mode: 'percent', value: 20, scope: 'all', refundWindowHours: 48 },
+      });
+    }
+    const plan = biz.depositPolicy?.enabled === false || i % 3 === 0 ? 'basic' : 'advanced';
+    await db.subscription.upsert({
+      where: { businessId: biz.id },
+      create: { businessId: biz.id, plan, pricePerBranchAgorot: plan === 'basic' ? 14900 : 24900 },
+      update: {},
+    });
+    for (const kind of ['payments', 'invoicing'] as const) {
+      await db.providerConnection.upsert({
+        where: { businessId_kind_provider: { businessId: biz.id, kind, provider: 'sandbox' } },
+        create: { businessId: biz.id, kind, provider: 'sandbox', credentialsEnc: seal({}), status: 'connected', label: 'סביבת בדיקה' },
+        update: {},
+      });
+    }
+    i++;
+  }
+  console.log(`demo phase 4: ${i} businesses bookable`);
+}
+
+main()
+  .then(phase4)
+  .finally(() => db.$disconnect());
