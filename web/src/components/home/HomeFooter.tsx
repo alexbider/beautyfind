@@ -74,7 +74,7 @@ export function HomeFooter() {
             BeautyFind הוא אינדקס גילוי. אנחנו מציגים עסקים ומידע על תחומי טיפול כדי לעזור לכם לבדוק את האפשרויות; איננו נותנים ייעוץ רפואי. התאמת טיפול לגופכם צריכה להיבחן מול איש מקצוע מוסמך.
           </p>
           <div className={styles.legalRow}>
-            <span>© <span className="ltr">{new Date().getFullYear()}</span> BeautyFind</span>
+            <span>© <span className="ltr">{new Date().getFullYear()}</span> BeautyFind · Israfind Group</span>
             <nav aria-label="מידע משפטי" className={styles.legal}>
               <Link href={ROUTES.privacy}>מדיניות פרטיות</Link>
               <Link href={ROUTES.terms}>תקנון</Link>

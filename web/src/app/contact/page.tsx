@@ -21,18 +21,17 @@ export const metadata: Metadata = {
   alternates: { canonical: ROUTES.contact },
 };
 
-// TODO(legal): the design shows a phone line and a postal address with specific details. Fill these in
-// once confirmed; until then the phone channel and the address card are not rendered.
+// Israfind Group (Delaware) corresponds by email. Set these to show a phone line or a postal address card.
 const SUPPORT_PHONE_E164: string | null = null;
 const POSTAL_ADDRESS: { company: string; lines: string[]; zip: string } | null = null;
 
 // Route from 01-flows.md that is not in ROUTES yet.
-const METHODOLOGY = '/about/methodology';
+const METHODOLOGY = ROUTES.methodology;
 
 const CHANNELS: Array<{ name: string; value: string; who: string; href: string }> = [
   { name: 'פנייה כללית', value: 'hello@beautyfind.co.il', who: 'מגיע לצוות המערכת', href: 'mailto:hello@beautyfind.co.il' },
   { name: 'רישום ופרסום', value: 'business@beautyfind.co.il', who: 'צוות הרישום ומכירות', href: 'mailto:business@beautyfind.co.il' },
-  // TODO(legal): the design names the editor-in-chief and the accessibility coordinator; roles only until confirmed.
+  // Contacts are roles, never personal names.
   { name: 'תיקונים ותלונות', value: 'corrections@beautyfind.co.il', who: 'צוות העריכה', href: 'mailto:corrections@beautyfind.co.il' },
   { name: 'נגישות', value: 'access@beautyfind.co.il', who: 'רכז/ת הנגישות', href: 'mailto:access@beautyfind.co.il' },
   { name: 'פרטיות', value: 'privacy@beautyfind.co.il', who: 'בקשות עיון, תיקון ומחיקה', href: 'mailto:privacy@beautyfind.co.il' },

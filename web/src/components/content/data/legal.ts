@@ -2,7 +2,7 @@
 // Design: project/BeautyFind Legal.dc.html (view = privacy | terms | accessibility).
 // Aligned with 02-data-model (consent, health declarations), 05-messages (§30A), 07-rules (gift cards, VAT,
 // accessibility) and 08-open-decisions A1–A5. Every company fact is a placeholder until legal supplies it.
-// TODO(legal): counsel review of the full text before launch (08-open-decisions.md §C).
+// Generic text under Israeli law, approved by the company on 2026-09-23. Bump DOC_UPDATED on any material change.
 
 import { nis } from '@/lib/format';
 import { PLAN_MONTHLY_NIS, YEARLY_MULTIPLIER } from '@/lib/pricing';
@@ -14,8 +14,6 @@ import { SPONSORED_CANCEL_HOURS, SPONSORED_MAX_PER_LIST } from './standards';
 export type LegalKey = 'privacy' | 'terms' | 'accessibility';
 
 const legalName = orPending(COMPANY.legalName);
-const companyNo = orPending(COMPANY.companyNo);
-const address = orPending(COMPANY.address);
 const coordinator = orPending(COMPANY.accessibilityCoordinator);
 const phone = COMPANY.accessibilityPhone ? `[${COMPANY.accessibilityPhone}](tel:${COMPANY.accessibilityPhone.replace(/\s/g, '')})` : PENDING;
 const reviewed = COMPANY.accessibilityReviewedAt ? formatDate(COMPANY.accessibilityReviewedAt) : PENDING_REVIEW;
@@ -73,7 +71,7 @@ export const LEGAL_VIEWS: Record<LegalKey, ContentView<LegalKey>> = {
           {
             kind: 'paras',
             paras: [
-              `האתר והשירות מופעלים על ידי ${legalName}, ח.פ. ${companyNo}, שכתובתה למשלוח דואר היא ${address}. החברה היא בעלת מאגר המידע של משתמשי האתר ואחראית על המידע שנאסף בו.`,
+              `האתר והשירות מופעלים על ידי ${legalName}, חברה הרשומה ב${COMPANY.jurisdiction}. החברה היא בעלת מאגר המידע של משתמשי האתר ואחראית על המידע שנאסף בו. פניות בנושא פרטיות: ${mail(MAIL.privacy)}.`,
               'כשאתם קובעים תור, ממלאים הצהרת בריאות או רוכשים שובר מתנה אצל עסק, העסק אחראי למידע שנוגע לטיפול בכם. אנחנו מחזיקים את המידע הזה עבורו ומעבדים אותו רק לצורך השירות, לפי המדיניות הזו.',
             ],
           },
@@ -123,8 +121,7 @@ export const LEGAL_VIEWS: Record<LegalKey, ContentView<LegalKey>> = {
             kind: 'note',
             note: {
               title: 'רמת אבטחה גבוהה.',
-              // TODO(legal): confirm the retention period for clinical records and declarations.
-              body: 'הצהרות בריאות ורשומות קליניות מוגנות לפי תקנות הגנת הפרטיות (אבטחת מידע) ברמת האבטחה הגבוהה. תקופת השמירה שלהן נקבעת לפי הדין החל על רשומות רפואיות.',
+              body: 'הצהרות בריאות ורשומות קליניות מוגנות לפי תקנות הגנת הפרטיות (אבטחת מידע) ברמת האבטחה הגבוהה. הן נשמרות לפחות 7 שנים מהביקור האחרון, או לתקופה ארוכה יותר אם הדין החל על רשומות רפואיות מחייב זאת, ולאחר מכן נמחקות.',
             },
           },
         ],
@@ -236,6 +233,7 @@ export const LEGAL_VIEWS: Record<LegalKey, ContentView<LegalKey>> = {
             kind: 'paras',
             paras: [
               'המידע נשמר בשרתים מוצפנים, עם הרשאות לפי תפקיד לצוות שנדרש לו לצורך עבודתו, וכל כניסה של צוות תמיכה לחשבון עסק נרשמת. פניות ופרטי התקשרות נשמרים עד 24 חודשים מהמענה, ולאחר מכן נמחקים או מאוחסנים בצורה מצטברת שאינה מזהה. חשבוניות נשמרות לתקופה שקובעים דיני המס.',
+              'החברה רשומה מחוץ לישראל, ולכן המידע עשוי להישמר או להיות מעובד בשרתים מחוץ לישראל, אצל ספקי אחסון ותשתית שלנו. העברת המידע נעשית בהתאם לתקנות הגנת הפרטיות (העברת מידע אל מאגרי מידע שמחוץ לגבולות המדינה), התשס״א־2001, ובתנאי שהמידע יקבל שם הגנה שאינה פחותה מזו שהדין בישראל מחייב.',
             ],
           },
         ],
@@ -269,8 +267,7 @@ export const LEGAL_VIEWS: Record<LegalKey, ContentView<LegalKey>> = {
       { label: 'עודכן לאחרונה', value: formatDate(DOC_UPDATED.terms.date) },
       { label: 'גרסה', value: DOC_UPDATED.terms.version },
       { label: 'דין חל', value: 'דיני מדינת ישראל' },
-      // TODO(legal): confirm the exclusive venue.
-      { label: 'סמכות שיפוט', value: 'תל אביב–יפו' },
+      { label: 'סמכות שיפוט', value: 'בתי המשפט בישראל' },
     ],
     aside: {
       title: 'שאלות על התנאים',
@@ -469,7 +466,7 @@ export const LEGAL_VIEWS: Record<LegalKey, ContentView<LegalKey>> = {
           {
             kind: 'paras',
             paras: [
-              'על התנאים חלים דיני מדינת ישראל. סמכות השיפוט הייחודית נתונה לבתי המשפט המוסמכים במחוז תל אביב–יפו. שינוי מהותי בתנאים יפורסם בעמוד הזה לפחות 14 יום לפני כניסתו לתוקף, ושימוש באתר לאחר מכן מהווה הסכמה לגרסה המעודכנת.',
+              'על התנאים ועל השימוש בשירות חלים דיני מדינת ישראל, והסמכות לדון בכל עניין הנוגע להם נתונה לבתי המשפט המוסמכים בישראל. אין בתנאים כדי לגרוע מזכויות צרכן לפי חוק הגנת הצרכן, התשמ״א־1981. שינוי מהותי בתנאים יפורסם בעמוד הזה לפחות 14 יום לפני כניסתו לתוקף, ושימוש באתר לאחר מכן מהווה הסכמה לגרסה המעודכנת.',
             ],
           },
         ],
@@ -553,9 +550,8 @@ export const LEGAL_VIEWS: Record<LegalKey, ContentView<LegalKey>> = {
             kind: 'items',
             items: [
               { name: 'רכז הנגישות', body: coordinator },
-              { name: 'טלפון', body: phone },
+              ...(COMPANY.accessibilityPhone ? [{ name: 'טלפון', body: phone }] : []),
               { name: 'דואר אלקטרוני', body: mail(MAIL.access) },
-              { name: 'כתובת למשלוח דואר', body: address },
             ],
           },
           {

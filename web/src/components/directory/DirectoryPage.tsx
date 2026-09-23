@@ -458,7 +458,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
                     </span>
                   </div>
                 ))}
-                <Link href={ROUTES.listingStandards} className={styles.method}>
+                <Link href={ROUTES.methodology} className={styles.method}>
                   <span>המתודולוגיה המלאה שלנו</span>
                   <ArrowForward size={13} />
                 </Link>

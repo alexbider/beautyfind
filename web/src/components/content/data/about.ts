@@ -12,14 +12,14 @@ export const LIVE_COUNT = '{live}';
 export type AboutKey = 'about' | 'editorial' | 'methodology';
 
 /**
- * TODO(content): real names and photos once each person has agreed to be listed.
+ * Roles only. Add a name and photo per person once they agree to be listed; the card shows the role until then.
  * Names stay null (rendered as a placeholder) until then; never invent people or credentials.
  */
 export const TEAM: TeamMember[] = [
-  { name: null, role: 'מייסדת ועורכת ראשית', bio: 'אחראית על מדיניות העריכה ועל החלטות הרישום, ואינה מטפלת במכירת פרסום.' },
-  { name: null, role: 'עורכת רפואית', bio: 'רופאה מורשית. בודקת כל תוכן שעוסק בפעולות רפואיות, בסיכונים ובהסמכות לפני פרסום.' },
-  { name: null, role: 'כתיבת מחירים ושוק', bio: 'אוספת ומנתחת את תפריטי המחירים שהעסקים מפרסמים, ומעדכנת את החציונים בכל רבעון.' },
-  { name: null, role: 'אימות ונתונים', bio: 'אחראי על אימות הרישום העסקי, הכתובות, הטלפונים והרישיונות, ועל בדיקות האיכות התקופתיות.' },
+  { name: null, role: 'עריכה ראשית', bio: 'אחראית על מדיניות העריכה ועל החלטות הרישום, ומופרדת ממכירת הפרסום.' },
+  { name: null, role: 'בקרת תוכן רפואי', bio: 'כל תוכן שעוסק בפעולות רפואיות, בסיכונים ובהסמכות נבדק לפני פרסום מול מקורות רשמיים, כמו משרד הבריאות.' },
+  { name: null, role: 'מחירים ושוק', bio: 'איסוף וניתוח של תפריטי המחירים שהעסקים מפרסמים. החציונים באתר מחושבים מהנתונים העדכניים.' },
+  { name: null, role: 'אימות ונתונים', bio: 'אימות הרישום העסקי, הכתובות, הטלפונים והרישיונות, ובדיקות איכות תקופתיות.' },
 ];
 
 const PLANS_LINE = `רישום בסיסי ב־₪${PLAN_MONTHLY_NIS.basic} או רישום מתקדם עם CRM ב־₪${PLAN_MONTHLY_NIS.advanced}, לכל סניף מפורסם לחודש, לא כולל מע״מ ובלי עמלות על תורים.`;

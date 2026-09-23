@@ -57,7 +57,7 @@ export function ClaimFooter() {
         </nav>
       </div>
       <div className={styles.footerBottom}>
-        <span>© 2026 BeautyFind</span>
+        <span>© 2026 BeautyFind · Israfind Group</span>
         <span>מידע כללי בלבד, לא ייעוץ רפואי</span>
       </div>
     </footer>

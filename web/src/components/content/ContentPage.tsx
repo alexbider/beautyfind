@@ -181,8 +181,8 @@ function BlockView({ block, section }: { block: Block; section: Section }) {
               <span aria-hidden="true" className={styles.avatar}>
                 {m.img ? <Image src={m.img} alt="" fill sizes="52px" style={{ objectFit: 'cover' }} /> : <PersonIcon />}
               </span>
-              <span className={styles.memberName}>{rich(m.name ?? PENDING, `mn${i}`)}</span>
-              <span className={styles.memberRole}>{m.role}</span>
+              <span className={styles.memberName}>{rich(m.name ?? m.role, `mn${i}`)}</span>
+              {m.name && <span className={styles.memberRole}>{m.role}</span>}
               <span className={styles.memberBio}>{rich(m.bio, `mb${i}`)}</span>
             </li>
           ))}

@@ -87,7 +87,6 @@ export function LegalPage({ view: key }: { view: LegalKey }) {
       introExtra={
         key === 'accessibility' ? (
           <p className={styles.effective}>
-            {/* TODO(legal): set COMPANY.accessibilityReviewedAt in content/meta.ts after the accessibility audit. */}
             ההצהרה עודכנה לאחרונה ב־<time dateTime={date} className="ltr">{formatDate(date)}</time> · גרסה <span className="ltr">{version}</span>
             {' · '}
             בדיקת נגישות אחרונה:{' '}

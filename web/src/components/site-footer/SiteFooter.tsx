@@ -52,7 +52,7 @@ export function SiteFooter({ note, wide = false }: { note?: string; wide?: boole
         ))}
       </div>
       <div className={styles.bottom} data-wide={wide || undefined}>
-        <span>© {new Date().getFullYear()} BeautyFind</span>
+        <span>© {new Date().getFullYear()} BeautyFind · Israfind Group</span>
         {note && <span>{note}</span>}
       </div>
     </footer>

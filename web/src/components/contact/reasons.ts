@@ -58,7 +58,6 @@ export const REASONS: ReasonInfo[] = [
     key: 'access', name: 'נגישות', hint: 'קושי בשימוש באתר', days: 7, kind: 'מענה',
     extraLabel: 'העמוד והטכנולוגיה המסייעת', extraPh: 'למשל: עמוד חיפוש, NVDA', extraTarget: 'access',
     msgHint: 'מה ניסיתם לעשות, ומה קרה בפועל. הפנייה מגיעה לרכז/ת הנגישות.',
-    // TODO(legal): the design names the coordinator. Use the name from the accessibility statement once confirmed.
     sent: 'הפנייה הועברה לרכז/ת הנגישות. נחזור אליכם עם פתרון או עם דרך חלופית בתוך שבעה ימי עסקים.',
   },
   {

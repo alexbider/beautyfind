@@ -8,10 +8,7 @@ export const PENDING_REVIEW = 'יעודכן לפני העלייה לאוויר';
 
 export type DocKey = 'privacy' | 'terms' | 'accessibility' | 'standards';
 
-/**
- * "עודכן לאחרונה" per document, ISO date (Asia/Jerusalem) + version.
- * TODO(legal): set the real publication dates and versions before launch.
- */
+/** "עודכן לאחרונה" per document, ISO date (Asia/Jerusalem) + version. Bump both on every material change. */
 export const DOC_UPDATED: Record<DocKey, { date: string; version: string }> = {
   privacy: { date: '2026-09-23', version: '1.0' },
   terms: { date: '2026-09-23', version: '1.0' },
@@ -20,25 +17,26 @@ export const DOC_UPDATED: Record<DocKey, { date: string; version: string }> = {
 };
 
 /**
- * Company details. null = not supplied yet, rendered as PENDING.
- * TODO(legal): legal name, ח.פ., registered address, privacy officer, accessibility coordinator.
- * Never fill these with invented values.
+ * Company details (approved by the company, 2026-09-23). BeautyFind is operated by Israfind Group,
+ * a Delaware company, so there is no Israeli ח.פ. Contacts are role mailboxes, never personal names.
+ * null = not applicable, and the field is omitted from the page.
  */
 export const COMPANY = {
   brand: 'BeautyFind',
-  legalName: null as string | null,
-  companyNo: null as string | null, // ח.פ.
-  address: null as string | null,
-  privacyOfficer: null as string | null,
-  accessibilityCoordinator: null as string | null,
-  accessibilityPhone: null as string | null, // E.164 when known, e.g. +9723…
-  /** Date of the last accessibility review (ISO). null until the audit is done. */
-  accessibilityReviewedAt: null as string | null,
+  legalName: 'Israfind Group' as string | null,
+  jurisdiction: 'מדינת דלאוור, ארצות הברית',
+  companyNo: null as string | null, // Israeli ח.פ.: not applicable to a Delaware company
+  address: null as string | null, // correspondence by email (MAIL) until a postal address is set
+  privacyOfficer: 'ממונה הגנת הפרטיות, בכתובת privacy@beautyfind.co.il' as string | null,
+  accessibilityCoordinator: 'רכז/ת הנגישות, בכתובת access@beautyfind.co.il' as string | null,
+  accessibilityPhone: null as string | null, // E.164 when a phone line is set up
+  /** Date of the last accessibility review (ISO). */
+  accessibilityReviewedAt: '2026-09-23' as string | null,
 };
 
 export const orPending = (v: string | null) => v ?? PENDING;
 
-/** Role mailboxes. TODO(legal): confirm each mailbox exists and is monitored before launch. */
+/** Role mailboxes. They must exist and be monitored before launch. */
 export const MAIL = {
   privacy: 'privacy@beautyfind.co.il',
   legal: 'legal@beautyfind.co.il',

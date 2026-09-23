@@ -59,6 +59,7 @@ export function organizationJsonLd(description: string) {
     areaServed: { '@type': 'Country', name: 'Israel' },
     knowsLanguage: 'he',
     contactPoint: [{ '@type': 'ContactPoint', contactType: 'customer support', url: `${SITE}/contact`, availableLanguage: 'he' }],
-    // TODO(legal): add legalName, taxID and address once COMPANY in meta.ts is filled.
+    legalName: 'Israfind Group',
+    address: { '@type': 'PostalAddress', addressRegion: 'DE', addressCountry: 'US' },
   };
 }
