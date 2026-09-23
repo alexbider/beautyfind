@@ -239,6 +239,8 @@ model Business {
   status         BusinessStatus @default(pending)
   // { cancel_window_hours, waitlist_hold_minutes, consult_fee, reminder_hours }
   settings       Json           @default("{}")
+  invoiceEmail   String?        @map("invoice_email")
+  accountantEmail String?       @map("accountant_email")
   createdAt      DateTime       @default(now()) @map("created_at")
   updatedAt      DateTime       @updatedAt @map("updated_at")
 
@@ -406,6 +408,9 @@ model Subscription {
   cycle                BillingCycle       @default(monthly)
   pricePerBranchAgorot Int                @map("price_per_branch_agorot")
   status               SubscriptionStatus @default(active)
+  // Downgrades wait for the next cycle; upgrades apply immediately (prorated).
+  pendingPlan          Plan?              @map("pending_plan")
+  currentPeriodEnd     DateTime?          @map("current_period_end")
   // { attempts, next_at }
   retry                Json?
   createdAt            DateTime           @default(now()) @map("created_at")
