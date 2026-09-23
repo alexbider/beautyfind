@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { buyGiftCard } from '@/app/gift/[branch]/actions';
-import { FixedActionBar } from '@/components/review/FixedLayer';
+import { ActionBar } from '@/components/shell/ActionBar';
 import { haptic } from '@/components/shell/haptics';
 import { TopBar } from '@/components/shell/TopBar';
 import { EMAIL_RE, toE164 } from '@/lib/format';
@@ -404,11 +404,11 @@ export function BuyForm({ slug, businessName, years, expiry, treatments, today, 
         </div>
       </main>
 
-      <FixedActionBar mobileOnly error={stepErr || undefined} hint={stepErr ? undefined : STEP_HINT[step]}>
+      <ActionBar mobileOnly error={stepErr || undefined} hint={stepErr ? undefined : STEP_HINT[step]}>
         <button type="button" onClick={next} disabled={busy} className={s.barBtn}>
           {step < STEPS ? 'המשך' : busy ? 'מעבירים לתשלום…' : <>תשלום <span className="ltr">{money(valueAgorot)}</span></>}
         </button>
-      </FixedActionBar>
+      </ActionBar>
     </>
   );
 }

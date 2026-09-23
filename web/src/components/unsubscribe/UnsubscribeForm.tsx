@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRef, useState } from 'react';
-import { FixedActionBar } from '@/components/review/FixedLayer';
+import { ActionBar } from '@/components/shell/ActionBar';
 import { haptic } from '@/components/shell/haptics';
 import { Switch } from '../account/ui';
 import { undoUnsubscribeAction, unsubscribeAction } from './actions';
@@ -148,11 +148,11 @@ export function UnsubscribeForm({
           שמירת ההעדפות
         </button>
       </div>
-      <FixedActionBar mobileOnly error={(tried && !anyOff ? NONE_OFF : failed) || undefined}>
+      <ActionBar mobileOnly error={(tried && !anyOff ? NONE_OFF : failed) || undefined}>
         <button type="button" className={styles.btnPrimary} onClick={save} disabled={busy} aria-busy={busy || undefined}>
           שמירת ההעדפות
         </button>
-      </FixedActionBar>
+      </ActionBar>
       <p className={styles.fine}>
         ההסרה נכנסת לתוקף מיד, ובכל מקרה תוך <span className="ltr">3</span> ימי עסקים. אפשר גם לשלוח ״הסר״ בתשובה לכל הודעה. <Link href="/privacy">מדיניות הפרטיות</Link>
       </p>

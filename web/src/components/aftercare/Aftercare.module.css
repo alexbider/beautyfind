@@ -91,7 +91,6 @@
 }
 
 @media (max-width: 767px), (max-width: 1023px) and (hover: none) {
-  .root { --shell-top: calc(var(--topbar-h) + var(--safe-t)); }
   .wrap { padding: 14px 0 24px; gap: 14px; }
   .wrap > :not(.segHost) { margin-inline: var(--pad); }
   .h1 { font-size: 28px; }
