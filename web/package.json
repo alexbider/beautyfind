@@ -14,7 +14,7 @@
     "ops:grant": "tsx scripts/grant-ops.ts",
     "db:seed:demo": "tsx prisma/seed-demo.ts",
     "postinstall": "prisma generate",
-    "vercel-build": "prisma migrate deploy && next build"
+    "vercel-build": "prisma migrate deploy && node scripts/staging-seed.mjs && next build"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
