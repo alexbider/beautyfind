@@ -7,6 +7,8 @@ import {
 import { EMAIL_RE } from '@/lib/format';
 import { PRESET_NAMES, type Area, type Level, type Perms } from '@/lib/permissions';
 import { LEVELS, STAFF_PRESETS, levelOf, nextLevel, type AreaRow, type InviteDTO, type MemberDTO, type StaffPreset } from './shared';
+import { ConfirmSheet } from '../ConfirmSheet';
+import { useSheetMode } from '../media';
 import styles from './Team.module.css';
 
 type Notice = { text: ReactNode; tone: 'ok' | 'err' } | null;
@@ -391,7 +393,9 @@ function Matrix({ members, areas }: { members: MemberDTO[]; areas: AreaRow[] }) 
 function Confirm(props: { title: string; body: string; confirmLabel: string; pending: boolean; onConfirm: () => void; onCancel: () => void }) {
   const uid = useId();
   const cancelRef = useRef<HTMLButtonElement>(null);
-  useEffect(() => { cancelRef.current?.focus(); }, []);
+  const sheet = useSheetMode();
+  useEffect(() => { if (!sheet) cancelRef.current?.focus(); }, [sheet]);
+  if (sheet) return <ConfirmSheet open {...props} />;
   return (
     <div
       role="alertdialog"

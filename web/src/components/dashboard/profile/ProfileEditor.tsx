@@ -4,6 +4,9 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useId, useMemo, useRef, useState, useTransition, type ReactNode } from 'react';
 import { saveProfile } from '@/app/biz/profile/actions';
 import { CATEGORIES, categoryBySlug } from '@/lib/catalog';
+import { ActionBar } from '../../shell/ActionBar';
+import { haptic } from '../../shell/haptics';
+import { revealFirstInvalid } from '../media';
 import { ImageDrop } from './ImageDrop';
 import {
   ABOUT_MAX, ABOUT_RECOMMENDED, DAY_NAMES, GAL_TAGS, MAX_GALLERY, validateProfile,
@@ -83,12 +86,10 @@ export function ProfileEditor({
     setHour(i, h.closed ? { closed: false, open: h.open || '09:00', close: h.close || '19:00' } : { closed: true });
   };
 
-  const focusFirstInvalid = () =>
-    requestAnimationFrame(() => {
-      const el = sectionRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]');
-      el?.focus();
-      el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    });
+  const focusFirstInvalid = () => {
+    haptic('warning');
+    revealFirstInvalid(sectionRef.current, '[aria-invalid="true"]');
+  };
 
   const publish = () => {
     if (ro || pending || uploads > 0) return;
@@ -101,6 +102,7 @@ export function ProfileEditor({
         setBase(snapshot);
         setTried(false);
         setSaved(true);
+        haptic('success');
         clearTimeout(savedTimer.current);
         savedTimer.current = setTimeout(() => setSaved(false), 4000);
         router.refresh();
@@ -136,7 +138,7 @@ export function ProfileEditor({
           <p className={s.sub}>כל שדה כאן מוצג בפרופיל הציבורי. החלפת האחראי הרפואי נעשית במסך צוות והרשאות ועוברת אימות רישיון.</p>
         </div>
         {canEdit && dirty && (
-          <div className={s.saveBar}>
+          <div className={`${s.saveBar} bf-desk-only`}>
             {(serverErr || (tried && !v.ok)) && (
               <span role="alert" className={s.unsaved}>{serverErr || 'יש שדות שדורשים תיקון'}</span>
             )}
@@ -418,6 +420,19 @@ export function ProfileEditor({
             </ul>
           </div>
         </div>
+      )}
+
+      {canEdit && dirty && (
+        <ActionBar
+          mobileOnly
+          error={serverErr || (tried && !v.ok ? 'יש שדות שדורשים תיקון' : undefined)}
+          hint={serverErr || (tried && !v.ok) ? undefined : uploads > 0 ? 'ממתין לסיום ההעלאה' : 'יש שינויים שעדיין לא פורסמו'}
+        >
+          <button type="button" onClick={reset} disabled={pending} className={s.ghostBtn}>ביטול</button>
+          <button type="button" onClick={publish} disabled={pending || uploads > 0} aria-busy={pending || undefined} className={s.primaryBtn}>
+            {pending ? 'מפרסם…' : 'פרסום השינויים'}
+          </button>
+        </ActionBar>
       )}
     </section>
   );

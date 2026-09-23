@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { CSSProperties, ReactNode } from 'react';
+import { Segmented } from '../../shell/Segmented';
 import { nf } from './format';
 import c from './charts.module.css';
 import ui from './ui.module.css';
@@ -16,20 +17,21 @@ export const RANGES = [
 ] as const;
 
 export function RangeSwitch({ base, current }: { base: string; current: number }) {
+  const href = (key: number) => (key === 30 ? base : `${base}?range=${key}`);
   return (
-    <nav aria-label="טווח זמן" className={ui.range}>
-      {RANGES.map(r => (
-        <Link
-          key={r.key}
-          href={r.key === 30 ? base : `${base}?range=${r.key}`}
-          scroll={false}
-          aria-current={r.key === current ? 'true' : undefined}
-          className={ui.rangeBtn}
-        >
-          {r.name}
-        </Link>
-      ))}
-    </nav>
+    <>
+      {/* App shell: the shared segmented control, full width under the heading. */}
+      <div className={`${ui.rangeShell} bf-shell-only`}>
+        <Segmented label="טווח זמן" value={String(current)} items={RANGES.map(r => ({ key: String(r.key), label: r.name, href: href(r.key) }))} />
+      </div>
+      <nav aria-label="טווח זמן" className={`${ui.range} bf-desk-only`}>
+        {RANGES.map(r => (
+          <Link key={r.key} href={href(r.key)} scroll={false} aria-current={r.key === current ? 'true' : undefined} className={ui.rangeBtn}>
+            {r.name}
+          </Link>
+        ))}
+      </nav>
+    </>
   );
 }
 

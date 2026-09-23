@@ -1,0 +1,5 @@
+/* The dashboard layout pads its content; the "עוד" list runs edge to edge like the other more pages. */
+.bleed { width: 100%; }
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .bleed { width: auto; margin: -12px -16px -24px; }
+}

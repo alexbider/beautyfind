@@ -45,7 +45,7 @@
   background: var(--teal-deep); font: inherit; font-size: 15.5px; font-weight: 700; color: #ffffff;
   text-decoration: none; cursor: pointer; transition: background .16s;
 }
-.cardBtn:hover { background: var(--navy); color: #ffffff; }
+@media (hover: hover) and (pointer: fine) { .cardBtn:hover { background: var(--navy); color: #ffffff; } }
 .cardBtn:disabled { background: var(--disabled); cursor: default; }
 
 /* ---------- Valid invite ---------- */
@@ -144,12 +144,12 @@
 }
 .submit { width: 100%; }
 .submitLink { display: flex; align-items: center; justify-content: center; text-decoration: none; }
-.submit:hover, .submitLink:hover { background: var(--navy); color: #ffffff; }
+@media (hover: hover) and (pointer: fine) { .submit:hover, .submitLink:hover { background: var(--navy); color: #ffffff; } }
 .submit:disabled { background: var(--disabled); cursor: default; }
 
 .fine { margin: 0; font-size: 12.5px; color: var(--subtle); text-wrap: pretty; }
 .fine a { color: var(--teal-deep); text-decoration: underline; }
-.fine a:hover { color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .fine a:hover { color: var(--navy); } }
 .inlineBtn {
   padding: 0; border: 0; background: transparent; font: inherit; font-size: 12.5px; font-weight: 700;
   color: var(--teal-deep); cursor: pointer; text-decoration: underline;
@@ -198,7 +198,7 @@
 .doneRow { display: flex; gap: 9px; flex-wrap: wrap; }
 
 /* ---------- Toast ---------- */
-.toastRegion { position: fixed; bottom: 18px; right: 50%; transform: translateX(50%); z-index: 40; pointer-events: none; }
+.toastRegion { position: fixed; bottom: calc(var(--bf-float-bottom) + 18px); right: 50%; transform: translateX(50%); z-index: 40; pointer-events: none; }
 .toast {
   width: max-content; max-width: min(90vw, 440px); padding: 12px 17px; border-radius: 13px; background: var(--navy);
   color: #ffffff; font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(12, 36, 62, .28);
@@ -207,4 +207,12 @@
 
 @media (prefers-reduced-motion: reduce) {
   .card, .grid, .fade, .licBox, .confirm, .done, .toast { animation: none; }
+}
+
+/* App shell: flow top bar and sticky action bar; 48px fields; success actions stacked. */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .input { min-height: 48px; }
+  .submit { min-height: 52px; }
+  .doneRow { flex-direction: column; }
+  .doneRow > * { justify-content: center; }
 }

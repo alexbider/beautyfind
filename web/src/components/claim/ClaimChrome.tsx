@@ -17,10 +17,10 @@ const FOOT_LINKS = [
   { name: 'יצירת קשר', href: ROUTES.contact },
 ];
 
-/** Slim business header with the flow's progress bar (0 to 100). */
+/** Slim business header with the flow's progress bar (0 to 100). The app shell shows the flow top bar instead. */
 export function ClaimHeader({ progress }: { progress: number }) {
   return (
-    <header className={styles.header}>
+    <header className={`${styles.header} bf-desk-only`}>
       <div className={styles.headerInner}>
         <Link href={ROUTES.home} aria-label="BeautyFind, לדף הבית" className={styles.brand}>
           <Wordmark size={28} />
@@ -42,7 +42,7 @@ export function ClaimHeader({ progress }: { progress: number }) {
 
 export function ClaimFooter() {
   return (
-    <footer className={styles.footer}>
+    <footer className={`${styles.footer} bf-desk-only`}>
       <div className={styles.footerTop}>
         <div className={styles.footerAbout}>
           <Wordmark size={26} onDark />

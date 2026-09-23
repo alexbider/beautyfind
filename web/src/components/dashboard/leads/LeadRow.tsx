@@ -7,6 +7,8 @@ import {
   KINDS, LIMITS, STAGES, entriesCount, sourceName, stageOf, validateLead,
   type LeadDTO, type LeadErrors, type LeadField, type LeadFields, type StageKey,
 } from './shared';
+import { ConfirmSheet } from '../ConfirmSheet';
+import { useSheetMode } from '../media';
 import styles from './Leads.module.css';
 
 const NONE = 'לא צוין';
@@ -62,7 +64,8 @@ const toFields = (l: LeadDTO): LeadFields => ({
   nextDate: l.nextDate ?? '',
 });
 
-function LeadDetail({ id, lead: l, canEdit, onDeleted }: { id: string; lead: LeadDTO; canEdit: boolean; onDeleted: () => void }) {
+/** The expanded card: inline under the row on desktop, inside the lead sheet (stacked) in the app shell. */
+export function LeadDetail({ id, lead: l, canEdit, onDeleted, stacked }: { id: string; lead: LeadDTO; canEdit: boolean; onDeleted: () => void; stacked?: boolean }) {
   const [editing, setEditing] = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
   const [err, setErr] = useState('');
@@ -81,7 +84,7 @@ function LeadDetail({ id, lead: l, canEdit, onDeleted }: { id: string; lead: Lea
   const events = l.events.slice().reverse();
 
   return (
-    <div id={id} className={styles.detail}>
+    <div id={id} className={styles.detail} data-stacked={stacked || undefined}>
       <div className={styles.col}>
         {!editing && (
           <div className={styles.card}>
@@ -401,7 +404,9 @@ export function ConfirmBox(props: {
 }) {
   const cancelRef = useRef<HTMLButtonElement>(null);
   const uid = useId();
-  useEffect(() => { cancelRef.current?.focus(); }, []);
+  const sheet = useSheetMode();
+  useEffect(() => { if (!sheet) cancelRef.current?.focus(); }, [sheet]);
+  if (sheet) return <ConfirmSheet open {...props} />;
   return (
     <div
       role="alertdialog"

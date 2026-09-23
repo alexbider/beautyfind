@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from 'react';
 import { connectProvider, disconnectProvider } from '@/app/biz/payments/actions';
+import { ConfirmSheet } from '../ConfirmSheet';
+import { useSheetMode } from '../media';
 import { verifyErrorText, type ProviderDTO } from './shared';
 import s from './payments.module.css';
 
@@ -15,6 +17,7 @@ export function ProviderCard({ p, otherConnected }: { p: ProviderDTO; otherConne
   const [err, setErr] = useState('');
   const [msg, setMsg] = useState('');
   const [busy, start] = useTransition();
+  const sheet = useSheetMode();
   const sandbox = p.key === 'sandbox';
 
   const submit = (e: React.FormEvent) => {
@@ -101,7 +104,7 @@ export function ProviderCard({ p, otherConnected }: { p: ProviderDTO; otherConne
             <button type="button" className={s.ghost} onClick={() => { setOpen(false); setValues({}); setErr(''); }}>ביטול</button>
           </div>
         </form>
-      ) : confirmOff ? (
+      ) : confirmOff && !sheet ? (
         <div className={`${s.callout} ${s.bad}`} role="alertdialog" aria-label={`ניתוק ${p.name}`}>
           <p style={{ margin: '0 0 9px' }}>
             {p.kind === 'payments'
@@ -125,6 +128,20 @@ export function ProviderCard({ p, otherConnected }: { p: ProviderDTO; otherConne
           )}
         </div>
       )}
+      <ConfirmSheet
+        open={confirmOff && sheet}
+        title={`ניתוק ${p.name}`}
+        body={
+          p.kind === 'payments'
+            ? 'בלי חברת סליקה מחוברת, מקדמות, שוברי מתנה וייעוץ בתשלום ייכבו מיד. תשלומים שכבר התקבלו לא נפגעים, והחזרים עליהם ימשיכו לעבור דרך החשבון הזה.'
+            : 'בלי מערכת חשבוניות מחוברת, חשבוניות מס לא יופקו אוטומטית, והקליניקה תפיק אותן במערכת שלה.'
+        }
+        confirmLabel="ניתוק"
+        cancelLabel="השאר מחובר"
+        pending={busy}
+        onConfirm={disconnect}
+        onCancel={() => setConfirmOff(false)}
+      />
     </article>
   );
 }

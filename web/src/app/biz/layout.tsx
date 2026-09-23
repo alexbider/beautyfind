@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Wordmark } from '@/components/Wordmark';
 import { DashNav } from '@/components/dashboard/DashNav';
+import { DashTopBar } from '@/components/dashboard/DashTopBar';
 import { visibleViews } from '@/components/dashboard/views';
 import { RoleMenu } from '@/components/dashboard/RoleMenu';
 import { PRESET_NAMES } from '@/lib/permissions';
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
 
 export default async function BizLayout({ children }: { children: React.ReactNode }) {
   const ctx = await bizContext();
-  const { business, branch, perms, role, member, preview } = ctx;
+  const { business, branch, perms, role, member, preview, memberships } = ctx;
 
   const [openReviews, openLeads, cityRegion] = await Promise.all([
     branch ? db.review.count({ where: { branchId: branch.id, status: 'published', businessReply: null } }) : 0,
@@ -38,10 +39,23 @@ export default async function BizLayout({ children }: { children: React.ReactNod
   const verified = business.status === 'live';
   const branchCount = business.branches.length;
   const profileHref = branch ? `/${branch.regionSlug}/biz/${branch.slug}` : '/';
+  const roles = Object.entries(PRESET_NAMES).map(([key, v]) => ({ key, ...v }));
 
   return (
     <div className={styles.root}>
-      <header className={styles.header}>
+      <DashTopBar
+        name={name}
+        line={line}
+        verified={verified}
+        profileHref={branch ? profileHref : null}
+        businesses={memberships.map(m => ({ id: m.businessId, name: m.business.branches[0]?.name ?? 'עסק ללא סניף', current: m.businessId === business.id }))}
+        branches={business.branches.map(b => ({ id: b.id, name: b.name, city: b.cityName, live: b.status === 'live' }))}
+        role={role}
+        canPreview={member.isOwner}
+        roles={roles}
+        views={views.map(v => ({ name: v.name, href: v.href }))}
+      />
+      <header className={`${styles.header} bf-desk-only`}>
         <div className={styles.bar}>
           <Link href="/" aria-label="BeautyFind" className={styles.brand}>
             <Wordmark size={25} />
@@ -67,7 +81,7 @@ export default async function BizLayout({ children }: { children: React.ReactNod
           <RoleMenu
             current={role}
             canPreview={member.isOwner}
-            options={Object.entries(PRESET_NAMES).map(([key, v]) => ({ key, ...v }))}
+            options={roles}
           />
           <span className={styles.statusWide} data-pending={!verified || undefined}>
             <span aria-hidden="true" />
