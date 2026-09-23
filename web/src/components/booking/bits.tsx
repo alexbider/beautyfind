@@ -66,6 +66,42 @@ export function WhatsAppButton({ e164, text }: { e164: string; text: string }) {
   );
 }
 
+/** App-shell contact row: WhatsApp, call and navigate as icon buttons with a short label. */
+export function ContactIcons({ whatsapp, waText, phone, navHref }: { whatsapp: string | null; waText: string; phone: string | null; navHref: string }) {
+  return (
+    <div className={s.iconRow}>
+      {whatsapp && (
+        <a href={waLink(whatsapp, waText)} target="_blank" rel="noopener noreferrer" className={s.iconBtn} aria-label="הודעת וואטסאפ לקליניקה">
+          <span className={s.iconDisc} data-tone="wa" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24">
+              <path fill="currentColor" d={WA_PATH} />
+            </svg>
+          </span>
+          <span className={s.iconLabel} aria-hidden="true">וואטסאפ</span>
+        </a>
+      )}
+      {phone && (
+        <a href={telHref(phone)} className={s.iconBtn} aria-label={`חיוג לקליניקה, ${fromE164(phone)}`}>
+          <span className={s.iconDisc} aria-hidden="true">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+              <path d={PHONE_PATH} />
+            </svg>
+          </span>
+          <span className={s.iconLabel} aria-hidden="true">חיוג</span>
+        </a>
+      )}
+      <a href={navHref} target="_blank" rel="noopener noreferrer" className={s.iconBtn} aria-label="ניווט לקליניקה ב־Waze">
+        <span className={s.iconDisc} aria-hidden="true">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 11 21 3l-8 18-2-8-8-2z" />
+          </svg>
+        </span>
+        <span className={s.iconLabel} aria-hidden="true">ניווט</span>
+      </a>
+    </div>
+  );
+}
+
 /** Navy toast, bottom centre, 3.2s (07-rules). */
 export function useToast() {
   const [toast, setToast] = useState('');

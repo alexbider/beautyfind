@@ -51,8 +51,8 @@ export default async function ConsultPage({ params, searchParams }: { params: Pr
   const [advanced, doctors] = await Promise.all([isAdvanced(branch.businessId), consultDoctors(branch.id, branch.medicalResponsibleId)]);
   if (!advanced || doctors.length === 0) {
     return (
-      <ConsultChrome back={back}>
-        <ConsultUnavailable branchName={branch.name} place={place} contactHref={`${profile}#contact`} />
+      <ConsultChrome back={back} flow>
+        <ConsultUnavailable branchName={branch.name} place={place} contactHref={`${profile}#contact`} closeHref={profile} />
       </ConsultChrome>
     );
   }
@@ -72,7 +72,7 @@ export default async function ConsultPage({ params, searchParams }: { params: Pr
   const doctor = doctors[0];
 
   return (
-    <ConsultChrome back={back}>
+    <ConsultChrome back={back} flow>
       <ConsultForm
         branch={{ id: branch.id, name: branch.name, place, profileHref: profile }}
         doctor={{ name: doctor.displayName, license: doctor.licenseNumber, specialty: doctor.specialty }}

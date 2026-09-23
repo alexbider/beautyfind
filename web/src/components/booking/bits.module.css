@@ -20,14 +20,14 @@
 .num { font-weight: 600; opacity: .75; }
 
 .phone { border: 1px solid #D4D4D4; background: #fff; color: #0C243E; }
-.phone:hover { background: #F0FAFB; border-color: #7ED7E1; color: #0C243E; }
+@media (hover: hover) and (pointer: fine) { .phone:hover { background: #F0FAFB; border-color: #7ED7E1; color: #0C243E; } }
 .phoneGlyph { flex: none; color: #0B7A87; }
 
 .wa { border: 1px solid #BFE6CC; background: #EAF7EF; color: #0E6B3A; }
-.wa:hover { background: #DDF2E5; border-color: #9ED9B3; color: #0E6B3A; }
+@media (hover: hover) and (pointer: fine) { .wa:hover { background: #DDF2E5; border-color: #9ED9B3; color: #0E6B3A; } }
 .waGlyph { flex: none; color: #1DA851; }
 
-.toastSlot { position: fixed; bottom: 18px; right: 50%; transform: translateX(50%); z-index: 40; pointer-events: none; }
+.toastSlot { position: fixed; bottom: max(18px, calc(var(--bf-float-bottom) + 12px)); right: 50%; transform: translateX(50%); z-index: 40; pointer-events: none; }
 .toast {
   max-width: min(90vw, 440px);
   width: max-content;
@@ -38,7 +38,16 @@
   font-size: 14px;
   font-weight: 600;
   box-shadow: 0 12px 30px rgba(12, 36, 62, .28);
-  animation: bkPop .16s ease both;
+  animation: bkPop .16s ease backwards;
   text-wrap: pretty;
 }
+
+/* Contact icon row (app shell). */
+.iconRow { display: flex; justify-content: space-around; gap: 8px; }
+.iconBtn { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 5px; min-height: 72px; padding: 4px 0; border-radius: 14px; color: #0C243E; text-decoration: none; }
+.iconBtn:active { background: #F6F8F9; }
+.iconDisc { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 24px; border: 1px solid #CDEFF3; background: #F0FAFB; color: #0B7A87; }
+.iconDisc[data-tone='wa'] { border-color: #BFE6CC; background: #EAF7EF; color: #1DA851; }
+.iconLabel { font-size: 12.5px; font-weight: 700; color: #3E4F62; }
+
 @keyframes bkPop { from { opacity: 0; transform: scale(.97) } to { opacity: 1; transform: none } }

@@ -6,8 +6,9 @@ import styles from './consult.module.css';
 /**
  * Page chrome from the design: white header bar with the wordmark, then the 1160px column.
  * `bare` drops the header, for pages inside the /clinic layout which has its own.
+ * `flow` marks the patient flow: in the app shell the page renders its own flow top bar instead.
  */
-export function ConsultChrome({ back, bare, children }: { back?: { href: string; label: string }; bare?: boolean; children: React.ReactNode }) {
+export function ConsultChrome({ back, bare, flow, children }: { back?: { href: string; label: string }; bare?: boolean; flow?: boolean; children: React.ReactNode }) {
   if (bare) {
     return (
       <div className={styles.root}>
@@ -16,8 +17,8 @@ export function ConsultChrome({ back, bare, children }: { back?: { href: string;
     );
   }
   return (
-    <div className={styles.root}>
-      <header className={styles.header}>
+    <div className={`${styles.root} ${flow ? styles.flowRoot : ''}`}>
+      <header className={`${styles.header} ${flow ? 'bf-desk-only' : ''}`}>
         <div className={styles.headerBar}>
           <Link href="/" aria-label="BeautyFind, לדף הבית" className={styles.brand}>
             <Wordmark size={21} />

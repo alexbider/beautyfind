@@ -20,6 +20,8 @@ function DayText({ label }: { label: string }) {
 /**
  * Real consult slots: a day row, then that day's free times. Both are radio groups.
  * `after` renders at the end of the time row (the patient's "אף מועד לא מתאים").
+ * `strip` (patient flow): in the app shell the days become a scroll-snap strip and the times a
+ * 3-column grid, with `after` below the grid. Without it the layout is the same everywhere.
  */
 export function SlotPicker({
   days,
@@ -28,6 +30,7 @@ export function SlotPicker({
   invalid,
   label,
   after,
+  strip,
 }: {
   days: SlotDay[];
   value: string | null;
@@ -35,6 +38,7 @@ export function SlotPicker({
   invalid?: boolean;
   label: string;
   after?: React.ReactNode;
+  strip?: boolean;
 }) {
   const initial = (value && days.find(d => d.slots.some(s => s.startsAt === value))?.date) || days[0]?.date || '';
   const [day, setDay] = useState(initial);
@@ -46,7 +50,7 @@ export function SlotPicker({
     <div>
       {days.length > 0 && (
         <>
-          <div role="radiogroup" aria-label={`${label}: יום`} onKeyDown={radioKeys} className={styles.chipsTight} style={{ marginBottom: 8 }}>
+          <div role="radiogroup" aria-label={`${label}: יום`} onKeyDown={radioKeys} className={`${styles.chipsTight} ${strip ? styles.dayStrip : ''}`} style={{ marginBottom: 8 }}>
             {days.map((d, i) => (
               <button
                 key={d.date}
@@ -63,22 +67,22 @@ export function SlotPicker({
           </div>
         </>
       )}
-      <div className={styles.chipsTight} style={{ marginBottom: 10 }}>
+      <div className={`${styles.chipsTight} ${strip ? styles.timeWrap : ''}`} style={{ marginBottom: 10 }}>
         {cur && (
-          <div role="radiogroup" aria-label={`${label}: שעה ביום ${cur.label}`} onKeyDown={radioKeys} className={styles.chipsTight}>
+          <div role="radiogroup" aria-label={`${label}: שעה ביום ${cur.label}`} onKeyDown={radioKeys} className={`${styles.chipsTight} ${strip ? styles.timeGrid : ''}`}>
             {cur.slots.map((s, i) => (
-          <button
-            key={s.startsAt}
-            type="button"
-            role="radio"
-            aria-checked={s.startsAt === value}
-            tabIndex={rove(i, timeIdx)}
-            onClick={() => onChange(s.startsAt)}
-            className={`${styles.chip} ${styles.chipSlot}`}
-            data-invalid={invalid || undefined}
-          >
-            <span className="ltr tnum">{s.time}</span>
-          </button>
+              <button
+                key={s.startsAt}
+                type="button"
+                role="radio"
+                aria-checked={s.startsAt === value}
+                tabIndex={rove(i, timeIdx)}
+                onClick={() => onChange(s.startsAt)}
+                className={`${styles.chip} ${styles.chipSlot}`}
+                data-invalid={invalid || undefined}
+              >
+                <span className="ltr tnum">{s.time}</span>
+              </button>
             ))}
           </div>
         )}
