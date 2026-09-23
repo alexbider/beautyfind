@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { AFTERCARE, aftercareKeyFor, phaseNow } from '@/components/aftercare/content';
 import { PhaseView } from '@/components/aftercare/PhaseView';
-import { FixedActionBar } from '@/components/review/FixedLayer';
+import { ActionBar } from '@/components/shell/ActionBar';
 import { TopBar } from '@/components/shell/TopBar';
 import styles from '@/components/aftercare/Aftercare.module.css';
 import { Wordmark } from '@/components/Wordmark';
@@ -116,7 +116,7 @@ export default async function AftercarePage({ params }: { params: Promise<{ toke
 
       {tel && (
         // Phones: the clinic is one tap away wherever the page is scrolled.
-        <FixedActionBar mobileOnly>
+        <ActionBar mobileOnly>
           {wa && (
             <a href={`https://wa.me/${wa.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className={styles.waIcon} aria-label="וואטסאפ לקליניקה">
               <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d={WA_PATH} /></svg>
@@ -126,7 +126,7 @@ export default async function AftercarePage({ params }: { params: Promise<{ toke
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={PHONE_PATH} /></svg>
             חיוג לקליניקה
           </a>
-        </FixedActionBar>
+        </ActionBar>
       )}
     </div>
   );

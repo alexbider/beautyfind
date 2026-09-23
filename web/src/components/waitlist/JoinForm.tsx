@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRef, useState, useTransition } from 'react';
-import { FixedActionBar } from '@/components/review/FixedLayer';
+import { ActionBar } from '@/components/shell/ActionBar';
 import { haptic } from '@/components/shell/haptics';
 import { IL_PHONE_RE } from '@/lib/format';
 import { SHELL_MQ } from '@/lib/ui/shell';
@@ -408,11 +408,11 @@ export function JoinForm({
         </aside>
       </div>
 
-      <FixedActionBar mobileOnly error={error} hint={error ? undefined : `${treatment?.name ?? 'בחרי טיפול'} · ${branch.name}`}>
+      <ActionBar mobileOnly error={error} hint={error ? undefined : `${treatment?.name ?? 'בחרי טיפול'} · ${branch.name}`}>
         <button type="button" className={styles.primary} onClick={submit} disabled={pending}>
           {pending ? 'שומרת…' : 'הצטרפות לרשימה'}
         </button>
-      </FixedActionBar>
+      </ActionBar>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { haptic } from '@/components/shell/haptics';
 import { TopBar } from '@/components/shell/TopBar';
 import { ROUTES } from '@/lib/routes';
 import { SHELL_MQ } from '@/lib/ui/shell';
-import { BodyLayer, FixedActionBar } from './FixedLayer';
+import { ActionBar } from '@/components/shell/ActionBar';
 import { CheckIcon, ReviewDone } from './ReviewParts';
 import {
   ASPECTS,
@@ -260,11 +260,9 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
   const at = (n: number) => ({ 'data-step': n, 'data-cur': n === step || undefined });
 
   const toastEl = (
-    <BodyLayer>
-      <div role="status" aria-live="polite" dir="rtl">
-        {toast && <div className={styles.toast}>{toast}</div>}
-      </div>
-    </BodyLayer>
+    <div role="status" aria-live="polite">
+      {toast && <div className={styles.toast}>{toast}</div>}
+    </div>
   );
 
   if (done) {
@@ -588,11 +586,11 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
       </div>
       </main>
 
-      <FixedActionBar mobileOnly error={stepError} hint={stepError ? undefined : STEP_HINT[step]}>
+      <ActionBar mobileOnly error={stepError} hint={stepError ? undefined : STEP_HINT[step]}>
         <button type="button" className={styles.barBtn} onClick={next} disabled={sending}>
           {step < STEPS ? (stepIsEmpty ? 'דילוג' : 'המשך') : sending ? 'שולחת…' : 'שליחת הביקורת'}
         </button>
-      </FixedActionBar>
+      </ActionBar>
     </>
   );
 }
