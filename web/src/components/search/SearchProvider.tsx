@@ -13,6 +13,8 @@ interface SearchCtx {
   total: number;
   /** A server render for a new URL is in flight. */
   pending: boolean;
+  /** The pending render only adds cards ("load more" or infinite scroll): the list stays as it is. */
+  loadingMore: boolean;
   /** Changes URL state (router.replace, no scroll). Resets "load more" unless `page` is given. */
   update: (patch: Partial<SearchState>, opts?: { focus?: FocusTarget }) => void;
   view: ViewKey;
@@ -41,12 +43,14 @@ export function SearchProvider({ state: serverState, total, children }: { state:
   // The view is presentation only: switching it rewrites the URL without a server round trip.
   const [view, setViewState] = useState<ViewKey>(serverState.view);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [more, setMore] = useState(false);
   const focusRef = useRef<FocusTarget | null>(null);
 
   const update = useCallback(
     (patch: Partial<SearchState>, opts?: { focus?: FocusTarget }) => {
       const next: SearchState = { ...state, ...patch, view, page: patch.page ?? 1 };
       focusRef.current = opts?.focus ?? null;
+      setMore(Object.keys(patch).length === 1 && patch.page != null);
       startTransition(() => {
         setOptimistic(next);
         router.replace(searchHref(next), { scroll: false });
@@ -82,8 +86,8 @@ export function SearchProvider({ state: serverState, total, children }: { state:
   }, [pending, serverState]);
 
   const value = useMemo<SearchCtx>(
-    () => ({ state, total, pending, update, view, setView, panelOpen, setPanelOpen }),
-    [state, total, pending, update, view, setView, panelOpen],
+    () => ({ state, total, pending, loadingMore: pending && more, update, view, setView, panelOpen, setPanelOpen }),
+    [state, total, pending, more, update, view, setView, panelOpen],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

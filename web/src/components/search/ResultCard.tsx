@@ -3,6 +3,7 @@ import { SaveHeart } from '@/components/save-heart/SaveHeart';
 import { nis } from '@/lib/format';
 import type { ListingCard } from '@/lib/server/public';
 import { priceTier } from './params';
+import { CardActions, CompactRating } from './PhoneCard';
 import { WhatsAppButton } from './WhatsAppButton';
 import s from './search.module.css';
 
@@ -10,6 +11,7 @@ import s from './search.module.css';
 export interface CardExtra {
   address: string;
   whatsapp: string | null;
+  phone: string | null;
   openNow: boolean;
   medicalName: string | null;
 }
@@ -72,6 +74,7 @@ export function ResultCard({ card: c, extra, index, delay, query }: { card: List
           <h3 className={s.cardTitle}>
             <Link href={c.href}>{c.name}</Link>
           </h3>
+          <CompactRating google={c.google} beautyfind={c.beautyfind} className={`${s.phoneRating} bf-shell-only`} />
           {/* TODO(sponsored): no campaigns table yet. When it lands: at most 2 sponsored cards per list,
               always tagged "ממומן" (neutral bordered tag here, data-ad border), never changing the order below. */}
           {c.verified && (
@@ -89,6 +92,10 @@ export function ResultCard({ card: c, extra, index, delay, query }: { card: List
             </span>
           )}
         </div>
+        <p className={`${s.phoneMeta} bf-shell-only`}>
+          {[c.categories[0]?.name, c.cityName].filter(Boolean).join(' · ')}
+          {c.verified && <span className={s.phoneVerified}> · מאומת</span>}
+        </p>
         <address className={s.address}>{extra?.address ? `${extra.address} · ${c.cityName}` : c.cityName}</address>
         <div className={s.metaRow}>
           {c.google ? (
@@ -145,6 +152,15 @@ export function ResultCard({ card: c, extra, index, delay, query }: { card: List
             </Link>
           </span>
         </div>
+        <CardActions
+          branchId={c.id}
+          name={c.name}
+          href={c.href}
+          whatsapp={extra?.whatsapp}
+          phone={extra?.phone}
+          query={query}
+          className={`${s.phoneActions} bf-shell-only`}
+        />
       </div>
     </li>
   );

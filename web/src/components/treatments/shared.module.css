@@ -13,7 +13,9 @@
 }
 .crumbBar .crumbs { max-width: 1320px; margin: 0 auto; padding: 14px var(--gutter); }
 .crumbs a { color: var(--muted); }
-.crumbs a:hover { color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) {
+  .crumbs a:hover { color: var(--teal-deep); }
+}
 .crumbSep { color: #C6CDD4; }
 .crumbNow { color: var(--navy); font-weight: 600; }
 
@@ -57,7 +59,9 @@
   border: 1px solid var(--line); border-radius: 14px; background: #ffffff;
   transition: border-color .2s, background .2s, transform .2s;
 }
-.regionCard:hover { border-color: var(--teal); background: var(--tint); transform: translateY(-2px); }
+@media (hover: hover) and (pointer: fine) {
+  .regionCard:hover { border-color: var(--teal); background: var(--tint); transform: translateY(-2px); }
+}
 .regionName { font-size: 16px; font-weight: 700; color: var(--navy); }
 .regionMeta { font-size: 12.5px; color: var(--subtle); }
 
@@ -78,24 +82,32 @@
   display: inline-flex; align-items: center; gap: 9px; min-height: 54px; padding: 0 24px; border-radius: 13px;
   background: var(--teal); color: var(--navy); font-size: 16px; font-weight: 700; transition: background .18s, transform .18s;
 }
-.ctaPrimary:hover { background: var(--teal-light); color: var(--navy); transform: translateY(-2px); }
+@media (hover: hover) and (pointer: fine) {
+  .ctaPrimary:hover { background: var(--teal-light); color: var(--navy); transform: translateY(-2px); }
+}
 .ctaGhost {
   display: inline-flex; align-items: center; min-height: 54px; padding: 0 22px; border: 1px solid rgba(255, 255, 255, .34);
   border-radius: 13px; font-size: 16px; font-weight: 700; color: #ffffff; transition: border-color .18s, color .18s;
 }
-.ctaGhost:hover { border-color: var(--teal-light); color: var(--teal-light); }
+@media (hover: hover) and (pointer: fine) {
+  .ctaGhost:hover { border-color: var(--teal-light); color: var(--teal-light); }
+}
 
 /* Primary / ghost buttons on light backgrounds */
 .btnPrimary {
   display: inline-flex; align-items: center; gap: 9px; min-height: 52px; padding: 0 22px; border-radius: 13px;
   background: var(--navy); color: #ffffff; font-size: 16px; font-weight: 700; transition: background .18s, color .18s, transform .18s;
 }
-.btnPrimary:hover { background: var(--teal); color: var(--navy); transform: translateY(-2px); }
+@media (hover: hover) and (pointer: fine) {
+  .btnPrimary:hover { background: var(--teal); color: var(--navy); transform: translateY(-2px); }
+}
 .btnGhost {
   display: inline-flex; align-items: center; min-height: 52px; padding: 0 20px; border: 1px solid var(--navy);
   border-radius: 13px; font-size: 16px; font-weight: 700; color: var(--navy); transition: border-color .18s, color .18s;
 }
-.btnGhost:hover { border-color: var(--teal); color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) {
+  .btnGhost:hover { border-color: var(--teal); color: var(--teal-deep); }
+}
 
 /* Responsibility badge: medical = navy, professional = outlined */
 .badge {
@@ -104,3 +116,11 @@
 }
 .badge[data-kind='medical'] { background: var(--navy); border-color: var(--navy); color: var(--teal-light); }
 .badge[data-kind='professional'] { background: #ffffff; border-color: var(--teal-border); color: var(--teal-deep); }
+
+/* App shell: the top bar carries back and the page name, so the breadcrumb bar is left out. */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .crumbBar { display: none; }
+  .cta { padding: 22px 18px; border-radius: 18px; }
+  .ctaActions > * { flex: 1 1 auto; justify-content: center; }
+  .faqLede { font-size: 15px; }
+}

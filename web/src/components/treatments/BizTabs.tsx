@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useId, useState, type ReactNode } from 'react';
 import { ArrowForward } from '@/components/icons';
 import type { ListingCard } from '@/lib/server/public';
-import { BizCard } from './BizCard';
+import { BizCard, type BizContact } from './BizCard';
 import { fmtInt } from './format';
 import styles from './BizTabs.module.css';
 
@@ -15,7 +15,7 @@ export interface BizTab {
   inName: string;
   allHref: string;
   total: number;
-  items: Array<{ card: ListingCard; meta: string }>;
+  items: Array<{ card: ListingCard; meta: string; contact?: BizContact }>;
 }
 
 /**
@@ -109,7 +109,7 @@ export function BizTabs({
         {shown > 0 ? (
           <ol className={styles.grid} key={tab.key}>
             {tab.items.map((it, i) => (
-              <BizCard key={it.card.id} card={it.card} meta={it.meta} size={size} index={i} />
+              <BizCard key={it.card.id} card={it.card} meta={it.meta} contact={it.contact} size={size} index={i} />
             ))}
           </ol>
         ) : (

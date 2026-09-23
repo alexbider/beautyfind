@@ -10,7 +10,9 @@
   border: 1px solid var(--line); border-radius: 13px; background: #ffffff; font: inherit; text-align: right; cursor: pointer;
   transition: border-color .18s, background .18s;
 }
-.reason:hover { border-color: var(--teal-light); }
+@media (hover: hover) and (pointer: fine) {
+  .reason:hover { border-color: var(--teal-light); }
+}
 .reason[data-on] { border-color: var(--teal); background: var(--tint); }
 .reasonName { font-size: 15.5px; font-weight: 700; color: var(--navy); }
 .reason[data-on] .reasonName { color: var(--teal-deep); }
@@ -50,7 +52,9 @@
   background: var(--navy); color: #ffffff; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;
   transition: background .18s, transform .18s;
 }
-.submit:hover:not(:disabled) { transform: translateY(-2px); }
+@media (hover: hover) and (pointer: fine) {
+  .submit:hover:not(:disabled) { transform: translateY(-2px); }
+}
 .submit:disabled { background: var(--muted); cursor: progress; }
 .sla { font-size: 13.5px; color: var(--muted); text-wrap: pretty; }
 
@@ -82,8 +86,16 @@
   min-height: 48px; padding: 0 20px; border: 1px solid var(--navy); border-radius: 12px; background: transparent; font: inherit;
   font-size: 15.5px; font-weight: 700; color: var(--navy); cursor: pointer; transition: border-color .18s, color .18s;
 }
-.again:hover { border-color: var(--teal); color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) {
+  .again:hover { border-color: var(--teal); color: var(--teal-deep); }
+}
 
 @media (min-width: 768px) {
   .reasonGrid, .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* App shell: the primary button spans the width and stays in thumb reach at the end of the form. */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .submit { flex: 1 1 100%; justify-content: center; }
+  .reasonName { font-size: 16px; }
 }

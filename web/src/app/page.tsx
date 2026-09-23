@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { cardExtras } from '@/app/search/extras';
 import { FaqAccordion } from '@/components/faq/FaqAccordion';
 import { ClinicRail } from '@/components/home/ClinicRail';
 import {
@@ -11,6 +12,7 @@ import { HomeFooter } from '@/components/home/HomeFooter';
 import { HomeHeader, type HeaderRegion } from '@/components/home/HomeHeader';
 import { HeroSearch } from '@/components/home/HeroSearch';
 import { IsraelMap } from '@/components/home/IsraelMap';
+import { PhoneSearchField } from '@/components/home/PhoneSearch';
 import type { RegionChoice } from '@/components/home/regionStore';
 import { ArrowForward, PathIcon } from '@/components/icons';
 import { CATEGORIES, CITIES, REGIONS, citiesOf, cityHref, type Category } from '@/lib/catalog';
@@ -110,6 +112,10 @@ export default async function HomePage() {
     totals[r.slug] = perRegion[i].total;
   });
 
+  // WhatsApp and phone for the carousel cards' contact buttons on phones.
+  const extras = await cardExtras([...new Set(Object.values(lists).flatMap(l => l.map(c => c.id)))]);
+  const contacts = Object.fromEntries(Object.entries(extras).map(([id, e]) => [id, { whatsapp: e.whatsapp, phone: e.phone }]));
+
   const headerRegions: HeaderRegion[] = REGIONS.map(r => ({
     slug: r.slug,
     name: r.name,
@@ -127,7 +133,7 @@ export default async function HomePage() {
       <a href="#main" className={styles.skip}>דלגו לתוכן</a>
       <HomeHeader regions={headerRegions} total={counts.total} />
 
-      <main id="main">
+      <main id="main" className={styles.main}>
         {/* ---------- Hero ---------- */}
         <section aria-labelledby="hero-h1" className={styles.hero}>
           <div className={styles.heroClip} aria-hidden="true"><div className={styles.heroGlow} /></div>
@@ -147,12 +153,25 @@ export default async function HomePage() {
               <p className={styles.lede}>
                 מכוני אסתטיקה רפואית, קוסמטיקה, מספרות, ספא ועיצוב הגוף, מקריית שמונה ועד אילת. גלו תחומי טיפול, השוו בין עסקים וקבעו את הפגישה הבאה שלכם.
               </p>
-              <div className={styles.heroSearch}>
+              <div className={`${styles.heroSearch} bf-desk-only`}>
                 <HeroSearch regionCounts={counts.region} cityCounts={counts.city} />
                 <div className={styles.regionLine} aria-hidden="true">
                   {REGIONS.map(r => r.name).join(' · ')}
                 </div>
               </div>
+
+              {/* Phones: a search field that opens the full-screen search, then the regions as a chips carousel. */}
+              <div className={`${styles.phoneSearch} bf-shell-only`}>
+                <PhoneSearchField />
+              </div>
+              <nav aria-label="אזורים" className={`${styles.regionChips} bf-shell-only`}>
+                {REGIONS.map(r => (
+                  <Link key={r.slug} href={`/${r.slug}`} className={styles.regionChip}>
+                    {r.name}
+                    <span className={`${styles.regionChipCount} ltr`}>{regionCount(r.slug)}</span>
+                  </Link>
+                ))}
+              </nav>
             </div>
 
             <div className={styles.heroArt} aria-hidden="true">
@@ -179,11 +198,36 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* ---------- Phones: treatment categories, 3 × n ---------- */}
+        <section aria-labelledby="h-cats-phone" className={`${styles.catsPhone} bf-shell-only`}>
+          <div className={styles.phoneHead}>
+            <h2 id="h-cats-phone" className={styles.phoneH2}>תחומי טיפול</h2>
+            <Link href="/treatments" className={styles.phoneAll}>הכול</Link>
+          </div>
+          <ul className={styles.catGrid}>
+            {CATEGORIES.map(c => (
+              <li key={c.slug}>
+                <FindBizLink category={c.slug} className={styles.catTile}>
+                  <span className={styles.catTileIcon} aria-hidden="true"><PathIcon paths={teaser(c).icon} size={24} /></span>
+                  <span className={styles.catTileName}>{c.name}</span>
+                </FindBizLink>
+              </li>
+            ))}
+            <li>
+              <Link href="/treatments" className={styles.catTile} data-all>
+                <span className={styles.catTileIcon} aria-hidden="true"><ArrowForward size={20} /></span>
+                <span className={styles.catTileName}>כל התחומים</span>
+              </Link>
+            </li>
+          </ul>
+        </section>
+
         {/* ---------- Businesses by region ---------- */}
         <section aria-labelledby="h-clinics" className={styles.clinics}>
           <ClinicRail
             lists={lists}
             totals={totals}
+            contacts={contacts}
             heading={
               <div className={styles.stack10}>
                 <h2 id="h-clinics" className={styles.h2}>מכוני יופי באזור שלכם<Dot /></h2>

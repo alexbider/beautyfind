@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { ArrowForward, Check } from '@/components/icons';
 import { nis } from '@/lib/format';
 import type { ListingCard } from '@/lib/server/public';
+import { SaveHeart } from '@/components/save-heart/SaveHeart';
+import { CardActions, CompactRating } from '@/components/search/PhoneCard';
 import { CATEGORY_CONTENT } from './content';
 import { fmtInt } from './format';
 import styles from './BizCard.module.css';
@@ -33,16 +35,24 @@ export function fallbackImage(card: ListingCard) {
   return (first && CATEGORY_CONTENT[first]?.img) || '/assets/biz-facial.jpg';
 }
 
+/** WhatsApp and phone for the phone card's icon buttons (ListingCard does not carry them). */
+export interface BizContact {
+  whatsapp: string | null;
+  phone: string | null;
+}
+
 /**
  * Compact business card (Region and Treatment Category "top rated" lists).
  * Google and BeautyFind ratings are shown on separate lines and never combined.
  * `meta` is the line under the name: "category · city" on Region, the city on a category page.
+ * App shell: the phone clinic card (spec §3.2), with a 16:9 image, save heart and contact buttons.
  */
-export function BizCard({ card, meta, size = 92, index = 0 }: { card: ListingCard; meta: string; size?: 92 | 96; index?: number }) {
+export function BizCard({ card, meta, contact, size = 92, index = 0 }: { card: ListingCard; meta: string; contact?: BizContact; size?: 92 | 96; index?: number }) {
   const img = card.coverUrl || fallbackImage(card);
   return (
-    <li className={styles.card} style={{ animationDelay: `${index * 50}ms` }}>
-      <Link href={card.href} tabIndex={-1} aria-hidden="true" className={styles.thumb} style={{ flexBasis: size, height: size }}>
+    <li className={styles.card} style={{ animationDelay: `${index * 50}ms`, '--thumb': `${size}px` } as React.CSSProperties}>
+      <SaveHeart id={card.id} name={card.name} className={`${styles.heart} bf-shell-only`} />
+      <Link href={card.href} tabIndex={-1} aria-hidden="true" className={styles.thumb}>
         {/* eslint-disable-next-line @next/next/no-img-element -- covers are user uploads or external URLs */}
         <img src={img} alt="" loading="lazy" decoding="async" />
       </Link>
@@ -51,6 +61,7 @@ export function BizCard({ card, meta, size = 92, index = 0 }: { card: ListingCar
           <h3 className={styles.name}>
             <Link href={card.href}>{card.name}</Link>
           </h3>
+          <CompactRating google={card.google} beautyfind={card.beautyfind} className="bf-shell-only" />
           {card.verified && (
             <span className={styles.verified}>
               <Check />
@@ -87,11 +98,12 @@ export function BizCard({ card, meta, size = 92, index = 0 }: { card: ListingCar
               <span className="sr-only"> לא כולל מע״מ</span>
             </span>
           )}
-          <Link href={card.href} className={styles.cta} aria-label={`לעסק: ${card.name}`}>
+          <Link href={card.href} className={`${styles.cta} bf-desk-only`} aria-label={`לעסק: ${card.name}`}>
             <span>לעסק</span>
             <ArrowForward size={13} />
           </Link>
         </div>
+        <CardActions branchId={card.id} name={card.name} href={card.href} whatsapp={contact?.whatsapp} phone={contact?.phone} className={`${styles.phoneActions} bf-shell-only`} />
       </div>
     </li>
   );

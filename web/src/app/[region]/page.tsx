@@ -3,6 +3,8 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { cardExtras } from '@/app/search/extras';
+import { ReadMore } from '@/components/content/ReadMore';
 import { REGION_CONTENT, regionFaqs } from '@/components/region/content';
 import { ArrowForward } from '@/components/icons';
 import { SiteFooter } from '@/components/site-footer/SiteFooter';
@@ -95,6 +97,8 @@ export default async function RegionPage({ params }: Props) {
     stats.push({ label: 'מול החציון הארצי', value: `${d > 0 ? '+' : ''}${d}%`, note: 'חציון הפער בין התחומים' });
   }
 
+  // WhatsApp and phone for the phone card's contact buttons.
+  const contacts = await cardExtras([...regionTop.items, ...cityTops.flatMap(c => c.items)].map(c => c.id));
   const cardMeta = (c: { categories: Array<{ name: string }>; cityName: string }) => [c.categories[0]?.name, c.cityName].filter(Boolean).join(' · ');
   const tabs: BizTab[] = [
     {
@@ -103,7 +107,7 @@ export default async function RegionPage({ params }: Props) {
       inName: rc.inName,
       allHref: `/search?region=${r}`,
       total: regionTop.total,
-      items: regionTop.items.map(card => ({ card, meta: cardMeta(card) })),
+      items: regionTop.items.map(card => ({ card, meta: cardMeta(card), contact: contacts[card.id] })),
     },
     ...tabCities.map((c, i) => ({
       key: c.slug,
@@ -111,7 +115,7 @@ export default async function RegionPage({ params }: Props) {
       inName: `ב${c.name}`,
       allHref: cityHref(c),
       total: cityTops[i].total,
-      items: cityTops[i].items.map(card => ({ card, meta: cardMeta(card) })),
+      items: cityTops[i].items.map(card => ({ card, meta: cardMeta(card), contact: contacts[card.id] })),
     })),
   ];
 
@@ -132,7 +136,7 @@ export default async function RegionPage({ params }: Props) {
     <div className={shared.root}>
       <JsonLd data={breadcrumbLd([{ name: 'ראשי', path: '/' }, { name: region.name, path: `/${r}` }])} />
       <JsonLd data={faqLd(faqs)} />
-      <SiteHeader variant="public" />
+      <SiteHeader variant="public" title={region.name} backHref="/" />
 
       <div className={styles.hero}>
         <div className={styles.heroCopy}>
@@ -284,9 +288,11 @@ export default async function RegionPage({ params }: Props) {
             <h2 id="h-local" className={`${shared.h2} ${shared.h2Md} ${styles.localH2}`}>
               מה כדאי לדעת על האזור<span className={shared.dot}>.</span>
             </h2>
-            {rc.paras.map(p => (
-              <p key={p} className={styles.para}>{p}</p>
-            ))}
+            <ReadMore lineHeight="29px">
+              {rc.paras.map(p => (
+                <p key={p} className={styles.para}>{p}</p>
+              ))}
+            </ReadMore>
             <div className={`${shared.infoBox} ${styles.tip}`}>
               <InfoGlyph />
               <p>

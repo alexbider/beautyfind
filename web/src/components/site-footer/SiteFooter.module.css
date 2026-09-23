@@ -9,7 +9,9 @@
 .groupName { font-size: 12.5px; font-weight: 700; color: var(--teal-light); }
 .links { display: flex; flex-direction: column; gap: 9px; }
 .link { min-height: 28px; display: flex; align-items: center; font-size: 14.5px; color: rgba(255, 255, 255, .82); }
-.link:hover { color: var(--teal-light); }
+@media (hover: hover) and (pointer: fine) {
+  .link:hover { color: var(--teal-light); }
+}
 .bottom {
   max-width: 1280px; margin: 0 auto; padding: 20px var(--gutter) 34px;
   border-top: 1px solid rgba(255, 255, 255, .14);
@@ -17,3 +19,10 @@
   font-size: 13px; color: rgba(255, 255, 255, .66);
 }
 .grid[data-wide], .bottom[data-wide] { max-width: 1320px; }
+
+/* App shell: no footer navigation (its links live on the "עוד" tab), only the closing line. */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .footer { margin-top: 8px; background: var(--bg-page); color: var(--muted); border-top: 1px solid var(--line); }
+  .grid { display: none; }
+  .bottom { padding: 16px 16px 20px; border-top: 0; flex-direction: column; align-items: flex-start; gap: 4px; font-size: 12.5px; color: var(--subtle); }
+}

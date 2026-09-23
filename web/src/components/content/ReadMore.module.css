@@ -1,0 +1,21 @@
+/* ReadMore: clamps only inside the app shell. */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .clamp:not([data-open]) {
+    max-height: var(--rm-max);
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
+    mask-image: linear-gradient(to bottom, #000 55%, transparent);
+  }
+  /* Paragraph margins inside the clamp would push the fifth line out of view. */
+  .clamp:not([data-open]) > :first-child { margin-top: 0; }
+}
+
+.more {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin: 4px 0 8px; padding: 0 2px;
+  border: 0; background: transparent; font: inherit; font-size: 15px; font-weight: 700; color: var(--teal-deep); cursor: pointer;
+}
+.more::after {
+  content: ''; width: 8px; height: 8px; margin-top: -4px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+  transform: rotate(45deg); transition: transform .2s;
+}
+.more[aria-expanded='true']::after { margin-top: 4px; transform: rotate(-135deg); }

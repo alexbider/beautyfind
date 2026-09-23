@@ -147,7 +147,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
 
   const header = (
     <>
-      <SiteHeader variant="public" />
+      <SiteHeader variant="public" title={current} backHref={crumbs[crumbs.length - 1].href} />
       <nav aria-label="נתיב ניווט" className={styles.crumbs}>
         <ol>
           {crumbs.map(c => (

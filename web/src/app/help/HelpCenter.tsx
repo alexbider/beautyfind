@@ -48,10 +48,25 @@ export function HelpCenter({ initialAudience, initialQuery = '' }: { initialAudi
   const filtered = !!(query || topic);
   const announce = query || topic ? (list.length ? `נמצאו ${plQ(list.length)}` : 'לא נמצאו שאלות מתאימות') : '';
   const side = SIDE[aud];
+  const placeholder = aud === 'client' ? 'למשל: ביטול תור, מקדמה, בוטוקס' : 'למשל: סניף נוסף, רישיון, ביקורת';
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(aud)) }} />
+
+      {/* App shell: the search field sits under the top bar and stays there while scrolling. */}
+      <form role="search" className={`${styles.phoneSearch} bf-shell-only`} onSubmit={e => e.preventDefault()}>
+        <label htmlFor="hp-q-phone" className="sr-only">חיפוש בשאלות</label>
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#5B6B7B" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <circle cx="8.5" cy="8.5" r="6" />
+          <path d="m13 13 5 5" />
+        </svg>
+        <input
+          id="hp-q-phone" type="search" value={q} aria-controls="hp-list" autoComplete="off" enterKeyHint="search"
+          onChange={e => { setQ(e.target.value); setTopic(null); }}
+          placeholder={placeholder}
+        />
+      </form>
 
       <section aria-labelledby="hp-h" className={styles.hero}>
         <div className={styles.heroInner}>
@@ -66,7 +81,7 @@ export function HelpCenter({ initialAudience, initialQuery = '' }: { initialAudi
               );
             })}
           </div>
-          <form role="search" className={styles.search} onSubmit={e => e.preventDefault()}>
+          <form role="search" className={`${styles.search} bf-desk-only`} onSubmit={e => e.preventDefault()}>
             <label htmlFor="hp-q" className="sr-only">חיפוש בשאלות</label>
             <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#5B6B7B" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
               <circle cx="8.5" cy="8.5" r="6" />
@@ -75,7 +90,7 @@ export function HelpCenter({ initialAudience, initialQuery = '' }: { initialAudi
             <input
               id="hp-q" type="search" value={q} aria-controls="hp-list" autoComplete="off"
               onChange={e => { setQ(e.target.value); setTopic(null); }}
-              placeholder={aud === 'client' ? 'למשל: ביטול תור, מקדמה, בוטוקס' : 'למשל: סניף נוסף, רישיון, ביקורת'}
+              placeholder={placeholder}
             />
           </form>
         </div>

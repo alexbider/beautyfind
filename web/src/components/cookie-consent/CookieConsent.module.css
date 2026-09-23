@@ -12,13 +12,17 @@
 .bannerText h2 { margin: 0 0 4px; font-size: 16.5px; font-weight: 700; }
 .bannerText p { margin: 0; font-size: 14px; color: var(--text); text-wrap: pretty; }
 .bannerText a { color: var(--teal-deep); }
-.bannerText a:hover { color: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .bannerText a:hover { color: var(--navy); }
+}
 .bannerBtns { flex: 0 1 auto; min-width: 0; display: flex; gap: 8px; flex-wrap: wrap; }
 .primary {
   min-height: 46px; padding: 0 17px; border: 0; border-radius: 12px; background: var(--teal-deep);
   font: inherit; font-size: 15px; font-weight: 700; color: #ffffff; cursor: pointer;
 }
-.primary:hover { background: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .primary:hover { background: var(--navy); }
+}
 .outline {
   min-height: 46px; padding: 0 15px; border: 1px solid var(--teal-deep); border-radius: 12px; background: #ffffff;
   font: inherit; font-size: 15px; font-weight: 700; color: var(--teal-deep); cursor: pointer;
@@ -72,3 +76,24 @@
   border: 1px solid var(--line); border-radius: 21px; background: #ffffff; box-shadow: 0 6px 18px rgba(12, 36, 62, .12);
   font: inherit; font-size: 13.5px; font-weight: 700; color: var(--text); cursor: pointer; animation: ckFade .2s ease both;
 }
+
+.handle { display: none; }
+
+/* App shell (spec §6 Cookie Consent): the banner is a bottom sheet resting on the tab bar. */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .banner {
+    left: 0; right: 0; bottom: var(--bf-float-bottom); max-width: none; margin: 0;
+    padding: 8px 16px calc(16px + var(--action-safe)); border: 0; border-radius: 20px 20px 0 0;
+    box-shadow: 0 -10px 36px rgba(12, 36, 62, .16); animation: ckSheet .26s cubic-bezier(.2, .9, .25, 1.02) both;
+  }
+  .handle { display: block; width: 40px; height: 5px; margin: 0 auto 10px; border-radius: 3px; background: var(--control-off); }
+  .bannerText { flex-basis: 100%; }
+  .bannerText p { font-size: 14.5px; }
+  .bannerBtns { flex: 1 1 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .primary, .outline { min-height: 48px; }
+  .linkBtn { grid-column: 1 / -1; min-height: 44px; }
+  /* Inside the BottomSheet, which has its own padding. */
+  .cats { padding: 0; }
+  .dialogFoot { padding: 0; }
+}
+@keyframes ckSheet { from { transform: translateY(100%) } to { transform: none } }

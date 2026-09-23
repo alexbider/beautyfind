@@ -7,7 +7,9 @@
   box-shadow: 0 24px 52px rgba(12, 36, 62, .14); transition: box-shadow .3s;
   opacity: 0; animation: bfmIn 1.2s ease .15s forwards, bfmFloat 15s ease-in-out 1.4s infinite;
 }
-.card:hover { box-shadow: 0 32px 66px rgba(12, 36, 62, .2); }
+@media (hover: hover) and (pointer: fine) {
+  .card:hover { box-shadow: 0 32px 66px rgba(12, 36, 62, .2); }
+}
 @keyframes bfmIn { to { opacity: 1 } }
 @keyframes bfmFloat { 0%, 100% { transform: translate3d(0, 0, 0) } 50% { transform: translate3d(0, -10px, 0) } }
 

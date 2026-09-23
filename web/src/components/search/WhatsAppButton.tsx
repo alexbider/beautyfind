@@ -4,14 +4,14 @@ import { track } from '@/lib/client/track';
 import s from './search.module.css';
 
 /** Icon-only WhatsApp button on a result card. Counts the click for the business's stats. */
-export function WhatsAppButton({ branchId, e164, name, query }: { branchId: string; e164: string; name: string; query?: string }) {
+export function WhatsAppButton({ branchId, e164, name, query, className }: { branchId: string; e164: string; name: string; query?: string; className?: string }) {
   return (
     <a
       href={`https://wa.me/${e164.replace(/\D/g, '')}`}
       target="_blank"
       rel="noopener noreferrer"
       aria-label={`וואטסאפ אל ${name}`}
-      className={s.waBtn}
+      className={`${s.waBtn} ${className ?? ''}`}
       onClick={() => track(branchId, 'whatsapp_click', query || undefined)}
     >
       <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">

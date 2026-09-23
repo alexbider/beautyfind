@@ -3,6 +3,10 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useState, useTransition, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react';
 import { Check, ChevronDown } from '@/components/icons';
+import { useMedia } from '@/components/search/useMedia';
+import { BottomSheet } from '@/components/shell/BottomSheet';
+import { Skeleton } from '@/components/shell/Skeleton';
+import { SHELL_MQ } from '@/lib/ui/shell';
 import { BIZ, RESULTS, fmtNum } from './copy';
 import { Count } from './Count';
 import { FILTER_KEYS, FILTER_LABELS, MAX_SHOW, PAGE, SORTS, dirHref, type DirQuery, type FilterKey } from './params';
@@ -25,18 +29,29 @@ interface Props {
  * The only client part of the list: filter and sort dropdowns plus "show more". Every action
  * just updates the URL; the server re-renders the list, so the page stays crawlable and
  * shareable. The status line is a polite live region, so the new count is announced.
+ * App shell: the dropdowns open as bottom sheets, and the next cards load by themselves when
+ * the end of the list scrolls into view (skeletons instead of the button, spec §3.1).
  */
 export function ResultsShell({ base, query, filterCounts, matched, total, shown, searchHref, children }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [menu, setMenu] = useState<Menu>(null);
+  const [sheet, setSheet] = useState<Menu>(null);
+  const [more, setMore] = useState(false);
+  const shell = useMedia(SHELL_MQ);
+  const sentinel = useRef<HTMLDivElement>(null);
   const uid = useId();
   const filterBtn = useRef<HTMLButtonElement>(null);
   const sortBtn = useRef<HTMLButtonElement>(null);
   const filterPanel = useRef<HTMLDivElement>(null);
   const sortPanel = useRef<HTMLDivElement>(null);
 
-  const go = (q: DirQuery) => startTransition(() => router.push(dirHref(base, q), { scroll: false }));
+  const go = (q: DirQuery, opts?: { more?: boolean }) => {
+    setMore(!!opts?.more);
+    // Loading more cards replaces the entry, so back leaves the page instead of stepping through batches.
+    startTransition(() => (opts?.more ? router.replace : router.push)(dirHref(base, q), { scroll: false }));
+  };
+  const open = (m: Exclude<Menu, null>) => (shell ? setSheet(m) : setMenu(cur => (cur === m ? null : m)));
 
   // Focus the checked (or first) item when a menu opens, per the ARIA menu pattern.
   useEffect(() => {
@@ -111,8 +126,17 @@ export function ResultsShell({ base, query, filterCounts, matched, total, shown,
   const onMore = (e: MouseEvent<HTMLAnchorElement>) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
     e.preventDefault();
-    go({ ...query, show: nextShow });
+    go({ ...query, show: nextShow }, { more: true });
   };
+
+  useEffect(() => {
+    const el = sentinel.current;
+    if (!shell || !canLoadMore || pending || !el) return;
+    const io = new IntersectionObserver(([e]) => e.isIntersecting && go({ ...query, show: nextShow }, { more: true }), { rootMargin: '0px 0px 600px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shell, canLoadMore, pending, nextShow]);
   const pct = `${Math.round(Math.min(1, shown / Math.max(1, matched)) * 100)}%`;
 
   return (
@@ -127,7 +151,7 @@ export function ResultsShell({ base, query, filterCounts, matched, total, shown,
             aria-haspopup="menu"
             aria-expanded={menu === 'filter'}
             aria-controls={`${uid}-filter`}
-            onClick={() => setMenu(m => (m === 'filter' ? null : 'filter'))}
+            onClick={() => open('filter')}
             onKeyDown={onTriggerKey('filter')}
           >
             <span>סינון</span>
@@ -174,7 +198,7 @@ export function ResultsShell({ base, query, filterCounts, matched, total, shown,
             aria-haspopup="menu"
             aria-expanded={menu === 'sort'}
             aria-controls={`${uid}-sort`}
-            onClick={() => setMenu(m => (m === 'sort' ? null : 'sort'))}
+            onClick={() => open('sort')}
             onKeyDown={onTriggerKey('sort')}
           >
             <span className={styles.ddMuted}>מיון</span>
@@ -230,14 +254,85 @@ export function ResultsShell({ base, query, filterCounts, matched, total, shown,
         </span>
       </div>
 
-      <div className={styles.results} aria-busy={pending}>
+      <BottomSheet
+        open={sheet === 'filter'}
+        onClose={() => setSheet(null)}
+        title="סינון עסקים"
+        footer={
+          <button type="button" className={styles.sheetShow} onClick={() => setSheet(null)}>
+            {pending ? 'מעדכן תוצאות…' : matched === 0 ? 'אין תוצאות, חזרה לרשימה' : <>הצגת <Count n={matched} f={BIZ} /></>}
+          </button>
+        }
+      >
+        <div className={styles.sheetList}>
+          {FILTER_KEYS.map(k => {
+            const on = query.filters.includes(k);
+            const n = filterCounts[k];
+            return (
+              <button key={k} type="button" role="checkbox" aria-checked={on} className={styles.opt} data-dim={n === 0 && !on ? true : undefined} onClick={() => toggleFilter(k)}>
+                <span aria-hidden="true" className={styles.box}>
+                  {on && <Check size={12} />}
+                </span>
+                <span className={styles.optName}>{FILTER_LABELS[k]}</span>
+                <span className={`${styles.optCount} ltr`}>{fmtNum(n)}</span>
+              </button>
+            );
+          })}
+          {nFilters > 0 && (
+            <button type="button" className={styles.clear} onClick={clearFilters}>
+              ניקוי הסינון
+            </button>
+          )}
+        </div>
+      </BottomSheet>
+
+      <BottomSheet open={sheet === 'sort'} onClose={() => setSheet(null)} title="מיון עסקים">
+        <div role="radiogroup" aria-label="מיון עסקים" className={styles.sheetList}>
+          {SORTS.map(o => {
+            const on = query.sort === o.key;
+            return (
+              <button
+                key={o.key}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                className={styles.opt}
+                data-kind="sort"
+                onClick={() => {
+                  setSheet(null);
+                  if (!on) go({ ...query, sort: o.key, show: PAGE });
+                }}
+              >
+                <span>{o.name}</span>
+                <span aria-hidden="true" className={styles.tick}>
+                  {on ? '✓' : ''}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </BottomSheet>
+
+      <div className={styles.results} aria-busy={(pending && !more) || undefined}>
         {children}
       </div>
+
+      {canLoadMore && (
+        <div ref={sentinel} className={`${styles.autoMore} bf-shell-only`} aria-hidden="true">
+          {Array.from({ length: pending && more ? Math.min(step, 2) : 1 }, (_, i) => (
+            <div key={i} className={styles.skelCard}>
+              <Skeleton height="auto" radius={16} className={styles.skelImg} />
+              <Skeleton width="58%" height={16} />
+              <Skeleton width="38%" height={13} />
+            </div>
+          ))}
+        </div>
+      )}
 
       {matched > 0 && (
         <div className={styles.moreRow}>
           {canLoadMore ? (
-            <a href={moreHref} rel="nofollow" className={styles.moreBtn} onClick={onMore} aria-disabled={pending || undefined}>
+            <a href={moreHref} rel="nofollow" className={`${styles.moreBtn} bf-desk-only`} onClick={onMore} aria-disabled={pending || undefined}>
               {pending ? 'טוען' : moreLabel}
             </a>
           ) : (

@@ -23,7 +23,9 @@
   flex: none; min-height: 48px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--navy); font: inherit;
   font-size: 15.5px; font-weight: 700; color: #ffffff; cursor: pointer; transition: background .16s;
 }
-.search button:hover { background: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) {
+  .search button:hover { background: var(--teal-deep); }
+}
 
 .actions { display: flex; gap: 9px; flex-wrap: wrap; justify-content: center; margin-bottom: 26px; }
 .primary, .secondary, .ghost {
@@ -31,11 +33,17 @@
   transition: background .16s, border-color .16s, color .16s;
 }
 .primary { padding: 0 18px; background: var(--teal-deep); color: #ffffff; }
-.primary:hover { background: var(--navy); color: #ffffff; }
+@media (hover: hover) and (pointer: fine) {
+  .primary:hover { background: var(--navy); color: #ffffff; }
+}
 .secondary { padding: 0 16px; border: 1px solid var(--line); background: #ffffff; color: var(--text); }
-.secondary:hover { border-color: var(--navy); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .secondary:hover { border-color: var(--navy); color: var(--navy); }
+}
 .ghost { padding: 0 14px; color: var(--teal-deep); }
-.ghost:hover { color: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .ghost:hover { color: var(--navy); }
+}
 
 .h2 { margin: 0 0 10px; font-size: 15px; font-weight: 700; text-align: right; }
 .popular { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; text-align: right; }
@@ -43,7 +51,9 @@
   min-width: 0; display: flex; align-items: center; gap: 10px; padding: 13px 15px; min-height: 44px; border: 1px solid var(--line);
   border-radius: 13px; background: #ffffff; color: inherit; transition: border-color .16s;
 }
-.card:hover { border-color: var(--teal-deep); color: inherit; }
+@media (hover: hover) and (pointer: fine) {
+  .card:hover { border-color: var(--teal-deep); color: inherit; }
+}
 .cardText { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .cardName { font-size: 14.5px; font-weight: 700; color: var(--navy); }
 .cardNote { font-size: 12.5px; color: var(--subtle); }
@@ -55,4 +65,11 @@
 @media (min-width: 1024px) {
   .inner { max-width: 760px; }
   .popular { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* App shell: tab bar below, top bar above; the three ways out stack as full-width buttons. */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .main { padding: 24px 16px 40px; }
+  .actions { flex-direction: column; align-items: stretch; }
+  .primary, .secondary, .ghost { justify-content: center; }
 }

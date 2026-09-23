@@ -8,6 +8,7 @@ import { REGIONS } from '@/lib/catalog';
 import { nis } from '@/lib/format';
 import { ArrowBack, ArrowForward, Check } from '../icons';
 import { SaveHeart } from '../save-heart/SaveHeart';
+import { CardActions, CompactRating } from '../search/PhoneCard';
 import { CATEGORY_IMAGE } from './content';
 import { useRegion, type RegionChoice } from './regionStore';
 import styles from './ClinicRail.module.css';
@@ -35,7 +36,9 @@ function StarRow({ rating }: { rating: number }) {
   );
 }
 
-function Card({ c, index }: { c: ListingCard; index: number }) {
+type Contact = { whatsapp: string | null; phone: string | null };
+
+function Card({ c, index, contact }: { c: ListingCard; index: number; contact?: Contact }) {
   const cover = c.coverUrl ?? CATEGORY_IMAGE[c.categories[0]?.slug ?? ''] ?? '/assets/biz-facial.jpg';
   const g = c.google;
   const bf = c.beautyfind;
@@ -55,9 +58,13 @@ function Card({ c, index }: { c: ListingCard; index: number }) {
       </div>
       <div className={styles.body}>
         <div>
-          <h3 className={styles.name}>
-            <Link href={c.href} className={styles.nameLink}>{c.name}</Link>
-          </h3>
+          <div className={styles.nameRow}>
+            <h3 className={styles.name}>
+              <Link href={c.href} className={styles.nameLink}>{c.name}</Link>
+            </h3>
+            <CompactRating google={g} beautyfind={bf} className="bf-shell-only" />
+          </div>
+          <p className={`${styles.phoneMeta} bf-shell-only`}>{[c.categories[0]?.name, c.cityName].filter(Boolean).join(' · ')}</p>
           <div className={styles.place}>
             {c.cityName}, אזור {REGIONS.find(r => r.slug === c.regionSlug)?.name}
             {c.verified && (
@@ -102,17 +109,28 @@ function Card({ c, index }: { c: ListingCard; index: number }) {
           ) : (
             <span />
           )}
-          <Link href={c.href} className={styles.go} aria-label={`לצפייה בעסק ${c.name}`}>
+          <Link href={c.href} className={`${styles.go} bf-desk-only`} aria-label={`לצפייה בעסק ${c.name}`}>
             <span>לעסק</span>
             <ArrowForward size={14} />
           </Link>
         </div>
+        <CardActions branchId={c.id} name={c.name} href={c.href} whatsapp={contact?.whatsapp} phone={contact?.phone} className="bf-shell-only" />
       </div>
     </article>
   );
 }
 
-export function ClinicRail({ heading, lists, totals }: { heading: ReactNode; lists: Record<RegionChoice, ListingCard[]>; totals: Record<RegionChoice, number> }) {
+export function ClinicRail({
+  heading,
+  lists,
+  totals,
+  contacts = {},
+}: {
+  heading: ReactNode;
+  lists: Record<RegionChoice, ListingCard[]>;
+  totals: Record<RegionChoice, number>;
+  contacts?: Record<string, Contact>;
+}) {
   const [region] = useRegion();
   const [tab, setTab] = useState<RegionChoice>('all');
   const [progress, setProgress] = useState(0);
@@ -166,7 +184,7 @@ export function ClinicRail({ heading, lists, totals }: { heading: ReactNode; lis
     <>
       <div className={styles.head}>
         {heading}
-        <div className={styles.arrows}>
+        <div className={`${styles.arrows} bf-desk-only`}>
           <button type="button" className={styles.arrow} aria-label="גלילה אחורה" aria-controls="clinic-panel" onClick={() => scrollBy(-1)} disabled={items.length < 2}>
             <ArrowBack size={16} />
           </button>
@@ -221,7 +239,7 @@ export function ClinicRail({ heading, lists, totals }: { heading: ReactNode; lis
           key={tab}
         >
           {items.map((c, i) => (
-            <Card key={c.id} c={c} index={i} />
+            <Card key={c.id} c={c} index={i} contact={contacts[c.id]} />
           ))}
           {items.length === 0 && (
             <div className={styles.empty}>

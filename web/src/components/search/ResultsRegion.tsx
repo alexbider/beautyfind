@@ -9,11 +9,13 @@ import s from './search.module.css';
  * results while a new URL renders, and shows the map placeholder.
  */
 export function ResultsRegion({ hasResults, children }: { hasResults: boolean; children: React.ReactNode }) {
-  const { view, pending } = useSearch();
+  const { view, pending, loadingMore } = useSearch();
   const mapOn = MAP_VIEW && view === 'map';
+  // Adding cards keeps the list as it is (the skeletons under it show the loading).
+  const dim = pending && !loadingMore;
   return (
-    <div className={s.resultsRegion} data-view={view} data-pending={pending || undefined} aria-busy={pending}>
-      {pending && (
+    <div className={s.resultsRegion} data-view={view} data-pending={dim || undefined} aria-busy={pending}>
+      {dim && (
         <p className={s.loadingLine} aria-hidden="true">
           <span className={s.spinner} />
           <span>טוען תוצאות…</span>

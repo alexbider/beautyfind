@@ -2,6 +2,9 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useMedia } from '@/components/search/useMedia';
+import { BottomSheet } from '@/components/shell/BottomSheet';
+import { SHELL_MQ } from '@/lib/ui/shell';
 import styles from './CookieConsent.module.css';
 
 // Real consent storage (kept per 02-data-model.md): localStorage['bf-cookie-consent'].
@@ -31,12 +34,17 @@ export function readConsent(): Consent | null {
   }
 }
 
-/** Global consent banner, preferences dialog and the floating "change" pill. Layout: bar. */
+/**
+ * Global consent banner, preferences dialog and the floating "change" pill. Layout: bar.
+ * App shell (spec §6 Cookie Consent): the banner is a bottom sheet above the tab bar, the
+ * preferences open in a full-height BottomSheet, and the pill is left out (the "עוד" tab has the link).
+ */
 export function CookieConsent() {
   // undefined = not read yet (SSR / first paint): render nothing to avoid a flash.
   const [saved, setSaved] = useState<Consent | null | undefined>(undefined);
   const [prefs, setPrefs] = useState(false);
   const [draft, setDraft] = useState<Consent>(NONE);
+  const shell = useMedia(SHELL_MQ);
 
   useEffect(() => {
     const s = readConsent();
@@ -52,11 +60,11 @@ export function CookieConsent() {
   }, []);
 
   useEffect(() => {
-    if (!prefs) return;
+    if (!prefs || shell) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setPrefs(false);
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [prefs]);
+  }, [prefs, shell]);
 
   if (saved === undefined) return null;
 
@@ -69,6 +77,40 @@ export function CookieConsent() {
     setPrefs(false);
   };
 
+  const catList = (
+    <ul className={styles.cats}>
+      {CATS.map(c => {
+        const on = c.locked || !!draft[c.key];
+        return (
+          <li key={c.key}>
+            <span className={styles.catText}>
+              <span className={styles.catName}>{c.name}</span>
+              <span className={styles.catNote}>{c.note}</span>
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={on}
+              aria-label={c.name}
+              disabled={c.locked}
+              className={styles.switch}
+              data-on={on || undefined}
+              onClick={() => !c.locked && setDraft(d => ({ ...d, [c.key]: !d[c.key] }))}
+            >
+              <span aria-hidden="true" />
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+  const foot = (
+    <div className={styles.dialogFoot}>
+      <button type="button" className={styles.save} onClick={() => save(draft)}>שמירת הבחירה</button>
+      <button type="button" className={styles.secondary} onClick={() => save(ALL)}>אישור הכל</button>
+    </div>
+  );
+
   const n = saved ? CATS.filter(c => saved[c.key]).length : 0;
   const decidedLabel = n === CATS.length ? 'כל ה־Cookie מאושרים' : n === 1 ? 'הכרחיים בלבד' : 'בחירה מותאמת';
 
@@ -76,6 +118,7 @@ export function CookieConsent() {
     <div dir="rtl" lang="he">
       {!saved && !prefs && (
         <section role="region" aria-labelledby="ck-h" className={styles.banner}>
+          <span aria-hidden="true" className={styles.handle} />
           <div className={styles.bannerRow}>
             <div className={styles.bannerText}>
               <h2 id="ck-h">קובצי Cookie באתר</h2>
@@ -93,48 +136,27 @@ export function CookieConsent() {
         </section>
       )}
 
-      {prefs && (
+      {prefs && shell && (
+        <BottomSheet open onClose={() => setPrefs(false)} title="העדפות Cookie" size="full" footer={foot}>
+          {catList}
+        </BottomSheet>
+      )}
+
+      {prefs && !shell && (
         <div className={styles.scrim} onClick={e => e.target === e.currentTarget && setPrefs(false)}>
           <section role="dialog" aria-modal="true" aria-labelledby="ck-ph" className={styles.dialog}>
             <div className={styles.dialogHead}>
               <h2 id="ck-ph">העדפות Cookie</h2>
               <button type="button" aria-label="סגירה" className={styles.close} onClick={() => setPrefs(false)}>×</button>
             </div>
-            <ul className={styles.cats}>
-              {CATS.map(c => {
-                const on = c.locked || !!draft[c.key];
-                return (
-                  <li key={c.key}>
-                    <span className={styles.catText}>
-                      <span className={styles.catName}>{c.name}</span>
-                      <span className={styles.catNote}>{c.note}</span>
-                    </span>
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={on}
-                      aria-label={c.name}
-                      disabled={c.locked}
-                      className={styles.switch}
-                      data-on={on || undefined}
-                      onClick={() => !c.locked && setDraft(d => ({ ...d, [c.key]: !d[c.key] }))}
-                    >
-                      <span aria-hidden="true" />
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-            <div className={styles.dialogFoot}>
-              <button type="button" className={styles.save} onClick={() => save(draft)}>שמירת הבחירה</button>
-              <button type="button" className={styles.secondary} onClick={() => save(ALL)}>אישור הכל</button>
-            </div>
+            {catList}
+            {foot}
           </section>
         </div>
       )}
 
       {saved && !prefs && (
-        <button type="button" className={styles.pill} onClick={() => setPrefs(true)}>
+        <button type="button" className={`${styles.pill} bf-desk-only`} onClick={() => setPrefs(true)}>
           {decidedLabel} · שינוי
         </button>
       )}

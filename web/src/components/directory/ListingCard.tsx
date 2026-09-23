@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { BOOKING_LIVE } from '@/lib/features';
 import { ArrowForward, Check } from '@/components/icons';
 import { SaveHeart } from '@/components/save-heart/SaveHeart';
+import { CardActions, CompactRating } from '@/components/search/PhoneCard';
 import { fmtNum } from './copy';
 import type { DirectoryCard } from './data';
 import styles from './Directory.module.css';
@@ -71,6 +72,7 @@ export function ListingCard({ c, delayIndex }: { c: DirectoryCard; delayIndex: n
           <h3 className={styles.name}>
             <Link href={c.href}>{c.name}</Link>
           </h3>
+          <CompactRating google={c.google} beautyfind={c.beautyfind} className="bf-shell-only" />
           {c.verified && (
             <span className={styles.verified}>
               <Check size={12} strokeWidth={1.8} />
@@ -78,6 +80,10 @@ export function ListingCard({ c, delayIndex }: { c: DirectoryCard; delayIndex: n
             </span>
           )}
         </div>
+        <p className={`${styles.phoneMeta} bf-shell-only`}>
+          {[c.categories[0]?.name, c.cityName].filter(Boolean).join(' · ')}
+          {c.verified && <span className={styles.phoneVerified}> · מאומת</span>}
+        </p>
         <address className={styles.address}>{c.address}</address>
 
         <div className={styles.ratings}>
@@ -122,7 +128,14 @@ export function ListingCard({ c, delayIndex }: { c: DirectoryCard; delayIndex: n
           )}
         </div>
 
-        <div className={styles.actions}>
+        {c.priceFromShekels != null && (
+          <p className={`${styles.phoneFrom} bf-shell-only`}>
+            החל מ־<span className="ltr">₪{fmtNum(c.priceFromShekels)}</span>, לא כולל מע״מ
+          </p>
+        )}
+        <CardActions branchId={c.id} name={c.name} href={c.href} whatsapp={c.whatsapp} phone={c.phone} className={`${styles.phoneActions} bf-shell-only`} />
+
+        <div className={`${styles.actions} bf-desk-only`}>
           {c.whatsapp && (
             <a href={waHref(c.whatsapp)} target="_blank" rel="noopener noreferrer" aria-label={`וואטסאפ אל ${c.name}`} className={`${styles.iconBtn} ${styles.wa}`}>
               <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">

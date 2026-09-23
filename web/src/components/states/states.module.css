@@ -23,7 +23,9 @@
   min-width: 0; display: flex; align-items: center; gap: 10px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 13px;
   background: #ffffff; font: inherit; text-align: right; color: inherit; cursor: pointer; transition: border-color .16s;
 }
-.sugCard:hover { border-color: var(--teal-deep); color: inherit; }
+@media (hover: hover) and (pointer: fine) {
+  .sugCard:hover { border-color: var(--teal-deep); color: inherit; }
+}
 .sugCardLg { padding: 14px 16px; }
 .sugText { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .sugName { font-size: 14.5px; font-weight: 700; color: var(--navy); }
@@ -43,9 +45,13 @@
   font-weight: 700; cursor: pointer; transition: background .16s, border-color .16s;
 }
 .btnPrimary { border: 0; background: var(--teal-deep); color: #ffffff; }
-.btnPrimary:hover { background: var(--navy); color: #ffffff; }
+@media (hover: hover) and (pointer: fine) {
+  .btnPrimary:hover { background: var(--navy); color: #ffffff; }
+}
 .btnSecondary { padding: 0 14px; border: 1px solid var(--line); background: #ffffff; color: var(--text); }
-.btnSecondary:hover { border-color: var(--navy); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .btnSecondary:hover { border-color: var(--navy); color: var(--navy); }
+}
 
 /* ---------- No results ---------- */
 .filters {
@@ -57,7 +63,9 @@
   flex: none; display: inline-flex; align-items: center; gap: 7px; min-height: 38px; padding: 0 8px 0 10px; border: 1px solid var(--teal-border);
   border-radius: 9px; background: var(--tint); font: inherit; font-size: 13px; font-weight: 700; color: var(--teal-deep); cursor: pointer;
 }
-.chip:hover { border-color: var(--teal-deep); color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover { border-color: var(--teal-deep); color: var(--teal-deep); }
+}
 .chipX {
   width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; border-radius: 5px;
   background: rgba(11, 122, 135, .14); font-size: 12px; line-height: 1;
@@ -112,7 +120,9 @@
 .bar > span { display: block; height: 100%; background: var(--teal-deep); transition: width .2s; }
 .tasks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
 .task { display: flex; align-items: center; gap: 11px; min-height: 44px; color: inherit; }
-a.task:hover .taskName { color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) {
+  a.task:hover .taskName { color: var(--teal-deep); }
+}
 .box {
   flex: none; display: inline-flex; align-items: center; justify-content: center; width: 23px; height: 23px; border: 1.5px solid var(--control-off);
   border-radius: 7px; background: #ffffff; color: #ffffff;
@@ -154,11 +164,17 @@ a.task:hover .taskName { color: var(--teal-deep); }
   font-size: 15.5px; font-weight: 700; cursor: pointer; transition: background .15s, border-color .15s;
 }
 .errPrimary { padding: 0 18px; border: 0; background: var(--teal-deep); color: #ffffff; }
-.errPrimary:hover { background: var(--navy); color: #ffffff; }
+@media (hover: hover) and (pointer: fine) {
+  .errPrimary:hover { background: var(--navy); color: #ffffff; }
+}
 .errSecondary { padding: 0 15px; border: 1px solid var(--line-strong); background: #ffffff; color: var(--navy); }
-.errSecondary:hover { background: var(--tint); border-color: var(--teal-light); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .errSecondary:hover { background: var(--tint); border-color: var(--teal-light); color: var(--navy); }
+}
 .errGhost { padding: 0 14px; border: 0; background: transparent; color: var(--teal-deep); }
-.errGhost:hover { color: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .errGhost:hover { color: var(--navy); }
+}
 .errCode { margin: 0; padding: 11px 13px; border: 1px solid var(--divider); border-radius: 11px; background: var(--bg-soft); font-size: 12.5px; color: var(--subtle); text-wrap: pretty; }
 .errCode strong { font-weight: 700; color: var(--muted); }
 
@@ -169,4 +185,11 @@ a.task:hover .taskName { color: var(--teal-deep); }
 @media (min-width: 1024px) {
   .sug[data-n='3'] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .facts, .kpis, .skeletons { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* App shell: stacked full-width actions, primary first, within thumb reach. */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .errActions { flex-direction: column; align-items: stretch; }
+  .chip { min-height: 44px; }
+  .errPrimary, .errGhost, .errSecondary { justify-content: center; min-height: 48px; }
 }

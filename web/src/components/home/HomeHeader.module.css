@@ -27,20 +27,27 @@
   font: inherit; font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer;
   animation: bfFade .2s ease both; transition: border-color .18s, color .18s;
 }
-.compact:hover { border-color: var(--navy); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .compact:hover { border-color: var(--navy); color: var(--navy); }
+}
 .navBtn {
   display: flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px; border: 0; border-radius: 10px;
   background: transparent; font: inherit; font-size: 16px; font-weight: 600; color: var(--navy); cursor: pointer;
   transition: background .18s;
 }
-.navBtn:hover, .navBtn[data-on] { background: #F3F6F8; }
+.navBtn[data-on] { background: #F3F6F8; }
+@media (hover: hover) and (pointer: fine) {
+  .navBtn:hover { background: #F3F6F8; }
+}
 .navBtn svg { transition: transform .2s; }
 .navBtn[data-on] svg { transform: rotate(180deg); }
 .navLink {
   display: flex; align-items: center; height: 44px; padding: 0 14px; border-radius: 10px;
   font-size: 16px; font-weight: 500; transition: background .18s;
 }
-.navLink:hover { background: #F3F6F8; color: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .navLink:hover { background: #F3F6F8; color: var(--navy); }
+}
 /* 760–999px: the bar has no room for everything; the guide and about links stay in the footer. */
 @media (max-width: 1023px) { .navLink, .compact { display: none; } }
 
@@ -51,7 +58,10 @@
   border: 1px solid var(--line); border-radius: 10px; background: #ffffff;
   font: inherit; font-size: 15px; font-weight: 600; color: var(--navy); cursor: pointer; transition: border-color .18s;
 }
-.picker:hover, .picker[aria-expanded='true'] { border-color: var(--navy); }
+.picker[aria-expanded='true'] { border-color: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .picker:hover { border-color: var(--navy); }
+}
 .regionList {
   position: absolute; left: 0; top: calc(100% + 8px); z-index: 60; width: 250px; max-height: 380px; overflow: auto;
   margin: 0; padding: 6px; list-style: none; background: #ffffff; border: 1px solid var(--line); border-radius: 12px;
@@ -62,7 +72,9 @@
   border: 0; border-radius: 8px; background: transparent; font: inherit; font-size: 16px; font-weight: 400;
   color: var(--navy); text-align: right; cursor: pointer;
 }
-.regionOpt:hover { background: #F3F6F8; }
+@media (hover: hover) and (pointer: fine) {
+  .regionOpt:hover { background: #F3F6F8; }
+}
 .regionOpt[data-on] { background: rgba(20, 179, 198, .10); font-weight: 700; }
 .optName { flex: 1; }
 .optCount { font-size: 13px; color: var(--subtle); font-weight: 400; }
@@ -71,7 +83,9 @@
   display: flex; align-items: center; height: 44px; padding: 0 12px; border-radius: 10px;
   font-size: 15px; font-weight: 600; color: var(--muted);
 }
-.biz:hover { color: var(--navy); background: #F3F6F8; }
+@media (hover: hover) and (pointer: fine) {
+  .biz:hover { color: var(--navy); background: #F3F6F8; }
+}
 
 /* Mobile bar */
 .mobileRegion {
@@ -104,14 +118,18 @@
   display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
   padding: 0 0 12px; margin-bottom: 8px; border-bottom: 1px solid var(--line);
 }
-.megaRegion:hover { color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) {
+  .megaRegion:hover { color: var(--teal-deep); }
+}
 .megaRegionName { font-family: var(--font-display); font-size: 24px; font-weight: 500; }
 .megaRegionCta { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--teal-deep); white-space: nowrap; }
 .megaLink {
   display: flex; align-items: center; min-height: 38px; padding: 0 10px; margin: 0 -10px; border-radius: 8px; font-size: 15px;
 }
 .megaLinkTall { min-height: 40px; }
-.megaLink:hover { background: #F3F6F8; color: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .megaLink:hover { background: #F3F6F8; color: var(--navy); }
+}
 .megaGroup { font-size: 13px; font-weight: 700; color: var(--muted); padding-bottom: 10px; margin-bottom: 6px; border-bottom: 1px solid var(--line); }
 .megaHelp {
   align-self: start; display: flex; flex-direction: column; gap: 12px; padding: 22px; border-radius: 14px; background: #F3F6F8;
@@ -122,7 +140,9 @@
   align-self: flex-start; min-height: 44px; padding: 0 14px; border: 1px solid var(--navy); border-radius: 9px; background: #ffffff;
   font: inherit; font-size: 14px; font-weight: 700; color: var(--navy); cursor: pointer; transition: background .18s, color .18s;
 }
-.megaHelpBtn:hover { background: var(--navy); color: #ffffff; }
+@media (hover: hover) and (pointer: fine) {
+  .megaHelpBtn:hover { background: var(--navy); color: #ffffff; }
+}
 .megaFoot { border-top: 1px solid var(--line); background: var(--bg-soft); }
 .megaFootInner {
   max-width: 1280px; margin: 0 auto; padding: 14px var(--gutter);

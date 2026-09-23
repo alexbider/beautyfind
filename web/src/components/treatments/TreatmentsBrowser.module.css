@@ -14,7 +14,9 @@
 }
 .groupLink:last-child { border-bottom: 0; }
 .groupLink[data-live] { font-weight: 600; color: var(--navy); }
-.groupLink:hover { background: var(--bg-page); color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) {
+  .groupLink:hover { background: var(--bg-page); color: var(--teal-deep); }
+}
 .groupCount { font-size: 12.5px; color: var(--subtle); }
 
 .legend { border: 1px solid var(--teal-border); border-radius: 16px; background: var(--tint); padding: 16px; }
@@ -32,7 +34,9 @@
   display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; padding: 0 16px;
   border-radius: 14px; background: var(--navy); color: #ffffff; font-size: 15px; font-weight: 700; transition: background .18s, color .18s;
 }
-.railCta:hover { background: var(--teal); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .railCta:hover { background: var(--teal); color: var(--navy); }
+}
 
 /* ---------- Filters ---------- */
 .content { min-width: 0; }
@@ -62,7 +66,9 @@
   font: inherit; font-size: 13.5px; font-weight: 700; color: var(--navy); cursor: pointer; transition: border-color .18s, color .18s;
 }
 .resetBtn::after { content: ''; position: absolute; inset: -4px 0; }
-.resetBtn:hover { border-color: var(--teal); color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) {
+  .resetBtn:hover { border-color: var(--teal); color: var(--teal-deep); }
+}
 /* Layout toggle (the design's `layout` prop, exposed as a segmented control). */
 .layoutSwitch { margin-right: auto; display: flex; gap: 2px; padding: 3px; border-radius: 11px; background: #F0F3F5; }
 .layoutBtn {
@@ -97,7 +103,9 @@
   display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 14px; border: 1px solid var(--line); border-radius: 16px;
   background: #ffffff; transition: border-color .22s, box-shadow .22s, background .22s;
 }
-.row:hover { border-color: var(--teal); background: var(--bg-soft); box-shadow: 0 14px 34px rgba(12, 36, 62, .08); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) {
+  .row:hover { border-color: var(--teal); background: var(--bg-soft); box-shadow: 0 14px 34px rgba(12, 36, 62, .08); color: var(--navy); }
+}
 .thumb { position: relative; height: 56px; border-radius: 12px; overflow: hidden; background: #EDF1F3; }
 .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .name { font-family: var(--font-display); font-size: 19.5px; line-height: 1.25; color: var(--navy); text-wrap: balance; }
@@ -119,3 +127,10 @@
   font: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer;
 }
 .footnote { margin: 22px 0 0; font-size: 13px; line-height: 1.6; color: var(--subtle); text-wrap: pretty; }
+
+/* App shell: the list comes first; the jump list is left out and the legend and CTA follow the list. */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .layout { display: flex; flex-direction: column; }
+  .rail { order: 2; }
+  .groupNav { display: none; }
+}

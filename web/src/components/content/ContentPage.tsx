@@ -1,13 +1,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { ArrowForward, Check, ChevronDown } from '@/components/icons';
+import { ArrowForward, Check } from '@/components/icons';
 import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { ContentFaq } from './ContentFaq';
 import { CookiePrefsButton } from './CookiePrefsButton';
 import { PENDING } from './meta';
 import { Rich, isHebrew, rich } from './Rich';
+import { TocButton } from './TocButton';
 import type { Aside, Block, ContentView, Section, Stat, Table } from './types';
 import styles from './content.module.css';
 
@@ -290,7 +291,7 @@ export function ContentPage(props: ContentPageProps) {
       {jsonLd?.map((j, i) => (
         <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(j) }} />
       ))}
-      <SiteHeader variant="public" />
+      <SiteHeader variant="public" title={view.name} backHref="/more" />
 
       <nav aria-label="נתיב ניווט" className={styles.crumbs}>
         <ol className={styles.crumbList}>
@@ -351,15 +352,9 @@ export function ContentPage(props: ContentPageProps) {
           </aside>
 
           <div className={styles.body}>
-            <details className={styles.mobileToc}>
-              <summary>
-                {tocTitle}
-                <ChevronDown />
-              </summary>
-              <nav aria-label={tocLabel} className={styles.railNav}>
-                <Toc sections={view.sections} legal={legal} />
-              </nav>
-            </details>
+            <div className={styles.mobileToc}>
+              <TocButton sections={view.sections.map(s => ({ id: s.id, head: s.head }))} legal={legal} label={tocLabel} />
+            </div>
 
             {view.sections.map((sec, i) => (
               <section key={sec.id} id={sec.id} aria-labelledby={`h-${sec.id}`} className={styles.section}>
