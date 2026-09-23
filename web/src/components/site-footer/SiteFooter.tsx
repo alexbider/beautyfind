@@ -30,10 +30,11 @@ const GROUPS: Array<{ name: string; links: Array<{ name: string; href: string }>
   },
 ];
 
-export function SiteFooter() {
+/** `note` is the right-hand line in the bottom bar (public pages: a medical disclaimer). `wide` = 1320px pages. */
+export function SiteFooter({ note, wide = false }: { note?: string; wide?: boolean } = {}) {
   return (
     <footer className={styles.footer}>
-      <div className={styles.grid}>
+      <div className={styles.grid} data-wide={wide || undefined}>
         <div className={styles.about}>
           <Wordmark size={26} onDark />
           <p>אינדקס היופי והאסתטיקה של ישראל: עסקים מאומתים, ביקורות אמיתיות ותפריטי טיפולים שאפשר להשוות.</p>
@@ -49,8 +50,9 @@ export function SiteFooter() {
           </nav>
         ))}
       </div>
-      <div className={styles.bottom}>
+      <div className={styles.bottom} data-wide={wide || undefined}>
         <span>© {new Date().getFullYear()} BeautyFind</span>
+        {note && <span>{note}</span>}
       </div>
     </footer>
   );

@@ -12,15 +12,20 @@ type Menu = 'loc' | 'svc' | null;
 
 const BIZ_LINKS = { login: ROUTES.bizLogin, join: ROUTES.join };
 
+export type HeaderVariant = 'business' | 'public';
+
 const MENU_REGIONS = MENU_REGION_ORDER.map(slug => regionBySlug(slug)!);
 const MEGA_CITY_LIMIT = 9;
 
 /**
- * Public header, business variant (Get Listed and the /for-business funnel).
+ * Site header.
+ * - business: Get Listed and the /for-business funnel (tag next to the logo, regions + services mega, login + register).
+ * - public: every interior client page (regions mega, treatments link, one "לעסקים" button, 1320px wide).
  * Desktop ≥760px: nav + mega menu. Below: hamburger opening a full-screen sheet.
  * Breakpoints are CSS media queries only, so SSR markup is correct at any width.
  */
-export function SiteHeader() {
+export function SiteHeader({ variant = 'business' }: { variant?: HeaderVariant }) {
+  const pub = variant === 'public';
   const [menu, setMenu] = useState<Menu>(null);
   const [megaIndex, setMegaIndex] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -81,25 +86,41 @@ export function SiteHeader() {
   return (
     <>
       <header className={styles.header}>
-        <div className={styles.bar}>
+        <div className={styles.bar} data-wide={pub || undefined}>
           <Link href="/" aria-label="BeautyFind, לדף הבית" className={styles.brand} onClick={close}>
             <Wordmark size={28} />
-            <span className={styles.brandTag}>לעסקים</span>
+            {!pub && <span className={styles.brandTag}>לעסקים</span>}
           </Link>
 
           <nav aria-label="ראשי" className={styles.nav}>
             <button type="button" className={styles.navBtn} data-on={locOpen || undefined} aria-expanded={locOpen} onClick={() => toggle('loc')}>
               אזורים<ChevronDown />
             </button>
-            <button type="button" className={styles.navBtn} data-on={menu === 'svc' || undefined} aria-expanded={menu === 'svc'} onClick={() => toggle('svc')}>
-              תחומי טיפול<ChevronDown />
-            </button>
-            <Link href="/about" className={styles.navLink}>אודות</Link>
-            <Link href="/magazine" className={styles.navLink}>מדריכים</Link>
+            {pub ? (
+              <>
+                <Link href="/treatments" className={styles.navLink}>תחומי טיפול</Link>
+                <Link href="/magazine" className={styles.navLink}>מדריכים</Link>
+                <Link href="/about" className={styles.navLink}>אודות</Link>
+              </>
+            ) : (
+              <>
+                <button type="button" className={styles.navBtn} data-on={menu === 'svc' || undefined} aria-expanded={menu === 'svc'} onClick={() => toggle('svc')}>
+                  תחומי טיפול<ChevronDown />
+                </button>
+                <Link href="/about" className={styles.navLink}>אודות</Link>
+                <Link href="/magazine" className={styles.navLink}>מדריכים</Link>
+              </>
+            )}
           </nav>
           <div className={styles.actions}>
-            <Link href={BIZ_LINKS.login} className={styles.login}>כניסת בעלי עסקים</Link>
-            <Link href={BIZ_LINKS.join} className={styles.cta}>רישום העסק</Link>
+            {pub ? (
+              <Link href={ROUTES.forBusiness} className={styles.cta}>לעסקים</Link>
+            ) : (
+              <>
+                <Link href={BIZ_LINKS.login} className={styles.login}>כניסת בעלי עסקים</Link>
+                <Link href={BIZ_LINKS.join} className={styles.cta}>רישום העסק</Link>
+              </>
+            )}
           </div>
 
           <button type="button" className={styles.burger} aria-label="תפריט" aria-expanded={mobileOpen} onClick={toggleMobile}>
@@ -110,7 +131,7 @@ export function SiteHeader() {
 
         {menu && (
           <div className={styles.mega}>
-            <div className={styles.megaInner}>
+            <div className={styles.megaInner} data-wide={pub || undefined}>
               <div className={styles.megaLeft}>
                 <div className={styles.label}>{locOpen ? 'אזורים' : 'קטגוריות'}</div>
                 {leftList('mega')}
@@ -136,10 +157,12 @@ export function SiteHeader() {
 
       {mobileOpen && (
         <div role="dialog" aria-label="תפריט" className={styles.sheet}>
-          <div className={styles.sheetTabs}>
-            <button type="button" className={styles.sheetTab} data-on={locOpen || undefined} onClick={() => toggle('loc')}>אזורים</button>
-            <button type="button" className={styles.sheetTab} data-on={menu === 'svc' || undefined} onClick={() => toggle('svc')}>תחומי טיפול</button>
-          </div>
+          {!pub && (
+            <div className={styles.sheetTabs}>
+              <button type="button" className={styles.sheetTab} data-on={locOpen || undefined} onClick={() => toggle('loc')}>אזורים</button>
+              <button type="button" className={styles.sheetTab} data-on={menu === 'svc' || undefined} onClick={() => toggle('svc')}>תחומי טיפול</button>
+            </div>
+          )}
           {menu && (
             <>
               <div className={styles.label}>{locOpen ? 'אזורים' : 'קטגוריות'}</div>
@@ -155,10 +178,17 @@ export function SiteHeader() {
             </>
           )}
           <div className={styles.sheetFoot}>
+            {pub && <Link href="/treatments" className={styles.sheetPlain} onClick={close}>תחומי טיפול</Link>}
             <Link href="/about" className={styles.sheetPlain} onClick={close}>אודות</Link>
             <Link href="/magazine" className={styles.sheetPlain} onClick={close}>מדריכים</Link>
-            <Link href={BIZ_LINKS.join} className={styles.sheetCta} onClick={close}>רישום העסק</Link>
-            <Link href={BIZ_LINKS.login} className={styles.sheetLogin} onClick={close}>כבר רשומים? כניסה לחשבון</Link>
+            {pub ? (
+              <Link href={ROUTES.forBusiness} className={styles.sheetCta} onClick={close}>לעסקים</Link>
+            ) : (
+              <>
+                <Link href={BIZ_LINKS.join} className={styles.sheetCta} onClick={close}>רישום העסק</Link>
+                <Link href={BIZ_LINKS.login} className={styles.sheetLogin} onClick={close}>כבר רשומים? כניסה לחשבון</Link>
+              </>
+            )}
           </div>
         </div>
       )}

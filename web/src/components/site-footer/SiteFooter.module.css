@@ -16,3 +16,4 @@
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
   font-size: 13px; color: rgba(255, 255, 255, .66);
 }
+.grid[data-wide], .bottom[data-wide] { max-width: 1320px; }

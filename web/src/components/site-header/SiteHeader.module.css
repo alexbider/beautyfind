@@ -8,6 +8,7 @@
   max-width: 1280px; margin: 0 auto; padding: 0 var(--gutter);
   height: 72px; display: flex; align-items: center; gap: 26px;
 }
+.bar[data-wide], .megaInner[data-wide] { max-width: 1320px; }
 .brand { flex: none; display: flex; align-items: center; gap: 12px; }
 .brandTag { font-size: 13px; font-weight: 700; color: var(--subtle); }
 
