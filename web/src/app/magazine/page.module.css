@@ -1,0 +1,19 @@
+.main { max-width: 1280px; margin: 0 auto; padding: 40px var(--gutter) 88px; }
+.h1 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: clamp(32px, 4vw, 52px); line-height: 1.1; }
+.dot { color: var(--teal); }
+.lede { margin: 12px 0 0; max-width: 56ch; font-size: 17px; line-height: 1.6; color: var(--text); }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; margin-top: 32px; }
+@media (min-width: 768px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.card { display: flex; flex-direction: column; gap: 6px; padding: 8px 8px 18px; border-radius: 18px; background: #ffffff; border: 1px solid var(--line); }
+.img { position: relative; display: block; aspect-ratio: 16 / 10; border-radius: 12px; overflow: hidden; background: #EDF1F3; margin-bottom: 8px; }
+.cover { object-fit: cover; }
+.kind { padding: 0 8px; font-size: 13px; font-weight: 700; color: var(--teal-deep); }
+.h2 { margin: 0; padding: 0 8px; font-family: var(--font-display); font-size: 22px; font-weight: 500; line-height: 1.25; }
+.desc { margin: 0; padding: 0 8px; font-size: 15px; line-height: 1.6; color: var(--muted); }
+.nowTitle { margin: 48px 0 0; font-size: 20px; font-weight: 700; }
+.now { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin-top: 14px; }
+@media (min-width: 768px) { .now { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.nowLink { display: grid; gap: 2px; padding: 16px 18px; border-radius: 14px; border: 1px solid var(--line); background: #ffffff; color: var(--navy); }
+.nowLink strong { font-size: 16px; }
+.nowLink span { font-size: 14px; color: var(--muted); }
+@media (hover: hover) and (pointer: fine) { .nowLink:hover { border-color: var(--teal-light); color: var(--navy); } }

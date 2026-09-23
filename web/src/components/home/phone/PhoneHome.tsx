@@ -31,6 +31,7 @@ export interface PhoneCard {
   openNow: boolean;
   whatsapp: string | null;
   phone: string | null;
+  verified: boolean;
 }
 
 export interface PhoneReview {
@@ -54,50 +55,50 @@ export interface PhoneHomeProps {
 }
 
 // The design opens on גוש דן; a region picked anywhere on the site (header, map) wins.
-const FALLBACK_REGION: RegionSlug = 'dan';
-const REGION_ORDER: RegionSlug[] = ['north', 'haifa', 'sharon', 'dan', 'jerusalem', 'shfela', 'south'];
-const rName = (r: RegionSlug) => REGIONS.find(x => x.slug === r)!.name;
+export const FALLBACK_REGION: RegionSlug = 'dan';
+export const REGION_ORDER: RegionSlug[] = ['north', 'haifa', 'sharon', 'dan', 'jerusalem', 'shfela', 'south'];
+export const rName = (r: RegionSlug) => REGIONS.find(x => x.slug === r)!.name;
 
 // Rough region centres, enough to turn a GPS fix into a region.
 const CENTRES: Record<RegionSlug, [number, number]> = {
   north: [32.95, 35.45], haifa: [32.79, 35.02], sharon: [32.27, 34.87], dan: [32.07, 34.8],
   jerusalem: [31.77, 35.2], shfela: [31.87, 34.8], south: [30.9, 34.8],
 };
-const nearestRegion = (lat: number, lng: number) =>
+export const nearestRegion = (lat: number, lng: number) =>
   REGION_ORDER.reduce((best, r) => {
     const d = (x: RegionSlug) => (CENTRES[x][0] - lat) ** 2 + (CENTRES[x][1] - lng) ** 2;
     return d(r) < d(best) ? r : best;
   }, FALLBACK_REGION);
 
-const WA_PATH = 'M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.2 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-3.3-.8-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.7-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.2Z';
-const STAR_PATH = 'M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8L12 2.5Z';
+export const WA_PATH = 'M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.2 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-3.3-.8-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.7-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.2Z';
+export const STAR_PATH = 'M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8L12 2.5Z';
 
-const Arrow = ({ size = 14, stroke = 'currentColor', width = 1.6, className }: { size?: number; stroke?: string; width?: number; className?: string }) => (
+export const Arrow = ({ size = 14, stroke = 'currentColor', width = 1.6, className }: { size?: number; stroke?: string; width?: number; className?: string }) => (
   <svg width={size} height={size} viewBox="0 0 14 14" fill="none" stroke={stroke} strokeWidth={width} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
     <path d="M12 7H2M6 3 2 7l4 4" />
   </svg>
 );
-const Chevron = ({ size = 12 }: { size?: number }) => (
+export const Chevron = ({ size = 12 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M2.5 4.5 6 8l3.5-3.5" />
   </svg>
 );
-const Pin = ({ size = 15, width = 1.4 }: { size?: number; width?: number }) => (
+export const Pin = ({ size = 15, width = 1.4 }: { size?: number; width?: number }) => (
   <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={width} aria-hidden="true">
     <path d="M8 14.5s5-4.2 5-8A5 5 0 0 0 3 6.5c0 3.8 5 8 5 8Z" />
     <circle cx="8" cy="6.4" r="1.9" />
   </svg>
 );
-const Glass = ({ size = 17 }: { size?: number }) => (
+export const Glass = ({ size = 17 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
     <circle cx="8" cy="8" r="5.5" />
     <path d="m12.5 12.5 3.5 3.5" />
   </svg>
 );
-const WhatsApp = ({ size = 19, fill = 'currentColor' }: { size?: number; fill?: string }) => (
+export const WhatsApp = ({ size = 19, fill = 'currentColor' }: { size?: number; fill?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} aria-hidden="true"><path d={WA_PATH} /></svg>
 );
-const Mail = () => (
+export const Mail = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#14B3C6" strokeWidth="1.5" strokeLinejoin="round" aria-hidden="true">
     <rect x="1.5" y="3" width="13" height="10" rx="2" />
     <path d="m2 4 6 5 6-5" />
@@ -114,7 +115,7 @@ const Kicker = ({ children, tone }: { children: ReactNode; tone?: 'teal' }) => (
 const Dot = ({ ch = '.' }: { ch?: string }) => <span className={s.dot}>{ch}</span>;
 
 /** Three rotating rings (hero decoration). */
-function Rings({ size, className }: { size: number; className: string }) {
+export function Rings({ size, className }: { size: number; className: string }) {
   return (
     <div aria-hidden="true" className={className} style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox="0 0 200 200" fill="none" className={s.spinA}>
@@ -131,9 +132,9 @@ function Rings({ size, className }: { size: number; className: string }) {
   );
 }
 
-const QUICK = ['בוטוקס', 'הסרת שיער', 'טיפול פנים', 'לק ג׳ל'];
+export const QUICK = ['בוטוקס', 'הסרת שיער', 'טיפול פנים', 'לק ג׳ל'];
 
-const TRUST_STRIP = [
+export const TRUST_STRIP = [
   { title: 'רישיונות נבדקים', d: 'M8 1.5 3 3.5v3.8c0 3.1 2.2 5.4 5 6.5 2.8-1.1 5-3.4 5-6.5V3.5L8 1.5ZM5.8 8l1.6 1.6L10.4 6.4' },
   { title: 'ביקורות מאומתות', d: 'M8 2l1.8 3.7 4 .6-2.9 2.8.7 4L8 11.2 4.4 13.1l.7-4-2.9-2.8 4-.6L8 2Z' },
   { title: 'ממומן מסומן', d: 'M8 14.5A6.5 6.5 0 1 0 8 1.5a6.5 6.5 0 0 0 0 13ZM8 7v4M8 5h.01' },
@@ -163,9 +164,9 @@ const MENU_CATS = [
   { label: 'ספא ועיסויים', slug: 'spa-massage', img: '/assets/biz-spa.jpg' },
 ];
 
-const READ_TIME = ['6 דקות קריאה', '4 דקות קריאה', '5 דקות קריאה'];
+export const READ_TIME = ['6 דקות קריאה', '5 דקות קריאה', '4 דקות קריאה'];
 
-const TRUST = [
+export const TRUST = [
   { n: '01', title: 'אימות לפני עלייה לאוויר', desc: 'בודקים רישיון רופא או אחות מול משרד הבריאות, ותעודת מקצוע לקוסמטיקאיות. בעלות על העסק מאומתת בנפרד.' },
   { n: '02', title: 'אחריות רפואית מסומנת', desc: 'הזרקות הן פעולה רפואית. בכל פרופיל מופיע מי הרופא האחראי, וטיפול רפואי עובר קודם לפגישת ייעוץ.' },
   { n: '03', title: 'ביקורות ממי שהגיעה בפועל', desc: 'ביקורת BeautyFind אפשרית רק אחרי תור שהתקיים. דירוג Google מוצג לצידה, בלי למזג.' },
@@ -179,7 +180,7 @@ const STEPS = [
   { label: 'תורים', text: 'לקוחות קובעות תור, האישור יוצא בוואטסאפ, SMS ומייל, והתור נכנס ליומן שלכם.' },
 ];
 
-const FAQS = [
+export const FAQS = [
   { q: 'האם השימוש ב־BeautyFind עולה כסף?', a: 'לא. החיפוש, ההשוואה וקביעת התור חינם. התשלום על הטיפול מתבצע מול העסק, שמנפיק חשבונית מס.' },
   { q: 'עסק יכול לשלם כדי לדרג גבוה יותר?', a: 'לא. מודעה ממומנת מסומנת תמיד, מוגבלת לשתיים בכל רשימה, ולא משנה את הדירוג או את הביקורות.' },
   { q: 'טיפולים אסתטיים כלולים בסל?', a: 'לא. טיפולים אסתטיים אינם בסל הבריאות. המחירים המוצגים לא כוללים מע״מ.' },
@@ -187,7 +188,7 @@ const FAQS = [
 ];
 
 const FOOT_GROUPS = [
-  { name: 'BeautyFind', links: [['מי אנחנו', '/about'], ['הסטנדרטים שלנו', ROUTES.listingStandards], ['מדיניות עריכה', '/about/editorial'], ['איך מדרגים', ROUTES.methodology], ['מדריכים', '/magazine'], ['תחומי טיפול', ROUTES.treatments]] },
+  { name: 'BeautyFind', links: [['מי אנחנו', '/about'], ['הסטנדרטים שלנו', ROUTES.listingStandards], ['מדיניות עריכה', '/about/editorial'], ['איך מדרגים', `${ROUTES.methodology}#ranking`], ['מדריכים', '/magazine'], ['תחומי טיפול', ROUTES.treatments]] },
   { name: 'לעסקים', links: [['הצטרפות לאינדקס', ROUTES.join], ['תביעת פרופיל', ROUTES.claim], ['מחירים', ROUTES.pricing], ['כניסה לעסקים', ROUTES.bizLogin]] },
   { name: 'עזרה ומשפטי', links: [['מרכז עזרה', ROUTES.help], ['צור קשר', ROUTES.contact], ['תנאי שימוש', ROUTES.terms], ['מדיניות פרטיות', ROUTES.privacy], ['הצהרת נגישות', ROUTES.accessibility]] },
 ] as const;
@@ -406,7 +407,7 @@ function BizCard({ c }: { c: PhoneCard }) {
 
 /* ---------------------------------------------------------------- Listing stepper */
 
-function ListingSteps() {
+export function ListingSteps({ variant }: { variant?: 'desk' }) {
   const reduce = useReducedMotion();
   const [step, setStep] = useState(0);
   const [tick, setTick] = useState(0);
@@ -455,7 +456,7 @@ function ListingSteps() {
   const noteOn = step === 3 && sub >= 1;
 
   return (
-    <div ref={box} className={s.stepBox} data-screen-label="Listing animation">
+    <div ref={box} className={s.stepBox} data-variant={variant} data-screen-label="Listing animation">
       <div className={s.progress}><span style={{ width: `${((step + 1) / 4) * 100}%` }} /></div>
       <div role="tablist" aria-label="שלבי הרישום" className={s.steps}>
         {STEPS.map((st, i) => (
@@ -677,7 +678,7 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
           </div>
           <div className={s.disclosure}>
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#8A96A3" strokeWidth="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.5" /><path d="M8 7v4M8 5h.01" /></svg>
-            <span>סדר ההצגה לפי אימות ודירוג. עסק ממומן מסומן תמיד ולא משפיע על הדירוג. <Link href={ROUTES.methodology} className={s.strongLink}>איך מדרגים</Link></span>
+            <span>סדר ההצגה לפי אימות ודירוג. עסק ממומן מסומן תמיד ולא משפיע על הדירוג. <Link href={`${ROUTES.methodology}#ranking`} className={s.strongLink}>איך מדרגים</Link></span>
           </div>
           <div className={s.allLinkWrap}>
             <Link href={`/${region}`} className={s.textLink}>
@@ -723,7 +724,7 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
                 </article>
               ))}
             </div>
-            <Link href={`${ROUTES.listingStandards}#reviews`} className={`${s.textLink} ${s.mt10}`}>מדיניות הביקורות<Arrow /></Link>
+            <Link href={`${ROUTES.terms}#reviews`} className={`${s.textLink} ${s.mt10}`}>מדיניות הביקורות<Arrow /></Link>
           </section>
         )}
 

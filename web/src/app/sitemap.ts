@@ -27,6 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     u('/', 1, 'daily'),
     u('/treatments', 0.8),
+    u('/regions', 0.7),
     ...CATEGORIES.map(c => u(`/treatments/${c.slug}`, 0.8)),
     ...REGIONS.map(r => u(`/${r.slug}`, 0.8, 'daily')),
     ...CITIES.filter(c => citiesWithListings.has(c.slug)).map(c => u(cityHref(c), 0.7, 'daily')),

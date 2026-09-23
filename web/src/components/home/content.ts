@@ -1,9 +1,5 @@
-// Static homepage copy from project/BeautyFind Homepage.dc.html.
+// Static homepage copy shared by the desktop and phone homepages.
 // Counts, ratings and prices never live here: they come from the database (lib/server/public.ts).
-import { BOOKING_LIVE } from '@/lib/features';
-
-import type { RegionSlug } from '@/lib/catalog';
-
 /** Per-category teaser line and 24px line icon (bento cards). Keyed by category slug. */
 export const CATEGORY_TEASER: Record<string, { short: string; icon: string[] }> = {
   'medical-aesthetics': { short: 'בוטוקס, חומרי מילוי וטיפולי מחט בליווי רפואי.', icon: ['M13.8 3.6l6.6 6.6', 'M11.7 5.7l6.6 6.6', 'M16.4 8.1l-8.6 8.6L3.6 20.4l3.7-4.2 8.6-8.6', 'M9.2 11.3l3.5 3.5'] },
@@ -22,12 +18,6 @@ export const CATEGORY_TEASER: Record<string, { short: string; icon: string[] }> 
   tanning: { short: 'שיזוף בהתזה, מיטות שיזוף וטיפוח לאחר שמש.', icon: ['M15.4 12a3.4 3.4 0 1 1-6.8 0 3.4 3.4 0 0 1 6.8 0', 'M12 2.6v2.4', 'M12 19v2.4', 'M2.6 12H5', 'M19 12h2.4', 'M5.5 5.5 7.2 7.2', 'M16.8 16.8l1.7 1.7', 'M5.5 18.5l1.7-1.7', 'M16.8 7.2l1.7-1.7'] },
 };
 
-/** Hero "הטיפולים המבוקשים" row and the empty-query suggestions. */
-export const SHORTCUT_SLUGS = ['facials', 'hair-removal', 'medical-aesthetics', 'spa-massage'];
-
-/** The bento's featured tile. */
-export const FEATURED_SLUG = 'facials';
-
 /** Fallback card image per first category, when a listing has no cover yet. */
 export const CATEGORY_IMAGE: Record<string, string> = {
   'medical-aesthetics': '/assets/biz-medical.jpg', 'plastic-surgery': '/assets/biz-medical.jpg', 'dental-aesthetics': '/assets/biz-medical.jpg',
@@ -37,46 +27,10 @@ export const CATEGORY_IMAGE: Record<string, string> = {
   'body-contouring': '/assets/biz-spa.jpg', tanning: '/assets/biz-spa.jpg',
 };
 
-export const REGION_IMAGE = (r: RegionSlug) => `/assets/region-${r}.jpg`;
-
-// Booking is native on BeautyFind (locked product decision), so the prototype's
-// "not a booking agency" line and the "book directly with the business" FAQ answer are adjusted.
-// The first row ("איפה אנחנו מכסים") is built on the page, with the catalog's city count.
-export const WHAT_ROWS = [
-  { label: 'מה אפשר לעשות', value: 'לחפש לפי תחום טיפול או שם עסק, להשוות שירותים ומחירים, ואז לקבוע תור או ליצור קשר ישירות עם העסק.', muted: false },
-  { label: 'מה זה לא', value: 'לא ייעוץ רפואי, ולא דירוג של איכות קלינית.', muted: true },
-];
-
-export const STANDARDS = [
-  { n: '1', tag: 'מקור המידע', title: 'המידע מגיע מהעסק עצמו', body: 'שירותים, צוות, תמונות, מחירים ופרטי קשר נמסרים על ידי העסק ומוצגים כפי שסופקו. אנחנו לא מוסיפים הבטחות שהעסק לא נתן.' },
-  { n: '2', tag: 'מבנה אחיד', title: 'לכל פרופיל אותו מבנה', body: 'תפריט הטיפולים, הצוות, התמונות, שעות הפעילות ודרכי ההתקשרות מופיעים באותו סדר, כדי שההשוואה תהיה מהירה והוגנת.' },
-  { n: '3', tag: 'חוות דעת', title: 'חוות דעת עם מקור גלוי', body: 'כשלעסק יש חוות דעת, אנחנו מציגים את הפלטפורמה, הדירוג ומספר הביקורות יחד. עסק בלי חוות דעת יקבל ״אין עדיין חוות דעת״, לעולם לא דירוג אפס.' },
-  { n: '4', tag: 'פרסום', title: 'מקום ממומן מסומן תמיד', body: 'מקומות בתשלום נושאים תג ״ממומן״ על גבי הכרטיס. המקום לא משנה שום פרט במידע של העסק.' },
-];
-
-export const FAQS = [
-  { q: 'מה זה BeautyFind?', a: 'BeautyFind הוא אינדקס גילוי שמרכז מכוני יופי, אסתטיקה רפואית, קוסמטיקה, מספרות, ספא ועיצוב הגוף בכל רחבי ישראל, יחד עם מידע על תחומי הטיפול שיעזור לכם לבדוק את האפשרויות.' },
-  { q: 'אילו אזורים האינדקס מכסה?', a: 'שבעה אזורים: צפון, חיפה, שרון, גוש דן, ירושלים, שפלה ודרום, ועשרות ערים ויישובים, מקריית שמונה ועד אילת. לכל אזור ולכל עיר יש דף אינדקס משלהם.' },
-  { q: 'האם BeautyFind נותן ייעוץ רפואי?', a: 'לא. דפי הטיפולים הם מידע כללי בלבד. התאמת טיפול לגופכם צריכה להיבחן מול איש מקצוע מוסמך.' },
-  { q: 'מה המשמעות של תג ״ממומן״?', a: 'עסקים יכולים לשלם עבור מקום מודגש. מקום ממומן משפיע על היכן שהעסק מופיע; הוא אינו משנה את המידע בפרופיל ואינו המלצה.' },
-  BOOKING_LIVE
-    ? { q: 'אפשר לקבוע תור דרך BeautyFind?', a: 'כן. בעסקים שמאפשרים קביעת תור אונליין קובעים ישירות מפרופיל העסק, ולצד זה תמיד אפשר לפנות לעסק בוואטסאפ או בטלפון.' }
-    : { q: 'איך יוצרים קשר עם עסק?', a: 'בכל פרופיל יש טופס פנייה שמגיע ישירות לעסק, ולצדו וואטסאפ, טלפון וניווט. קביעת תור אונליין ישירות מהפרופיל תתווסף בקרוב.' },
-];
-
 // TODO(cms): no magazine yet. Titles and images from the design; every card links to /magazine
 // until articles exist at /magazine/:slug.
 export const ARTICLES = [
   { kind: 'מדריך', title: 'איך לבחור מכון יופי או קליניקה', desc: 'על מה להסתכל בצוות, בתפריט הטיפולים ובתהליך הייעוץ.', img: '/assets/art-choose.jpg', href: '/magazine' },
-  { kind: 'צ׳קליסט', title: 'שאלות לשאול לפני פגישת הייעוץ הראשונה', desc: 'רשימה קצרה לקחת איתכם: על איש המקצוע, על התוכנית ועל הטיפול שאחרי.', img: '/assets/art-questions.jpg', href: '/magazine' },
   { kind: 'הסבר', title: 'איך להבין מחירי טיפולים בישראל', desc: 'למה הצעות מחיר משתנות לפי יחידה, אזור ומספר מפגשים, ואיך להשוות נכון.', img: '/assets/art-prices.jpg', href: '/magazine' },
+  { kind: 'צ׳קליסט', title: 'שאלות לשאול לפני פגישת הייעוץ', desc: 'רשימה קצרה לקחת איתכם: על איש המקצוע, על התוכנית ועל הטיפול שאחרי.', img: '/assets/art-questions.jpg', href: '/magazine' },
 ];
-
-export const PROV_POINTS = [
-  { title: 'המידע שלכם, תמיד מעודכן', body: 'עדכנו שירותים, צוות, תמונות ופרטי קשר מפרופיל אחד.' },
-  { title: 'נמצאים לפי טיפול ולפי עיר', body: 'הופיעו באינדקסים שהלקוחות באמת מחפשים בהם.' },
-  { title: 'מבנה אחד, ברור וקריא', body: 'הפרופיל שלכם מוצג באותו פורמט מסודר כמו כל עסק אחר.' },
-];
-
-/** "עסק אחד" / "N עסקים" as plain text (aria labels, meta lines). */
-export const bizCountText = (n: number) => (n === 1 ? 'עסק אחד' : `${n} עסקים`);
