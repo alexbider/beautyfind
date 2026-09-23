@@ -28,7 +28,7 @@ In development every OTP code is `DEV_FIXED_OTP` (123456). Messages (OTP, passwo
 | `/for-business/claim` | Claim an existing listing (needs a business login) | `BeautyFind Claim.dc.html` |
 | `/logout` | POST, ends the session | |
 
-The funnel is Get Listed → business signup (phone OTP) → Onboarding → a `BIZ-xxxx` verification request (plus `LIC-xxxx` when medical categories are picked). Existing listings go Claim → code sent to the listing's registered phone or email → a `CLM-xxxx` request. Ownership and publishing wait for BeautyFind approval (the Verification console is a later phase).
+The funnel is Get Listed → business signup (phone OTP) → Onboarding → a `BIZ-xxxx` verification request (plus `LIC-xxxx` when medical categories are picked). Existing listings go Claim → code sent to the listing's registered phone or email → a `CLM-xxxx` request. Ownership and publishing wait for BeautyFind approval in the Verification console (phase 2).
 
 ### Phase 2: dashboard and verification
 
