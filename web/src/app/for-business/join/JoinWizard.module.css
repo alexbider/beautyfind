@@ -31,7 +31,7 @@
   flex: none; min-height: 42px; padding: 0 13px; border: 1px solid var(--line); border-radius: 11px; background: #ffffff;
   font: inherit; font-size: 14px; font-weight: 700; color: var(--text); cursor: pointer; transition: border-color .15s;
 }
-.saveExit:hover { border-color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .saveExit:hover { border-color: var(--navy); } }
 .progress { height: 4px; background: var(--divider); }
 .progress > span { display: block; height: 100%; background: var(--teal-deep); transition: width .22s; }
 
@@ -52,7 +52,7 @@
 .claimLine { margin: 0; font-size: 13.5px; color: var(--muted); text-wrap: pretty; }
 .claimLine a, .tipFoot a { color: var(--teal-deep); text-decoration: underline; text-underline-offset: 2px; }
 .claimLine a { font-weight: 700; }
-.claimLine a:hover, .tipFoot a:hover { color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .claimLine a:hover, .tipFoot a:hover { color: var(--navy); } }
 
 .stepBadge { display: inline-block; margin-bottom: 6px; font-size: 12.5px; font-weight: 700; color: var(--teal-deep); }
 .h1 { margin: 0 0 4px; font-family: var(--font-display); font-size: clamp(23px, 3vw, 31px); font-weight: 500; letter-spacing: -0.015em; }
@@ -140,7 +140,7 @@
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
   padding: 12px; text-align: center; color: var(--subtle); cursor: pointer; user-select: none; transition: color .15s;
 }
-.slotEmpty:hover { color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) { .slotEmpty:hover { color: var(--teal-deep); } }
 .slotEmpty:focus-within { outline: 2px solid var(--teal); outline-offset: -2px; border-radius: inherit; }
 .slotEmpty svg { opacity: .45; }
 .slotCap { max-width: 90%; font-size: 13px; font-weight: 500; }
@@ -256,7 +256,7 @@
   flex: 1; min-width: 200px; min-height: 50px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--teal-deep);
   font: inherit; font-size: 16px; font-weight: 700; color: #ffffff; cursor: pointer; transition: background .15s;
 }
-.next:hover { background: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .next:hover { background: var(--navy); } }
 .next:disabled { background: var(--disabled); cursor: progress; }
 .skip {
   flex: none; min-height: 50px; padding: 0 13px; border: 0; border-radius: 12px; background: transparent;
@@ -297,7 +297,7 @@
   font: inherit; font-size: 13px; font-weight: 700; color: var(--teal-deep); cursor: pointer;
   text-decoration: underline; text-underline-offset: 2px;
 }
-.planSwitch:hover { color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .planSwitch:hover { color: var(--navy); } }
 .planName { font-size: 15px; font-weight: 700; }
 .planPrice { font-size: 13.5px; color: var(--text); }
 .planNote { margin-top: 4px; font-size: 12.5px; color: var(--subtle); text-wrap: pretty; }
@@ -340,13 +340,13 @@
   min-height: 48px; display: inline-flex; align-items: center; border-radius: 12px; font-size: 15.5px; transition: background .15s, border-color .15s;
 }
 .donePrimary { padding: 0 17px; background: var(--teal-deep); font-weight: 700; color: #ffffff; }
-.donePrimary:hover { background: var(--navy); color: #ffffff; }
+@media (hover: hover) and (pointer: fine) { .donePrimary:hover { background: var(--navy); color: #ffffff; } }
 .doneSecondary { padding: 0 15px; border: 1px solid var(--line); background: #ffffff; font-weight: 600; color: var(--text); }
-.doneSecondary:hover { border-color: var(--navy); color: var(--text); }
+@media (hover: hover) and (pointer: fine) { .doneSecondary:hover { border-color: var(--navy); color: var(--text); } }
 
 /* ---------- Toast ---------- */
 .toast {
-  position: fixed; bottom: 18px; right: 50%; translate: 50% 0; z-index: 40; max-width: min(90vw, 440px);
+  position: fixed; bottom: calc(var(--bf-float-bottom) + 18px); right: 50%; translate: 50% 0; z-index: 40; max-width: min(90vw, 440px);
   padding: 12px 17px; border-radius: 13px; background: var(--navy); color: #ffffff; font-size: 14px; font-weight: 600;
   box-shadow: 0 12px 30px rgba(12, 36, 62, .28); animation: obPop .16s ease both; text-wrap: pretty;
 }
@@ -354,4 +354,38 @@
 /* Keep 16px inputs on phones so iOS does not zoom on focus (matches globals.css). */
 @media (max-width: 767px) {
   .input, .svcInput, .time { font-size: 16px; }
+}
+
+/* ---------- Step transitions (spec §3.4): forward enters from the left, back from the right ---------- */
+@keyframes obFwd { from { opacity: 0; transform: translateX(-24px) } to { opacity: 1; transform: none } }
+@keyframes obBack { from { opacity: 0; transform: translateX(24px) } to { opacity: 1; transform: none } }
+@keyframes obCheck { from { opacity: 0; transform: scale(.8) } to { opacity: 1; transform: none } }
+.main[data-dir='fwd'] { animation: obFwd .24s cubic-bezier(.2, .7, .2, 1) backwards; }
+.main[data-dir='back'] { animation: obBack .24s cubic-bezier(.2, .7, .2, 1) backwards; }
+
+/* ---------- App shell: top bar with progress, sticky action bar, full-screen success ---------- */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .root { background: #ffffff; }
+  .page { padding: 8px 16px 24px; }
+  .card { padding: 0; border: 0; border-radius: 0; animation: none; }
+  .input, .svcInput { min-height: 48px; font-size: 16px; }
+  .time { min-height: 48px; font-size: 16px; }
+  .chip { min-height: 44px; }
+  .svcRow { padding: 12px; }
+  .svcPrice, .svcDur { width: 96px; }
+  .svcRemove { width: 48px; height: 48px; }
+  .h1 { font-size: 24px; }
+  .next { min-height: 52px; min-width: 0; }
+  .skip { min-height: 52px; }
+  .side { display: flex; flex-direction: column; gap: 12px; }
+  .done {
+    max-width: none; min-height: calc(100dvh - var(--topbar-h) - var(--safe-t) - 32px);
+    display: flex; flex-direction: column; border: 0; border-radius: 0; padding: 24px 0 8px; animation: none;
+  }
+  .doneIcon { width: 72px; height: 72px; align-self: center; margin: 12px 0 18px; animation: obCheck .22s var(--ease-out) both; }
+  .doneIcon svg { width: 34px; height: 34px; }
+  .doneH1 { text-align: center; }
+  .doneBody { text-align: center; }
+  .doneActions { margin-top: auto; flex-direction: column; }
+  .donePrimary, .doneSecondary { justify-content: center; min-height: 52px; }
 }

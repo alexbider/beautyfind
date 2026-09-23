@@ -3,6 +3,11 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
 import { Wordmark } from '@/components/Wordmark';
+import { ConfirmSheet } from '@/components/dashboard/ConfirmSheet';
+import { revealFirstInvalid, useSheetMode } from '@/components/dashboard/media';
+import { ActionBar } from '@/components/shell/ActionBar';
+import { haptic } from '@/components/shell/haptics';
+import { TopBar } from '@/components/shell/TopBar';
 import { ROUTES } from '@/lib/routes';
 import { acceptInvite, declineInvite, requestNewInvite, sendInviteCode, switchAccount, type AcceptResult } from './actions';
 import type { Fail, InviteState } from './invite';
@@ -82,10 +87,20 @@ export function InviteScreen({
   const [invite] = useState(initialInvite);
   const [viewer] = useState(initialViewer);
   const [toast, flash] = useToast();
+  // App shell: the join form reports its step so the flow top bar can show progress and back.
+  const [flow, setFlow] = useState<Flow | null>(null);
 
   return (
     <div className={styles.root}>
-      <header className={styles.header}>
+      <TopBar
+        mode="flow"
+        title={flow?.step === 'done' ? 'ברוכים הבאים' : 'הצטרפות לצוות'}
+        progress={flow && flow.step !== 'done' ? { step: flow.index, total: flow.total } : undefined}
+        noBack={!flow?.back}
+        onBack={() => flow?.back?.()}
+        closeHref={flow?.step === 'done' ? ROUTES.dashboard : ROUTES.home}
+      />
+      <header className={`${styles.header} bf-desk-only`}>
         <div className={styles.headerInner}>
           <Link href={ROUTES.home} aria-label="BeautyFind, לדף הבית" className={styles.logo}>
             <Wordmark size={21} />
@@ -101,6 +116,7 @@ export function InviteScreen({
             invite={invite}
             viewer={viewer}
             flash={flash}
+            onFlow={setFlow}
             onDeclined={() => {
               setState('declined');
               flash(`ההזמנה נדחתה. שלחנו עדכון ל${invite.inviterName}`);
@@ -229,6 +245,7 @@ function StateCard({
 /* ---------- Valid invite ---------- */
 
 type Step = 'details' | 'code' | 'done';
+type Flow = { step: Step; index: number; total: number; back: (() => void) | null };
 type Done = Extract<AcceptResult, { ok: true }>;
 
 function ValidInvite({
@@ -236,12 +253,14 @@ function ValidInvite({
   invite,
   viewer,
   flash,
+  onFlow,
   onDeclined,
 }: {
   token: string;
   invite: ScreenInvite;
   viewer: ScreenViewer;
   flash: (t: string) => void;
+  onFlow: (f: Flow | null) => void;
   onDeclined: () => void;
 }) {
   const { role } = invite;
@@ -297,7 +316,7 @@ function ValidInvite({
 
       <section aria-label="יצירת חשבון" className={styles.formCard}>
         {'need' in viewer ? (
-          <JoinForm token={token} invite={invite} viewer={viewer} flash={flash} onDeclined={onDeclined} />
+          <JoinForm token={token} invite={invite} viewer={viewer} flash={flash} onFlow={onFlow} onDeclined={onDeclined} />
         ) : (
           <AccountGate token={token} invite={invite} viewer={viewer} flash={flash} onDeclined={onDeclined} />
         )}
@@ -312,10 +331,12 @@ function DeclineLine({ token, invite, flash, onDeclined, withTerms }: { token: s
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const yesRef = useRef<HTMLButtonElement>(null);
+  // Below 768px the confirmation is a bottom sheet.
+  const sheet = useSheetMode();
 
   useEffect(() => {
-    if (confirm) yesRef.current?.focus();
-  }, [confirm]);
+    if (confirm && !sheet) yesRef.current?.focus();
+  }, [confirm, sheet]);
 
   const decline = async () => {
     if (busy) return;
@@ -340,7 +361,16 @@ function DeclineLine({ token, invite, flash, onDeclined, withTerms }: { token: s
           דחיית ההזמנה
         </button>
       </p>
-      {confirm && (
+      <ConfirmSheet
+        open={confirm && sheet}
+        title="דחיית ההזמנה"
+        body={<p>לדחות את ההזמנה ל{invite.bizName}? אחרי הדחייה הקישור לא יעבוד, ונשלח עדכון ל{invite.inviterName}.</p>}
+        confirmLabel="כן, לדחות"
+        pending={busy}
+        onConfirm={decline}
+        onCancel={() => setConfirm(false)}
+      />
+      {confirm && !sheet && (
         <div className={styles.confirm} role="group" aria-label="אישור דחיית ההזמנה">
           <p className={styles.confirmText}>לדחות את ההזמנה ל{invite.bizName}? אחרי הדחייה הקישור לא יעבוד, ונשלח עדכון ל{invite.inviterName}.</p>
           <div className={styles.confirmRow}>
@@ -424,22 +454,48 @@ const ERR: Record<Fail['error'], string> = {
   otp_too_many: 'יותר מדי ניסיונות. שלחו קוד חדש.',
 };
 
+// Draft (spec §3.4): everything but the password survives a reload of the invite link.
+const draftKey = (token: string) => `bf-invite-draft:${token}`;
+
 function JoinForm({
   token,
   invite,
   viewer,
   flash,
+  onFlow,
   onDeclined,
 }: {
   token: string;
   invite: ScreenInvite;
   viewer: Extract<ScreenViewer, { mode: 'new' | 'self' }>;
   flash: (t: string) => void;
+  onFlow: (f: Flow | null) => void;
   onDeclined: () => void;
 }) {
   const { need } = viewer;
   const [step, setStep] = useState<Step>('details');
   const [f, setF] = useState<InviteForm>({ name: need.name ? (invite.name ?? '') : '', phone: '', password: '', profession: '', license: '', specialty: '', cert: '' });
+  const [hydrated, setHydrated] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    try {
+      const d = JSON.parse(window.localStorage.getItem(draftKey(token)) ?? 'null') as Partial<InviteForm> | null;
+      if (d) setF(s => ({ ...s, ...d, password: '' }));
+    } catch {
+      // A broken or blocked draft is ignored.
+    }
+    setHydrated(true);
+  }, [token]);
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      if (step === 'done') window.localStorage.removeItem(draftKey(token));
+      else window.localStorage.setItem(draftKey(token), JSON.stringify({ ...f, password: '' }));
+    } catch {
+      // Storage can be blocked (private mode). The draft is a convenience only.
+    }
+  }, [hydrated, token, f, step]);
   const [tried, setTried] = useState(false);
   const [serverErr, setServerErr] = useState<{ text: ReactNode; field?: FormField } | null>(null);
   const [code, setCode] = useState('');
@@ -460,6 +516,13 @@ function JoinForm({
     if (step === 'code') codeRef.current?.focus();
     else headRef.current?.focus();
   }, [step]);
+
+  useEffect(() => {
+    const total = need.phone ? 3 : 2;
+    const index = step === 'details' ? 1 : step === 'code' ? 2 : total;
+    onFlow({ step, index, total, back: step === 'code' ? () => setStep('details') : null });
+    return () => onFlow(null);
+  }, [step, need.phone, onFlow]);
 
   const check = checkForm(f, need);
   const localErr = tried ? check : null;
@@ -531,6 +594,7 @@ function JoinForm({
       return;
     }
     if (!res.ok) return showFail(res, step === 'code' ? 'code' : 'details');
+    haptic('success');
     setDone(res);
     setStep('done');
   };
@@ -541,6 +605,8 @@ function JoinForm({
     setServerErr(null);
     if (check) {
       setTried(true);
+      haptic('warning');
+      revealFirstInvalid(formRef.current);
       return;
     }
     if (!withCode) return accept(null);
@@ -622,7 +688,7 @@ function JoinForm({
   if (step === 'code') {
     const codeBad = codeTried && code.length !== 6;
     return (
-      <form noValidate onSubmit={verify} className={`${styles.stack} ${styles.fade}`}>
+      <form id="inv-code-form" noValidate onSubmit={verify} className={`${styles.stack} ${styles.fade}`}>
         <h2 ref={headRef} tabIndex={-1} className={styles.h2}>
           קוד אימות
         </h2>
@@ -652,9 +718,14 @@ function JoinForm({
             {codeBad ? 'הקוד צריך להכיל 6 ספרות' : codeErr}
           </p>
         )}
-        <button type="submit" className={styles.submit} disabled={busy} aria-busy={busy || undefined}>
+        <button type="submit" className={`${styles.submit} bf-desk-only`} disabled={busy} aria-busy={busy || undefined}>
           אימות והצטרפות
         </button>
+        <ActionBar mobileOnly hint="הקוד הגיע ב־SMS">
+          <button type="submit" form="inv-code-form" className={styles.submit} disabled={busy} aria-busy={busy || undefined}>
+            אימות והצטרפות
+          </button>
+        </ActionBar>
         <div className={styles.codeLinks}>
           <button type="button" className={`${styles.textBtn} ${styles.textBtnTeal}`} onClick={resend} disabled={busy}>
             שליחה חוזרת
@@ -678,7 +749,7 @@ function JoinForm({
 
   const licLabel = prof ? LICENSE_LABEL[prof] : undefined;
   return (
-    <form noValidate onSubmit={submitDetails} className={styles.stack}>
+    <form ref={formRef} id="inv-details-form" noValidate onSubmit={submitDetails} className={styles.stack}>
       <h2 ref={headRef} tabIndex={-1} className={styles.h2}>
         הפרטים שלך
       </h2>
@@ -824,13 +895,18 @@ function JoinForm({
       )}
 
       {errText && (
-        <p role="alert" className={styles.alert}>
+        <p role="alert" className={`${styles.alert} bf-desk-only`}>
           {errText}
         </p>
       )}
-      <button type="submit" className={styles.submit} disabled={busy} aria-busy={busy || undefined}>
+      <button type="submit" className={`${styles.submit} bf-desk-only`} disabled={busy} aria-busy={busy || undefined}>
         {withCode ? 'שליחת קוד אימות' : 'הצטרפות לצוות'}
       </button>
+      <ActionBar mobileOnly error={errText ?? undefined} hint={errText ? undefined : withCode ? 'בשלב הבא נשלח קוד אימות לטלפון' : 'ההרשאה נקבעה על ידי מנהלי הקליניקה'}>
+        <button type="submit" form="inv-details-form" className={styles.submit} disabled={busy} aria-busy={busy || undefined}>
+          {withCode ? 'שליחת קוד אימות' : 'הצטרפות לצוות'}
+        </button>
+      </ActionBar>
       <DeclineLine token={token} invite={invite} flash={flash} onDeclined={onDeclined} withTerms />
     </form>
   );

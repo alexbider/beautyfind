@@ -3,10 +3,15 @@
 import { useEffect, useMemo, useRef, useState, useTransition, type ReactNode } from 'react';
 import { addLead } from '@/app/biz/leads/actions';
 import { ArrowForward } from '@/components/icons';
-import { nis } from '@/lib/format';
-import { LeadRow } from './LeadRow';
+import { fromE164, nis, telHref } from '@/lib/format';
+import { BottomSheet } from '../../shell/BottomSheet';
+import { PullToRefresh } from '../../shell/PullToRefresh';
+import { Segmented } from '../../shell/Segmented';
+import { SwipeRow, type SwipeAction } from '../../shell/SwipeRow';
+import { revealFirstInvalid, useShell } from '../media';
+import { LeadDetail, LeadRow } from './LeadRow';
 import {
-  EMPTY_LEAD, MANUAL_SOURCES, OPEN_STAGES, STAGES, clientsCount, validateLead,
+  EMPTY_LEAD, MANUAL_SOURCES, OPEN_STAGES, STAGES, clientsCount, sourceName, stageOf, validateLead,
   type LeadDTO, type LeadErrors, type LeadField, type LeadFields, type SourceKey, type StageKey,
 } from './shared';
 import styles from './Leads.module.css';
@@ -50,6 +55,10 @@ export function LeadsBoard({ leads, canEdit }: { leads: LeadDTO[]; canEdit: bool
   const [q, setQ] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  // App shell: rows open the lead in a sheet, and the add form is a sheet too.
+  const shell = useShell();
+  const [sheetId, setSheetId] = useState<string | null>(null);
+  const sheetLead = sheetId ? leads.find(l => l.id === sheetId) ?? null : null;
   const addBtnRef = useRef<HTMLButtonElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
@@ -58,7 +67,8 @@ export function LeadsBoard({ leads, canEdit }: { leads: LeadDTO[]; canEdit: bool
   // A deleted lead disappears from the props; keep the open id honest.
   useEffect(() => {
     if (openId && !leads.some(l => l.id === openId)) setOpenId(null);
-  }, [leads, openId]);
+    if (sheetId && !leads.some(l => l.id === sheetId)) setSheetId(null);
+  }, [leads, openId, sheetId]);
 
   const total = leads.length;
   const openN = leads.filter(l => l.stage === 'new' || l.stage === 'contacted').length;
@@ -115,7 +125,12 @@ export function LeadsBoard({ leads, canEdit }: { leads: LeadDTO[]; canEdit: bool
         )}
       </div>
 
-      {canEdit && addOpen && <AddLeadForm onClose={closeAdd} />}
+      {canEdit && addOpen && !shell && <AddLeadForm onClose={closeAdd} />}
+      {canEdit && (
+        <BottomSheet open={addOpen && shell} onClose={() => closeAdd(false)} title="לקוח חדש" size="full">
+          <AddLeadForm onClose={closeAdd} inSheet />
+        </BottomSheet>
+      )}
 
       <dl className={styles.stats}>
         {stats.map(s => (
@@ -127,7 +142,15 @@ export function LeadsBoard({ leads, canEdit }: { leads: LeadDTO[]; canEdit: bool
         ))}
       </dl>
 
-      <div role="group" aria-label="סינון לפי שלב" className={styles.chips}>
+      <div className={`${styles.segBleed} bf-shell-only`}>
+        <Segmented
+          label="סינון לפי שלב"
+          value={filter}
+          onChange={k => setFilter(k as Filter)}
+          items={chips.map(c => ({ key: c.key, label: c.name, count: c.count }))}
+        />
+      </div>
+      <div role="group" aria-label="סינון לפי שלב" className={`${styles.chips} bf-desk-only`}>
         {chips.map(c => {
           const on = filter === c.key;
           return (
@@ -157,7 +180,32 @@ export function LeadsBoard({ leads, canEdit }: { leads: LeadDTO[]; canEdit: bool
         <button type="button" className={styles.clear} onClick={() => { setQ(''); setFilter('all'); }}>ניקוי סינון</button>
       </div>
 
-      <div className={styles.list}>
+      {shown.length > 0 && (
+        <div className={`${styles.rows} bf-shell-only`}>
+          <PullToRefresh>
+            <ul className={styles.rowList}>
+              {shown.map(l => (
+                <li key={l.id}>
+                  <MobileLeadRow lead={l} onOpen={() => setSheetId(l.id)} />
+                </li>
+              ))}
+            </ul>
+          </PullToRefresh>
+        </div>
+      )}
+      <BottomSheet open={!!sheetLead && shell} onClose={() => setSheetId(null)} title={sheetLead?.name ?? 'לקוח'} size="full">
+        {sheetLead && (
+          <LeadDetail
+            id={`lead-sheet-${sheetLead.id}`}
+            lead={sheetLead}
+            canEdit={canEdit}
+            stacked
+            onDeleted={() => { setSheetId(null); headingRef.current?.focus(); }}
+          />
+        )}
+      </BottomSheet>
+
+      <div className={`${styles.list} ${shown.length > 0 ? 'bf-desk-only' : ''}`}>
         {shown.map(l => (
           <LeadRow
             key={l.id}
@@ -186,17 +234,45 @@ export function LeadsBoard({ leads, canEdit }: { leads: LeadDTO[]; canEdit: bool
   );
 }
 
+// ---------- App shell row: 64-72px, full bleed, swipe for WhatsApp and call ----------
+
+function MobileLeadRow({ lead: l, onOpen }: { lead: LeadDTO; onOpen: () => void }) {
+  const stg = stageOf(l.stage);
+  const sub = [l.treatment, sourceName(l.source)].filter(Boolean).join(' · ');
+  const actions: SwipeAction[] = l.phone
+    ? [
+        { label: 'WhatsApp', tone: 'primary', onAction: () => window.open(`https://wa.me/${l.phone!.slice(1)}`, '_blank', 'noopener') },
+        { label: 'חיוג', tone: 'neutral', onAction: () => window.location.assign(telHref(l.phone!)) },
+      ]
+    : [];
+  const body = (
+    <button type="button" className={styles.mRow} onClick={onOpen}>
+      <span aria-hidden="true" className={styles.mAvatar}>{l.name.trim().slice(0, 1)}</span>
+      <span className={styles.mText}>
+        <span className={styles.mName}>{l.name}</span>
+        <span className={styles.mSub}>{sub || (l.phone ? <span className="ltr">{fromE164(l.phone)}</span> : l.email)}</span>
+      </span>
+      <span className={styles.mEnd}>
+        <span className={styles.pill} style={{ color: stg.color, background: stg.bg, borderColor: stg.border }}>{stg.name}</span>
+        <span dir="ltr" className={styles.mWhen}>{l.lastWhen.split(' · ')[0]}</span>
+      </span>
+    </button>
+  );
+  return actions.length ? <SwipeRow actions={actions}>{body}</SwipeRow> : body;
+}
+
 // ---------- Manual add ----------
 
-function AddLeadForm({ onClose }: { onClose: (added: boolean) => void }) {
+function AddLeadForm({ onClose, inSheet }: { onClose: (added: boolean) => void; inSheet?: boolean }) {
   const [f, setF] = useState<LeadFields>(EMPTY_LEAD);
   const [source, setSource] = useState<SourceKey>('phone');
   const [errs, setErrs] = useState<LeadErrors | null>(null);
   const [serverErr, setServerErr] = useState('');
   const [pending, start] = useTransition();
   const nameRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { nameRef.current?.focus(); }, []);
+  useEffect(() => { if (!inSheet) nameRef.current?.focus(); }, [inSheet]);
 
   const set = (k: LeadField) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = k === 'value' ? digitsOf(e.target.value).slice(0, 7) : e.target.value;
@@ -207,7 +283,7 @@ function AddLeadForm({ onClose }: { onClose: (added: boolean) => void }) {
 
   const submit = () => {
     const v = validateLead(f, { withNext: false });
-    if (v.first) { setErrs(v); return; }
+    if (v.first) { setErrs(v); revealFirstInvalid(formRef.current); return; }
     start(async () => {
       const r = await addLead({ fields: f, source });
       if (r.ok) onClose(true);
@@ -224,13 +300,15 @@ function AddLeadForm({ onClose }: { onClose: (added: boolean) => void }) {
 
   return (
     <div
+      ref={formRef}
       id="lead-add"
       role="region"
       aria-labelledby="lead-add-h"
       className={styles.addCard}
+      data-sheet={inSheet || undefined}
       onKeyDown={e => { if (e.key === 'Escape') onClose(false); }}
     >
-      <h2 id="lead-add-h" className={styles.addTitle}>לקוח חדש</h2>
+      <h2 id="lead-add-h" className={inSheet ? 'sr-only' : styles.addTitle}>לקוח חדש</h2>
       <p className={styles.addSub}>לתיעוד שיחה, הודעה ב־WhatsApp או מי שנכנס/ה לקליניקה. נדרש טלפון או דוא״ל.</p>
       <div className={styles.addFields}>
         <label className={`${styles.field} ${styles.g180}`}>

@@ -49,7 +49,7 @@
   display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 15px; border: 1px solid var(--line-strong);
   border-radius: 11px; font-size: 14px; font-weight: 700; color: var(--navy); transition: border-color .18s, color .18s;
 }
-.outlineLink:hover { border-color: var(--teal); color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) { .outlineLink:hover { border-color: var(--teal); color: var(--teal-deep); } }
 
 .empty { display: flex; align-items: flex-start; gap: 12px; }
 .empty > svg { flex: none; margin-top: 1px; }
@@ -91,7 +91,7 @@
   min-height: 46px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--navy); color: #fff; font: inherit;
   font-size: 15px; font-weight: 700; cursor: pointer; transition: background .18s, color .18s;
 }
-.primaryBtn:hover:not(:disabled) { background: var(--teal); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .primaryBtn:hover:not(:disabled) { background: var(--teal); color: var(--navy); } }
 .primaryBtn:disabled { cursor: progress; opacity: .75; }
 .ghostBtn {
   min-height: 46px; padding: 0 14px; border: 0; background: transparent; font: inherit; font-size: 14px; font-weight: 700;
@@ -101,6 +101,35 @@
   min-height: 46px; padding: 0 16px; border: 1px solid var(--navy); border-radius: 12px; background: transparent; font: inherit;
   font-size: 14.5px; font-weight: 700; color: var(--navy); cursor: pointer; transition: border-color .18s, color .18s;
 }
-.outlineBtn:hover { border-color: var(--teal); color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) { .outlineBtn:hover { border-color: var(--teal); color: var(--teal-deep); } }
 .note { font-size: 12.5px; color: var(--subtle); }
 .reported { margin: 10px 0 0; font-size: 13.5px; font-weight: 700; color: var(--teal-deep); }
+
+/* ---------- App shell: full-bleed rows, review sheet, report confirmation ---------- */
+.rows { margin: 0 -16px; background: #fff; border-block: 1px solid var(--line); }
+.rowList { list-style: none; margin: 0; padding: 0; }
+.rowList > li { position: relative; }
+.rowList > li + li::before { content: ''; position: absolute; top: 0; inset-inline: 16px 0; height: 1px; background: var(--divider); z-index: 2; }
+.mRow {
+  width: 100%; min-height: 72px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 10px 16px;
+  border: 0; background: #fff; font: inherit; color: var(--navy); text-align: right; cursor: pointer;
+}
+.mRow:active { background: var(--bg-page); }
+.mTop { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.mWho { min-width: 0; font-size: 15.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mBody { font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.review[data-at='sheet'] { padding: 0; border: 0; border-radius: 0; }
+.sheetActions { display: flex; gap: 10px; }
+.sheetActions > :first-child { flex: 1; }
+.dangerBtn {
+  min-height: 48px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--bad-text); color: #fff; font: inherit;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+}
+.dangerBtn:disabled { opacity: .7; }
+.confirmText { margin: 0; font-size: 15px; line-height: 1.65; color: var(--text); text-wrap: pretty; }
+
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .h1 { font-size: 26px; }
+  .textarea { font-size: 16px; }
+  .actions > .primaryBtn { flex: 1; }
+}

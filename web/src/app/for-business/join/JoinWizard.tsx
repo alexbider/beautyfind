@@ -4,6 +4,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition, type ReactNode } from 'react';
 import { Wordmark } from '@/components/Wordmark';
+import { revealFirstInvalid } from '@/components/dashboard/media';
+import { ActionBar } from '@/components/shell/ActionBar';
+import { haptic } from '@/components/shell/haptics';
+import { TopBar } from '@/components/shell/TopBar';
 import { CATEGORIES, CITIES, REGIONS, regionBySlug, type RegionSlug } from '@/lib/catalog';
 import { nis } from '@/lib/format';
 import { PLAN_MONTHLY_NIS, PLATFORM_PRICE_NOTE, type PlanKey } from '@/lib/pricing';
@@ -115,6 +119,9 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
   const [uploading, setUploading] = useState(0);
   const [pending, startTransition] = useTransition();
   const [hydrated, setHydrated] = useState(false);
+  // Step transition direction (spec §3.4): forward slides in from the left, back from the right.
+  const [dir, setDir] = useState<'fwd' | 'back'>('fwd');
+  const mainRef = useRef<HTMLElement>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const photoUrls = useRef(photos);
@@ -148,6 +155,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
   }, []);
 
   const goTo = (i: number) => {
+    setDir(i < step ? 'back' : 'fwd');
     setDraft(d => ({ ...d, step: i }));
     setTried(false);
     setServerError('');
@@ -238,6 +246,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
       const res = await submitJoin({ plan, f, cats, svcs, hours, decl, media: { cover: mediaIds.cover, logo: mediaIds.logo, license: mediaIds.license, gallery } });
       if (res.ok) {
         writeDraft(draftKey, null);
+        haptic('success');
         setRef(res.ref);
         setDone(true);
         window.scrollTo({ top: 0 });
@@ -252,6 +261,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
         goTo(res.step);
         setTried(true);
       }
+      haptic('warning');
       setServerError(res.error);
     });
   };
@@ -260,6 +270,9 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
     if (pending) return;
     if (!stepOk) {
       setTried(true);
+      // Validation summary sits above the button; the first bad field scrolls into view.
+      haptic('warning');
+      revealFirstInvalid(mainRef.current);
       return;
     }
     if (st.key === 'verify') {
@@ -279,6 +292,13 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
   const bad = tried ? v.bad : null;
   const hasMedical = v.hasMedical;
   const openDays = hours.filter(h => !h.closed).length;
+
+  const hint =
+    st.key === 'verify'
+      ? 'לאחר השליחה נתחיל באימות. בדרך כלל עד יומיים, ואם חסר משהו נפנה בוואטסאפ.'
+      : stepOk
+        ? 'הכול מוכן, אפשר להמשיך'
+        : 'השלימו את שדות החובה כדי להמשיך';
 
   const progressPct = Math.round(((step + (done ? 1 : 0)) / TOTAL) * 100);
   const stepCount = (
@@ -344,7 +364,15 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
 
   return (
     <div className={styles.root} dir="rtl" lang="he">
-      <header className={styles.header}>
+      <TopBar
+        mode="flow"
+        title={done ? 'הבקשה נשלחה' : st.name}
+        progress={done ? undefined : { step: step + 1, total: TOTAL }}
+        noBack={done || step === 0}
+        onBack={() => goTo(step - 1)}
+        onClose={done ? () => router.push(ROUTES.dashboard) : saveExit}
+      />
+      <header className={`${styles.header} bf-desk-only`}>
         <div className={styles.headerInner}>
           <Link href={ROUTES.home} className={styles.brand} aria-label="BeautyFind, לדף הבית">
             <Wordmark size={21} />
@@ -369,7 +397,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
       <div className={styles.page}>
         {!done ? (
           <div className={styles.shell}>
-            <main className={styles.main}>
+            <main ref={mainRef} className={styles.main} key={step} data-dir={dir}>
               {step === 0 && (
                 <p className={styles.claimLine}>
                   העסק כבר מופיע ב־BeautyFind? <Link href={ROUTES.claim}>אישור בעלות על רישום קיים</Link>
@@ -377,7 +405,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
               )}
 
               <div>
-                <span className={styles.stepBadge}>{stepCount}</span>
+                <span className={`${styles.stepBadge} bf-desk-only`}>{stepCount}</span>
                 <h1 ref={headingRef} tabIndex={-1} className={styles.h1}>
                   {st.title}
                 </h1>
@@ -746,12 +774,12 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
               )}
 
               {err && (
-                <p role="alert" className={styles.error}>
+                <p role="alert" className={`${styles.error} bf-desk-only`}>
                   {err}
                 </p>
               )}
 
-              <div className={styles.actions}>
+              <div className={`${styles.actions} bf-desk-only`}>
                 {step > 0 && (
                   <button type="button" onClick={() => goTo(step - 1)} className={styles.back}>
                     חזרה
@@ -773,17 +801,28 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
                   </button>
                 )}
               </div>
-              <p className={styles.nextHint}>
-                {st.key === 'verify'
-                  ? 'לאחר השליחה נתחיל באימות. בדרך כלל עד יומיים, ואם חסר משהו נפנה בוואטסאפ.'
-                  : stepOk
-                    ? 'הכול מוכן, אפשר להמשיך'
-                    : 'השלימו את שדות החובה כדי להמשיך'}
-              </p>
+              <p className={`${styles.nextHint} bf-desk-only`}>{hint}</p>
+              <ActionBar mobileOnly hint={err ? undefined : hint} error={err || undefined}>
+                {st.key === 'photos' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      goTo(step + 1);
+                      flash('אפשר להשלים תמונות בלוח הבקרה');
+                    }}
+                    className={styles.skip}
+                  >
+                    אשלים אחר כך
+                  </button>
+                )}
+                <button type="button" onClick={next} disabled={pending} aria-busy={pending || undefined} className={styles.next}>
+                  {st.key === 'verify' ? 'שליחה לאימות' : 'המשך'}
+                </button>
+              </ActionBar>
             </main>
 
             <aside className={styles.side}>
-              <div className={styles.railCard}>
+              <div className={`${styles.railCard} bf-desk-only`}>
                 <ol className={styles.rail}>
                   {STEPS.map((x, i) => {
                     const cur = step === i;

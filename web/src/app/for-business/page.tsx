@@ -8,6 +8,7 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { nis } from '@/lib/format';
 import { PLAN_MONTHLY_NIS, PLATFORM_BILLING_LINE, PLATFORM_PRICE_NOTE, type PlanKey } from '@/lib/pricing';
 import { ROUTES, joinWithPlan } from '@/lib/routes';
+import { StickyJoinBar } from './StickyJoinBar';
 import styles from './page.module.css';
 
 // Design: project/BeautyFind Get Listed.dc.html
@@ -155,7 +156,7 @@ export default function GetListedPage() {
   return (
     <div className={styles.root}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
-      <SiteHeader />
+      <SiteHeader title="רישום עסק" backHref="/more" />
 
       <main>
         <section aria-labelledby="hero-h1" className={styles.hero}>
@@ -215,6 +216,7 @@ export default function GetListedPage() {
           </div>
         </section>
 
+        <span id="hero-end" aria-hidden="true" />
         <section aria-label="נתוני האינדקס" className={styles.proof}>
           <ul>
             {PROOF.map((p, i) => (
@@ -388,7 +390,11 @@ export default function GetListedPage() {
         </section>
       </main>
 
-      <SiteFooter />
+      <StickyJoinBar heroEndId="hero-end" ctaId="h-cta" />
+      {/* Phones: the footer's links live on the "עוד" tab. */}
+      <div className="bf-desk-only">
+        <SiteFooter />
+      </div>
     </div>
   );
 }

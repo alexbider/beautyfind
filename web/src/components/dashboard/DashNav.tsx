@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import styles from './DashNav.module.css';
 
+/** Desktop side rail (a scrolling strip on narrow mouse windows). The app shell uses the tab bar instead. */
 export function DashNav({ views }: { views: Array<{ key: string; name: string; href: string; badge: number }> }) {
   const path = usePathname();
   return (
-    <nav aria-label="ניווט בלוח הבקרה" className={styles.nav}>
+    <nav aria-label="ניווט בלוח הבקרה" className={`${styles.nav} bf-desk-only`}>
       {views.map(v => {
         const on = v.href === '/biz' ? path === '/biz' : path.startsWith(v.href);
         return (

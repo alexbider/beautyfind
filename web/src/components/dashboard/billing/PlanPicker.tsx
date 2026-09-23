@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, type ReactNode } from 'react';
 import { changeCycle, changePlan } from '@/app/biz/billing/actions';
+import { ConfirmSheet } from '../ConfirmSheet';
+import { useSheetMode } from '../media';
 import s from './billing.module.css';
 
 export type PlanCard = {
@@ -43,6 +45,22 @@ export function PlanPicker({
     });
 
   const when = periodEnd ? <>, ב־<span className="ltr">{periodEnd}</span></> : null;
+  // Below 768px the confirmation is a bottom sheet.
+  const sheet = useSheetMode();
+  const askTitle = !ask ? '' : ask.kind === 'plan' ? `לעבור למסלול ${ask.plan.name}?` : 'לעבור לחיוב שנתי?';
+  const askLine: ReactNode = !ask ? null : ask.kind === 'yearly' ? (
+    yearlyLine
+  ) : cur && ask.plan.rank < cur.rank ? (
+    <>מערכת ניהול הקליניקה (יומן, CRM, מלאי, אוטומציות) תיסגר בסוף מחזור החיוב{when}. עד אז הכול ממשיך לעבוד, והמידע נשמר 90 יום אם תחזרו.</>
+  ) : cur ? (
+    <>המעבר נכנס לתוקף מיד. החיוב היחסי לתקופה הנוכחית יופיע בחשבונית הבאה{when}.</>
+  ) : (
+    <>המסלול נשמר מיד. החיוב מתחיל כשהסניף הראשון מתפרסם.</>
+  );
+  const confirm = () => {
+    if (!ask) return;
+    run(() => (ask.kind === 'plan' ? changePlan(ask.plan.key) : changeCycle('yearly')));
+  };
 
   return (
     <div onKeyDown={e => { if (e.key === 'Escape') setAsk(null); }}>
@@ -114,43 +132,29 @@ export function PlanPicker({
         })}
       </div>
 
-      {ask ? (
+      {ask && !sheet ? (
         <div className={s.ask} role="group" aria-labelledby="ask-title" aria-describedby="ask-line">
-          {ask.kind === 'plan' ? (
-            <>
-              <p id="ask-title" className={s.askTitle}>לעבור למסלול {ask.plan.name}?</p>
-              <p id="ask-line" className={s.askLine}>
-                {cur && ask.plan.rank < cur.rank ? (
-                  <>
-                    מערכת ניהול הקליניקה (יומן, CRM, מלאי, אוטומציות) תיסגר בסוף מחזור החיוב{when}. עד אז הכול ממשיך לעבוד, והמידע נשמר 90 יום אם תחזרו.
-                  </>
-                ) : cur ? (
-                  <>המעבר נכנס לתוקף מיד. החיוב היחסי לתקופה הנוכחית יופיע בחשבונית הבאה{when}.</>
-                ) : (
-                  <>המסלול נשמר מיד. החיוב מתחיל כשהסניף הראשון מתפרסם.</>
-                )}
-              </p>
-            </>
-          ) : (
-            <>
-              <p id="ask-title" className={s.askTitle}>לעבור לחיוב שנתי?</p>
-              <p id="ask-line" className={s.askLine}>{yearlyLine}</p>
-            </>
-          )}
+          <p id="ask-title" className={s.askTitle}>{askTitle}</p>
+          <p id="ask-line" className={s.askLine}>{askLine}</p>
           <div className={s.askActions}>
-            <button
-              type="button"
-              className={s.primary}
-              disabled={busy}
-              autoFocus
-              onClick={() => run(() => (ask.kind === 'plan' ? changePlan(ask.plan.key) : changeCycle('yearly')))}
-            >
+            <button type="button" className={s.primary} disabled={busy} autoFocus onClick={confirm}>
               {busy ? 'שומר…' : 'אישור המעבר'}
             </button>
             <button type="button" className={s.ghost} onClick={() => setAsk(null)}>ביטול</button>
           </div>
         </div>
       ) : null}
+      <ConfirmSheet
+        open={!!ask && sheet}
+        title={askTitle}
+        body={<p>{askLine}</p>}
+        confirmLabel={busy ? 'שומר…' : 'אישור המעבר'}
+        tone="primary"
+        pending={busy}
+        error={error || undefined}
+        onConfirm={confirm}
+        onCancel={() => setAsk(null)}
+      />
       {error ? <p role="alert" className={s.error} style={{ margin: '0 0 14px' }}>{error}</p> : null}
     </div>
   );

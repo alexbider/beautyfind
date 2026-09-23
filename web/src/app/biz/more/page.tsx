@@ -3,6 +3,7 @@ import { MoreMenu, type MoreRow } from '@/components/more/MoreMenu';
 import { visibleViews } from '@/components/dashboard/views';
 import { bizContext } from '@/lib/server/biz';
 import { isAdvanced } from '@/lib/server/clinic';
+import s from './page.module.css';
 
 export const metadata: Metadata = { title: 'עוד' };
 
@@ -17,29 +18,30 @@ export default async function BizMorePage() {
 
   const manage: MoreRow[] = views.map(v => ({ kind: 'link', label: v.name, href: v.href }));
   const business: MoreRow[] = [
-    { kind: 'link', label: 'סניפים', href: '/biz/branches', note: String(ctx.business.branches.length) },
-    { kind: 'link', label: 'מקום ממומן', href: '/biz/sponsored' },
+    // Branches and sponsored placements get rows here once /biz/branches and /biz/sponsored exist.
     ...(profileHref ? [{ kind: 'link', label: 'תצוגת הפרופיל הציבורי', href: profileHref } as MoreRow] : []),
     ...(advanced ? [{ kind: 'link', label: 'מערכת הקליניקה', href: '/clinic' } as MoreRow] : []),
   ];
 
   return (
-    <MoreMenu
-      title="עוד"
-      groups={[
-        { name: 'ניהול', rows: manage },
-        { name: 'העסק', rows: business },
-        {
-          name: 'עזרה ומידע',
-          rows: [
-            { kind: 'link', label: 'מרכז עזרה', href: '/help' },
-            { kind: 'link', label: 'צור קשר', href: '/contact' },
-            { kind: 'link', label: 'תנאי שימוש', href: '/terms' },
-            { kind: 'link', label: 'מדיניות פרטיות', href: '/privacy' },
-          ],
-        },
-        { name: 'חשבון', rows: [{ kind: 'logout' }] },
-      ]}
-    />
+    <div className={s.bleed}>
+      <MoreMenu
+        title="עוד"
+        groups={[
+          { name: 'ניהול', rows: manage },
+          { name: 'העסק', rows: business },
+          {
+            name: 'עזרה ומידע',
+            rows: [
+              { kind: 'link', label: 'מרכז עזרה', href: '/help' },
+              { kind: 'link', label: 'צור קשר', href: '/contact' },
+              { kind: 'link', label: 'תנאי שימוש', href: '/terms' },
+              { kind: 'link', label: 'מדיניות פרטיות', href: '/privacy' },
+            ],
+          },
+          { name: 'חשבון', rows: [{ kind: 'logout' }] },
+        ]}
+      />
+    </div>
   );
 }

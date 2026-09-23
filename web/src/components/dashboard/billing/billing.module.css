@@ -9,7 +9,7 @@
 }
 .cycleBtn[aria-pressed='true'] { background: var(--navy); color: #ffffff; font-weight: 700; }
 .cycleBtn:disabled { cursor: default; }
-.cycleBtn:not([aria-pressed='true']):not(:disabled):hover { color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) { .cycleBtn:not([aria-pressed='true']):not(:disabled):hover { color: var(--teal-deep); } }
 
 .plans { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(12px, 1.4vw, 18px); margin-bottom: 14px; align-items: stretch; }
 @media (min-width: 768px) {
@@ -40,7 +40,7 @@
   margin-top: auto; min-height: 46px; padding: 0 15px; border: 1px solid var(--navy); border-radius: 12px; background: #ffffff;
   font: inherit; font-size: 14.5px; font-weight: 700; color: var(--navy); cursor: pointer; transition: background .18s, color .18s;
 }
-.pick:hover:not(:disabled) { background: var(--navy); color: #ffffff; }
+@media (hover: hover) and (pointer: fine) { .pick:hover:not(:disabled) { background: var(--navy); color: #ffffff; } }
 .pick:disabled { opacity: .6; cursor: default; }
 
 .ask {
@@ -55,7 +55,7 @@
   min-height: 44px; padding: 0 16px; border: 0; border-radius: 11px; background: var(--navy); color: #ffffff;
   font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; transition: background .18s, color .18s;
 }
-.primary:hover:not(:disabled) { background: var(--teal); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .primary:hover:not(:disabled) { background: var(--teal); color: var(--navy); } }
 .primary:disabled { background: var(--disabled); cursor: default; }
 .ghost {
   min-height: 44px; padding: 0 13px; border: 0; background: transparent; font: inherit; font-size: 14px; font-weight: 700;
@@ -89,7 +89,7 @@
   min-height: 44px; display: inline-flex; align-items: center; padding: 0 15px; border: 1px solid var(--navy); border-radius: 12px;
   font-size: 14.5px; font-weight: 700; color: var(--navy); transition: background .18s, color .18s;
 }
-.outline:hover { background: var(--navy); color: #ffffff; }
+@media (hover: hover) and (pointer: fine) { .outline:hover { background: var(--navy); color: #ffffff; } }
 
 /* ---------- Accounting ---------- */
 .fields { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
@@ -119,3 +119,8 @@
 }
 .invHead > span:last-child { text-align: left; }
 .invTitle { padding: 13px 18px; border-bottom: 1px solid var(--line); background: var(--bg-soft); font-size: 12.5px; font-weight: 700; color: var(--subtle); }
+
+/* App shell: 48px fields with 16px text (no iOS zoom). */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .input { min-height: 48px; font-size: 16px; }
+}

@@ -23,7 +23,7 @@
   min-height: 46px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--navy); color: #fff;
   font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; transition: background .18s, color .18s;
 }
-.primaryBtn:hover:not(:disabled) { background: var(--teal); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .primaryBtn:hover:not(:disabled) { background: var(--teal); color: var(--navy); } }
 .primaryBtn:disabled { cursor: progress; opacity: .75; }
 .savedChip {
   display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 14px; border-radius: 12px;
@@ -79,7 +79,7 @@
   min-height: 44px; padding: 0 13px; border: 1px solid var(--line-strong); border-radius: 11px; background: #fff; font: inherit;
   font-size: 13.5px; font-weight: 700; color: var(--text); cursor: pointer; transition: border-color .18s, background .18s;
 }
-.chip:hover:not(:disabled) { border-color: var(--teal); }
+@media (hover: hover) and (pointer: fine) { .chip:hover:not(:disabled) { border-color: var(--teal); } }
 .chip[data-on] { border-color: var(--navy); background: var(--navy); color: #fff; }
 .chip:disabled { cursor: default; }
 .fieldset[aria-invalid='true'] .chip:not([data-on]) { border-color: #D98A74; }
@@ -162,7 +162,7 @@
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
   padding: 10px; color: var(--subtle); text-align: center; cursor: pointer;
 }
-.dropEmpty:hover { color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) { .dropEmpty:hover { color: var(--teal-deep); } }
 .dropEmpty:focus-within, .dropReplace:focus-within { outline: 2px solid var(--teal); outline-offset: -4px; border-radius: 12px; }
 .dropCap { font-size: 12.5px; font-weight: 700; line-height: 1.4; text-wrap: pretty; }
 .dropReplace {
@@ -174,7 +174,7 @@
   position: absolute; top: 6px; left: 6px; width: 44px; height: 44px; border: 0; border-radius: 12px; background: rgba(12, 36, 62, .72);
   color: #fff; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
 }
-.dropRemove:hover { background: #A33A31; }
+@media (hover: hover) and (pointer: fine) { .dropRemove:hover { background: #A33A31; } }
 .dropProgress {
   position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 12px; background: rgba(255, 255, 255, .94);
   display: flex; flex-direction: column; gap: 6px; animation: bfFade .15s ease both;
@@ -209,4 +209,11 @@
 .gapList > li {
   display: inline-flex; align-items: center; height: 30px; padding: 0 11px; border: 1px solid #F0C9BF; border-radius: 9px; background: #fff;
   font-size: 13.5px; font-weight: 700; color: #A8432C;
+}
+
+/* App shell: 48px fields with 16px text; publishing lives in the sticky action bar. */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .input, .inputSmall, .inputCaption, .time { min-height: 48px; font-size: 16px; }
+  .textarea { font-size: 16px; }
+  .h1 { font-size: 26px; }
 }

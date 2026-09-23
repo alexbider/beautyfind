@@ -57,9 +57,9 @@
   flex: none; min-height: 44px; padding: 0 11px; border: 1px solid var(--line-strong); border-radius: 10px; background: #fff;
   font: inherit; font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer; transition: border-color .18s, color .18s;
 }
-.removeBtn:hover:not(:disabled) { border-color: #C2453E; color: #C2453E; }
+@media (hover: hover) and (pointer: fine) { .removeBtn:hover:not(:disabled) { border-color: #C2453E; color: #C2453E; } }
 .smallBtn { color: var(--navy); }
-.smallBtn:hover:not(:disabled) { border-color: var(--teal); color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) { .smallBtn:hover:not(:disabled) { border-color: var(--teal); color: var(--teal-deep); } }
 .inviteActions { flex: none; display: flex; flex-wrap: wrap; gap: 6px; }
 
 /* ---------- Confirm ---------- */
@@ -74,7 +74,7 @@
   min-height: 44px; padding: 0 16px; border: 0; border-radius: 11px; background: #8E2F28; color: #fff;
   font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; transition: background .18s;
 }
-.dangerBtn:hover:not(:disabled) { background: #C2453E; }
+@media (hover: hover) and (pointer: fine) { .dangerBtn:hover:not(:disabled) { background: #C2453E; } }
 .dangerBtn:disabled { opacity: .6; cursor: progress; }
 .ghostBtn { min-height: 44px; padding: 0 13px; border: 0; background: transparent; font: inherit; font-size: 14px; font-weight: 700; color: var(--muted); cursor: pointer; }
 
@@ -98,7 +98,7 @@
   flex: none; min-height: 46px; padding: 0 17px; border: 0; border-radius: 12px; background: var(--navy); color: #fff;
   font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; transition: background .18s, color .18s;
 }
-.sendBtn:hover:not(:disabled) { background: var(--teal); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .sendBtn:hover:not(:disabled) { background: var(--teal); color: var(--navy); } }
 .sendBtn:disabled { opacity: .6; cursor: progress; }
 .invErr { margin: 10px 0 0; font-size: 13.5px; font-weight: 700; color: #A8432C; }
 .invOk { margin: 10px 0 0; font-size: 13.5px; font-weight: 700; color: var(--teal-deep); }
@@ -132,7 +132,7 @@
   flex: 1; min-height: 44px; padding: 0 10px; border: 0; border-radius: 10px; background: var(--navy); color: #fff;
   font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: background .18s, color .18s;
 }
-.saveBtn:hover:not(:disabled) { background: var(--teal); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .saveBtn:hover:not(:disabled) { background: var(--teal); color: var(--navy); } }
 .saveBtn:disabled { background: var(--divider); color: var(--subtle); cursor: default; }
 .resetBtn { flex: none; min-height: 44px; padding: 0 6px; border: 0; background: transparent; font: inherit; font-size: 12.5px; font-weight: 700; color: var(--muted); cursor: pointer; }
 .matrixNotice { margin: 0; padding: 11px 18px; border-top: 1px solid var(--divider); font-size: 13.5px; font-weight: 700; color: var(--teal-deep); background: var(--tint); }
@@ -143,3 +143,14 @@
 
 @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
 @keyframes pop { from { opacity: 0; transform: scale(.97) } to { opacity: 1; transform: none } }
+
+/* App shell: chips wrap under the name, 44px targets, 48px fields; the permission matrix scrolls sideways. */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .roleChips { flex: 1 1 100%; }
+  .roleChip { min-height: 44px; }
+  .input { min-height: 48px; font-size: 16px; }
+  .g200, .g160 { min-width: 100%; }
+  .sendBtn { flex: 1 1 100%; min-height: 52px; }
+  .card { margin-inline: -16px; border-radius: 0; border-inline: 0; }
+  .scroll { overscroll-behavior-x: contain; }
+}

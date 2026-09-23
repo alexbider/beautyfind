@@ -13,7 +13,7 @@
   display: flex; align-items: flex-start; gap: 11px; width: 100%; padding: 11px 8px; border-radius: 10px;
   text-align: right; transition: background .18s; color: inherit;
 }
-a.task:hover { background: var(--bg-page); color: inherit; }
+@media (hover: hover) and (pointer: fine) { a.task:hover { background: var(--bg-page); color: inherit; } }
 .box {
   flex: none; margin-top: 1px; width: 22px; height: 22px; border-radius: 7px; border: 1px solid var(--line-strong); background: #ffffff;
   display: inline-flex; align-items: center; justify-content: center; color: #ffffff;
@@ -24,7 +24,7 @@ a.task:hover { background: var(--bg-page); color: inherit; }
 .task[data-done] .taskName { color: var(--subtle); text-decoration: line-through; }
 .taskNote { font-size: 12.5px; line-height: 1.5; color: var(--subtle); text-wrap: pretty; }
 .taskGo { flex: none; align-self: center; color: var(--subtle); transition: color .18s; }
-a.task:hover .taskGo { color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) { a.task:hover .taskGo { color: var(--teal-deep); } }
 
 .dark { padding: clamp(16px, 2vw, 22px); background: var(--navy); border-radius: 18px; color: #ffffff; }
 .darkTitle { margin: 0 0 8px; font-family: var(--font-display); font-weight: 500; font-size: 21px; line-height: 1.2; }
@@ -34,9 +34,9 @@ a.task:hover .taskGo { color: var(--teal-deep); }
   display: inline-flex; align-items: center; min-height: 46px; padding: 0 16px; border-radius: 12px; background: var(--teal);
   color: var(--navy); font-size: 14.5px; font-weight: 700; transition: background .18s;
 }
-.darkPrimary:hover { background: var(--teal-light); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .darkPrimary:hover { background: var(--teal-light); color: var(--navy); } }
 .darkGhost {
   display: inline-flex; align-items: center; min-height: 46px; padding: 0 16px; border: 1px solid rgba(255, 255, 255, .34);
   border-radius: 12px; font-size: 14.5px; font-weight: 700; color: #ffffff; transition: border-color .18s, color .18s;
 }
-.darkGhost:hover { border-color: var(--teal-light); color: var(--teal-light); }
+@media (hover: hover) and (pointer: fine) { .darkGhost:hover { border-color: var(--teal-light); color: var(--teal-light); } }
