@@ -16,6 +16,13 @@ npm run dev                   # http://localhost:3000
 
 In development every OTP code is `DEV_FIXED_OTP` (123456). Messages (OTP, password reset) are printed to the server console by the `console` messaging adapter.
 
+## Deploy (Vercel)
+
+- Project root directory: `web`. Vercel runs `npm run vercel-build`, which applies migrations (`prisma migrate deploy`) and then builds.
+- Storage: a Neon Postgres database (sets `DATABASE_URL` and `DATABASE_URL_UNPOOLED`) and a Vercel Blob store (sets `BLOB_READ_WRITE_TOKEN`), both connected to the project. Set `STORAGE_ADAPTER=blob`.
+- Also set `SITE_URL`, `SESSION_SECRET` and `DATA_KEY`. Never change `DATA_KEY` once data exists: it encrypts health declarations and provider credentials.
+- Test deployments: `STAGING=1` adds a noindex header to every response, a disallow-all robots.txt and a "test environment" bar. `ALLOW_CONSOLE_MESSAGING=1` prints login codes to the Vercel logs and `ALLOW_SANDBOX_PAYMENTS=1` enables the fake checkout. Remove all three before a real launch.
+
 ## What's built
 
 ### Phase 1: business funnel

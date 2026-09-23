@@ -18,6 +18,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="he" dir="rtl" className={`${frank.variable} ${assistant.variable} ${jost.variable}`}>
       <body>
+        {process.env.STAGING === '1' && (
+          <div role="note" style={{ padding: '6px 16px', background: 'var(--navy)', color: '#fff', fontSize: 13, fontWeight: 700, textAlign: 'center' }}>
+            סביבת בדיקה · הנתונים והעסקים באתר הזה לדוגמה בלבד
+          </div>
+        )}
         {children}
         <CookieConsent />
       </body>
