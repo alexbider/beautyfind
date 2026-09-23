@@ -1,0 +1,19 @@
+.list { display: flex; flex-direction: column; gap: 10px; }
+.item {
+  background: #ffffff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+  transition: background .22s, border-color .22s; animation: bfRise .55s var(--ease-out) both;
+}
+.item[data-open] { background: var(--bg-soft); border-color: var(--teal); }
+.h { margin: 0; font-size: 17px; font-weight: 700; }
+.q {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; min-height: 64px;
+  padding: 14px 18px; border: 0; background: transparent; font: inherit; font-size: 17px; font-weight: 700;
+  line-height: 1.45; color: var(--navy); text-align: right; cursor: pointer;
+}
+.plus {
+  flex: none; width: 34px; height: 34px; border: 1px solid var(--line-strong); border-radius: 50%; background: #ffffff;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 18px; color: var(--navy);
+  transition: transform .25s;
+}
+.item[data-open] .plus { transform: rotate(45deg); }
+.a { margin: 0; padding: 0 18px 18px; font-size: 16px; line-height: 1.7; color: var(--text); text-wrap: pretty; animation: bfFade .25s ease both; }

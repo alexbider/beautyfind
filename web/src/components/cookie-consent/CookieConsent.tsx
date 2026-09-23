@@ -1,0 +1,135 @@
+'use client';
+
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import styles from './CookieConsent.module.css';
+
+// Real consent storage (kept per 02-data-model.md): localStorage['bf-cookie-consent'].
+export const CONSENT_KEY = 'bf-cookie-consent';
+
+export interface Consent {
+  essential: true;
+  analytics: boolean;
+  embeds: boolean;
+}
+
+const CATS: Array<{ key: keyof Consent; name: string; note: string; locked: boolean }> = [
+  { key: 'essential', name: 'הכרחיים', note: 'אזור, סינון שמור, כניסה לחשבון ואבטחה. בלעדיהם האתר לא עובד.', locked: true },
+  { key: 'analytics', name: 'מדידה מצטברת', note: 'אילו עמודים נקראים ואיפה החיפוש נתקע, ללא זיהוי אישי.', locked: false },
+  { key: 'embeds', name: 'תוכן מוטמע', note: 'מפות, סרטוני הקליניקות ווידג׳טים של ביקורות מגוגל.', locked: false },
+];
+
+const NONE: Consent = { essential: true, analytics: false, embeds: false };
+const ALL: Consent = { essential: true, analytics: true, embeds: true };
+
+export function readConsent(): Consent | null {
+  try {
+    return JSON.parse(localStorage.getItem(CONSENT_KEY) || 'null');
+  } catch {
+    return null;
+  }
+}
+
+/** Global consent banner, preferences dialog and the floating "change" pill. Layout: bar. */
+export function CookieConsent() {
+  // undefined = not read yet (SSR / first paint): render nothing to avoid a flash.
+  const [saved, setSaved] = useState<Consent | null | undefined>(undefined);
+  const [prefs, setPrefs] = useState(false);
+  const [draft, setDraft] = useState<Consent>(NONE);
+
+  useEffect(() => {
+    const s = readConsent();
+    setSaved(s);
+    if (s) setDraft(s);
+  }, []);
+
+  useEffect(() => {
+    if (!prefs) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setPrefs(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [prefs]);
+
+  if (saved === undefined) return null;
+
+  const save = (v: Consent) => {
+    try {
+      localStorage.setItem(CONSENT_KEY, JSON.stringify(v));
+    } catch {}
+    setSaved(v);
+    setDraft(v);
+    setPrefs(false);
+  };
+
+  const n = saved ? CATS.filter(c => saved[c.key]).length : 0;
+  const decidedLabel = n === CATS.length ? 'כל ה־Cookie מאושרים' : n === 1 ? 'הכרחיים בלבד' : 'בחירה מותאמת';
+
+  return (
+    <div dir="rtl" lang="he">
+      {!saved && !prefs && (
+        <section role="region" aria-labelledby="ck-h" className={styles.banner}>
+          <div className={styles.bannerRow}>
+            <div className={styles.bannerText}>
+              <h2 id="ck-h">קובצי Cookie באתר</h2>
+              <p>
+                אנחנו משתמשים בקבצים הכרחיים כדי לזכור אזור וסינון, ובקבצי מדידה מצטברת, רק אם תאשרו. איננו משתמשים במידע לפרסום מותאם.{' '}
+                <Link href="/privacy">מדיניות הפרטיות</Link>
+              </p>
+            </div>
+            <div className={styles.bannerBtns}>
+              <button type="button" className={styles.primary} onClick={() => save(ALL)}>אישור הכל</button>
+              <button type="button" className={styles.outline} onClick={() => save(NONE)}>הכרחיים בלבד</button>
+              <button type="button" className={styles.linkBtn} onClick={() => setPrefs(true)}>בחירה מפורטת</button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {prefs && (
+        <div className={styles.scrim} onClick={e => e.target === e.currentTarget && setPrefs(false)}>
+          <section role="dialog" aria-modal="true" aria-labelledby="ck-ph" className={styles.dialog}>
+            <div className={styles.dialogHead}>
+              <h2 id="ck-ph">העדפות Cookie</h2>
+              <button type="button" aria-label="סגירה" className={styles.close} onClick={() => setPrefs(false)}>×</button>
+            </div>
+            <ul className={styles.cats}>
+              {CATS.map(c => {
+                const on = c.locked || !!draft[c.key];
+                return (
+                  <li key={c.key}>
+                    <span className={styles.catText}>
+                      <span className={styles.catName}>{c.name}</span>
+                      <span className={styles.catNote}>{c.note}</span>
+                    </span>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={on}
+                      aria-label={c.name}
+                      disabled={c.locked}
+                      className={styles.switch}
+                      data-on={on || undefined}
+                      onClick={() => !c.locked && setDraft(d => ({ ...d, [c.key]: !d[c.key] }))}
+                    >
+                      <span aria-hidden="true" />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+            <div className={styles.dialogFoot}>
+              <button type="button" className={styles.save} onClick={() => save(draft)}>שמירת הבחירה</button>
+              <button type="button" className={styles.secondary} onClick={() => save(ALL)}>אישור הכל</button>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {saved && !prefs && (
+        <button type="button" className={styles.pill} onClick={() => setPrefs(true)}>
+          {decidedLabel} · שינוי
+        </button>
+      )}
+    </div>
+  );
+}
