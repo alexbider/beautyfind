@@ -1,0 +1,10 @@
+.heart {
+  width: 44px; height: 44px; border-radius: 50%; border: 0; padding: 0; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, .92); backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(12, 36, 62, .12); transition: transform .16s, box-shadow .16s;
+}
+.heart:hover { transform: scale(1.06); }
+.heart path { fill: none; stroke: var(--navy); stroke-width: 1.7; stroke-linejoin: round; transition: fill .16s, stroke .16s; }
+.heart[data-on] { box-shadow: 0 0 0 3px var(--teal-border); }
+.heart[data-on] path { fill: var(--teal); stroke: var(--teal); }

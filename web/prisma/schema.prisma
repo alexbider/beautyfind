@@ -653,3 +653,40 @@ model MediaFile {
 
   @@map("media_files")
 }
+
+// ---------- Contact ----------
+
+enum ContactReason {
+  general
+  business
+  correction
+  complaint
+  access
+  press
+}
+
+enum ContactStatus {
+  new
+  in_progress
+  closed
+}
+
+// Messages from /contact. Routed to BeautyFind staff by reason.
+model ContactMessage {
+  id           String        @id @default(uuid()) @db.Uuid
+  ref          String        @unique // PN-0001
+  reason       ContactReason
+  name         String
+  email        String
+  phone        String? // E.164
+  businessName String?       @map("business_name")
+  pageUrl      String?       @map("page_url") // for corrections and complaints
+  message      String
+  status       ContactStatus @default(new)
+  userId       String?       @map("user_id") @db.Uuid
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  @@index([reason, status])
+  @@map("contact_messages")
+}
