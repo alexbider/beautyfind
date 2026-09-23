@@ -76,6 +76,8 @@ model User {
   emailVerifiedAt DateTime? @map("email_verified_at")
   marketingOptIn  Boolean   @default(false) @map("marketing_opt_in")
   termsAcceptedAt DateTime? @map("terms_accepted_at")
+  // BeautyFind staff only (see 04-permissions.md). Null for clients and businesses.
+  opsRole      OpsRole?    @map("ops_role")
   createdAt    DateTime    @default(now()) @map("created_at")
   updatedAt    DateTime    @updatedAt @map("updated_at")
 
@@ -97,6 +99,14 @@ model Session {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("sessions")
+}
+
+enum OpsRole {
+  moderator
+  verifier
+  ops
+  support
+  legal
 }
 
 enum OtpPurpose {
@@ -237,6 +247,7 @@ model Business {
   subscription   Subscription?
   depositPolicy  DepositPolicy?
   verificationRequests VerificationRequest[]
+  invites        StaffInvite[]
 
   @@map("businesses")
 }
@@ -281,8 +292,22 @@ model Branch {
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
 
+  // Google Business rating, synced weekly. Never merged with BeautyFind reviews.
+  googleRating      Float?    @map("google_rating")
+  googleReviewCount Int?      @map("google_review_count")
+  googlePlaceUrl    String?   @map("google_place_url")
+  googleSyncedAt    DateTime? @map("google_synced_at")
+  description String?
+  wazeUrl     String?      @map("waze_url")
+  instagram   String?
+  // [{ q, a }]
+  faqs        Json         @default("[]")
+
   categories  BranchCategory[]
   treatments  Treatment[]
+  leads       Lead[]
+  reviews     Review[]
+  events      ProfileEvent[]
 
   @@index([regionSlug, status])
   @@map("branches")
@@ -321,6 +346,7 @@ model Treatment {
   requiresDeclaration Boolean   @default(false) @map("requires_declaration")
   onlineBookable      Boolean   @default(true) @map("online_bookable") // forced false when isMedical
   depositOverrideAgorot Int?    @map("deposit_override_agorot")
+  isPublished         Boolean   @default(true) @map("is_published")
   sortOrder           Int       @default(0) @map("sort_order")
   createdAt           DateTime  @default(now()) @map("created_at")
   updatedAt           DateTime  @updatedAt @map("updated_at")
@@ -449,4 +475,173 @@ model RefCounter {
   value  Int    @default(0)
 
   @@map("ref_counters")
+}
+
+// ---------- Staff invites ----------
+
+enum InviteStatus {
+  sent
+  accepted
+  expired
+  declined
+  revoked
+}
+
+model StaffInvite {
+  id         String       @id @default(uuid()) @db.Uuid
+  businessId String       @map("business_id") @db.Uuid
+  business   Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  email      String
+  name       String?
+  preset     String // manager | front | book | practitioner
+  permissions Json        @default("{}")
+  tokenHash  String       @unique @map("token_hash")
+  invitedById String      @map("invited_by_id") @db.Uuid
+  status     InviteStatus @default(sent)
+  expiresAt  DateTime     @map("expires_at") // sent + 7 days
+  acceptedAt DateTime?    @map("accepted_at")
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+
+  @@index([businessId, status])
+  @@map("staff_invites")
+}
+
+// ---------- CRM ----------
+
+enum LeadStage {
+  new
+  contacted
+  booked
+  done
+  lost
+}
+
+enum LeadSource {
+  form
+  whatsapp
+  phone
+  walkin
+  referral
+}
+
+model Lead {
+  id          String     @id @default(uuid()) @db.Uuid
+  businessId  String     @map("business_id") @db.Uuid
+  branchId    String?    @map("branch_id") @db.Uuid
+  branch      Branch?    @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  name        String
+  phone       String? // E.164
+  email       String?
+  city        String?
+  treatment   String?
+  source      LeadSource
+  stage       LeadStage  @default(new)
+  valueAgorot Int?       @map("value_agorot")
+  nextAction  String?    @map("next_action")
+  nextDate    DateTime?  @map("next_date") @db.Date
+  notes       String?
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  events      LeadEvent[]
+
+  @@index([businessId, stage])
+  @@map("leads")
+}
+
+enum LeadEventKind {
+  form
+  contact
+  stage
+  note
+  edit
+  visit
+}
+
+// History of a lead; append-only.
+model LeadEvent {
+  id        String        @id @default(uuid()) @db.Uuid
+  leadId    String        @map("lead_id") @db.Uuid
+  lead      Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  kind      LeadEventKind
+  text      String
+  actorId   String?       @map("actor_id") @db.Uuid
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  @@index([leadId, createdAt])
+  @@map("lead_events")
+}
+
+// ---------- Reviews (BeautyFind verified reviews) ----------
+
+enum ReviewStatus {
+  submitted
+  published
+  rejected
+  removed
+}
+
+model Review {
+  id            String       @id @default(uuid()) @db.Uuid
+  branchId      String       @map("branch_id") @db.Uuid
+  branch        Branch       @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  bookingId     String?      @map("booking_id") @db.Uuid // required once bookings exist
+  authorName    String       @map("author_name") // already formatted per name_mode
+  rating        Int
+  title         String
+  body          String
+  treatmentName String?      @map("treatment_name")
+  status        ReviewStatus @default(submitted)
+  businessReply String?      @map("business_reply")
+  repliedAt     DateTime?    @map("replied_at")
+  repliedById   String?      @map("replied_by_id") @db.Uuid
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  @@index([branchId, status])
+  @@map("reviews")
+}
+
+// ---------- Profile analytics ----------
+// Written only for visitors who allowed analytics cookies.
+
+enum ProfileEventType {
+  view
+  contact_click
+  whatsapp_click
+  call_click
+  waze_click
+  booking_start
+  form_submit
+}
+
+model ProfileEvent {
+  id        String           @id @default(uuid()) @db.Uuid
+  branchId  String           @map("branch_id") @db.Uuid
+  branch    Branch           @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  type      ProfileEventType
+  device    String? // mobile | desktop | tablet
+  city      String?
+  query     String? // search query that led here
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  @@index([branchId, type, createdAt])
+  @@map("profile_events")
+}
+
+// ---------- Media ----------
+
+model MediaFile {
+  id         String   @id @default(uuid()) @db.Uuid
+  ownerId    String   @map("owner_id") @db.Uuid // uploading user
+  businessId String?  @map("business_id") @db.Uuid
+  key        String   @unique // storage key
+  mime       String
+  bytes      Int
+  alt        String?
+  // private files (license scans) are never served publicly
+  isPrivate  Boolean  @default(false) @map("is_private")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("media_files")
 }

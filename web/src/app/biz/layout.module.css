@@ -1,0 +1,56 @@
+.root { font-size: 16px; line-height: 1.55; color: var(--navy); background: var(--bg-page); min-height: 100dvh; overflow-x: clip; }
+.header {
+  position: sticky; top: 0; z-index: 50; background: rgba(255, 255, 255, .96);
+  backdrop-filter: saturate(1.2) blur(8px); border-bottom: 1px solid var(--line);
+}
+.bar {
+  max-width: 1400px; margin: 0 auto; padding: 0 clamp(16px, 3vw, 28px); height: 68px;
+  display: flex; align-items: center; gap: 18px;
+}
+.brand { flex: none; display: flex; align-items: center; }
+.divider { flex: none; width: 1px; height: 26px; background: var(--line); }
+.bizId { min-width: 0; display: flex; flex-direction: column; }
+.bizName { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bizLine { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chip {
+  flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--bg-soft);
+  font-size: 13px; font-weight: 700; color: var(--navy);
+}
+.chip:hover { border-color: var(--teal-light); }
+.chipTeal { color: var(--teal-deep); }
+.profileLink {
+  margin-right: auto; flex: none; display: none; align-items: center; gap: 8px; height: 42px; padding: 0 15px;
+  border: 1px solid var(--line-strong); border-radius: 11px; font-size: 14.5px; font-weight: 700; color: var(--navy);
+  transition: border-color .18s, color .18s;
+}
+.profileLink:hover { border-color: var(--teal); color: var(--teal-deep); }
+.statusWide {
+  flex: none; display: none; align-items: center; gap: 9px; height: 42px; padding: 0 14px; border-radius: 11px;
+  background: var(--tint); font-size: 13.5px; font-weight: 700; color: var(--teal-deep);
+}
+.statusWide > span { width: 8px; height: 8px; border-radius: 50%; background: var(--teal-deep); }
+.statusNarrow {
+  margin-right: auto; flex: none; display: flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 10px;
+  background: var(--tint); font-size: 13px; font-weight: 700; color: var(--teal-deep);
+}
+.statusWide[data-pending], .statusNarrow[data-pending] { background: var(--warn-bg); color: var(--warn-text); }
+.statusWide[data-pending] > span { background: var(--warn-text); }
+
+/* The header carries a lot on phones: hide secondary chips below 620px. */
+@media (max-width: 619px) {
+  .chip, .divider { display: none; }
+}
+@media (min-width: 1000px) {
+  .profileLink, .statusWide { display: flex; }
+  .statusNarrow { display: none; }
+}
+
+.shell {
+  max-width: 1400px; margin: 0 auto; padding: clamp(16px, 2.4vw, 30px) clamp(16px, 3vw, 28px) clamp(48px, 5vw, 80px);
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(16px, 2vw, 32px); align-items: start;
+}
+@media (min-width: 1000px) {
+  .shell { grid-template-columns: minmax(214px, 252px) minmax(0, 1fr); }
+}
+.main { min-width: 0; display: flex; flex-direction: column; gap: clamp(14px, 1.8vw, 22px); }
