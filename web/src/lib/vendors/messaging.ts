@@ -31,6 +31,10 @@ export function messaging(): MessagingAdapter {
   const name = process.env.MESSAGING_ADAPTER ?? 'console';
   switch (name) {
     case 'console':
+      // It prints OTP codes and invite links to the log, so it must never run in production.
+      if (process.env.NODE_ENV === 'production' && process.env.ALLOW_CONSOLE_MESSAGING !== '1') {
+        throw new Error('MESSAGING_ADAPTER=console is not allowed in production');
+      }
       return consoleAdapter;
     default:
       throw new Error(`Unknown MESSAGING_ADAPTER "${name}"`);

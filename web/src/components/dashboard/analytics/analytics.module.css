@@ -1,0 +1,61 @@
+/* Analytics tab. Design: project/BeautyFind Dashboard.dc.html (isAnalytics). */
+
+.queryGrid { grid-template-columns: minmax(0, 1fr) 68px 58px 76px; }
+.term { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.termText { font-size: 14.5px; font-weight: 700; text-wrap: pretty; overflow-wrap: anywhere; }
+.termBar { display: flex; justify-content: flex-start; }
+.termBar > span { display: block; height: 6px; background: var(--teal-border); border-radius: 999px; }
+.numStrong { font-weight: 700; }
+.numSoft { color: var(--text); }
+.numRate { font-size: 13.5px; font-weight: 700; color: var(--teal-deep); }
+
+.cookie {
+  display: flex; align-items: flex-start; gap: 10px; padding: 12px 15px; border: 1px solid var(--teal-border);
+  border-radius: 14px; background: var(--tint); font-size: 13.5px; line-height: 1.6; color: var(--text); text-wrap: pretty;
+}
+.cookie svg { flex: none; margin-top: 3px; }
+.cookie p { margin: 0; }
+
+/* ---------- Benchmark ---------- */
+.bench { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.benchRow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.benchName { flex: none; width: 136px; font-size: 14px; font-weight: 700; text-wrap: pretty; }
+.benchBars { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 5px; }
+.benchLine { display: flex; align-items: center; gap: 8px; }
+.benchTrack { flex: 1; display: flex; justify-content: flex-start; }
+.benchTrack > span { display: block; height: 11px; border-radius: 999px; }
+.benchYou, .benchMed { flex: none; width: 58px; text-align: right; font-size: 13.5px; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+.benchYou { font-weight: 700; }
+.benchMed { color: var(--subtle); }
+.benchVerdict { flex: none; font-size: 13px; font-weight: 700; }
+.benchKey { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; font-size: 12.5px; color: var(--muted); }
+.benchKey > span { display: inline-flex; align-items: center; gap: 7px; }
+.benchKey i { display: inline-block; width: 14px; height: 8px; border-radius: 999px; }
+
+/* ---------- Ratings ---------- */
+.ratingHead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.bigNum {
+  display: inline-flex; align-items: baseline; gap: 8px; font-family: var(--font-display); font-size: 30px; line-height: 1;
+  color: var(--navy); font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate;
+}
+.bigNum small { font-family: var(--font-ui); font-size: 13px; color: var(--subtle); }
+.stars { direction: ltr; unicode-bidi: isolate; }
+.google { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.googleRow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-bottom: 12px; border-bottom: 1px solid var(--divider); }
+.googleRow:last-child { border-bottom: 0; padding-bottom: 0; }
+.googleName { font-size: 14px; font-weight: 700; }
+.googleMeta { display: block; font-size: 12px; color: var(--subtle); font-weight: 400; }
+
+/* ---------- Per treatment ---------- */
+.treatRow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 13px 18px; border-bottom: 1px solid var(--divider); }
+.treatName { flex: none; width: 124px; font-size: 14.5px; font-weight: 700; text-wrap: pretty; }
+.treatBar { flex: 1; min-width: 120px; display: flex; justify-content: flex-start; }
+.treatBar > span { display: block; height: 10px; background: var(--navy); border-radius: 999px; }
+.treatNum { flex: none; width: 52px; text-align: right; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+.treatNumSoft { flex: none; width: 44px; text-align: right; font-size: 14px; color: var(--text); font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+.treatRate {
+  flex: none; display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; background: var(--tint);
+  font-size: 12.5px; font-weight: 700; color: var(--teal-deep);
+}
+.treatHead { display: flex; align-items: center; gap: 12px; padding: 10px 18px; border-bottom: 1px solid var(--divider); background: var(--bg-soft); font-size: 11.5px; font-weight: 700; color: var(--subtle); }
+.treatHead > span:first-child { flex: 1; }

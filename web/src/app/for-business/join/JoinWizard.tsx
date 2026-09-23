@@ -8,8 +8,8 @@ import { CATEGORIES, CITIES, REGIONS, regionBySlug, type RegionSlug } from '@/li
 import { nis } from '@/lib/format';
 import { PLAN_MONTHLY_NIS, type PlanKey } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
-import { submitJoin } from './actions';
 import { PhotoSlot } from './PhotoSlot';
+import { submitJoin, uploadJoinFile } from './actions';
 import {
   BIZ_TYPES, DAY_NAMES, DEFAULT_HOURS, EMPTY_FIELDS, STEPS, matchCity, validate,
   type BizType, type DeclKey, type Fields, type HoursRow, type ServiceRow, type StepKey,
@@ -110,6 +110,9 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
   const [toast, setToast] = useState('');
   const [serverError, setServerError] = useState('');
   const [photos, setPhotos] = useState<Partial<Record<PhotoKey, string>>>({});
+  // Stored upload ids per slot; previews above stay local blob URLs.
+  const [mediaIds, setMediaIds] = useState<Partial<Record<PhotoKey, string>>>({});
+  const [uploading, setUploading] = useState(0);
   const [pending, startTransition] = useTransition();
   const [hydrated, setHydrated] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -178,21 +181,42 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
     else setHour(i, { closed: !h.closed });
   };
 
-  const pickPhoto = (k: PhotoKey, file: File) => {
-    const old = photos[k];
+  const dropSlot = (k: PhotoKey) => {
+    const old = photoUrls.current[k];
     if (old) URL.revokeObjectURL(old);
-    const url = URL.createObjectURL(file);
-    setPhotos(p => ({ ...p, [k]: url }));
-  };
-  const clearPhoto = (k: PhotoKey) => {
-    const old = photos[k];
-    if (old) URL.revokeObjectURL(old);
-    setPhotos(p => {
+    const without = <T,>(p: Partial<Record<PhotoKey, T>>) => {
       const n = { ...p };
       delete n[k];
       return n;
-    });
+    };
+    setPhotos(without);
+    setMediaIds(without);
   };
+  const pickPhoto = async (k: PhotoKey, file: File) => {
+    dropSlot(k);
+    const url = URL.createObjectURL(file);
+    setPhotos(p => ({ ...p, [k]: url }));
+    const form = new FormData();
+    form.set('file', file);
+    form.set('kind', k === 'license' ? 'license' : 'photo');
+    setUploading(n => n + 1);
+    try {
+      const res = await uploadJoinFile(form);
+      if (res.ok) {
+        // Ignore a result for a slot that was cleared or replaced meanwhile.
+        if (photoUrls.current[k] === url) setMediaIds(m => ({ ...m, [k]: res.id }));
+      } else {
+        dropSlot(k);
+        flash(res.error === 'size' ? 'הקובץ גדול מ־8MB' : res.error === 'type' ? 'אפשר להעלות JPG, PNG או WEBP' : 'ההעלאה נכשלה. נסו שוב.');
+      }
+    } catch {
+      dropSlot(k);
+      flash('ההעלאה נכשלה. נסו שוב.');
+    } finally {
+      setUploading(n => n - 1);
+    }
+  };
+  const clearPhoto = (k: PhotoKey) => dropSlot(k);
 
   const switchPlan = () => {
     const nextPlan: PlanKey = plan === 'basic' ? 'advanced' : 'basic';
@@ -201,9 +225,17 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
   };
 
   const submit = () => {
+    if (uploading > 0) {
+      flash('רגע, התמונות עדיין עולות');
+      return;
+    }
     setServerError('');
     startTransition(async () => {
-      const res = await submitJoin({ plan, f, cats, svcs, hours, decl });
+      const gallery = Object.entries(mediaIds)
+        .filter(([key]) => key.startsWith('gal'))
+        .sort(([a], [b]) => Number(a.slice(3)) - Number(b.slice(3)))
+        .map(([, id]) => id as string);
+      const res = await submitJoin({ plan, f, cats, svcs, hours, decl, media: { cover: mediaIds.cover, logo: mediaIds.logo, license: mediaIds.license, gallery } });
       if (res.ok) {
         writeDraft(draftKey, null);
         setRef(res.ref);

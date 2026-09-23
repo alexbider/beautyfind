@@ -1,0 +1,42 @@
+/* Overview tab. Design: project/BeautyFind Dashboard.dc.html (isOverview). */
+
+.completionHead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.completionValue {
+  font-family: var(--font-display); font-size: 24px; line-height: 1; color: var(--teal-deep);
+  font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate;
+}
+.progress { height: 8px; border-radius: 999px; background: var(--divider); overflow: hidden; margin-bottom: 16px; display: flex; justify-content: flex-start; }
+.progress > span { display: block; height: 8px; background: var(--teal); border-radius: 999px; transition: width .4s var(--ease-out); }
+
+.tasks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.task {
+  display: flex; align-items: flex-start; gap: 11px; width: 100%; padding: 11px 8px; border-radius: 10px;
+  text-align: right; transition: background .18s; color: inherit;
+}
+a.task:hover { background: var(--bg-page); color: inherit; }
+.box {
+  flex: none; margin-top: 1px; width: 22px; height: 22px; border-radius: 7px; border: 1px solid var(--line-strong); background: #ffffff;
+  display: inline-flex; align-items: center; justify-content: center; color: #ffffff;
+}
+.task[data-done] .box { border-color: var(--teal-deep); background: var(--teal-deep); }
+.taskText { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.taskName { font-size: 15px; font-weight: 600; color: var(--navy); }
+.task[data-done] .taskName { color: var(--subtle); text-decoration: line-through; }
+.taskNote { font-size: 12.5px; line-height: 1.5; color: var(--subtle); text-wrap: pretty; }
+.taskGo { flex: none; align-self: center; color: var(--subtle); transition: color .18s; }
+a.task:hover .taskGo { color: var(--teal-deep); }
+
+.dark { padding: clamp(16px, 2vw, 22px); background: var(--navy); border-radius: 18px; color: #ffffff; }
+.darkTitle { margin: 0 0 8px; font-family: var(--font-display); font-weight: 500; font-size: 21px; line-height: 1.2; }
+.darkText { margin: 0 0 14px; font-size: 14.5px; line-height: 1.7; color: rgba(255, 255, 255, .82); text-wrap: pretty; }
+.darkActions { display: flex; flex-wrap: wrap; gap: 8px; }
+.darkPrimary {
+  display: inline-flex; align-items: center; min-height: 46px; padding: 0 16px; border-radius: 12px; background: var(--teal);
+  color: var(--navy); font-size: 14.5px; font-weight: 700; transition: background .18s;
+}
+.darkPrimary:hover { background: var(--teal-light); color: var(--navy); }
+.darkGhost {
+  display: inline-flex; align-items: center; min-height: 46px; padding: 0 16px; border: 1px solid rgba(255, 255, 255, .34);
+  border-radius: 12px; font-size: 14.5px; font-weight: 700; color: #ffffff; transition: border-color .18s, color .18s;
+}
+.darkGhost:hover { border-color: var(--teal-light); color: var(--teal-light); }

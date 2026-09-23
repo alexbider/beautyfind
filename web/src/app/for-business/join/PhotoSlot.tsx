@@ -2,9 +2,7 @@
 
 import styles from './JoinWizard.module.css';
 
-// A dashed drop area that previews a picked image locally.
-// TODO(storage): files are only previewed via object URLs and never uploaded. Wire this to the
-// storage vendor once it exists and send the resulting URLs with the submit payload.
+// A dashed drop area that previews a picked image locally. The wizard uploads the file on pick.
 export function PhotoSlot({
   label,
   placeholder,

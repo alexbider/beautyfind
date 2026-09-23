@@ -1,0 +1,121 @@
+/* Billing tab. Design: project/BeautyFind Dashboard.dc.html (isBilling). */
+
+.cycleRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.cycleLabel { font-size: 13.5px; font-weight: 700; color: var(--text); }
+.cycle { display: flex; gap: 4px; background: #ffffff; border: 1px solid var(--line); border-radius: 12px; padding: 4px; }
+.cycleBtn {
+  min-height: 40px; padding: 0 13px; border: 0; border-radius: 9px; background: transparent; font: inherit;
+  font-size: 14px; font-weight: 500; color: var(--text); cursor: pointer; white-space: nowrap; transition: background .18s, color .18s;
+}
+.cycleBtn[aria-pressed='true'] { background: var(--navy); color: #ffffff; font-weight: 700; }
+.cycleBtn:disabled { cursor: default; }
+.cycleBtn:not([aria-pressed='true']):not(:disabled):hover { color: var(--teal-deep); }
+
+.plans { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(12px, 1.4vw, 18px); margin-bottom: 14px; align-items: stretch; }
+@media (min-width: 620px) {
+  .plans { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.plan {
+  display: flex; flex-direction: column; gap: 9px; padding: clamp(16px, 2vw, 22px); background: #ffffff;
+  border: 1.5px solid var(--line); border-radius: 18px;
+}
+.plan[data-current] { background: var(--tint); border-color: var(--teal-deep); }
+.planTop { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.planName { font-family: var(--font-display); font-size: 21px; line-height: 1.2; }
+.badge {
+  display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 7px; background: var(--teal-deep);
+  font-size: 11.5px; font-weight: 700; color: #ffffff;
+}
+.badgeSoft { background: var(--warn-bg); color: var(--warn-text); border: 1px solid var(--warn-line); }
+.price {
+  font-family: var(--font-display); font-size: 32px; line-height: 1.05; color: var(--navy); text-align: right;
+  font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate;
+}
+.per { font-size: 12.5px; color: var(--subtle); }
+.planLine { font-size: 13.5px; color: var(--text); text-wrap: pretty; }
+.feats { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.feats li { display: flex; align-items: flex-start; gap: 8px; font-size: 13.5px; line-height: 1.55; color: var(--text); text-wrap: pretty; }
+.feats svg { flex: none; margin-top: 4px; }
+.pick {
+  margin-top: auto; min-height: 46px; padding: 0 15px; border: 1px solid var(--navy); border-radius: 12px; background: #ffffff;
+  font: inherit; font-size: 14.5px; font-weight: 700; color: var(--navy); cursor: pointer; transition: background .18s, color .18s;
+}
+.pick:hover:not(:disabled) { background: var(--navy); color: #ffffff; }
+.pick:disabled { opacity: .6; cursor: default; }
+
+.ask {
+  margin-bottom: 14px; padding: 16px 18px; border: 1px solid var(--teal); border-radius: 16px; background: #ffffff;
+  animation: bfPopSoft .18s ease both;
+}
+@keyframes bfPopSoft { from { opacity: 0; transform: scale(.97) } to { opacity: 1; transform: none } }
+.askTitle { margin: 0 0 4px; font-size: 15.5px; font-weight: 700; }
+.askLine { margin: 0 0 13px; font-size: 13.5px; color: var(--muted); text-wrap: pretty; }
+.askActions { display: flex; flex-wrap: wrap; gap: 9px; }
+.primary {
+  min-height: 44px; padding: 0 16px; border: 0; border-radius: 11px; background: var(--navy); color: #ffffff;
+  font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; transition: background .18s, color .18s;
+}
+.primary:hover:not(:disabled) { background: var(--teal); color: var(--navy); }
+.primary:disabled { background: var(--disabled); cursor: default; }
+.ghost {
+  min-height: 44px; padding: 0 13px; border: 0; background: transparent; font: inherit; font-size: 14px; font-weight: 700;
+  color: var(--muted); cursor: pointer;
+}
+.error { margin: 10px 0 0; font-size: 13.5px; font-weight: 700; color: var(--bad-text); }
+.ok {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 12px; background: var(--tint);
+  font-size: 14px; font-weight: 700; color: var(--teal-deep); animation: bfPopSoft .2s ease both;
+}
+
+/* ---------- Next charge / payment ---------- */
+.sum { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 9px 12px; font-size: 14.5px; }
+.sum dt { color: var(--muted); }
+.sum dd { margin: 0; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+.total { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 13px; padding-top: 13px; border-top: 1px solid var(--line); }
+.totalLabel { font-size: 14.5px; font-weight: 700; }
+.totalValue { font-family: var(--font-display); font-size: 30px; line-height: 1; color: var(--navy); font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+.callout { margin: 13px 0 0; padding: 11px 13px; border-radius: 12px; font-size: 13px; line-height: 1.6; text-wrap: pretty; }
+.calloutInfo { background: var(--bg-soft); border: 1px solid var(--line); color: var(--text); }
+.calloutWarn { background: var(--warn-bg); border: 1px solid var(--warn-line); color: var(--warn-text); }
+.calloutBad { background: var(--bad-bg); border: 1px solid var(--bad-line); color: var(--bad-text); }
+.payCard { display: flex; flex-direction: column; gap: 9px; }
+.payLabel { font-size: 12.5px; font-weight: 700; color: var(--subtle); }
+
+.sponsorEmpty {
+  display: flex; align-items: center; gap: 10px; padding: 11px 13px; margin-bottom: 12px; border: 1px dashed var(--line-strong);
+  border-radius: 12px; background: var(--bg-soft); font-size: 13.5px; color: var(--muted);
+}
+.outline {
+  min-height: 44px; display: inline-flex; align-items: center; padding: 0 15px; border: 1px solid var(--navy); border-radius: 12px;
+  font-size: 14.5px; font-weight: 700; color: var(--navy); transition: background .18s, color .18s;
+}
+.outline:hover { background: var(--navy); color: #ffffff; }
+
+/* ---------- Accounting ---------- */
+.fields { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+.field { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 5px; }
+.fieldNarrow { min-width: 150px; }
+.field > span { font-size: 13px; font-weight: 700; }
+.input {
+  min-height: 46px; padding: 0 13px; border: 1px solid var(--line-strong); border-radius: 11px; background: #ffffff;
+  font-size: 15px; color: var(--navy); outline: none; text-align: left; font-variant-numeric: tabular-nums; direction: ltr;
+}
+.input:focus { border-color: var(--teal); }
+.input[aria-invalid='true'] { border-color: var(--bad-input); }
+.input:disabled { background: var(--bg-soft); color: var(--muted); }
+.inputBold { font-weight: 700; }
+.hint { margin: 0 0 14px; font-size: 12.5px; line-height: 1.6; color: var(--subtle); text-wrap: pretty; }
+.saveRow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 18px; }
+
+.table { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.qHead {
+  display: grid; grid-template-columns: minmax(0, 1fr) 88px 78px 88px; gap: 10px; padding: 10px 14px;
+  background: var(--bg-soft); border-bottom: 1px solid var(--divider); font-size: 11.5px; font-weight: 700; color: var(--subtle);
+}
+.qHead > span:not(:first-child) { text-align: left; }
+.invHead {
+  display: grid; grid-template-columns: 96px minmax(0, 1fr) 86px; gap: 13px; padding: 10px 18px; border-bottom: 1px solid var(--divider);
+  font-size: 11.5px; font-weight: 700; color: var(--subtle);
+}
+.invHead > span:last-child { text-align: left; }
+.invTitle { padding: 13px 18px; border-bottom: 1px solid var(--line); background: var(--bg-soft); font-size: 12.5px; font-weight: 700; color: var(--subtle); }

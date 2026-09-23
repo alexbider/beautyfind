@@ -301,6 +301,7 @@ model Branch {
   googleSyncedAt    DateTime? @map("google_synced_at")
   description String?
   wazeUrl     String?      @map("waze_url")
+  websiteUrl  String?      @map("website_url")
   instagram   String?
   // [{ q, a }]
   faqs        Json         @default("[]")
@@ -410,6 +411,7 @@ model Subscription {
   status               SubscriptionStatus @default(active)
   // Downgrades wait for the next cycle; upgrades apply immediately (prorated).
   pendingPlan          Plan?              @map("pending_plan")
+  pendingCycle         BillingCycle?      @map("pending_cycle")
   currentPeriodEnd     DateTime?          @map("current_period_end")
   // { attempts, next_at }
   retry                Json?
@@ -505,6 +507,7 @@ model StaffInvite {
   status     InviteStatus @default(sent)
   expiresAt  DateTime     @map("expires_at") // sent + 7 days
   acceptedAt DateTime?    @map("accepted_at")
+  renewalRequestedAt DateTime? @map("renewal_requested_at")
   createdAt  DateTime     @default(now()) @map("created_at")
   updatedAt  DateTime     @updatedAt @map("updated_at")
 

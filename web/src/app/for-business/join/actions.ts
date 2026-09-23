@@ -1,5 +1,6 @@
 'use server';
 
+import { saveUpload } from '@/lib/server/media';
 import { randomBytes } from 'node:crypto';
 import { z } from 'zod';
 import { CATEGORIES, REGIONS } from '@/lib/catalog';
@@ -48,7 +49,23 @@ async function uniqueSlug(base: string) {
   return `${base}-${randomBytes(6).toString('hex')}`;
 }
 
-export async function submitJoin(input: JoinPayload): Promise<SubmitResult> {
+export type UploadJoinResult = { ok: true; id: string } | { ok: false; error: 'auth' | 'type' | 'size' | 'empty' };
+
+/** Uploads one onboarding file right after it's picked. License scans are private. */
+export async function uploadJoinFile(form: FormData): Promise<UploadJoinResult> {
+  const user = await currentUser();
+  if (!user || user.kind !== 'business') return { ok: false, error: 'auth' };
+  const file = form.get('file');
+  if (!(file instanceof File)) return { ok: false, error: 'empty' };
+  const res = await saveUpload(file, { ownerId: user.id, isPrivate: form.get('kind') === 'license' });
+  return res.ok ? { ok: true, id: res.id } : res;
+}
+
+const MediaIds = z
+  .object({ cover: z.string().uuid().optional(), logo: z.string().uuid().optional(), license: z.string().uuid().optional(), gallery: z.array(z.string().uuid()).max(12).default([]) })
+  .default({ gallery: [] });
+
+export async function submitJoin(input: JoinPayload & { media?: z.input<typeof MediaIds> }): Promise<SubmitResult> {
   const user = await currentUser();
   if (!user || user.kind !== 'business') return { ok: false, reason: 'auth' };
 
@@ -63,6 +80,18 @@ export async function submitJoin(input: JoinPayload): Promise<SubmitResult> {
     const key = STEPS[firstBad].key;
     return { ok: false, reason: 'invalid', step: firstBad, error: v.errors[key] };
   }
+
+  // Only files this user uploaded may be attached; private ones only as the license scan.
+  const mediaParsed = MediaIds.safeParse(input.media ?? { gallery: [] });
+  const media = mediaParsed.success ? mediaParsed.data : { gallery: [] as string[] };
+  const wantedIds = [media.cover, media.logo, media.license, ...media.gallery].filter((x): x is string => !!x);
+  const owned = wantedIds.length
+    ? await db.mediaFile.findMany({ where: { id: { in: wantedIds }, ownerId: user.id }, select: { id: true, isPrivate: true } })
+    : [];
+  const pub = new Set(owned.filter(m => !m.isPrivate).map(m => m.id));
+  const priv = new Set(owned.filter(m => m.isPrivate).map(m => m.id));
+  const mediaUrl = (id?: string) => (id && pub.has(id) ? `/media/${id}` : null);
+  const licenseDoc = media.license && priv.has(media.license) ? media.license : null;
 
   const f = p.f;
   const phone = toE164(f.phone)!;
@@ -114,6 +143,7 @@ export async function submitJoin(input: JoinPayload): Promise<SubmitResult> {
           status: 'pending',
         },
       });
+      if (owned.length) await tx.mediaFile.updateMany({ where: { id: { in: owned.map(m => m.id) } }, data: { businessId: business.id } });
 
       const branch = await tx.branch.create({
         data: {
@@ -129,7 +159,14 @@ export async function submitJoin(input: JoinPayload): Promise<SubmitResult> {
           email: f.email.trim().toLowerCase(),
           hours,
           status: 'draft',
-          // TODO(storage): coverUrl, logoUrl, gallery once uploads have a home.
+          coverUrl: mediaUrl(media.cover),
+          coverAlt: mediaUrl(media.cover) ? f.name.trim() : null,
+          logoUrl: mediaUrl(media.logo),
+          // Alt text is required on the public profile; seeded here and editable in the dashboard.
+          gallery: media.gallery
+            .map(id => mediaUrl(id))
+            .filter((u): u is string => !!u)
+            .map((url, i) => ({ url, alt: `${f.name.trim()}, תמונה ${i + 1}`, tag: 'הקליניקה' })),
         },
       });
 
@@ -161,7 +198,7 @@ export async function submitJoin(input: JoinPayload): Promise<SubmitResult> {
 
       if (hasMedical) {
         const license = await tx.license.create({
-          data: { kind: 'doctor', number: f.docLic.trim(), nameOnRecord: f.docName.trim(), specialty: f.docSpec.trim() || null, status: 'pending', source: 'moh_doctors' },
+          data: { kind: 'doctor', number: f.docLic.trim(), nameOnRecord: f.docName.trim(), specialty: f.docSpec.trim() || null, status: 'pending', source: 'moh_doctors', documentFile: licenseDoc },
         });
         const doctor = await tx.staffMember.create({
           data: {
@@ -173,7 +210,7 @@ export async function submitJoin(input: JoinPayload): Promise<SubmitResult> {
         await tx.verificationRequest.create({
           data: {
             ref: licRef!, kind: 'license', businessId: business.id, branchId: branch.id, submittedById: user.id,
-            submitted: { ...snapshot.responsibility, licenseId: license.id, staffId: doctor.id, document: null },
+            submitted: { ...snapshot.responsibility, licenseId: license.id, staffId: doctor.id, document: licenseDoc },
             checks: [
               { result: 'todo', text: 'מספר רישיון מול מאגר משרד הבריאות' },
               { result: 'todo', text: 'התאמת השם לרישיון' },
@@ -186,7 +223,7 @@ export async function submitJoin(input: JoinPayload): Promise<SubmitResult> {
         let licenseId: string | null = null;
         if (certGiven) {
           const license = await tx.license.create({
-            data: { kind: 'cosmetician_cert', number: f.proCert.trim(), nameOnRecord: f.proName.trim(), status: 'pending', source: 'manual' },
+            data: { kind: 'cosmetician_cert', number: f.proCert.trim(), nameOnRecord: f.proName.trim(), status: 'pending', source: 'manual', documentFile: licenseDoc },
           });
           licenseId = license.id;
         }
@@ -200,7 +237,7 @@ export async function submitJoin(input: JoinPayload): Promise<SubmitResult> {
           await tx.verificationRequest.create({
             data: {
               ref: licRef!, kind: 'cert', businessId: business.id, branchId: branch.id, submittedById: user.id,
-              submitted: { ...snapshot.responsibility, licenseId, staffId: pro.id, document: null },
+              submitted: { ...snapshot.responsibility, licenseId, staffId: pro.id, document: licenseDoc },
               checks: [{ result: 'todo', text: 'בדיקת תעודה או הכשרה' }],
               slaDueAt,
             },

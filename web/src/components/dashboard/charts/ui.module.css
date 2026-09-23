@@ -1,0 +1,99 @@
+/* Shared dashboard blocks: headings, cards, KPI tiles, range switch, bar lists and empty chart frames.
+   Design: project/BeautyFind Dashboard.dc.html (overview, analytics, billing). */
+
+.section { display: flex; flex-direction: column; gap: clamp(14px, 1.8vw, 22px); animation: bfFade .25s ease both; }
+
+.headRow { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.h1 {
+  margin: 0; font-family: var(--font-display); font-weight: 500; font-size: clamp(25px, 2.3vw, 34px);
+  line-height: 1.14; letter-spacing: -0.014em;
+}
+.h1 > span { color: var(--teal); }
+.h1Sub { margin: 4px 0 0; font-size: 14.5px; color: var(--muted); text-wrap: pretty; max-width: 78ch; }
+
+.card { min-width: 0; padding: clamp(16px, 2vw, 22px); background: #ffffff; border: 1px solid var(--line); border-radius: 18px; }
+.cardFlush { min-width: 0; background: #ffffff; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+.cardFlushHead { padding: 16px 18px; border-bottom: 1px solid var(--line); }
+.cardHead { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+.h2 { margin: 0; font-size: 16px; font-weight: 700; }
+.h2Gap { margin: 0 0 14px; font-size: 16px; font-weight: 700; }
+.h2Tight { margin: 0 0 3px; font-size: 16px; font-weight: 700; }
+.meta { margin: 0; font-size: 12.5px; color: var(--subtle); }
+.metaGap { margin: 0 0 16px; font-size: 12.5px; color: var(--subtle); }
+.foot { margin: 14px 0 0; font-size: 12.5px; line-height: 1.6; color: var(--subtle); text-wrap: pretty; }
+.insight { margin: 13px 0 0; font-size: 13.5px; line-height: 1.65; color: var(--text); text-wrap: pretty; }
+.flushNote { margin: 0; padding: 14px 18px; font-size: 13.5px; line-height: 1.7; color: var(--text); text-wrap: pretty; }
+.strong { font-weight: 700; }
+
+.twoCols { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(12px, 1.4vw, 18px); }
+.stack { min-width: 0; display: flex; flex-direction: column; gap: clamp(12px, 1.4vw, 18px); }
+@media (min-width: 620px) {
+  .twoCols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.alignStart { align-items: start; }
+
+/* ---------- Range switch ---------- */
+.range { display: flex; gap: 4px; background: #ffffff; border: 1px solid var(--line); border-radius: 12px; padding: 4px; }
+.rangeBtn {
+  display: inline-flex; align-items: center; min-height: 40px; padding: 0 13px; border-radius: 9px;
+  font-size: 14px; font-weight: 500; color: var(--text); white-space: nowrap; transition: background .18s, color .18s;
+}
+.rangeBtn:hover { color: var(--teal-deep); }
+.rangeBtn[aria-current='true'] { background: var(--navy); color: #ffffff; font-weight: 700; }
+
+/* ---------- KPI tiles ---------- */
+.kpis { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(10px, 1.2vw, 14px); }
+@media (min-width: 1000px) {
+  .kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.kpi {
+  min-width: 0; display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; background: #ffffff;
+  border: 1px solid var(--line); border-radius: 16px; animation: bfRise .4s var(--ease-out) both;
+}
+.kpi dt { font-size: 12.5px; font-weight: 700; color: var(--subtle); }
+.kpiValue {
+  margin: 0; font-family: var(--font-display); font-size: 31px; line-height: 1.05; color: var(--navy);
+  text-align: right; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate;
+}
+.kpiFoot { margin: 0; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.delta {
+  display: inline-flex; align-items: center; height: 22px; padding: 0 7px; border-radius: 6px; background: var(--tint);
+  font-size: 11.5px; font-weight: 700; color: var(--teal-deep); font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate;
+}
+.delta[data-tone='down'] { background: #FFF4F2; color: #A8432C; }
+.delta[data-tone='none'] { background: #F0F3F5; color: var(--muted); }
+.kpiNote { font-size: 12px; color: var(--subtle); }
+
+/* ---------- Horizontal bar list ---------- */
+.bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 11px; }
+.barRow { display: flex; align-items: center; gap: 11px; }
+.barName { flex: none; width: 96px; font-size: 14px; font-weight: 700; text-wrap: pretty; }
+.barName[data-weight='regular'] { font-weight: 400; color: var(--text); }
+.barTrack { flex: 1; min-width: 0; height: 10px; border-radius: 999px; display: flex; justify-content: flex-start; overflow: hidden; }
+.barTrack[data-track] { background: var(--divider); }
+.barFill { display: block; height: 10px; border-radius: 999px; transition: width .45s var(--ease-out); }
+.barValue { flex: none; width: 48px; text-align: right; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+.barShare { flex: none; width: 40px; text-align: right; font-size: 12px; color: var(--subtle); font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+
+/* ---------- Empty states ---------- */
+.emptyFrame {
+  position: relative; display: flex; align-items: center; justify-content: center; min-height: 150px;
+  padding: 18px; border: 1px dashed var(--line-strong); border-radius: 14px; background: var(--bg-soft);
+  overflow: hidden;
+}
+.emptyFrame svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.emptyText {
+  position: relative; margin: 0; max-width: 46ch; padding: 9px 14px; border-radius: 11px; background: rgba(255, 255, 255, .92);
+  font-size: 13.5px; line-height: 1.6; font-weight: 700; color: var(--muted); text-align: center; text-wrap: pretty;
+}
+.emptyRow { margin: 0; padding: 18px; font-size: 13.5px; line-height: 1.6; color: var(--muted); text-align: center; text-wrap: pretty; }
+.emptyInline { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--muted); text-wrap: pretty; }
+
+/* ---------- Table-like grids ---------- */
+.gridHead {
+  display: grid; gap: 10px; padding: 10px 18px; border-bottom: 1px solid var(--divider); background: var(--bg-soft);
+  font-size: 11.5px; font-weight: 700; color: var(--subtle);
+}
+.gridRow { display: grid; gap: 10px; align-items: center; padding: 12px 18px; border-bottom: 1px solid var(--divider); }
+.num { text-align: left; font-size: 14px; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+.numHead { text-align: left; }
