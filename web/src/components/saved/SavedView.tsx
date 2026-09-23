@@ -34,7 +34,7 @@ export function SavedTabs({ current, cmp }: { current: 'list' | 'compare'; cmp: 
     <>
       <nav aria-label="תצוגה" className={`${styles.tabs} bf-desk-only`}>
         <Link href={listHref} className={styles.tab} aria-current={current === 'list' ? 'page' : undefined}>
-          שמורות
+          שמורים
         </Link>
         <Link href={compareHref(cmp)} className={styles.tab} aria-current={current === 'compare' ? 'page' : undefined}>
           השוואה · <span className="ltr tnum">{cmp.length}</span>
@@ -110,7 +110,7 @@ export function SavedView({ initialCards, initialCmp, serverSignedIn }: { initia
     void setSaved(c.id, false).then(ok => {
       if (!ok) return show('לא הצלחנו להסיר. נסו שוב.');
       setCmp(x => x.filter(id => id !== c.id));
-      show(`${c.name} הוסרה מהשמורות`, { label: 'ביטול', run: () => void setSaved(c.id, true) });
+      show(`${c.name} הוסרה מהשמורים`, { label: 'ביטול', run: () => void setSaved(c.id, true) });
     });
   };
 
@@ -225,7 +225,7 @@ export function SavedView({ initialCards, initialCmp, serverSignedIn }: { initia
                 ) : (
                   <span className={styles.ph} aria-hidden="true">{c.name}</span>
                 )}
-                <button type="button" className={styles.unsave} aria-pressed="true" aria-label={`הסרת ${c.name} מהשמורות`} onClick={() => unsave(c)}>
+                <button type="button" className={styles.unsave} aria-pressed="true" aria-label={`הסרת ${c.name} מהשמורים`} onClick={() => unsave(c)}>
                   <HeartIcon />
                 </button>
               </div>

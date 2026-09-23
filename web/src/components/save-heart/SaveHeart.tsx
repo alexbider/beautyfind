@@ -160,7 +160,7 @@ export function SaveHeart({ id, name, className }: { id: string; name: string; c
     void toggle().then(ok => {
       if (ok) return;
       if (timer.current) clearTimeout(timer.current);
-      setToast(wasSaved ? 'לא הצלחנו להסיר מהשמורות. נסו שוב.' : 'לא הצלחנו לשמור. נסו שוב.');
+      setToast(wasSaved ? 'לא הצלחנו להסיר מהשמורים. נסו שוב.' : 'לא הצלחנו לשמור. נסו שוב.');
       timer.current = setTimeout(() => setToast(null), 3200);
     });
   };

@@ -70,7 +70,7 @@ export function AccountView({ data, initialTab }: { data: AccountData; initialTa
         });
         return show('לא הצלחנו להסיר. נסו שוב.');
       }
-      show(`${name} הוסרה מהשמורות`, {
+      show(`${name} הוסרה מהשמורים`, {
         label: 'ביטול',
         run: () =>
           void setSaved(id, true).then(() =>
@@ -148,7 +148,7 @@ export function AccountView({ data, initialTab }: { data: AccountData; initialTa
                 <article key={c.id} className={styles.card}>
                   <div className={styles.cardHead}>
                     <h2 className={styles.cardTitle}><Link href={c.href}>{c.name}</Link></h2>
-                    <button type="button" className={styles.x} aria-label={`הסרת ${c.name} מהשמורות`} onClick={() => removeSaved(c.id, c.name)}>×</button>
+                    <button type="button" className={styles.x} aria-label={`הסרת ${c.name} מהשמורים`} onClick={() => removeSaved(c.id, c.name)}>×</button>
                   </div>
                   <p className={styles.muted}>{[c.city, c.cats].filter(Boolean).join(' · ')}</p>
                   <p className={styles.ratings}>
@@ -172,7 +172,7 @@ export function AccountView({ data, initialTab }: { data: AccountData; initialTa
             </div>
             {saved.length > 0 && (
               <p className={styles.moreLink}>
-                <Link href="/saved">לכל השמורות ולהשוואה בין קליניקות</Link>
+                <Link href="/saved">לכל השמורים ולהשוואה בין קליניקות</Link>
               </p>
             )}
           </div>
@@ -464,7 +464,7 @@ function Settings({ data, show }: { data: AccountData; show: (t: string) => void
       <section className={styles.panel} aria-labelledby="ac-privacy">
         <h2 id="ac-privacy" className={styles.panelTitle}>פרטיות ונתונים</h2>
         <p className={styles.hint}>
-          רשומות רפואיות והצהרות בריאות שמורות אצל הקליניקה שטיפלה בכם, לא אצלנו, ואפשר לבקש אותן ממנה. אנחנו שומרים את התורים, הביקורות, השמורות וההעדפות שכאן.
+          רשומות רפואיות והצהרות בריאות שמורות אצל הקליניקה שטיפלה בכם, לא אצלנו, ואפשר לבקש אותן ממנה. אנחנו שומרים את התורים, הביקורות, הקליניקות השמורות וההעדפות שכאן.
         </p>
         {deletion && (
           <p className={styles.deletion} role="status">
@@ -490,7 +490,7 @@ function Settings({ data, show }: { data: AccountData; show: (t: string) => void
         onConfirm={doDelete}
         onClose={() => setConfirm(false)}
       >
-        <p>נמחק את החשבון, השמורות, ההעדפות והביקורות שלא פורסמו, תוך <span className="ltr">30</span> יום לפי מדיניות הפרטיות. תורים עתידיים לא יבוטלו אוטומטית, כדאי לבטל אותם קודם.</p>
+        <p>נמחק את החשבון, הקליניקות השמורות, ההעדפות והביקורות שלא פורסמו, תוך <span className="ltr">30</span> יום לפי מדיניות הפרטיות. תורים עתידיים לא יבוטלו אוטומטית, כדאי לבטל אותם קודם.</p>
         <p>חשבוניות ורשומות שהקליניקות חייבות לשמור על פי חוק יישארו אצלן.</p>
         <label className={styles.field}>
           סיבה (לא חובה)
