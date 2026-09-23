@@ -3,10 +3,18 @@
 import Link from 'next/link';
 import { useEffect, useId, useRef, useState, useTransition } from 'react';
 import { linkExistingDeclaration, signDeclaration } from '@/app/b/[token]/declaration/actions';
+import { inShell, scrollToField, scrollTop } from '@/components/booking/flow';
+import { ActionBar } from '@/components/shell/ActionBar';
+import { haptic } from '@/components/shell/haptics';
+import { TopBar } from '@/components/shell/TopBar';
 import { Wordmark } from '@/components/Wordmark';
 import { LIMITS, MIN_INK_POINTS, QUESTIONS, nameOk, plAnswers, type DeclType } from './questions';
 import { SignaturePad, typedSignaturePng, type SignaturePadHandle } from './SignaturePad';
 import styles from './Declaration.module.css';
+
+// Design: project/BeautyFind Health Declaration.dc.html. Desktop: one page with the appointment beside it.
+// App shell (spec §3.3, §6): three step screens (details and questionnaire, medications, signature last),
+// one question per row with כן/לא segmented buttons, and the submit in a sticky action bar.
 
 export interface DeclarationProps {
   token: string;
@@ -21,6 +29,10 @@ export interface DeclarationProps {
 }
 
 type Ans = Record<string, boolean | undefined>;
+type Step = 1 | 2 | 3;
+
+const TOTAL = 3;
+const STEP_NAMES: Record<Step, string> = { 1: 'שאלון רפואי', 2: 'תרופות ותוספים', 3: 'חתימה' };
 
 const PRIVACY = [
   'רק הצוות המטפל בתור הזה והרופא/ה האחראי/ת, לא הקבלה ולא BeautyFind',
@@ -61,9 +73,12 @@ export function DeclarationForm(p: DeclarationProps) {
   const [tried, setTried] = useState(false);
   const [serverErr, setServerErr] = useState('');
   const [toast, setToast] = useState('');
+  const [step, setStep] = useState<Step>(1);
   const [pending, start] = useTransition();
   const pad = useRef<SignaturePadHandle>(null);
   const toastT = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const paneRef = useRef<HTMLDivElement>(null);
+  const draftReady = useRef(false);
   const ids = useId();
 
   const flash = (t: string) => {
@@ -75,6 +90,7 @@ export function DeclarationForm(p: DeclarationProps) {
 
   // Draft: this device only, never on the reception tablet, and never the signature.
   useEffect(() => {
+    draftReady.current = true;
     if (p.kiosk) return;
     try {
       const raw = localStorage.getItem(draftKey);
@@ -85,11 +101,23 @@ export function DeclarationForm(p: DeclarationProps) {
         if (d.detail) setDetail(d.detail);
         if (typeof d.meds === 'string') setMeds(d.meds);
         if (typeof d.noMeds === 'boolean') setNoMeds(d.noMeds);
+        if (d.step === 2 || d.step === 3) setStep(d.step);
       }
     } catch {
       /* storage unavailable */
     }
   }, [draftKey, p.kiosk]);
+
+  // Saved on every change (spec §3.4), so the reminder link brings the client back where she stopped.
+  useEffect(() => {
+    if (!draftReady.current || p.kiosk || view !== 'form') return;
+    if (!Object.keys(ans).length && !meds && !noMeds && step === 1) return;
+    try {
+      localStorage.setItem(draftKey, JSON.stringify({ ans, detail, meds, noMeds, step }));
+    } catch {
+      /* storage unavailable */
+    }
+  }, [draftKey, p.kiosk, view, ans, detail, meds, noMeds, step]);
 
   const answered = QS.filter(q => ans[q.key] != null).length;
   const yesN = QS.filter(q => ans[q.key] === true).length;
@@ -100,15 +128,21 @@ export function DeclarationForm(p: DeclarationProps) {
   const birthOk = !birthDate || /^\d{4}-\d{2}-\d{2}$/.test(birthDate);
   const idOk = !idLast4 || /^\d{4}$/.test(idLast4);
   const ok = allAns && medsOk && nameValid && sigOk && attest && birthOk && idOk;
-  const err = !tried ? ''
-    : !allAns ? `יש לענות על כל שאלות השאלון: ${QS.length - answered === 1 ? 'חסרה שאלה אחת' : `חסרות ${QS.length - answered}`}`
-    : !medsOk ? 'רשמי תרופות קבועות, או סמני ״אין תרופות קבועות״'
-    : !nameValid ? 'כתבי שם פרטי ושם משפחה'
-    : !birthOk ? 'תאריך הלידה אינו תקין'
-    : !idOk ? 'יש להקליד 4 ספרות בדיוק'
-    : !sigOk ? (mode === 'drawn' ? 'חסרה חתימה' : 'יש לאשר שהקלדת השם מהווה חתימה')
-    : !attest ? 'יש לאשר את ההצהרה בתחתית הטופס' : '';
-  const errorText = err || serverErr;
+
+  // Checks in page order, each tied to the step screen that shows the field.
+  const checks: Array<{ step: Step; ok: boolean; msg: string }> = [
+    { step: 1, ok: birthOk, msg: 'תאריך הלידה אינו תקין' },
+    { step: 1, ok: idOk, msg: 'יש להקליד 4 ספרות בדיוק' },
+    { step: 1, ok: allAns, msg: `יש לענות על כל שאלות השאלון: ${QS.length - answered === 1 ? 'חסרה שאלה אחת' : `חסרות ${QS.length - answered}`}` },
+    { step: 2, ok: medsOk, msg: 'רשמי תרופות קבועות, או סמני ״אין תרופות קבועות״' },
+    { step: 3, ok: nameValid, msg: 'כתבי שם פרטי ושם משפחה' },
+    { step: 3, ok: sigOk, msg: mode === 'drawn' ? 'חסרה חתימה' : 'יש לאשר שהקלדת השם מהווה חתימה' },
+    { step: 3, ok: attest, msg: 'יש לאשר את ההצהרה בתחתית הטופס' },
+  ];
+  const firstBad = checks.find(c => !c.ok);
+  const stepBad = checks.find(c => c.step === step && !c.ok);
+  const errorText = (tried && firstBad ? firstBad.msg : '') || serverErr;
+  const barError = (tried && stepBad ? stepBad.msg : '') || serverErr;
 
   const pregYes = ans.preg === true;
   const flagOn = yesN > 0;
@@ -118,15 +152,56 @@ export function DeclarationForm(p: DeclarationProps) {
     ? `ההזרקה לא תתבצע בתור הזה. ${p.appt.doctor ? `${p.appt.doctor} או הקליניקה ייצרו` : 'הקליניקה תיצור'} איתך קשר לתיאום מועד אחר. אין חיוב על הזזה מסיבה רפואית.`
     : `הפירוט יגיע אל ${p.appt.who} לפני הטיפול, וייצרו איתך קשר רק אם צריך להתאים משהו. התור נשאר במקומו.`;
 
+  // ---------- Steps (app shell) ----------
+
+  /** In the shell only the current step shows; on desktop everything does. */
+  const on = (n: Step) => (n === step ? '' : styles.off);
+
+  const showFirstInvalid = () =>
+    // Fields of later steps come later in the page, so the first match is on the step being shown.
+    requestAnimationFrame(() => scrollToField(paneRef.current?.querySelector('[data-miss], [data-invalid]')));
+
+  const go = (n: Step) => {
+    const fwd = n >= step;
+    setStep(n);
+    setTried(false);
+    setServerErr('');
+    if (!inShell()) return;
+    scrollTop();
+    // Slide without remounting, so the drawn signature survives going back and forth.
+    const el = paneRef.current;
+    if (el && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      el.animate([{ opacity: 0, transform: `translateX(${fwd ? -40 : 40}px)` }, { opacity: 1, transform: 'none' }], { duration: 240, easing: 'cubic-bezier(.2,.7,.2,1)' });
+    }
+  };
+
+  const next = () => {
+    if (step === TOTAL) {
+      submit();
+      return;
+    }
+    if (stepBad) {
+      setTried(true);
+      haptic('warning');
+      showFirstInvalid();
+      return;
+    }
+    go((step + 1) as Step);
+  };
+
   const submit = () => {
     setServerErr('');
     if (!ok) {
       setTried(true);
+      haptic('warning');
+      if (firstBad && inShell() && firstBad.step !== step) setStep(firstBad.step);
+      showFirstInvalid();
       return;
     }
     start(async () => {
       const blob = mode === 'drawn' ? await pad.current?.toPng() : await typedSignaturePng(signName);
       if (!blob) {
+        haptic('warning');
         setServerErr('לא הצלחנו לשמור את החתימה. נסי לחתום שוב.');
         return;
       }
@@ -140,6 +215,7 @@ export function DeclarationForm(p: DeclarationProps) {
       fd.set('signature', blob, 'signature.png');
       const r = await signDeclaration(p.token, fd);
       if (!r.ok) {
+        haptic('warning');
         setServerErr(r.error);
         return;
       }
@@ -150,6 +226,7 @@ export function DeclarationForm(p: DeclarationProps) {
       }
       setDone({ signedAt: nowStamp(), yes: r.yes });
       setView('done');
+      haptic('success');
       window.scrollTo({ top: 0 });
       flash('ההצהרה נשלחה לקליניקה');
     });
@@ -157,7 +234,7 @@ export function DeclarationForm(p: DeclarationProps) {
 
   const saveDraft = () => {
     try {
-      localStorage.setItem(draftKey, JSON.stringify({ ans, detail, meds, noMeds }));
+      localStorage.setItem(draftKey, JSON.stringify({ ans, detail, meds, noMeds, step }));
       flash('נשמר. הקישור בהודעת התזכורת יחזיר אותך לכאן');
     } catch {
       flash('לא הצלחנו לשמור במכשיר הזה');
@@ -170,17 +247,20 @@ export function DeclarationForm(p: DeclarationProps) {
     start(async () => {
       const r = await linkExistingDeclaration(p.token, id);
       if (!r.ok) {
+        haptic('warning');
         setServerErr(r.error);
         return;
       }
       setDone({ signedAt: p.reusable!.signedOn, yes: -1 });
       setView('done');
+      haptic('success');
       flash('ההצהרה הקיימת צורפה לתור');
     });
   };
 
   const reopen = () => {
     setView('form');
+    setStep(1);
     setInk(0);
     setAttest(false);
     setTypedConsent(false);
@@ -190,7 +270,7 @@ export function DeclarationForm(p: DeclarationProps) {
 
   const bookingHref = `/b/${p.token}`;
   const aside = (
-    <aside className={styles.side}>
+    <aside className={`${styles.side} ${on(1)}`}>
       <div className={styles.card} style={{ padding: 0, overflow: 'hidden' }}>
         <div className={styles.apptHead}>
           <span className={styles.apptKicker}>ההצהרה עבור התור</span>
@@ -222,9 +302,27 @@ export function DeclarationForm(p: DeclarationProps) {
     </aside>
   );
 
+  // Close (×): back to the booking; on the reception tablet it only returns to the first screen.
+  const closeProps = p.kiosk ? { onClose: () => (view === 'form' ? go(1) : undefined) } : { closeHref: bookingHref };
+  const hint =
+    step === 1 ? (
+      <>
+        נענו <span className="ltr tnum">{answered}</span> מתוך <span className="ltr tnum">{QS.length}</span> שאלות
+      </>
+    ) : step === 2 ? (
+      'כולל גלולות, ויטמינים ותוספי צמחים'
+    ) : (
+      'ההצהרה נשלחת רק לצוות המטפל בקליניקה'
+    );
+
   return (
     <div className={styles.root}>
-      <header className={styles.header}>
+      {view === 'form' ? (
+        <TopBar mode="flow" title="הצהרת בריאות" progress={{ step, total: TOTAL }} noBack={step === 1} onBack={() => step > 1 && !pending && go((step - 1) as Step)} {...closeProps} />
+      ) : (
+        <TopBar mode="flow" title="הצהרת בריאות" noBack {...closeProps} />
+      )}
+      <header className={`${styles.header} bf-desk-only`}>
         <div className={styles.headerBar}>
           {p.kiosk ? <Wordmark size={21} /> : <Link href="/" aria-label="BeautyFind" className={styles.brand}><Wordmark size={21} /></Link>}
           <span className={styles.flex1} />
@@ -240,125 +338,138 @@ export function DeclarationForm(p: DeclarationProps) {
       <div className={styles.wrap}>
         {view === 'form' && (
           <div className={styles.fade}>
-            <h1 className={styles.h1}>הצהרת בריאות לפני הטיפול</h1>
-            <p className={styles.lede}>כמה דקות של מילוי שחוסכות הפתעות בחדר הטיפול. התשובות מגיעות רק לצוות המטפל, ותשובת ״כן״ לא מבטלת את התור: היא מאפשרת להתכונן נכון.</p>
+            <p className="sr-only" aria-live="polite">{`שלב ${step} מתוך ${TOTAL}: ${STEP_NAMES[step]}`}</p>
+            <div className={on(1)}>
+              <h1 className={styles.h1}>הצהרת בריאות לפני הטיפול</h1>
+              <p className={styles.lede}>כמה דקות של מילוי שחוסכות הפתעות בחדר הטיפול. התשובות מגיעות רק לצוות המטפל, ותשובת ״כן״ לא מבטלת את התור: היא מאפשרת להתכונן נכון.</p>
+            </div>
 
             <div className={styles.shell}>
               <main className={styles.main}>
-                <section aria-labelledby={`${ids}-h1`} className={styles.card}>
-                  <h2 id={`${ids}-h1`} className={styles.h2}>הפרטים שלך</h2>
-                  <dl className={styles.meDl}>
-                    <dt>שם מלא</dt><dd className={styles.w700}>{p.client.name}</dd>
-                    <dt>טלפון</dt><dd><span className="ltr tnum">{p.client.phone}</span></dd>
-                  </dl>
-                  <div className={styles.meFields}>
-                    <label className={styles.field}>
-                      <span>תאריך לידה <span className={styles.optional}>(לא חובה)</span></span>
-                      <input type="date" dir="ltr" value={birthDate} onChange={e => setBirthDate(e.target.value)} className={styles.input} data-invalid={(tried && !birthOk) || undefined} max={new Date().toISOString().slice(0, 10)} />
+                <div ref={paneRef} className={styles.pane}>
+                  <section aria-labelledby={`${ids}-h1`} className={`${styles.card} ${on(1)}`}>
+                    <h2 id={`${ids}-h1`} className={styles.h2}>הפרטים שלך</h2>
+                    <dl className={styles.meDl}>
+                      <dt>שם מלא</dt><dd className={styles.w700}>{p.client.name}</dd>
+                      <dt>טלפון</dt><dd><span className="ltr tnum">{p.client.phone}</span></dd>
+                    </dl>
+                    <div className={styles.meFields}>
+                      <label className={styles.field}>
+                        <span>תאריך לידה <span className={styles.optional}>(לא חובה)</span></span>
+                        <input type="date" dir="ltr" value={birthDate} onChange={e => setBirthDate(e.target.value)} className={styles.input} data-invalid={(tried && !birthOk) || undefined} max={new Date().toISOString().slice(0, 10)} />
+                      </label>
+                      <label className={styles.field}>
+                        <span>4 ספרות אחרונות של ת״ז <span className={styles.optional}>(לא חובה)</span></span>
+                        <input dir="ltr" inputMode="numeric" pattern="[0-9]*" autoComplete="off" maxLength={4} value={idLast4} onChange={e => setIdLast4(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder="4821" className={`${styles.input} tnum`} data-invalid={(tried && !idOk) || undefined} />
+                      </label>
+                    </div>
+                    <p className={styles.small}>
+                      משהו לא נכון?{' '}
+                      {p.client.accountHref ? <Link href={p.client.accountHref}>עדכון בחשבון</Link>
+                        : p.clinicPhone ? <>חייגי לקליניקה <a href={p.clinicPhone.href} className="ltr">{p.clinicPhone.display}</a></>
+                        : 'פני לקליניקה'}
+                    </p>
+                  </section>
+
+                  <section aria-labelledby={`${ids}-h2`} className={`${styles.card} ${on(1)}`}>
+                    <div className={styles.qHead}>
+                      <h2 id={`${ids}-h2`} className={styles.h2} style={{ margin: 0 }}>שאלון רפואי</h2>
+                      <span className={`${styles.prog} ltr tnum`} data-state={allAns ? 'ok' : tried ? 'bad' : undefined}>{answered} / {QS.length}</span>
+                    </div>
+                    <p className={styles.qIntro}>{medical ? 'לטיפול בהזרקה. תשובות חיוביות עוברות לרופא/ה המטפל/ת לפני הטיפול.' : 'לטיפול קוסמטי. תשובות חיוביות עוברות למטפל/ת לפני הטיפול.'}</p>
+                    <ul className={styles.qList}>
+                      {QS.map(q => {
+                        const v = ans[q.key];
+                        const miss = tried && v == null;
+                        return (
+                          <li key={q.key} className={styles.q} data-yes={v === true || undefined}>
+                            <div className={styles.qRow}>
+                              <span className={styles.qText}>
+                                <span className={styles.qLabel} id={`${ids}-${q.key}`}>{q.label}</span>
+                                {q.note && <span className={styles.qNote}>{q.note}</span>}
+                              </span>
+                              <span role="radiogroup" aria-labelledby={`${ids}-${q.key}`} className={styles.yn}>
+                                <button type="button" role="radio" aria-checked={v === true} data-yes={v === true || undefined} data-miss={miss || undefined} onClick={() => setAns(a => ({ ...a, [q.key]: true }))}>כן</button>
+                                <button type="button" role="radio" aria-checked={v === false} data-no={v === false || undefined} data-miss={miss || undefined} onClick={() => setAns(a => ({ ...a, [q.key]: false }))}>לא</button>
+                              </span>
+                            </div>
+                            {v === true && (
+                              <textarea
+                                aria-label={`פירוט: ${q.label}`}
+                                value={detail[q.key] ?? ''}
+                                maxLength={LIMITS.detail}
+                                onChange={e => setDetail(d => ({ ...d, [q.key]: e.target.value }))}
+                                rows={2}
+                                placeholder={q.placeholder}
+                                className={styles.detail}
+                              />
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </section>
+
+                  <section aria-labelledby={`${ids}-h3`} className={`${styles.card} ${on(2)}`}>
+                    <h2 id={`${ids}-h3`} className={styles.h2} style={{ marginBottom: 3 }}>תרופות ותוספים קבועים</h2>
+                    <p className={styles.qIntro} style={{ marginBottom: 11 }}>כולל גלולות, ויטמינים ותוספי צמחים: חלקם משפיעים על דימום ועל רגישות העור.</p>
+                    <textarea
+                      aria-label="תרופות ותוספים קבועים"
+                      value={meds}
+                      maxLength={LIMITS.meds}
+                      onChange={e => { setMeds(e.target.value); setNoMeds(false); }}
+                      rows={3}
+                      placeholder="למשל: אלטרוקסין 50 מק״ג בבוקר, אומגה 3"
+                      className={styles.meds}
+                      data-invalid={(tried && !medsOk) || undefined}
+                    />
+                    <button type="button" aria-pressed={noMeds} className={styles.noMeds} data-on={noMeds || undefined} onClick={() => { setNoMeds(n => !n); if (!noMeds) setMeds(''); }}>אין תרופות קבועות</button>
+                  </section>
+
+                  <section aria-labelledby={`${ids}-h4`} className={`${styles.card} ${on(3)}`}>
+                    <h2 id={`${ids}-h4`} className={styles.h2}>חתימה</h2>
+                    <label className={styles.field} style={{ marginBottom: 12 }}>
+                      <span>שם מלא כפי שבתעודת הזהות</span>
+                      <input value={signName} maxLength={LIMITS.name} autoComplete="name" enterKeyHint="done" onChange={e => setSignName(e.target.value)} placeholder={p.client.name} className={styles.input} data-invalid={(tried && !nameValid) || undefined} />
                     </label>
-                    <label className={styles.field}>
-                      <span>4 ספרות אחרונות של ת״ז <span className={styles.optional}>(לא חובה)</span></span>
-                      <input dir="ltr" inputMode="numeric" autoComplete="off" maxLength={4} value={idLast4} onChange={e => setIdLast4(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder="4821" className={`${styles.input} tnum`} data-invalid={(tried && !idOk) || undefined} />
-                    </label>
-                  </div>
-                  <p className={styles.small}>
-                    משהו לא נכון?{' '}
-                    {p.client.accountHref ? <Link href={p.client.accountHref}>עדכון בחשבון</Link>
-                      : p.clinicPhone ? <>חייגי לקליניקה <a href={p.clinicPhone.href} className="ltr">{p.clinicPhone.display}</a></>
-                      : 'פני לקליניקה'}
-                  </p>
-                </section>
 
-                <section aria-labelledby={`${ids}-h2`} className={styles.card}>
-                  <div className={styles.qHead}>
-                    <h2 id={`${ids}-h2`} className={styles.h2} style={{ margin: 0 }}>שאלון רפואי</h2>
-                    <span className={`${styles.prog} ltr tnum`} data-state={allAns ? 'ok' : tried ? 'bad' : undefined}>{answered} / {QS.length}</span>
-                  </div>
-                  <p className={styles.qIntro}>{medical ? 'לטיפול בהזרקה. תשובות חיוביות עוברות לרופא/ה המטפל/ת לפני הטיפול.' : 'לטיפול קוסמטי. תשובות חיוביות עוברות למטפל/ת לפני הטיפול.'}</p>
-                  <ul className={styles.qList}>
-                    {QS.map(q => {
-                      const v = ans[q.key];
-                      const miss = tried && v == null;
-                      return (
-                        <li key={q.key} className={styles.q}>
-                          <div className={styles.qRow}>
-                            <span className={styles.qText}>
-                              <span className={styles.qLabel} id={`${ids}-${q.key}`}>{q.label}</span>
-                              {q.note && <span className={styles.qNote}>{q.note}</span>}
-                            </span>
-                            <span role="radiogroup" aria-labelledby={`${ids}-${q.key}`} className={styles.yn}>
-                              <button type="button" role="radio" aria-checked={v === true} data-yes={v === true || undefined} data-miss={miss || undefined} onClick={() => setAns(a => ({ ...a, [q.key]: true }))}>כן</button>
-                              <button type="button" role="radio" aria-checked={v === false} data-no={v === false || undefined} data-miss={miss || undefined} onClick={() => setAns(a => ({ ...a, [q.key]: false }))}>לא</button>
-                            </span>
-                          </div>
-                          {v === true && (
-                            <textarea
-                              aria-label={`פירוט: ${q.label}`}
-                              value={detail[q.key] ?? ''}
-                              maxLength={LIMITS.detail}
-                              onChange={e => setDetail(d => ({ ...d, [q.key]: e.target.value }))}
-                              rows={2}
-                              placeholder={q.placeholder}
-                              className={styles.detail}
-                            />
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </section>
+                    {mode === 'drawn' ? (
+                      <>
+                        <div className={styles.padHead}>
+                          <span id={`${ids}-pad`} className={styles.padLabel}>חתמי באצבע או בעכבר</span>
+                          <button type="button" className={styles.ghost} onClick={() => pad.current?.clear()}>ניקוי</button>
+                        </div>
+                        <SignaturePad ref={pad} labelId={`${ids}-pad`} onInk={setInk} hasInk={ink > 0} invalid={tried && !sigOk} />
+                        <p className={styles.rotate} aria-hidden="true">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="7" y="2.5" width="10" height="19" rx="2" transform="rotate(-90 12 12)" />
+                            <path d="M4 7.5A8 8 0 0 1 9.5 3M9.5 3 7 2.2M9.5 3 8.6 5.4" />
+                          </svg>
+                          סיבוב המסך לחתימה
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <div className={styles.padHead}><span className={styles.padLabel}>חתימה בהקלדת שם מלא</span></div>
+                        <div className={styles.typedPreview} data-invalid={(tried && !sigOk) || undefined} aria-hidden="true">{signName.trim() || p.client.name}</div>
+                        <Checkbox checked={typedConsent} onToggle={() => setTypedConsent(v => !v)} invalid={tried && !typedConsent}
+                          title="אני מאשרת שהשם שהקלדתי מהווה את חתימתי על ההצהרה" />
+                      </>
+                    )}
+                    <button type="button" className={styles.linkBtn} onClick={() => { setMode(m => (m === 'drawn' ? 'typed' : 'drawn')); setInk(0); setTypedConsent(false); }}>
+                      {mode === 'drawn' ? 'חתימה בהקלדת שם מלא' : 'חזרה לחתימה באצבע או בעכבר'}
+                    </button>
 
-                <section aria-labelledby={`${ids}-h3`} className={styles.card}>
-                  <h2 id={`${ids}-h3`} className={styles.h2} style={{ marginBottom: 3 }}>תרופות ותוספים קבועים</h2>
-                  <p className={styles.qIntro} style={{ marginBottom: 11 }}>כולל גלולות, ויטמינים ותוספי צמחים: חלקם משפיעים על דימום ועל רגישות העור.</p>
-                  <textarea
-                    aria-label="תרופות ותוספים קבועים"
-                    value={meds}
-                    maxLength={LIMITS.meds}
-                    onChange={e => { setMeds(e.target.value); setNoMeds(false); }}
-                    rows={3}
-                    placeholder="למשל: אלטרוקסין 50 מק״ג בבוקר, אומגה 3"
-                    className={styles.meds}
-                    data-invalid={(tried && !medsOk) || undefined}
-                  />
-                  <button type="button" aria-pressed={noMeds} className={styles.noMeds} data-on={noMeds || undefined} onClick={() => { setNoMeds(n => !n); if (!noMeds) setMeds(''); }}>אין תרופות קבועות</button>
-                </section>
+                    <Checkbox checked={attest} onToggle={() => setAttest(v => !v)} invalid={tried && !attest}
+                      title="אני מצהירה שהפרטים נכונים ומלאים, ושאעדכן את הקליניקה על כל שינוי במצבי לפני הטיפול"
+                      sub="מסירת מידע חלקי עלולה לסכן אותך. אם משהו לא ברור, כתבי בשדה הפירוט" />
+                  </section>
+                </div>
 
-                <section aria-labelledby={`${ids}-h4`} className={styles.card}>
-                  <h2 id={`${ids}-h4`} className={styles.h2}>חתימה</h2>
-                  <label className={styles.field} style={{ marginBottom: 12 }}>
-                    <span>שם מלא כפי שבתעודת הזהות</span>
-                    <input value={signName} maxLength={LIMITS.name} autoComplete="name" onChange={e => setSignName(e.target.value)} placeholder={p.client.name} className={styles.input} data-invalid={(tried && !nameValid) || undefined} />
-                  </label>
+                {/* Desktop: summary and submit in the page. The shell puts them in the action bar. */}
+                {errorText && <p role="alert" className={`${styles.error} bf-desk-only`}>{errorText}</p>}
 
-                  {mode === 'drawn' ? (
-                    <>
-                      <div className={styles.padHead}>
-                        <span id={`${ids}-pad`} className={styles.padLabel}>חתמי באצבע או בעכבר</span>
-                        <button type="button" className={styles.ghost} onClick={() => pad.current?.clear()}>ניקוי</button>
-                      </div>
-                      <SignaturePad ref={pad} labelId={`${ids}-pad`} onInk={setInk} hasInk={ink > 0} invalid={tried && !sigOk} />
-                    </>
-                  ) : (
-                    <>
-                      <div className={styles.padHead}><span className={styles.padLabel}>חתימה בהקלדת שם מלא</span></div>
-                      <div className={styles.typedPreview} data-invalid={(tried && !sigOk) || undefined} aria-hidden="true">{signName.trim() || p.client.name}</div>
-                      <Checkbox checked={typedConsent} onToggle={() => setTypedConsent(v => !v)} invalid={tried && !typedConsent}
-                        title="אני מאשרת שהשם שהקלדתי מהווה את חתימתי על ההצהרה" />
-                    </>
-                  )}
-                  <button type="button" className={styles.linkBtn} onClick={() => { setMode(m => (m === 'drawn' ? 'typed' : 'drawn')); setInk(0); setTypedConsent(false); }}>
-                    {mode === 'drawn' ? 'חתימה בהקלדת שם מלא' : 'חזרה לחתימה באצבע או בעכבר'}
-                  </button>
-
-                  <Checkbox checked={attest} onToggle={() => setAttest(v => !v)} invalid={tried && !attest}
-                    title="אני מצהירה שהפרטים נכונים ומלאים, ושאעדכן את הקליניקה על כל שינוי במצבי לפני הטיפול"
-                    sub="מסירת מידע חלקי עלולה לסכן אותך. אם משהו לא ברור, כתבי בשדה הפירוט" />
-                </section>
-
-                {errorText && <p role="alert" className={styles.error}>{errorText}</p>}
-
-                <div className={styles.actions}>
+                <div className={`${styles.actions} bf-desk-only`}>
                   <button type="button" className={styles.primary} onClick={submit} disabled={pending} aria-busy={pending || undefined}>
                     {pending ? 'שולחת…' : 'חתימה ושליחה לקליניקה'}
                   </button>
@@ -367,6 +478,12 @@ export function DeclarationForm(p: DeclarationProps) {
               </main>
               {aside}
             </div>
+
+            <ActionBar mobileOnly hint={barError ? undefined : hint} error={barError || undefined}>
+              <button type="button" className={styles.barBtn} data-off={(step < TOTAL && !!stepBad) || undefined} onClick={next} disabled={pending} aria-busy={pending || undefined}>
+                {step < TOTAL ? 'המשך' : pending ? 'שולחת…' : 'חתימה ושליחה לקליניקה'}
+              </button>
+            </ActionBar>
           </div>
         )}
 

@@ -7,9 +7,13 @@ import { EMAIL_RE, fromE164, nisFromAgorot, telHref, toE164 } from '@/lib/format
 import { VAT_RATE } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
 import { addDays, dowOf } from '@/lib/time';
+import { ActionBar } from '../shell/ActionBar';
+import { haptic } from '../shell/haptics';
+import { TopBar } from '../shell/TopBar';
 import { Wordmark } from '../Wordmark';
 import { loadWeek, submitBooking } from './actions';
 import { ArrowGlyph, CheckGlyph, PeopleGlyph, PhoneButton, Toast, WhatsAppButton, useToast } from './bits';
+import { DRAFT_MAX_AGE, clearDraft, inShell, readDraft, scrollToField, scrollTop, writeDraft } from './flow';
 import {
   DOW, SLOT_WEEKS, closedDaysText, dateText, dom, downloadIcs, freeTxt, hoursRows, isMobileE164, keyOf, timeOfIso, waLink, wazeHref, weekLabel, weekTxt,
   type BookTreatment, type BookingData, type DaySlots, type SubmitError,
@@ -33,6 +37,19 @@ const BUCKETS = [
 const COUNT_WORDS: Record<number, string> = { 2: 'שתי', 3: 'שלוש', 4: 'ארבע', 5: 'חמש', 6: 'שש' };
 
 const vatIncl = (agorot: number) => Math.round((agorot * (1 + VAT_RATE)) / 100) * 100;
+
+/** What a returning client resumes from (per branch, this device only). */
+interface BookDraft {
+  svcId: string | null;
+  staffPick: StaffPick;
+  slot: string | null;
+  week: number;
+  dayKey: string | null;
+  step: Step;
+  form: { name: string; phone: string; email: string };
+}
+/** A saved slot this close to its start is not worth resuming. */
+const RESUME_SLOT_MARGIN_MS = 15 * 60 * 1000;
 
 /** Price with its Hebrew prefix/suffix; the amount itself always sits in an LTR span. */
 function Price({ t, className }: { t: Pick<BookTreatment, 'priceType' | 'priceAgorot'>; className?: string }) {
@@ -83,11 +100,18 @@ export function BookingFlow({ data }: { data: BookingData }) {
   const [done, setDone] = useState<{ ref: string; token: string } | null>(null);
   const [redirecting, setRedirecting] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [dir, setDir] = useState<'fwd' | 'back'>('fwd');
+  const [resumed, setResumed] = useState(false);
+  const [nudge, setNudge] = useState(false);
   const { toast, flash } = useToast();
 
   const headingRefs = useRef<Record<string, HTMLHeadingElement | null>>({});
   const lastView = useRef<string>(`${step}`);
   const loading = useRef(new Set<string>());
+  const step4Ref = useRef<HTMLElement | null>(null);
+  const draftReady = useRef(false);
+  const skipFocus = useRef(false);
+  const draftKey = `bf-book-draft:${branch.id}`;
 
   const svc = treatments.find(t => t.id === svcId) ?? null;
   const needsConsult = !!svc?.isMedical;
@@ -147,8 +171,55 @@ export function BookingFlow({ data }: { data: BookingData }) {
   useEffect(() => {
     if (view === lastView.current) return;
     lastView.current = view;
-    headingRefs.current[view]?.focus();
+    // A resumed draft opens on its step without moving focus.
+    if (skipFocus.current) {
+      skipFocus.current = false;
+      return;
+    }
+    // In the shell every step is its own screen: start it at the top, focus without jumping.
+    if (inShell()) {
+      scrollTop();
+      headingRefs.current[view]?.focus({ preventScroll: true });
+    } else headingRefs.current[view]?.focus();
   }, [view]);
+
+  // ---------- Draft: resume where the client stopped (spec §3.4) ----------
+
+  useEffect(() => {
+    draftReady.current = true;
+    const d = readDraft<BookDraft>(draftKey, DRAFT_MAX_AGE);
+    if (!d) return;
+    if (d.form) setForm(f => ({ name: f.name || d.form.name || '', phone: f.phone || d.form.phone || '', email: f.email || d.form.email || '' }));
+    const t = treatments.find(x => x.id === d.svcId);
+    // A treatment chosen from the profile link (?t=) wins over an older draft for another one.
+    if (!t || !t.bookable || (data.preselect && data.preselect !== t.id)) return;
+    const staffOk = d.staffPick === 'any' ? t.staffIds.length > 1 : !!d.staffPick && t.staffIds.includes(d.staffPick);
+    const sp: StaffPick = staffOk ? d.staffPick : soleStaff(t);
+    const slotOk = !!sp && !!d.slot && new Date(d.slot).getTime() > Date.now() + RESUME_SLOT_MARGIN_MS;
+    setSvcId(t.id);
+    setStaffPick(sp);
+    if (slotOk) {
+      setWeek(Math.max(0, Math.min(SLOT_WEEKS - 1, d.week)));
+      setDayKey(d.dayKey);
+      setAutoDay(false);
+      setSlot(d.slot);
+    }
+    const target: Step = !sp ? 2 : !slotOk ? 3 : d.step === 4 ? 4 : 3;
+    if (target !== step) skipFocus.current = true;
+    setStep(target);
+    setResumed(true);
+    // Runs once on mount: the draft belongs to this branch and page load.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!draftReady.current || done || redirecting) return;
+    if (!svcId && !form.name && !form.phone) {
+      clearDraft(draftKey);
+      return;
+    }
+    writeDraft<BookDraft>(draftKey, { svcId, staffPick, slot, week, dayKey, step, form });
+  }, [draftKey, svcId, staffPick, slot, week, dayKey, step, form, done, redirecting]);
   const liveText = done ? 'התור נקבע' : `שלב ${step} מתוך 4: ${STEP_NAMES[step]}`;
 
   // ---------- Derived ----------
@@ -171,9 +242,12 @@ export function BookingFlow({ data }: { data: BookingData }) {
   // ---------- Actions ----------
 
   const go = (n: Step) => {
+    setDir(n >= step ? 'fwd' : 'back');
     setStep(n);
     setTried(false);
     setStepNotice(null);
+    setNudge(false);
+    setResumed(false);
   };
 
   const pickTreatment = (t: BookTreatment) => {
@@ -208,6 +282,9 @@ export function BookingFlow({ data }: { data: BookingData }) {
   const submit = () => {
     if (!formOk || !svc || !slot || !staffPick) {
       setTried(true);
+      haptic('warning');
+      // Field borders render on the next frame; then bring the first one into view.
+      requestAnimationFrame(() => scrollToField(step4Ref.current?.querySelector('[aria-invalid="true"], [data-invalid]')));
       return;
     }
     setServerError(null);
@@ -230,16 +307,19 @@ export function BookingFlow({ data }: { data: BookingData }) {
         res = { ok: false as const, error: 'failed' as const };
       }
       if (res.ok) {
+        clearDraft(draftKey);
         if (res.checkoutUrl) {
           setRedirecting(true);
           window.location.assign(res.checkoutUrl);
           return;
         }
         setDone({ ref: res.ref, token: res.token });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        haptic('success');
+        window.scrollTo({ top: 0, behavior: inShell() ? 'auto' : 'smooth' });
         flash('התור נקבע · אישור נשלח בוואטסאפ');
         return;
       }
+      haptic('warning');
       if (res.error === 'slot_taken') {
         setWeeks(m => {
           const next = { ...m };
@@ -248,6 +328,7 @@ export function BookingFlow({ data }: { data: BookingData }) {
         });
         setSlot(null);
         setStepNotice({ step: 3, text: 'השעה שבחרתם נתפסה הרגע. הנה השעות הפנויות המעודכנות, בחרו שעה אחרת.' });
+        setDir('back');
         setStep(3);
         return;
       }
@@ -255,6 +336,7 @@ export function BookingFlow({ data }: { data: BookingData }) {
         setStaffPick(null);
         setSlot(null);
         setStepNotice({ step: 2, text: 'המטפלת שבחרתם כבר לא זמינה לטיפול הזה. בחרו מטפלת אחרת.' });
+        setDir('back');
         setStep(2);
         return;
       }
@@ -263,6 +345,9 @@ export function BookingFlow({ data }: { data: BookingData }) {
   };
 
   const restart = () => {
+    clearDraft(draftKey);
+    setResumed(false);
+    setDir('back');
     setDone(null);
     setSvcId(null);
     setStaffPick(null);
@@ -321,7 +406,7 @@ export function BookingFlow({ data }: { data: BookingData }) {
   };
 
   const rail = (
-    <ol className={s.rail}>
+    <ol className={`${s.rail} bf-desk-only`}>
       {([1, 2, 3, 4] as Step[]).map(n => {
         const cur = !done && step === n;
         const isDone = !!done || n < reach;
@@ -461,7 +546,7 @@ export function BookingFlow({ data }: { data: BookingData }) {
       </h2>
       <p className={s.lead}>{staffNote}</p>
       {stepNotice?.step === 2 && <p className={s.error} role="alert">{stepNotice.text}</p>}
-      <div role="radiogroup" aria-labelledby="bk-h2" onKeyDown={radioKeys} className={s.two}>
+      <div role="radiogroup" aria-labelledby="bk-h2" onKeyDown={radioKeys} className={`${s.two} ${s.people}`}>
         {svcStaff.map((p, i) => staffCard(p.id, { name: p.name, role: p.role, init: p.init, ...p.tone }, i === 0))}
         {svcStaff.length > 1 && staffCard('any', { name: 'ללא העדפה', role: 'כל מטפלת פנויה בקליניקה', init: <PeopleGlyph />, color: '#5B6B7B', tint: '#F0F3F5' }, false)}
       </div>
@@ -595,6 +680,66 @@ export function BookingFlow({ data }: { data: BookingData }) {
     </section>
   );
 
+  // ---------- Summary (desktop sidebar; a collapsible card at the top of step 4 in the shell) ----------
+
+  const summary: Array<{ label: string; value: ReactNode; strong?: boolean; muted?: boolean }> = [
+    { label: 'טיפול', value: svc ? svc.name : 'טרם נבחר', strong: !!svc, muted: !svc },
+    { label: 'משך', value: svc ? <><span className="ltr tnum">{svc.durationMin}</span> דקות</> : 'לפי הטיפול', muted: !svc },
+    { label: 'מטפלת', value: staffLabel ?? 'טרם נבחרה', muted: !staffLabel },
+    {
+      label: 'מועד',
+      value: slot ? <>{slotWhen} · <span className="ltr tnum">{timeOfIso(slot)}</span></> : 'טרם נבחר',
+      muted: !slot,
+    },
+    {
+      label: 'דמי קדימה',
+      value: dep > 0 ? <span className="ltr tnum">{nisFromAgorot(dep)}</span> : policy.depositOn ? 'ללא' : 'הקליניקה אינה גובה',
+    },
+  ];
+
+  const summaryFold = svc && (
+    <details className={`${s.fold} bf-shell-only`}>
+      <summary className={s.foldHead}>
+        <span className={s.foldText}>
+          <span className={s.foldTitle}>סיכום ההזמנה</span>
+          <span className={s.foldSub}>
+            {svc.name}
+            {slot && (
+              <>
+                {' · '}
+                {slotKey && DOW[dowOf(slotKey)]} <span className="ltr tnum">{timeOfIso(slot)}</span>
+              </>
+            )}
+          </span>
+        </span>
+        <Price t={svc} className={s.foldPrice} />
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={s.foldChevron}>
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </summary>
+      <dl className={s.foldDl}>
+        {summary.map(r => (
+          <div key={r.label} className={s.sumRow}>
+            <dt>{r.label}</dt>
+            <dd data-strong={r.strong || undefined} data-muted={r.muted || undefined}>
+              {r.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <p className={s.foldNote}>
+        {svc.priceAgorot > 0 ? (
+          <>
+            המחיר לא כולל מע״מ · <span className="ltr tnum">{nisFromAgorot(vatIncl(svc.priceAgorot))}</span> כולל מע״מ · תשלום בקליניקה
+            {dep > 0 && ' · דמי הקדימה מקוזזים מהסכום'}
+          </>
+        ) : (
+          'תשלום בקליניקה · חשבונית מס מהקליניקה'
+        )}
+      </p>
+    </details>
+  );
+
   // ---------- Step 4 ----------
 
   const policyNote =
@@ -626,7 +771,8 @@ export function BookingFlow({ data }: { data: BookingData }) {
   const field = (key: 'name' | 'phone' | 'email', v: string) => setForm(f => ({ ...f, [key]: v }));
 
   const step4 = (
-    <section aria-labelledby="bk-h4" className={s.card}>
+    <section aria-labelledby="bk-h4" className={s.card} ref={step4Ref}>
+      {summaryFold}
       <h2 id="bk-h4" ref={el => { headingRefs.current['4'] = el; }} tabIndex={-1} className={`${s.h2} ${s.h2Solo}`}>
         הפרטים שלכם
       </h2>
@@ -701,13 +847,14 @@ export function BookingFlow({ data }: { data: BookingData }) {
         </div>
       )}
 
+      {/* In the shell the same messages sit above the sticky button (ActionBar error). */}
       {tried && !formOk && (
-        <p className={s.error} role="alert">
+        <p className={`${s.error} bf-desk-only`} role="alert">
           {errText}
         </p>
       )}
       {serverError && (
-        <p className={s.error} role="alert">
+        <p className={`${s.error} bf-desk-only`} role="alert">
           {errorMessages[serverError]}
         </p>
       )}
@@ -735,7 +882,7 @@ export function BookingFlow({ data }: { data: BookingData }) {
       </h2>
       <p className={s.doneBody}>אישור נשלח בוואטסאפ, ותזכורת תישלח לפני התור. לשינוי מועד או ביטול, היכנסו לניהול התור.</p>
       <div className={s.doneLinks}>
-        <Link href={`/b/${done.token}`} className={s.doneLink}>
+        <Link href={`/b/${done.token}`} className={`${s.doneLink} bf-desk-only`}>
           ניהול התור
         </Link>
         {svc.requiresDeclaration && (
@@ -762,7 +909,30 @@ export function BookingFlow({ data }: { data: BookingData }) {
         <dd>{branch.address}</dd>
       </dl>
 
-      <div className={s.doneActions}>
+      {/* Shell: two stacked actions, the rest as quiet links. */}
+      <div className={`${s.doneStack} bf-shell-only`}>
+        <Link href={`/b/${done.token}`} className={s.primaryBtn}>
+          ניהול התור
+        </Link>
+        <button type="button" className={s.ghostBtn} onClick={() => { downloadIcs(calEvent(), `${done.ref}.ics`); flash('קובץ יומן הורד, מתאים ל־Google, Outlook ו־iPhone'); }}>
+          הוספה ליומן
+        </button>
+        <p className={s.doneMore}>
+          <a href={wazeHref(branch.wazeUrl, branch.address)} target="_blank" rel="noopener noreferrer">
+            ניווט ב־Waze
+          </a>
+          {branch.whatsapp && (
+            <a href={waLink(branch.whatsapp, `שלום ${branch.name}, קבעתי תור דרך BeautyFind (אסמכתא ${done.ref}).`)} target="_blank" rel="noopener noreferrer">
+              הודעה לקליניקה
+            </a>
+          )}
+          <button type="button" onClick={restart}>
+            תור נוסף
+          </button>
+        </p>
+      </div>
+
+      <div className={`${s.doneActions} bf-desk-only`}>
         <button type="button" className={s.primaryBtn} onClick={() => { downloadIcs(calEvent(), `${done.ref}.ics`); flash('קובץ יומן הורד, מתאים ל־Google, Outlook ו־iPhone'); }}>
           הוספה ליומן
         </button>
@@ -829,8 +999,33 @@ export function BookingFlow({ data }: { data: BookingData }) {
   }
   const busy = pending || redirecting;
 
+  // Shell: the primary is never greyed out. Tapping it early explains what is missing (warning haptic).
+  const next = () => {
+    if (step === 4) submit();
+    else if (nextOk) go((step + 1) as Step);
+    else {
+      setNudge(true);
+      haptic('warning');
+    }
+  };
+  const barError: ReactNode =
+    step === 4 && serverError ? errorMessages[serverError] : step === 4 && tried && !formOk ? errText : nudge && !nextOk ? nextHint : null;
+  const actionBar = !done && (
+    <ActionBar mobileOnly hint={barError ? undefined : nextHint} error={barError}>
+      {step === 1 && needsConsult ? (
+        <Link href={consultHref} className={s.barBtn}>
+          {nextLabel}
+        </Link>
+      ) : (
+        <button type="button" className={s.barBtn} data-off={(step !== 4 && !nextOk) || undefined} disabled={busy} aria-busy={busy || undefined} onClick={next}>
+          {nextLabel}
+        </button>
+      )}
+    </ActionBar>
+  );
+
   const footer = !done && (
-    <div className={s.footer}>
+    <div className={`${s.footer} bf-desk-only`}>
       <div className={s.footRow}>
         {step > 1 && (
           <button type="button" className={s.backBtn} onClick={() => go((step - 1) as Step)} disabled={busy}>
@@ -863,23 +1058,9 @@ export function BookingFlow({ data }: { data: BookingData }) {
   // ---------- Aside ----------
 
   const todayDow = dowOf(todayKey);
-  const summary: Array<{ label: string; value: ReactNode; strong?: boolean; muted?: boolean }> = [
-    { label: 'טיפול', value: svc ? svc.name : 'טרם נבחר', strong: !!svc, muted: !svc },
-    { label: 'משך', value: svc ? <><span className="ltr tnum">{svc.durationMin}</span> דקות</> : 'לפי הטיפול', muted: !svc },
-    { label: 'מטפלת', value: staffLabel ?? 'טרם נבחרה', muted: !staffLabel },
-    {
-      label: 'מועד',
-      value: slot ? <>{slotWhen} · <span className="ltr tnum">{timeOfIso(slot)}</span></> : 'טרם נבחר',
-      muted: !slot,
-    },
-    {
-      label: 'דמי קדימה',
-      value: dep > 0 ? <span className="ltr tnum">{nisFromAgorot(dep)}</span> : policy.depositOn ? 'ללא' : 'הקליניקה אינה גובה',
-    },
-  ];
 
   const aside = (
-    <aside className={s.aside}>
+    <aside className={`${s.aside} bf-desk-only`}>
       <div className={s.sumCard}>
         <div className={s.sumHead}>
           <h2 className={s.sumTitle}>סיכום ההזמנה</h2>
@@ -958,7 +1139,15 @@ export function BookingFlow({ data }: { data: BookingData }) {
 
   return (
     <div className={s.root}>
-      <header className={s.header}>
+      <TopBar
+        mode="flow"
+        title="קביעת תור"
+        progress={closedForOnline || done ? undefined : { step, total: 4 }}
+        noBack={step === 1 || !!done || closedForOnline}
+        onBack={() => step > 1 && !busy && go((step - 1) as Step)}
+        closeHref={branch.profileHref}
+      />
+      <header className={`${s.header} bf-desk-only`}>
         <div className={s.headerIn}>
           <Link href="/" className={s.logo} aria-label="BeautyFind, לדף הבית">
             <Wordmark size={21} />
@@ -1005,18 +1194,28 @@ export function BookingFlow({ data }: { data: BookingData }) {
             ) : done ? (
               doneView
             ) : (
-              <>
+              // Keyed per step so each screen enters with its slide (shell) or fade (desktop).
+              <div key={step} className={s.pane} data-dir={dir}>
+                {resumed && (
+                  <p className={s.resumed} role="status">
+                    <span>המשכנו מהמקום שבו עצרתם.</span>
+                    <button type="button" onClick={restart}>
+                      התחלה מחדש
+                    </button>
+                  </p>
+                )}
                 {step === 1 && step1}
                 {step === 2 && step2}
                 {step === 3 && step3}
                 {step === 4 && step4}
-              </>
+              </div>
             )}
             {!closedForOnline && footer}
           </main>
           {aside}
         </div>
       </div>
+      {!closedForOnline && actionBar}
 
       <Toast text={toast} />
     </div>

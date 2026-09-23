@@ -6,7 +6,7 @@
 }
 @media (min-width: 480px) { .root { --pad: 22px; } }
 .root a:not([class]) { color: var(--teal-deep); }
-.root a:not([class]):hover { color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .root a:not([class]):hover { color: var(--navy); } }
 
 .header { background: #fff; border-bottom: 1px solid var(--line); }
 .headerBar { max-width: 1100px; margin: 0 auto; padding: 12px var(--pad); display: flex; align-items: center; gap: 13px; flex-wrap: wrap; min-height: 66px; }
@@ -16,10 +16,10 @@
   flex: none; display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 13px; border-radius: 11px;
   background: var(--tint); font-size: 14px; font-weight: 700; color: var(--teal-deep);
 }
-.backLink:hover { color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .backLink:hover { color: var(--navy); } }
 
 .wrap { max-width: 1100px; margin: 0 auto; padding: clamp(16px, 2.4vw, 28px) var(--pad) 60px; }
-.fade { animation: hdFade .22s ease both; }
+.fade { animation: hdFade .22s ease backwards; }
 @keyframes hdFade { from { opacity: 0; transform: translateY(7px) } to { opacity: 1; transform: none } }
 @keyframes hdPop { from { opacity: 0; transform: scale(.97) } to { opacity: 1; transform: none } }
 
@@ -96,7 +96,7 @@
   flex: none; min-height: 44px; padding: 0 11px; border: 0; border-radius: 9px; background: transparent;
   font: inherit; font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer;
 }
-.ghost:hover { background: var(--bg-page); }
+@media (hover: hover) and (pointer: fine) { .ghost:hover { background: var(--bg-page); } }
 .pad { position: relative; height: 150px; border: 1px dashed var(--line-strong); border-radius: 12px; background: var(--bg-soft); overflow: hidden; }
 .pad[data-ink] { border-color: var(--teal-light); }
 .pad[data-invalid] { border-color: var(--bad-input); }
@@ -113,7 +113,7 @@
   display: inline-flex; align-items: center; min-height: 44px; padding: 0; border: 0; background: transparent;
   font: inherit; font-size: 13.5px; font-weight: 700; color: var(--teal-deep); text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
 }
-.linkBtn:hover { color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .linkBtn:hover { color: var(--navy); } }
 
 .check {
   width: 100%; margin-top: 9px; min-height: 44px; display: flex; align-items: flex-start; gap: 11px; padding: 0;
@@ -138,7 +138,7 @@
   flex: 1; min-width: 190px; min-height: 50px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--teal-deep);
   font: inherit; font-size: 16px; font-weight: 700; color: #fff; cursor: pointer; transition: background .15s;
 }
-.primary:hover:not(:disabled) { background: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .primary:hover:not(:disabled) { background: var(--navy); } }
 .primary:disabled { background: var(--disabled); cursor: progress; }
 .secondary {
   flex: none; min-height: 50px; padding: 0 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff;
@@ -153,7 +153,7 @@
 .apptDl dd { margin: 0; font-weight: 700; }
 .resp { margin: 0; padding: 11px 16px; border-top: 1px solid var(--divider); font-size: 12.5px; color: var(--muted); text-wrap: pretty; }
 
-.flag { background: var(--warn-bg); border: 1px solid var(--warn-line); border-radius: 17px; padding: 14px 16px; animation: hdFade .2s ease both; }
+.flag { background: var(--warn-bg); border: 1px solid var(--warn-line); border-radius: 17px; padding: 14px 16px; animation: hdFade .2s ease backwards; }
 .flagTitle { display: block; margin-bottom: 4px; font-size: 14px; font-weight: 700; color: var(--warn-text); }
 .flag p { margin: 0; font-size: 13px; color: var(--text); text-wrap: pretty; }
 
@@ -165,7 +165,7 @@
 
 .doneCard {
   max-width: 620px; background: #fff; border: 1px solid var(--teal-border); border-radius: 18px;
-  padding: clamp(20px, 2.6vw, 30px); animation: hdPop .2s ease both;
+  padding: clamp(20px, 2.6vw, 30px); animation: hdPop .2s ease backwards;
 }
 .doneIcon {
   display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; margin-bottom: 13px;
@@ -181,15 +181,78 @@
   min-height: 46px; display: inline-flex; align-items: center; padding: 0 16px; border: 0; border-radius: 12px; background: var(--teal-deep);
   font: inherit; font-size: 15px; font-weight: 700; color: #fff; cursor: pointer;
 }
-a.primarySm:hover, .primarySm:hover:not(:disabled) { background: var(--navy); color: #fff; }
+@media (hover: hover) and (pointer: fine) { a.primarySm:hover, .primarySm:hover:not(:disabled) { background: var(--navy); color: #fff; } }
 .primarySm:disabled { background: var(--disabled); }
 .secondarySm {
   min-height: 46px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff;
   font: inherit; font-size: 15px; font-weight: 600; color: var(--text); cursor: pointer;
 }
 
+/* ---------- Step flow pieces ---------- */
+/* Desktop shows every step at once, so the pane is transparent to the layout. */
+.pane { display: contents; }
+.rotate { display: none; }
+.barBtn {
+  width: 100%; min-height: 52px; padding: 0 18px; border: 0; border-radius: 13px; background: var(--teal-deep);
+  font: inherit; font-size: 16px; font-weight: 700; color: #fff; cursor: pointer;
+}
+.barBtn[data-off] { background: var(--divider); color: var(--subtle); }
+.barBtn:disabled { background: var(--disabled); cursor: progress; }
+.doneIcon { animation: hdRing .22s var(--ease-out) backwards; }
+@keyframes hdRing { from { opacity: 0; transform: scale(.8) } to { opacity: 1; transform: none } }
+
+/* ---------- App shell (spec §3.3, §6 Health Declaration) ---------- */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .root { min-height: 0; background: #fff; --pad: 16px; }
+  /* The body reserves 76px for the action bar; the hint line and 52px button need more. */
+  .wrap { padding: 8px var(--pad) 64px; }
+  .off { display: none !important; }
+  .shell { display: block; }
+  .side { margin-top: 18px; }
+  .pane { display: flex; flex-direction: column; gap: 22px; }
+  .h1 { font-size: 26px; }
+  .lede { font-size: 15px; margin-bottom: 16px; }
+
+  .main > .pane > .card { padding: 0; border: 0; border-radius: 0; background: transparent; }
+  .h2 { font-family: var(--font-display); font-size: 22px; font-weight: 500; letter-spacing: -0.01em; }
+  .input { min-height: 48px; font-size: 16px; }
+  .meds, .detail { font-size: 16px; }
+  .meds { min-height: 140px; }
+  .noMeds { min-height: 48px; }
+
+  /* One question per row: text, then a joined כן / לא segmented control. */
+  .qList { margin: 0 calc(-1 * var(--pad)); }
+  .q { padding: 14px var(--pad); }
+  .q[data-yes] { background: var(--warn-bg); }
+  .qRow { flex-wrap: nowrap; align-items: center; }
+  .qText { flex: 1 1 auto; }
+  .qLabel { font-size: 15px; }
+  .yn { gap: 0; padding: 3px; border: 1px solid var(--line); border-radius: 13px; background: var(--bg-page); }
+  .yn button { min-width: 56px; min-height: 44px; border: 0; border-radius: 10px; background: transparent; }
+  .yn button[data-miss] { box-shadow: inset 0 0 0 1px var(--bad-input); }
+  .yn button[data-yes] { background: #fff; color: var(--warn-text); box-shadow: 0 1px 3px rgba(12, 36, 62, .14); }
+  .yn button[data-no] { background: var(--teal-deep); color: #fff; }
+  .detail { margin-top: 10px; background: #fff; border-color: #E8C98F; }
+
+  /* Signature: full width, 180px tall, with a hint to rotate the phone for more room. */
+  .pad { height: 180px; }
+  .typedPreview { height: 180px; }
+  .check { min-height: 48px; margin-top: 12px; }
+
+  .doneCard { max-width: none; min-height: calc(100dvh - var(--topbar-h) - var(--safe-t) - 40px); display: flex; flex-direction: column; justify-content: center; padding: 8px 0 24px; border: 0; background: transparent; text-align: center; }
+  .doneIcon { align-self: center; width: 84px; height: 84px; margin-bottom: 18px; }
+  .doneIcon svg { width: 38px; height: 38px; }
+  .h1done { font-size: 28px; }
+  .doneDl { padding: 14px 16px; border: 1px solid var(--divider); border-radius: 14px; background: var(--bg-soft); text-align: right; margin-bottom: 22px; }
+  .doneActions { flex-direction: column; align-items: stretch; gap: 10px; }
+  .doneActions > .primarySm, .doneActions > .secondarySm { width: 100%; min-height: 52px; justify-content: center; font-size: 16px; }
+}
+@media (max-width: 767px) and (orientation: portrait) {
+  .rotate { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 8px 0 0; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+}
+
 .toast {
-  position: fixed; bottom: calc(18px + var(--bf-bottom-bar)); right: 50%; transform: translateX(50%); z-index: 40;
+  position: fixed; bottom: max(18px, calc(var(--bf-float-bottom) + 12px)); right: 50%; transform: translateX(50%); z-index: 40;
   max-width: min(90vw, 440px); padding: 12px 17px; border-radius: 13px; background: var(--navy); color: #fff;
   font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(12, 36, 62, .28); text-wrap: pretty;
 }
