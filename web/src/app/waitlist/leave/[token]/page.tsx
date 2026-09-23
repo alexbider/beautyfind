@@ -25,7 +25,7 @@ export default async function WaitlistLeavePage({ params }: { params: Promise<{ 
 
   if (!e) {
     return (
-      <PublicShell>
+      <PublicShell title="רשימת המתנה">
         <StateCard title="הקישור לא תקין" actions={home}>
           <p className={styles.doneP}>ייתכן שהקישור הועתק חלקית. אפשר לפתוח אותו שוב מההודעה שקיבלת.</p>
         </StateCard>
@@ -38,7 +38,7 @@ export default async function WaitlistLeavePage({ params }: { params: Promise<{ 
     const text =
       e.status === 'booked' ? 'קבעת תור מרשימת ההמתנה, ולכן כבר לא ממתינה לטיפול הזה.' : e.status === 'expired' ? 'תקופת ההמתנה שבחרת הסתיימה.' : 'כבר יצאת מרשימת ההמתנה לטיפול הזה.';
     return (
-      <PublicShell>
+      <PublicShell title="רשימת המתנה">
         <StateCard
           title="את לא ברשימת ההמתנה"
           actions={
@@ -59,7 +59,7 @@ export default async function WaitlistLeavePage({ params }: { params: Promise<{ 
   }
 
   return (
-    <PublicShell>
+    <PublicShell title="רשימת המתנה">
       <LeaveView token={token} treatmentName={e.treatmentName} branchLabel={`${e.branch.name}, ${e.branch.cityName}`} rejoinHref={rejoin} leave={leaveAction} />
     </PublicShell>
   );

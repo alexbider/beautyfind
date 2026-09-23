@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { TopBar } from '@/components/shell/TopBar';
 import { Wordmark } from '@/components/Wordmark';
 import { ROUTES } from '@/lib/routes';
 import { plMinutes } from './shared';
@@ -37,11 +38,25 @@ export const PhoneIcon = () => (
   </svg>
 );
 
-/** Page frame for the client-facing waitlist pages: wordmark header, optional account link. */
-export function PublicShell({ children, accountLink = false }: { children: ReactNode; accountLink?: boolean }) {
+/**
+ * Page frame for the client-facing waitlist pages: wordmark header, optional account link.
+ * In the app shell the header gives way to a flow top bar (tab bar hidden, × closes to `closeHref`).
+ */
+export function PublicShell({
+  children,
+  accountLink = false,
+  title,
+  closeHref = ROUTES.home,
+}: {
+  children: ReactNode;
+  accountLink?: boolean;
+  title: string;
+  closeHref?: string;
+}) {
   return (
     <div dir="rtl" lang="he" className={styles.root}>
-      <header className={styles.header}>
+      <TopBar mode="flow" noBack title={title} closeHref={closeHref} />
+      <header className={`${styles.header} bf-desk-only`}>
         <div className={styles.headerInner}>
           <Link href={ROUTES.home} className={styles.logo} aria-label="BeautyFind, לדף הבית">
             <Wordmark size={21} />

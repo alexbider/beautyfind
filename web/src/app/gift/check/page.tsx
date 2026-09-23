@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { CheckForm } from '@/components/gift/CheckForm';
+import { GiftFrame } from '../frame';
 
 // Design: project/BeautyFind Gift Cards.dc.html (view=redeem). ?code= prefills and checks once.
 
@@ -19,5 +20,9 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 export default async function GiftCheckPage({ searchParams }: Props) {
   const sp = await searchParams;
   const code = typeof sp.code === 'string' ? sp.code.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20) : '';
-  return <CheckForm initial={code} />;
+  return (
+    <GiftFrame pushed={{ title: 'בדיקת יתרה בשובר', backHref: '/more' }}>
+      <CheckForm initial={code} />
+    </GiftFrame>
+  );
 }

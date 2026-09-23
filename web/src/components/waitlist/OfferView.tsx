@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
+import { haptic } from '@/components/shell/haptics';
 import { ROUTES } from '@/lib/routes';
 import { clock, leavePath, minutesLeftText } from './shared';
 import { Ltr } from './ui';
@@ -89,6 +90,7 @@ export function OfferView({
     start(async () => {
       const r = await accept(token).catch((): AcceptActionResult => ({ ok: false, error: 'server' }));
       if (r.ok) {
+        haptic('success');
         window.location.assign(r.url);
         return;
       }
@@ -104,7 +106,10 @@ export function OfferView({
     setErr(null);
     start(async () => {
       const r = await pass(token).catch((): PassActionResult => ({ ok: false, error: 'server' }));
-      if (r.ok) setState('passed');
+      if (r.ok) {
+        haptic('light');
+        setState('passed');
+      }
       else if (r.error === 'expired') setState('expired');
       else if (r.error === 'closed' || r.error === 'not_found') router.refresh();
       else setErr('משהו השתבש. נסי שוב בעוד רגע.');

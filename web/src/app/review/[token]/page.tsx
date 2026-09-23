@@ -83,7 +83,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ token: 
   }
 
   return (
-    <ReviewShell>
+    <ReviewShell form>
       <ReviewForm
         token={token}
         profileHref={profileHref}

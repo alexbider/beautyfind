@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode, Ref } from 'react';
+import { TopBar } from '@/components/shell/TopBar';
 import { Wordmark } from '@/components/Wordmark';
 import { ROUTES } from '@/lib/routes';
 import { publishedAs, starsText, type SubmittedSummary } from './shared';
@@ -20,10 +21,15 @@ const ClockIcon = () => (
   </svg>
 );
 
-export function ReviewShell({ children }: { children: ReactNode }) {
+/**
+ * Page frame: wordmark header on desktop, a flow top bar in the app shell (the tab bar is hidden on
+ * /review). With `form`, the review form renders its own top bar (it drives the step progress) and main.
+ */
+export function ReviewShell({ children, form = false }: { children: ReactNode; form?: boolean }) {
   return (
     <div dir="rtl" lang="he" className={styles.root}>
-      <header className={styles.header}>
+      {!form && <TopBar mode="flow" noBack title="ביקורת" closeHref={ROUTES.account} />}
+      <header className={`${styles.header} bf-desk-only`}>
         <div className={styles.headerInner}>
           <Link href={ROUTES.home} className={styles.logo} aria-label="BeautyFind, לדף הבית">
             <Wordmark size={21} />
@@ -37,7 +43,7 @@ export function ReviewShell({ children }: { children: ReactNode }) {
           </Link>
         </div>
       </header>
-      <main className={styles.wrap}>{children}</main>
+      {form ? children : <main className={styles.wrap}>{children}</main>}
     </div>
   );
 }
@@ -69,7 +75,7 @@ export function ReviewDone({
       'הביקורת לא עמדה בכללי הפרסום. שלחנו לך הודעה עם ההסבר.'
     );
   return (
-    <div className={styles.done}>
+    <div className={`${styles.done} ${styles.doneFull}`}>
       <span aria-hidden="true" className={styles.doneIcon}>
         <CheckIcon size={27} width={2} />
       </span>

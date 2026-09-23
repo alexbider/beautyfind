@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { AFTERCARE, aftercareKeyFor, phaseNow } from '@/components/aftercare/content';
 import { PhaseView } from '@/components/aftercare/PhaseView';
+import { FixedActionBar } from '@/components/review/FixedLayer';
+import { TopBar } from '@/components/shell/TopBar';
 import styles from '@/components/aftercare/Aftercare.module.css';
 import { Wordmark } from '@/components/Wordmark';
 import { fromE164, telHref } from '@/lib/format';
@@ -47,7 +49,8 @@ export default async function AftercarePage({ params }: { params: Promise<{ toke
 
   return (
     <div className={styles.root}>
-      <header className={styles.header}>
+      <TopBar mode="pushed" title="הנחיות אחרי הטיפול" backHref={`/b/${token}`} />
+      <header className={`${styles.header} bf-desk-only`}>
         <div className={styles.headerBar}>
           <Link href="/" aria-label="BeautyFind" className={styles.brand}><Wordmark size={21} /></Link>
           <span className={styles.clinic}>{b.branch.name}</span>
@@ -110,6 +113,21 @@ export default async function AftercarePage({ params }: { params: Promise<{ toke
           {' '}<Link href={`/b/${token}`}>לפרטי התור</Link>
         </p>
       </main>
+
+      {tel && (
+        // Phones: the clinic is one tap away wherever the page is scrolled.
+        <FixedActionBar mobileOnly>
+          {wa && (
+            <a href={`https://wa.me/${wa.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className={styles.waIcon} aria-label="וואטסאפ לקליניקה">
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d={WA_PATH} /></svg>
+            </a>
+          )}
+          <a href={telHref(tel)} className={styles.emergency}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={PHONE_PATH} /></svg>
+            חיוג לקליניקה
+          </a>
+        </FixedActionBar>
+      )}
     </div>
   );
 }

@@ -5,7 +5,9 @@ import { BuyDone, BuyFailed, BuyWaiting } from '@/components/gift/BuyReturn';
 import { NoSales } from '@/components/gift/NoSales';
 import { giftTreatments, returnState, sellableBranch } from '@/components/gift/server';
 import { yearsText } from '@/components/gift/shared';
+import { profileHref } from '@/lib/server/public';
 import { addDays, ilDate, ilDateKey } from '@/lib/time';
+import { GiftFrame } from '../frame';
 
 // Design: project/BeautyFind Gift Cards.dc.html (view=buy). Payment runs at the business's own provider;
 // the checkout returns here with ?card=<id>&paid=1|0 and the card turns active once the provider confirms.
@@ -36,18 +38,39 @@ export default async function GiftBuyPage({ params, searchParams }: Props) {
   const s = await sellableBranch(branch);
   if (!s) notFound();
 
+  const closeHref = profileHref(s.branch);
+  const flow = { title: 'שובר מתנה', closeHref };
   const cardId = typeof sp.card === 'string' ? sp.card : null;
   if (cardId) {
     const r = await returnState(s.businessId, cardId, typeof sp.paid === 'string' ? sp.paid : undefined);
     if (r?.state === 'done') {
       const { state: _state, ...done } = r;
-      return <BuyDone slug={s.branch.slug} {...done} />;
+      return (
+        <GiftFrame flow={flow}>
+          <BuyDone slug={s.branch.slug} {...done} />
+        </GiftFrame>
+      );
     }
-    if (r?.state === 'waiting') return <BuyWaiting />;
-    if (r?.state === 'failed' && s.canSell) return <BuyFailed slug={s.branch.slug} cardId={cardId} />;
+    if (r?.state === 'waiting')
+      return (
+        <GiftFrame flow={flow}>
+          <BuyWaiting />
+        </GiftFrame>
+      );
+    if (r?.state === 'failed' && s.canSell)
+      return (
+        <GiftFrame flow={flow}>
+          <BuyFailed slug={s.branch.slug} cardId={cardId} />
+        </GiftFrame>
+      );
   }
 
-  if (!s.canSell) return <NoSales branch={s.branch} />;
+  if (!s.canSell)
+    return (
+      <GiftFrame flow={flow}>
+        <NoSales branch={s.branch} />
+      </GiftFrame>
+    );
 
   const now = new Date();
   const today = ilDateKey(now);
@@ -56,14 +79,17 @@ export default async function GiftBuyPage({ params, searchParams }: Props) {
   const treatments = await giftTreatments(s.branch.id);
 
   return (
-    <BuyForm
-      slug={s.branch.slug}
-      businessName={s.branch.name}
-      years={s.years}
-      expiry={ilDate(expires)}
-      treatments={treatments}
-      today={today}
-      maxDate={addDays(today, 365)}
-    />
+    <GiftFrame flow={flow} bare>
+      <BuyForm
+        closeHref={closeHref}
+        slug={s.branch.slug}
+        businessName={s.branch.name}
+        years={s.years}
+        expiry={ilDate(expires)}
+        treatments={treatments}
+        today={today}
+        maxDate={addDays(today, 365)}
+      />
+    </GiftFrame>
   );
 }

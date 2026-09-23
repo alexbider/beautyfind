@@ -26,7 +26,7 @@ export default async function WaitlistOfferPage({ params }: { params: Promise<{ 
 
   if (!o) {
     return (
-      <PublicShell accountLink>
+      <PublicShell accountLink title="רשימת המתנה" closeHref={ROUTES.account}>
         <StateCard
           title="הקישור לא תקין"
           actions={
@@ -60,7 +60,7 @@ export default async function WaitlistOfferPage({ params }: { params: Promise<{ 
   };
 
   return (
-    <PublicShell accountLink>
+    <PublicShell accountLink title="התפנה תור" closeHref={ROUTES.account}>
       <OfferView key={o.state} token={token} data={data} accept={acceptOfferAction} pass={passOfferAction} />
     </PublicShell>
   );

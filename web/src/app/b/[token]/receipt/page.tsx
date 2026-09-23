@@ -23,7 +23,7 @@ export default async function BookingReceiptPage({ params }: { params: Promise<{
   const data = await receiptForBooking(bookingId);
 
   return (
-    <ReceiptShell back={{ href: `/b/${token}`, label: 'לפרטי התור' }}>
+    <ReceiptShell title="קבלות וחשבוניות" back={{ href: `/b/${token}`, label: 'לפרטי התור' }}>
       {data ? (
         <ReceiptView data={data} />
       ) : (

@@ -8,7 +8,7 @@
 .clinic { flex: 1; min-width: 0; text-align: left; font-size: 13.5px; font-weight: 700; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .wrap { max-width: 760px; margin: 0 auto; padding: clamp(18px, 3vw, 32px) var(--pad) 60px; display: flex; flex-direction: column; gap: clamp(16px, 2vw, 22px); }
-.fade { animation: acFade .22s ease both; }
+.fade { animation: acFade .22s ease backwards; }
 @keyframes acFade { from { opacity: 0; transform: translateY(7px) } to { opacity: 1; transform: none } }
 .kicker { display: block; font-size: 13.5px; font-weight: 700; color: var(--teal-deep); }
 .h1 { margin: 4px 0 6px; font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 500; line-height: 1.14; letter-spacing: -0.015em; }
@@ -49,7 +49,7 @@
   display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 16px; border-radius: 12px; background: #A33A31;
   font-size: 15px; font-weight: 700; color: #fff;
 }
-.emergency:hover { background: #8C2F27; color: #fff; }
+@media (hover: hover) and (pointer: fine) { .emergency:hover { background: #8C2F27; color: #fff; } }
 .emergency svg { flex: none; color: #fff; }
 .wa {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 15px; border-radius: 12px;
@@ -57,13 +57,13 @@
   transition: background .15s, border-color .15s;
 }
 .wa svg { flex: none; color: var(--wa-glyph); }
-.wa:hover { background: #DDF2E5; border-color: #9ED9B3; color: var(--wa-text); }
+@media (hover: hover) and (pointer: fine) { .wa:hover { background: #DDF2E5; border-color: #9ED9B3; color: var(--wa-text); } }
 .afterHours { margin: 10px 0 0; font-size: 12.5px; color: var(--muted); text-wrap: pretty; }
 .mda {
   display: inline-flex; align-items: center; gap: 7px; min-height: 44px; margin-top: 4px;
   font-size: 14px; font-weight: 700; color: #A33A31; text-decoration: underline; text-underline-offset: 3px;
 }
-.mda:hover { color: #7A2A23; }
+@media (hover: hover) and (pointer: fine) { .mda:hover { color: #7A2A23; } }
 
 .follow {
   background: #fff; border: 1px solid var(--teal-border); border-radius: 17px; padding: 16px 18px;
@@ -75,8 +75,27 @@
   flex: none; min-height: 46px; display: inline-flex; align-items: center; padding: 0 16px; border-radius: 12px; background: var(--teal-deep);
   font-size: 15px; font-weight: 700; color: #fff;
 }
-.primary:hover { background: var(--navy); color: #fff; }
+@media (hover: hover) and (pointer: fine) { .primary:hover { background: var(--navy); color: #fff; } }
 
 .foot { margin: 0; font-size: 12.5px; color: var(--subtle); text-wrap: pretty; }
 .foot a { color: var(--teal-deep); display: inline-flex; align-items: center; min-height: 44px; }
-.foot a:hover { color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .foot a:hover { color: var(--navy); } }
+
+/* ---------- App shell (phones, touch tablets): responsive spec §6 Aftercare ----------
+   The phase control is the shell's segmented control, sticky under the top bar and full width; the
+   red-flag block stays in the page and the call button is also pinned in the action bar. */
+.segHost { display: contents; }
+.waIcon {
+  flex: none; display: inline-flex; align-items: center; justify-content: center; width: 52px; min-height: 48px;
+  border: 1px solid var(--wa-line); border-radius: 12px; background: var(--wa-bg); color: var(--wa-glyph);
+}
+
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .root { --shell-top: calc(var(--topbar-h) + var(--safe-t)); }
+  .wrap { padding: 14px 0 24px; gap: 14px; }
+  .wrap > :not(.segHost) { margin-inline: var(--pad); }
+  .h1 { font-size: 28px; }
+  .emergency, .wa { min-height: 48px; justify-content: center; }
+  .row > * { flex: 1 1 220px; }
+  .mda { min-height: 48px; }
+}

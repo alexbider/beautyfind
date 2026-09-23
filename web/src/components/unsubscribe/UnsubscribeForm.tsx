@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { useRef, useState } from 'react';
+import { FixedActionBar } from '@/components/review/FixedLayer';
+import { haptic } from '@/components/shell/haptics';
 import { Switch } from '../account/ui';
 import { undoUnsubscribeAction, unsubscribeAction } from './actions';
 import type { Channel } from './token';
@@ -17,6 +19,8 @@ function joinIn(chs: Channel[]) {
   const w = chs.map(c => IN[c]);
   return w.length < 2 ? (w[0] ?? '') : `${w.slice(0, -1).join(', ')} ו${w[w.length - 1]}`;
 }
+
+const NONE_OFF = 'כל הערוצים עדיין פעילים. כבי לפחות אחד, או חזרי מאוחר יותר.';
 
 /** "מקליניקת נועה" / "מ־BeautyFind" */
 const from = (name: string) => (/^[A-Za-z0-9]/.test(name) ? `מ־${name}` : `מ${name}`);
@@ -37,16 +41,21 @@ export function UnsubscribeForm({
 
   const save = async () => {
     setTried(true);
-    if (!anyOff) return;
+    if (!anyOff) {
+      haptic('warning');
+      return;
+    }
     setBusy(true);
     setFailed(null);
     const r = await unsubscribeAction(token, scope, offList).catch(() => null);
     setBusy(false);
     if (!r?.ok) {
+      haptic('warning');
       setFailed(r?.error === 'invalid_link' ? 'הקישור כבר לא תקף. אפשר לשלוח ״הסר״ בתשובה להודעה.' : 'לא הצלחנו לשמור. נסי שוב בעוד רגע.');
       return;
     }
     const who = scope === 'all' ? 'מכל העסקים ומ־BeautyFind' : from(source);
+    haptic('success');
     setDone({ body: `הפסקנו את הדיוור ${who} ${joinIn(offList)}. הודעות על תורים ימשיכו להגיע כרגיל.`, undo: r.undo });
     requestAnimationFrame(() => doneRef.current?.focus());
   };
@@ -131,11 +140,19 @@ export function UnsubscribeForm({
         <strong>ימשיכו להגיע:</strong> אישורי תור, תזכורות, הנחיות אחרי טיפול, קבלות וחשבוניות. אלה הודעות שירות ולא דיוור.
       </div>
 
-      {tried && !anyOff && <p className={styles.err} role="alert">כל הערוצים עדיין פעילים. כבי לפחות אחד, או חזרי מאוחר יותר.</p>}
-      {failed && <p className={styles.err} role="alert">{failed}</p>}
-      <button type="button" className={styles.btnPrimary} onClick={save} disabled={busy} aria-busy={busy || undefined}>
-        שמירת ההעדפות
-      </button>
+      {/* Desktop: in the column. Phones: the same button in the sticky action bar, within thumb reach. */}
+      <div className={`${styles.deskSubmit} bf-desk-only`}>
+        {tried && !anyOff && <p className={styles.err} role="alert">{NONE_OFF}</p>}
+        {failed && <p className={styles.err} role="alert">{failed}</p>}
+        <button type="button" className={styles.btnPrimary} onClick={save} disabled={busy} aria-busy={busy || undefined}>
+          שמירת ההעדפות
+        </button>
+      </div>
+      <FixedActionBar mobileOnly error={(tried && !anyOff ? NONE_OFF : failed) || undefined}>
+        <button type="button" className={styles.btnPrimary} onClick={save} disabled={busy} aria-busy={busy || undefined}>
+          שמירת ההעדפות
+        </button>
+      </FixedActionBar>
       <p className={styles.fine}>
         ההסרה נכנסת לתוקף מיד, ובכל מקרה תוך <span className="ltr">3</span> ימי עסקים. אפשר גם לשלוח ״הסר״ בתשובה לכל הודעה. <Link href="/privacy">מדיניות הפרטיות</Link>
       </p>

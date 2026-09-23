@@ -6,5 +6,14 @@
 .meta { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
 .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 22px; }
 .pay { min-height: 52px; border: 0; border-radius: 12px; background: var(--teal-deep); color: #fff; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
-.pay:hover { background: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .pay:hover { background: var(--navy); } }
 .fail { min-height: 46px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--bad-text); font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+
+/* App shell (phones, touch tablets): the card fills the screen under the top bar, buttons at the bottom
+   within thumb reach. */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .root { min-height: calc(100dvh - var(--topbar-h) - var(--safe-t)); place-items: stretch; padding: 12px 16px calc(16px + var(--safe-b)); }
+  .card { max-width: none; display: flex; flex-direction: column; align-items: center; padding: 28px 20px 20px; box-shadow: none; }
+  .actions { align-self: stretch; margin-top: auto; padding-top: 22px; }
+  .fail { min-height: 48px; }
+}

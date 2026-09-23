@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { retryGiftCard } from '@/app/gift/[branch]/actions';
+import { haptic } from '@/components/shell/haptics';
 import { money, type Channel } from './shared';
 import s from './gift.module.css';
 
@@ -26,8 +27,22 @@ export function BuyDone(p: DoneProps) {
   const title = p.channel === 'self' ? 'השובר מוכן' : p.scheduled ? 'השובר מתוזמן' : 'השובר נשלח';
   const via = p.channel === 'wa' ? ' בוואטסאפ' : ' במייל';
   const receiptLine = p.receipt ? 'הקבלה נשלחה אלייך במייל.' : 'הקבלה על התשלום נשלחת מהקליניקה.';
+  // No haptic here: the page opens from the checkout redirect, without a tap (browsers block vibrate).
+  useEffect(() => {
+    // The purchase is done: the form draft of this tab is no longer needed.
+    try {
+      sessionStorage.removeItem(`bf-gift-draft:${p.slug}`);
+    } catch {
+      /* storage unavailable */
+    }
+  }, [p.slug]);
   return (
-    <div className={`${s.done} ${s.pop}`}>
+    <div className={`${s.done} ${s.doneFull} ${s.pop}`}>
+      <span aria-hidden="true" className={s.doneIcon}>
+        <svg width="28" height="28" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2.5 7.5 5.5 10.5 11.5 4" />
+        </svg>
+      </span>
       <h1 className={s.h1Sm}>{title}</h1>
       <p className={s.doneBody}>
         {p.channel === 'self' ? (
@@ -90,7 +105,10 @@ export function BuyFailed({ slug, cardId }: { slug: string; cardId: string }) {
     start(async () => {
       const r = await retryGiftCard(slug, cardId);
       if (r.ok) window.location.assign(r.checkoutUrl);
-      else setErr(r.error);
+      else {
+        haptic('warning');
+        setErr(r.error);
+      }
     });
   return (
     <div className={`${s.done} ${s.pop}`} style={{ borderColor: 'var(--bad-line)' }}>

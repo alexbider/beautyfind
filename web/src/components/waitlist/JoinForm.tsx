@@ -2,7 +2,10 @@
 
 import Link from 'next/link';
 import { useRef, useState, useTransition } from 'react';
+import { FixedActionBar } from '@/components/review/FixedLayer';
+import { haptic } from '@/components/shell/haptics';
 import { IL_PHONE_RE } from '@/lib/format';
+import { SHELL_MQ } from '@/lib/ui/shell';
 import { DAYS, SPANS, TIMES, whenText, type SpanKey, type TimeRange } from './shared';
 import { CheckIcon, HoldText, Ltr } from './ui';
 import { Toast, useToast } from './toast';
@@ -40,6 +43,20 @@ const ERRORS: Record<string, string> = {
 };
 
 type Field = 'prefs' | 'treatment' | 'staff' | 'name' | 'phone';
+
+/** Where each field lives on the page, for "scroll to the first error". */
+const FIELD_EL: Record<Field, string> = { treatment: 'wl-sec-t', prefs: 'wl-sec-d', staff: 'wl-sec-s', name: 'wl-name', phone: 'wl-phone' };
+
+/** Scrolls the page (the scroll container) so the element sits under the top bar; never scrollIntoView. */
+function scrollToEl(id: string) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const shell = window.matchMedia(SHELL_MQ).matches;
+  const top = el.getBoundingClientRect().top + window.scrollY - (shell ? 56 + 16 : 24);
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  window.scrollTo({ top: Math.max(0, top), behavior: reduce ? 'auto' : 'smooth' });
+  if (el instanceof HTMLInputElement) el.focus({ preventScroll: true });
+}
 
 export function JoinForm({
   branch,
@@ -98,6 +115,8 @@ export function JoinForm({
     setServerErr(null);
     if (firstBad || !treatment) {
       setTried(true);
+      haptic('warning');
+      if (firstBad) scrollToEl(FIELD_EL[firstBad]);
       return;
     }
     start(async () => {
@@ -121,6 +140,8 @@ export function JoinForm({
         return;
       }
       setDone({ ...res, days: [...days], times: [...times] });
+      haptic('success');
+      window.scrollTo({ top: 0 });
       flash(res.updated ? 'העדפות ההמתנה עודכנו' : 'הצטרפת לרשימת ההמתנה');
       requestAnimationFrame(() => doneRef.current?.focus());
     });
@@ -144,7 +165,10 @@ export function JoinForm({
     return (
       <div className={styles.fade}>
         <Toast text={toast} />
-        <div className={styles.done}>
+        <div className={`${styles.done} ${styles.doneFull}`}>
+          <span aria-hidden="true" className={styles.doneIcon}>
+            <CheckIcon size={26} />
+          </span>
           <h1 className={styles.doneH} ref={doneRef} tabIndex={-1}>
             את ברשימת ההמתנה
           </h1>
@@ -187,7 +211,7 @@ export function JoinForm({
           </div>
 
           {!fixedTreatment && treatments.length > 1 && (
-            <section aria-labelledby="wl-h0" className={styles.card}>
+            <section id="wl-sec-t" aria-labelledby="wl-h0" className={styles.card}>
               <h2 id="wl-h0" className={styles.h2}>
                 לאיזה טיפול?
               </h2>
@@ -214,7 +238,7 @@ export function JoinForm({
             </section>
           )}
 
-          <section aria-labelledby="wl-h1" className={styles.card}>
+          <section id="wl-sec-d" aria-labelledby="wl-h1" className={styles.card}>
             <h2 id="wl-h1" className={styles.h2}>
               אילו ימים מתאימים?
             </h2>
@@ -255,7 +279,7 @@ export function JoinForm({
             </div>
           </section>
 
-          <section aria-labelledby="wl-h2" className={styles.card}>
+          <section id="wl-sec-s" aria-labelledby="wl-h2" className={styles.card}>
             <h2 id="wl-h2" className={styles.h2}>
               כמה זמן להמתין?
             </h2>
@@ -316,10 +340,12 @@ export function JoinForm({
               <label className={styles.field}>
                 שם
                 <input
+                  id="wl-name"
                   className={`${styles.input} ${show('name') ? styles.inputBad : ''}`}
                   value={name}
                   onChange={e => setName(e.target.value)}
                   autoComplete="name"
+                  enterKeyHint="next"
                   maxLength={80}
                   aria-invalid={show('name') || undefined}
                 />
@@ -327,12 +353,14 @@ export function JoinForm({
               <label className={styles.field}>
                 טלפון נייד (וואטסאפ)
                 <input
+                  id="wl-phone"
                   className={`${styles.input} ${styles.phone} ${show('phone') ? styles.inputBad : ''}`}
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   type="tel"
                   inputMode="tel"
                   autoComplete="tel-national"
+                  enterKeyHint="done"
                   placeholder="050-123-4567"
                   maxLength={16}
                   dir="ltr"
@@ -342,15 +370,17 @@ export function JoinForm({
             </div>
           </section>
 
-          {error && (
-            <p role="alert" className={styles.alert}>
-              {error}
-            </p>
-          )}
-
-          <button type="button" className={styles.primary} onClick={submit} disabled={pending}>
-            {pending ? 'שומרת…' : 'הצטרפות לרשימה'}
-          </button>
+          {/* Desktop: summary and button in the column. Phones: the sticky action bar below. */}
+          <div className={`${styles.deskSubmit} bf-desk-only`}>
+            {error && (
+              <p role="alert" className={styles.alert}>
+                {error}
+              </p>
+            )}
+            <button type="button" className={styles.primary} onClick={submit} disabled={pending}>
+              {pending ? 'שומרת…' : 'הצטרפות לרשימה'}
+            </button>
+          </div>
         </div>
 
         <aside className={styles.aside} aria-label="פרטי ההמתנה">
@@ -377,6 +407,12 @@ export function JoinForm({
           <p className={styles.asideNote}>ההצטרפות לא מחייבת ואינה גובה מקדמה. המקדמה, אם הקליניקה דורשת, נגבית רק כשמאשרים תור.</p>
         </aside>
       </div>
+
+      <FixedActionBar mobileOnly error={error} hint={error ? undefined : `${treatment?.name ?? 'בחרי טיפול'} · ${branch.name}`}>
+        <button type="button" className={styles.primary} onClick={submit} disabled={pending}>
+          {pending ? 'שומרת…' : 'הצטרפות לרשימה'}
+        </button>
+      </FixedActionBar>
     </div>
   );
 }

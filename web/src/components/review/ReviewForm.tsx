@@ -2,7 +2,11 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { haptic } from '@/components/shell/haptics';
+import { TopBar } from '@/components/shell/TopBar';
 import { ROUTES } from '@/lib/routes';
+import { SHELL_MQ } from '@/lib/ui/shell';
+import { BodyLayer, FixedActionBar } from './FixedLayer';
 import { CheckIcon, ReviewDone } from './ReviewParts';
 import {
   ASPECTS,
@@ -24,6 +28,7 @@ import {
   type AspectKey,
   type NameMode,
   type PhotoKind,
+  type ReviewField,
   type ReviewInput,
   type SubmitError,
   type SubmittedSummary,
@@ -41,8 +46,26 @@ export type ReviewVisit = {
   clientName: string;
 };
 
-type Draft = Pick<ReviewInput, 'rating' | 'aspects' | 'title' | 'body' | 'tags' | 'nameMode'>;
+type Draft = Pick<ReviewInput, 'rating' | 'aspects' | 'title' | 'body' | 'tags' | 'nameMode'> & { step?: number };
 type Photo = { file: File; url: string };
+
+// Phones (app shell): one step per screen, stars → aspects → text → photos → publish settings
+// (responsive spec §3.4). Desktop keeps the single page; the steps are CSS only, so both share one form.
+const STEPS = 5;
+const FIELD_STEP: Record<ReviewField, number> = { rating: 1, title: 3, body: 3, declarations: 5 };
+const FIELD_EL: Record<ReviewField, string> = { rating: 'rv-sec-rating', title: 'rv-title', body: 'rv-body', declarations: 'rv-decls' };
+const STEP_HINT = ['', 'דירוג בכוכבים הוא החלק היחיד שחובה כאן', 'לא חובה. אפשר להמשיך בלי', 'כותרת קצרה ולפחות 40 תווים', 'לא חובה. אפשר להמשיך בלי תמונות', 'עוד שתי הצהרות, והביקורת נשלחת לבדיקה'];
+
+/** Scrolls the page (the scroll container) so the element sits under the top bar; never scrollIntoView. */
+function scrollToEl(id: string) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const shell = window.matchMedia(SHELL_MQ).matches;
+  const top = el.getBoundingClientRect().top + window.scrollY - (shell ? 56 + 40 : 24);
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  window.scrollTo({ top: Math.max(0, top), behavior: reduce ? 'auto' : 'smooth' });
+  if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) el.focus({ preventScroll: true });
+}
 
 export function ReviewForm({ token, visit, profileHref }: { token: string; visit: ReviewVisit; profileHref: string }) {
   const draftKey = `bf-review-draft:${visit.ref}`;
@@ -60,6 +83,9 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState<SubmittedSummary | null>(null);
   const [toast, setToast] = useState('');
+  const [step, setStep] = useState(1);
+  const [dir, setDir] = useState<'fwd' | 'back'>('fwd');
+  const restored = useRef(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const doneRef = useRef<HTMLHeadingElement>(null);
   const errRef = useRef<HTMLParagraphElement>(null);
@@ -86,10 +112,27 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
       if (typeof d.body === 'string') setBody(d.body);
       if (Array.isArray(d.tags)) setTags(d.tags.filter(t => (TAGS as readonly string[]).includes(t)));
       if (d.nameMode && NAME_MODES.includes(d.nameMode)) setNameMode(d.nameMode);
+      if (typeof d.step === 'number' && d.step >= 1 && d.step <= STEPS) setStep(d.step);
     } catch {
       /* storage unavailable */
+    } finally {
+      restored.current = true;
     }
   }, [draftKey]);
+
+  // The draft is saved on this device as it changes (and so on every step), per booking.
+  useEffect(() => {
+    if (!restored.current || done) return;
+    const t = setTimeout(() => {
+      try {
+        const d: Draft = { rating, aspects, title, body, tags, nameMode, step };
+        localStorage.setItem(draftKey, JSON.stringify(d));
+      } catch {
+        /* storage unavailable */
+      }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [draftKey, rating, aspects, title, body, tags, nameMode, step, done]);
 
   useEffect(
     () => () => {
@@ -102,6 +145,9 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
   const input: ReviewInput = { rating, aspects, title, body, tags, nameMode, photoConsent, declarations: decl };
   const bad = checkReview(input);
   const error = tried && bad ? bad.error : serverErr;
+  // Phones: the first problem at or before the current step blocks "next".
+  const stepBad = bad && FIELD_STEP[bad.field] <= step ? bad : null;
+  const stepError = tried && stepBad ? stepBad.error : serverErr;
   const bodyLen = body.trim().length;
   const titleBad = tried && bad?.field === 'title';
   const bodyBad = tried && bodyLen < BODY_MIN;
@@ -130,7 +176,7 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
 
   const saveDraft = () => {
     try {
-      const d: Draft = { rating, aspects, title, body, tags, nameMode };
+      const d: Draft = { rating, aspects, title, body, tags, nameMode, step };
       localStorage.setItem(draftKey, JSON.stringify(d));
       flash('הטיוטה נשמרה במכשיר הזה');
     } catch {
@@ -142,7 +188,13 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
     setServerErr(null);
     if (bad) {
       setTried(true);
-      requestAnimationFrame(() => errRef.current?.focus());
+      haptic('warning');
+      if (window.matchMedia(SHELL_MQ).matches) {
+        goTo(FIELD_STEP[bad.field], FIELD_STEP[bad.field] < step ? 'back' : 'fwd');
+        requestAnimationFrame(() => scrollToEl(FIELD_EL[bad.field]));
+      } else {
+        requestAnimationFrame(() => errRef.current?.focus());
+      }
       return;
     }
     setSending(true);
@@ -162,6 +214,7 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
     setSending(false);
     if (!res.ok) {
       setServerErr(res.message ?? SUBMIT_ERRORS[res.error] ?? SUBMIT_ERRORS.server);
+      haptic('warning');
       requestAnimationFrame(() => errRef.current?.focus());
       return;
     }
@@ -171,36 +224,78 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
       /* ignore */
     }
     setDone(res.summary);
+    haptic('success');
     flash('הביקורת נשלחה לבדיקה');
     window.scrollTo({ top: 0 });
     requestAnimationFrame(() => doneRef.current?.focus());
   };
 
+  function goTo(n: number, d: 'fwd' | 'back') {
+    setDir(d);
+    setStep(n);
+    window.scrollTo({ top: 0 });
+  }
+
+  const next = () => {
+    setServerErr(null);
+    if (stepBad) {
+      setTried(true);
+      haptic('warning');
+      if (FIELD_STEP[stepBad.field] < step) goTo(FIELD_STEP[stepBad.field], 'back');
+      requestAnimationFrame(() => scrollToEl(FIELD_EL[stepBad.field]));
+      return;
+    }
+    if (step < STEPS) {
+      setTried(false);
+      goTo(step + 1, 'fwd');
+    } else void submit();
+  };
+  const back = () => {
+    setTried(false);
+    setServerErr(null);
+    goTo(Math.max(1, step - 1), 'back');
+  };
+
+  /** CSS-only steps: every block says which step it belongs to; the shell shows the current one. */
+  const at = (n: number) => ({ 'data-step': n, 'data-cur': n === step || undefined });
+
   const toastEl = (
-    <div role="status" aria-live="polite">
-      {toast && <div className={styles.toast}>{toast}</div>}
-    </div>
+    <BodyLayer>
+      <div role="status" aria-live="polite" dir="rtl">
+        {toast && <div className={styles.toast}>{toast}</div>}
+      </div>
+    </BodyLayer>
   );
 
   if (done) {
     return (
-      <div>
-        {toastEl}
-        <ReviewDone summary={done} clientName={visit.clientName} profileHref={profileHref} headingRef={doneRef} />
-      </div>
+      <>
+        <TopBar mode="flow" noBack title="ביקורת" closeHref={ROUTES.account} />
+        <main className={styles.wrap}>
+          {toastEl}
+          <ReviewDone summary={done} clientName={visit.clientName} profileHref={profileHref} headingRef={doneRef} />
+        </main>
+      </>
     );
   }
 
+  const stepIsEmpty = (step === 2 && !Object.keys(aspects).length) || (step === 4 && !Object.keys(photos).length);
+
   return (
-    <div>
+    <>
+      <TopBar mode="flow" title="ביקורת" progress={{ step, total: STEPS }} noBack={step === 1} onBack={back} closeHref={ROUTES.account} />
+      <main className={styles.wrap}>
       {toastEl}
       <div className={styles.fade}>
-        <h1 className={styles.h1}>איך היה הטיפול?</h1>
-        <p className={styles.lead}>הביקורת שלכם עוזרת ללקוחות הבאות לבחור נכון. אפשר לכתוב רק על טיפול שהיה בפועל: הביקור שלכם אומת מול היומן של הקליניקה.</p>
+        <div {...at(1)}>
+          <h1 className={styles.h1}>איך היה הטיפול?</h1>
+          <p className={styles.lead}>הביקורת שלכם עוזרת ללקוחות הבאות לבחור נכון. אפשר לכתוב רק על טיפול שהיה בפועל: הביקור שלכם אומת מול היומן של הקליניקה.</p>
+        </div>
 
-        <div className={styles.shell}>
+        <div className={styles.shell} data-flow data-dir={dir}>
           <div className={styles.main}>
-            <section aria-labelledby="rv-h1" className={styles.card}>
+            <section aria-labelledby="rv-h1" className={styles.card} data-split>
+              <div id="rv-sec-rating" {...at(1)}>
               <h2 id="rv-h1" className={styles.h2}>
                 דירוג כללי
               </h2>
@@ -213,7 +308,9 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
                 ))}
               </div>
               <p className={`${styles.ratingLabel} ${ratingClass}`}>{rating ? RATING_LABELS[rating] : 'בחרו דירוג (חובה)'}</p>
+              </div>
 
+              <div {...at(2)}>
               <h3 className={styles.h3}>מה בלט בטיפול?</h3>
               <div className={styles.aspects}>
                 {ASPECTS.map(a => {
@@ -241,9 +338,10 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
                   );
                 })}
               </div>
+              </div>
             </section>
 
-            <section aria-labelledby="rv-h2" className={styles.card}>
+            <section aria-labelledby="rv-h2" className={styles.card} {...at(3)}>
               <h2 id="rv-h2" className={`${styles.h2} ${styles.h2Tight}`}>
                 הביקורת שלכם
               </h2>
@@ -252,17 +350,20 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
               <label className={styles.field}>
                 כותרת
                 <input
+                  id="rv-title"
                   className={`${styles.input} ${titleBad ? styles.inputBad : ''}`}
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   placeholder="למשל: ייעוץ כנה בלי לחץ למכור"
                   maxLength={TITLE_MAX}
+                  enterKeyHint="next"
                   aria-invalid={titleBad || undefined}
                 />
               </label>
               <label className={styles.field}>
                 מה חשוב לדעת
                 <textarea
+                  id="rv-body"
                   className={`${styles.textarea} ${bodyBad ? styles.inputBad : ''}`}
                   value={body}
                   onChange={e => setBody(e.target.value)}
@@ -277,8 +378,8 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
                 <span aria-hidden="true" className={styles.meterBar}>
                   <span className={`${styles.meterFill} ${lenClass}`} style={{ width: `${Math.min(100, bodyLen / 2)}%` }} />
                 </span>
-                <span id="rv-len" dir="ltr" className={`ltr ${styles.meterText} ${lenClass}`}>
-                  {bodyLen < BODY_MIN ? `${bodyLen} / ${BODY_MIN} תווים` : `${bodyLen} תווים`}
+                <span id="rv-len" className={`${styles.meterText} ${lenClass}`}>
+                  <span dir="ltr" className="ltr">{bodyLen < BODY_MIN ? `${bodyLen} / ${BODY_MIN}` : bodyLen}</span> תווים
                 </span>
               </div>
 
@@ -303,7 +404,7 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
               </div>
             </section>
 
-            <section aria-labelledby="rv-h3" className={styles.card}>
+            <section aria-labelledby="rv-h3" className={styles.card} {...at(4)}>
               <h2 id="rv-h3" className={`${styles.h2} ${styles.h2Tight}`}>
                 תמונות <span className={styles.h2Note}>· לא חובה</span>
               </h2>
@@ -360,7 +461,7 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
               </label>
             </section>
 
-            <section aria-labelledby="rv-h4" className={styles.card}>
+            <section aria-labelledby="rv-h4" className={styles.card} {...at(5)}>
               <h2 id="rv-h4" className={styles.h2}>
                 איך לפרסם
               </h2>
@@ -381,7 +482,7 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
                 })}
               </fieldset>
 
-              <ul className={styles.decls}>
+              <ul id="rv-decls" className={styles.decls}>
                 {DECLARATIONS.map(d => {
                   const on = decl[d.key];
                   return (
@@ -408,27 +509,29 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
               </ul>
             </section>
 
-            {error && (
-              <p role="alert" ref={errRef} tabIndex={-1} className={styles.alert}>
-                {error}
-              </p>
-            )}
+            <div className={`${styles.deskSubmit} bf-desk-only`}>
+              {error && (
+                <p role="alert" ref={errRef} tabIndex={-1} className={styles.alert}>
+                  {error}
+                </p>
+              )}
 
-            <div className={styles.submitRow}>
-              <button type="button" className={styles.submit} onClick={submit} disabled={sending}>
-                {sending ? 'שולחת…' : 'שליחת הביקורת'}
-              </button>
-              <button type="button" className={styles.draft} onClick={saveDraft}>
-                שמירה כטיוטה
-              </button>
+              <div className={styles.submitRow}>
+                <button type="button" className={styles.submit} onClick={submit} disabled={sending}>
+                  {sending ? 'שולחת…' : 'שליחת הביקורת'}
+                </button>
+                <button type="button" className={styles.draft} onClick={saveDraft}>
+                  שמירה כטיוטה
+                </button>
+              </div>
             </div>
-            <p className={styles.fine}>
+            <p className={styles.fine} {...at(5)}>
               הביקורת נבדקת לפני פרסום, בדרך כלל בתוך <span dir="ltr" className="ltr">6</span> שעות. לא נפרסם ביקורת שכוללת האשמה פלילית ללא אסמכתה, ולא נמחק ביקורת רק מפני שהיא שלילית.
             </p>
           </div>
 
           <aside className={styles.aside} aria-label="הביקור">
-            <div className={styles.verified}>
+            <div className={styles.verified} {...at(1)}>
               <div className={styles.verifiedHead}>
                 <span aria-hidden="true" className={styles.verifiedIcon}>
                   <CheckIcon size={14} />
@@ -461,7 +564,7 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
               </dl>
             </div>
 
-            <div className={styles.rulesCard}>
+            <div className={styles.rulesCard} {...at(3)}>
               <h2 className={styles.rulesH}>מה מתפרסם ומה לא</h2>
               <ul className={styles.rules}>
                 {RULES.map(r => (
@@ -483,6 +586,13 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
           </aside>
         </div>
       </div>
-    </div>
+      </main>
+
+      <FixedActionBar mobileOnly error={stepError} hint={stepError ? undefined : STEP_HINT[step]}>
+        <button type="button" className={styles.barBtn} onClick={next} disabled={sending}>
+          {step < STEPS ? (stepIsEmpty ? 'דילוג' : 'המשך') : sending ? 'שולחת…' : 'שליחת הביקורת'}
+        </button>
+      </FixedActionBar>
+    </>
   );
 }

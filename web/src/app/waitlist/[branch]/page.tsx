@@ -35,7 +35,7 @@ export default async function WaitlistJoinPage({ params, searchParams }: Props) 
     const wa = branch.whatsapp ?? null;
     const phone = branch.phone ?? null;
     return (
-      <PublicShell>
+      <PublicShell title="רשימת המתנה" closeHref={profileHref}>
         <StateCard
           title={advanced ? 'אין כרגע טיפולים לרשימת המתנה' : 'רשימת המתנה לא זמינה כאן'}
           actions={
@@ -72,7 +72,7 @@ export default async function WaitlistJoinPage({ params, searchParams }: Props) 
   const prefill = user?.kind === 'client' ? { name: user.fullName ?? '', phone: user.phone ? fromE164(user.phone) : '' } : { name: '', phone: '' };
 
   return (
-    <PublicShell>
+    <PublicShell title="רשימת המתנה" closeHref={profileHref}>
       <JoinForm
         branch={{ id: branch.id, name: branch.name, cityName: branch.cityName }}
         treatments={treatments}

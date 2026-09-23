@@ -1,17 +1,15 @@
 import { SiteFooter } from '@/components/site-footer/SiteFooter';
-import { SiteHeader } from '@/components/site-header/SiteHeader';
-import s from '@/components/gift/gift.module.css';
 
-// Public gift card pages: /gift/[branch] (buy) and /gift/check (balance).
+// Public gift card pages: /gift/[branch] (buy) and /gift/check (balance). Each page renders its
+// header through GiftFrame (./frame.tsx). The footer is a desktop pattern; the shell has "עוד".
 
 export default function GiftLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <SiteHeader variant="public" />
-      <main className={s.root}>
-        <div className={s.wrap}>{children}</div>
-      </main>
-      <SiteFooter />
+      {children}
+      <div className="bf-desk-only">
+        <SiteFooter />
+      </div>
     </>
   );
 }

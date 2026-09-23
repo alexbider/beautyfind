@@ -12,7 +12,7 @@
   .root, .embed { --wl-pad: 22px; --wl-days: repeat(6, minmax(0, 1fr)); }
 }
 .root a:not([class]), .embed a:not([class]) { color: var(--teal-deep); }
-.root a:not([class]):hover, .embed a:not([class]):hover { color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .root a:not([class]):hover, .embed a:not([class]):hover { color: var(--navy); } }
 
 @keyframes wlFade { from { opacity: 0; transform: translateY(7px) } to { opacity: 1; transform: none } }
 @keyframes wlPop { from { opacity: 0; transform: scale(.97) } to { opacity: 1; transform: none } }
@@ -31,10 +31,10 @@
   flex: none; display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 13px;
   border-radius: 11px; background: var(--tint); font-size: 14px; font-weight: 700; color: var(--teal-deep); text-decoration: none;
 }
-.headLink:hover { color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .headLink:hover { color: var(--navy); } }
 
 .wrap { max-width: 1100px; margin: 0 auto; padding: clamp(16px, 2.4vw, 28px) var(--wl-pad) 60px; }
-.fade { animation: wlFade .22s ease both; }
+.fade { animation: wlFade .22s ease backwards; }
 
 /* ---------- Join ---------- */
 .shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(14px, 1.8vw, 20px); align-items: start; }
@@ -58,8 +58,8 @@
 }
 .day { min-height: 46px; border-radius: 11px; font-size: 14.5px; font-weight: 700; }
 .chip { min-height: 44px; padding: 0 14px; border-radius: 11px; font-size: 14px; font-weight: 600; }
-.day:hover, .chip:hover { border-color: var(--teal-border); }
-.on, .on:hover { background: var(--teal-deep); border-color: var(--teal-deep); color: #ffffff; }
+@media (hover: hover) and (pointer: fine) { .day:hover, .chip:hover { border-color: var(--teal-border); } }
+.on, .on:hover, .on:active { background: var(--teal-deep); border-color: var(--teal-deep); color: #ffffff; }
 .bad { border-color: var(--bad-input); }
 .chipRange { font-size: 12.5px; opacity: .8; }
 
@@ -99,7 +99,7 @@
   font: inherit; font-size: 16px; font-weight: 700; color: #ffffff; cursor: pointer; transition: background .16s;
   display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
 }
-.primary:hover { background: var(--navy); color: #ffffff; }
+@media (hover: hover) and (pointer: fine) { .primary:hover { background: var(--navy); color: #ffffff; } }
 .primary:disabled { background: var(--disabled); cursor: default; }
 
 /* Aside summary */
@@ -117,7 +117,7 @@
 /* ---------- Result / done cards ---------- */
 .done {
   max-width: 620px; background: #ffffff; border: 1px solid var(--teal-border); border-radius: 18px;
-  padding: clamp(20px, 2.6vw, 30px); animation: wlPop .2s ease both;
+  padding: clamp(20px, 2.6vw, 30px); animation: wlPop .2s ease backwards;
 }
 .plain { border-color: var(--line); }
 .center { margin: 0 auto; }
@@ -133,10 +133,10 @@
   border-radius: 12px; font: inherit; font-size: 15px; text-decoration: none; cursor: pointer; transition: background .16s, border-color .16s;
 }
 .btn { border: 0; background: var(--teal-deep); font-weight: 700; color: #ffffff; }
-.btn:hover { background: var(--navy); color: #ffffff; }
+@media (hover: hover) and (pointer: fine) { .btn:hover { background: var(--navy); color: #ffffff; } }
 .btn:disabled { background: var(--disabled); cursor: default; }
 .btnGhost { padding: 0 14px; border: 1px solid var(--line); background: #ffffff; font-weight: 600; color: var(--text); }
-.btnGhost:hover { border-color: var(--line-strong); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .btnGhost:hover { border-color: var(--line-strong); color: var(--navy); } }
 .btnGhost:disabled { color: var(--subtle); cursor: default; }
 
 /* WhatsApp / phone (project convention) */
@@ -146,13 +146,13 @@
 }
 .wa { background: var(--wa-bg); border: 1px solid var(--wa-line); color: var(--wa-text); }
 .wa svg { color: var(--wa-glyph); }
-.wa:hover { color: var(--wa-text); border-color: var(--wa-glyph); }
+@media (hover: hover) and (pointer: fine) { .wa:hover { color: var(--wa-text); border-color: var(--wa-glyph); } }
 .tel { background: #ffffff; border: 1px solid var(--line-strong); color: var(--navy); }
 .tel svg { color: var(--teal); }
-.tel:hover { color: var(--navy); border-color: var(--teal); }
+@media (hover: hover) and (pointer: fine) { .tel:hover { color: var(--navy); border-color: var(--teal); } }
 
 /* ---------- Offer ---------- */
-.offerWrap { max-width: 560px; margin: 0 auto; animation: wlFade .22s ease both; }
+.offerWrap { max-width: 560px; margin: 0 auto; animation: wlFade .22s ease backwards; }
 .offer { background: #ffffff; border: 1px solid var(--teal-border); border-radius: 20px; overflow: hidden; }
 .offerHead {
   padding: 16px 20px; background: var(--tint); border-bottom: 1px solid var(--teal-border);
@@ -173,13 +173,13 @@
   flex: 1; min-width: 180px; min-height: 52px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--teal-deep);
   font: inherit; font-size: 16.5px; font-weight: 700; color: #ffffff; cursor: pointer; transition: background .16s;
 }
-.accept:hover { background: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .accept:hover { background: var(--navy); } }
 .accept:disabled { background: var(--disabled); cursor: default; }
 .pass {
   flex: none; min-height: 52px; padding: 0 16px; border: 1px solid var(--line); border-radius: 12px; background: #ffffff;
   font: inherit; font-size: 15px; font-weight: 600; color: var(--text); cursor: pointer;
 }
-.pass:hover { border-color: var(--line-strong); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .pass:hover { border-color: var(--line-strong); color: var(--navy); } }
 .pass:disabled { color: var(--subtle); cursor: default; }
 .offerErr { margin: 14px 0 0; }
 .alertGap { margin-bottom: 14px; }
@@ -202,7 +202,7 @@
   flex: none; min-height: 44px; padding: 0 15px; border: 0; border-radius: 11px; background: var(--teal-deep);
   font: inherit; font-size: 14.5px; font-weight: 700; color: #ffffff; cursor: pointer; transition: background .16s;
 }
-.bannerBtn:hover { background: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .bannerBtn:hover { background: var(--navy); } }
 .bannerBtn:disabled { background: var(--disabled); cursor: default; }
 
 .panel { background: #ffffff; border: 1px solid var(--line); border-radius: 17px; overflow: hidden; margin-bottom: 14px; }
@@ -216,8 +216,8 @@
   min-height: 44px; display: inline-flex; align-items: center; padding: 0 13px; text-decoration: none; border: 1px solid var(--line); border-radius: 10px; background: #ffffff;
   font: inherit; font-size: 13.5px; font-weight: 600; color: var(--text); cursor: pointer;
 }
-.filter:hover { border-color: var(--teal-border); }
-.filter:hover { color: var(--text); }
+@media (hover: hover) and (pointer: fine) { .filter:hover { border-color: var(--teal-border); } }
+@media (hover: hover) and (pointer: fine) { .filter:hover { color: var(--text); } }
 .filterOn, .filterOn:hover { background: var(--teal-deep); border-color: var(--teal-deep); color: #ffffff; }
 .filterN { font-size: 12px; opacity: .8; margin-inline-start: 5px; }
 
@@ -242,7 +242,7 @@
   flex: none; min-height: 44px; min-width: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: #ffffff;
   font: inherit; font-size: 13px; font-weight: 600; color: var(--bad-text); cursor: pointer;
 }
-.remove:hover { border-color: var(--bad-line); background: var(--bad-bg); }
+@media (hover: hover) and (pointer: fine) { .remove:hover { border-color: var(--bad-line); background: var(--bad-bg); } }
 .remove:disabled { color: var(--subtle); cursor: default; background: #ffffff; }
 .empty { margin: 0; padding: 18px 16px; border-top: 1px solid var(--divider); font-size: 14px; color: var(--muted); }
 .foot { margin: 12px 0 0; font-size: 12.5px; color: var(--subtle); text-wrap: pretty; }
@@ -262,7 +262,62 @@
 
 /* ---------- Toast ---------- */
 .toast {
-  position: fixed; bottom: calc(18px + var(--bf-bottom-bar, 0px)); right: 50%; transform: translateX(50%); z-index: 40;
+  position: fixed; bottom: max(18px, calc(var(--bf-float-bottom, 0px) + 12px)); right: 50%; translate: 50% 0; z-index: 60;
   max-width: min(90vw, 440px); padding: 12px 17px; border-radius: 13px; background: var(--navy); color: #ffffff;
-  font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(12, 36, 62, .28); animation: wlPop .16s ease both; text-wrap: pretty;
+  font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(12, 36, 62, .28); animation: wlPop .16s ease backwards; text-wrap: pretty;
+}
+
+/* ---------- App shell (phones, touch tablets): responsive spec §2, §3.3, §3.4 ----------
+   Scoped to .root (the public pages); the clinic queue uses .embed and keeps its layout. */
+.deskSubmit { display: contents; }
+.doneIcon {
+  display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; margin-bottom: 13px;
+  border-radius: 50%; background: var(--tint); color: var(--teal-deep); animation: wlCheck .22s var(--ease-out) backwards;
+}
+@keyframes wlCheck { from { opacity: 0; transform: scale(.8) } to { opacity: 1; transform: none } }
+
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .root { min-height: 100dvh; background: var(--bg-page); }
+  .root .wrap { padding: 12px 16px 24px; }
+  .root .input { min-height: 48px; font-size: 16px; }
+  .root .day { min-height: 48px; }
+  .root .chip, .root .btn, .root .btnGhost, .root .wa, .root .tel { min-height: 48px; }
+  .root .primary { width: 100%; min-height: 52px; }
+  /* Result and state cards: the whole screen, actions stacked at the bottom within thumb reach. */
+  .root .done {
+    max-width: none; min-height: calc(100dvh - var(--topbar-h) - var(--safe-t) - 36px - var(--safe-b));
+    display: flex; flex-direction: column; border-radius: 20px;
+  }
+  .root .done .actions { margin-top: auto; padding-top: 16px; flex-direction: column; align-items: stretch; }
+  .root .done .actions > * { width: 100%; }
+  .root .doneFull { align-items: stretch; }
+  .root .doneIcon { align-self: center; width: 72px; height: 72px; margin: 16px 0 14px; }
+  .root .doneFull .doneH, .root .doneFull .doneP { text-align: center; }
+}
+
+/* Offer: a full-screen card, the countdown large at the top, both buttons stacked at the bottom. */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .root .offerWrap { max-width: none; }
+  .root .offer {
+    min-height: calc(100dvh - var(--topbar-h) - var(--safe-t) - 36px - var(--safe-b));
+    display: flex; flex-direction: column; border-radius: 20px;
+  }
+  .root .offerHead { flex-direction: column; align-items: center; gap: 6px; padding: 22px 20px 20px; text-align: center; }
+  .root .offerTitle { flex: none; font-size: 15px; }
+  .root .timer {
+    height: auto; padding: 6px 18px; border-radius: 16px; border: 1px solid var(--teal-border);
+    font-size: clamp(48px, 16vw, 64px); line-height: 1.1; letter-spacing: .01em;
+  }
+  .root .timerLow { border-color: var(--bad-line); }
+  .root .offerBody { flex: 1; display: flex; flex-direction: column; padding: 20px; }
+  .root .offerH1 { font-size: 28px; }
+  .root .offerErr { order: 1; margin: 0 0 12px; }
+  .root .offerBtns { order: 2; margin-top: auto; flex-direction: column; align-items: stretch; }
+  .root .accept { flex: none; min-width: 0; width: 100%; min-height: 52px; }
+  .root .pass { width: 100%; min-height: 48px; }
+}
+
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  /* Touch tablets: a comfortable reading column instead of full width. */
+  @media (min-width: 600px) { .root .wrap { max-width: 680px; } }
 }

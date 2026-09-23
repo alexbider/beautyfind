@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { TopBar } from '@/components/shell/TopBar';
 import { Wordmark } from '@/components/Wordmark';
 import { contactsFor, maskContact, senderName } from '@/components/unsubscribe/data';
 import { CHANNELS, parseUnsubscribeToken } from '@/components/unsubscribe/token';
@@ -48,7 +49,8 @@ export default async function UnsubscribePage({ params }: { params: Promise<{ to
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
+      <TopBar mode="pushed" title="הסרה מדיוור" backHref="/" />
+      <header className={`${styles.header} bf-desk-only`}>
         <div className={styles.headerIn}>
           <Link href="/" aria-label="BeautyFind, לדף הבית" className={styles.logo}><Wordmark size={21} /></Link>
         </div>

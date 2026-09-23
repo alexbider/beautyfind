@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation';
+import { TopBar } from '@/components/shell/TopBar';
 import { nisFromAgorot } from '@/lib/format';
 import { db } from '@/lib/server/db';
 import { applyPaymentResult } from '@/lib/server/money';
@@ -37,22 +38,26 @@ export default async function SandboxPay({ params, searchParams }: { params: Pro
     redirect(ok ? success : cancel);
   }
 
+  // App shell: a flow screen (no tab bar on /pay), × returns to the cancel URL like a hosted page would.
   return (
-    <main className={styles.root}>
-      <div className={styles.card}>
-        <p className={styles.badge}>סביבת בדיקה · לא מתבצע חיוב</p>
-        <h1 className={styles.h1}>תשלום</h1>
-        <p className={styles.amount}><span className="ltr">{nisFromAgorot(p.grossAgorot)}</span></p>
-        <p className={styles.meta}>{p.payerName}</p>
-        {p.status === 'pending' ? (
-          <form action={pay} className={styles.actions}>
-            <button name="result" value="ok" className={styles.pay}>תשלום בכרטיס בדיקה <span className="ltr">4242</span></button>
-            <button name="result" value="fail" className={styles.fail}>סימולציית כישלון</button>
-          </form>
-        ) : (
-          <p className={styles.meta}>התשלום כבר עובד ({p.status}).</p>
-        )}
-      </div>
-    </main>
+    <>
+      <TopBar mode="flow" noBack title="תשלום מאובטח" closeHref={cancel} />
+      <main className={styles.root}>
+        <div className={styles.card}>
+          <p className={styles.badge}>סביבת בדיקה · לא מתבצע חיוב</p>
+          <h1 className={styles.h1}>תשלום</h1>
+          <p className={styles.amount}><span className="ltr">{nisFromAgorot(p.grossAgorot)}</span></p>
+          <p className={styles.meta}>{p.payerName}</p>
+          {p.status === 'pending' ? (
+            <form action={pay} className={styles.actions}>
+              <button name="result" value="ok" className={styles.pay}>תשלום בכרטיס בדיקה <span className="ltr">4242</span></button>
+              <button name="result" value="fail" className={styles.fail}>סימולציית כישלון</button>
+            </form>
+          ) : (
+            <p className={styles.meta}>התשלום כבר עובד ({p.status}).</p>
+          )}
+        </div>
+      </main>
+    </>
   );
 }

@@ -1,16 +1,18 @@
 import Link from 'next/link';
 import { Wordmark } from '../Wordmark';
 import { PrintButton } from './PrintButton';
+import { ReceiptTopBar } from './ReceiptTopBar';
 import type { ReceiptData } from './data';
 import styles from './receipt.module.css';
 
 // Design: project/BeautyFind Receipt.dc.html (status: deposit | paid | refunding | refunded).
 // Server component; only the print button runs on the client. Refund tracker and chrome hide in print.
 
-export function ReceiptShell({ back, children }: { back: { href: string; label: string }; children: React.ReactNode }) {
+export function ReceiptShell({ back, title, children }: { back: { href: string; label: string }; title: string; children: React.ReactNode }) {
   return (
     <div className={styles.page}>
-      <header className={styles.header} data-noprint>
+      <ReceiptTopBar title={title} backHref={back.href} />
+      <header className={`${styles.header} bf-desk-only`} data-noprint>
         <div className={styles.headerIn}>
           <Link href="/" aria-label="BeautyFind, לדף הבית" className={styles.logo}><Wordmark size={21} /></Link>
           <span className={styles.spacer} />

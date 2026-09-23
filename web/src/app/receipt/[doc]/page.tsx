@@ -34,7 +34,7 @@ export default async function ReceiptDocPage({ params, searchParams }: { params:
   if (!data) notFound();
 
   return (
-    <ReceiptShell back={signedIn ? { href: '/account', label: 'לחשבון שלי' } : { href: '/', label: 'ל־BeautyFind' }}>
+    <ReceiptShell title="חשבונית" back={signedIn ? { href: '/account', label: 'לחשבון שלי' } : { href: '/', label: 'ל־BeautyFind' }}>
       <ReceiptView data={data} />
     </ReceiptShell>
   );

@@ -1,10 +1,14 @@
 'use client';
 
 import { useId, useRef, useState } from 'react';
+import { Segmented } from '@/components/shell/Segmented';
 import type { AftercarePhase } from './content';
 import styles from './Aftercare.module.css';
 
-/** Title, phase tabs and the do / don't lists. Opens on the phase that applies now. */
+/**
+ * Title, phase tabs and the do / don't lists. Opens on the phase that applies now.
+ * App shell: the tabs become the shell's segmented control, sticky under the top bar.
+ */
 export function PhaseView({ kicker, meta, phases, nowIdx }: {
   kicker: string; meta: React.ReactNode; phases: Array<Omit<AftercarePhase, 'untilHours'>>; nowIdx: number;
 }) {
@@ -31,7 +35,34 @@ export function PhaseView({ kicker, meta, phases, nowIdx }: {
         <p className={styles.meta}>{meta}</p>
       </div>
 
-      <div role="tablist" aria-label="שלב" className={styles.tabs} onKeyDown={onKey}>
+      <div className={`${styles.segHost} bf-shell-only`}>
+        <Segmented
+          sticky
+          label="שלב"
+          value={phases[idx].key}
+          onChange={k => {
+            setIdx(Math.max(0, phases.findIndex(p => p.key === k)));
+            // Scrolled past the lists: bring the new phase's lists back under the sticky control.
+            const panel = document.getElementById(`${ids}-panel`);
+            const top = panel ? panel.getBoundingClientRect().top : 0;
+            if (panel && top < 120) {
+              const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+              window.scrollTo({ top: top + window.scrollY - 128, behavior: reduce ? 'auto' : 'smooth' });
+            }
+          }}
+          items={phases.map((p, i) => ({
+            key: p.key,
+            label: (
+              <>
+                {p.name}
+                {i === nowIdx && <span className={styles.now}>· עכשיו</span>}
+              </>
+            ),
+          }))}
+        />
+      </div>
+
+      <div role="tablist" aria-label="שלב" className={`${styles.tabs} bf-desk-only`} onKeyDown={onKey}>
         {phases.map((p, i) => (
           <button
             key={p.key}

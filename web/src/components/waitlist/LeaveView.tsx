@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useRef, useState, useTransition } from 'react';
+import { haptic } from '@/components/shell/haptics';
 import { ROUTES } from '@/lib/routes';
 import styles from './Waitlist.module.css';
 
@@ -29,6 +30,7 @@ export function LeaveView({
     start(async () => {
       const r = await leave(token).catch(() => ({ ok: false }));
       setState(r.ok ? 'left' : 'error');
+      haptic(r.ok ? 'success' : 'warning');
       requestAnimationFrame(() => h.current?.focus());
     });
 
