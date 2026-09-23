@@ -18,11 +18,11 @@ In development every OTP code is `DEV_FIXED_OTP` (123456). Messages (OTP, passwo
 
 ## Deploy (Vercel)
 
-- Project root directory: `web`. Vercel runs `npm run vercel-build`, which applies migrations (`prisma migrate deploy`) and then builds.
+- Project root directory: `web`. `npm run build` runs `scripts/vercel-prebuild.mjs` first, which on Vercel applies migrations (`prisma migrate deploy`) and the staging seed step.
 - Storage: a Neon Postgres database (sets `DATABASE_URL` and `DATABASE_URL_UNPOOLED`) and a Vercel Blob store (sets `BLOB_READ_WRITE_TOKEN`), both connected to the project. Set `STORAGE_ADAPTER=blob`.
 - Also set `SITE_URL`, `SESSION_SECRET` and `DATA_KEY`. Never change `DATA_KEY` once data exists: it encrypts health declarations and provider credentials.
 - Test deployments: `STAGING=1` adds a noindex header to every response, a disallow-all robots.txt and a "test environment" bar. `ALLOW_CONSOLE_MESSAGING=1` prints login codes to the Vercel logs and `ALLOW_SANDBOX_PAYMENTS=1` enables the fake checkout. Remove all three before a real launch.
-- Demo data on a test deployment: set `SEED_DEMO=1` and redeploy (the build runs `scripts/staging-seed.mjs`). `OPS_EMAILS` (comma separated) makes those existing accounts ops staff on the next build. Both do nothing without `STAGING=1`.
+- Demo data on a test deployment: set `SEED_DEMO=1` and redeploy (the build runs `scripts/staging-seed.mjs`; the build log prints the STAGING and SEED_DEMO values it saw). `OPS_EMAILS` (comma separated) makes those existing accounts ops staff on the next build. Both do nothing without `STAGING=1`.
 
 ## What's built
 
