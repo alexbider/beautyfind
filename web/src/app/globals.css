@@ -95,6 +95,7 @@ img, svg, video { max-width: 100%; }
 }
 @media (max-width: 767px), (max-width: 1023px) and (hover: none) {
   :root:has([data-tabbar]) { --tabbar-offset: calc(var(--tabbar-h) + var(--safe-b)); --action-safe: 0px; }
+  :root { --shell-top: calc(var(--topbar-h) + var(--safe-t)); } /* sticky things sit under the top bar */
   :root:has([data-bottom-bar]) { --bf-bottom-bar: 76px; }
   body { padding-bottom: calc(var(--tabbar-offset) + var(--bf-bottom-bar)); }
   /* Pressed state within 50ms on every tappable element. */
@@ -106,8 +107,10 @@ html.bf-sheet-open, html.bf-sheet-open body { overflow: hidden; overscroll-behav
 /* Page transitions (root template): push = 24px slide from the left (RTL forward) + fade, 200ms. */
 @keyframes bfPush { from { opacity: 0; transform: translateX(-24px) } to { opacity: 1; transform: none } }
 .bf-page { overflow-x: clip; }
-.bf-page-in { animation: bfPush .2s var(--ease-out) both; }
-@media (min-width: 1024px) and (hover: hover) { .bf-page-in { animation: bfFade .12s ease both; } }
+/* backwards, not both: a retained transform would make this box the containing block of every
+   position: fixed element (action bars, toasts, sheets) after the animation ends. */
+.bf-page-in { animation: bfPush .2s var(--ease-out) backwards; }
+@media (min-width: 1024px) and (hover: hover) { .bf-page-in { animation: bfFade .12s ease backwards; } }
 
 /* Desktop-only / shell-only wrappers for pages that render both a website header and the app shell. */
 @media (max-width: 767px), (max-width: 1023px) and (hover: none) { .bf-desk-only { display: none !important; } }

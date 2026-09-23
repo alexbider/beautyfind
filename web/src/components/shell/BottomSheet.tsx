@@ -37,7 +37,7 @@ export function BottomSheet({ open, onClose, title, hideTitle, children, footer,
 
   // Focus in, lock page scroll, restore focus on close.
   useEffect(() => {
-    if (!open) return;
+    if (!open || !mounted) return;
     opener.current = document.activeElement;
     const root = document.documentElement;
     root.classList.add('bf-sheet-open');
@@ -50,7 +50,7 @@ export function BottomSheet({ open, onClose, title, hideTitle, children, footer,
       root.classList.remove('bf-sheet-open');
       (opener.current as HTMLElement | null)?.focus?.();
     };
-  }, [open]);
+  }, [open, mounted]);
 
   const onKey = useCallback(
     (e: React.KeyboardEvent) => {
