@@ -1,0 +1,37 @@
+/* WhatsApp / phone / Waze buttons. Spec: project/CLAUDE.md "Phone / WhatsApp buttons share one treatment". */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 48px; padding: 0 15px; border-radius: 12px; border: 1px solid transparent;
+  font: inherit; font-size: 15px; font-weight: 700; line-height: 1.2; text-decoration: none; white-space: nowrap;
+  cursor: pointer; transition: background .15s, border-color .15s, color .15s;
+}
+.btn[data-size="lg"] { min-height: 52px; border-radius: 13px; font-size: 16px; }
+.btn[data-size="sm"] { min-height: 44px; padding: 0 14px; border-radius: 11px; font-size: 14.5px; }
+.btn svg { flex: none; }
+
+.wa { border-color: var(--wa-line); background: var(--wa-bg); color: var(--wa-text); }
+.wa svg { color: var(--wa-glyph); }
+.wa:hover { background: #DDF2E5; border-color: #9ED9B3; color: var(--wa-text); }
+
+.call { border-color: var(--line-strong); background: #ffffff; color: var(--navy); }
+.call svg { color: var(--teal-deep); }
+.call:hover { background: var(--tint); border-color: var(--teal-light); color: var(--navy); }
+
+.waze { border-color: var(--line); background: #ffffff; color: var(--navy); }
+.waze:hover { border-color: var(--teal); color: var(--teal-deep); }
+
+.num { font-weight: 600; opacity: .75; font-variant-numeric: tabular-nums; }
+
+/* Primary: the contact-form call to action (design: booking CTA, navy, 54px, radius 13). */
+.primary {
+  display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%;
+  min-height: 54px; padding: 0 18px; border: 0; border-radius: 13px; background: var(--navy); color: #ffffff;
+  font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;
+  transition: background .18s, color .18s, transform .18s;
+}
+.primary:hover { background: var(--teal); color: var(--navy); transform: translateY(-2px); }
+.primary svg { flex: none; }
+.primary[data-size="lg"] { min-height: 52px; }
+.primary[data-size="lg"]:hover { transform: none; }
+.primary[data-tone="teal"] { width: auto; min-height: 48px; border-radius: 12px; background: var(--teal-deep); font-size: 15.5px; }
+.primary[data-tone="teal"]:hover { background: var(--navy); color: #ffffff; transform: none; }

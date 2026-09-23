@@ -119,8 +119,9 @@ async function onApprove(tx: Tx, req: Req): Promise<'license_pending' | 'already
         const medical = b.categories.some(c => c.category.isMedical);
         if (medical && b.medicalResponsible?.license?.status !== 'verified') return 'license_pending';
       }
-      await tx.business.update({ where: { id: req.businessId }, data: { status: 'live' } });
-      await tx.branch.updateMany({ where: { businessId: req.businessId, status: 'draft' }, data: { status: 'live' } });
+      const biz = await tx.business.update({ where: { id: req.businessId }, data: { status: 'live' } });
+      // Listed through Onboarding by its owner, so ownership is verified along with the listing.
+      await tx.branch.updateMany({ where: { businessId: req.businessId, status: 'draft' }, data: { status: 'live', isClaimed: biz.ownerUserId !== null } });
       return null;
     }
     case 'claim': {

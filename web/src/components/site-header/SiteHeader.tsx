@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { GROUP_ORDER, MENU_REGION_ORDER, categoriesInGroup, citiesOf, cityHref, regionBySlug } from '@/lib/catalog';
 import { ROUTES } from '@/lib/routes';
@@ -26,6 +27,8 @@ const MEGA_CITY_LIMIT = 9;
  */
 export function SiteHeader({ variant = 'business' }: { variant?: HeaderVariant }) {
   const pub = variant === 'public';
+  const path = usePathname() ?? '';
+  const cur = (prefix: string) => (path === prefix || path.startsWith(prefix + '/') ? ('page' as const) : undefined);
   const [menu, setMenu] = useState<Menu>(null);
   const [megaIndex, setMegaIndex] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -98,9 +101,9 @@ export function SiteHeader({ variant = 'business' }: { variant?: HeaderVariant }
             </button>
             {pub ? (
               <>
-                <Link href="/treatments" className={styles.navLink}>תחומי טיפול</Link>
-                <Link href="/magazine" className={styles.navLink}>מדריכים</Link>
-                <Link href="/about" className={styles.navLink}>אודות</Link>
+                <Link href="/treatments" className={styles.navLink} aria-current={cur('/treatments')}>תחומי טיפול</Link>
+                <Link href="/magazine" className={styles.navLink} aria-current={cur('/magazine')}>מדריכים</Link>
+                <Link href="/about" className={styles.navLink} aria-current={cur('/about')}>אודות</Link>
               </>
             ) : (
               <>

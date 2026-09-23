@@ -1,0 +1,40 @@
+.section { min-width: 0; }
+.head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+.section[data-variant='category'] .head { margin-bottom: 16px; }
+.count { font-size: 14px; color: var(--muted); }
+
+.bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--line); margin-bottom: 18px;
+}
+.section[data-variant='category'] .bar { margin-bottom: 20px; }
+.tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex: none; min-height: 48px; padding: 0 15px; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  background: transparent; font: inherit; font-size: 15.5px; font-weight: 500; color: var(--muted); cursor: pointer;
+  transition: color .18s, border-color .18s; white-space: nowrap;
+}
+.section[data-variant='category'] .tab { padding: 0 16px; font-size: 16px; }
+.tab[data-on] { font-weight: 700; color: var(--navy); border-bottom-color: var(--navy); }
+.tab:hover { color: var(--navy); }
+
+.all { display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 700; color: var(--teal-deep); }
+.allArrow { flex: none; margin-right: 6px; }
+
+.grid {
+  list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px;
+}
+.section[data-variant='category'] .grid { gap: 14px; }
+@media (min-width: 620px) {
+  .section[data-variant='region'] .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1000px) {
+  .section[data-variant='category'] .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.empty {
+  margin: 0; padding: clamp(22px, 3vw, 34px); border: 1px dashed var(--line-strong); border-radius: 16px;
+  text-align: center; font-size: 15px; color: var(--muted);
+}
+.empty a { font-weight: 700; color: var(--teal-deep); border-bottom: 1px solid var(--line-strong); }

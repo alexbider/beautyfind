@@ -1,6 +1,7 @@
 import 'server-only';
 import { Prisma, type RegionSlug } from '@prisma/client';
 import { cache } from 'react';
+import { BOOKING_LIVE } from '../features';
 import { db } from './db';
 
 // Read-only queries for public pages. Only live branches of live businesses are ever returned.
@@ -56,7 +57,7 @@ function where(f: ListingFilter): Prisma.BranchWhereInput {
   if (f.verifiedOnly) and.push({ isClaimed: true });
   if (f.accessible) and.push({ accessible: true });
   if (f.freeParking) and.push({ freeParking: true });
-  if (f.onlineBooking) and.push({ onlineBooking: true });
+  if (f.onlineBooking && BOOKING_LIVE) and.push({ onlineBooking: true });
   if (f.maxPriceShekels != null) and.push({ treatments: { some: { isPublished: true, priceAgorot: { lte: f.maxPriceShekels * 100 } } } });
   const q = f.q?.trim();
   if (q) {
@@ -112,7 +113,7 @@ function toCard(b: CardRow, stats: Map<string, { rating: number; count: number }
     priceFromShekels: prices.length ? Math.min(...prices) / 100 : null,
     accessible: b.accessible,
     freeParking: b.freeParking,
-    onlineBooking: b.onlineBooking,
+    onlineBooking: BOOKING_LIVE && b.onlineBooking,
     hasMedicalResponsible: b.medicalResponsible?.license?.status === 'verified',
   };
 }

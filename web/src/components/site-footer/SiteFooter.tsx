@@ -25,6 +25,7 @@ const GROUPS: Array<{ name: string; links: Array<{ name: string; href: string }>
       { name: 'מרכז עזרה', href: '/help' },
       { name: 'צור קשר', href: '/contact' },
       { name: 'מדיניות פרטיות', href: '/privacy' },
+      { name: 'תנאי שימוש', href: '/terms' },
       { name: 'הצהרת נגישות', href: '/accessibility' },
     ],
   },

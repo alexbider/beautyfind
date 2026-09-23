@@ -30,7 +30,7 @@ export const DAY_NAMES = ['ראשון', 'שני', 'שלישי', 'רביעי', '�
 export type DeclKey = 'accurate' | 'authorized' | 'standards' | 'medical';
 
 export const DECLARATIONS: Array<{ key: DeclKey; label: string; note: string }> = [
-  { key: 'accurate', label: 'כל הפרטים שמסרתי נכונים ומעודכנים', note: 'פרט שגוי שדווח נבדק בתוך יום עסקים' },
+  { key: 'accurate', label: 'כל הפרטים שמסרתי נכונים ומעודכנים', note: 'פרט שגוי שדווח נבדק בתוך 5 ימי עסקים' },
   { key: 'authorized', label: 'אני בעל/ת העסק או מוסמך/ת לפעול בשמו', note: 'נדרש לאימות בעלות על הכרטיס' },
   { key: 'standards', label: 'קראתי את תקן הרישום ואני מתחייב/ת לעמוד בו', note: 'כולל איסור על הבטחת תוצאה ועל הנחה בעד ביקורת' },
   { key: 'medical', label: 'טיפולים רפואיים בקליניקה מבוצעים על ידי רופא/ה בלבד', note: 'חובה כשנבחרו קטגוריות הזרקה' },

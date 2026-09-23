@@ -73,3 +73,9 @@ img, svg, video { max-width: 100%; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   html { scroll-behavior: auto; }
 }
+
+/* Pages with a fixed bottom action bar mark it with [data-bottom-bar]; floating UI (the cookie pill) sits above it. */
+:root { --bf-bottom-bar: 0px; }
+@media (max-width: 759px) {
+  :root:has([data-bottom-bar]) { --bf-bottom-bar: 76px; }
+}

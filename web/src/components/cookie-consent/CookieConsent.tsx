@@ -6,6 +6,7 @@ import styles from './CookieConsent.module.css';
 
 // Real consent storage (kept per 02-data-model.md): localStorage['bf-cookie-consent'].
 export const CONSENT_KEY = 'bf-cookie-consent';
+export const OPEN_PREFS_EVENT = 'bf-open-cookie-prefs';
 
 export interface Consent {
   essential: true;
@@ -41,6 +42,13 @@ export function CookieConsent() {
     const s = readConsent();
     setSaved(s);
     if (s) setDraft(s);
+  }, []);
+
+  // Any page can reopen the preferences (e.g. the privacy policy) by dispatching this event.
+  useEffect(() => {
+    const open = () => setPrefs(true);
+    window.addEventListener(OPEN_PREFS_EVENT, open);
+    return () => window.removeEventListener(OPEN_PREFS_EVENT, open);
   }, []);
 
   useEffect(() => {

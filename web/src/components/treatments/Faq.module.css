@@ -1,0 +1,32 @@
+.list { min-width: 0; display: flex; flex-direction: column; }
+.list[data-variant='cards'] { gap: 10px; }
+.list[data-variant='rules'] { border-top: 1px solid var(--line); }
+
+.item { transition: background .22s, border-color .22s; background: #ffffff; }
+.list[data-variant='cards'] .item { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.list[data-variant='cards'] .item[data-open] { background: var(--bg-soft); border-color: var(--teal); }
+.list[data-variant='rules'] .item { border-bottom: 1px solid var(--line); }
+.list[data-variant='rules'] .item[data-open] { background: var(--bg-soft); }
+
+.h { margin: 0; font-size: 16.5px; font-weight: 700; }
+.q {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%;
+  border: 0; background: transparent; font: inherit; font-size: 16.5px; font-weight: 700; line-height: 1.45;
+  color: var(--navy); text-align: right; cursor: pointer;
+}
+.list[data-variant='cards'] .q { min-height: 62px; padding: 14px 18px; }
+.list[data-variant='rules'] .q { min-height: 64px; padding: 14px 8px; }
+
+.plus {
+  flex: none; border: 1px solid var(--line-strong); border-radius: 50%; background: #ffffff;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 17px; color: var(--navy);
+  transition: transform .25s;
+}
+.list[data-variant='cards'] .plus { width: 32px; height: 32px; }
+.list[data-variant='rules'] .plus { width: 30px; height: 30px; }
+.item[data-open] .plus { transform: rotate(45deg); }
+
+.a { margin: 0; font-size: 15.5px; color: var(--text); text-wrap: pretty; animation: bfFade .25s ease both; }
+.a[hidden] { display: none; }
+.list[data-variant='cards'] .a { padding: 0 18px 18px; line-height: 1.7; }
+.list[data-variant='rules'] .a { padding: 0 8px 18px; max-width: 64ch; line-height: 1.72; }

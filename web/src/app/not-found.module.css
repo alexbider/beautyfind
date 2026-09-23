@@ -1,0 +1,58 @@
+/* 404. Values from BeautyFind States.dc.html. Popular grid: 1 → 2 (560px) → 3 (900px) tracks for 6 items. */
+
+.root { min-height: 100dvh; overflow-x: clip; background: #ffffff; }
+.main { padding: clamp(28px, 5vw, 72px) var(--gutter) clamp(48px, 7vw, 96px); }
+.inner { max-width: 640px; margin: 0 auto; text-align: center; animation: nfFade .22s ease both; }
+@keyframes nfFade { from { opacity: 0; transform: translateY(7px) } to { opacity: 1; transform: none } }
+
+.code {
+  display: block; font-family: var(--font-display); font-size: clamp(64px, 11vw, 110px); font-weight: 500; line-height: 1;
+  letter-spacing: -0.03em; color: var(--teal-border);
+}
+.h1 { margin: 6px 0 7px; font-family: var(--font-display); font-size: clamp(23px, 3vw, 30px); font-weight: 500; letter-spacing: -0.014em; }
+.lede { margin: 0 0 20px; font-size: 15.5px; color: var(--text); text-wrap: pretty; }
+
+.search { position: relative; display: flex; gap: 8px; max-width: 520px; margin: 0 auto 16px; }
+.search svg { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.search input {
+  flex: 1; min-width: 0; min-height: 48px; padding: 0 42px 0 12px; border: 1px solid var(--line-strong); border-radius: 12px;
+  font: inherit; font-size: 16px; color: var(--navy); background: #ffffff; outline: none;
+}
+.search input:focus { border-color: var(--teal); }
+.search button {
+  flex: none; min-height: 48px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--navy); font: inherit;
+  font-size: 15.5px; font-weight: 700; color: #ffffff; cursor: pointer; transition: background .16s;
+}
+.search button:hover { background: var(--teal-deep); }
+
+.actions { display: flex; gap: 9px; flex-wrap: wrap; justify-content: center; margin-bottom: 26px; }
+.primary, .secondary, .ghost {
+  min-height: 48px; display: inline-flex; align-items: center; border-radius: 12px; font-size: 15.5px; font-weight: 700;
+  transition: background .16s, border-color .16s, color .16s;
+}
+.primary { padding: 0 18px; background: var(--teal-deep); color: #ffffff; }
+.primary:hover { background: var(--navy); color: #ffffff; }
+.secondary { padding: 0 16px; border: 1px solid var(--line); background: #ffffff; color: var(--text); }
+.secondary:hover { border-color: var(--navy); color: var(--navy); }
+.ghost { padding: 0 14px; color: var(--teal-deep); }
+.ghost:hover { color: var(--navy); }
+
+.h2 { margin: 0 0 10px; font-size: 15px; font-weight: 700; text-align: right; }
+.popular { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; text-align: right; }
+.card {
+  min-width: 0; display: flex; align-items: center; gap: 10px; padding: 13px 15px; min-height: 44px; border: 1px solid var(--line);
+  border-radius: 13px; background: #ffffff; color: inherit; transition: border-color .16s;
+}
+.card:hover { border-color: var(--teal-deep); color: inherit; }
+.cardText { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.cardName { font-size: 14.5px; font-weight: 700; color: var(--navy); }
+.cardNote { font-size: 12.5px; color: var(--subtle); }
+.cardArrow { flex: none; color: var(--teal-deep); }
+
+@media (min-width: 560px) {
+  .popular { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 900px) {
+  .inner { max-width: 760px; }
+  .popular { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

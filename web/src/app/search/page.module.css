@@ -1,0 +1,69 @@
+/* Search page layout. Values from project/BeautyFind Search.dc.html. */
+
+@keyframes pgRise { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
+
+.root { min-height: 100dvh; background: #ffffff; color: var(--navy); overflow-x: clip; }
+
+.main {
+  max-width: 1440px; margin: 0 auto;
+  padding: clamp(18px, 2.2vw, 28px) clamp(16px, 3vw, 28px) clamp(56px, 6vw, 92px);
+}
+
+.crumbs { margin-bottom: 14px; }
+.crumbs ol { list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; padding: 0; font-size: 13.5px; color: var(--muted); }
+.crumbs a { color: var(--muted); }
+.crumbs a:hover { color: var(--teal-deep); }
+.crumbs [aria-current] { font-weight: 700; color: var(--navy); }
+.crumbSep { color: #C6CDD4; }
+
+.hero {
+  display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px;
+  margin-bottom: clamp(18px, 2.2vw, 26px);
+}
+.heroText { min-width: 0; }
+.eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.eyebrowLine { display: inline-block; width: 24px; height: 1px; background: var(--teal); }
+.h1 {
+  margin: 0; font-family: var(--font-display); font-weight: 500; font-size: clamp(28px, 3.2vw, 44px); line-height: 1.15;
+  letter-spacing: -0.014em; text-wrap: balance; animation: pgRise .5s var(--ease-out) both;
+}
+.h1Dot { color: var(--teal); }
+.answer { margin: 10px 0 0; max-width: 72ch; font-size: 16.5px; line-height: 1.65; color: var(--text); text-wrap: pretty; }
+.queryPath {
+  margin: 0; flex: 0 1 auto; max-width: 100%; font-size: 13px; color: var(--subtle);
+  font-variant-numeric: tabular-nums; overflow-wrap: anywhere; unicode-bidi: isolate;
+}
+
+.presets { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 18px; }
+.presetsLabel { font-size: 13px; font-weight: 700; color: var(--subtle); margin-inline-end: 4px; }
+.preset {
+  display: inline-flex; align-items: center; gap: 7px; min-height: 38px; padding: 0 13px;
+  border: 1px solid var(--line); border-radius: 999px; background: #ffffff;
+  font-size: 14px; font-weight: 500; color: var(--text); transition: border-color .18s, background .18s, color .18s;
+}
+.preset:hover { border-color: var(--teal); background: var(--tint); color: var(--teal-deep); }
+
+.results { min-width: 0; }
+
+.related {
+  margin-top: clamp(34px, 4vw, 52px); padding-top: clamp(24px, 3vw, 34px); border-top: 1px solid var(--line);
+}
+.relatedTitle {
+  margin: 0 0 4px; font-family: var(--font-display); font-weight: 500; font-size: clamp(21px, 1.9vw, 27px);
+  line-height: 1.2; letter-spacing: -0.012em;
+}
+.relatedLine { margin: 0 0 14px; max-width: 70ch; font-size: 14px; color: var(--muted); text-wrap: pretty; }
+.relatedLinks { display: flex; flex-wrap: wrap; gap: 8px; }
+.relatedLink {
+  display: inline-flex; flex-direction: column; justify-content: center; gap: 2px; min-height: 52px; padding: 8px 14px;
+  border: 1px solid var(--line); border-radius: 12px; background: #ffffff; transition: border-color .18s, background .18s;
+}
+.relatedLink:hover { border-color: var(--teal); background: var(--tint); color: var(--navy); }
+.relatedName { font-size: 14.5px; font-weight: 700; }
+.relatedHref { font-size: 12px; color: var(--subtle); text-align: right; }
+
+/* Route-entry skeleton header (loading.tsx) */
+.skelHeader { height: 72px; border-bottom: 1px solid var(--line); }
+.skelHeaderBar { max-width: 1440px; height: 100%; margin: 0 auto; padding: 0 clamp(16px, 3vw, 28px); display: flex; align-items: center; gap: 18px; }
+.skelSearch { flex: 1; height: 50px; border: 1px solid var(--line); border-radius: 13px; background: var(--bg-soft); }
+.skelTitle { display: block; width: min(420px, 80%); height: 34px; margin: 6px 0 22px; border-radius: 8px; background: var(--divider); }

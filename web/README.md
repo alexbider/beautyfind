@@ -50,6 +50,28 @@ Give someone console access (they must have signed up first):
 npm run ops:grant -- someone@beautyfind.co.il verifier
 ```
 
+### Phase 3: public site
+
+| Route | Screen | Design file |
+|---|---|---|
+| `/` | Homepage (search, region carousel, Israel map, categories) | `BeautyFind Homepage.dc.html` |
+| `/search?q=&region=&city=&t=` | Search with URL-driven filters (noindex, follow) | `BeautyFind Search.dc.html` |
+| `/[region]` | Region landing | `BeautyFind Region.dc.html` |
+| `/[region]/[city]` · `/[region]/[city]/[category]` | City and city + category directory | `BeautyFind Directory.dc.html` |
+| `/[region]/biz/[slug]` | Business profile with contact form (creates a CRM lead) | `BeautyFind Business Profile.dc.html` |
+| `/pro/[id]` | Practitioner | `BeautyFind Practitioner.dc.html` |
+| `/treatments` · `/treatments/[category]` | All categories, category explainers | `BeautyFind Treatments.dc.html`, `BeautyFind Treatment Category.dc.html` |
+| `/about` (+ `/editorial`, `/methodology`) · `/listing-standards` (+ `/sponsorship`) | Content pages | `BeautyFind About.dc.html`, `BeautyFind Standards.dc.html` |
+| `/privacy` · `/terms` · `/accessibility` | Legal (company details are `TODO(legal)` placeholders) | `BeautyFind Legal.dc.html` |
+| `/contact` · `/help` | Contact form (stored as `ContactMessage`), help centre | `BeautyFind Contact.dc.html`, `BeautyFind Help.dc.html` |
+| 404 / error | System states | `BeautyFind States.dc.html` |
+
+Public data comes only from `src/lib/server/public.ts` (live branches of live businesses). Google and BeautyFind ratings are separate fields and never averaged; JSON-LD `aggregateRating` uses BeautyFind reviews only. Profile analytics are recorded through `/api/events` only for visitors who accepted analytics cookies. `sitemap.xml` and `robots.txt` are generated.
+
+`src/lib/features.ts` → `BOOKING_LIVE = false` keeps every public page from claiming or filtering on online booking until phase 4 ships it.
+
+Demo content for local development (36 fictional businesses, treatments, reviews): `npm run db:seed:demo`. It refuses to run in production.
+
 Shared pieces: `SiteHeader` (mega menu), `SiteFooter`, `CookieConsent` (`localStorage['bf-cookie-consent']`), tokens in `src/app/globals.css`, catalog in `src/lib/catalog.ts`, routes in `src/lib/routes.ts`.
 
 ## Stubs until vendors are chosen
@@ -58,6 +80,9 @@ Shared pieces: `SiteHeader` (mega menu), `SiteFooter`, `CookieConsent` (`localSt
 - **File storage** (`src/lib/vendors/storage.ts`): local disk under `.data/uploads` until a vendor is chosen. Public images are served from `/media/<id>`; license scans are private and only readable by verifiers at `/ops/media/<id>`.
 - **Registry lookups** (Ministry of Health, company registry): the verification console shows a manual-check state (`TODO(registry)`).
 - **Billing job**: nothing applies `pendingPlan` / `pendingCycle` at `currentPeriodEnd` yet (`TODO(billing-job)`).
+- **Sponsored placements**: no campaigns table yet, so no ממומן cards anywhere (`TODO(sponsored)`).
+- **Map view** on Search: needs branch coordinates (`TODO(map)`).
+- **Magazine / articles**: no CMS yet; links point to `/magazine` (`TODO(cms)`).
 - **Payments / invoices**: a `Subscription` row is created with the chosen plan; nothing is charged.
 
 ## Conventions

@@ -1,0 +1,71 @@
+/* Gallery grid (design: galleryCols / galleryRow / primarySpan). */
+.grid { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-auto-rows: 104px; }
+.grid[data-tiles="0"] { grid-template-columns: minmax(0, 1fr); }
+.tile {
+  position: relative; padding: 0; border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
+  background: #EDF1F3; cursor: pointer; transition: border-color .2s;
+}
+.tile:hover { border-color: var(--teal); }
+.tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.primary { grid-row: span 2; border-radius: 20px; }
+.grid[data-tiles="1"] .tile:not(.primary) { grid-row: span 2; }
+.more {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: rgba(12, 36, 62, .7); color: #ffffff; font-size: 15px; font-weight: 700;
+}
+@media (min-width: 620px) {
+  .grid { grid-auto-rows: 128px; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+  .grid[data-tiles="4"] { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); }
+  .grid[data-tiles="0"] { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Before / after. */
+.ba { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+@media (min-width: 560px) { .ba { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.baCard {
+  display: flex; flex-direction: column; padding: 0; border: 1px solid var(--line); border-radius: 18px; overflow: hidden;
+  background: #ffffff; cursor: pointer; text-align: right; font: inherit;
+  transition: border-color .22s, box-shadow .22s, transform .22s;
+}
+.baCard:hover { border-color: var(--line-strong); box-shadow: var(--shadow-card); transform: translateY(-3px); }
+.baImg { position: relative; display: block; aspect-ratio: 16 / 10; background: repeating-linear-gradient(135deg, #EEF2F4 0 9px, #F7F9FA 9px 18px); }
+.baImg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.baCap { padding: 14px 16px; font-size: 14.5px; line-height: 1.55; color: var(--text); text-wrap: pretty; }
+
+/* Lightbox (design: lightboxOpen). */
+.lb {
+  position: fixed; inset: 0; z-index: 95; display: flex; flex-direction: column;
+  background: rgba(12, 36, 62, .95); animation: bfFade .2s ease both;
+}
+.lbTop { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 22px; color: #ffffff; }
+.lbCount { font-size: 13.5px; color: rgba(255, 255, 255, .75); font-variant-numeric: tabular-nums; }
+.lbRound {
+  flex: none; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255, 255, 255, .28); border-radius: 50%;
+  background: transparent; color: #ffffff; cursor: pointer; transition: border-color .18s, color .18s;
+}
+.lbRound:hover { border-color: var(--teal); color: var(--teal-light); }
+.lbClose { width: 44px; height: 44px; }
+.lbStep { width: 52px; height: 52px; background: rgba(255, 255, 255, .06); }
+.lbMid { flex: 1; min-height: 0; display: flex; align-items: center; gap: 16px; padding: 0 clamp(12px, 3vw, 34px) 10px; }
+.lbStage {
+  flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; justify-content: center;
+  border-radius: 18px; overflow: hidden; background: #12293F; animation: lbPop .22s var(--ease-out) both;
+}
+@keyframes lbPop { from { opacity: 0; transform: scale(.97) } to { opacity: 1; transform: none } }
+.lbStage img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+.lbFoot { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 12px 22px 22px; }
+.lbCap { font-size: 14.5px; color: rgba(255, 255, 255, .82); text-align: center; }
+.lbThumbs { display: flex; gap: 8px; max-width: 100%; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; overscroll-behavior-x: contain; }
+.lbThumbs::-webkit-scrollbar { height: 0; }
+.lbThumb {
+  flex: 0 0 68px; height: 48px; padding: 0; border: 2px solid transparent; border-radius: 9px; overflow: hidden;
+  background: #1C3550; opacity: .55; cursor: pointer; transition: opacity .18s, border-color .18s;
+}
+.lbThumb[aria-current="true"] { border-color: var(--teal); opacity: 1; }
+.lbThumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lbHint { font-size: 12px; color: rgba(255, 255, 255, .45); }
+@media (max-width: 559px) {
+  .lbStep { width: 44px; height: 44px; }
+  .lbMid { gap: 8px; }
+  .lbHint { display: none; }
+}

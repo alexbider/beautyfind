@@ -1,0 +1,97 @@
+/* Contact. Breakpoints from the design: 620px (two columns), 1000px (form + rail),
+   1000px × 820px tall (sticky rail), 1180px (intro + stats side by side). */
+
+.root { min-height: 100dvh; overflow-x: clip; background: #ffffff; }
+.dot { color: var(--teal); }
+
+.crumbs { background: var(--bg-soft); border-bottom: 1px solid var(--line); }
+.crumbs ol {
+  list-style: none; max-width: 1320px; margin: 0 auto; padding: 14px var(--gutter); display: flex; flex-wrap: wrap;
+  align-items: center; gap: 8px; font-size: 13.5px; color: var(--subtle);
+}
+.crumbs a { color: var(--muted); }
+.crumbs [aria-current] { color: var(--navy); font-weight: 600; }
+.crumbSep { color: #C6CDD4; }
+
+/* ---------- Intro ---------- */
+.intro { border-bottom: 1px solid var(--line); }
+.introInner {
+  max-width: 1320px; margin: 0 auto; padding: clamp(24px, 3.2vw, 48px) var(--gutter);
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(22px, 3vw, 48px); align-items: end;
+}
+.introCopy { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.eyebrow { display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.eyebrow > span { width: 24px; height: 1px; background: var(--teal); display: inline-block; }
+.h1 {
+  margin: 0; font-family: var(--font-display); font-weight: 500; font-size: clamp(32px, 3.7vw, 52px); line-height: 1.07;
+  letter-spacing: -0.016em; text-wrap: balance; animation: introRise .55s var(--ease-out) both;
+}
+@keyframes introRise { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
+.lede { margin: 0; font-size: clamp(16.5px, 1.15vw, 19px); line-height: 1.62; color: var(--text); text-wrap: pretty; max-width: 58ch; }
+
+.stats {
+  margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
+}
+.stats > div { display: flex; flex-direction: column; gap: 3px; padding: 14px 16px; background: #ffffff; }
+.stats dt { font-size: 12px; font-weight: 700; color: var(--subtle); }
+.stats dd { margin: 0; font-size: 15.5px; font-weight: 700; color: var(--navy); text-align: right; }
+
+/* ---------- Main ---------- */
+.main { max-width: 1320px; margin: 0 auto; padding: clamp(26px, 3.2vw, 46px) var(--gutter) clamp(56px, 6vw, 96px); }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(24px, 3vw, 56px); align-items: start; }
+.col { min-width: 0; }
+
+.before { margin-top: clamp(32px, 3.6vw, 52px); padding-top: clamp(24px, 2.6vw, 32px); border-top: 1px solid var(--line); }
+.h2 { margin: 0 0 6px; font-family: var(--font-display); font-weight: 500; font-size: clamp(21px, 1.9vw, 27px); line-height: 1.2; letter-spacing: -0.012em; }
+.beforeLede { margin: 0 0 16px; font-size: 15.5px; line-height: 1.7; color: var(--muted); max-width: 58ch; text-wrap: pretty; }
+.shortcuts { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.shortcut {
+  display: flex; flex-direction: column; gap: 5px; padding: 16px; border: 1px solid var(--line); border-radius: 15px; background: #ffffff;
+  transition: border-color .2s, box-shadow .2s, transform .2s;
+}
+.shortcut:hover { border-color: var(--teal); box-shadow: 0 14px 32px rgba(12, 36, 62, .07); transform: translateY(-2px); color: inherit; }
+.shortcutQ { font-size: 15.5px; font-weight: 700; color: var(--navy); text-wrap: pretty; }
+.shortcutA { font-size: 13.5px; line-height: 1.6; color: var(--muted); text-wrap: pretty; }
+.shortcutGo { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 13px; font-weight: 700; color: var(--teal-deep); }
+
+/* ---------- Rail ---------- */
+.rail { min-width: 0; position: static; top: 88px; display: flex; flex-direction: column; gap: 14px; }
+.card { border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: #ffffff; }
+.cardHead { padding: 13px 16px; border-bottom: 1px solid var(--line); background: var(--bg-soft); font-size: 12.5px; font-weight: 700; color: var(--subtle); }
+.channel {
+  display: flex; flex-direction: column; gap: 3px; padding: 14px 16px; min-height: 44px; border-bottom: 1px solid var(--divider);
+  transition: background .18s;
+}
+.channel:last-child { border-bottom: 0; }
+.channel:hover { background: var(--bg-page); }
+.channelName { font-size: 15px; font-weight: 700; color: var(--navy); }
+.channelValue { font-size: 13.5px; color: var(--teal-deep); text-align: right; font-weight: 600; }
+.channelWho { font-size: 12.5px; color: var(--subtle); text-wrap: pretty; }
+
+.hoursCard { border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: #ffffff; }
+.cardLabel { font-size: 12.5px; font-weight: 700; color: var(--subtle); }
+.hours { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.hours li { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; font-size: 14.5px; }
+.hours li > span:first-child { color: var(--text); }
+.hours li > span:last-child { flex: none; font-weight: 700; color: var(--navy); font-variant-numeric: tabular-nums; }
+.hours li > span.closed { color: var(--subtle); }
+.hoursNote { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--subtle); text-wrap: pretty; }
+
+.addressCard { border: 1px solid var(--teal-border); border-radius: 18px; padding: 16px; background: var(--tint); display: flex; flex-direction: column; gap: 8px; }
+.addressLabel { font-size: 12.5px; font-weight: 700; color: var(--teal-deep); }
+.addressCard p { margin: 0; font-size: 14.5px; line-height: 1.7; color: var(--navy); }
+
+@media (min-width: 620px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1000px) {
+  .grid { grid-template-columns: minmax(0, 1.35fr) minmax(300px, 1fr); }
+  .shortcuts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1000px) and (min-height: 820px) {
+  .rail { position: sticky; }
+}
+@media (min-width: 1180px) {
+  .introInner { grid-template-columns: minmax(0, 1fr) minmax(300px, 380px); }
+}

@@ -1,0 +1,2 @@
+.root { min-height: 100dvh; overflow-x: clip; background: #ffffff; }
+.main { max-width: 1160px; margin: 0 auto; padding: clamp(40px, 7vw, 96px) var(--gutter) clamp(56px, 8vw, 112px); }

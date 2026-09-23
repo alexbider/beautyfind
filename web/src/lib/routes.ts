@@ -17,6 +17,13 @@ export const ROUTES = {
   terms: '/terms',
   accessibility: '/accessibility',
   help: '/help',
+  search: '/search',
+  treatments: '/treatments',
+  methodology: '/about/methodology',
+  saved: '/saved',
+  giftCheck: '/gift/check',
+  branches: '/biz/branches',
+  sponsoredBuy: '/biz/sponsored',
 } as const;
 
 export const joinWithPlan = (plan: 'basic' | 'advanced') => `${ROUTES.join}?plan=${plan}`;

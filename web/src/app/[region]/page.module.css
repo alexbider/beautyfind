@@ -1,0 +1,104 @@
+/* Region landing. Breakpoints from the design: mid 620px, desk 1000px, wide 1180px. */
+
+/* ---------- Hero ---------- */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr); align-items: stretch; border-bottom: 1px solid var(--line); }
+.heroCopy {
+  min-width: 0; display: flex; flex-direction: column; gap: 15px;
+  padding: clamp(22px, 3vw, 44px) var(--gutter) clamp(24px, 3vw, 40px);
+}
+ol.crumbs { font-size: 13px; }
+.h1 {
+  margin: 0; font-family: var(--font-display); font-weight: 500; font-size: clamp(33px, 3.9vw, 56px); line-height: 1.07;
+  letter-spacing: -0.016em; text-wrap: balance; animation: bfRise .6s var(--ease-out) both;
+}
+.lede { margin: 0; font-size: clamp(16.5px, 1.15vw, 19px); line-height: 1.62; color: var(--text); text-wrap: pretty; max-width: 58ch; }
+.heroCtas { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 4px; }
+.heroFig { margin: 0; position: relative; min-height: clamp(220px, 46vw, 340px); background: #EDF1F3; overflow: hidden; }
+@media (min-width: 1180px) {
+  .hero { grid-template-columns: minmax(0, 1fr) minmax(320px, 42%); }
+  .heroCopy { padding-right: max(32px, calc((100vw - 1320px) / 2 + 32px)); }
+  .heroFig { min-height: 100%; }
+}
+
+/* ---------- Stats band ---------- */
+.statsBand { background: var(--navy); }
+.stats {
+  margin: 0 auto; max-width: 1320px; padding: clamp(18px, 2vw, 26px) var(--gutter);
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px clamp(18px, 2.4vw, 34px);
+}
+@media (min-width: 620px) {
+  .stats[data-cols='3'] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .stats[data-cols='4'] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.stat { display: flex; flex-direction: column; gap: 4px; padding-top: 12px; border-top: 2px solid rgba(126, 215, 225, .38); }
+.stat dt { font-size: 12.5px; font-weight: 700; color: rgba(255, 255, 255, .72); }
+.stat dd { margin: 0; }
+.statValue {
+  font-family: var(--font-display); font-size: clamp(25px, 2.5vw, 34px); line-height: 1.05; color: var(--teal-light);
+  text-align: right; align-self: flex-start;
+}
+.statNote { font-size: 12.5px; color: rgba(255, 255, 255, .6); }
+
+/* ---------- Main ---------- */
+.main { max-width: 1320px; margin: 0 auto; padding: clamp(26px, 3.2vw, 46px) var(--gutter) clamp(56px, 6vw, 96px); }
+.block { margin-top: clamp(36px, 4vw, 58px); }
+
+/* Cities */
+.cities { scroll-margin-top: 92px; }
+.cityGrid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+@media (min-width: 620px) { .cityGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1000px) { .cityGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 1180px) { .cityGrid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+.cityCard {
+  display: flex; flex-direction: column; gap: 2px; min-height: 76px; justify-content: center; padding: 12px 14px;
+  border: 1px solid var(--line); border-radius: 13px; background: #ffffff; transition: border-color .2s, background .2s, transform .2s;
+}
+.cityCard:hover { border-color: var(--teal); background: var(--tint); transform: translateY(-2px); }
+.cityName { font-size: 15.5px; font-weight: 700; color: var(--navy); }
+.cityCount { font-size: 12.5px; color: var(--subtle); }
+
+/* Categories table-list */
+.catHeader { display: none; align-items: center; gap: 14px; padding: 0 14px 8px; font-size: 11.5px; font-weight: 700; color: var(--subtle); }
+@media (min-width: 1180px) { .catHeader { display: flex; } }
+.catList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.catList > li { animation: bfCard .38s var(--ease-out) both; }
+.catRow {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 14px; border: 1px solid var(--line);
+  border-radius: 15px; background: #ffffff; transition: border-color .22s, background .22s, box-shadow .22s;
+}
+.catRow:hover { border-color: var(--teal); background: var(--bg-soft); box-shadow: 0 14px 34px rgba(12, 36, 62, .08); color: var(--navy); }
+.cName { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 2px; }
+.cMedian { flex: none; width: 110px; text-align: right; }
+.cDelta { flex: none; width: 118px; }
+.cCount { flex: none; width: 76px; text-align: right; }
+.cArrow { flex: none; width: 16px; }
+.catName { font-family: var(--font-display); font-size: 19px; line-height: 1.25; color: var(--navy); }
+.catTop { font-size: 13px; color: var(--muted); }
+.median { font-size: 15.5px; font-weight: 700; color: var(--navy); }
+.na { font-size: 12.5px; color: var(--subtle); }
+.delta {
+  display: inline-flex; align-items: center; height: 26px; padding: 0 9px; border-radius: 7px;
+  background: var(--tint); font-size: 12.5px; font-weight: 700; color: var(--teal-deep); white-space: nowrap;
+}
+.delta[data-up] { background: #FFF4F2; color: #A8432C; }
+.count { font-size: 14px; color: var(--muted); }
+.arrow { display: flex; align-items: center; justify-content: center; color: var(--subtle); }
+
+/* Local */
+h2.localH2 { margin-bottom: 12px; }
+.para { margin: 0 0 14px; font-size: 16.5px; line-height: 1.76; color: var(--text); text-wrap: pretty; max-width: 60ch; }
+.tip { margin-top: 6px; }
+.factsTitle { margin: 0 0 12px; font-size: 12.5px; font-weight: 700; color: var(--subtle); }
+.facts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.facts li { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 13px 0; border-bottom: 1px solid var(--divider); }
+.factLabel { font-size: 15px; color: var(--text); text-wrap: pretty; }
+.factValue { flex: none; font-size: 15px; font-weight: 700; color: var(--navy); }
+.factsEmpty { margin: 0; padding: 13px 0; border-top: 1px solid var(--line); font-size: 15px; color: var(--muted); }
+
+/* FAQ */
+h2.faqH2 { margin-bottom: 10px; }
+p.faqLede { max-width: 42ch; }
+
+/* Nearby */
+.near { padding-top: clamp(24px, 2.8vw, 34px); border-top: 1px solid var(--line); }
+.near > div:first-child { margin-bottom: 14px; }

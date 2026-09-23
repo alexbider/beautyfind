@@ -27,6 +27,7 @@
   font-size: 16px; font-weight: 500; transition: background .18s;
 }
 .navLink:hover { background: var(--bg-page); }
+.navLink[aria-current='page'] { color: var(--teal-deep); font-weight: 700; }
 .login { display: flex; align-items: center; height: 44px; font-size: 15px; font-weight: 700; color: var(--teal-deep); }
 .cta {
   display: flex; align-items: center; height: 44px; padding: 0 18px; border-radius: 11px;
