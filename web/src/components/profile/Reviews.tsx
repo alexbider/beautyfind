@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { SHEET_MQ } from '@/lib/ui/shell';
+import { BottomSheet } from '../shell/BottomSheet';
 import { ChevronLeft, ChevronRight, CloseGlyph, SmallStars } from './icons';
 import styles from './Reviews.module.css';
 
@@ -26,10 +28,11 @@ const TRUST = [
 /** The "i" disclosure with how the reviews work. Escape and outside click close it. */
 export function ReviewsInfo() {
   const [open, setOpen] = useState(false);
+  const [sheet, setSheet] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
   const btn = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    if (!open) return;
+    if (!open || sheet) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setOpen(false);
@@ -45,13 +48,30 @@ export function ReviewsInfo() {
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('mousedown', onDown);
     };
-  }, [open]);
+  }, [open, sheet]);
   return (
     <div ref={wrap}>
-      <button ref={btn} type="button" className={styles.info} aria-expanded={open} aria-controls="rv-info" aria-label="איך הביקורות האלה עובדות" onClick={() => setOpen(o => !o)}>
+      <button
+        ref={btn}
+        type="button"
+        className={styles.info}
+        aria-expanded={open}
+        aria-controls="rv-info"
+        aria-label="איך הביקורות האלה עובדות"
+        onClick={() => {
+          setSheet(window.matchMedia(SHEET_MQ).matches);
+          setOpen(o => !o);
+        }}
+      >
         <span aria-hidden="true">i</span>
       </button>
-      {open && (
+      {/* Phones: a bottom sheet instead of the popover (spec §3). */}
+      <BottomSheet open={open && sheet} onClose={() => setOpen(false)} title="איך הביקורות עובדות">
+        <ul className={styles.popList}>
+          {TRUST.map(t => <li key={t}>{t}</li>)}
+        </ul>
+      </BottomSheet>
+      {open && !sheet && (
         <div id="rv-info" role="dialog" aria-label="איך הביקורות עובדות" className={styles.pop}>
           <div className={styles.popHead}>
             <span className={styles.popTitle}>איך הביקורות עובדות</span>

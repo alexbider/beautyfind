@@ -33,6 +33,6 @@
   min-height: 44px; display: inline-flex; align-items: center; padding: 0 14px; border: 1px solid var(--line); border-radius: 11px;
   background: #ffffff; font-size: 14.5px; font-weight: 700; color: var(--text); transition: border-color .18s;
 }
-.go:hover { border-color: var(--navy); color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .go:hover { border-color: var(--navy); color: var(--navy); } }
 .go[data-main] { padding: 0 15px; border-color: var(--teal-deep); background: var(--teal-deep); color: #ffffff; }
-.go[data-main]:hover { background: var(--navy); border-color: var(--navy); color: #ffffff; }
+@media (hover: hover) and (pointer: fine) { .go[data-main]:hover { background: var(--navy); border-color: var(--navy); color: #ffffff; } }

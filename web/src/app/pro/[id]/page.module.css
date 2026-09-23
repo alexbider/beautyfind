@@ -5,13 +5,13 @@
 .crumbs { max-width: 1160px; margin: 0 auto; padding: 14px var(--pad) 0; display: flex; align-items: center; gap: 6px 12px; flex-wrap: wrap; }
 .trail { display: flex; gap: 6px; flex-wrap: wrap; font-size: 13px; color: var(--subtle); }
 .trail a { color: var(--muted); }
-.trail a:hover { color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) { .trail a:hover { color: var(--teal-deep); } }
 .trail [aria-current] { color: var(--navy); font-weight: 600; }
 .back {
   margin-right: auto; flex: none; display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 13px; border-radius: 11px;
   background: var(--tint); font-size: 14px; font-weight: 700; color: var(--teal-deep);
 }
-.back:hover { background: var(--teal-border); color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) { .back:hover { background: var(--teal-border); color: var(--teal-deep); } }
 
 .body { max-width: 1160px; margin: 0 auto; padding: clamp(14px, 2vw, 22px) var(--pad) 64px; }
 
@@ -38,7 +38,7 @@
   min-height: 48px; display: inline-flex; align-items: center; padding: 0 18px; border-radius: 12px; background: var(--teal-deep);
   font-size: 15.5px; font-weight: 700; color: #ffffff; transition: background .18s;
 }
-.cta:hover { background: var(--navy); color: #ffffff; }
+@media (hover: hover) and (pointer: fine) { .cta:hover { background: var(--navy); color: #ffffff; } }
 
 .shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(16px, 2vw, 24px); align-items: start; }
 @media (min-width: 1024px) { .shell { grid-template-columns: minmax(0, 1fr) 330px; } }
@@ -89,8 +89,27 @@
 .boxH { margin: 0 0 10px; font-size: 15px; font-weight: 700; }
 .place { display: block; color: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; transition: border-color .18s; }
 .box > div + div { margin-top: 8px; }
-.place:hover { border-color: var(--teal-light); color: inherit; }
+@media (hover: hover) and (pointer: fine) { .place:hover { border-color: var(--teal-light); color: inherit; } }
 .placeName { display: block; font-size: 15px; font-weight: 700; color: var(--navy); }
 .placeAddr { display: block; font-size: 13px; color: var(--muted); }
 .placeDays { display: block; margin-top: 4px; font-size: 13px; font-weight: 600; color: var(--text); }
 .wazeLink { display: inline-flex; align-items: center; min-height: 44px; margin-top: 6px; font-size: 14px; font-weight: 700; color: var(--teal-deep); }
+
+/* ---------- App shell (phones, touch tablets): responsive spec §6 "Practitioner" ---------- */
+.heroLic { margin-top: 14px; }
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .root { background: #ffffff; }
+  .body { padding: 8px 16px 32px; }
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 16px; margin-bottom: 26px; }
+  /* 1:1 portrait at the top. */
+  .portrait { width: min(100%, 44vh); max-width: 420px; aspect-ratio: 1 / 1; border-radius: 20px; font-size: 72px; justify-self: center; }
+  .h1 { font-size: 32px; }
+  .title { margin-bottom: 0; font-size: 16px; }
+  .shell { gap: 26px; }
+  .main { gap: 26px; }
+  /* Treatments as a list, one row each. */
+  .tx { grid-template-columns: minmax(0, 1fr); gap: 0; border-block: 1px solid var(--line); margin-inline: -16px; }
+  .txCard { border: 0; border-radius: 0; padding: 14px 16px; min-height: 64px; justify-content: center; }
+  .txCard + .txCard { border-top: 1px solid var(--divider); }
+  .rv { padding: 14px; }
+}

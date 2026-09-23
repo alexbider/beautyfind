@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Wordmark } from '@/components/Wordmark';
+import { haptic } from '@/components/shell/haptics';
+import { goBack } from '@/components/shell/nav';
+import { TopBar } from '@/components/shell/TopBar';
 import { EMAIL_RE, IL_PHONE_RE, fromE164, toE164 } from '@/lib/format';
 import { ROUTES } from '@/lib/routes';
 import {
@@ -90,7 +93,7 @@ const isEmail = (v: string) => EMAIL_RE.test(v.trim());
 type ServerErr = { text: ReactNode; action?: { label: string; run: () => void } };
 
 const Ltr = ({ children, bold }: { children: ReactNode; bold?: boolean }) => (
-  <span className="ltr" style={bold ? { fontWeight: 700 } : undefined}>
+  <span className="ltr" style={bold ? { fontWeight: 700, whiteSpace: 'nowrap' } : { whiteSpace: 'nowrap' }}>
     {children}
   </span>
 );
@@ -189,6 +192,17 @@ export function AuthScreen({
     }
     if (view !== 'otp') h1Ref.current?.focus();
   }, [view]);
+
+  // Auto-submit once all six digits are in (typed, pasted or filled from the SMS), once per code.
+  const otpForm = useRef<HTMLFormElement>(null);
+  const autoSent = useRef('');
+  useEffect(() => {
+    const code = otp.join('');
+    if (code.length < OTP_LEN) autoSent.current = '';
+    if (view !== 'otp' || busy || code.length !== OTP_LEN || autoSent.current === code) return;
+    autoSent.current = code;
+    otpForm.current?.requestSubmit();
+  }, [otp, view, busy]);
 
   const flash = (t: string) => {
     clearTimeout(toastTimer.current);
@@ -322,6 +336,7 @@ export function AuthScreen({
         action: { label: 'שליחת קישור חדש', run: () => go('forgot', { ident: reset?.email ?? '' }) },
       },
     };
+    if (e !== 'cooldown') haptic('warning');
     if (e === 'cooldown' && res.retryInSeconds) setCooldown(res.retryInSeconds);
     if (e === 'otp_invalid' || e === 'otp_expired' || e === 'otp_too_many') {
       setOtpBad(true);
@@ -344,6 +359,7 @@ export function AuthScreen({
   };
 
   const finish = (res: SignedIn, toastText: string) => {
+    haptic('success');
     flash(toastText);
     setBusy(true);
     router.replace(res.redirectTo);
@@ -508,12 +524,28 @@ export function AuthScreen({
   const aside = ASIDE[role];
   const stats = aside.stats ?? clientStats;
 
+  // App shell: a focused flow with close (×); back steps inside the screen (code → phone, reset → sign in).
+  const firstStep = view === 'signin' || view === 'signup';
+  const stepBack = () => {
+    if (view === 'otp') {
+      if (otpFlow === 'signup') go('signup');
+      else {
+        setMethod('otp');
+        go('signin');
+      }
+    } else {
+      if (view === 'sent' || view === 'reset') setMethod('password');
+      go('signin');
+    }
+  };
+
   return (
     <div className={styles.root}>
+      <TopBar mode="flow" noBack={firstStep} onBack={stepBack} onClose={() => goBack(router, next ?? ROUTES.home)} />
       <div className={styles.shell}>
         <main className={styles.main}>
           <div className={styles.inner}>
-            <Link href={ROUTES.home} className={styles.logo} aria-label="BeautyFind, לדף הבית">
+            <Link href={ROUTES.home} className={`${styles.logo} bf-desk-only`} aria-label="BeautyFind, לדף הבית">
               <Wordmark size={25} />
             </Link>
 
@@ -722,7 +754,7 @@ export function AuthScreen({
             )}
 
             {view === 'otp' && (
-              <form noValidate onSubmit={submitOtp} className={`${styles.form} ${styles.otpWrap}`} aria-busy={busy}>
+              <form ref={otpForm} noValidate onSubmit={submitOtp} className={`${styles.form} ${styles.otpWrap}`} aria-busy={busy}>
                 <div className={styles.info}>
                   <p>
                     שלחנו קוד בן <Ltr>6</Ltr> ספרות {sms ? 'ב־SMS' : 'בוואטסאפ'} למספר <Ltr bold>{fromE164(otpPhone)}</Ltr>.{' '}

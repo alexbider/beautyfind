@@ -8,11 +8,13 @@ import { CallButton, TrackedLink, WazeButton, WhatsAppButton } from '@/component
 import { displayUrl, initials, instagramHref, mapsHref, ratingText } from '@/components/profile/format';
 import { BeforeAfter, Gallery } from '@/components/profile/Gallery';
 import { CheckMark, ExternalGlyph, INSTAGRAM_PATH, MessageGlyph, PinGlyph, RatingStars } from '@/components/profile/icons';
+import { DetailsSheetProvider, DetailsTrigger, ProfileHeader, SectionTabs } from '@/components/profile/ProfileMobile';
 import { ProfileView } from '@/components/profile/ProfileView';
 import { ReviewsInfo, ReviewsRail } from '@/components/profile/Reviews';
 import { Services } from '@/components/profile/Services';
 import { UnclaimedProfile } from '@/components/profile/Unclaimed';
 import { SaveHeart } from '@/components/save-heart/SaveHeart';
+import { ActionBar } from '@/components/shell/ActionBar';
 import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { BOOKING_LIVE } from '@/lib/features';
@@ -57,8 +59,9 @@ export default async function BusinessProfilePage({ params }: Props) {
   if (!p) notFound();
   const v = buildView(p);
 
+  const parentHref = v.citySlug ? `/${p.regionSlug}/${v.citySlug}` : `/${p.regionSlug}`;
   const crumbs = (
-    <nav aria-label="נתיב ניווט" className={styles.crumbs}>
+    <nav aria-label="נתיב ניווט" className={`${styles.crumbs} bf-desk-only`}>
       <ol>
         <li><Link href="/">ראשי</Link></li>
         <li aria-hidden="true">/</li>
@@ -81,7 +84,7 @@ export default async function BusinessProfilePage({ params }: Props) {
     return (
       <div className={styles.root}>
         {ld}
-        <SiteHeader variant="public" />
+        <SiteHeader variant="public" title={p.name} backHref={parentHref} />
         {crumbs}
         <UnclaimedProfile p={p} v={v} />
         <ProfileView branchId={p.id} />
@@ -92,15 +95,25 @@ export default async function BusinessProfilePage({ params }: Props) {
 
   const similar = await similarBusinesses(p, v.cats[0]?.slug);
   const isClinic = p.business.type === 'clinic' || p.business.type === 'medspa';
+  const cta = primaryCta(p, v);
+
+  // Phone section tabs, in the order the sections are shown there (CSS order in the app shell).
+  const tabs = [
+    v.services.length > 0 && { key: 'services', label: 'טיפולים', target: 'sec-services' },
+    v.staff.length > 0 && { key: 'team', label: 'צוות', target: 'sec-team' },
+    { key: 'reviews', label: 'ביקורות', target: 'sec-reviews' },
+    { key: 'details', label: 'פרטים', target: 'sec-details' },
+  ].filter((t): t is { key: string; label: string; target: string } => !!t);
 
   return (
     <div className={styles.root}>
       {ld}
-      <SiteHeader variant="public" />
+      <ProfileHeader name={p.name} watchId="h-name" backHref={parentHref} />
       {crumbs}
       <ProfileView branchId={p.id} />
 
       <ContactProvider branch={{ id: p.id, name: p.name, phone: p.phone, whatsapp: p.whatsapp }} treatments={v.treatmentOptions}>
+      <DetailsSheetProvider title="פרטים" sheet={<DetailsSheet p={p} v={v} />}>
         {v.photos.length > 0 && (
           <section aria-label="תמונות העסק" className={`${styles.wrap} ${styles.gallery}`}>
             <Gallery photos={v.photos} />
@@ -111,8 +124,17 @@ export default async function BusinessProfilePage({ params }: Props) {
           <div className={styles.col}>
             <Identity p={p} v={v} />
 
+            <div className={styles.tabsSlot}>
+              <SectionTabs items={tabs} />
+            </div>
+
+            <section id="sec-details" aria-labelledby="h-details" className={`${styles.detailsM} ${styles.oDetails}`}>
+              <h2 id="h-details" className={styles.h2}>פרטים<span className={styles.dotTeal}>.</span></h2>
+              <DetailsSummary p={p} v={v} />
+            </section>
+
             {v.description.length > 0 && (
-              <section aria-labelledby="h-about">
+              <section aria-labelledby="h-about" className={styles.oAbout}>
                 <h2 id="h-about" className={styles.h2}>{isClinic ? 'על הקליניקה' : 'על העסק'}<span className={styles.dotTeal}>.</span></h2>
                 <div className={styles.about}>
                   {v.description.map((para, i) => <p key={i}>{para}</p>)}
@@ -121,7 +143,7 @@ export default async function BusinessProfilePage({ params }: Props) {
             )}
 
             {v.services.length > 0 && (
-              <section aria-labelledby="h-services">
+              <section id="sec-services" aria-labelledby="h-services" className={styles.oServices}>
                 <div className={styles.secHead}>
                   <h2 id="h-services" className={styles.h2}>שירותים ומחירים<span className={styles.dotTeal}>.</span></h2>
                   {v.pricesUpdated && <span className={styles.secNote}>המחירים כפי שנמסרו על ידי העסק, עודכנו ב־{v.pricesUpdated}</span>}
@@ -134,7 +156,7 @@ export default async function BusinessProfilePage({ params }: Props) {
             <ReviewsSection p={p} v={v} />
 
             {v.beforeAfter.length > 0 && (
-              <section aria-labelledby="h-ba">
+              <section aria-labelledby="h-ba" className={styles.oBa}>
                 <div className={styles.secHead}>
                   <h2 id="h-ba" className={styles.h2}>לפני ואחרי<span className={styles.dotTeal}>.</span></h2>
                   <span className={styles.secNote}>פורסם על ידי העסק בהסכמת המטופלים</span>
@@ -144,7 +166,7 @@ export default async function BusinessProfilePage({ params }: Props) {
             )}
 
             {v.staff.length > 0 && (
-              <section aria-labelledby="h-team">
+              <section id="sec-team" aria-labelledby="h-team" className={styles.oTeam}>
                 <h2 id="h-team" className={styles.h2}>הצוות שלנו<span className={styles.dotTeal}>.</span></h2>
                 <div className={styles.team}>
                   {v.staff.map(s => (
@@ -171,7 +193,7 @@ export default async function BusinessProfilePage({ params }: Props) {
             )}
 
             {v.hoursRows && (
-              <section aria-labelledby="h-hours">
+              <section aria-labelledby="h-hours" className="bf-desk-only">
                 <h2 id="h-hours" className={styles.h2}>שעות פעילות<span className={styles.dotTeal}>.</span></h2>
                 <table className={styles.hours}>
                   <caption>היום מסומן. השעות לפי שעון ישראל.</caption>
@@ -193,7 +215,7 @@ export default async function BusinessProfilePage({ params }: Props) {
             )}
 
             {v.faqs.length > 0 && (
-              <section aria-labelledby="h-faq">
+              <section aria-labelledby="h-faq" className={styles.oFaq}>
                 <h2 id="h-faq" className={styles.h2}>שאלות נפוצות<span className={styles.dotTeal}>.</span></h2>
                 <FaqAccordion items={v.faqs} />
               </section>
@@ -202,7 +224,7 @@ export default async function BusinessProfilePage({ params }: Props) {
             <Location p={p} />
 
             {similar.length > 0 && (
-              <section aria-labelledby="h-similar">
+              <section aria-labelledby="h-similar" className={styles.oSimilar}>
                 <h2 id="h-similar" className={styles.h2}>עסקים נוספים ב{p.cityName}<span className={styles.dotTeal}>.</span></h2>
                 <div className={styles.similar} data-n={similar.length}>
                   {similar.map(s => (
@@ -226,12 +248,25 @@ export default async function BusinessProfilePage({ params }: Props) {
             )}
           </div>
 
-          <aside aria-label="יצירת קשר עם העסק" className={styles.aside}>
-            <BookingCard p={p} v={v} />
+          <aside aria-label="יצירת קשר עם העסק" className={`${styles.aside} bf-desk-only`}>
+            <BookingCard p={p} v={v} cta={cta} />
           </aside>
         </main>
 
-        <MobileBar p={p} />
+        <ActionBar mobileOnly>
+          {p.whatsapp && <WhatsAppButton branchId={p.id} e164={p.whatsapp} businessName={p.name} size="lg" iconOnly />}
+          {p.phone && <CallButton branchId={p.id} e164={p.phone} size="lg" iconOnly />}
+          {cta ? (
+            <Link href={cta.href} className={btn.primary} data-size="lg">
+              {cta.label}
+            </Link>
+          ) : (
+            <ContactTrigger className={btn.primary} dataSize="lg">
+              השארת פרטים לתיאום
+            </ContactTrigger>
+          )}
+        </ActionBar>
+      </DetailsSheetProvider>
       </ContactProvider>
 
       <div className={styles.footGap} />
@@ -354,7 +389,7 @@ function ReviewsSection({ p, v }: { p: PublicProfile; v: View }) {
   const bf = p.beautyfind;
   const distMax = Math.max(1, ...v.dist.map(d => d.count));
   return (
-    <section aria-labelledby="h-reviews">
+    <section id="sec-reviews" aria-labelledby="h-reviews" className={styles.oReviews}>
       <div className={rv.head}>
         <h2 id="h-reviews" className={styles.h2} style={{ margin: 0 }}>מה הלקוחות אומרים<span className={styles.dotTeal}>.</span></h2>
         <div className={rv.tools}>
@@ -456,7 +491,7 @@ function Location({ p }: { p: PublicProfile }) {
     p.accessible && { label: 'נגישות', value: 'המקום נגיש לכיסא גלגלים' },
   ].filter((c): c is { label: string; value: string } => !!c);
   return (
-    <section aria-labelledby="h-loc">
+    <section aria-labelledby="h-loc" className="bf-desk-only">
       <h2 id="h-loc" className={styles.h2}>איך מגיעים<span className={styles.dotTeal}>.</span></h2>
       <div className={styles.loc}>
         <div role="img" aria-label={`מפה סכמטית: ${p.name}, ${full}`} className={styles.map}>
@@ -494,7 +529,7 @@ function Location({ p }: { p: PublicProfile }) {
 }
 
 /** The ONE sticky sidebar card: contact CTA, WhatsApp/phone, details, socials, and the Google rating at its end. */
-function BookingCard({ p, v }: { p: PublicProfile; v: View }) {
+function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null }) {
   const place = p.address.includes(p.cityName) ? p.address : `${p.address.split(',')[0]}, ${p.cityName}`;
   return (
     <div id="contact" className={styles.book}>
@@ -511,13 +546,13 @@ function BookingCard({ p, v }: { p: PublicProfile; v: View }) {
       </p>
 
       {/* Online booking (phase 4): shown only once BOOKING_LIVE is flipped. The contact form below stays. */}
-      {BOOKING_LIVE && p.onlineBooking && (
-        <Link href={`/book/${p.slug}`} className={`${btn.primary} ${styles.bookCta}`}>
-          <span>קביעת תור</span>
+      {cta && (
+        <Link href={cta.href} className={`${btn.primary} ${styles.bookCta}`}>
+          <span>{cta.label}</span>
           <ArrowForward size={15} />
         </Link>
       )}
-      <ContactTrigger className={`${btn.primary} ${styles.bookCta}`} dataTone={BOOKING_LIVE && p.onlineBooking ? 'quiet' : undefined}>
+      <ContactTrigger className={`${btn.primary} ${styles.bookCta}`} dataTone={cta ? 'quiet' : undefined}>
         <MessageGlyph />
         <span>השארת פרטים לתיאום</span>
       </ContactTrigger>
@@ -604,15 +639,142 @@ function BookingCard({ p, v }: { p: PublicProfile; v: View }) {
   );
 }
 
-/** Fixed bottom bar below 760px: call, WhatsApp, and the contact popup. */
-function MobileBar({ p }: { p: PublicProfile }) {
+type Cta = { href: string; label: string };
+
+/**
+ * Online booking CTA, only when booking is live and the branch takes it. A clinic whose published
+ * treatments are all medical books a consult instead (the booking flow would hand off to it anyway).
+ * Null = no online booking: the contact form is the primary action.
+ */
+function primaryCta(p: PublicProfile, v: View): Cta | null {
+  if (!(BOOKING_LIVE && p.onlineBooking)) return null;
+  const medicalOnly = p.treatments.length > 0 ? p.treatments.every(t => t.isMedical) : v.cats.length > 0 && v.cats.every(c => c.isMedical);
+  return medicalOnly ? { href: `/consult/${p.slug}`, label: 'קביעת ייעוץ' } : { href: `/book/${p.slug}`, label: 'קביעת תור' };
+}
+
+/** Phone "פרטים" section: today's hours and the address, each opening the details sheet. */
+function DetailsSummary({ p, v }: { p: PublicProfile; v: View }) {
+  const full = p.address.includes(p.cityName) ? p.address : `${p.address}, ${p.cityName}`;
   return (
-    <div className={styles.bar} data-bottom-bar>
-      {p.phone && <CallButton branchId={p.id} e164={p.phone} size="lg" />}
-      {p.whatsapp && <WhatsAppButton branchId={p.id} e164={p.whatsapp} businessName={p.name} size="lg" />}
-      <ContactTrigger className={btn.primary} dataSize="lg">
-        פנייה
-      </ContactTrigger>
+    <div className={styles.sumCard}>
+      {v.hoursRows && (
+        <DetailsTrigger className={styles.sumRow}>
+          <span aria-hidden="true" className={styles.sumIcon}>
+            <svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              {FACT_ICONS.clock.map(d => <path key={d} d={d} />)}
+            </svg>
+          </span>
+          <span className={styles.sumText}>
+            <span className={styles.sumLabel}>שעות פעילות</span>
+            <span className={styles.sumValue}>
+              {v.todayRange ? <>היום <span dir="ltr" className={`ltr ${styles.range}`}>{v.todayRange}</span></> : 'סגור היום'}
+              {v.open && <span className={styles.sumOpen} data-closed={!v.open.open || undefined}> · {v.open.label}</span>}
+            </span>
+          </span>
+          <ChevronGlyph />
+        </DetailsTrigger>
+      )}
+      <DetailsTrigger className={styles.sumRow}>
+        <span aria-hidden="true" className={styles.sumIcon}><PinGlyph size={18} /></span>
+        <span className={styles.sumText}>
+          <span className={styles.sumLabel}>כתובת ויצירת קשר</span>
+          <span className={styles.sumValue}>{full}</span>
+        </span>
+        <ChevronGlyph />
+      </DetailsTrigger>
+    </div>
+  );
+}
+
+function ChevronGlyph() {
+  return (
+    <svg className={styles.sumChev} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M15 5l-7 7 7 7" />
+    </svg>
+  );
+}
+
+/** Content of the phone "פרטים" sheet: hours, address and directions, contact details. */
+function DetailsSheet({ p, v }: { p: PublicProfile; v: View }) {
+  const full = p.address.includes(p.cityName) ? p.address : `${p.address}, ${p.cityName}`;
+  const extras = [p.freeParking && 'חנייה חינם במקום', p.accessible && 'המקום נגיש לכיסא גלגלים'].filter((x): x is string => !!x);
+  return (
+    <div className={styles.sheet}>
+      {v.hoursRows && (
+        <section aria-labelledby="sh-hours">
+          <h3 id="sh-hours" className={styles.sheetH}>
+            שעות פעילות
+            {v.open && <span className={styles.sumOpen} data-closed={!v.open.open || undefined}> · {v.open.label}</span>}
+          </h3>
+          <table className={styles.hours}>
+            <caption className="sr-only">שעות הפעילות לפי שעון ישראל. היום מסומן.</caption>
+            <tbody>
+              {v.hoursRows.map(h => (
+                <tr key={h.day} data-today={h.today || undefined}>
+                  <th scope="row">
+                    {h.day}
+                    {h.today && <span className={styles.todayBadge}> · היום</span>}
+                  </th>
+                  <td data-closed={!h.range || undefined}>{h.range ? <span dir="ltr" className={`ltr ${styles.range}`}>{h.range}</span> : 'סגור'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
+
+      <section aria-labelledby="sh-addr">
+        <h3 id="sh-addr" className={styles.sheetH}>כתובת</h3>
+        <address className={styles.sheetAddr}>{full}</address>
+        {extras.length > 0 && <p className={styles.sheetNote}>{extras.join(' · ')}</p>}
+        <div className={styles.sheetBtns}>
+          <a href={mapsHref(`${p.name} ${full}`)} target="_blank" rel="noopener noreferrer" className={styles.sheetBtn}>
+            <span>הוראות הגעה</span>
+            <ArrowForward size={14} />
+          </a>
+          {p.wazeUrl && <WazeButton branchId={p.id} href={p.wazeUrl} size="md" />}
+        </div>
+      </section>
+
+      {(p.phone || p.email || p.websiteUrl || p.instagram) && (
+        <section aria-labelledby="sh-contact">
+          <h3 id="sh-contact" className={styles.sheetH}>יצירת קשר</h3>
+          <dl className={`${styles.bookDl} ${styles.sheetDl}`}>
+            {p.phone && (
+              <div>
+                <dt>טלפון</dt>
+                <dd>
+                  <TrackedLink branchId={p.id} type="call_click" href={telHref(p.phone)} dir="ltr">{fromE164(p.phone)}</TrackedLink>
+                </dd>
+              </div>
+            )}
+            {p.email && (
+              <div>
+                <dt>אימייל</dt>
+                <dd>
+                  <TrackedLink branchId={p.id} type="contact_click" href={`mailto:${p.email}`} dir="ltr">{p.email}</TrackedLink>
+                </dd>
+              </div>
+            )}
+            {p.websiteUrl && (
+              <div>
+                <dt>אתר</dt>
+                <dd>
+                  <TrackedLink branchId={p.id} type="contact_click" href={p.websiteUrl} dir="ltr" external>{displayUrl(p.websiteUrl)}</TrackedLink>
+                </dd>
+              </div>
+            )}
+            {p.instagram && (
+              <div>
+                <dt>אינסטגרם</dt>
+                <dd>
+                  <a href={instagramHref(p.instagram)} target="_blank" rel="noopener noreferrer" dir="ltr">{p.instagram.startsWith('@') ? p.instagram : `@${p.instagram}`}</a>
+                </dd>
+              </div>
+            )}
+          </dl>
+        </section>
+      )}
     </div>
   );
 }

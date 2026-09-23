@@ -1,9 +1,15 @@
 /* Toast */
 .toastWrap {
-  position: fixed; z-index: 60; bottom: calc(18px + var(--bf-bottom-bar, 0px)); inset-inline: 0;
+  position: fixed; z-index: 70; bottom: calc(18px + var(--bf-float-bottom, 0px)); inset-inline: 0;
   display: flex; justify-content: center; pointer-events: none; padding: 0 16px;
 }
+/* Above the desktop compare tray. In the app shell the tray is the action bar, already in --bf-float-bottom. */
 .toastWrap[data-raised] { bottom: 88px; }
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .toastWrap, .toastWrap[data-raised] { bottom: calc(var(--bf-float-bottom, 0px) + 12px); }
+}
+.sheetActions { display: flex; flex-direction: column; gap: 8px; }
+.sheetActions > button { width: 100%; min-height: 50px; }
 .toast {
   pointer-events: auto; max-width: min(90vw, 440px); padding: 12px 17px; border-radius: 13px;
   background: var(--navy); color: #fff; font-size: 14px; font-weight: 600; text-wrap: pretty;
@@ -54,7 +60,7 @@
   min-height: 46px; padding: 0 16px; border-radius: 12px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
 }
 .btnPrimary { border: 0; background: var(--teal-deep); color: #fff; }
-.btnPrimary:hover { background: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .btnPrimary:hover { background: var(--navy); } }
 .btnDanger { border: 0; background: var(--bad-text); color: #fff; }
 .btnGhost { border: 1px solid var(--line); background: #fff; color: var(--text); font-weight: 600; }
 .btnPrimary:disabled, .btnDanger:disabled { background: var(--disabled); cursor: default; }

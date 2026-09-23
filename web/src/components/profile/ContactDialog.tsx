@@ -6,6 +6,8 @@ import { submitProfileLead } from '@/app/[region]/biz/[slug]/actions';
 import { LEAD_LIMITS, leadErrors, type LeadField } from '@/app/[region]/biz/[slug]/lead-shared';
 import { track } from '@/lib/client/track';
 import { ROUTES } from '@/lib/routes';
+import { SHEET_MQ } from '@/lib/ui/shell';
+import { BottomSheet } from '../shell/BottomSheet';
 import { CallButton, WhatsAppButton } from './ContactLinks';
 import { CheckMark, CloseGlyph } from './icons';
 import styles from './ContactDialog.module.css';
@@ -98,6 +100,11 @@ function ContactDialog({ branch, treatments, preset, onClose }: { branch: Contac
   const [formError, setFormError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
+  // Only ever mounted in the browser (after a tap, or the #contact hash), so the query is safe here.
+  const [sheet] = useState(() => window.matchMedia(SHEET_MQ).matches);
+  // BottomSheet moves focus in only when `open` turns true after it has mounted, so open it one tick later.
+  const [sheetOpen, setSheetOpen] = useState(false);
+  useEffect(() => setSheetOpen(true), []);
 
   // Validation runs on submit, then live.
   const errs = tried ? { ...serverFields, ...leadErrors(v) } : {};
@@ -108,6 +115,7 @@ function ContactDialog({ branch, treatments, preset, onClose }: { branch: Contac
   };
 
   useEffect(() => {
+    if (sheet) return; // BottomSheet owns focus, scroll lock and Escape.
     first.current?.focus();
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -118,7 +126,7 @@ function ContactDialog({ branch, treatments, preset, onClose }: { branch: Contac
       document.body.style.overflow = prev;
       window.removeEventListener('keydown', onKey);
     };
-  }, [onClose]);
+  }, [onClose, sheet]);
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key !== 'Tab' || !panel.current) return;
@@ -163,152 +171,170 @@ function ContactDialog({ branch, treatments, preset, onClose }: { branch: Contac
   const titleId = `${uid}-t`;
   const fid = (k: string) => `${uid}-${k}`;
 
+  const title = done ? 'הפנייה נשלחה' : `פנייה ל${branch.name}`;
+  const content = (
+    <>
+      {done ? (
+        <div className={styles.done} role="status">
+          <span className={styles.doneIcon} aria-hidden="true">
+            <CheckMark size={26} strokeWidth={2} />
+          </span>
+          <p className={styles.doneText}>
+            העברנו את הפרטים ל{branch.name}. העסק יחזור אליכם בטלפון או באימייל שהשארתם.
+          </p>
+          <button type="button" className={styles.doneBtn} onClick={onClose} autoFocus>
+            סגירה
+          </button>
+        </div>
+      ) : (
+        <>
+          <p className={styles.sub}>השאירו פרטים והעסק יחזור אליכם. הפנייה נשלחת ישירות לעסק ונשמרת אצלו.</p>
+          <form className={styles.form} onSubmit={submit} noValidate>
+            <div className={styles.field}>
+              <label htmlFor={fid('name')} className={styles.label}>שם מלא</label>
+              <input
+                ref={first}
+                id={fid('name')}
+                className={styles.input}
+                value={v.name}
+                onChange={set('name')}
+                autoComplete="name"
+                maxLength={LEAD_LIMITS.name}
+                aria-invalid={!!errs.name}
+                aria-describedby={errs.name ? fid('name-e') : undefined}
+              />
+              {errs.name && <span id={fid('name-e')} className={styles.fieldErr}>{errs.name}</span>}
+            </div>
+
+            <div className={styles.row}>
+              <div className={styles.field}>
+                <label htmlFor={fid('phone')} className={styles.label}>טלפון</label>
+                <input
+                  id={fid('phone')}
+                  type="tel"
+                  dir="ltr"
+                  inputMode="tel"
+                  className={styles.input}
+                  value={v.phone}
+                  onChange={set('phone')}
+                  autoComplete="tel"
+                  placeholder="050-0000000"
+                  maxLength={LEAD_LIMITS.phone}
+                  aria-invalid={!!(errs.phone || errs.contact)}
+                  aria-describedby={errs.phone ? fid('phone-e') : undefined}
+                />
+                {errs.phone && <span id={fid('phone-e')} className={styles.fieldErr}>{errs.phone}</span>}
+              </div>
+              <div className={styles.field}>
+                <label htmlFor={fid('email')} className={styles.label}>אימייל</label>
+                <input
+                  id={fid('email')}
+                  type="email"
+                  dir="ltr"
+                  inputMode="email"
+                  className={styles.input}
+                  value={v.email}
+                  onChange={set('email')}
+                  autoComplete="email"
+                  maxLength={LEAD_LIMITS.email}
+                  aria-invalid={!!(errs.email || errs.contact)}
+                  aria-describedby={errs.email ? fid('email-e') : undefined}
+                />
+                {errs.email && <span id={fid('email-e')} className={styles.fieldErr}>{errs.email}</span>}
+              </div>
+            </div>
+            <span className={styles.hint}>מספיק טלפון או אימייל, אחד מהם.</span>
+
+            <div className={styles.field}>
+              <label htmlFor={fid('treatment')} className={styles.label}>
+                טיפול שמעניין אתכם <span className={styles.opt}>(לא חובה)</span>
+              </label>
+              <input
+                id={fid('treatment')}
+                className={styles.input}
+                value={v.treatment}
+                onChange={set('treatment')}
+                list={treatments.length ? fid('tx') : undefined}
+                maxLength={LEAD_LIMITS.treatment}
+                aria-invalid={!!errs.treatment}
+              />
+              {treatments.length > 0 && (
+                <datalist id={fid('tx')}>
+                  {treatments.map(t => <option key={t.name} value={t.name} />)}
+                </datalist>
+              )}
+              {errs.treatment && <span className={styles.fieldErr}>{errs.treatment}</span>}
+            </div>
+            {medical && <p className={styles.medNote}>טיפול רפואי נקבע בתיאום ייעוץ רפואי. העסק יחזור אליכם לתיאום הייעוץ.</p>}
+
+            <div className={styles.field}>
+              <label htmlFor={fid('message')} className={styles.label}>
+                הודעה <span className={styles.opt}>(לא חובה)</span>
+              </label>
+              <textarea
+                id={fid('message')}
+                className={styles.textarea}
+                value={v.message}
+                onChange={set('message')}
+                maxLength={LEAD_LIMITS.message}
+                placeholder="למשל: מתי נוח לכם שיחזרו אליכם"
+                aria-invalid={!!errs.message}
+              />
+              {errs.message && <span className={styles.fieldErr}>{errs.message}</span>}
+            </div>
+
+            <div className={styles.trap} aria-hidden="true">
+              <label htmlFor={fid('website')}>אתר</label>
+              <input id={fid('website')} name="website" tabIndex={-1} autoComplete="off" value={website} onChange={e => setWebsite(e.target.value)} />
+            </div>
+
+            {summary && (
+              <p className={styles.summary} role="alert">
+                {summary}
+              </p>
+            )}
+            <button type="submit" className={styles.submit} disabled={sending}>
+              {sending ? 'שולחים…' : 'שליחת הפנייה'}
+            </button>
+            <p className={styles.fine}>
+              הפרטים מועברים לעסק בלבד, כדי שיחזור אליכם. <Link href={ROUTES.privacy}>מדיניות פרטיות</Link>
+            </p>
+          </form>
+
+          {(branch.whatsapp || branch.phone) && (
+            <div className={styles.alt}>
+              <span className={styles.altLabel}>מעדיפים לדבר עכשיו?</span>
+              {branch.whatsapp && <WhatsAppButton branchId={branch.id} e164={branch.whatsapp} businessName={branch.name} />}
+              {branch.phone && <CallButton branchId={branch.id} e164={branch.phone} />}
+            </div>
+          )}
+        </>
+      )}
+    </>
+  );
+
+  // Phones: a full-height bottom sheet (spec §3, forms). Wider screens keep the centred dialog.
+  if (sheet) {
+    return (
+      <BottomSheet open={sheetOpen} onClose={onClose} title={title} size="full">
+        <div ref={panel} className={styles.sheetBody}>
+          {content}
+        </div>
+      </BottomSheet>
+    );
+  }
+
   return (
     <div className={styles.overlay} onMouseDown={e => e.target === e.currentTarget && onClose()}>
       <div ref={panel} role="dialog" aria-modal="true" aria-labelledby={titleId} className={styles.panel} onKeyDown={onKeyDown}>
         <div className={styles.head}>
-          <h2 id={titleId} className={styles.title}>{done ? 'הפנייה נשלחה' : `פנייה ל${branch.name}`}</h2>
+          <h2 id={titleId} className={styles.title}>{title}</h2>
           <button type="button" className={styles.close} aria-label="סגירה" onClick={onClose}>
             <CloseGlyph size={14} />
           </button>
         </div>
 
-        {done ? (
-          <div className={styles.done} role="status">
-            <span className={styles.doneIcon} aria-hidden="true">
-              <CheckMark size={26} strokeWidth={2} />
-            </span>
-            <p className={styles.doneText}>
-              העברנו את הפרטים ל{branch.name}. העסק יחזור אליכם בטלפון או באימייל שהשארתם.
-            </p>
-            <button type="button" className={styles.doneBtn} onClick={onClose} autoFocus>
-              סגירה
-            </button>
-          </div>
-        ) : (
-          <>
-            <p className={styles.sub}>השאירו פרטים והעסק יחזור אליכם. הפנייה נשלחת ישירות לעסק ונשמרת אצלו.</p>
-            <form className={styles.form} onSubmit={submit} noValidate>
-              <div className={styles.field}>
-                <label htmlFor={fid('name')} className={styles.label}>שם מלא</label>
-                <input
-                  ref={first}
-                  id={fid('name')}
-                  className={styles.input}
-                  value={v.name}
-                  onChange={set('name')}
-                  autoComplete="name"
-                  maxLength={LEAD_LIMITS.name}
-                  aria-invalid={!!errs.name}
-                  aria-describedby={errs.name ? fid('name-e') : undefined}
-                />
-                {errs.name && <span id={fid('name-e')} className={styles.fieldErr}>{errs.name}</span>}
-              </div>
-
-              <div className={styles.row}>
-                <div className={styles.field}>
-                  <label htmlFor={fid('phone')} className={styles.label}>טלפון</label>
-                  <input
-                    id={fid('phone')}
-                    type="tel"
-                    dir="ltr"
-                    inputMode="tel"
-                    className={styles.input}
-                    value={v.phone}
-                    onChange={set('phone')}
-                    autoComplete="tel"
-                    placeholder="050-0000000"
-                    maxLength={LEAD_LIMITS.phone}
-                    aria-invalid={!!(errs.phone || errs.contact)}
-                    aria-describedby={errs.phone ? fid('phone-e') : undefined}
-                  />
-                  {errs.phone && <span id={fid('phone-e')} className={styles.fieldErr}>{errs.phone}</span>}
-                </div>
-                <div className={styles.field}>
-                  <label htmlFor={fid('email')} className={styles.label}>אימייל</label>
-                  <input
-                    id={fid('email')}
-                    type="email"
-                    dir="ltr"
-                    inputMode="email"
-                    className={styles.input}
-                    value={v.email}
-                    onChange={set('email')}
-                    autoComplete="email"
-                    maxLength={LEAD_LIMITS.email}
-                    aria-invalid={!!(errs.email || errs.contact)}
-                    aria-describedby={errs.email ? fid('email-e') : undefined}
-                  />
-                  {errs.email && <span id={fid('email-e')} className={styles.fieldErr}>{errs.email}</span>}
-                </div>
-              </div>
-              <span className={styles.hint}>מספיק טלפון או אימייל, אחד מהם.</span>
-
-              <div className={styles.field}>
-                <label htmlFor={fid('treatment')} className={styles.label}>
-                  טיפול שמעניין אתכם <span className={styles.opt}>(לא חובה)</span>
-                </label>
-                <input
-                  id={fid('treatment')}
-                  className={styles.input}
-                  value={v.treatment}
-                  onChange={set('treatment')}
-                  list={treatments.length ? fid('tx') : undefined}
-                  maxLength={LEAD_LIMITS.treatment}
-                  aria-invalid={!!errs.treatment}
-                />
-                {treatments.length > 0 && (
-                  <datalist id={fid('tx')}>
-                    {treatments.map(t => <option key={t.name} value={t.name} />)}
-                  </datalist>
-                )}
-                {errs.treatment && <span className={styles.fieldErr}>{errs.treatment}</span>}
-              </div>
-              {medical && <p className={styles.medNote}>טיפול רפואי נקבע בתיאום ייעוץ רפואי. העסק יחזור אליכם לתיאום הייעוץ.</p>}
-
-              <div className={styles.field}>
-                <label htmlFor={fid('message')} className={styles.label}>
-                  הודעה <span className={styles.opt}>(לא חובה)</span>
-                </label>
-                <textarea
-                  id={fid('message')}
-                  className={styles.textarea}
-                  value={v.message}
-                  onChange={set('message')}
-                  maxLength={LEAD_LIMITS.message}
-                  placeholder="למשל: מתי נוח לכם שיחזרו אליכם"
-                  aria-invalid={!!errs.message}
-                />
-                {errs.message && <span className={styles.fieldErr}>{errs.message}</span>}
-              </div>
-
-              <div className={styles.trap} aria-hidden="true">
-                <label htmlFor={fid('website')}>אתר</label>
-                <input id={fid('website')} name="website" tabIndex={-1} autoComplete="off" value={website} onChange={e => setWebsite(e.target.value)} />
-              </div>
-
-              {summary && (
-                <p className={styles.summary} role="alert">
-                  {summary}
-                </p>
-              )}
-              <button type="submit" className={styles.submit} disabled={sending}>
-                {sending ? 'שולחים…' : 'שליחת הפנייה'}
-              </button>
-              <p className={styles.fine}>
-                הפרטים מועברים לעסק בלבד, כדי שיחזור אליכם. <Link href={ROUTES.privacy}>מדיניות פרטיות</Link>
-              </p>
-            </form>
-
-            {(branch.whatsapp || branch.phone) && (
-              <div className={styles.alt}>
-                <span className={styles.altLabel}>מעדיפים לדבר עכשיו?</span>
-                {branch.whatsapp && <WhatsAppButton branchId={branch.id} e164={branch.whatsapp} businessName={branch.name} />}
-                {branch.phone && <CallButton branchId={branch.id} e164={branch.phone} />}
-              </div>
-            )}
-          </>
-        )}
+        {content}
       </div>
     </div>
   );
