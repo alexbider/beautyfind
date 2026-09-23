@@ -1,0 +1,60 @@
+/* Toast */
+.toastWrap {
+  position: fixed; z-index: 60; bottom: calc(18px + var(--bf-bottom-bar, 0px)); inset-inline: 0;
+  display: flex; justify-content: center; pointer-events: none; padding: 0 16px;
+}
+.toastWrap[data-raised] { bottom: 88px; }
+.toast {
+  pointer-events: auto; max-width: min(90vw, 440px); padding: 12px 17px; border-radius: 13px;
+  background: var(--navy); color: #fff; font-size: 14px; font-weight: 600; text-wrap: pretty;
+  box-shadow: 0 12px 30px rgba(12, 36, 62, .28); display: flex; align-items: center; gap: 12px;
+  animation: uiPop .16s ease both;
+}
+.toastAction {
+  flex: none; min-height: 44px; margin: -12px 0; border: 0; background: transparent; padding: 0 4px; cursor: pointer;
+  font: inherit; font-size: 14px; font-weight: 700; color: var(--teal-light);
+}
+@keyframes uiPop { from { opacity: 0; transform: scale(.97) } to { opacity: 1; transform: none } }
+
+/* Switch: 44px hit area around a 50×30 track (44×26 when small) */
+.switch {
+  flex: none; min-width: 50px; min-height: 44px; padding: 0; border: 0; background: transparent; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.switch:disabled { cursor: not-allowed; opacity: .45; }
+.track {
+  position: relative; display: block; width: 50px; height: 30px; border-radius: 15px;
+  background: var(--control-off); transition: background .16s;
+}
+.knob {
+  position: absolute; top: 3px; inset-inline-start: 3px; width: 24px; height: 24px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 3px rgba(12, 36, 62, .25); transition: inset-inline-start .16s;
+}
+.switch[data-on] .track { background: var(--teal-deep); }
+.switch[data-on] .knob { inset-inline-start: 23px; }
+.switch[data-size='sm'] { min-width: 44px; }
+.switch[data-size='sm'] .track { width: 44px; height: 26px; border-radius: 13px; }
+.switch[data-size='sm'] .knob { width: 20px; height: 20px; }
+.switch[data-size='sm'][data-on] .knob { inset-inline-start: 21px; }
+
+/* Confirm dialog */
+.dialog {
+  width: min(92vw, 460px); padding: 0; border: 0; border-radius: 18px; background: #fff; color: var(--navy);
+  box-shadow: var(--shadow-modal);
+}
+.dialog::backdrop { background: rgba(12, 36, 62, .45); }
+.dialog[open] { animation: uiPop .18s ease both; }
+.dialogBody { padding: 22px; }
+.dialogTitle { margin: 0 0 8px; font-family: var(--font-display); font-size: 24px; font-weight: 500; letter-spacing: -0.014em; }
+.dialogText { font-size: 14.5px; color: var(--text); text-wrap: pretty; }
+.dialogText p { margin: 0 0 10px; }
+.dialogActions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 16px; }
+
+.btnPrimary, .btnDanger, .btnGhost {
+  min-height: 46px; padding: 0 16px; border-radius: 12px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
+}
+.btnPrimary { border: 0; background: var(--teal-deep); color: #fff; }
+.btnPrimary:hover { background: var(--navy); }
+.btnDanger { border: 0; background: var(--bad-text); color: #fff; }
+.btnGhost { border: 1px solid var(--line); background: #fff; color: var(--text); font-weight: 600; }
+.btnPrimary:disabled, .btnDanger:disabled { background: var(--disabled); cursor: default; }

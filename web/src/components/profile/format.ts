@@ -151,7 +151,8 @@ export const displayUrl = (url: string) => url.replace(/^https?:\/\//i, '').repl
 
 /** Two leading letters of the first two words, for the logo placeholder ("רוטשילד אסתטיקה" → "רא"). */
 export function initials(name: string): string {
-  const words = name.replace(/[״"׳'.]/g, '').split(/\s+/).filter(Boolean);
+  // Titles aren't part of the name: "ד״ר נועה לוי" → "נל".
+  const words = name.replace(/^\s*(ד["״]ר|פרופ['׳]?|dr\.?)\s+/i, '').replace(/[״"׳'.]/g, '').split(/\s+/).filter(Boolean);
   if (words.length === 0) return '';
   if (words.length === 1) return words[0].slice(0, 2);
   return words[0][0] + words[1][0];

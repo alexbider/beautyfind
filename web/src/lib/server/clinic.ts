@@ -24,6 +24,14 @@ export async function isAdvanced(businessId: string) {
   return sub?.plan === 'advanced' && sub.status !== 'cancelled';
 }
 
+/** The viewer's level for a clinic area. Never throws; the /clinic nav uses it to hide `none` areas. */
+export function clinicLevel(ctx: { preview: Preset | null; member: { isOwner: boolean; preset: string | null; permissions: unknown } }, area: ClinicArea): ClinicLevel {
+  const preset: Preset = ctx.preview ?? (ctx.member.isOwner ? 'owner' : isPreset(ctx.member.preset) ? ctx.member.preset : 'practitioner');
+  const stored = (ctx.member.permissions ?? {}) as Record<string, unknown>;
+  const raw = !ctx.preview && !ctx.member.isOwner ? stored[area] : undefined;
+  return raw === 'none' || raw === 'own' || raw === 'view' || raw === 'manage' ? raw : DEFAULTS[preset][area];
+}
+
 /**
  * Context for /clinic pages. 404 when the area is `none` for this role.
  * `advanced: false` means render the upgrade card (the area exists but isn't in the plan).
@@ -31,9 +39,7 @@ export async function isAdvanced(businessId: string) {
 export async function clinicContext(area: ClinicArea) {
   const ctx = await bizContext();
   const preset: Preset = ctx.preview ?? (ctx.member.isOwner ? 'owner' : isPreset(ctx.member.preset) ? ctx.member.preset : 'practitioner');
-  const stored = (ctx.member.permissions ?? {}) as Record<string, unknown>;
-  const raw = !ctx.preview && !ctx.member.isOwner ? stored[area] : undefined;
-  const level: ClinicLevel = raw === 'none' || raw === 'own' || raw === 'view' || raw === 'manage' ? raw : DEFAULTS[preset][area];
+  const level = clinicLevel(ctx, area);
   if (level === 'none') notFound();
   const profession: Profession = ctx.member.profession;
   return {

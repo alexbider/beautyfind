@@ -7,6 +7,7 @@ import { EMAIL_RE, toE164 } from '@/lib/format';
 import { hashPassword, hmac, randomToken, verifyPassword } from '@/lib/server/crypto';
 import { db } from '@/lib/server/db';
 import { sendOtp, verifyOtp } from '@/lib/server/otp';
+import { claimGuestRecords } from '@/lib/server/claim-guest';
 import { createSession } from '@/lib/server/session';
 import { messaging } from '@/lib/vendors/messaging';
 import { ROUTES } from '@/lib/routes';
@@ -75,6 +76,7 @@ export async function verifySigninCode(input: z.input<typeof verifySigninInput>)
   const user = await db.user.findUnique({ where: { phone: p.data.phone } });
   if (!user) return fail('unknown_phone');
   if (!user.phoneVerifiedAt) await db.user.update({ where: { id: user.id }, data: { phoneVerifiedAt: new Date() } });
+  await claimGuestRecords(user);
   await createSession(user.id, p.data.remember);
   return { ok: true, kind: user.kind, redirectTo: destinationFor(user.kind, p.data.next ?? null) };
 }
@@ -183,6 +185,7 @@ export async function completeSignup(input: z.input<typeof completeSignupInput>)
     }
     throw e;
   }
+  await claimGuestRecords(user);
   await createSession(user.id, p.data.remember);
   return { ok: true, kind: user.kind, redirectTo: destinationFor(user.kind, p.data.next ?? null, biz ? form.bizName : undefined) };
 }

@@ -1,14 +1,33 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
+import { mergeLocalSaved, setSavedAction } from '../saved/actions';
 import styles from './SaveHeart.module.css';
 
-// Interim storage until client accounts and the SavedClinic table land (phase 4).
-// Key and shape match the prototype: localStorage['bf-saved'] = [branchId, ...].
+// Saved clinics store shared by every heart on the page (and by /saved).
+// - Signed-in client: SavedClinic rows, read once via GET /saved/api, written via a server action.
+// - Guest (or business account): localStorage['bf-saved'] = [branchId, ...], as in the prototype.
+// On the first load as a signed-in client, any ids left in localStorage are merged into the
+// account once and then cleared.
+
 const KEY = 'bf-saved';
 const EVENT = 'bf-saved-change';
+const STALE_MS = 20_000;
 
-function read(): string[] {
+export interface SavedSnapshot {
+  ready: boolean; // the signed-in check has finished
+  signedIn: boolean;
+  ids: string[]; // newest first for accounts; insertion order for guests
+}
+
+const SERVER_SNAP: SavedSnapshot = { ready: false, signedIn: false, ids: [] };
+let snap: SavedSnapshot = SERVER_SNAP;
+let checkedAt = 0;
+let inflight: Promise<void> | null = null;
+let listening = false;
+const subs = new Set<() => void>();
+
+function readLocal(): string[] {
   try {
     const v = JSON.parse(localStorage.getItem(KEY) || '[]');
     return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
@@ -17,27 +36,104 @@ function read(): string[] {
   }
 }
 
-export function useSaved(id: string) {
-  const [saved, setSaved] = useState(false);
-  useEffect(() => {
-    const sync = () => setSaved(read().includes(id));
-    sync();
-    window.addEventListener(EVENT, sync);
-    window.addEventListener('storage', sync);
-    return () => {
-      window.removeEventListener(EVENT, sync);
-      window.removeEventListener('storage', sync);
-    };
-  }, [id]);
-  const toggle = () => {
-    const list = read();
-    const next = list.includes(id) ? list.filter(x => x !== id) : [...list, id];
+function writeLocal(ids: string[]) {
+  try {
+    if (ids.length) localStorage.setItem(KEY, JSON.stringify(ids));
+    else localStorage.removeItem(KEY);
+  } catch {}
+}
+
+function setSnap(next: Partial<SavedSnapshot>) {
+  snap = { ...snap, ...next };
+  subs.forEach(f => f());
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event(EVENT));
+}
+
+/** Re-checks who is signed in (and their saved ids). Deduplicated; cheap to call on mount. */
+export function refreshSaved(force = false): Promise<void> {
+  if (typeof window === 'undefined') return Promise.resolve();
+  if (!listening) {
+    listening = true;
+    window.addEventListener('storage', e => {
+      if (e.key === KEY && !snap.signedIn) setSnap({ ids: readLocal() });
+    });
+  }
+  if (inflight) return inflight;
+  if (!force && snap.ready && Date.now() - checkedAt < STALE_MS) return Promise.resolve();
+  if (!snap.ready) setSnap({ ids: readLocal() }); // show the browser list while checking
+  inflight = (async () => {
     try {
-      localStorage.setItem(KEY, JSON.stringify(next));
-    } catch {}
-    window.dispatchEvent(new Event(EVENT));
-  };
-  return { saved, toggle };
+      const res = await fetch('/saved/api', { cache: 'no-store', credentials: 'same-origin' });
+      const j = res.ok ? ((await res.json()) as { signedIn?: boolean; ids?: string[] }) : null;
+      if (!j?.signedIn) {
+        setSnap({ ready: true, signedIn: false, ids: readLocal() });
+      } else {
+        let ids = Array.isArray(j.ids) ? j.ids : [];
+        const local = readLocal();
+        if (local.length) {
+          const merged = await mergeLocalSaved(local);
+          if (merged.ok) {
+            writeLocal([]);
+            ids = merged.ids;
+          }
+        }
+        setSnap({ ready: true, signedIn: true, ids });
+      }
+    } catch {
+      setSnap({ ready: true, signedIn: false, ids: readLocal() });
+    } finally {
+      checkedAt = Date.now();
+      inflight = null;
+    }
+  })();
+  return inflight;
+}
+
+/** Save (on = true) or unsave a branch. Optimistic; reverts if the server refuses. */
+export async function setSaved(id: string, on: boolean): Promise<boolean> {
+  if (!snap.ready) await refreshSaved();
+  const before = snap.ids;
+  const has = before.includes(id);
+  if (has === on) return true;
+  if (!snap.signedIn) {
+    const local = readLocal().filter(x => x !== id);
+    const next = on ? [...local, id] : local;
+    writeLocal(next);
+    setSnap({ ids: next });
+    return true;
+  }
+  setSnap({ ids: on ? [id, ...before] : before.filter(x => x !== id) });
+  try {
+    const r = await setSavedAction(id, on);
+    if (r.ok) return true;
+    if (r.reason === 'signed_out') {
+      // Session ended in another tab: fall back to the browser list.
+      await refreshSaved(true);
+      return setSaved(id, on);
+    }
+  } catch {}
+  setSnap({ ids: before });
+  return false;
+}
+
+const subscribe = (f: () => void) => {
+  subs.add(f);
+  return () => subs.delete(f);
+};
+
+/** The whole saved list. */
+export function useSavedIds(): SavedSnapshot {
+  const s = useSyncExternalStore(subscribe, () => snap, () => SERVER_SNAP);
+  useEffect(() => {
+    void refreshSaved();
+  }, []);
+  return s;
+}
+
+export function useSaved(id: string) {
+  const { ids } = useSavedIds();
+  const saved = ids.includes(id);
+  return { saved, toggle: () => void setSaved(id, !saved) };
 }
 
 /**

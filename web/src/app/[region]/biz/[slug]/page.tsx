@@ -15,6 +15,7 @@ import { UnclaimedProfile } from '@/components/profile/Unclaimed';
 import { SaveHeart } from '@/components/save-heart/SaveHeart';
 import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
+import { BOOKING_LIVE } from '@/lib/features';
 import { fromE164, telHref } from '@/lib/format';
 import { getProfile, type PublicProfile } from '@/lib/server/public';
 import { buildView, jsonLd, ldJson, metaDescription, prosLabel, reviewsLabel, similarBusinesses, type ProfileView as View } from './data';
@@ -509,10 +510,14 @@ function BookingCard({ p, v }: { p: PublicProfile; v: View }) {
         {v.open && ` · ${v.open.label}`}
       </p>
 
-      {/* TODO(booking): when /book/[branch] exists (phase 4), the primary action becomes
-          <Link href={`/book/${p.slug}`}>קביעת תור אונליין</Link> (track 'booking_start'), and this
-          contact popup moves to a secondary button. Medical treatments keep "בתיאום ייעוץ רפואי". */}
-      <ContactTrigger className={`${btn.primary} ${styles.bookCta}`}>
+      {/* Online booking (phase 4): shown only once BOOKING_LIVE is flipped. The contact form below stays. */}
+      {BOOKING_LIVE && p.onlineBooking && (
+        <Link href={`/book/${p.slug}`} className={`${btn.primary} ${styles.bookCta}`}>
+          <span>קביעת תור</span>
+          <ArrowForward size={15} />
+        </Link>
+      )}
+      <ContactTrigger className={`${btn.primary} ${styles.bookCta}`} dataTone={BOOKING_LIVE && p.onlineBooking ? 'quiet' : undefined}>
         <MessageGlyph />
         <span>השארת פרטים לתיאום</span>
       </ContactTrigger>

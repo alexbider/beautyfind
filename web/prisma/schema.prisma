@@ -1011,6 +1011,7 @@ model Payment {
 
 enum DocumentType {
   tax_invoice_receipt // issued by a clinic through its invoicing provider
+  receipt // קבלה only: gift card sales, VAT is invoiced when the card is redeemed
   credit_note
   platform_invoice // Israfind Group, no Israeli VAT
 }

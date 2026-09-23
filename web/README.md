@@ -62,17 +62,43 @@ npm run ops:grant -- someone@beautyfind.co.il verifier
 | `/pro/[id]` | Practitioner | `BeautyFind Practitioner.dc.html` |
 | `/treatments` · `/treatments/[category]` | All categories, category explainers | `BeautyFind Treatments.dc.html`, `BeautyFind Treatment Category.dc.html` |
 | `/about` (+ `/editorial`, `/methodology`) · `/listing-standards` (+ `/sponsorship`) | Content pages | `BeautyFind About.dc.html`, `BeautyFind Standards.dc.html` |
-| `/privacy` · `/terms` · `/accessibility` | Legal (company details are `TODO(legal)` placeholders) | `BeautyFind Legal.dc.html` |
+| `/privacy` · `/terms` · `/accessibility` | Legal (Israfind Group, Delaware) | `BeautyFind Legal.dc.html` |
 | `/contact` · `/help` | Contact form (stored as `ContactMessage`), help centre | `BeautyFind Contact.dc.html`, `BeautyFind Help.dc.html` |
 | 404 / error | System states | `BeautyFind States.dc.html` |
 
 Public data comes only from `src/lib/server/public.ts` (live branches of live businesses). Google and BeautyFind ratings are separate fields and never averaged; JSON-LD `aggregateRating` uses BeautyFind reviews only. Profile analytics are recorded through `/api/events` only for visitors who accepted analytics cookies. `sitemap.xml` and `robots.txt` are generated.
 
-`src/lib/features.ts` → `BOOKING_LIVE = false` keeps every public page from claiming or filtering on online booking until phase 4 ships it.
+`src/lib/features.ts` → `BOOKING_LIVE` gates every public claim, count and filter on online booking. It is `true` since phase 4; set it to `false` to take booking offline everywhere at once.
 
 Demo content for local development (36 fictional businesses, treatments, reviews): `npm run db:seed:demo`. It refuses to run in production.
 
 Shared pieces: `SiteHeader` (mega menu), `SiteFooter`, `CookieConsent` (`localStorage['bf-cookie-consent']`), tokens in `src/app/globals.css`, catalog in `src/lib/catalog.ts`, routes in `src/lib/routes.ts`.
+
+### Phase 4: booking, clinic system and money
+
+| Route | Screen | Design file |
+|---|---|---|
+| `/book/[branch]?t=` | Booking: treatment, practitioner, slot, details, deposit checkout | `BeautyFind Booking.dc.html` |
+| `/b/[token]` | Manage booking (guest link): reschedule, cancel with refund, add to calendar | `BeautyFind Manage Booking.dc.html` |
+| `/b/[token]/declaration` (`?kiosk=1` for the reception tablet) | Health declaration, drawn or typed signature | `BeautyFind Health Declaration.dc.html` |
+| `/b/[token]/receipt` · `/receipt/[doc]` | The clinic's documents: tax invoice/receipt, receipt, credit note, refund tracker | `BeautyFind Receipt.dc.html` |
+| `/b/[token]/aftercare` | Aftercare by phase, after the treatment is finished | `BeautyFind Aftercare.dc.html` |
+| `/consult/[branch]?t=` | Consult request for medical treatments (real doctor slots, or preferred times) | `BeautyFind Consult Request.dc.html` |
+| `/waitlist/[branch]?t=` · `/w/[token]` · `/waitlist/leave/[token]` | Join, offer with hold timer, leave | `BeautyFind Waitlist.dc.html` |
+| `/review/[token]` | Verified review, completed bookings only | `BeautyFind Review.dc.html` |
+| `/gift/[branch]` · `/gift/check` | Buy a gift card, check a balance | `BeautyFind Gift Cards.dc.html` |
+| `/account` · `/saved` · `/saved/compare` · `/unsubscribe/[token]` | Client account, saved clinics, compare, one-click unsubscribe | `BeautyFind Account.dc.html`, `BeautyFind Saved.dc.html` |
+| `/clinic` · `/clinic/booking/[id]` | Clinic system: appointments, booking card (check-in, doctor ack, start, finish, no-show, clinic cancel) | `BeautyFind Clinic Booking.dc.html` |
+| `/clinic/consults` · `/clinic/waitlist` · `/clinic/gift-cards` | Consult inbox, waitlist queue, gift card desk and ledger | as above |
+| `/biz/payments` | Connect the business's own payment and invoicing providers, deposit policy | `BeautyFind Dashboard.dc.html` |
+
+How it fits together:
+- **Services** in `src/lib/server/`: `availability.ts` (slot engine), `booking.ts` (create, confirm, cancel, reschedule, holds), `money.ts` (checkout, webhooks, receipts, refunds with credit notes), `waitlist.ts`, `giftcards.ts`, `clinic.ts` (plan and role gates, who may read a declaration), `claim-guest.ts`.
+- **Concurrency:** bookings take a Postgres advisory lock per practitioner and re-check the slot inside it. A deposit holds the slot for 10 minutes.
+- **Clinic features need the advanced plan.** Basic listings book without deposits; clinic pages show an upgrade card.
+- **Health declarations** are sealed with AES-256-GCM (`DATA_KEY`). Only the treating practitioner or the branch's medical doctor can read the answers or the signature, and every read is audit-logged.
+- **Guest to account:** clients book as guests by phone. When the same phone is verified by OTP (sign-up or sign-in), its bookings, waitlist entries, consult requests and consents move to the account.
+- **Local payments:** the `sandbox` provider serves a fake checkout at `/pay/sandbox/[paymentId]`. Production builds refuse it unless `ALLOW_SANDBOX_PAYMENTS=1`. `SITE_URL` must match the address you open, or checkout redirects go elsewhere.
 
 ## Stubs until vendors are chosen
 
@@ -83,7 +109,12 @@ Shared pieces: `SiteHeader` (mega menu), `SiteFooter`, `CookieConsent` (`localSt
 - **Sponsored placements**: no campaigns table yet, so no ממומן cards anywhere (`TODO(sponsored)`).
 - **Map view** on Search: needs branch coordinates (`TODO(map)`).
 - **Magazine / articles**: no CMS yet; links point to `/magazine` (`TODO(cms)`).
-- **Payments / invoices**: a `Subscription` row is created with the chosen plan; nothing is charged.
+- **Platform billing**: a `Subscription` row is created with the chosen plan; nothing is charged to the business yet.
+- **Clinic payment and invoicing providers**: the adapter interfaces and registry are in `src/lib/vendors/payments` and `src/lib/vendors/invoicing`. Only `sandbox` works; Cardcom, Tranzila, Grow, PayPlus, Green Invoice, iCount and EZcount are listed as coming soon.
+- **Scheduler**: nothing runs on a timer yet. Pages close expired holds, offers and waitlist entries when they load. Still missing: M6 review requests, gift card delivery on a future date and expiry reminders, marking cards expired.
+- **Treatment booking from an approved consult**: the approval is recorded, but the clinic books the treatment itself (`TODO(clinic-booking)`).
+- **Inventory**: product batches are recorded on the clinical record; stock is not deducted (`TODO(inventory)`).
+- **Rate limits** for gift card lookups are in memory per server instance; they need a shared store with more than one instance.
 
 ## Conventions
 

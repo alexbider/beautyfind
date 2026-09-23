@@ -1,0 +1,84 @@
+/* Clinic inbox (side=clinic). Design: project/BeautyFind Consult Request.dc.html */
+
+.top { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.topText { flex: 1; min-width: 0; }
+.h1 { margin: 2px 0 0; font-size: clamp(25px, 3.2vw, 32px); }
+.newCount { flex: none; font-size: 13.5px; font-weight: 700; color: var(--teal-deep); }
+
+.filters { margin-bottom: clamp(14px, 1.8vw, 20px); }
+.filterChip { padding: 0 12px; }
+
+.grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(12px, 1.6vw, 18px); align-items: start; }
+@media (min-width: 900px) { .grid { grid-template-columns: 320px minmax(0, 1fr); } }
+
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.item {
+  width: 100%; min-height: 44px; display: flex; flex-direction: column; align-items: stretch; gap: 5px; padding: 12px 14px;
+  border: 1px solid var(--line); border-radius: 14px; background: #fff; font: inherit; text-align: right; cursor: pointer; color: var(--navy);
+}
+.item:hover { border-color: var(--teal-light); }
+.item[aria-current="true"] { background: var(--tint); border-color: var(--teal-light); }
+.itemTop { display: flex; align-items: center; gap: 8px; }
+.itemName { flex: 1; min-width: 0; font-size: 15px; font-weight: 700; }
+.itemWhen { flex: none; font-size: 12px; font-weight: 600; color: var(--subtle); }
+.itemAreas { font-size: 13.5px; color: var(--text); }
+.badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.badge { height: 24px; display: inline-flex; align-items: center; padding: 0 8px; border-radius: 7px; font-size: 12px; font-weight: 700; background: var(--tint); color: var(--teal-deep); }
+.badge[data-tone="wait"], .badge[data-tone="flag"] { background: var(--warn-bg); color: var(--warn-text); }
+.badge[data-tone="ok"] { background: var(--ok-bg); color: var(--ok-text); }
+.badge[data-tone="closed"] { background: #F0F3F5; color: var(--muted); }
+.badgeLg { flex: none; height: 28px; padding: 0 10px; border-radius: 8px; font-size: 12.5px; }
+
+.emptyList { margin: 0; padding: 14px; border: 1px dashed var(--control-off); border-radius: 14px; font-size: 14px; color: var(--muted); }
+.empty { max-width: 620px; background: #fff; border: 1px solid var(--line); border-radius: 17px; padding: clamp(16px, 2vw, 22px); }
+
+.detail { min-width: 0; background: #fff; border: 1px solid var(--line); border-radius: 17px; overflow: hidden; scroll-margin-top: 12px; }
+.detailHead { padding: clamp(15px, 1.8vw, 21px); border-bottom: 1px solid var(--divider); display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.detailName { margin: 0; font-size: 19px; font-weight: 700; }
+.detailName:focus { outline: none; }
+.detailSub { font-size: 13px; color: var(--muted); }
+
+.facts { margin: 0; padding: clamp(15px, 1.8vw, 21px); display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 10px 12px; font-size: 14.5px; }
+.facts dt { color: var(--subtle); }
+.facts dd { margin: 0; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.goal { font-weight: 500 !important; color: var(--text); text-wrap: pretty; }
+.phone { display: inline-flex; align-items: center; min-height: 28px; color: var(--navy); }
+.phone:hover { color: var(--teal-deep); }
+
+.detail .inset { margin: 0 clamp(15px, 1.8vw, 21px) 14px; }
+
+.panel { padding: 14px clamp(15px, 1.8vw, 21px); border-top: 1px solid var(--divider); background: var(--bg-soft); }
+.panelStack { display: flex; flex-direction: column; gap: 11px; }
+.proposed { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border: 1px solid var(--teal-border); border-radius: 11px; background: #fff; }
+.proposedText { flex: 1; min-width: 12em; font-size: 13.5px; font-weight: 600; color: var(--text); }
+
+.btnPrimary, .btnGhost, .btnDanger, .btnBad, .btnText {
+  min-height: 46px; padding: 0 16px; border-radius: 11px; font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer;
+}
+.btnPrimary { border: 0; background: var(--teal-deep); color: #fff; }
+.btnPrimary:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--navy); }
+.btnPrimary:disabled, .btnPrimary[aria-disabled="true"] { background: var(--disabled); cursor: default; }
+.btnGhost { padding: 0 14px; border: 1px solid var(--line); background: #fff; font-weight: 600; color: var(--text); }
+.btnGhost:hover:not(:disabled) { border-color: var(--teal-light); }
+.btnDanger { padding: 0 14px; border: 1px solid var(--bad-line); background: #fff; color: var(--bad-text); }
+.btnBad { border: 0; background: var(--bad-text); color: #fff; }
+.btnBad:disabled { background: #D9B5B1; cursor: default; }
+.btnText { padding: 0 14px; border: 0; background: transparent; font-weight: 600; color: var(--muted); }
+.btnGhost:disabled, .btnDanger:disabled { opacity: .6; cursor: default; }
+
+.gated { display: inline-flex; align-items: center; gap: 8px; }
+.gatedWhy { font-size: 12.5px; font-weight: 700; color: var(--subtle); }
+
+.preview { margin: 0 0 11px; padding: 10px 12px; border: 1px solid var(--teal-border); border-radius: 11px; background: #fff; font-size: 13.5px; color: var(--text); text-wrap: pretty; }
+
+.reasons { display: flex; flex-direction: column; gap: 7px; margin-bottom: 11px; }
+.reason {
+  display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 13px; border: 1px solid var(--line); border-radius: 11px;
+  background: #fff; font: inherit; text-align: right; cursor: pointer;
+}
+.reason[aria-pressed="true"] { background: var(--tint); border-color: var(--teal-light); }
+.reason[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+.reasonName { flex: 1; min-width: 0; font-size: 14px; font-weight: 700; color: var(--navy); }
+.reasonWho { flex: none; font-size: 12px; font-weight: 600; color: var(--subtle); }
+
+.roleNote { margin: 14px 0 0; font-size: 12.5px; color: var(--subtle); text-wrap: pretty; }

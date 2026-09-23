@@ -93,6 +93,9 @@ export async function createBooking(opts: {
   });
   if (!treatment) return { ok: false, error: 'not_found' };
   if (treatment.isMedical) return { ok: false, error: 'medical_needs_consult' };
+  // Staff booking by phone or walk-in may override the online switches; clients may not.
+  const online = (opts.source ?? 'online') === 'online' || opts.source === 'waitlist';
+  if (online && (!treatment.branch.onlineBooking || !treatment.onlineBookable)) return { ok: false, error: 'not_found' };
 
   const duration = treatment.durationMin ?? 60;
   const eligible = await eligiblePractitioners(opts.branchId, treatment);
@@ -222,6 +225,11 @@ export async function cancelBooking(opts: { bookingId: string; by: 'client' | 'c
   }
   if (opts.by === 'clinic') {
     await messaging().send({ channel: 'whatsapp', to: b.clientPhone, template: 'M12_clinic_cancelled', vars: { ref: b.ref, reason: opts.reason }, kind: 'service' });
+  } else if (b.status === 'confirmed') {
+    // An abandoned checkout needs no confirmation; a real appointment does.
+    const vars = { name: b.clientName, ref: b.ref, date: ilDate(b.startsAt), time: hhmm(b.startsAt), refunded: String(refunded / 100), late: late ? '1' : '0' };
+    await messaging().send({ channel: 'whatsapp', to: b.clientPhone, template: 'M13_client_cancelled', vars, kind: 'service' });
+    if (b.clientEmail) await messaging().send({ channel: 'email', to: b.clientEmail, template: 'M13_client_cancelled', vars, kind: 'service' });
   }
   // Offer the freed slot to the waitlist (lib/server/waitlist.ts).
   if (b.startsAt.getTime() > Date.now()) {
@@ -240,6 +248,7 @@ export async function rescheduleBooking(opts: { bookingId: string; startsAt: Dat
   const b = await db.booking.findUnique({ where: { id: opts.bookingId } });
   if (!b || !b.practitionerId) return { ok: false, error: 'not_found' };
   if (b.status !== 'confirmed') return { ok: false, error: 'not_reschedulable' };
+  if (b.startsAt.getTime() === opts.startsAt.getTime()) return { ok: false, error: 'not_reschedulable' };
   const late = opts.by === 'client' && hoursUntil(b) < refundWindowHours(b);
   const oldStart = b.startsAt;
   const ok = await db.$transaction(async tx => {
@@ -259,5 +268,10 @@ export async function rescheduleBooking(opts: { bookingId: string; startsAt: Dat
 
 /** Releases expired payment holds. Safe to call often (e.g. before listing availability). */
 export async function releaseExpiredHolds() {
-  await db.booking.updateMany({ where: { status: 'pending_payment', holdUntil: { lt: new Date() } }, data: { status: 'abandoned' } });
+  const due = await db.booking.findMany({ where: { status: 'pending_payment', holdUntil: { lt: new Date() } }, select: { id: true } });
+  if (!due.length) return;
+  const ids = due.map(b => b.id);
+  await db.booking.updateMany({ where: { id: { in: ids }, status: 'pending_payment' }, data: { status: 'abandoned' } });
+  const { reopenAbandonedWaitlistBookings } = await import('./waitlist');
+  await reopenAbandonedWaitlistBookings(ids);
 }

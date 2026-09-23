@@ -17,7 +17,7 @@ const sandbox: InvoiceAdapter = {
     return { ok: true };
   },
   async issue(_c, req) {
-    const n = (req.type === 'credit_note' ? 'CN-' : 'INV-') + randomDigits(6);
+    const n = (req.type === 'credit_note' ? 'CN-' : req.type === 'receipt' ? 'RC-' : 'INV-') + randomDigits(6);
     return { number: n, providerRef: 'sbx_' + n, pdfUrl: null };
   },
 };

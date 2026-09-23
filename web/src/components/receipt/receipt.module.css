@@ -1,0 +1,105 @@
+/* Receipt. Design: project/BeautyFind Receipt.dc.html */
+.page { min-height: 100vh; overflow-x: clip; background: var(--bg-page); color: var(--navy); line-height: 1.55; }
+
+.header { background: #fff; border-bottom: 1px solid var(--line); }
+.headerIn { max-width: 760px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+@media (min-width: 560px) { .headerIn { padding-inline: 22px; } }
+.logo { display: inline-flex; align-items: center; min-height: 44px; }
+.spacer { flex: 1; min-width: 0; }
+.headBtn {
+  flex: none; min-height: 44px; padding: 0 13px; border: 1px solid var(--line); border-radius: 10px; background: #fff;
+  font: inherit; font-size: 14px; font-weight: 700; color: var(--text); cursor: pointer;
+}
+.headBtn:hover { border-color: var(--navy); }
+.headLink {
+  flex: none; min-height: 44px; display: inline-flex; align-items: center; padding: 0 13px; border-radius: 10px;
+  background: var(--tint); font-size: 14px; font-weight: 700; color: var(--teal-deep);
+}
+.headLink:hover { color: var(--navy); }
+
+.wrap { max-width: 760px; margin: 0 auto; padding: clamp(18px, 3vw, 32px) 16px 60px; display: flex; flex-direction: column; gap: 14px; }
+@media (min-width: 560px) { .wrap { padding-inline: 22px; } }
+
+/* Refund tracker */
+.track { background: #fff; border: 1px solid var(--teal-border); border-radius: 17px; padding: 16px 18px; animation: rcFade .22s ease both; }
+.trackTitle { margin: 0 0 3px; font-size: 16px; font-weight: 700; }
+.trackIntro { margin: 0 0 14px; font-size: 14px; color: var(--muted); text-wrap: pretty; }
+.trackFail { margin: 0 0 12px; padding: 10px 12px; border: 1px solid var(--bad-line); border-radius: 11px; background: var(--bad-bg); font-size: 13.5px; font-weight: 700; color: var(--bad-text); }
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.step { display: flex; gap: 12px; min-height: 52px; }
+.rail { flex: none; display: flex; flex-direction: column; align-items: center; }
+.dot {
+  width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
+  background: var(--control-off); color: #fff; font-size: 12px; font-weight: 800;
+}
+.step[data-done] .dot { background: var(--ok-text); }
+.step[data-cur] .dot { background: var(--teal-deep); }
+.line { flex: 1; width: 2px; background: var(--line); }
+.step[data-done] .line { background: var(--ok-line); }
+.stepText { flex: 1; min-width: 0; padding-bottom: 10px; }
+.stepName { display: block; font-size: 14.5px; font-weight: 700; color: var(--subtle); }
+.step[data-done] .stepName, .step[data-cur] .stepName { color: var(--navy); }
+.stepNote { display: block; font-size: 13px; color: var(--muted); }
+
+/* Document */
+.doc { background: #fff; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; animation: rcPop .2s ease both; }
+.docHead { padding: clamp(18px, 2.6vw, 28px); border-bottom: 1px solid var(--divider); display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+.docTitleBlock { flex: 1 1 240px; min-width: 0; }
+.kicker { display: block; font-size: 13px; font-weight: 700; color: var(--teal-deep); }
+.doc[data-kind='credit'] .kicker { color: var(--warn-text); }
+.doc[data-kind='confirmation'] .kicker { color: var(--muted); }
+.h1 { margin: 3px 0 0; font-family: var(--font-display); font-size: clamp(24px, 3.2vw, 32px); font-weight: 500; letter-spacing: -0.015em; line-height: 1.2; }
+.issued { display: block; margin-top: 2px; font-size: 13.5px; color: var(--muted); }
+.issuer { flex: none; text-align: left; display: flex; flex-direction: column; }
+.issuerName { font-size: 15px; font-weight: 700; }
+.issuerSub { font-size: 13px; color: var(--muted); }
+
+.meta {
+  padding: 14px clamp(18px, 2.6vw, 28px); display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px 20px;
+  font-size: 14px; border-bottom: 1px solid var(--divider);
+}
+@media (min-width: 560px) { .meta { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.metaLabel { color: var(--subtle); }
+
+.lines { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+.lines th { padding: 10px clamp(18px, 2.6vw, 28px); text-align: right; font-size: 12.5px; font-weight: 700; color: var(--muted); background: var(--bg-soft); }
+.lines td { padding: 11px clamp(18px, 2.6vw, 28px); border-top: 1px solid var(--divider); font-weight: 600; color: var(--text); }
+.lines tr[data-soft] td { font-weight: 500; }
+.lines tr[data-strong] td { font-weight: 800; color: var(--navy); }
+.lines .amtCol { text-align: left; white-space: nowrap; }
+
+.docFoot {
+  padding: 14px clamp(18px, 2.6vw, 28px); border-top: 1px solid var(--divider); background: var(--bg-soft);
+  display: flex; flex-direction: column; gap: 5px; font-size: 13.5px; color: var(--text);
+}
+.note { text-wrap: pretty; }
+.pdf {
+  align-self: flex-start; min-height: 44px; display: inline-flex; align-items: center; margin-top: 4px; font-weight: 700; color: var(--teal-deep);
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.pdf:hover { color: var(--navy); }
+
+.fine { margin: 0; font-size: 12.5px; color: var(--subtle); text-wrap: pretty; }
+.fine a { color: var(--teal-deep); }
+
+/* Empty / invalid states */
+.state { background: #fff; border: 1px dashed var(--line-strong); border-radius: 18px; padding: clamp(22px, 4vw, 40px); text-align: center; }
+.stateTitle { margin: 0 0 6px; font-family: var(--font-display); font-size: clamp(22px, 3vw, 28px); font-weight: 500; letter-spacing: -0.014em; }
+.stateText { margin: 0 auto 14px; max-width: 48ch; font-size: 14.5px; color: var(--muted); text-wrap: pretty; }
+.stateBtn {
+  min-height: 46px; display: inline-flex; align-items: center; padding: 0 16px; border-radius: 12px; background: var(--teal-deep);
+  font-size: 15px; font-weight: 700; color: #fff;
+}
+.stateBtn:hover { background: var(--navy); color: #fff; }
+
+@keyframes rcFade { from { opacity: 0; transform: translateY(7px) } to { opacity: 1; transform: none } }
+@keyframes rcPop { from { opacity: 0; transform: scale(.97) } to { opacity: 1; transform: none } }
+
+@media print {
+  .page [data-noprint] { display: none !important; }
+  .page { background: #fff; min-height: 0; }
+  .wrap { padding: 0; max-width: none; }
+  .doc { border-color: #bbb; border-radius: 0; animation: none; break-inside: avoid; }
+  .doc + .doc { break-before: page; }
+  .docFoot, .lines th { background: #fff; }
+}

@@ -8,7 +8,7 @@ export interface InvoiceLine {
 }
 
 export interface IssueRequest {
-  type: 'tax_invoice_receipt' | 'credit_note';
+  type: 'tax_invoice_receipt' | 'receipt' | 'credit_note';
   customer: { name: string; phone?: string | null; email?: string | null };
   lines: InvoiceLine[];
   vatRate: number;

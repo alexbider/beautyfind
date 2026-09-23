@@ -47,7 +47,8 @@ export async function startPayment(opts: {
 }): Promise<StartPaymentResult> {
   const conn = await connectionFor(opts.businessId, 'payments');
   if (!conn) return { ok: false, error: 'no_provider' };
-  const { net, vat } = splitVat(opts.grossAgorot);
+  // A gift card sale is a prepayment: VAT is invoiced when the card is redeemed, not when it's bought.
+  const { net, vat } = opts.purpose === 'gift_card' ? { net: opts.grossAgorot, vat: 0 } : splitVat(opts.grossAgorot);
   const payment = await db.payment.create({
     data: {
       payee: 'business', businessId: opts.businessId, bookingId: opts.bookingId, giftCardId: opts.giftCardId,
@@ -131,26 +132,34 @@ async function onPaid(p: Payment) {
 async function onFailed(p: Payment) {
   if (p.bookingId) {
     // The hold keeps the slot for 10 minutes; a failed payment releases it now.
-    await db.booking.updateMany({ where: { id: p.bookingId, status: 'pending_payment' }, data: { status: 'abandoned', holdUntil: null } });
+    const moved = await db.booking.updateMany({ where: { id: p.bookingId, status: 'pending_payment' }, data: { status: 'abandoned', holdUntil: null } });
+    if (moved.count) {
+      const { reopenAbandonedWaitlistBookings } = await import('./waitlist');
+      await reopenAbandonedWaitlistBookings([p.bookingId]);
+    }
   }
 }
 
-/** The clinic's חשבונית מס/קבלה, issued through its invoicing provider if connected. */
+/**
+ * The clinic's חשבונית מס/קבלה, issued through its invoicing provider if connected.
+ * Gift card sales get a plain קבלה; the tax invoice is issued per redemption (components/gift/server.ts).
+ */
 async function issueReceipt(p: Payment) {
   if (!p.businessId) return;
   const conn = await connectionFor(p.businessId, 'invoicing');
   if (!conn) return; // the business issues documents in its own system
+  const type = p.purpose === 'gift_card' ? 'receipt' : 'tax_invoice_receipt';
   const doc = await invoiceAdapter(conn.provider).issue(conn.credentials, {
-    type: 'tax_invoice_receipt',
+    type,
     customer: { name: p.payerName, phone: p.payerPhone, email: p.payerEmail },
     lines: [{ description: PURPOSE_LINE[p.purpose], qty: 1, unitAgorot: p.netAgorot }],
-    vatRate: VAT_RATE,
+    vatRate: type === 'receipt' ? 0 : VAT_RATE,
     payment: { method: 'card', last4: p.cardLast4 ?? undefined, installments: p.installments },
     sendTo: p.payerEmail,
   });
   await db.document.create({
     data: {
-      issuer: 'business', businessId: p.businessId, type: 'tax_invoice_receipt', number: doc.number, paymentId: p.id,
+      issuer: 'business', businessId: p.businessId, type, number: doc.number, paymentId: p.id,
       lines: [{ description: PURPOSE_LINE[p.purpose], qty: 1, unitAgorot: p.netAgorot }],
       netAgorot: p.netAgorot, vatAgorot: p.vatAgorot, grossAgorot: p.grossAgorot,
       provider: conn.provider, providerRef: doc.providerRef, pdfUrl: doc.pdfUrl, sentTo: p.payerEmail,

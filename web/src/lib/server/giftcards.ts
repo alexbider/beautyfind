@@ -28,7 +28,8 @@ export async function activatePaidGiftCard(giftCardId: string) {
 /** M14: sends the card to the recipient (or the buyer for "self"). Also run by the scheduler for future send dates. */
 export async function deliverGiftCard(giftCardId: string) {
   const g = await db.giftCard.findUnique({ where: { id: giftCardId }, include: { business: { include: { branches: { take: 1 } } } } });
-  if (!g) return;
+  // A cancelled, refunded or unpaid card is never sent.
+  if (!g || (g.status !== 'scheduled' && g.status !== 'active')) return;
   if (g.status === 'scheduled') await db.giftCard.update({ where: { id: g.id }, data: { status: 'active' } });
   const to = g.recipientChannel === 'self' ? g.buyerEmail ?? g.buyerPhone : g.recipientContact;
   if (!to) return;

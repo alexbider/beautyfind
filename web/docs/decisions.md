@@ -14,3 +14,9 @@ Decisions made after the design handoff. The handoff's `08-open-decisions.md` st
 - Architecture: one `PaymentProvider` adapter interface (hosted checkout or tokenised charge, refund, webhook verification) and one `InvoiceProvider` interface (issue receipt/invoice, credit note), with an adapter per provider and a per-business `PaymentConnection` holding encrypted credentials.
 - First adapters to build: Cardcom, Tranzila, Grow (Meshulam), PayPlus for payments; Green Invoice (Morning), iCount, EZcount for invoicing. Others are added behind the same interface.
 - A business without a connected provider can still list and take free bookings; deposits, gift cards and paid consults switch on only after a provider is connected.
+
+**Gift cards: receipt at sale, tax invoice at redemption.** A gift card sale is a prepayment, so the clinic's invoicing provider issues a plain receipt (קבלה) with no VAT when the card is bought. A tax invoice is issued for the amount used at each redemption, so VAT is charged once. Refunds of an unused card go back to the card through the payment provider.
+
+**Guest records follow the verified phone.** Clients can book, join a waitlist or ask for a consult without an account. Signing up or signing in with the same phone, verified by OTP, moves those records to the account. Records that already belong to an account are never moved.
+
+**Online booking is live** (`BOOKING_LIVE = true`). A business can still switch online booking off per branch or per treatment; staff booking by phone or walk-in may override those switches, clients may not.

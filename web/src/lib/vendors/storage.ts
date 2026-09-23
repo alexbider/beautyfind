@@ -10,16 +10,16 @@ export interface StorageAdapter {
   get(key: string): Promise<Buffer | null>;
 }
 
-const ROOT = path.resolve(process.env.UPLOAD_DIR ?? '.data/uploads');
+const ROOT = path.resolve(/*turbopackIgnore: true*/ process.env.UPLOAD_DIR ?? '.data/uploads');
 
 const localAdapter: StorageAdapter = {
   async put(key, body) {
-    const file = path.join(ROOT, key);
+    const file = path.join(/*turbopackIgnore: true*/ ROOT, key);
     await mkdir(path.dirname(file), { recursive: true });
     await writeFile(file, body);
   },
   async get(key) {
-    const file = path.join(ROOT, key);
+    const file = path.join(/*turbopackIgnore: true*/ ROOT, key);
     if (!file.startsWith(ROOT + path.sep)) return null;
     try {
       return await readFile(file);
