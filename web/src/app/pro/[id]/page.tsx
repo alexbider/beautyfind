@@ -9,8 +9,11 @@ import {
   type PractitionerProfession, type PriceType,
 } from '@/components/profile/format';
 import { CheckMark } from '@/components/profile/icons';
+import btn from '@/components/profile/buttons.module.css';
 import { SiteFooter } from '@/components/site-footer/SiteFooter';
+import { ActionBar } from '@/components/shell/ActionBar';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
+import { BOOKING_LIVE } from '@/lib/features';
 import { ROUTES } from '@/lib/routes';
 import { getPractitioner } from './data';
 import styles from './page.module.css';
@@ -65,12 +68,62 @@ export default async function PractitionerPage({ params }: Props) {
   const title = [PROFESSION_NAME[profession], lic.verified ? pr.license?.specialty : null, primary.name].filter(Boolean).join(' · ');
   const branchName = new Map(pr.branches.map(b => [b.id, b.name]));
   const ctaLabel = medical ? 'בקשת ייעוץ' : 'פנייה לעסק';
+  // Phone action bar: book (or book a consult, for medical practitioners) when the branch takes online
+  // booking; otherwise the profile's contact form, as on desktop.
+  const online = BOOKING_LIVE && primary.onlineBooking;
+  const barCta = online
+    ? medical
+      ? { href: `/consult/${primary.slug}`, label: 'קביעת ייעוץ' }
+      : { href: `/book/${primary.slug}`, label: 'קביעת תור' }
+    : { href: `${primary.href}#contact`, label: ctaLabel };
+
+  const licCard = (
+    <div className={styles.lic} data-tone={lic.verified && lic.type === 'doctor' ? 'medical' : undefined}>
+      <div className={styles.licHead}>
+        {lic.respLabel && (
+          <span className={styles.licResp} style={{ color: lic.badgeTone === 'ok' ? 'var(--ok-text)' : 'var(--teal-deep)' }}>
+            {lic.respLabel}
+          </span>
+        )}
+        <span className={styles.licType}>{lic.licType}</span>
+      </div>
+      {lic.verified ? (
+        <>
+          <dl className={styles.licDl}>
+            <dt>מספר</dt>
+            <dd data-num dir="ltr" className="ltr">{lic.number}</dd>
+            <dt>נבדק מול</dt>
+            <dd>{lic.source}</dd>
+            {lic.mohVerified && (
+              <>
+                <dt>סטטוס</dt>
+                <dd>מאומת מול משרד הבריאות</dd>
+              </>
+            )}
+            {pr.license?.verifiedAt && (
+              <>
+                <dt>בדיקה אחרונה</dt>
+                <dd data-num dir="ltr" className="ltr">{shortDate(pr.license.verifiedAt)}</dd>
+              </>
+            )}
+          </dl>
+          <p className={styles.licNote}>
+            {licenseNote(profession, doctorName)} <Link href={ROUTES.listingStandards}>איך אנחנו בודקים</Link>
+          </p>
+        </>
+      ) : (
+        <p className={styles.licPending}>
+          פרטי הרישיון או ההסמכה עדיין לא אומתו ב־BeautyFind. <Link href={ROUTES.listingStandards}>איך אנחנו בודקים</Link>
+        </p>
+      )}
+    </div>
+  );
 
   return (
     <div className={styles.root}>
-      <SiteHeader variant="public" />
+      <SiteHeader variant="public" title={pr.displayName} backHref={primary.href} />
 
-      <div className={styles.crumbs}>
+      <div className={`${styles.crumbs} bf-desk-only`}>
         <nav aria-label="נתיב ניווט" className={styles.trail}>
           <Link href={`/${primary.regionSlug}`}>{primary.region.name}</Link>
           <span aria-hidden="true">/</span>
@@ -96,7 +149,9 @@ export default async function PractitionerPage({ params }: Props) {
             )}
             <h1 id="pr-h" className={styles.h1}>{pr.displayName}</h1>
             <p className={styles.title}>{title}</p>
-            <div className={styles.ctas}>
+            {/* Phones: the license card sits right under the name. */}
+            <div className={`${styles.heroLic} bf-shell-only`}>{licCard}</div>
+            <div className={`${styles.ctas} bf-desk-only`}>
               {/* Full navigation so the profile opens its contact popup from the #contact hash on load. */}
               <a href={`${primary.href}#contact`} className={styles.cta}>{ctaLabel}</a>
               {primary.whatsapp && <WhatsAppButton branchId={primary.id} e164={primary.whatsapp} businessName={primary.name} />}
@@ -168,45 +223,7 @@ export default async function PractitionerPage({ params }: Props) {
           </main>
 
           <aside className={styles.side} aria-label="רישיון ומקום עבודה">
-            <div className={styles.lic} data-tone={lic.verified && lic.type === 'doctor' ? 'medical' : undefined}>
-              <div className={styles.licHead}>
-                {lic.respLabel && (
-                  <span className={styles.licResp} style={{ color: lic.badgeTone === 'ok' ? 'var(--ok-text)' : 'var(--teal-deep)' }}>
-                    {lic.respLabel}
-                  </span>
-                )}
-                <span className={styles.licType}>{lic.licType}</span>
-              </div>
-              {lic.verified ? (
-                <>
-                  <dl className={styles.licDl}>
-                    <dt>מספר</dt>
-                    <dd data-num dir="ltr" className="ltr">{lic.number}</dd>
-                    <dt>נבדק מול</dt>
-                    <dd>{lic.source}</dd>
-                    {lic.mohVerified && (
-                      <>
-                        <dt>סטטוס</dt>
-                        <dd>מאומת מול משרד הבריאות</dd>
-                      </>
-                    )}
-                    {pr.license?.verifiedAt && (
-                      <>
-                        <dt>בדיקה אחרונה</dt>
-                        <dd data-num dir="ltr" className="ltr">{shortDate(pr.license.verifiedAt)}</dd>
-                      </>
-                    )}
-                  </dl>
-                  <p className={styles.licNote}>
-                    {licenseNote(profession, doctorName)} <Link href={ROUTES.listingStandards}>איך אנחנו בודקים</Link>
-                  </p>
-                </>
-              ) : (
-                <p className={styles.licPending}>
-                  פרטי הרישיון או ההסמכה עדיין לא אומתו ב־BeautyFind. <Link href={ROUTES.listingStandards}>איך אנחנו בודקים</Link>
-                </p>
-              )}
-            </div>
+            <div className="bf-desk-only">{licCard}</div>
 
             <div className={styles.box}>
               <h2 className={styles.boxH}>איפה אפשר לפגוש</h2>
@@ -231,6 +248,17 @@ export default async function PractitionerPage({ params }: Props) {
           </aside>
         </div>
       </div>
+
+      <ActionBar mobileOnly>
+        {primary.whatsapp && <WhatsAppButton branchId={primary.id} e164={primary.whatsapp} businessName={primary.name} size="lg" iconOnly />}
+        {primary.phone && <CallButton branchId={primary.id} e164={primary.phone} size="lg" iconOnly />}
+        {/* A plain link for #contact: full navigation so the profile opens its contact popup on load. */}
+        {online ? (
+          <Link href={barCta.href} className={btn.primary} data-size="lg">{barCta.label}</Link>
+        ) : (
+          <a href={barCta.href} className={btn.primary} data-size="lg">{barCta.label}</a>
+        )}
+      </ActionBar>
 
       <SiteFooter wide note="מידע כללי בלבד, לא ייעוץ רפואי" />
     </div>

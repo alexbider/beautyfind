@@ -96,7 +96,7 @@
   min-height: 50px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--teal-deep);
   font: inherit; font-size: 16px; font-weight: 700; color: #ffffff; cursor: pointer; transition: background .16s;
 }
-.primary:hover { background: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .primary:hover { background: var(--navy); } }
 .primary:disabled { cursor: progress; }
 .primaryGap { margin-top: 2px; }
 
@@ -109,7 +109,7 @@
   border: 1px solid var(--line); border-radius: 12px; background: #ffffff;
   font: inherit; font-size: 15px; font-weight: 700; color: var(--navy); cursor: pointer; transition: border-color .16s;
 }
-.alt:hover { border-color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .alt:hover { border-color: var(--navy); } }
 .altIcon {
   display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 7px;
   background: var(--ok-bg); color: var(--ok-text);
@@ -121,7 +121,7 @@
   padding: 0; border: 0; background: transparent; font: inherit; font-size: 14px; font-weight: 700;
   color: var(--teal-deep); cursor: pointer;
 }
-.linkBtn:hover { color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .linkBtn:hover { color: var(--navy); } }
 
 /* Password strength */
 .meter { display: flex; align-items: center; gap: 8px; }
@@ -190,7 +190,7 @@
   align-self: flex-start; min-height: 46px; padding: 0 16px; border: 0; border-radius: 12px; background: var(--teal-deep);
   font: inherit; font-size: 15px; font-weight: 700; color: #ffffff; cursor: pointer; transition: background .16s;
 }
-.sentBtn:hover { background: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .sentBtn:hover { background: var(--navy); } }
 
 /* ---------- Footer line ---------- */
 .legal {
@@ -198,7 +198,7 @@
   font-size: 12.5px; color: var(--subtle); text-wrap: pretty;
 }
 .legal a { color: var(--teal-deep); text-decoration: underline; }
-.legal a:hover { color: var(--navy); }
+@media (hover: hover) and (pointer: fine) { .legal a:hover { color: var(--navy); } }
 
 /* ---------- Aside (wide screens only) ---------- */
 .aside {
@@ -229,7 +229,21 @@
 .stats dt { font-size: 12.5px; color: rgba(255, 255, 255, .72); text-wrap: pretty; }
 
 /* ---------- Toast ---------- */
-.toastRegion { position: fixed; bottom: 18px; right: 50%; transform: translateX(50%); z-index: 40; pointer-events: none; }
+.toastRegion { position: fixed; bottom: calc(var(--bf-float-bottom, 0px) + 18px); right: 50%; transform: translateX(50%); z-index: 70; pointer-events: none; }
+
+/* ---------- App shell: full-screen focused flow under the flow top bar (close ×), content from the top ---------- */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .root { min-height: 100dvh; background: #ffffff; }
+  .shell { min-height: 0; }
+  .main { justify-content: flex-start; padding-top: 12px; padding-bottom: calc(24px + var(--safe-b)); }
+  .roleTabs { margin-bottom: 20px; }
+  .h1 { font-size: 28px; }
+  .input { min-height: 52px; font-size: 16px; }
+  .primary, .otpSubmit { min-height: 52px; }
+  .otpGrid { grid-template-columns: repeat(6, minmax(0, 48px)); gap: 8px; }
+  .otpCell { min-height: 58px; font-size: 24px; }
+  .toastRegion { bottom: calc(var(--bf-float-bottom, 0px) + 12px); }
+}
 .toast {
   width: max-content; max-width: min(90vw, 420px); padding: 12px 17px; border-radius: 13px; background: var(--navy); color: #ffffff;
   font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(12, 36, 62, .28); animation: auPop .16s ease both; text-wrap: pretty;

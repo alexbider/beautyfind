@@ -1,7 +1,22 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { SHEET_MQ } from '@/lib/ui/shell';
+import { BottomSheet } from '../shell/BottomSheet';
 import styles from './ui.module.css';
+
+/** matchMedia as state (false on the server and the first client render). */
+export function useMedia(query: string) {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const sync = () => setOn(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, [query]);
+  return on;
+}
 
 // Small shared pieces for the client pages (account, saved, unsubscribe).
 
@@ -88,7 +103,9 @@ export function ConfirmDialog({
   const ref = useRef<HTMLDialogElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const opener = useRef<Element | null>(null);
+  const sheet = useMedia(SHEET_MQ);
   useEffect(() => {
+    if (sheet) return;
     const d = ref.current;
     if (!d) return;
     if (open && !d.open) {
@@ -98,7 +115,31 @@ export function ConfirmDialog({
     } else if (!open && d.open) {
       d.close();
     }
-  }, [open]);
+  }, [open, sheet]);
+
+  // Phones: the confirmation is a bottom sheet (spec §3), actions stacked in its footer.
+  if (sheet) {
+    return (
+      <BottomSheet
+        open={open}
+        onClose={() => !busy && onClose()}
+        title={title}
+        footer={
+          <div className={styles.sheetActions}>
+            <button type="button" className={danger ? styles.btnDanger : styles.btnPrimary} onClick={onConfirm} disabled={busy} aria-busy={busy || undefined}>
+              {confirmLabel}
+            </button>
+            <button type="button" className={styles.btnGhost} onClick={onClose} disabled={busy}>
+              {cancelLabel}
+            </button>
+          </div>
+        }
+      >
+        <div className={styles.dialogText}>{children}</div>
+      </BottomSheet>
+    );
+  }
+
   return (
     <dialog
       ref={ref}

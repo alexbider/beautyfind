@@ -6,6 +6,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { BOOKING_LIVE } from '@/lib/features';
 import { relHe } from '@/components/profile/format';
 import { setSaved, useSavedIds } from '../save-heart/SaveHeart';
+import { ActionBar } from '../shell/ActionBar';
+import { haptic } from '../shell/haptics';
+import { Segmented } from '../shell/Segmented';
+import { SkeletonRow } from '../shell/Skeleton';
+import { SwipeRow } from '../shell/SwipeRow';
 import { Toast, useToast } from '../account/ui';
 import { publicSavedCards } from './actions';
 import { MAX_COMPARE, clinicsLabel, ratingText, type SavedCard } from './types';
@@ -24,15 +29,28 @@ export const compareHref = (ids: string[]) => (ids.length ? `/saved/compare?ids=
 
 /** Segmented list / compare switcher shared by both views. */
 export function SavedTabs({ current, cmp }: { current: 'list' | 'compare'; cmp: string[] }) {
+  const listHref = cmp.length ? `/saved?ids=${cmp.join(',')}` : '/saved';
   return (
-    <nav aria-label="תצוגה" className={styles.tabs}>
-      <Link href={cmp.length ? `/saved?ids=${cmp.join(',')}` : '/saved'} className={styles.tab} aria-current={current === 'list' ? 'page' : undefined}>
-        שמורות
-      </Link>
-      <Link href={compareHref(cmp)} className={styles.tab} aria-current={current === 'compare' ? 'page' : undefined}>
-        השוואה · <span className="ltr tnum">{cmp.length}</span>
-      </Link>
-    </nav>
+    <>
+      <nav aria-label="תצוגה" className={`${styles.tabs} bf-desk-only`}>
+        <Link href={listHref} className={styles.tab} aria-current={current === 'list' ? 'page' : undefined}>
+          שמורות
+        </Link>
+        <Link href={compareHref(cmp)} className={styles.tab} aria-current={current === 'compare' ? 'page' : undefined}>
+          השוואה · <span className="ltr tnum">{cmp.length}</span>
+        </Link>
+      </nav>
+      <nav aria-label="תצוגה" className={`${styles.segSlot} bf-shell-only`}>
+        <Segmented
+          label="תצוגה"
+          value={current}
+          items={[
+            { key: 'list', label: 'רשימה', href: listHref },
+            { key: 'compare', label: 'השוואה', href: compareHref(cmp), count: cmp.length },
+          ]}
+        />
+      </nav>
+    </>
   );
 }
 
@@ -96,7 +114,10 @@ export function SavedView({ initialCards, initialCmp, serverSignedIn }: { initia
     });
   };
 
-  const toggleCmp = (id: string) => setCmp(x => (x.includes(id) ? x.filter(y => y !== id) : x.length >= MAX_COMPARE ? x : [...x, id]));
+  const toggleCmp = (id: string) => {
+    haptic('light');
+    setCmp(x => (x.includes(id) ? x.filter(y => y !== id) : x.length >= MAX_COMPARE ? x : [...x, id]));
+  };
 
   const trayText =
     cmpLive.length === 1 ? 'נבחרה קליניקה אחת · בחרו עוד אחת לפחות' : `${clinicsLabel(cmpLive.length)} להשוואה${cmpLive.length === MAX_COMPARE ? ' · מקסימום' : ''}`;
@@ -139,7 +160,59 @@ export function SavedView({ initialCards, initialCmp, serverSignedIn }: { initia
         </div>
       )}
 
-      <div className={styles.grid} aria-busy={pending || !store.ready || undefined}>
+      {/* App shell: full-bleed rows, swipe to remove, a compare checkbox at the end of each row. */}
+      <ul className={`${styles.rows} bf-shell-only`} aria-busy={pending || !store.ready || undefined}>
+        {shown.map(c => {
+          const on = cmp.includes(c.id);
+          const locked = !on && cmpLive.length >= MAX_COMPARE;
+          return (
+            <li key={c.id}>
+              <SwipeRow actions={[{ label: 'הסרה', tone: 'danger', onAction: () => unsave(c) }]}>
+                <div className={styles.row} data-cmp={on || undefined}>
+                  <Link href={c.href} className={styles.rowMain}>
+                    <span className={styles.thumb} aria-hidden="true">
+                      {c.coverUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={c.coverUrl} alt="" loading="lazy" />
+                      ) : (
+                        c.name.slice(0, 2)
+                      )}
+                    </span>
+                    <span className={styles.rowText}>
+                      <span className={styles.rowName}>{c.name}</span>
+                      <span className={styles.rowMeta}>{[c.cats, c.city].filter(Boolean).join(' · ')}</span>
+                      <span className={styles.rowRating}>
+                        {c.google ? (
+                          <>Google <span className="ltr tnum">★ {ratingText(c.google.rating)}</span></>
+                        ) : c.beautyfind ? (
+                          <>BeautyFind <span className="ltr tnum">★ {ratingText(c.beautyfind.rating)}</span></>
+                        ) : (
+                          <span className={styles.count}>עדיין אין דירוג</span>
+                        )}
+                      </span>
+                    </span>
+                  </Link>
+                  <button
+                    type="button"
+                    role="checkbox"
+                    aria-checked={on}
+                    aria-disabled={locked || undefined}
+                    aria-label={`להשוואה: ${c.name}`}
+                    className={styles.rowCmp}
+                    onClick={() => !locked && toggleCmp(c.id)}
+                  >
+                    <span className={styles.box} aria-hidden="true">{on ? '✓' : ''}</span>
+                  </button>
+                </div>
+              </SwipeRow>
+            </li>
+          );
+        })}
+        {(!store.ready || pending) && !shown.length && [0, 1, 2].map(i => <li key={i}><SkeletonRow /></li>)}
+      </ul>
+      {shown.length > 0 && <p className={`${styles.swipeHint} bf-shell-only`}>החליקו שורה כדי להסיר אותה, וסמנו עד שלוש להשוואה.</p>}
+
+      <div className={`${styles.grid} bf-desk-only`} aria-busy={pending || !store.ready || undefined}>
         {shown.map(c => {
           const on = cmp.includes(c.id);
           const locked = !on && cmpLive.length >= MAX_COMPARE;
@@ -190,8 +263,18 @@ export function SavedView({ initialCards, initialCmp, serverSignedIn }: { initia
         {(!store.ready || pending) && !shown.length && [0, 1, 2].map(i => <div key={i} className={styles.skeleton} aria-hidden="true" />)}
       </div>
 
+      {/* App shell: the compare tray replaces the action bar (spec §2.3). */}
       {cmpLive.length > 0 && (
-        <div role="region" aria-label="סל השוואה" className={styles.tray}>
+        <ActionBar mobileOnly hint={<span role="status">{trayText}</span>}>
+          <button type="button" className={styles.barClear} onClick={() => setCmp([])}>ניקוי</button>
+          <button type="button" className={styles.barGo} disabled={cmpLive.length < 2} onClick={() => router.push(compareHref(cmpLive))}>
+            השוואה
+          </button>
+        </ActionBar>
+      )}
+
+      {cmpLive.length > 0 && (
+        <div role="region" aria-label="סל השוואה" className={`${styles.tray} bf-desk-only`}>
           <span className={styles.trayText}>{trayText}</span>
           <button type="button" className={styles.trayClear} onClick={() => setCmp([])}>ניקוי</button>
           <button type="button" className={styles.trayGo} disabled={cmpLive.length < 2} onClick={() => router.push(compareHref(cmpLive))}>
