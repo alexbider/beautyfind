@@ -7,10 +7,10 @@
   --ob-gal: repeat(2, minmax(0, 1fr));
   min-height: 100dvh; overflow-x: clip; background: var(--bg-page); color: var(--navy); line-height: 1.55;
 }
-@media (min-width: 560px) {
+@media (min-width: 480px) {
   .root { --ob-pad: 22px; --ob-two: repeat(2, minmax(0, 1fr)); --ob-cat: repeat(3, minmax(0, 1fr)); --ob-gal: repeat(3, minmax(0, 1fr)); }
 }
-@media (min-width: 1020px) {
+@media (min-width: 1024px) {
   .root { --ob-cat: repeat(4, minmax(0, 1fr)); }
 }
 
@@ -38,11 +38,11 @@
 /* ---------- Layout ---------- */
 .page { max-width: 1200px; margin: 0 auto; padding: clamp(16px, 2.4vw, 28px) var(--ob-pad) 60px; }
 .shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(14px, 1.8vw, 20px); align-items: start; }
-@media (min-width: 1020px) {
+@media (min-width: 1024px) {
   .shell { grid-template-columns: minmax(0, 1fr) 300px; }
 }
 /* The side column holds rail + plan + tip, so it needs more height than the design's 700px gate. */
-@media (min-width: 1020px) and (min-height: 820px) {
+@media (min-width: 1024px) and (min-height: 700px) {
   .side { position: sticky; top: 18px; }
 }
 .main { min-width: 0; display: flex; flex-direction: column; gap: 13px; }
@@ -352,6 +352,6 @@
 }
 
 /* Keep 16px inputs on phones so iOS does not zoom on focus (matches globals.css). */
-@media (max-width: 760px) {
+@media (max-width: 767px) {
   .input, .svcInput, .time { font-size: 16px; }
 }

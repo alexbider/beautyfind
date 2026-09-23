@@ -14,10 +14,10 @@
   color: #0C243E;
   line-height: 1.55;
 }
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .root { --vf-pad: 22px; --vf-cmp: repeat(2, minmax(0, 1fr)); }
 }
-@media (min-width: 960px) {
+@media (min-width: 1024px) {
   .root { --vf-shell: 340px minmax(0, 1fr); }
 }
 

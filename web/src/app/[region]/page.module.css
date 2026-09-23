@@ -14,7 +14,7 @@ ol.crumbs { font-size: 13px; }
 .lede { margin: 0; font-size: clamp(16.5px, 1.15vw, 19px); line-height: 1.62; color: var(--text); text-wrap: pretty; max-width: 58ch; }
 .heroCtas { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 4px; }
 .heroFig { margin: 0; position: relative; min-height: clamp(220px, 46vw, 340px); background: #EDF1F3; overflow: hidden; }
-@media (min-width: 1180px) {
+@media (min-width: 1280px) {
   .hero { grid-template-columns: minmax(0, 1fr) minmax(320px, 42%); }
   .heroCopy { padding-right: max(32px, calc((100vw - 1320px) / 2 + 32px)); }
   .heroFig { min-height: 100%; }
@@ -26,7 +26,7 @@ ol.crumbs { font-size: 13px; }
   margin: 0 auto; max-width: 1320px; padding: clamp(18px, 2vw, 26px) var(--gutter);
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px clamp(18px, 2.4vw, 34px);
 }
-@media (min-width: 620px) {
+@media (min-width: 768px) {
   .stats[data-cols='3'] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .stats[data-cols='4'] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
@@ -46,9 +46,9 @@ ol.crumbs { font-size: 13px; }
 /* Cities */
 .cities { scroll-margin-top: 92px; }
 .cityGrid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-@media (min-width: 620px) { .cityGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (min-width: 1000px) { .cityGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-@media (min-width: 1180px) { .cityGrid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (min-width: 768px) { .cityGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .cityGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 1280px) { .cityGrid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 .cityCard {
   display: flex; flex-direction: column; gap: 2px; min-height: 76px; justify-content: center; padding: 12px 14px;
   border: 1px solid var(--line); border-radius: 13px; background: #ffffff; transition: border-color .2s, background .2s, transform .2s;
@@ -59,7 +59,7 @@ ol.crumbs { font-size: 13px; }
 
 /* Categories table-list */
 .catHeader { display: none; align-items: center; gap: 14px; padding: 0 14px 8px; font-size: 11.5px; font-weight: 700; color: var(--subtle); }
-@media (min-width: 1180px) { .catHeader { display: flex; } }
+@media (min-width: 1280px) { .catHeader { display: flex; } }
 .catList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .catList > li { animation: bfCard .38s var(--ease-out) both; }
 .catRow {

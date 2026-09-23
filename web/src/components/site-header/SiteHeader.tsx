@@ -5,7 +5,9 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { GROUP_ORDER, MENU_REGION_ORDER, categoriesInGroup, citiesOf, cityHref, regionBySlug } from '@/lib/catalog';
 import { ROUTES } from '@/lib/routes';
+import { TABS, isTabRoot } from '@/lib/ui/shell';
 import { ChevronDown } from '../icons';
+import { SearchIcon, TopBar } from '../shell/TopBar';
 import { Wordmark } from '../Wordmark';
 import styles from './SiteHeader.module.css';
 
@@ -25,9 +27,23 @@ const MEGA_CITY_LIMIT = 9;
  * Desktop ≥760px: nav + mega menu. Below: hamburger opening a full-screen sheet.
  * Breakpoints are CSS media queries only, so SSR markup is correct at any width.
  */
-export function SiteHeader({ variant = 'business' }: { variant?: HeaderVariant }) {
+export function SiteHeader({
+  variant = 'business',
+  title,
+  backHref,
+  largeTitle,
+}: {
+  variant?: HeaderVariant;
+  /** App shell (phones): title of a pushed screen, shown centred in the top bar. */
+  title?: string;
+  /** App shell: where back goes on a deep link. */
+  backHref?: string;
+  /** App shell: large title for a root screen. */
+  largeTitle?: string;
+}) {
   const pub = variant === 'public';
   const path = usePathname() ?? '';
+  const root = isTabRoot(TABS.client, path);
   const cur = (prefix: string) => (path === prefix || path.startsWith(prefix + '/') ? ('page' as const) : undefined);
   const [menu, setMenu] = useState<Menu>(null);
   const [megaIndex, setMegaIndex] = useState(0);
@@ -88,7 +104,14 @@ export function SiteHeader({ variant = 'business' }: { variant?: HeaderVariant }
 
   return (
     <>
-      <header className={styles.header}>
+      <TopBar
+        mode={root ? 'root' : 'pushed'}
+        title={title}
+        largeTitle={largeTitle}
+        backHref={backHref ?? '/'}
+        actions={path === '/search' ? [] : [{ label: 'חיפוש', href: '/search', icon: SearchIcon }]}
+      />
+      <header className={`${styles.header} bf-desk-only`}>
         <div className={styles.bar} data-wide={pub || undefined}>
           <Link href="/" aria-label="BeautyFind, לדף הבית" className={styles.brand} onClick={close}>
             <Wordmark size={28} />
@@ -159,7 +182,7 @@ export function SiteHeader({ variant = 'business' }: { variant?: HeaderVariant }
       </header>
 
       {mobileOpen && (
-        <div role="dialog" aria-label="תפריט" className={styles.sheet}>
+        <div role="dialog" aria-label="תפריט" className={`${styles.sheet} bf-desk-only`}>
           {!pub && (
             <div className={styles.sheetTabs}>
               <button type="button" className={styles.sheetTab} data-on={locOpen || undefined} onClick={() => toggle('loc')}>אזורים</button>

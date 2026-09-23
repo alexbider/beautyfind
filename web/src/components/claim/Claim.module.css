@@ -323,12 +323,12 @@
 .footerBottom span { font-size: 13px; color: rgba(255, 255, 255, .66); }
 
 /* ---------- Breakpoints ---------- */
-@media (min-width: 620px) {
+@media (min-width: 768px) {
   .methods, .nextSteps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .day { grid-template-columns: 120px minmax(0, 1fr); }
 }
-@media (min-width: 1000px) {
+@media (min-width: 1024px) {
   .nav, .helpDesk { display: flex; }
   .helpMobile, .mobileNote { display: none; }
   .layout { grid-template-columns: minmax(240px, 300px) minmax(0, 1fr); }
@@ -337,6 +337,6 @@
   .stepNote { display: block; }
   .railInfo { display: flex; }
 }
-@media (min-width: 1000px) and (min-height: 760px) {
+@media (min-width: 1024px) and (min-height: 700px) {
   .rail { position: sticky; }
 }

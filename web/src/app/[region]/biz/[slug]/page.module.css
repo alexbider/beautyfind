@@ -1,7 +1,7 @@
 /* Business Profile. Design: project/BeautyFind Business Profile.dc.html.
    Breakpoints mirror the design's MQ: mid 620, desk 760, twoStep 900, wide 1024, tall (sticky card). */
 .root { overflow-x: clip; background: #ffffff; min-height: 100dvh; }
-@media (max-width: 759px) { .root { padding-bottom: 84px; } }
+@media (max-width: 767px) { .root { padding-bottom: 84px; } }
 .wrap { max-width: 1280px; margin: 0 auto; padding-inline: var(--gutter); }
 
 /* Breadcrumbs */
@@ -22,7 +22,7 @@
   padding-top: clamp(26px, 3vw, 40px);
 }
 .aside { order: -1; align-self: stretch; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
-@media (min-width: 900px) {
+@media (min-width: 1024px) {
   .main { grid-template-columns: minmax(0, 1fr) minmax(296px, 340px); }
   .aside { order: 0; }
 }
@@ -68,7 +68,7 @@
 .facts {
   margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; background: #ffffff;
 }
-@media (min-width: 620px) and (max-width: 899px), (min-width: 1024px) {
+@media (min-width: 768px) {
   .facts { grid-template-columns: repeat(var(--n), minmax(0, 1fr)); }
 }
 .fact { display: flex; align-items: flex-start; gap: 13px; padding: 20px; background: #ffffff; box-shadow: -1px 0 0 var(--line), 0 1px 0 var(--line); }
@@ -92,8 +92,8 @@
 
 /* Team */
 .team { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
-@media (min-width: 520px) { .team { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (min-width: 760px) and (max-width: 899px), (min-width: 1200px) { .team { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 480px) { .team { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 768px) and (max-width: 1023px), (min-width: 1280px) { .team { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .person {
   display: flex; flex-direction: column; gap: 12px; padding: 18px; border: 1px solid var(--line); border-radius: 18px; background: #ffffff;
   color: inherit; transition: border-color .22s, box-shadow .22s;
@@ -122,7 +122,7 @@
 /* Location */
 .loc { border: 1px solid var(--line); border-radius: 20px; overflow: hidden; background: #ffffff; }
 .map { position: relative; height: 300px; background: linear-gradient(#F4F7F8, #E9EFF1); }
-@media (max-width: 619px) { .map { height: 220px; } }
+@media (max-width: 767px) { .map { height: 220px; } }
 .mapGrid { position: absolute; inset: 0; background-image: linear-gradient(rgba(12, 36, 62, .05) 1px, transparent 1px), linear-gradient(90deg, rgba(12, 36, 62, .05) 1px, transparent 1px); background-size: 46px 46px; }
 .mapRoadH { position: absolute; left: 0; right: 0; top: 38%; height: 14px; background: #ffffff; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); transform: rotate(-2deg); }
 .mapRoadV { position: absolute; top: 0; bottom: 0; right: 44%; width: 14px; background: #ffffff; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
@@ -130,7 +130,7 @@
 .mapLabel { padding: 7px 12px; border-radius: 9px; background: var(--navy); color: #ffffff; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
 .mapDot { width: 14px; height: 14px; border-radius: 50%; background: var(--teal); border: 3px solid #ffffff; box-shadow: 0 2px 8px rgba(12, 36, 62, .28); }
 .travel { display: grid; grid-template-columns: minmax(0, 1fr); border-top: 1px solid var(--line); }
-@media (min-width: 620px) and (max-width: 899px), (min-width: 1024px) { .travel { grid-template-columns: repeat(var(--n), minmax(0, 1fr)); } }
+@media (min-width: 768px) { .travel { grid-template-columns: repeat(var(--n), minmax(0, 1fr)); } }
 .travelCell { display: flex; flex-direction: column; gap: 5px; padding: 16px 20px; background: #ffffff; box-shadow: -1px 0 0 var(--line), 0 1px 0 var(--line); }
 .travelLabel { font-size: 12.5px; font-weight: 700; color: var(--subtle); }
 .travelValue { font-size: 15px; line-height: 1.5; color: var(--text); text-wrap: pretty; }
@@ -141,8 +141,8 @@
 
 /* Similar businesses */
 .similar { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
-@media (min-width: 560px) { .similar { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (min-width: 760px) and (max-width: 899px), (min-width: 1200px) { .similar[data-n="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 480px) { .similar { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 768px) and (max-width: 1023px), (min-width: 1280px) { .similar[data-n="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .simCard { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: #ffffff; color: inherit; transition: border-color .22s, box-shadow .22s, transform .22s; }
 .simCard:hover { border-color: var(--line-strong); box-shadow: var(--shadow-card); transform: translateY(-3px); color: inherit; }
 .simImg { position: relative; aspect-ratio: 16 / 10; background: #EDF1F3; }
@@ -156,7 +156,7 @@
 /* Sidebar booking card: ONE card, sticky with the page (never its own scroll box).
    It needs ~88px + ~730px of height, so below that it scrolls with the page (design MQ.tall). */
 .book { padding: 22px; border: 1px solid var(--line); border-radius: 20px; background: #ffffff; box-shadow: 0 18px 44px rgba(12, 36, 62, .08); }
-@media (min-width: 1000px) and (min-height: 850px) { .book { position: sticky; top: 88px; z-index: 2; } }
+@media (min-width: 1024px) and (min-height: 700px) { .book { position: sticky; top: 88px; z-index: 2; } }
 .bookHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .bookTitle { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 22px; line-height: 1.25; }
 .verified { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 0 10px; border-radius: 7px; background: var(--tint); font-size: 11.5px; font-weight: 700; color: var(--teal-deep); }
@@ -190,7 +190,7 @@
 
 /* Mobile CTA bar (design: mobileBar, below 760px). */
 .bar { display: none; }
-@media (max-width: 759px) {
+@media (max-width: 767px) {
   .bar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; gap: 10px;
     padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); background: rgba(255, 255, 255, .96);

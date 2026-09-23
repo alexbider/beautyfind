@@ -1,11 +1,11 @@
 .layout {
   display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(22px, 2.6vw, 44px); align-items: start;
 }
-@media (min-width: 1000px) { .layout { grid-template-columns: minmax(240px, 286px) minmax(0, 1fr); } }
+@media (min-width: 1024px) { .layout { grid-template-columns: minmax(240px, 286px) minmax(0, 1fr); } }
 
 /* ---------- Rail ---------- */
 .rail { min-width: 0; top: 88px; display: flex; flex-direction: column; gap: 14px; }
-@media (min-width: 1000px) and (min-height: 760px) { .rail { position: sticky; } }
+@media (min-width: 1024px) and (min-height: 700px) { .rail { position: sticky; } }
 .groupNav { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: #ffffff; }
 .railHead { padding: 13px 16px; border-bottom: 1px solid var(--line); background: var(--bg-soft); font-size: 12.5px; font-weight: 700; color: var(--subtle); }
 .groupLink {
@@ -37,7 +37,7 @@
 /* ---------- Filters ---------- */
 .content { min-width: 0; }
 .filters { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin-bottom: 22px; }
-@media (min-width: 1180px) { .filters { grid-template-columns: minmax(0, 1fr) minmax(0, 330px); } }
+@media (min-width: 1280px) { .filters { grid-template-columns: minmax(0, 1fr) minmax(0, 330px); } }
 .searchBox {
   position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 16px;
   background: #ffffff; border: 1px solid var(--line-strong); border-radius: 13px; cursor: text;
@@ -82,7 +82,7 @@
 .groupMeta { font-size: 13px; color: var(--subtle); }
 
 .colHead { display: none; align-items: center; gap: 14px; padding: 0 14px 8px; font-size: 11.5px; font-weight: 700; color: var(--subtle); }
-@media (min-width: 1180px) { .colHead { display: flex; } }
+@media (min-width: 1280px) { .colHead { display: flex; } }
 .cImg { flex: none; width: 56px; }
 .cName { flex: 1; min-width: 190px; display: flex; flex-direction: column; gap: 3px; }
 .cResp { flex: none; width: 118px; }

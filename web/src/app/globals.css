@@ -34,6 +34,7 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; background: #ffffff; }
+html { overflow-x: clip; }
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
 body {
   font-family: var(--font-ui);
@@ -50,9 +51,10 @@ a:hover { color: var(--teal-deep); }
 ::selection { background: rgba(20, 179, 198, .25); }
 * { -webkit-tap-highlight-color: transparent; }
 button, a[href], [role="button"], summary, label { touch-action: manipulation; }
-button:not(:disabled):active, a[href]:active, [role="button"]:active { transform: scale(.985); }
+@media (hover: hover) and (pointer: fine) { button:not(:disabled):active, a[href]:active, [role="button"]:active { transform: scale(.985); } }
 img, svg, video { max-width: 100%; }
-@media (max-width: 760px) { input, select, textarea { font-size: 16px; } }
+/* 16px form text on touch screens prevents iOS zoom on focus. */
+@media (max-width: 1023px) { input, select, textarea { font-size: 16px; } }
 
 /* Numbers, phones, emails, codes and star rows inside Hebrew text. */
 .ltr { direction: ltr; unicode-bidi: isolate; }
@@ -70,12 +72,43 @@ img, svg, video { max-width: 100%; }
 @keyframes bfUp { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: none } }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
+  /* Slides and scales off; short fades (≤120ms) stay. */
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   html { scroll-behavior: auto; }
 }
 
-/* Pages with a fixed bottom action bar mark it with [data-bottom-bar]; floating UI (the cookie pill) sits above it. */
-:root { --bf-bottom-bar: 0px; }
-@media (max-width: 759px) {
-  :root:has([data-bottom-bar]) { --bf-bottom-bar: 76px; }
+/* ---------- App shell (responsive spec §1, §2) ----------
+   Breakpoints: xs 0 · sm 480 · md 768 · lg 1024 · xl 1280. CSS media queries only.
+   The shell (top bar, tab bar, action bar) applies in:
+     @media (max-width: 767px), (max-width: 1023px) and (hover: none)
+   Hover effects belong under (hover: hover) and (pointer: fine); touch gets pressed states.
+   Tall sticky sidebars also need (min-height: 700px). */
+:root {
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --topbar-h: 56px;
+  --tabbar-h: 64px;
+  --tabbar-offset: 0px;   /* distance from the bottom edge to the first free pixel above the tab bar */
+  --action-safe: var(--safe-b);
+  --bf-bottom-bar: 0px;   /* height of a sticky action bar, when the page has one */
+  --bf-float-bottom: calc(var(--tabbar-offset) + var(--bf-bottom-bar)); /* toasts, pills, FABs sit above this */
 }
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  :root:has([data-tabbar]) { --tabbar-offset: calc(var(--tabbar-h) + var(--safe-b)); --action-safe: 0px; }
+  :root:has([data-bottom-bar]) { --bf-bottom-bar: 76px; }
+  body { padding-bottom: calc(var(--tabbar-offset) + var(--bf-bottom-bar)); }
+  /* Pressed state within 50ms on every tappable element. */
+  button:not(:disabled):active, a[href]:active, [role="button"]:active, [role="tab"]:active, [role="radio"]:active { transform: scale(.97); transition: transform 50ms; }
+}
+/* A sheet is open: the page behind never scrolls or rubber-bands. */
+html.bf-sheet-open, html.bf-sheet-open body { overflow: hidden; overscroll-behavior: none; }
+
+/* Page transitions (root template): push = 24px slide from the left (RTL forward) + fade, 200ms. */
+@keyframes bfPush { from { opacity: 0; transform: translateX(-24px) } to { opacity: 1; transform: none } }
+.bf-page { overflow-x: clip; }
+.bf-page-in { animation: bfPush .2s var(--ease-out) both; }
+@media (min-width: 1024px) and (hover: hover) { .bf-page-in { animation: bfFade .12s ease both; } }
+
+/* Desktop-only / shell-only wrappers for pages that render both a website header and the app shell. */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) { .bf-desk-only { display: none !important; } }
+@media not all and (max-width: 767px) { @media not all and (max-width: 1023px) and (hover: none) { .bf-shell-only { display: none !important; } } }

@@ -1,0 +1,78 @@
+/* Mobile top bar (spec §2.1). Hidden outside the app shell media query. */
+.shell { display: none; }
+
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  /* contents: the sticky bar must stick to the page, not to this wrapper */
+  .shell { display: contents; }
+}
+
+.sentinel { position: absolute; top: 0; height: 4px; width: 1px; pointer-events: none; }
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 56px;
+  align-items: center;
+  height: calc(var(--topbar-h) + var(--safe-t));
+  padding: var(--safe-t) 4px 0;
+  background: #fff;
+  border-bottom: 1px solid transparent;
+  transition: border-color .12s;
+}
+.bar[data-scrolled] { border-bottom-color: var(--line); }
+.bar[data-mode='root'] { grid-template-columns: auto minmax(0, 1fr) auto; padding-inline: 16px 8px; }
+
+.start, .end { display: flex; align-items: center; min-width: 0; }
+.end { justify-content: flex-end; gap: 2px; }
+
+.brand { display: inline-flex; align-items: center; min-height: 44px; }
+
+.iconBtn {
+  display: inline-grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 24px;
+  background: transparent;
+  color: var(--navy);
+  cursor: pointer;
+}
+.iconBtn:active { background: var(--bg-page); transform: scale(.94); }
+.iconSpacer { width: 48px; height: 48px; }
+
+.title { min-width: 0; text-align: center; }
+.title[data-root] { text-align: center; }
+.titleText {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 700;
+  animation: bfFade .12s ease both;
+}
+
+.progress {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 3px;
+  background: var(--divider);
+}
+.progress > span { display: block; height: 100%; background: var(--teal-deep); transition: width .24s var(--ease-out); }
+.bar:has(.progress) { position: sticky; }
+
+.stepText { margin: 8px 16px 0; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+
+.large {
+  margin: 4px 16px 10px;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}

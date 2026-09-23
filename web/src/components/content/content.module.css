@@ -300,14 +300,14 @@
 .ctaGhost:hover { border-color: var(--teal-light); color: var(--teal-light); }
 
 /* ---------- Breakpoints ---------- */
-@media (min-width: 620px) {
+@media (min-width: 768px) {
   .stats, .rules { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .team, .plans { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .stackRow { grid-template-columns: 56px minmax(0, 1fr); }
   .root[data-variant='legal'] .secHead { grid-template-columns: 44px minmax(0, 1fr); }
 }
 
-@media (min-width: 1000px) {
+@media (min-width: 1024px) {
   .mainGrid { grid-template-columns: minmax(220px, 260px) minmax(0, 1fr); }
   .root[data-variant='legal'] .mainGrid { grid-template-columns: minmax(220px, 268px) minmax(0, 1fr); }
   .rail { display: flex; flex-direction: column; gap: 14px; }
@@ -318,7 +318,7 @@
 }
 
 /* Sticky rail only when it fits: the inner rail scrolls if it is still taller than the viewport. */
-@media (min-width: 1000px) and (min-height: 700px) {
+@media (min-width: 1024px) and (min-height: 700px) {
   .rail {
     position: sticky; top: 88px; max-height: calc(100dvh - 104px); overflow-y: auto; scrollbar-width: thin;
     /* Room for focus rings inside the scrolling rail. */
@@ -326,7 +326,7 @@
   }
 }
 
-@media (min-width: 1180px) {
+@media (min-width: 1280px) {
   .introGrid { grid-template-columns: minmax(0, 1fr) minmax(300px, 380px); }
   .root[data-variant='legal'] .introGrid { grid-template-columns: minmax(0, 1fr) minmax(280px, 360px); }
 }

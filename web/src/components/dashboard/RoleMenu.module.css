@@ -13,7 +13,7 @@
 }
 .as { display: none; font-weight: 500; color: var(--subtle); }
 .name { white-space: nowrap; }
-@media (min-width: 1000px) { .as { display: inline; } }
+@media (min-width: 1024px) { .as { display: inline; } }
 .menu {
   position: absolute; top: 50px; left: 0; width: 272px; z-index: 60; padding: 6px; background: #ffffff;
   border: 1px solid var(--line); border-radius: 15px; box-shadow: 0 18px 42px rgba(12, 36, 62, .14);

@@ -1,7 +1,7 @@
 /* Saved + Compare. Design: project/BeautyFind Saved.dc.html */
 .page { min-height: 100vh; overflow-x: clip; background: var(--bg-soft); color: var(--navy); line-height: 1.55; }
 .wrap { max-width: 1160px; margin: 0 auto; padding: clamp(16px, 2.4vw, 28px) 16px 120px; }
-@media (min-width: 640px) { .wrap { padding-inline: 22px; } }
+@media (min-width: 768px) { .wrap { padding-inline: 22px; } }
 
 .head { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
 .headText { flex: 1 1 300px; min-width: 0; }
@@ -43,8 +43,8 @@
 .btnPrimary:hover { background: var(--navy); color: #fff; }
 
 .grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; animation: svFade .22s ease both; }
-@media (min-width: 640px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (min-width: 1000px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 768px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
 .card { min-width: 0; background: #fff; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; }
 .card[data-cmp] { border-color: var(--teal-light); }

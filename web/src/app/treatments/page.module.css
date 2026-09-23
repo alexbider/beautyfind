@@ -5,7 +5,7 @@
   max-width: 1320px; margin: 0 auto; padding: clamp(28px, 3.4vw, 52px) var(--gutter);
   display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(22px, 3vw, 48px); align-items: start;
 }
-@media (min-width: 1180px) { .introInner { grid-template-columns: minmax(0, 1fr) minmax(320px, 400px); } }
+@media (min-width: 1280px) { .introInner { grid-template-columns: minmax(0, 1fr) minmax(320px, 400px); } }
 .introCopy { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
 .h1 {
   margin: 0; font-family: var(--font-display); font-weight: 500; font-size: clamp(32px, 3.6vw, 52px); line-height: 1.08;
@@ -28,8 +28,8 @@
 
 /* Popular */
 .popular { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(12px, 1.4vw, 18px); }
-@media (min-width: 620px) { .popular { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (min-width: 1000px) { .popular { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 768px) { .popular { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .popular { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .popular > li { animation: bfCard .42s var(--ease-out) both; }
 .popCard {
   position: relative; display: flex; flex-direction: column; justify-content: flex-end; min-height: 190px; padding: 16px;

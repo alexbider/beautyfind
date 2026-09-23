@@ -43,7 +43,7 @@
 }
 .burger span { display: block; width: 18px; height: 1.5px; background: var(--navy); }
 
-@media (min-width: 760px) {
+@media (min-width: 768px) {
   .nav, .actions { display: flex; }
   .burger { display: none; }
 }
@@ -55,7 +55,7 @@
   box-shadow: 0 24px 48px rgba(12, 36, 62, .10);
   animation: bfDrop .2s ease both;
 }
-@media (min-width: 760px) { .mega { display: block; } }
+@media (min-width: 768px) { .mega { display: block; } }
 .megaInner {
   max-width: 1280px; margin: 0 auto; padding: 26px var(--gutter) 30px;
   display: grid; grid-template-columns: minmax(220px, 32%) minmax(0, 1fr); gap: 34px;
@@ -87,7 +87,7 @@
   position: fixed; inset: 72px 0 0; z-index: 45; background: #ffffff; overflow: auto;
   padding: 20px var(--gutter) 48px; animation: bfDrop .2s ease both;
 }
-@media (min-width: 760px) { .sheet { display: none; } }
+@media (min-width: 768px) { .sheet { display: none; } }
 .sheetTabs { display: flex; gap: 8px; margin-bottom: 20px; }
 .sheetTab {
   flex: 1; min-height: 48px; border: 1px solid var(--line); border-radius: 11px; background: #ffffff;

@@ -13,7 +13,7 @@
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 8px;
   background: rgba(12, 36, 62, .7); color: #ffffff; font-size: 15px; font-weight: 700;
 }
-@media (min-width: 620px) {
+@media (min-width: 768px) {
   .grid { grid-auto-rows: 128px; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
   .grid[data-tiles="4"] { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); }
   .grid[data-tiles="0"] { grid-template-columns: minmax(0, 1fr); }
@@ -21,7 +21,7 @@
 
 /* Before / after. */
 .ba { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
-@media (min-width: 560px) { .ba { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 480px) { .ba { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .baCard {
   display: flex; flex-direction: column; padding: 0; border: 1px solid var(--line); border-radius: 18px; overflow: hidden;
   background: #ffffff; cursor: pointer; text-align: right; font: inherit;
@@ -64,7 +64,7 @@
 .lbThumb[aria-current="true"] { border-color: var(--teal); opacity: 1; }
 .lbThumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .lbHint { font-size: 12px; color: rgba(255, 255, 255, .45); }
-@media (max-width: 559px) {
+@media (max-width: 479px) {
   .lbStep { width: 44px; height: 44px; }
   .lbMid { gap: 8px; }
   .lbHint { display: none; }

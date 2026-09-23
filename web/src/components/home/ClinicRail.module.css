@@ -38,13 +38,13 @@
   padding: 4px var(--gutter) 12px; margin: 0 calc(-1 * var(--gutter)); scroll-padding-inline: var(--gutter);
 }
 .rail::-webkit-scrollbar { display: none; }
-@media (min-width: 760px) {
+@media (min-width: 768px) {
   .rail { grid-auto-columns: calc((100% - 1.5 * var(--rail-gap)) / 2.5); padding: 4px 0 12px; margin: 0; scroll-padding-inline: 0; }
 }
-@media (min-width: 1000px) {
+@media (min-width: 1024px) {
   .rail { grid-auto-columns: calc((100% - 3.5 * var(--rail-gap)) / 4.5); }
 }
-@media (max-width: 759px) { .fade { display: none; } }
+@media (max-width: 767px) { .fade { display: none; } }
 
 .card {
   position: relative; display: flex; flex-direction: column; min-width: 0; scroll-snap-align: start;

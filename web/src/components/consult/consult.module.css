@@ -8,7 +8,7 @@
   line-height: 1.55;
   --pad: 16px;
 }
-@media (min-width: 560px) { .root { --pad: 22px; } }
+@media (min-width: 480px) { .root { --pad: 22px; } }
 
 .root a:not([class]) { color: var(--teal-deep); }
 .root a:not([class]):hover { color: var(--navy); }
@@ -38,10 +38,10 @@
 
 /* ---------- Layout ---------- */
 .shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(14px, 1.8vw, 20px); align-items: start; }
-@media (min-width: 1000px) { .shell { grid-template-columns: minmax(0, 1fr) 320px; } }
+@media (min-width: 1024px) { .shell { grid-template-columns: minmax(0, 1fr) 320px; } }
 .main { min-width: 0; display: flex; flex-direction: column; gap: 13px; }
 .aside { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
-@media (min-width: 1000px) and (min-height: 700px) { .aside { position: sticky; top: 18px; } }
+@media (min-width: 1024px) and (min-height: 700px) { .aside { position: sticky; top: 18px; } }
 
 .card { background: #fff; border: 1px solid var(--line); border-radius: 17px; padding: clamp(15px, 1.8vw, 21px); }
 .cardTeal { background: #fff; border: 1px solid var(--teal-border); border-radius: 17px; overflow: hidden; }
@@ -70,7 +70,7 @@
 
 /* ---------- Format cards ---------- */
 .formats { display: grid; grid-template-columns: minmax(0, 1fr); gap: 9px; }
-@media (min-width: 560px) { .formats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 480px) { .formats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .format {
   min-width: 0; min-height: 44px; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 13px 14px;
   border: 1px solid var(--line); border-radius: 13px; background: #fff; font: inherit; text-align: right; cursor: pointer;
@@ -82,7 +82,7 @@
 /* ---------- Fields ---------- */
 .field { display: flex; flex-direction: column; gap: 5px; margin-top: 15px; font-size: 13px; font-weight: 700; }
 .fieldRow { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 12px; }
-@media (min-width: 560px) { .fieldRow { grid-template-columns: repeat(2, minmax(0, 320px)); } }
+@media (min-width: 480px) { .fieldRow { grid-template-columns: repeat(2, minmax(0, 320px)); } }
 .textarea, .input {
   border: 1px solid var(--line-strong); border-radius: 11px; font: inherit; font-size: 15px; font-weight: 400; color: var(--navy); background: #fff; outline: none;
 }

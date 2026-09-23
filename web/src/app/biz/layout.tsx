@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Wordmark } from '@/components/Wordmark';
 import { DashNav } from '@/components/dashboard/DashNav';
-import { DASH_VIEWS } from '@/components/dashboard/nav';
+import { visibleViews } from '@/components/dashboard/views';
 import { RoleMenu } from '@/components/dashboard/RoleMenu';
 import { PRESET_NAMES } from '@/lib/permissions';
 import { bizContext } from '@/lib/server/biz';
@@ -28,9 +28,7 @@ export default async function BizLayout({ children }: { children: React.ReactNod
   ]);
   const firstCat = branch ? await db.branchCategory.findFirst({ where: { branchId: branch.id }, include: { category: true } }) : null;
 
-  const isOwnerView = member.isOwner && !preview;
-  // payments has no area of its own: it follows billing, and only for roles that can edit billing.
-  const views = DASH_VIEWS.filter(v => (v.key === 'team' ? isOwnerView : v.href === '/biz/payments' ? perms.billing === 'edit' : perms[v.key] !== 'none')).map(v => ({
+  const views = visibleViews({ member, preview, perms }).map(v => ({
     ...v,
     badge: v.key === 'reviews' ? openReviews : v.key === 'leads' ? openLeads : 0,
   }));

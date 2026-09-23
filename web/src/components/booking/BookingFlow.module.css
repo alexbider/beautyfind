@@ -12,9 +12,9 @@
   color: #0C243E;
   line-height: 1.55;
 }
-@media (min-width: 560px) { .root { --bk-two: repeat(2, minmax(0, 1fr)); --bk-slots: repeat(3, minmax(0, 1fr)); --bk-pad: 22px; } }
-@media (min-width: 860px) { .root { --bk-svc: repeat(2, minmax(0, 1fr)); --bk-slots: repeat(4, minmax(0, 1fr)); } }
-@media (min-width: 1040px) { .root { --bk-main: minmax(0, 1fr) 330px; } }
+@media (min-width: 480px) { .root { --bk-two: repeat(2, minmax(0, 1fr)); --bk-slots: repeat(3, minmax(0, 1fr)); --bk-pad: 22px; } }
+@media (min-width: 768px) { .root { --bk-svc: repeat(2, minmax(0, 1fr)); --bk-slots: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .root { --bk-main: minmax(0, 1fr) 330px; } }
 
 .root a:not([class]) { color: #0B7A87; text-decoration: underline; text-underline-offset: 2px; }
 .root a:not([class]):hover { color: #0C243E; }
@@ -457,7 +457,7 @@
 
 /* ---------- Aside ---------- */
 .aside { min-width: 0; }
-@media (min-width: 1040px) and (min-height: 720px) { .aside { position: sticky; top: 18px; } }
+@media (min-width: 1024px) and (min-height: 700px) { .aside { position: sticky; top: 18px; } }
 .sumCard { background: #fff; border: 1px solid #E6E6E6; border-radius: 17px; overflow: hidden; }
 .sumHead { padding: 14px 16px; border-bottom: 1px solid #EDEFF2; }
 .sumTitle { margin: 0; font-size: 15.5px; font-weight: 700; }

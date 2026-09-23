@@ -1,6 +1,6 @@
 /* BeautyFind Clinic Booking.dc.html */
 .page { max-width: 1160px; margin: 0 auto; padding: clamp(16px, 2.4vw, 26px) var(--cpad, 16px) 60px; }
-@media (min-width: 560px) { .page { --cpad: 22px; } }
+@media (min-width: 480px) { .page { --cpad: 22px; } }
 
 .context { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .back {
@@ -29,7 +29,7 @@
 .telNum { font-weight: 600; opacity: .75; }
 
 .steps { list-style: none; margin: 0 0 16px; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
-@media (min-width: 560px) { .steps { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 480px) { .steps { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .steps li {
   min-width: 0; padding: 9px 11px; border-radius: 12px; background: #fff; border: 1px solid var(--line);
   display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; color: var(--subtle);
@@ -45,10 +45,10 @@
 .steps[data-ended] li { opacity: .6; }
 
 .shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(14px, 1.8vw, 20px); align-items: start; }
-@media (min-width: 1000px) { .shell { grid-template-columns: minmax(0, 1fr) 340px; } }
+@media (min-width: 1024px) { .shell { grid-template-columns: minmax(0, 1fr) 340px; } }
 .main { min-width: 0; display: flex; flex-direction: column; gap: 13px; }
 .side { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
-@media (min-width: 1000px) and (min-height: 720px) { .side { position: sticky; top: 18px; } }
+@media (min-width: 1024px) and (min-height: 700px) { .side { position: sticky; top: 18px; } }
 
 .card { background: #fff; border: 1px solid var(--line); border-radius: 17px; padding: clamp(15px, 1.8vw, 21px); }
 .h2 { margin: 0 0 12px; font-size: 16px; font-weight: 700; }

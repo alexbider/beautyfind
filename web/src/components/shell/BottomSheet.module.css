@@ -1,0 +1,70 @@
+/* Bottom sheet below 768px, centred dialog above. */
+.root { position: fixed; inset: 0; z-index: 90; }
+
+.scrim { position: absolute; inset: 0; background: rgba(12, 36, 62, .42); animation: bfFade .2s ease both; }
+
+.panel {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 90dvh;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  box-shadow: var(--shadow-modal);
+  outline: none;
+  animation: sheetUp .26s cubic-bezier(.2, .9, .25, 1.02) both;
+  transition: height .26s var(--ease-out), transform .2s var(--ease-out);
+}
+.panel[data-dragging] { transition: none; }
+.panel[data-size='half'] { height: 50dvh; }
+.panel[data-size='full'], .panel[data-expanded] { height: 90dvh; }
+
+@keyframes sheetUp { from { transform: translateY(100%) } to { transform: none } }
+
+.grab { flex: none; touch-action: none; cursor: grab; padding-top: 8px; }
+.handle { display: block; width: 40px; height: 5px; margin: 0 auto 4px; border-radius: 3px; background: var(--control-off); }
+.head { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px 0 8px; }
+.title { flex: 1; margin: 0; font-size: 17px; font-weight: 800; }
+.close {
+  display: grid; place-items: center; width: 44px; height: 44px; margin-inline-start: auto;
+  border: 0; border-radius: 22px; background: var(--bg-page); color: var(--navy); cursor: pointer;
+}
+
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 16px 16px;
+}
+.footer {
+  flex: none;
+  padding: 12px 16px calc(12px + var(--safe-b));
+  border-top: 1px solid var(--line);
+  background: #fff;
+}
+
+@media (min-width: 768px) {
+  .panel {
+    inset: auto;
+    top: 50%;
+    left: 50%;
+    width: min(560px, calc(100vw - 48px));
+    max-height: min(84vh, 760px);
+    height: auto;
+    border-radius: 18px;
+    transform: translate(-50%, -50%);
+    animation: dialogIn .2s var(--ease-out) both;
+  }
+  .panel[data-size='half'], .panel[data-size='full'], .panel[data-expanded] { height: auto; }
+  .handle { display: none; }
+  .grab { cursor: default; padding-top: 10px; }
+  .footer { padding-bottom: 14px; border-radius: 0 0 18px 18px; }
+}
+@keyframes dialogIn { from { opacity: 0; transform: translate(-50%, -48%) } to { opacity: 1; transform: translate(-50%, -50%) } }
+
+@media (prefers-reduced-motion: reduce) {
+  .panel, .scrim { animation: bfFade .12s ease both !important; }
+}

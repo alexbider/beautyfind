@@ -96,7 +96,7 @@ export function ConsultInbox({ bizName, requests, initialId, canManage, isPhysic
     // Below 900px the detail sits under the list: bring it into view.
     requestAnimationFrame(() => {
       detailH.current?.focus({ preventScroll: true });
-      if (window.matchMedia('(max-width: 899px)').matches) detailH.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (window.matchMedia('(max-width: 1023px)').matches) detailH.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   };
 

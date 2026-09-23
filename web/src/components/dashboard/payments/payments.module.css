@@ -3,8 +3,8 @@
 
 /* ---------- What's on ---------- */
 .features { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
-@media (min-width: 620px) { .features { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (min-width: 1100px) { .features { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 768px) { .features { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .features { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .feature { min-width: 0; display: flex; flex-direction: column; gap: 5px; padding: 14px 16px; background: #fff; border: 1px solid var(--line); border-radius: 15px; }
 .feature[data-on] { border-color: var(--teal-border); background: var(--tint); }
 .featureTop { display: flex; align-items: center; gap: 8px; }
@@ -17,7 +17,7 @@
 
 /* ---------- Providers ---------- */
 .providers { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
-@media (min-width: 760px) { .providers { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 768px) { .providers { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .provider { min-width: 0; display: flex; flex-direction: column; gap: 9px; padding: 15px 17px; background: #fff; border: 1.5px solid var(--line); border-radius: 16px; }
 .provider[data-state='connected'] { border-color: var(--teal-deep); background: var(--tint); }
 .provider[data-state='error'] { border-color: var(--bad-line); }
@@ -115,7 +115,7 @@
 .ovName { font-size: 14px; font-weight: 700; min-width: 0; }
 .ovSub { display: block; font-size: 12px; font-weight: 400; color: var(--subtle); }
 .ovPrice { font-size: 13.5px; color: var(--muted); text-align: left; direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
-@media (max-width: 519px) {
+@media (max-width: 479px) {
   .ovHead { display: none; }
   .ovRow { grid-template-columns: minmax(0, 1fr) 128px; }
   .ovPrice { display: none; }

@@ -99,11 +99,11 @@
 .cardNote { margin: 11px 0 0; padding-top: 10px; border-top: 1px solid var(--divider); font-size: 12.5px; color: var(--muted); text-wrap: pretty; }
 .cardNote a { font-weight: 700; color: var(--navy); }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .hero, .body { --hp-pad: 22px; }
   .topics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
-@media (min-width: 1000px) {
+@media (min-width: 1024px) {
   .topics { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .shell { grid-template-columns: minmax(0, 1fr) 300px; }
 }

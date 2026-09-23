@@ -26,10 +26,10 @@
   list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px;
 }
 .section[data-variant='category'] .grid { gap: 14px; }
-@media (min-width: 620px) {
+@media (min-width: 768px) {
   .section[data-variant='region'] .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-@media (min-width: 1000px) {
+@media (min-width: 1024px) {
   .section[data-variant='category'] .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 

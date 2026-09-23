@@ -7,7 +7,7 @@
   min-height: 100vh; overflow-x: clip; background: var(--bg-page);
   font-family: var(--font-ui); color: var(--navy); line-height: 1.55;
 }
-@media (min-width: 560px) { .root { --rv-pad: 22px; --rv-asp: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 480px) { .root { --rv-pad: 22px; --rv-asp: repeat(3, minmax(0, 1fr)); } }
 .root a:not([class]) { color: var(--teal-deep); }
 .root a:not([class]):hover { color: var(--navy); }
 
@@ -35,7 +35,7 @@
 .lead { margin: 0 0 clamp(16px, 2vw, 22px); max-width: 58ch; font-size: 15.5px; color: var(--text); text-wrap: pretty; }
 
 .shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(14px, 1.8vw, 20px); align-items: start; }
-@media (min-width: 1000px) { .shell { grid-template-columns: minmax(0, 1fr) 320px; } }
+@media (min-width: 1024px) { .shell { grid-template-columns: minmax(0, 1fr) 320px; } }
 .main { min-width: 0; display: flex; flex-direction: column; gap: 13px; }
 
 .card { background: #ffffff; border: 1px solid var(--line); border-radius: 17px; padding: clamp(15px, 1.8vw, 21px); }
@@ -180,7 +180,7 @@
 
 /* ---------- Aside ---------- */
 .aside { min-width: 0; }
-@media (min-width: 1000px) and (min-height: 700px) { .aside { position: sticky; top: 18px; } }
+@media (min-width: 1024px) and (min-height: 700px) { .aside { position: sticky; top: 18px; } }
 .verified { background: #ffffff; border: 1px solid var(--teal-border); border-radius: 17px; overflow: hidden; margin-bottom: 12px; }
 .verifiedHead { padding: 13px 16px; background: var(--tint); border-bottom: 1px solid var(--teal-border); display: flex; align-items: center; gap: 9px; }
 .verifiedIcon { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; background: var(--teal-deep); color: #ffffff; }

@@ -78,7 +78,7 @@ export function HomeHeader({ regions, total }: { regions: HeaderRegion[]; total:
       if (e.key !== 'Escape') return;
       const o = openRef.current;
       if (!o.menu && !o.regionOpen && !o.mobileOpen) return;
-      const desk = window.matchMedia('(min-width: 760px)').matches;
+      const desk = window.matchMedia('(min-width: 768px)').matches;
       const back = o.menu === 'find' ? findBtn : o.menu === 'treat' ? treatBtn : o.regionOpen ? (desk ? regionBtn : mobileRegionBtn) : burger;
       closeAll();
       back.current?.focus();

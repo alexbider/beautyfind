@@ -47,7 +47,7 @@ function Card({ c, index }: { c: ListingCard; index: number }) {
             src={cover}
             alt=""
             fill
-            sizes="(min-width: 1000px) 270px, (min-width: 760px) 38vw, 78vw"
+            sizes="(min-width: 1024px) 270px, (min-width: 760px) 38vw, 78vw"
             className={styles.img}
           />
         </Link>
@@ -143,7 +143,7 @@ export function ClinicRail({ heading, lists, totals }: { heading: ReactNode; lis
     const card = el?.firstElementChild as HTMLElement | null;
     if (!el || !card) return;
     const gap = parseFloat(getComputedStyle(el).columnGap) || 20;
-    const step = (card.offsetWidth + gap) * (window.matchMedia('(min-width: 1000px)').matches ? 2 : 1);
+    const step = (card.offsetWidth + gap) * (window.matchMedia('(min-width: 1024px)').matches ? 2 : 1);
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     el.scrollBy({ left: -dir * step, behavior: reduce ? 'auto' : 'smooth' });
   };

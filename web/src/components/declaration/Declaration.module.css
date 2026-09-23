@@ -4,7 +4,7 @@
   min-height: 100dvh; overflow-x: clip; background: var(--bg-page);
   color: var(--navy); line-height: 1.55;
 }
-@media (min-width: 560px) { .root { --pad: 22px; } }
+@media (min-width: 480px) { .root { --pad: 22px; } }
 .root a:not([class]) { color: var(--teal-deep); }
 .root a:not([class]):hover { color: var(--navy); }
 
@@ -27,10 +27,10 @@
 .lede { margin: 0 0 clamp(16px, 2vw, 22px); max-width: 60ch; font-size: 15.5px; color: var(--text); text-wrap: pretty; }
 
 .shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(14px, 1.8vw, 20px); align-items: start; }
-@media (min-width: 1000px) { .shell { grid-template-columns: minmax(0, 1fr) 320px; } }
+@media (min-width: 1024px) { .shell { grid-template-columns: minmax(0, 1fr) 320px; } }
 .main { min-width: 0; display: flex; flex-direction: column; gap: 13px; }
 .side { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
-@media (min-width: 1000px) and (min-height: 720px) { .side { position: sticky; top: 18px; } }
+@media (min-width: 1024px) and (min-height: 700px) { .side { position: sticky; top: 18px; } }
 
 .card { background: #fff; border: 1px solid var(--line); border-radius: 17px; padding: clamp(15px, 1.8vw, 21px); }
 .h2 { margin: 0 0 12px; font-size: 16.5px; font-weight: 700; }
@@ -44,7 +44,7 @@
 .meDl dt { color: var(--subtle); }
 .meDl dd { margin: 0; font-weight: 600; }
 .meFields { margin-top: 14px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
-@media (min-width: 560px) { .meFields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 480px) { .meFields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 .field { display: flex; flex-direction: column; gap: 5px; font-size: 13px; font-weight: 700; }
 .input {

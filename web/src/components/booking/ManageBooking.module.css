@@ -10,8 +10,8 @@
   color: #0C243E;
   line-height: 1.55;
 }
-@media (min-width: 560px) { .root { --mb-pad: 22px; --mb-act: repeat(3, minmax(0, 1fr)); } }
-@media (min-width: 1000px) { .root { --mb-shell: minmax(0, 1fr) 320px; } }
+@media (min-width: 480px) { .root { --mb-pad: 22px; --mb-act: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .root { --mb-shell: minmax(0, 1fr) 320px; } }
 
 .root a:not([class]) { color: #0B7A87; }
 .root a:not([class]):hover { color: #0C243E; }
@@ -79,7 +79,7 @@
 .prepCta:hover { background: #0C243E; color: #fff; }
 
 .actions { display: grid; grid-template-columns: var(--mb-act); gap: 9px; }
-@media (min-width: 560px) {
+@media (min-width: 480px) {
   .actions[data-count='1'] { grid-template-columns: minmax(0, 1fr); }
   .actions[data-count='2'] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -170,7 +170,7 @@
 
 /* ---------- Aside ---------- */
 .side { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
-@media (min-width: 1000px) and (min-height: 700px) { .side { position: sticky; top: 18px; } }
+@media (min-width: 1024px) and (min-height: 700px) { .side { position: sticky; top: 18px; } }
 .sideCard { background: #fff; border: 1px solid #E6E6E6; border-radius: 17px; padding: 14px 16px; }
 .sideLabel { display: block; font-size: 12.5px; font-weight: 700; color: #5B6B7B; }
 .sideName { display: block; margin-bottom: 10px; font-size: 16px; font-weight: 700; }

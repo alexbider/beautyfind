@@ -16,7 +16,7 @@
 .nav { align-items: center; gap: 2px; flex: 1; }
 .actions { align-items: center; gap: 10px; flex: none; }
 .mobileActions { margin-right: auto; display: flex; align-items: center; gap: 8px; }
-@media (min-width: 760px) {
+@media (min-width: 768px) {
   .nav, .actions { display: flex; }
   .mobileActions { display: none; }
 }
@@ -42,7 +42,7 @@
 }
 .navLink:hover { background: #F3F6F8; color: var(--navy); }
 /* 760–999px: the bar has no room for everything; the guide and about links stay in the footer. */
-@media (max-width: 999px) { .navLink, .compact { display: none; } }
+@media (max-width: 1023px) { .navLink, .compact { display: none; } }
 
 /* Region picker */
 .pickerWrap { position: relative; }
@@ -93,7 +93,7 @@
   background: #ffffff; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
   box-shadow: 0 24px 48px rgba(12, 36, 62, .10); animation: bfDrop .18s ease both;
 }
-@media (min-width: 760px) { .mega { display: block; } }
+@media (min-width: 768px) { .mega { display: block; } }
 .findGrid, .treatGrid {
   max-width: 1280px; margin: 0 auto; padding: 32px var(--gutter) 36px; display: grid; gap: 28px 32px;
 }
@@ -140,7 +140,7 @@
   border-bottom: 1px solid var(--line); padding: 16px var(--gutter) 20px;
   box-shadow: 0 24px 48px rgba(12, 36, 62, .12); animation: bfDrop .18s ease both;
 }
-@media (min-width: 760px) { .sheet, .regionSheet { display: none; } }
+@media (min-width: 768px) { .sheet, .regionSheet { display: none; } }
 .sheetList { display: flex; flex-direction: column; }
 .sheetSection { border-bottom: 1px solid var(--line); }
 .sheetToggle {

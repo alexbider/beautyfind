@@ -15,10 +15,10 @@
   color: var(--muted); font-variant-numeric: tabular-nums; margin-right: auto;
 }
 .item[data-on] .badge { background: var(--teal-deep); color: #ffffff; }
-@media (min-width: 1000px) {
+@media (min-width: 1024px) {
   .nav { flex-direction: column; overflow-x: visible; }
   .item { border-right-width: 2px; border-radius: 10px 0 0 10px; }
 }
-@media (min-width: 1000px) and (min-height: 760px) {
+@media (min-width: 1024px) and (min-height: 700px) {
   .nav { position: sticky; top: 84px; }
 }

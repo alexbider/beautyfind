@@ -84,6 +84,6 @@
 }
 .again:hover { border-color: var(--teal); color: var(--teal-deep); }
 
-@media (min-width: 620px) {
+@media (min-width: 768px) {
   .reasonGrid, .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

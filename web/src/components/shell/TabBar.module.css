@@ -1,0 +1,60 @@
+/* Bottom tab bar (spec §2.2): 64px + home indicator, only inside the app shell media query. */
+.bar {
+  display: none;
+}
+
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .bar {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 60;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    height: calc(var(--tabbar-h) + var(--safe-b));
+    padding-bottom: var(--safe-b);
+    background: rgba(255, 255, 255, .92);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--line);
+  }
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 48px;
+  min-height: 48px;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  transition: color .12s;
+}
+.tab:hover { color: var(--muted); }
+.tab[data-on] { color: var(--teal-deep); }
+.tab:active { transform: scale(.94); }
+
+.icon { position: relative; display: grid; place-items: center; width: 28px; height: 26px; }
+.label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-inline: 2px; }
+
+.badge {
+  position: absolute;
+  top: -3px;
+  inset-inline-start: 15px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  border: 2px solid #fff;
+  background: var(--bad-text);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 14px;
+  text-align: center;
+}

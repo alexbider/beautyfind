@@ -52,13 +52,13 @@
 .headerCta:hover { background: var(--teal); color: var(--navy); transform: translateY(-1px); }
 
 /* Phones: the two-field search bar gets its own row under the wordmark. */
-@media (max-width: 699px) {
+@media (max-width: 767px) {
   .headerBar { flex-wrap: wrap; row-gap: 8px; padding-top: 10px; padding-bottom: 10px; min-height: 0; }
   .searchForm { flex: 1 1 100%; }
   .field { padding: 0 10px 0 8px; }
   .searchBtn { padding: 0 13px; }
 }
-@media (min-width: 1040px) { .headerNav { display: flex; } }
+@media (min-width: 1024px) { .headerNav { display: flex; } }
 
 /* ---------- Shell + filter panel ---------- */
 .shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
@@ -72,7 +72,7 @@
   box-shadow: 0 30px 70px rgba(12, 36, 62, .28); animation: srSheet .22s var(--ease-out) both;
   padding-bottom: max(18px, env(safe-area-inset-bottom));
 }
-@media (min-width: 1040px) {
+@media (min-width: 1024px) {
   .shell { grid-template-columns: 306px minmax(0, 1fr); gap: clamp(22px, 2.2vw, 32px); }
   .panel, .panel[data-open] {
     display: flex; position: static; inset: auto; z-index: 1; border-radius: 20px; box-shadow: none; animation: none; padding-bottom: 18px;
@@ -80,7 +80,7 @@
   .closeBtn, .showBtn, .filterBtn { display: none !important; }
 }
 /* Sticky only when the viewport is tall enough for a useful scroll box. */
-@media (min-width: 1040px) and (min-height: 640px) {
+@media (min-width: 1024px) and (min-height: 700px) {
   .panel, .panel[data-open] { position: sticky; top: 88px; max-height: calc(100dvh - 108px); }
 }
 
@@ -230,10 +230,10 @@
 }
 
 .list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
-@media (min-width: 700px) {
+@media (min-width: 768px) {
   .resultsRegion[data-view="grid"] .list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-@media (min-width: 1360px) {
+@media (min-width: 1280px) {
   .resultsRegion[data-view="grid"] .list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
@@ -247,7 +247,7 @@
 .photo { position: relative; display: block; flex: 1 1 100%; height: 180px; border-radius: 12px; overflow: hidden; background: #EDF1F3; }
 .photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .photoEmpty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #A9B4BF; }
-@media (min-width: 700px) {
+@media (min-width: 768px) {
   .resultsRegion:not([data-view="grid"]) .photo { flex: 0 0 190px; height: 172px; }
   .resultsRegion:not([data-view="grid"]) .titleRow { padding-inline-end: 48px; }
 }
@@ -304,7 +304,7 @@
   margin: 0 0 16px; position: relative; height: 260px; border: 1px solid var(--line); border-radius: 18px; overflow: hidden;
   background: linear-gradient(#F4F7F8, #E9EFF1);
 }
-@media (min-width: 700px) { .map { height: 360px; } }
+@media (min-width: 768px) { .map { height: 360px; } }
 .mapGrid {
   position: absolute; inset: 0;
   background-image: linear-gradient(rgba(12, 36, 62, .05) 1px, transparent 1px), linear-gradient(90deg, rgba(12, 36, 62, .05) 1px, transparent 1px);
@@ -331,7 +331,7 @@
 .noResLine { margin: 0; font-size: 15px; line-height: 1.6; color: var(--muted); max-width: 50ch; text-wrap: pretty; }
 .noResSub { margin: 10px 0 0; font-size: 15px; font-weight: 700; color: var(--navy); }
 .widenGrid { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
-@media (min-width: 560px) { .widenGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 480px) { .widenGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 1280px) { .widenGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .widen {
   min-width: 0; display: flex; align-items: center; gap: 10px; padding: 13px 15px; min-height: 44px;
@@ -365,7 +365,7 @@
 
 /* ---------- Loading skeleton (route entry, States "טעינה") ---------- */
 .skelGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-@media (min-width: 900px) { .skelGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .skelGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .skelCard { min-width: 0; background: #ffffff; border: 1px solid var(--line); border-radius: 15px; overflow: hidden; }
 .skelImg { aspect-ratio: 16 / 9; background: var(--divider); animation: srPulse 1.4s ease-in-out infinite; }
 .skelBody { padding: 14px 15px; display: flex; flex-direction: column; gap: 9px; }

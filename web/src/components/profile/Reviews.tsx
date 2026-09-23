@@ -95,7 +95,7 @@ export function ReviewsRail({ reviews, total }: { reviews: ReviewView[]; total: 
     const el = rail.current;
     if (!el) return;
     const card = el.firstElementChild;
-    const step = (card ? card.getBoundingClientRect().width + 14 : 320) * (window.matchMedia('(min-width:900px)').matches ? 2 : 1);
+    const step = (card ? card.getBoundingClientRect().width + 14 : 320) * (window.matchMedia('(min-width: 1024px)').matches ? 2 : 1);
     const span = el.scrollWidth - el.clientWidth;
     const rtl = el.scrollLeft <= 0; // RTL browsers report 0 → -span
     const min = rtl ? -span : 0;

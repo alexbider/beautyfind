@@ -3,7 +3,7 @@
 
 .header { background: #fff; border-bottom: 1px solid var(--line); }
 .headerIn { max-width: 760px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-@media (min-width: 560px) { .headerIn { padding-inline: 22px; } }
+@media (min-width: 480px) { .headerIn { padding-inline: 22px; } }
 .logo { display: inline-flex; align-items: center; min-height: 44px; }
 .spacer { flex: 1; min-width: 0; }
 .headBtn {
@@ -18,7 +18,7 @@
 .headLink:hover { color: var(--navy); }
 
 .wrap { max-width: 760px; margin: 0 auto; padding: clamp(18px, 3vw, 32px) 16px 60px; display: flex; flex-direction: column; gap: 14px; }
-@media (min-width: 560px) { .wrap { padding-inline: 22px; } }
+@media (min-width: 480px) { .wrap { padding-inline: 22px; } }
 
 /* Refund tracker */
 .track { background: #fff; border: 1px solid var(--teal-border); border-radius: 17px; padding: 16px 18px; animation: rcFade .22s ease both; }
@@ -58,7 +58,7 @@
   padding: 14px clamp(18px, 2.6vw, 28px); display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px 20px;
   font-size: 14px; border-bottom: 1px solid var(--divider);
 }
-@media (min-width: 560px) { .meta { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 480px) { .meta { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .metaLabel { color: var(--subtle); }
 
 .lines { width: 100%; border-collapse: collapse; font-size: 14.5px; }

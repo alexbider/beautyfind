@@ -1,0 +1,59 @@
+/* Pull to refresh */
+.ptr { display: grid; place-items: center; overflow: hidden; transition: height .2s var(--ease-out); }
+.ptrSpin {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2.5px solid var(--teal-border); border-top-color: var(--teal-deep);
+}
+.ptrSpin[data-busy] { animation: ptrSpin .7s linear infinite; }
+@keyframes ptrSpin { to { transform: rotate(360deg) } }
+
+/* Swipe rows: actions sit on the left (RTL trailing edge), the row slides to the right. */
+.swipe { position: relative; overflow: hidden; }
+.swipeActions { position: absolute; inset-block: 0; left: 0; display: flex; }
+.swipeBtn {
+  flex: 1; border: 0; padding: 0 8px; font: inherit; font-size: 14px; font-weight: 800; color: #fff; cursor: pointer;
+  background: var(--muted);
+}
+.swipeBtn[data-tone='danger'] { background: var(--bad-text); }
+.swipeBtn[data-tone='primary'] { background: var(--teal-deep); }
+.swipeFront { position: relative; background: #fff; transition: transform .22s var(--ease-out); touch-action: pan-y; }
+.swipeFront[data-dragging] { transition: none; }
+/* Keyboard users: focusing an action slides it into view. Fine pointers get visible actions. */
+.swipeActions:focus-within ~ .swipeFront { transform: translateX(var(--w, 168px)); }
+@media (hover: hover) and (pointer: fine) {
+  .swipe { display: flex; }
+  .swipeActions { position: static; order: 2; flex: none; }
+  .swipeFront { flex: 1; min-width: 0; }
+}
+
+/* Skeletons */
+.skel {
+  display: block;
+  background: linear-gradient(90deg, #EEF1F3 0%, #F6F8F9 45%, #EEF1F3 90%);
+  background-size: 200% 100%;
+  animation: skel 1.2s ease-in-out infinite;
+}
+@keyframes skel { from { background-position: 100% 0 } to { background-position: -100% 0 } }
+.skelRow { display: flex; align-items: center; gap: 12px; min-height: 68px; padding: 0 16px; }
+.skelLines { flex: 1; display: grid; gap: 8px; }
+
+/* Segmented control */
+.segWrap { position: relative; }
+.segWrap::before, .segWrap::after {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 20px; pointer-events: none; z-index: 1;
+}
+.segWrap::before { right: 0; background: linear-gradient(to left, #fff, rgba(255, 255, 255, 0)); }
+.segWrap::after { left: 0; background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0)); }
+.segWrap[data-sticky] { position: sticky; top: calc(var(--shell-top, 0px)); z-index: 20; background: #fff; }
+.seg {
+  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 8px 16px;
+  overscroll-behavior-x: contain; scroll-snap-type: x proximity;
+}
+.seg::-webkit-scrollbar { display: none; }
+.segItem {
+  flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px;
+  border: 1px solid var(--line); border-radius: 20px; background: #fff; color: var(--navy);
+  font: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; scroll-snap-align: center;
+}
+.segItem[data-on] { background: var(--navy); border-color: var(--navy); color: #fff; }
+.segCount { font-size: 12px; font-weight: 800; opacity: .75; }

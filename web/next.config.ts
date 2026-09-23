@@ -8,7 +8,11 @@ const nextConfig: NextConfig = {
   // Onboarding uploads photos through a server action (8MB max per file, see lib/server/media.ts).
   experimental: { serverActions: { bodySizeLimit: '9mb' } },
   async headers() {
-    return staging ? [{ source: '/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] }] : [];
+    return [
+      // The service worker must always be re-checked, or clients keep an old one.
+      { source: '/sw.js', headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }, { key: 'Service-Worker-Allowed', value: '/' }] },
+      ...(staging ? [{ source: '/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] }] : []),
+    ];
   },
 };
 

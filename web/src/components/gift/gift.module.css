@@ -2,7 +2,7 @@
 
 .root { min-height: 60vh; overflow-x: clip; background: var(--bg-page); color: var(--navy); line-height: 1.55; }
 .wrap { max-width: 1160px; margin: 0 auto; padding: clamp(16px, 2.4vw, 28px) 16px 60px; }
-@media (min-width: 560px) { .wrap { padding-inline: 22px; } }
+@media (min-width: 480px) { .wrap { padding-inline: 22px; } }
 
 .fade { animation: gcFade .22s ease both; }
 .pop { animation: gcPop .2s ease both; }
@@ -17,10 +17,10 @@
 
 /* ---------- Buy layout ---------- */
 .shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(14px, 1.8vw, 22px); align-items: start; }
-@media (min-width: 1000px) { .shell { grid-template-columns: minmax(0, 1fr) 380px; } }
+@media (min-width: 1024px) { .shell { grid-template-columns: minmax(0, 1fr) 380px; } }
 .main { min-width: 0; display: flex; flex-direction: column; gap: 13px; }
 .side { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
-@media (min-width: 1000px) and (min-height: 760px) { .side { position: sticky; top: 18px; } }
+@media (min-width: 1024px) and (min-height: 700px) { .side { position: sticky; top: 18px; } }
 
 .card { background: #fff; border: 1px solid var(--line); border-radius: 17px; padding: clamp(15px, 1.8vw, 21px); display: flex; flex-direction: column; gap: 11px; }
 .h2 { margin: 0; font-size: 16.5px; font-weight: 700; }
@@ -37,7 +37,7 @@
 .chip:focus-visible, .amount:focus-visible, .treat:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
 
 .amounts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-@media (min-width: 560px) { .amounts { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 480px) { .amounts { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .amount {
   min-width: 0; min-height: 52px; border: 1px solid var(--line); border-radius: 12px; background: #fff;
   font: inherit; font-size: 17px; font-weight: 800; color: var(--text); cursor: pointer; direction: ltr; unicode-bidi: isolate;
@@ -59,7 +59,7 @@
 .fieldNarrow { max-width: 240px; }
 .fieldNote { font-weight: 500; color: var(--subtle); }
 .fields2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 11px; }
-@media (min-width: 560px) { .fields2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 480px) { .fields2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .input, .textarea {
   width: 100%; min-height: 46px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 11px; font: inherit; font-size: 15px;
   color: var(--navy); background: #fff; outline: none;
@@ -163,7 +163,7 @@
 .clinicHead { margin-bottom: 14px; }
 .clinicH1 { margin: 2px 0 0; font-family: var(--font-display); font-size: clamp(25px, 3.2vw, 32px); font-weight: 500; letter-spacing: -0.015em; }
 .kpis { margin: 0 0 14px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-@media (min-width: 560px) { .kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 480px) { .kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .kpi { min-width: 0; padding: 13px 15px; background: #fff; border: 1px solid var(--line); border-radius: 15px; display: flex; flex-direction: column; }
 .kpi dt { font-size: 12.5px; font-weight: 700; color: var(--subtle); }
 .kpi dd { margin: 2px 0 0; font-size: 22px; font-weight: 800; direction: ltr; unicode-bidi: isolate; text-align: right; font-variant-numeric: tabular-nums; }
@@ -188,7 +188,7 @@
 .deskBtnGhost:hover:not(:disabled) { background: var(--bg-soft); color: var(--navy); }
 .deskCard { border-top: 1px solid var(--divider); padding-top: 12px; display: flex; flex-direction: column; gap: 10px; }
 .deskGrid { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; font-size: 14px; }
-@media (min-width: 760px) { .deskGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 768px) { .deskGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .deskGrid dt { font-size: 12px; font-weight: 700; color: var(--subtle); }
 .deskGrid dd { margin: 0; font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
 .note { margin: 0; padding: 10px 12px; border-radius: 11px; font-size: 13px; line-height: 1.6; text-wrap: pretty; }

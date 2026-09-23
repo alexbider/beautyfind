@@ -7,7 +7,7 @@
   padding: 8px; background: #ffffff; border: 1px solid var(--line); border-radius: 18px;
   box-shadow: 0 24px 64px rgba(12, 36, 62, .14);
 }
-@media (min-width: 900px) {
+@media (min-width: 1024px) {
   .form { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) auto; }
   .field + .field { border-right: 1px solid var(--line); }
 }

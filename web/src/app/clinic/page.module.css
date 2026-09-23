@@ -1,5 +1,5 @@
 .page { max-width: 1160px; margin: 0 auto; padding: clamp(16px, 2.4vw, 26px) var(--cpad, 16px) 60px; }
-@media (min-width: 560px) { .page { --cpad: 22px; } }
+@media (min-width: 480px) { .page { --cpad: 22px; } }
 
 .head { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
 .headText { flex: 1 1 300px; min-width: 0; }
@@ -34,7 +34,7 @@
   font-size: 12.5px; font-weight: 700; white-space: nowrap;
 }
 .tag { display: none; }
-@media (min-width: 640px) { .tag { display: inline-flex; } }
+@media (min-width: 768px) { .tag { display: inline-flex; } }
 .tag[data-tone='warn'] { background: var(--warn-bg); color: var(--warn-text); border: 1px solid var(--warn-line); }
 .pill { border: 1px solid transparent; }
 .pill[data-tone='teal'] { background: var(--tint); color: var(--teal-deep); border-color: var(--teal-border); }

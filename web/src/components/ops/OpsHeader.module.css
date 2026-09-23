@@ -13,7 +13,7 @@
   flex-wrap: wrap;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .inner { padding: 12px 22px; }
 }
 
