@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { clinicContext } from '@/lib/server/clinic';
 import { ClinicQueue } from '@/components/waitlist/ClinicQueue';
 import styles from '@/components/waitlist/Waitlist.module.css';
+import cq from '@/components/waitlist/ClinicQueue.module.css';
+import { TopBar } from '@/components/shell/TopBar';
 import { offerSlotAction, removeEntryAction } from './actions';
 import { accessibleBranches, loadQueue } from './data';
 
@@ -20,11 +22,13 @@ export default async function ClinicWaitlistPage({ searchParams }: { searchParam
 
   if (!ctx.advanced || !branch) {
     return (
-      <div className={`${styles.embed} ${styles.wrap}`}>
+      <div className={`${styles.embed} ${cq.wrap}`}>
+        <TopBar mode="root" largeTitle="רשימת המתנה" />
+        <div className={cq.inset}>
         <div className={styles.qHead}>
           <div className={styles.qHeadText}>
             <span className={styles.qKicker}>{branch?.name ?? 'העסק שלי'} · יומן</span>
-            <h1 className={styles.qH1}>רשימת המתנה</h1>
+            <h1 className={`${styles.qH1} bf-desk-only`}>רשימת המתנה</h1>
           </div>
         </div>
         <div className={styles.upgrade}>
@@ -42,13 +46,14 @@ export default async function ClinicWaitlistPage({ searchParams }: { searchParam
             </div>
           )}
         </div>
+        </div>
       </div>
     );
   }
 
   const data = await loadQueue(branch.id, ctx.business.settings);
   return (
-    <div className={`${styles.embed} ${styles.wrap}`}>
+    <div className={`${styles.embed} ${cq.wrap}`}>
       <ClinicQueue
         kicker={`${branch.name} · יומן`}
         branchId={branch.id}

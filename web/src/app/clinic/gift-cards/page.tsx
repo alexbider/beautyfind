@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Desk } from '@/components/gift/Desk';
+import { Desk, GiftScreen, PhoneLedger, PhoneLookup } from '@/components/gift/Desk';
 import { FILTERS, ledger, type LedgerFilter } from '@/components/gift/server';
 import { STATUS, money } from '@/components/gift/shared';
+import d from '@/components/gift/Desk.module.css';
 import s from '@/components/gift/gift.module.css';
+import { Segmented } from '@/components/shell/Segmented';
+import { TopBar } from '@/components/shell/TopBar';
 import { clinicContext } from '@/lib/server/clinic';
 import { canTakePayments, connectionFor } from '@/lib/server/money';
 
@@ -23,10 +26,12 @@ export default async function ClinicGiftCardsPage({ searchParams }: Props) {
 
   if (!ctx.advanced) {
     return (
-      <div className={`${s.wrap} ${s.fade}`}>
+      <div className={d.wrap}>
+        <TopBar mode="root" largeTitle="שוברי מתנה" />
+        <div className={d.inner}>
         <div className={s.clinicHead}>
           <span className={s.eyebrow}>{branchName} · הכנסות</span>
-          <h1 className={s.clinicH1}>שוברי מתנה</h1>
+          <h1 className={`${s.clinicH1} bf-desk-only`}>שוברי מתנה</h1>
         </div>
         <div className={s.upgrade}>
           <h2 className={s.h2}>שוברי מתנה זמינים במסלול המתקדם</h2>
@@ -34,6 +39,7 @@ export default async function ClinicGiftCardsPage({ searchParams }: Props) {
           <div className={s.actions}>
             <Link href="/biz/billing" className={s.btn}>לשדרוג המסלול</Link>
           </div>
+        </div>
         </div>
       </div>
     );
@@ -56,12 +62,18 @@ export default async function ClinicGiftCardsPage({ searchParams }: Props) {
     return `/clinic/gift-cards${str ? `?${str}` : ''}`;
   };
 
+  const empty = q || f !== 'all' ? 'אין שוברים שמתאימים לסינון.' : 'עוד לא נמכרו שוברים. הם יופיעו כאן מיד אחרי התשלום.';
+
   return (
-    <div className={`${s.wrap} ${s.fade}`}>
+    <div className={d.wrap}>
+      <GiftScreen canManage={ctx.canManage} invoicing={!!invoicing}>
+      <div className={d.inner}>
       <div className={s.clinicHead}>
         <span className={s.eyebrow}>{branchName} · הכנסות</span>
-        <h1 className={s.clinicH1}>שוברי מתנה</h1>
+        <h1 className={`${s.clinicH1} bf-desk-only`}>שוברי מתנה</h1>
       </div>
+
+      <PhoneLookup />
 
       <dl className={s.kpis}>
         <div className={s.kpi}>
@@ -93,14 +105,17 @@ export default async function ClinicGiftCardsPage({ searchParams }: Props) {
         </p>
       ) : ctx.branch ? (
         <p className={s.small} style={{ marginBottom: 12 }}>
-          עמוד הקנייה של הקליניקה: <Link href={`/gift/${ctx.branch.slug}`}><span className="ltr">/gift/{ctx.branch.slug}</span></Link>
+          עמוד הקנייה של הקליניקה: <Link href={`/gift/${ctx.branch.slug}`} className={d.inlineLink}><span className="ltr">/gift/{ctx.branch.slug}</span></Link>
         </p>
       ) : null}
 
       <Desk canManage={ctx.canManage} invoicing={!!invoicing} />
 
+      <div className={`${d.seg} bf-shell-only`}>
+        <Segmented label="סינון שוברים" value={f} items={FILTERS.map(key => ({ key, label: FILTER_NAMES[key], href: hrefFor(key) }))} />
+      </div>
       <div className={s.filters}>
-        <nav aria-label="סינון שוברים" className={s.chips}>
+        <nav aria-label="סינון שוברים" className={`${s.chips} bf-desk-only`}>
           {FILTERS.map(key => (
             <Link key={key} href={hrefFor(key)} aria-current={f === key ? 'page' : undefined} className={s.filter}>{FILTER_NAMES[key]}</Link>
           ))}
@@ -112,7 +127,9 @@ export default async function ClinicGiftCardsPage({ searchParams }: Props) {
         </form>
       </div>
 
-      <div className={s.tableWrap}>
+      </div>
+
+      <div className={`${s.tableWrap} bf-desk-only`}>
         <table className={s.table}>
           <caption className="sr-only">יומן שוברים</caption>
           <thead>
@@ -128,7 +145,7 @@ export default async function ClinicGiftCardsPage({ searchParams }: Props) {
           <tbody>
             {data.rows.length === 0 ? (
               <tr>
-                <td colSpan={6} className={s.emptyRow}>{q || f !== 'all' ? 'אין שוברים שמתאימים לסינון.' : 'עוד לא נמכרו שוברים. הם יופיעו כאן מיד אחרי התשלום.'}</td>
+                <td colSpan={6} className={s.emptyRow}>{empty}</td>
               </tr>
             ) : (
               data.rows.map(r => {
@@ -148,12 +165,16 @@ export default async function ClinicGiftCardsPage({ searchParams }: Props) {
           </tbody>
         </table>
       </div>
+      <PhoneLedger rows={data.rows} empty={empty} />
+      <div className={d.foot}>
       {data.total > data.rows.length ? (
         <p className={s.foot}>מוצגים <span className="ltr">{data.rows.length}</span> שוברים אחרונים מתוך <span className="ltr">{data.total}</span>. אפשר לחפש לפי קוד או שם.</p>
       ) : null}
       <p className={s.foot}>
         יתרת שוברים פתוחה, <span className="ltr">{money(k.openAgorot)}</span>, היא התחייבות של הקליניקה, לא הכנסה. היא נרשמת כהכנסה רק במימוש, יחד עם חשבונית המס. BeautyFind לא גובה עמלה על שוברים.
       </p>
+      </div>
+      </GiftScreen>
     </div>
   );
 }

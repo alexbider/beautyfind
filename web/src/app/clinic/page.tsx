@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { DAY_SHORT, STATUS, ddmm, plBookings, shortName } from '@/components/clinic/labels';
+import { DAY_SHORT, ddmm, plBookings, shortName } from '@/components/clinic/labels';
 import { CLINIC_NAV, clinicLevel } from '@/components/clinic/levels';
+import { TodayBoard, type DayGroup } from '@/components/clinic/TodayBoard';
 import { UpgradeCard } from '@/components/clinic/UpgradeCard';
+import { TopBar } from '@/components/shell/TopBar';
 import { bizContext } from '@/lib/server/biz';
 import { releaseExpiredHolds } from '@/lib/server/booking';
 import { clinicContext } from '@/lib/server/clinic';
@@ -12,7 +13,9 @@ import { addDays, dowOf, hhmm, ilDateKey, ilToUtc } from '@/lib/time';
 import styles from './page.module.css';
 
 // Clinic landing: today and upcoming bookings for the branch, each linking to its Clinic Booking card.
-// The full back office (Noa Clinic: calendar, CRM ...) is a later phase.
+// On phones this is the "היום" tab (spec §6): today's timeline first, the next appointment
+// highlighted, one-tap check-in and pull to refresh. The full back office (Noa Clinic: calendar,
+// CRM ...) is a later phase.
 
 export const metadata: Metadata = { title: 'תורים', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
@@ -29,7 +32,14 @@ export default async function ClinicHome() {
   }
 
   const ctx = await clinicContext('bookings');
-  if (!ctx.advanced) return <div className={styles.page}><UpgradeCard area="תורים והצהרות בריאות" /></div>;
+  if (!ctx.advanced) {
+    return (
+      <div className={styles.page}>
+        <TopBar mode="root" largeTitle="היום" />
+        <UpgradeCard area="תורים והצהרות בריאות" />
+      </div>
+    );
+  }
   const branch = ctx.branch;
   // No scheduler yet: close checkout holds that ran out so they don't show as waiting for a deposit.
   await releaseExpiredHolds();
@@ -65,13 +75,49 @@ export default async function ClinicHome() {
   const todayRows = groups.get(today) ?? [];
   const arrived = todayRows.filter(r => ['checked_in', 'in_treatment', 'completed'].includes(r.status)).length;
   const dayLabel = (k: string) => (k === today ? 'היום' : k === addDays(today, 1) ? 'מחר' : DAY_SHORT[dowOf(k)]);
+  // The next appointment of today: the first one still ahead, or already waiting in the clinic.
+  const nextId = todayRows.find(
+    r => ['pending_payment', 'confirmed', 'checked_in'].includes(r.status) && r.startsAt.getTime() + r.durationMin * 60_000 > now.getTime(),
+  )?.id;
+
+  const days: DayGroup[] = [...groups.entries()].map(([k, list]) => ({
+    key: k,
+    label: dayLabel(k),
+    prefix: k === today || k === addDays(today, 1) ? `${DAY_SHORT[dowOf(k)]} · ` : '',
+    date: ddmm(ilToUtc(k, '12:00')),
+    count: plBookings(list.length),
+    today: k === today,
+    rows: list.map(r => {
+      const open = ['pending_payment', 'confirmed', 'checked_in'].includes(r.status);
+      const d = r.declaration;
+      const valid = !!d && !d.supersededById && d.validUntil > now;
+      const tag = !open ? null
+        : r.requiresDeclaration && !valid ? { t: 'הצהרה חסרה', tone: 'warn' }
+        : valid && d!.flagged && !d!.physicianAckAt ? { t: 'ממצאים לעיון רופא/ה', tone: 'warn' }
+        : null;
+      return {
+        id: r.id,
+        time: hhmm(r.startsAt),
+        late: r.startsAt < now && r.status === 'confirmed',
+        dim: ['cancelled_client', 'cancelled_clinic', 'no_show'].includes(r.status),
+        name: shortName(r.clientName),
+        what: [r.treatment?.name ?? (r.kind === 'consult' ? 'פגישת ייעוץ' : ''), r.practitioner?.displayName].filter(Boolean).join(' · '),
+        tag,
+        status: r.status,
+        next: r.id === nextId,
+        // Same rule as the booking card (manage level); the shortcut is offered on today's rows only.
+        canCheckIn: ctx.canManage && k === today && r.status === 'confirmed',
+      };
+    }),
+  }));
 
   return (
     <div className={styles.page}>
+      <TopBar mode="root" largeTitle="היום" />
       <div className={styles.head}>
         <div className={styles.headText}>
           <span className={styles.kicker}>{branch?.name ?? 'העסק שלי'}{ctx.level === 'own' ? ' · התורים שלי' : ''}</span>
-          <h1 className={styles.h1}>תורים</h1>
+          <h1 className={`${styles.h1} bf-desk-only`}>תורים</h1>
           <p className={styles.sub}>
             היום: {todayRows.length ? plBookings(todayRows.length) : 'אין תורים'}
             {arrived === 1 ? ' · מטופלת אחת הגיעה' : arrived > 1 ? <> · <span className="ltr">{arrived}</span> הגיעו</> : null}
@@ -85,44 +131,7 @@ export default async function ClinicHome() {
           <p>תורים שנקבעים אונליין, בטלפון או מרשימת ההמתנה יופיעו כאן, מקובצים לפי יום.</p>
         </div>
       ) : (
-        <div className={styles.days}>
-          {[...groups.entries()].map(([k, list]) => (
-            <section key={k} aria-labelledby={`d-${k}`} className={styles.day}>
-              <h2 id={`d-${k}`} className={styles.dayHead}>
-                <span>{dayLabel(k)}</span>
-                <span className={styles.dayDate}>{k === today || k === addDays(today, 1) ? `${DAY_SHORT[dowOf(k)]} · ` : ''}<span className="ltr tnum">{ddmm(ilToUtc(k, '12:00'))}</span></span>
-                <span className={styles.dayCount}>{plBookings(list.length)}</span>
-              </h2>
-              <ul className={styles.list}>
-                {list.map(r => {
-                  const st = STATUS[r.status];
-                  const open = ['pending_payment', 'confirmed', 'checked_in'].includes(r.status);
-                  const d = r.declaration;
-                  const valid = !!d && !d.supersededById && d.validUntil > now;
-                  const tag = !open ? null
-                    : r.requiresDeclaration && !valid ? { t: 'הצהרה חסרה', tone: 'warn' }
-                    : valid && d!.flagged && !d!.physicianAckAt ? { t: 'ממצאים לעיון רופא/ה', tone: 'warn' }
-                    : null;
-                  const past = r.startsAt < now && r.status === 'confirmed';
-                  return (
-                    <li key={r.id}>
-                      <Link href={`/clinic/booking/${r.id}`} className={styles.row} data-dim={['cancelled_client', 'cancelled_clinic', 'no_show'].includes(r.status) || undefined}>
-                        <span className={`${styles.time} ltr tnum`} data-late={past || undefined}>{hhmm(r.startsAt)}</span>
-                        <span className={styles.who}>
-                          <span className={styles.name}>{shortName(r.clientName)}</span>
-                          <span className={styles.what}>{[r.treatment?.name ?? (r.kind === 'consult' ? 'פגישת ייעוץ' : ''), r.practitioner?.displayName].filter(Boolean).join(' · ')}</span>
-                        </span>
-                        {tag && <span className={styles.tag} data-tone={tag.tone}>{tag.t}</span>}
-                        <span className={styles.pill} data-tone={st.tone}>{st.name}</span>
-                        <svg className={styles.chev} width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 3 5 7l4 4" /></svg>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          ))}
-        </div>
+        <TodayBoard days={days} />
       )}
     </div>
   );

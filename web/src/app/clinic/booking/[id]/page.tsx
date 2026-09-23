@@ -6,6 +6,7 @@ import { ActionPanel, OpButton, type ActView } from '@/components/clinic/Booking
 import { SOURCE, dayName, ddmm, ddmmHhmm, roleOfProfession, waHref } from '@/components/clinic/labels';
 import { UpgradeCard } from '@/components/clinic/UpgradeCard';
 import styles from '@/components/clinic/ClinicBooking.module.css';
+import { TopBar } from '@/components/shell/TopBar';
 import { QUESTIONS, plAnswers, type SealedDeclaration } from '@/components/declaration/questions';
 import { fromE164, nisFromAgorot, telHref } from '@/lib/format';
 import { VAT_RATE } from '@/lib/pricing';
@@ -45,7 +46,7 @@ const plRest = (n: number) => (n === 1 ? 'השאלה הנוספת: לא.' : n ==
 export default async function ClinicBookingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const ctx = await clinicContext('bookings');
-  if (!ctx.advanced) return <div className={styles.page}><UpgradeCard area="תורים והצהרות בריאות" /></div>;
+  if (!ctx.advanced) return <><TopBar mode="pushed" title="כרטיס תור" backHref="/clinic" /><div className={styles.page}><UpgradeCard area="תורים והצהרות בריאות" /></div></>;
 
   const a = actorFrom(ctx);
   const b = await loadForActor(id, a);
@@ -242,9 +243,11 @@ export default async function ClinicBookingPage({ params }: { params: Promise<{ 
   const qLabel = (key: string) => qs.find(q => q.key === key)?.short ?? key;
 
   return (
+    <>
+    <TopBar mode="pushed" title="כרטיס תור" backHref="/clinic" />
     <div className={styles.page}>
       <div className={styles.context}>
-        <Link href="/clinic" className={styles.back}>
+        <Link href="/clinic" className={`${styles.back} bf-desk-only`}>
           <svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4" /></svg>
           לרשימת התורים
         </Link>
@@ -355,7 +358,7 @@ export default async function ClinicBookingPage({ params }: { params: Promise<{ 
             </section>
           )}
 
-          <ActionPanel bookingId={b.id} act={act}>
+          <ActionPanel bookingId={b.id} act={act} clientFirst={b.clientName.split(' ')[0]}>
             {b.status === 'completed' && (
               <div className={styles.clinical}>
                 <h3 className={styles.h3}>רישום קליני</h3>
@@ -421,5 +424,6 @@ export default async function ClinicBookingPage({ params }: { params: Promise<{ 
         </aside>
       </div>
     </div>
+    </>
   );
 }

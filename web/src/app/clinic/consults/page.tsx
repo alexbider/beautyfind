@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ConsultChrome } from '@/components/consult/Chrome';
 import { ConsultInbox, type InboxRequest } from '@/components/consult/ConsultInbox';
 import { FLAGS, FORMATS, PRIOR, TIMES, DAY_LETTERS, type FlagKey } from '@/components/consult/constants';
 import { consultActor, consultDoctors, slotLabel } from '@/components/consult/service';
 import styles from '@/components/consult/consult.module.css';
+import ix from '@/components/consult/inbox.module.css';
+import { TopBar } from '@/components/shell/TopBar';
 import { fromE164 } from '@/lib/format';
 import { clinicContext } from '@/lib/server/clinic';
 import { db } from '@/lib/server/db';
@@ -34,9 +35,11 @@ export default async function ConsultsInboxPage({ searchParams }: { searchParams
 
   if (!ctx.advanced) {
     return (
-      <ConsultChrome bare>
+      <div className={styles.root}>
+        <TopBar mode="root" largeTitle="בקשות ייעוץ" />
+        <div className={`${ix.page} ${ix.upgradePage}`}>
         <span className={styles.kicker}>{ctx.branch?.name ?? 'העסק שלי'} · פניות</span>
-        <h1 className={styles.h1}>בקשות ייעוץ רפואי</h1>
+        <h1 className={`${styles.h1} bf-desk-only`}>בקשות ייעוץ רפואי</h1>
         <div className={styles.upgrade}>
           <h2 className={styles.h2}>תיבת בקשות הייעוץ היא חלק ממערכת הקליניקה</h2>
           <p className={styles.upgradeBody}>
@@ -47,7 +50,8 @@ export default async function ConsultsInboxPage({ searchParams }: { searchParams
             <Link href="/biz/leads" className={styles.btnGhostLink}>לפניות מהפרופיל</Link>
           </div>
         </div>
-      </ConsultChrome>
+        </div>
+      </div>
     );
   }
 
@@ -115,8 +119,10 @@ export default async function ConsultsInboxPage({ searchParams }: { searchParams
   const initial = r && requests.some(q => q.id === r) ? r : null;
   const consultHref = firstBranch ? `/consult/${firstBranch.slug}` : null;
 
+  // Own wrapper instead of ConsultChrome: the phone top bar and rows run edge to edge.
   return (
-    <ConsultChrome bare>
+    <div className={styles.root}>
+      <div className={ix.page}>
       <ConsultInbox
         bizName={firstBranch?.name ?? 'הקליניקה'}
         requests={requests}
@@ -128,6 +134,7 @@ export default async function ConsultsInboxPage({ searchParams }: { searchParams
         multiBranch={actor.branchIds.length > 1}
         consultHref={consultHref}
       />
-    </ConsultChrome>
+      </div>
+    </div>
   );
 }

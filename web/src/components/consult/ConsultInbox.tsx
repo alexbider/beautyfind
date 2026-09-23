@@ -8,6 +8,13 @@ import {
   approveTreatmentAction, askDetailsAction, confirmProposedAction, declineAction, proposeSlotAction, proposeSlotsAction,
 } from '@/app/clinic/consults/actions';
 import { telHref } from '@/lib/format';
+import { useDetailParam, useShell } from '../clinic/mobile';
+import { ActionBar } from '../shell/ActionBar';
+import { BottomSheet } from '../shell/BottomSheet';
+import { haptic } from '../shell/haptics';
+import { PullToRefresh } from '../shell/PullToRefresh';
+import { Segmented } from '../shell/Segmented';
+import { TopBar } from '../shell/TopBar';
 import { DECLINES, FLAGS, STATUS, declineMessage, firstName, proposeMessage, type DeclineKey, type FlagKey, type SlotDay } from './constants';
 import { SlotPicker } from './SlotPicker';
 import { LtrText, radioKeys, rove } from './ui';
@@ -15,6 +22,8 @@ import styles from './consult.module.css';
 import ix from './inbox.module.css';
 
 // Design: project/BeautyFind Consult Request.dc.html (side=clinic)
+// Phones (spec §6 Consult inbox): list → detail screen with the request id in the URL (?r=), so back
+// returns to the list; the actions sit in the sticky action bar and their forms open in sheets.
 
 export interface InboxRequest {
   id: string;
@@ -64,6 +73,8 @@ interface Props {
 
 export function ConsultInbox({ bizName, requests, initialId, canManage, isPhysician, viewer, doctorName, multiBranch, consultHref }: Props) {
   const router = useRouter();
+  const shell = useShell();
+  const detail = useDetailParam('r');
   const initialReq = initialId ? requests.find(q => q.id === initialId) : null;
   const [filter, setFilter] = useState<Filter>(initialReq && !FILTERS[0].match(initialReq.status) ? 'all' : 'open');
   const [selId, setSelId] = useState<string | null>(initialId);
@@ -75,7 +86,11 @@ export function ConsultInbox({ bizName, requests, initialId, canManage, isPhysic
 
   const f = FILTERS.find(x => x.key === filter)!;
   const list = requests.filter(q => f.match(q.status));
-  const sel = list.find(q => q.id === selId) ?? list[0] ?? null;
+  // The request in the URL wins (phones: the detail screen stays on it even after its status moves
+  // it out of the current filter); otherwise the desktop selection, then the first in the list.
+  const routed = detail.id ? requests.find(q => q.id === detail.id) ?? null : null;
+  const sel = routed ?? list.find(q => q.id === selId) ?? list[0] ?? null;
+  const view = detail.id ? 'detail' : 'list';
   const nNew = requests.filter(q => q.status === 'new').length;
   const counts = Object.fromEntries(FILTERS.map(x => [x.key, requests.filter(q => x.match(q.status)).length])) as Record<Filter, number>;
 
@@ -85,24 +100,37 @@ export function ConsultInbox({ bizName, requests, initialId, canManage, isPhysic
     return () => clearTimeout(t);
   }, [toast]);
 
+  // Leaving the detail screen (back) closes any open form.
+  useEffect(() => {
+    if (!detail.id) setMode('none');
+  }, [detail.id]);
+
   const pick = (id: string) => {
     setSelId(id);
     setMode('none');
-    try {
-      const u = new URL(window.location.href);
-      u.searchParams.set('r', id);
-      window.history.replaceState(null, '', u.toString());
-    } catch {}
-    // Below 900px the detail sits under the list: bring it into view.
+    if (shell) {
+      detail.open(id);
+      return;
+    }
+    detail.replace(id);
+    // Narrow desktop windows stack the detail under the list: bring it into view.
     requestAnimationFrame(() => {
       detailH.current?.focus({ preventScroll: true });
       if (window.matchMedia('(max-width: 1023px)').matches) detailH.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   };
 
+  const changeFilter = (k: Filter) => {
+    setFilter(k);
+    setMode('none');
+    // Desktop: a selection outside the new filter gives way to the list's first row.
+    const next = FILTERS.find(x => x.key === k)!;
+    if (routed && !next.match(routed.status)) detail.replace(null);
+  };
+
   const openMode = (m: Mode) => {
     setMode(m);
-    requestAnimationFrame(() => panelRef.current?.querySelector<HTMLElement>('button:not([aria-disabled="true"]), textarea')?.focus());
+    if (!shell) requestAnimationFrame(() => panelRef.current?.querySelector<HTMLElement>('button:not([aria-disabled="true"]), textarea')?.focus());
   };
 
   const act = async (fn: () => Promise<{ ok: true; message: string } | { ok: false; error: string }>) => {
@@ -112,10 +140,15 @@ export function ConsultInbox({ bizName, requests, initialId, canManage, isPhysic
       const res = await fn();
       if (res.ok) {
         setMode('none');
+        haptic('success');
         setToast({ text: res.message });
         router.refresh();
-      } else setToast({ text: res.error, bad: true });
+      } else {
+        haptic('warning');
+        setToast({ text: res.error, bad: true });
+      }
     } catch {
+      haptic('warning');
       setToast({ text: 'הפעולה נכשלה. בדקו את החיבור ונסו שוב.', bad: true });
     } finally {
       setBusy(false);
@@ -123,36 +156,50 @@ export function ConsultInbox({ bizName, requests, initialId, canManage, isPhysic
   };
 
   const filterIdx = FILTERS.findIndex(x => x.key === filter);
+  const manageable = !!sel && canManage && sel.status !== 'closed_declined' && sel.status !== 'closed_treatment_booked';
 
   return (
-    <>
-      <div className={ix.top}>
-        <div className={ix.topText}>
-          <span className={styles.kicker}>{bizName} · פניות</span>
-          <h1 className={`${styles.h1} ${ix.h1}`}>בקשות ייעוץ רפואי</h1>
-        </div>
-        <span className={ix.newCount}>
-          {nNew === 0 ? 'אין בקשות חדשות' : nNew === 1 ? 'בקשה חדשה אחת' : nNew === 2 ? 'שתי בקשות חדשות' : <><span className="ltr tnum">{nNew}</span> בקשות חדשות</>}
-        </span>
-      </div>
+    <div className={ix.screen} data-view={view}>
+      {view === 'detail' && sel ? (
+        <TopBar mode="pushed" title={sel.name} onBack={detail.close} />
+      ) : (
+        <TopBar mode="root" largeTitle="בקשות ייעוץ" />
+      )}
 
-      <div role="radiogroup" aria-label="סינון לפי סטטוס" onKeyDown={radioKeys} className={`${styles.chipsTight} ${ix.filters}`}>
-        {FILTERS.map((x, i) => (
-          <button
-            key={x.key}
-            type="button"
-            role="radio"
-            aria-checked={filter === x.key}
-            tabIndex={rove(i, filterIdx)}
-            onClick={() => {
-              setFilter(x.key);
-              setMode('none');
-            }}
-            className={`${styles.chip} ${ix.filterChip}`}
-          >
-            {x.name} <span className={`ltr tnum ${styles.chipCount}`}>{counts[x.key]}</span>
-          </button>
-        ))}
+      <div className={ix.listPane}>
+        <div className={ix.top}>
+          <div className={ix.topText}>
+            <span className={styles.kicker}>{bizName} · פניות</span>
+            <h1 className={`${styles.h1} ${ix.h1} bf-desk-only`}>בקשות ייעוץ רפואי</h1>
+          </div>
+          <span className={ix.newCount}>
+            {nNew === 0 ? 'אין בקשות חדשות' : nNew === 1 ? 'בקשה חדשה אחת' : nNew === 2 ? 'שתי בקשות חדשות' : <><span className="ltr tnum">{nNew}</span> בקשות חדשות</>}
+          </span>
+        </div>
+
+        <div role="radiogroup" aria-label="סינון לפי סטטוס" onKeyDown={radioKeys} className={`${styles.chipsTight} ${ix.filters} bf-desk-only`}>
+          {FILTERS.map((x, i) => (
+            <button
+              key={x.key}
+              type="button"
+              role="radio"
+              aria-checked={filter === x.key}
+              tabIndex={rove(i, filterIdx)}
+              onClick={() => changeFilter(x.key)}
+              className={`${styles.chip} ${ix.filterChip}`}
+            >
+              {x.name} <span className={`ltr tnum ${styles.chipCount}`}>{counts[x.key]}</span>
+            </button>
+          ))}
+        </div>
+        <div className={`${ix.seg} bf-shell-only`}>
+          <Segmented
+            label="סינון לפי סטטוס"
+            value={filter}
+            onChange={k => changeFilter(k as Filter)}
+            items={FILTERS.map(x => ({ key: x.key, label: x.name, count: counts[x.key] }))}
+          />
+        </div>
       </div>
 
       {requests.length === 0 ? (
@@ -170,30 +217,34 @@ export function ConsultInbox({ bizName, requests, initialId, canManage, isPhysic
         </div>
       ) : (
         <div className={ix.grid}>
-          {list.length === 0 ? (
-            <p className={ix.emptyList}>אין בקשות בסינון הזה.</p>
-          ) : (
-            <ul aria-label="רשימת בקשות" className={ix.list}>
-              {list.map(q => {
-                const st = STATUS[q.status];
-                return (
-                  <li key={q.id}>
-                    <button type="button" aria-current={sel?.id === q.id ? 'true' : undefined} onClick={() => pick(q.id)} className={ix.item}>
-                      <span className={ix.itemTop}>
-                        <span className={ix.itemName}>{q.name}</span>
-                        <span className={ix.itemWhen}><LtrText text={q.received} /></span>
-                      </span>
-                      <span className={ix.itemAreas}>{q.areas.join(' · ')}</span>
-                      <span className={ix.badges}>
-                        <span className={ix.badge} data-tone={st.tone}>{st.name}</span>
-                        {q.flags.length > 0 && <span className={ix.badge} data-tone="flag">דורש עיון רפואי</span>}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+          <div className={ix.listPane}>
+            <PullToRefresh>
+              {list.length === 0 ? (
+                <p className={ix.emptyList}>אין בקשות בסינון הזה.</p>
+              ) : (
+                <ul aria-label="רשימת בקשות" className={ix.list}>
+                  {list.map(q => {
+                    const st = STATUS[q.status];
+                    return (
+                      <li key={q.id}>
+                        <button type="button" aria-current={sel?.id === q.id ? 'true' : undefined} onClick={() => pick(q.id)} className={ix.item}>
+                          <span className={ix.itemTop}>
+                            <span className={ix.itemName}>{q.name}</span>
+                            <span className={ix.itemWhen}><LtrText text={q.received} /></span>
+                          </span>
+                          <span className={ix.itemAreas}>{q.areas.join(' · ')}</span>
+                          <span className={ix.badges}>
+                            <span className={ix.badge} data-tone={st.tone}>{st.name}</span>
+                            {q.flags.length > 0 && <span className={ix.badge} data-tone="flag">דורש עיון רפואי</span>}
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </PullToRefresh>
+          </div>
 
           {sel && (
             <section aria-labelledby="cs-dt" className={ix.detail}>
@@ -269,7 +320,7 @@ export function ConsultInbox({ bizName, requests, initialId, canManage, isPhysic
                 </p>
               )}
 
-              {canManage && sel.status !== 'closed_declined' && sel.status !== 'closed_treatment_booked' && (
+              {manageable && (
                 <div ref={panelRef} className={ix.panel}>
                   <Panel
                     key={sel.id + mode}
@@ -282,6 +333,7 @@ export function ConsultInbox({ bizName, requests, initialId, canManage, isPhysic
                     bizName={bizName}
                     openMode={openMode}
                     act={act}
+                    sheet={shell}
                   />
                 </div>
               )}
@@ -298,12 +350,19 @@ export function ConsultInbox({ bizName, requests, initialId, canManage, isPhysic
             : `מחובר/ת כ${viewer.roleName} (הרשאת הזמנות). סגירה מסיבה רפואית ואישור טיפול שמורים לרופא/ה: העבירי את הבקשה לעיון ${doctorName}.`}
       </p>
 
+      {/* Phones: the detail screen's actions, above the tab bar. */}
+      {view === 'detail' && manageable && sel && (
+        <ActionBar mobileOnly className={ix.bar}>
+          <Actions req={sel} busy={busy} isPhysician={isPhysician} openMode={openMode} act={act} compact />
+        </ActionBar>
+      )}
+
       {toast && (
-        <div role={toast.bad ? 'alert' : 'status'} className={`${styles.toast} ${toast.bad ? styles.toastBad : ''}`}>
+        <div role={toast.bad ? 'alert' : 'status'} className={`${styles.toast} ${toast.bad ? styles.toastBad : ''} ${ix.toastPos}`}>
           {toast.text}
         </div>
       )}
-    </>
+    </div>
   );
 }
 
@@ -311,8 +370,14 @@ export function ConsultInbox({ bizName, requests, initialId, canManage, isPhysic
 
 type Act = (fn: () => Promise<{ ok: true; message: string } | { ok: false; error: string }>) => Promise<void>;
 
+const MODE_TITLE: Record<Exclude<Mode, 'none'>, string> = {
+  propose: 'הצעת מועד לייעוץ',
+  decline: 'סגירת הבקשה',
+  approve: 'אישור טיפול',
+};
+
 function Panel({
-  req, mode, busy, isPhysician, doctorName, viewerName, bizName, openMode, act,
+  req, mode, busy, isPhysician, doctorName, viewerName, bizName, openMode, act, sheet,
 }: {
   req: InboxRequest;
   mode: Mode;
@@ -323,14 +388,19 @@ function Panel({
   bizName: string;
   openMode: (m: Mode) => void;
   act: Act;
+  /** Phones: the forms open in a sheet and the buttons live in the action bar. */
+  sheet: boolean;
 }) {
   const first = firstName(req.name);
-  const scheduledLive = req.status === 'consult_scheduled' && !!req.booking?.live;
-  const canSchedule = !scheduledLive; // new / awaiting, or a scheduled consult whose booking lapsed
+  const canSchedule = !(req.status === 'consult_scheduled' && !!req.booking?.live);
 
-  if (mode === 'propose') return <ProposePanel req={req} busy={busy} doctorName={doctorName} bizName={bizName} openMode={openMode} act={act} />;
-  if (mode === 'decline') return <DeclinePanel req={req} busy={busy} isPhysician={isPhysician} viewerName={viewerName} openMode={openMode} act={act} />;
-  if (mode === 'approve') return <ApprovePanel req={req} busy={busy} openMode={openMode} act={act} />;
+  const form =
+    mode === 'propose' ? <ProposePanel req={req} busy={busy} doctorName={doctorName} bizName={bizName} openMode={openMode} act={act} />
+    : mode === 'decline' ? <DeclinePanel req={req} busy={busy} isPhysician={isPhysician} viewerName={viewerName} openMode={openMode} act={act} />
+    : mode === 'approve' ? <ApprovePanel req={req} busy={busy} openMode={openMode} act={act} />
+    : null;
+
+  if (form && !sheet) return form;
 
   return (
     <div className={ix.panelStack}>
@@ -344,37 +414,53 @@ function Panel({
           </button>
         </div>
       )}
-      <div className={styles.row} style={{ gap: 8 }}>
-        {canSchedule && (
-          <button type="button" disabled={busy} onClick={() => openMode('propose')} className={req.proposed ? ix.btnGhost : ix.btnPrimary}>
-            {req.proposed ? 'הצעת מועד אחר' : 'הצעת מועד לייעוץ'}
-          </button>
-        )}
-        {(req.status === 'new' || req.status === 'awaiting_client') && (
-          <button type="button" disabled={busy} onClick={() => act(() => askDetailsAction(req.id))} className={ix.btnGhost}>
-            {req.status === 'awaiting_client' ? 'בקשת פרטים שוב בוואטסאפ' : 'בקשת פרטים בוואטסאפ'}
-          </button>
-        )}
-        {scheduledLive && (
-          <span className={ix.gated}>
-            <button
-              type="button"
-              aria-disabled={!isPhysician || busy || undefined}
-              aria-describedby={isPhysician ? undefined : 'cs-approve-why'}
-              onClick={() => isPhysician && !busy && openMode('approve')}
-              className={ix.btnPrimary}
-            >
-              אישור טיפול
-            </button>
-            {!isPhysician && <span id="cs-approve-why" className={ix.gatedWhy}>שמור לרופא/ה</span>}
-          </span>
-        )}
-        <button type="button" disabled={busy} onClick={() => openMode('decline')} className={ix.btnDanger}>
-          לא מתאימה
-        </button>
+      <div className={`${styles.row} bf-desk-only`} style={{ gap: 8 }}>
+        <Actions req={req} busy={busy} isPhysician={isPhysician} openMode={openMode} act={act} />
       </div>
+      {form && mode !== 'none' && (
+        <BottomSheet open onClose={() => openMode('none')} title={MODE_TITLE[mode]} size={mode === 'propose' ? 'full' : 'auto'}>
+          {form}
+        </BottomSheet>
+      )}
     </div>
   );
+}
+
+/** The request's actions: a row in the desktop panel, the action bar on phones (short labels). */
+function Actions({ req, busy, isPhysician, openMode, act, compact }: { req: InboxRequest; busy: boolean; isPhysician: boolean; openMode: (m: Mode) => void; act: Act; compact?: boolean }) {
+  const scheduledLive = req.status === 'consult_scheduled' && !!req.booking?.live;
+  const canSchedule = !scheduledLive; // new / awaiting, or a scheduled consult whose booking lapsed
+  const decline = (
+    <button key="decline" type="button" disabled={busy} onClick={() => openMode('decline')} className={ix.btnDanger}>
+      לא מתאימה
+    </button>
+  );
+  const ask = (req.status === 'new' || req.status === 'awaiting_client') && (
+    <button key="ask" type="button" disabled={busy} onClick={() => act(() => askDetailsAction(req.id))} className={ix.btnGhost}>
+      {compact ? 'בקשת פרטים' : req.status === 'awaiting_client' ? 'בקשת פרטים שוב בוואטסאפ' : 'בקשת פרטים בוואטסאפ'}
+    </button>
+  );
+  const propose = canSchedule && (
+    <button key="propose" type="button" disabled={busy} onClick={() => openMode('propose')} className={req.proposed && !compact ? ix.btnGhost : ix.btnPrimary}>
+      {req.proposed ? 'הצעת מועד אחר' : compact ? 'הצעת מועד' : 'הצעת מועד לייעוץ'}
+    </button>
+  );
+  const approve = scheduledLive && (
+    <span key="approve" className={ix.gated}>
+      <button
+        type="button"
+        aria-disabled={!isPhysician || busy || undefined}
+        aria-describedby={isPhysician ? undefined : 'cs-approve-why'}
+        onClick={() => isPhysician && !busy && openMode('approve')}
+        className={ix.btnPrimary}
+      >
+        אישור טיפול
+      </button>
+      {!isPhysician && <span id="cs-approve-why" className={ix.gatedWhy}>שמור לרופא/ה</span>}
+    </span>
+  );
+  // Desktop keeps the design's order; the phone bar puts the primary action last (it takes the width).
+  return compact ? <>{decline}{ask}{approve || propose}</> : <>{propose}{ask}{approve}{decline}</>;
 }
 
 function ProposePanel({ req, busy, doctorName, bizName, openMode, act }: { req: InboxRequest; busy: boolean; doctorName: string; bizName: string; openMode: (m: Mode) => void; act: Act }) {
@@ -409,7 +495,7 @@ function ProposePanel({ req, busy, doctorName, bizName, openMode, act }: { req: 
       {days && days.length === 0 && <p className={styles.emptySlots}>אין מועדים פנויים ביומן הרופא/ה בשבועיים הקרובים.</p>}
       {days && days.length > 0 && <SlotPicker days={days} value={slot} onChange={setSlot} label="מועד להציע" />}
       <p className={ix.preview}><LtrText text={msg} /></p>
-      <div className={styles.row} style={{ gap: 8 }}>
+      <div className={`${styles.row} ${ix.formBtns}`} style={{ gap: 8 }}>
         <button type="button" disabled={!slot || busy} onClick={() => slot && act(() => proposeSlotAction(req.id, slot))} className={ix.btnPrimary}>
           שליחה בוואטסאפ
         </button>
@@ -447,7 +533,7 @@ function DeclinePanel({ req, busy, isPhysician, viewerName, openMode, act }: { r
         <p className={styles.hintSm}>תור הייעוץ יבוטל, ודמי ייעוץ ששולמו יוחזרו במלואם.</p>
       )}
       <p className={ix.preview} style={{ borderColor: 'var(--line)' }}>{msg}</p>
-      <div className={styles.row} style={{ gap: 8 }}>
+      <div className={`${styles.row} ${ix.formBtns}`} style={{ gap: 8 }}>
         <button type="button" disabled={!reason || busy} onClick={() => reason && act(() => declineAction(req.id, reason))} className={ix.btnBad}>
           שליחת התשובה
         </button>
@@ -473,7 +559,7 @@ function ApprovePanel({ req, busy, openMode, act }: { req: InboxRequest; busy: b
         ) : null}
         את תור הטיפול קובעים מהיומן, או מטפלים כבר בביקור הזה.
       </p>
-      <div className={styles.row} style={{ gap: 8 }}>
+      <div className={`${styles.row} ${ix.formBtns}`} style={{ gap: 8 }}>
         <button type="button" disabled={busy} onClick={() => act(() => approveTreatmentAction(req.id, note))} className={ix.btnPrimary}>
           אישור טיפול
         </button>
