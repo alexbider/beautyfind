@@ -1,0 +1,19 @@
+/* Sticky section chips (Business Profile mobile v2, §4). Rendered in the app shell only. */
+.tabs {
+  position: sticky; top: calc(var(--topbar-h) + var(--safe-t)); z-index: 30;
+  background: rgba(255, 255, 255, .96); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.tabRail {
+  display: flex; gap: 6px; overflow-x: auto; padding: 9px 20px; scroll-padding-inline: 20px;
+  scrollbar-width: none; overscroll-behavior-x: contain;
+}
+.tabRail::-webkit-scrollbar { height: 0; }
+.tab {
+  flex: none; display: inline-flex; align-items: center; min-height: 40px; padding: 0 15px; border: 1px solid var(--line);
+  border-radius: 999px; background: #ffffff; font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap;
+  transition: background .18s, color .18s, border-color .18s;
+}
+.tab[aria-current='true'] { background: var(--navy); border-color: var(--navy); color: #ffffff; font-weight: 700; }
+.tab:active { transform: scale(.97); }
+@media (prefers-reduced-motion: reduce) { .tab { transition: none; } }

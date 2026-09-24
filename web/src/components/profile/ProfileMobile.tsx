@@ -1,12 +1,11 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
-import { BottomSheet } from '@/components/shell/BottomSheet';
-import { Segmented } from '@/components/shell/Segmented';
+import { useEffect, useRef, useState } from 'react';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
+import styles from './ProfileMobile.module.css';
 
-// App-shell pieces of the Business Profile (responsive spec §6): the top bar that picks up the clinic
-// name once the title scrolls away, the sticky section tabs, and the "פרטים" sheet with hours and address.
+// App-shell pieces of the Business Profile (mobile v2 handoff): the top bar that picks up the clinic
+// name once the title scrolls away, and the sticky section chips.
 
 /** Site header whose phone top bar shows `name` only after the element `#watchId` has scrolled under it. */
 export function ProfileHeader({ name, watchId, backHref }: { name: string; watchId: string; backHref: string }) {
@@ -21,73 +20,81 @@ export function ProfileHeader({ name, watchId, backHref }: { name: string; watch
   return <SiteHeader variant="public" title={past ? name : undefined} backHref={backHref} />;
 }
 
-/** Offset of the sticky top bar + section tabs, read from the live layout. */
+/** Height of the sticky top bar + section tabs, read from the live layout (handoff: ~124px). */
 function stickyOffset() {
   const bar = document.querySelector<HTMLElement>('[data-mode="pushed"]');
-  const tabs = document.querySelector<HTMLElement>('[data-profile-tabs] > *');
-  return (bar?.getBoundingClientRect().height ?? 56) + (tabs?.getBoundingClientRect().height ?? 56) + 8;
+  const tabs = document.querySelector<HTMLElement>('[data-profile-tabs]');
+  return (bar?.getBoundingClientRect().height ?? 56) + (tabs?.getBoundingClientRect().height ?? 58) + 10;
 }
 
-/** Section tabs (טיפולים · צוות · ביקורות · פרטים): scroll to a section, and follow the one in view. */
+/**
+ * Sticky section chips under the top bar (Business Profile mobile v2, §4). Tap scrolls to the section;
+ * the active chip is the last section whose top has passed the sticky band.
+ */
 export function SectionTabs({ items }: { items: Array<{ key: string; label: string; target: string }> }) {
   const [on, setOn] = useState(items[0]?.key ?? '');
+  const bar = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const els = items.map(it => document.getElementById(it.target)).filter((x): x is HTMLElement => !!x);
-    if (!els.length) return;
-    const visible = new Map<string, number>();
-    const io = new IntersectionObserver(
-      entries => {
-        for (const e of entries) {
-          if (e.isIntersecting) visible.set(e.target.id, e.boundingClientRect.top);
-          else visible.delete(e.target.id);
+    let raf = 0;
+    const update = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const band = stickyOffset() + 26;
+        let cur = items[0]?.key ?? '';
+        for (const it of items) {
+          const el = document.getElementById(it.target);
+          if (el && el.getBoundingClientRect().top < band) cur = it.key;
         }
-        // The first section (in page order) that is still in the reading band wins.
-        const first = items.find(it => visible.has(it.target));
-        if (first) setOn(first.key);
-      },
-      { rootMargin: '-120px 0px -45% 0px' },
-    );
-    els.forEach(el => io.observe(el));
-    return () => io.disconnect();
+        setOn(cur);
+      });
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
   }, [items]);
 
-  const go = (key: string) => {
-    const it = items.find(x => x.key === key);
-    const el = it && document.getElementById(it.target);
+  // Keep the active chip in view inside the horizontal rail.
+  useEffect(() => {
+    const chip = bar.current?.querySelector<HTMLElement>('[aria-current="true"]');
+    const rail = bar.current?.firstElementChild as HTMLElement | null;
+    if (!chip || !rail) return;
+    const c = chip.getBoundingClientRect();
+    const r = rail.getBoundingClientRect();
+    if (c.left < r.left + 16 || c.right > r.right - 16) rail.scrollBy({ left: c.left - r.left - (r.width - c.width) / 2, behavior: 'smooth' });
+  }, [on]);
+
+  const go = (it: { key: string; target: string }) => {
+    const el = document.getElementById(it.target);
     if (!el) return;
-    setOn(key);
+    setOn(it.key);
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - stickyOffset(), behavior: reduce ? 'auto' : 'smooth' });
   };
 
   return (
-    <div data-profile-tabs style={{ display: 'contents' }}>
-      <Segmented sticky label="מדורי העמוד" items={items.map(it => ({ key: it.key, label: it.label }))} value={on} onChange={go} />
+    <div ref={bar} data-profile-tabs className={`${styles.tabs} bf-shell-only`}>
+      <nav aria-label="מדורי העמוד" className={styles.tabRail}>
+        {items.map(it => (
+          <a
+            key={it.key}
+            href={`#${it.target}`}
+            className={styles.tab}
+            aria-current={on === it.key ? 'true' : undefined}
+            onClick={e => {
+              e.preventDefault();
+              go(it);
+            }}
+          >
+            {it.label}
+          </a>
+        ))}
+      </nav>
     </div>
-  );
-}
-
-const DetailsCtx = createContext<(() => void) | null>(null);
-
-/** Owns the "פרטים" sheet; `sheet` is rendered only while it is open (never duplicated in the page HTML). */
-export function DetailsSheetProvider({ title, sheet, children }: { title: string; sheet: React.ReactNode; children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <DetailsCtx.Provider value={() => setOpen(true)}>
-      {children}
-      <BottomSheet open={open} onClose={() => setOpen(false)} title={title} size="half">
-        {sheet}
-      </BottomSheet>
-    </DetailsCtx.Provider>
-  );
-}
-
-export function DetailsTrigger({ className, children, label }: { className?: string; children: React.ReactNode; label?: string }) {
-  const open = useContext(DetailsCtx);
-  return (
-    <button type="button" className={className} aria-haspopup="dialog" aria-label={label} onClick={() => open?.()}>
-      {children}
-    </button>
   );
 }

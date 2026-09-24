@@ -1,5 +1,6 @@
 import { PrismaClient, type RegionSlug } from '@prisma/client';
 import { CATEGORIES, CITIES, GROUP_ORDER, REGIONS } from '../src/lib/catalog';
+import { demoGallery } from './demo-gallery';
 
 const db = new PrismaClient();
 
@@ -47,6 +48,9 @@ async function main() {
     const existing = await db.branch.findUnique({ where: { slug: l.slug } });
     if (existing) {
       if (l.email && !existing.email) await db.branch.update({ where: { id: existing.id }, data: { email: l.email } });
+      if (Array.isArray(existing.gallery) && existing.gallery.length === 0) {
+        await db.branch.update({ where: { id: existing.id }, data: { gallery: demoGallery(existing.coverUrl ?? l.img) } });
+      }
       continue;
     }
     const biz = await db.business.create({ data: { status: 'live', type: CATEGORIES.find(c => c.slug === l.cat)?.isMedical ? 'clinic' : 'salon' } });
@@ -66,6 +70,7 @@ async function main() {
         isClaimed: l.claimed,
         coverUrl: l.img,
         coverAlt: l.name,
+        gallery: demoGallery(l.img),
         categories: { create: [{ categorySlug: l.cat }] },
       },
     });

@@ -45,3 +45,12 @@
   background: #ffffff; font: inherit; font-size: 14px; font-weight: 700; color: var(--navy); cursor: pointer; transition: border-color .18s, color .18s;
 }
 @media (hover: hover) and (pointer: fine) { .ask:hover { border-color: var(--teal); color: var(--teal-deep); } }
+
+/* Business Profile mobile v2 §9 */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .icon { display: none; }
+  .toggle { padding: 14px 16px; gap: 10px; }
+  .panel { padding: 0 16px 14px; }
+  .name { font-size: 16.5px; line-height: 1.35; text-wrap: pretty; }
+  .from { font-size: 14px; }
+}

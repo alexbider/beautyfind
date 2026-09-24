@@ -86,11 +86,21 @@ export function Gallery({ photos }: { photos: Photo[] }) {
         })}
       </div>
       {n > 1 && (
-        <span className={styles.counter} aria-hidden="true">
-          <span className="ltr tnum">
-            {Math.min(cur, n - 1) + 1} / {n}
+        <>
+          <span className={styles.counter} aria-hidden="true">
+            <span className="ltr tnum">
+              {Math.min(cur, n - 1) + 1} / {n}
+            </span>
           </span>
-        </span>
+          {/* Phones: opens the viewer at the slide in view. */}
+          <button type="button" className={styles.allPill} onClick={() => lb.open(Math.min(cur, n - 1))}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+              <rect x="2" y="2" width="5" height="5" rx="1.2" /><rect x="9" y="2" width="5" height="5" rx="1.2" />
+              <rect x="2" y="9" width="5" height="5" rx="1.2" /><rect x="9" y="9" width="5" height="5" rx="1.2" />
+            </svg>
+            כל {n} התמונות
+          </button>
+        </>
       )}
       {lb.index >= 0 && <Lightbox photos={photos} index={lb.index} onIndex={lb.setIndex} onClose={lb.close} label="גלריית תמונות" />}
     </div>
@@ -173,7 +183,7 @@ function Lightbox({ photos, index, onIndex, onClose, label }: { photos: Photo[];
     if (!t || n < 2) return;
     const dx = e.changedTouches[0].clientX - t.x;
     const dy = e.changedTouches[0].clientY - t.y;
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) step(dx > 0 ? 1 : -1);
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) step(dx > 0 ? 1 : -1);
   };
 
   const p = photos[index];
@@ -213,7 +223,8 @@ function Lightbox({ photos, index, onIndex, onClose, label }: { photos: Photo[];
             ))}
           </div>
         )}
-        <span className={styles.lbHint}>חיצים למעבר · Esc ליציאה</span>
+        <span className={`${styles.lbHint} bf-desk-only`}>חיצים למעבר · Esc ליציאה</span>
+        {n > 1 && <span className={`${styles.lbHintTouch} bf-shell-only`}>החליקו למעבר בין התמונות</span>}
       </div>
     </div>
   );

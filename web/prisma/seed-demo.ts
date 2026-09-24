@@ -4,6 +4,7 @@
 import { PrismaClient, type PriceType } from '@prisma/client';
 import { CATEGORIES, CITIES } from '../src/lib/catalog';
 import { seal } from '../src/lib/server/seal-core';
+import { demoGallery } from './demo-gallery';
 
 if (process.env.NODE_ENV === 'production') {
   console.error('seed-demo refuses to run in production');
@@ -101,7 +102,14 @@ async function main() {
       console.warn('skip', name);
       continue;
     }
-    if (await db.branch.findFirst({ where: { name } })) continue;
+    const existing = await db.branch.findFirst({ where: { name }, select: { id: true, coverUrl: true, gallery: true } });
+    if (existing) {
+      // Demo rows from an earlier seed: give them the gallery once (never overwrites photos someone added).
+      if (Array.isArray(existing.gallery) && existing.gallery.length === 0) {
+        await db.branch.update({ where: { id: existing.id }, data: { gallery: demoGallery(existing.coverUrl ?? '') } });
+      }
+      continue;
+    }
     const cityRow = await db.city.findUniqueOrThrow({ where: { slug: city.slug } });
     const slug = `${city.slug}-${cats[0].slug}-${i + 1}`;
     const medical = cats.some(c => c.isMedical);
@@ -111,7 +119,7 @@ async function main() {
       data: {
         businessId: biz.id, name, slug, regionSlug: city.region, cityId: cityRow.id, cityName: city.name,
         address: `${city.name}`, phone: `+9723${String(5000000 + i * 7919).slice(0, 7)}`, whatsapp: claimed ? `+97250${String(1000000 + i * 104729).slice(0, 7)}` : null,
-        hours: HOURS, status: 'live', isClaimed: claimed, coverUrl: IMG[cats[0].slug], coverAlt: name,
+        hours: HOURS, status: 'live', isClaimed: claimed, coverUrl: IMG[cats[0].slug], coverAlt: name, gallery: demoGallery(IMG[cats[0].slug]),
         googleRating: google, googleReviewCount: googleCount || null, googleSyncedAt: google ? new Date() : null,
         description: claimed ? `${name} ב${city.name}. ${cats.map(c => c.name).join(' ו')}, עם מחירים גלויים ותורים מסודרים.` : null,
         categories: { create: cats.map(c => ({ categorySlug: c.slug })) },

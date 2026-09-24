@@ -116,3 +116,10 @@
 .foot { display: flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 10px; border-top: 1px solid #F0F2F4; }
 .tx { display: inline-flex; align-items: center; min-height: 26px; padding: 0 9px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg-soft); font-size: 12px; font-weight: 700; color: var(--text); }
 .source { margin-right: auto; font-size: 12px; color: var(--subtle); }
+
+/* Business Profile mobile v2 §10: swipe replaces the arrows; the rail runs edge to edge. */
+@media (max-width: 767px), (max-width: 1023px) and (hover: none) {
+  .arrows { display: none; }
+  .rail { margin: 0 -20px; padding: 2px 20px 6px; width: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 20px; }
+  .card { flex: 0 0 84%; }
+}
