@@ -98,29 +98,37 @@ export const WEBSITE_PATH =
 const STAR_SM = 'M8 1.3l2.06 4.3 4.69.62-3.43 3.24.87 4.66L8 11.9 3.81 14.12l.87-4.66L1.25 6.22l4.69-.62z';
 const STAR_LG = 'M9.5 1.6l2.45 5.1 5.57.74-4.07 3.85 1.03 5.53L9.5 14.1l-4.98 2.64 1.03-5.53L1.48 7.44l5.57-.74z';
 
-function StarsSvg({ fill, width, height, lg }: { fill: string; width: number; height: number; lg: boolean }) {
-  const d = lg ? STAR_LG : STAR_SM;
-  const step = lg ? 21 : 17;
-  return (
-    <svg width={width} height={height} viewBox={lg ? '0 0 102 19' : '0 0 85 16'} fill={fill} aria-hidden="true" style={{ display: 'block' }}>
-      {[0, 1, 2, 3, 4].map(i => <path key={i} transform={i ? `translate(${i * step},0)` : undefined} d={d} />)}
-    </svg>
-  );
-}
-
 /**
  * Five stars filled to `rating` (grey #DADCE0 track, Google-yellow fill), always LTR.
+ * Each star gets its own fill, so 4.7 shows four full stars and 70% of the fifth
+ * (one clip over the whole row would ignore the gaps between the stars).
  * `lg` is the review-summary size (102×19); the default is the inline size (92×17 / 85×16).
  */
 export function RatingStars({ rating, width = 92, height = 17, lg = false }: { rating: number; width?: number; height?: number; lg?: boolean }) {
-  const pct = Math.max(0, Math.min(100, (rating / 5) * 100));
+  const d = lg ? STAR_LG : STAR_SM;
+  const step = lg ? 21 : 17;
+  const r = Math.max(0, Math.min(5, rating));
   return (
-    <span dir="ltr" aria-hidden="true" style={{ position: 'relative', display: 'inline-block', width, height, flex: 'none' }}>
-      <StarsSvg fill="#DADCE0" width={width} height={height} lg={lg} />
-      <span style={{ position: 'absolute', left: 0, top: 0, height, overflow: 'hidden', width: `${pct.toFixed(1)}%` }}>
-        <StarsSvg fill="#FBBC04" width={width} height={height} lg={lg} />
-      </span>
-    </span>
+    <svg width={width} height={height} viewBox={lg ? '0 0 102 19' : '0 0 85 16'} aria-hidden="true" style={{ display: 'block', flex: 'none', maxWidth: 'none' }}>
+      {[0, 1, 2, 3, 4].map(i => {
+        const f = Math.round(Math.max(0, Math.min(1, r - i)) * 100);
+        const fill = f === 100 ? '#FBBC04' : f === 0 ? '#DADCE0' : `url(#bf-star-${f})`;
+        return (
+          <g key={i} transform={i ? `translate(${i * step},0)` : undefined}>
+            {f > 0 && f < 100 && (
+              <defs>
+                {/* The id depends only on the fill level, so repeats on one page are identical. */}
+                <linearGradient id={`bf-star-${f}`} x1="0" x2="1" y1="0" y2="0">
+                  <stop offset={`${f}%`} stopColor="#FBBC04" />
+                  <stop offset={`${f}%`} stopColor="#DADCE0" />
+                </linearGradient>
+              </defs>
+            )}
+            <path d={d} fill={fill} />
+          </g>
+        );
+      })}
+    </svg>
   );
 }
 

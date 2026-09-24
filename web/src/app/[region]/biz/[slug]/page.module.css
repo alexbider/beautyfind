@@ -47,6 +47,9 @@
 .rating { display: inline-flex; align-items: center; gap: 7px; }
 .ratingNum { font-size: 15px; font-weight: 700; }
 .ratingCount { font-size: 14px; color: var(--muted); }
+.ratingSrc { font-size: 12.5px; color: var(--subtle); }
+a.rating { color: inherit; }
+@media (hover: hover) and (pointer: fine) { a.rating:hover .ratingCount { color: var(--teal-deep); } }
 .sep { width: 1px; height: 18px; background: var(--line); }
 .addr { display: inline-flex; align-items: center; gap: 7px; font-size: 15px; color: var(--text); }
 .addr svg { color: var(--subtle); flex: none; }

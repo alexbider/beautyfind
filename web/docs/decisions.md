@@ -20,3 +20,7 @@ Decisions made after the design handoff. The handoff's `08-open-decisions.md` st
 **Guest records follow the verified phone.** Clients can book, join a waitlist or ask for a consult without an account. Signing up or signing in with the same phone, verified by OTP, moves those records to the account. Records that already belong to an account are never moved.
 
 **Online booking is live** (`BOOKING_LIVE = true`). A business can still switch online booking off per branch or per treatment; staff booking by phone or walk-in may override those switches, clients may not.
+
+## 2026-09-24
+
+**Business profile: one combined rating under the name.** The line under the business name shows a single score for Google and BeautyFind together, weighted by review count, with the total count (for example "4.9 (415 ביקורות) Google ו־BeautyFind"). It links to the reviews section, where each source is still shown on its own with its own score, count and distribution. Everywhere else (cards, sidebar, reviews section) the two sources stay separate.

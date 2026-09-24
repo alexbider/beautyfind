@@ -256,7 +256,7 @@ export default async function BusinessProfilePage({ params }: Props) {
                 <span aria-hidden="true" className={styles.barDot} />
                 {status}
               </span>
-              <span className={styles.barSub}>{v.todayRange ? <>היום <span dir="ltr" className="ltr">{v.todayRange}</span></> : p.cityName}</span>
+              <span className={styles.barSub}>{v.todayRange ? <span dir="ltr" className="ltr">{v.todayRange}</span> : p.cityName}</span>
             </span>
           )}
           {p.phone && <CallButton branchId={p.id} e164={p.phone} size="lg" iconOnly />}
@@ -289,6 +289,24 @@ function Identity({ p, v }: { p: PublicProfile; v: View }) {
     p.accessible && { name: 'נגיש לכיסא גלגלים', on: true },
     ...v.cats.map(c => ({ name: c.name, on: false })),
   ].filter((h): h is { name: string; on: boolean } => !!h);
+
+  // One line under the name: Google and BeautyFind combined, weighted by review count. The reviews
+  // section below still shows each source on its own (score, count, distribution).
+  const g = v.google && v.google.count > 0 ? v.google : null;
+  const bf = p.beautyfind && p.beautyfind.count > 0 ? p.beautyfind : null;
+  const total = (g?.count ?? 0) + (bf?.count ?? 0);
+  const combined = total > 0
+    ? (() => {
+        const rating = ((g ? g.rating * g.count : 0) + (bf ? bf.rating * bf.count : 0)) / total;
+        const parts = [g && `${g.count} בגוגל`, bf && `${bf.count} ב־BeautyFind`].filter(Boolean).join(' ו־');
+        return {
+          rating,
+          count: total,
+          sources: g && bf ? 'Google ו־BeautyFind' : g ? 'Google' : 'BeautyFind',
+          aria: `דירוג ${ratingText(rating)} מתוך 5 מ־${reviewsLabel(total)}: ${parts}. מעבר לביקורות`,
+        };
+      })()
+    : null;
 
   type Fact = { label: string; value: React.ReactNode; note: string | null; icon: string[] };
   const facts = ([
@@ -326,23 +344,17 @@ function Identity({ p, v }: { p: PublicProfile; v: View }) {
       </div>
 
       <div className={styles.metaRow}>
-        {v.google && (
-          <span className={styles.rating} role="img" aria-label={`${ratingText(v.google.rating)} מתוך 5 בגוגל, ${reviewsLabel(v.google.count)}`}>
-            <RatingStars rating={v.google.rating} />
-            <span className={`ltr ${styles.ratingNum}`}>{ratingText(v.google.rating)}</span>
-            <span className={styles.ratingCount}>{reviewsLabel(v.google.count)} בגוגל</span>
-          </span>
-        )}
-        {p.beautyfind && (
+        {combined && (
           <>
-            {v.google && <span aria-hidden="true" className={styles.sep} />}
-            <a href="#h-reviews" className={styles.rating}>
-              <span className={`ltr ${styles.ratingNum}`}>{ratingText(p.beautyfind.rating)}</span>
-              <span className={styles.ratingCount}>{reviewsLabel(p.beautyfind.count)} {p.beautyfind.count === 1 ? 'מאומתת' : 'מאומתות'} ב־BeautyFind</span>
+            <a href="#h-reviews" className={styles.rating} aria-label={combined.aria}>
+              <RatingStars rating={combined.rating} />
+              <span className={`ltr ${styles.ratingNum}`}>{ratingText(combined.rating)}</span>
+              <span className={styles.ratingCount}>({reviewsLabel(combined.count)})</span>
+              <span className={styles.ratingSrc}>{combined.sources}</span>
             </a>
+            <span aria-hidden="true" className={styles.sep} />
           </>
         )}
-        {(v.google || p.beautyfind) && <span aria-hidden="true" className={styles.sep} />}
         <span className={styles.addr}>
           <PinGlyph />
           {p.address}
