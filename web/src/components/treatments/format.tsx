@@ -24,7 +24,7 @@ export function countText(n: number, one: string, many: string, zero?: string) {
   return `${fmtInt(n)} ${many}`;
 }
 
-export const BIZ = { one: 'עסק אחד', many: 'עסקים', zero: 'אין עדיין עסקים' };
+export const BIZ = { one: 'עסק אחד', many: 'עסקים', zero: 'עדיין אין עסקים' };
 
 /** ₪1,200 inside an LTR span. */
 export function Price({ shekels, className }: { shekels: number; className?: string }) {

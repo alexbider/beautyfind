@@ -33,10 +33,10 @@ const REDEEM_ERRORS: Record<RedeemError, string> = {
   expired: 'תוקף השובר פג.',
   refunded: 'השובר בוטל והכסף הוחזר לקונה.',
   empty: 'השובר מומש במלואו.',
-  amount: 'הכניסי סכום למימוש.',
+  amount: 'הזיני סכום למימוש.',
   over_balance: 'הסכום גבוה מהיתרה בשובר.',
   booking_not_found: 'לא מצאנו תור עם המספר הזה בקליניקה.',
-  needs_consult: 'שובר לטיפול רפואי: המימוש רק אחרי ייעוץ שבו הרופא/ה אישר/ה את הטיפול. קשרי את התור שנקבע מהייעוץ.',
+  needs_consult: 'שובר לטיפול רפואי אפשר לממש רק אחרי ייעוץ שבו הרופא/ה אישר/ה את הטיפול. קשרי אותו לתור שנקבע בעקבות הייעוץ.',
   conflict: 'היתרה השתנתה בזמן הפעולה. בדקי שוב את השובר.',
 };
 
@@ -79,12 +79,12 @@ export async function deskCancel(cardId: string): Promise<CancelActionResult> {
   if (!r.ok) {
     return {
       ok: false,
-      error: r.error === 'provider' ? 'ההחזר לא עבר אצל חברת הסליקה. השובר נשאר פעיל, נסו שוב מאוחר יותר.' : 'אפשר לבטל רק שובר שלא מומש, תוך 14 ימים מהקנייה.',
+      error: r.error === 'provider' ? 'ההחזר לא עבר אצל חברת הסליקה. השובר נשאר פעיל, נסו שוב מאוחר יותר.' : 'אפשר לבטל רק שובר שלא מומש, בתוך 14 ימים מהרכישה.',
     };
   }
   if (!ctx.preview) {
     await db.auditLog.create({ data: { actorId: ctx.user.id, action: 'gift_card_cancel', subjectType: 'gift_card', subjectId: r.card.id, businessId: ctx.business.id } });
   }
   revalidatePath('/clinic/gift-cards');
-  return { ok: true, message: `השובר בוטל · ${money(r.card.valueAgorot)} יוחזרו לכרטיס של הקונה`, card: r.card };
+  return { ok: true, message: `השובר בוטל · ${money(r.card.valueAgorot)} יוחזרו לכרטיס האשראי של הקונה`, card: r.card };
 }

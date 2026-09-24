@@ -24,7 +24,7 @@ export default async function ClinicMorePage() {
       }
       groups={[
         { name: 'מעבר', rows },
-        { name: 'עזרה', rows: [{ kind: 'link', label: 'מרכז עזרה', href: '/help' }, { kind: 'link', label: 'צור קשר', href: '/contact' }] },
+        { name: 'עזרה', rows: [{ kind: 'link', label: 'מרכז עזרה', href: '/help' }, { kind: 'link', label: 'יצירת קשר', href: '/contact' }] },
         { name: 'חשבון', rows: [{ kind: 'logout' }] },
       ]}
     />

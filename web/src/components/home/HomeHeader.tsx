@@ -254,7 +254,7 @@ export function HomeHeader({ regions, total }: { regions: HeaderRegion[]; total:
               <div className={styles.megaHelp}>
                 <div className={styles.megaHelpLabel}>לא מצאתם את העיר שלכם?</div>
                 <p>
-                  האינדקס מכסה <span className="ltr">{CITIES.length}</span> ערים בכל שבעת האזורים. חפשו כל עיר או יישוב, או עברו לדף אזור לרשימה המלאה.
+                  האינדקס מכסה <span className="ltr">{CITIES.length}</span> ערים בכל שבעת האזורים. חפשו עיר או יישוב, או היכנסו לדף האזור לרשימה המלאה.
                 </p>
                 <button type="button" className={styles.megaHelpBtn} onClick={() => search('loc')}>חיפוש לפי מקום</button>
               </div>

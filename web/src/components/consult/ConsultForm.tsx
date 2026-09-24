@@ -41,7 +41,7 @@ type Step = 1 | 2 | 3 | 4 | 5;
 
 const TOTAL = 5;
 const STEP_FIELDS: Record<Step, Field[]> = { 1: ['areas'], 2: ['goal'], 3: ['prior'], 4: ['when'], 5: ['name', 'phone', 'consent'] };
-const STEP_NAMES: Record<Step, string> = { 1: 'אזורים', 2: 'מה חשוב לך', 3: 'הזרקות קודמות', 4: 'סוג פגישה ומועד', 5: 'פרטים ואישור' };
+const STEP_NAMES: Record<Step, string> = { 1: 'אזורים', 2: 'מה חשוב לכם', 3: 'הזרקות קודמות', 4: 'סוג פגישה ומועד', 5: 'פרטים ואישור' };
 const stepOf = (f: Field) => (Number(Object.keys(STEP_FIELDS).find(k => STEP_FIELDS[Number(k) as Step].includes(f))) || 1) as Step;
 
 /** Resumable answers (this device only). Medical flags are never stored. */
@@ -151,11 +151,11 @@ export function ConsultForm({ branch, doctor, treatment, fee, slots, openDays, p
   };
   const ORDER: Field[] = ['areas', 'goal', 'prior', 'when', 'name', 'phone', 'consent'];
   const MSG: Record<Field, string> = {
-    areas: 'בחרי לפחות אזור אחד',
-    goal: 'ספרי במשפט מה היית רוצה שישתנה',
-    prior: 'סמני אם היו הזרקות קודמות',
-    when: noFit ? 'בחרי לפחות טווח שעות אחד' : 'בחרי מועד לייעוץ, או ״אף מועד לא מתאים״',
-    name: 'כתבי שם מלא',
+    areas: 'בחרו לפחות אזור אחד',
+    goal: 'ספרו במשפט מה הייתם רוצים לשנות',
+    prior: 'סמנו אם היו הזרקות קודמות',
+    when: noFit ? 'בחרו לפחות טווח שעות אחד' : 'בחרו מועד לייעוץ, או ״אף מועד לא מתאים״',
+    name: 'כתבו שם מלא',
     phone: 'מספר הטלפון לא מלא',
     consent: 'יש לאשר העברת הפרטים לצוות הרפואי',
   };
@@ -256,7 +256,7 @@ export function ConsultForm({ branch, doctor, treatment, fee, slots, openDays, p
       requestAnimationFrame(() => errRef.current?.focus({ preventScroll: inShell() }));
     } catch {
       haptic('warning');
-      setServerError('השליחה נכשלה. בדקי את החיבור לאינטרנט ונסי שוב.');
+      setServerError('השליחה נכשלה. בדקו את החיבור לאינטרנט ונסו שוב.');
       requestAnimationFrame(() => errRef.current?.focus({ preventScroll: inShell() }));
     } finally {
       setBusy(false);
@@ -270,15 +270,15 @@ export function ConsultForm({ branch, doctor, treatment, fee, slots, openDays, p
   if (done) {
     const whenText = done.slot ?? TIMES.filter(t => times.includes(t.key)).map(t => t.name).join(', ');
     const [title, body] = done.checkoutUrl
-      ? ['המועד שמור לך', `כדי להשלים את קביעת הייעוץ יש לשלם את דמי הייעוץ, ₪${fee}, שמתקזזים מהטיפול. המועד נשמר לך ל־10 דקות.`]
+      ? ['המועד שמור עבורכם', `כדי להשלים את קביעת הייעוץ יש לשלם את דמי הייעוץ, ₪${fee}, שמתקזזים מהטיפול. המועד שמור עבורכם ל־10 דקות.`]
       : done.scheduled
         ? [
             'הייעוץ נקבע',
-            `אישור נשלח בוואטסאפ, עם קישור לניהול המועד. בייעוץ ייבדק אם ואיזה טיפול מתאים, ואם מתאים, אפשר לטפל באותו ביקור.${fee > 0 ? ` דמי הייעוץ, ₪${fee}, משולמים בקליניקה ומתקזזים מהטיפול.` : ''}`,
+            `אישור נשלח בוואטסאפ, עם קישור לניהול המועד. בייעוץ ייבדק אם יש טיפול שמתאים לכם ואיזה. אם כן, אפשר לטפל כבר באותו ביקור.${fee > 0 ? ` דמי הייעוץ, ₪${fee}, משולמים בקליניקה ומתקזזים מהטיפול.` : ''}`,
           ]
         : [
             `הבקשה נשלחה ל${doctor.name}`,
-            'הקליניקה תחזור אלייך בוואטסאפ תוך יום עסקים עם הצעת מועד. אם יתברר שהטיפול לא מתאים, תקבלי הסבר, לא רק ״לא״.',
+            'הקליניקה תחזור אליכם בוואטסאפ תוך יום עסקים עם הצעת מועד. אם יתברר שהטיפול לא מתאים, תקבלו הסבר מפורט.',
           ];
     return (
       <>
@@ -321,7 +321,7 @@ export function ConsultForm({ branch, doctor, treatment, fee, slots, openDays, p
     );
   }
 
-  const nextLabel = step === TOTAL ? (busy ? 'שולחת…' : 'שליחת בקשת ייעוץ') : 'המשך';
+  const nextLabel = step === TOTAL ? (busy ? 'שולחים…' : 'שליחת בקשת ייעוץ') : 'המשך';
   const hint: React.ReactNode =
     step === 1
       ? areas.length ? areas.join(' · ') : 'אפשר לבחור יותר מאזור אחד'
@@ -330,7 +330,7 @@ export function ConsultForm({ branch, doctor, treatment, fee, slots, openDays, p
         : step === 3
           ? 'המידע עובר רק לצוות הרפואי של הקליניקה'
           : step === 4
-            ? chosen ? <>נבחר מועד: <SlotLabel days={slots} startsAt={chosen} /></> : noFit ? 'הקליניקה תציע מועד לפי הזמנים שסימנת' : 'המועד נשמר לך מיד עם השליחה'
+            ? chosen ? <>נבחר מועד: <SlotLabel days={slots} startsAt={chosen} /></> : noFit ? 'הקליניקה תציע מועד לפי הזמנים שסימנתם' : 'המועד נשמר עבורכם מיד עם השליחה'
             : 'לא לדיוור · תשובה בוואטסאפ תוך יום עסקים';
 
   return (
@@ -348,7 +348,7 @@ export function ConsultForm({ branch, doctor, treatment, fee, slots, openDays, p
         <div className={on(1)}>
           <h1 className={styles.h1}>בקשת ייעוץ לפני הזרקה</h1>
           <p className={styles.lead}>
-            בוטוקס וחומרי מילוי הם טיפול רפואי. לפני שקובעים טיפול, פגישה עם {doctor.name} מאפשרת לשמוע מה חשוב לך ולהחליט אם ובאיזו כמות זה מתאים.
+            בוטוקס וחומרי מילוי הם טיפול רפואי. לפני שקובעים טיפול, פגישה עם {doctor.name} מאפשרת לשמוע מה חשוב לכם ולהחליט יחד אם הטיפול מתאים ובאיזה מינון.
           </p>
         </div>
         <div className={styles.shell}>
@@ -374,7 +374,7 @@ export function ConsultForm({ branch, doctor, treatment, fee, slots, openDays, p
                   </div>
                 </div>
                 <label className={`${styles.field} ${styles.goalField} ${on(2)}`}>
-                  <span data-head="2" tabIndex={-1} className={styles.goalLabel}>מה היית רוצה שישתנה?</span>
+                  <span data-head="2" tabIndex={-1} className={styles.goalLabel}>מה הייתם רוצים לשנות?</span>
                   <textarea
                     ref={refs.goal}
                     value={goal}
@@ -424,7 +424,7 @@ export function ConsultForm({ branch, doctor, treatment, fee, slots, openDays, p
 
               <section aria-labelledby="cs-h3" className={`${styles.card} ${on(4, 5)}`}>
                 <div className={on(4)}>
-                  <h2 id="cs-h3" data-head="4" tabIndex={-1} className={`${styles.h2} ${styles.h2Gap}`}>איך נוח לך להיפגש</h2>
+                  <h2 id="cs-h3" data-head="4" tabIndex={-1} className={`${styles.h2} ${styles.h2Gap}`}>איך נוח לכם להיפגש?</h2>
                   <div role="radiogroup" aria-labelledby="cs-h3" onKeyDown={radioKeys} className={styles.formats}>
                     {FORMATS.map((f, i) => (
                       <button
@@ -443,11 +443,11 @@ export function ConsultForm({ branch, doctor, treatment, fee, slots, openDays, p
                   </div>
 
                   <h3 className={styles.h3}>מועד לייעוץ</h3>
-                  <p className={styles.hintSm}>מועדים פנויים ביומן של {doctor.name}. המועד נשמר לך מיד.</p>
+                  <p className={styles.hintSm}>מועדים פנויים ביומן של {doctor.name}. המועד נשמר עבורכם מיד.</p>
                   <div ref={refs.when}>
                     {slots.length === 0 && (
                       <p className={styles.emptySlots}>
-                        אין כרגע מועדים פנויים בשבועיים הקרובים. סמני מתי נוח לך, והקליניקה תציע מועד.
+                        אין כרגע מועדים פנויים בשבועיים הקרובים. סמנו מתי נוח לכם, והקליניקה תציע מועד.
                       </p>
                     )}
                     <SlotPicker
@@ -478,7 +478,7 @@ export function ConsultForm({ branch, doctor, treatment, fee, slots, openDays, p
                     />
                     {noFit && (
                       <>
-                        <span id="cs-times" className={styles.subLabel}>מתי בדרך כלל נוח לך? הקליניקה תציע מועד.</span>
+                        <span id="cs-times" className={styles.subLabel}>מתי בדרך כלל נוח לכם? הקליניקה תציע מועד.</span>
                         <div role="group" aria-labelledby="cs-times" className={styles.chips}>
                           {TIMES.map(t => (
                             <button
@@ -517,7 +517,7 @@ export function ConsultForm({ branch, doctor, treatment, fee, slots, openDays, p
                 </div>
 
                 <div className={on(5)}>
-                  <h2 data-head="5" tabIndex={-1} className={`${styles.h2} ${styles.h2Gap} bf-shell-only`}>לאן לחזור אלייך</h2>
+                  <h2 data-head="5" tabIndex={-1} className={`${styles.h2} ${styles.h2Gap} bf-shell-only`}>לאן לחזור אליכם?</h2>
                   <div className={styles.fieldRow}>
                     <label className={styles.field}>
                       שם מלא
@@ -563,7 +563,7 @@ export function ConsultForm({ branch, doctor, treatment, fee, slots, openDays, p
               >
                 <span aria-hidden="true" className={styles.box}>{consent && <Check size={12} strokeWidth={2.2} />}</span>
                 <span className={styles.consentText}>
-                  <span className={styles.consentMain}>אני מאשרת שהפרטים יועברו לצוות הרפואי של הקליניקה לצורך הייעוץ</span>
+                  <span className={styles.consentMain}>אני מאשר/ת שהפרטים יועברו לצוות הרפואי של הקליניקה לצורך הייעוץ</span>
                   <span className={styles.consentSub}>לא לדיוור · הצהרת בריאות מלאה תתבקש רק אם ייקבע טיפול</span>
                 </span>
               </button>
@@ -574,7 +574,7 @@ export function ConsultForm({ branch, doctor, treatment, fee, slots, openDays, p
               <p ref={errRef} tabIndex={-1} role="alert" className={`${styles.alert} bf-desk-only`}>{errorText}</p>
             )}
             <button type="button" onClick={submit} disabled={busy} aria-busy={busy || undefined} className={`${styles.primary} bf-desk-only`}>
-              {busy ? 'שולחת…' : 'שליחת בקשת ייעוץ'}
+              {busy ? 'שולחים…' : 'שליחת בקשת ייעוץ'}
             </button>
           </main>
 
@@ -616,7 +616,7 @@ export function ConsultForm({ branch, doctor, treatment, fee, slots, openDays, p
               </dl>
             </div>
             <div className={styles.whyCard}>
-              <h2 className={styles.whyH}>למה ייעוץ ולא תור ישיר</h2>
+              <h2 className={styles.whyH}>למה קודם ייעוץ?</h2>
               <ul className={styles.whyList}>
                 {WHY.map(w => (
                   <li key={w}>

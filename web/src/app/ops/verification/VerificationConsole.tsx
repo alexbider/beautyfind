@@ -309,7 +309,7 @@ export function VerificationConsole({ items, who }: { items: QueueItem[]; who: s
               </h2>
               <p className={styles.emptyText}>
                 {items.length
-                  ? 'נסו סינון אחר, או חזרו ל״הכל״.'
+                  ? 'נסו סינון אחר, או חזרו ל״הכול״.'
                   : 'כשעסק יגיש רישום, רישיון, תעודה או בקשת בעלות, הבקשה תופיע כאן עם יעד ה־SLA שלה.'}
               </p>
             </div>
@@ -576,7 +576,7 @@ export function VerificationConsole({ items, who }: { items: QueueItem[]; who: s
           >
             <p className={styles.sheetText}>
               {confirm === 'reopen'
-                ? `${cur.who} (${cur.what}) תחזור לתור הפתוח, ושעון ה־SLA יתחיל מחדש.`
+                ? `הבקשה של ${cur.who} (${cur.what}) תחזור לתור הפתוח, ושעון ה־SLA יתחיל מחדש.`
                 : `${cur.what}: ${cur.who}${cur.biz ? `, ${cur.biz}` : ''}. העסק יקבל הודעה על האישור.`}
             </p>
             <p className={styles.footNote}>ההחלטה נרשמת עם שמך ושעת ההחלטה, ואינה ניתנת לעריכה.</p>

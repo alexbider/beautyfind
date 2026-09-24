@@ -9,7 +9,7 @@ export const AREAS: Area[] = ['overview', 'analytics', 'profile', 'menu', 'revie
 
 export const PRESET_NAMES: Record<Preset, { name: string; sub: string }> = {
   owner: { name: 'בעלים', sub: 'מנהל ראשי · רואה ומנהל הכול' },
-  manager: { name: 'מנהלת קליניקה', sub: 'תוכן, פניות וביקורות' },
+  manager: { name: 'מנהל/ת קליניקה', sub: 'תוכן, פניות וביקורות' },
   front: { name: 'מזכירות', sub: 'פניות ולקוחות' },
   book: { name: 'הנהלת חשבונות', sub: 'מנוי וחשבוניות' },
   practitioner: { name: 'מטפל/ת', sub: 'היומן שלי ורישום קליני' },

@@ -347,7 +347,7 @@ export function ConsultInbox({ bizName, requests, initialId, canManage, isPhysic
           ? `מחובר/ת כ${viewer.roleName} (צפייה בלבד). פעולות על בקשות שמורות לבעלי הרשאת הזמנות.`
           : isPhysician
             ? `מחובר/ת כ־${viewer.name}. הצעת מועד ובקשת פרטים פתוחות לכל בעלי הרשאת הזמנות; סגירה מסיבה רפואית ואישור טיפול לרופא/ה בלבד.`
-            : `מחובר/ת כ${viewer.roleName} (הרשאת הזמנות). סגירה מסיבה רפואית ואישור טיפול שמורים לרופא/ה: העבירי את הבקשה לעיון ${doctorName}.`}
+            : `מחובר/ת כ${viewer.roleName} (הרשאת הזמנות). סגירה מסיבה רפואית ואישור טיפול שמורים לרופא/ה: העבירו את הבקשה לעיון ${doctorName}.`}
       </p>
 
       {/* Phones: the detail screen's actions, above the tab bar. */}
@@ -485,12 +485,12 @@ function ProposePanel({ req, busy, doctorName, bizName, openMode, act }: { req: 
   const picked = days?.flatMap(d => d.slots.map(s => ({ ...s, day: d.label }))).find(s => s.startsAt === slot) ?? null;
   const msg = picked
     ? proposeMessage({ first: firstName(req.name), business: bizName, doctor: doctorName, day: picked.day, time: picked.time, fee: req.feeShekels })
-    : 'בחרי מועד כדי לראות את נוסח ההודעה';
+    : 'בחרו מועד כדי לראות את נוסח ההודעה';
 
   return (
     <div>
-      <span className={styles.subLabel} style={{ fontSize: 14 }}>בחרי מועד להציע</span>
-      {!days && !error && <p className={styles.hintSm} role="status">טוען מועדים פנויים…</p>}
+      <span className={styles.subLabel} style={{ fontSize: 14 }}>בחירת מועד להצעה</span>
+      {!days && !error && <p className={styles.hintSm} role="status">טוענים מועדים פנויים…</p>}
       {error && <p className={styles.alert} role="alert" style={{ marginBottom: 11 }}>{error}</p>}
       {days && days.length === 0 && <p className={styles.emptySlots}>אין מועדים פנויים ביומן הרופא/ה בשבועיים הקרובים.</p>}
       {days && days.length > 0 && <SlotPicker days={days} value={slot} onChange={setSlot} label="מועד להציע" />}
@@ -507,7 +507,7 @@ function ProposePanel({ req, busy, doctorName, bizName, openMode, act }: { req: 
 
 function DeclinePanel({ req, busy, isPhysician, viewerName, openMode, act }: { req: InboxRequest; busy: boolean; isPhysician: boolean; viewerName: string; openMode: (m: Mode) => void; act: Act }) {
   const [reason, setReason] = useState<DeclineKey | null>(null);
-  const msg = reason ? declineMessage(reason, { first: firstName(req.name), doctor: viewerName }) : 'בחרי סיבה כדי לראות את נוסח ההודעה';
+  const msg = reason ? declineMessage(reason, { first: firstName(req.name), doctor: viewerName }) : 'בחרו סיבה כדי לראות את נוסח ההודעה';
   return (
     <div>
       <span id="cs-reason" className={styles.subLabel} style={{ fontSize: 14 }}>סיבה</span>

@@ -43,7 +43,7 @@ export function DetailsStep({ headingRef, form, touched, onChange }: Props) {
       <h2 id="h-details" ref={headingRef} tabIndex={-1} className={styles.h2}>
         פרטי העסק<span className={styles.dot}>.</span>
       </h2>
-      <p className={styles.lede}>אישרנו שהעסק שלכם. עכשיו נשלים את מה שהלקוחות רואים ראשון, ואפשר לערוך את הכול גם אחר כך.</p>
+      <p className={styles.lede}>אימתנו שהעסק שלכם. עכשיו נשלים את מה שלקוחות רואים ראשון, ואת הכול אפשר לערוך גם אחר כך.</p>
 
       <div className={styles.fields}>
         <label className={styles.field}>
@@ -92,7 +92,7 @@ export function DetailsStep({ headingRef, form, touched, onChange }: Props) {
       {medical && (
         <div className={styles.medical}>
           <p>
-            <strong>בחרתם תחום רפואי.</strong> הזרקות ופעולות חודרניות מחייבות רופא או רופאה מוסמכים, או אחות בהסמכה ובאחריות רופא הנמצא בקליניקה. נדרש שם מלא של האחראי הרפואי כדי לפרסם את התחום.
+            <strong>בחרתם תחום רפואי.</strong> הזרקות ופעולות חודרניות מחייבות רופא או רופאה מוסמכים, או אחות בהסמכה ובאחריות רופא שנמצא בקליניקה. נדרש שם מלא של האחראי הרפואי כדי לפרסם את התחום.
           </p>
           <label className={styles.field}>
             <span className={styles.label}>שם האחראי הרפואי <Req /></span>

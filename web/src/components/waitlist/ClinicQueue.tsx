@@ -69,7 +69,7 @@ export type OfferSlotResult = { ok: true; sentTo: string } | { ok: false; error:
 
 const OFFER_ERR: Record<string, string> = {
   no_match: 'אין ממתינה שמתאימה לתור הזה, או שהוא כבר לא פנוי',
-  forbidden: 'אין לך הרשאה לשלוח הצעות מרשימת ההמתנה',
+  forbidden: 'אין הרשאה לשלוח הצעות מרשימת ההמתנה',
   invalid: 'התור הזה כבר לא זמין',
 };
 
@@ -192,7 +192,7 @@ export function ClinicQueue({
                     disabled={!!f.sentTo || !f.matchIds.length || pending}
                     onClick={() => send({ branchId, treatmentId: f.treatmentId, practitionerId: f.practitionerId, startsAt: f.startsAt })}
                   >
-                    {f.sentTo ? `נשלח ל${f.sentTo} · ממתין` : 'הצעה לראשונה המתאימה'}
+                    {f.sentTo ? `נשלח ל${f.sentTo} · ממתין` : 'הצעה לראשונה שמתאימה'}
                   </button>
                 )}
               </div>

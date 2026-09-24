@@ -43,10 +43,10 @@ export default async function ConsultsInboxPage({ searchParams }: { searchParams
         <div className={styles.upgrade}>
           <h2 className={styles.h2}>תיבת בקשות הייעוץ היא חלק ממערכת הקליניקה</h2>
           <p className={styles.upgradeBody}>
-            ברישום מתקדם + CRM מטופלות בוחרות מועד לייעוץ ישירות מהיומן של הרופא/ה, והבקשות מגיעות לכאן: הצעת מועד, בקשת פרטים וסגירה מסיבה רפואית, הכול מתועד. בינתיים פניות מגיעות מטופס יצירת הקשר בפרופיל.
+            ברישום מתקדם + CRM, מטופלות בוחרות מועד לייעוץ ישירות מהיומן של הרופא/ה, והבקשות מגיעות לכאן. מכאן מציעים מועד, מבקשים פרטים או סוגרים בקשה מסיבה רפואית, וכל פעולה מתועדת. בינתיים, פניות מגיעות מטופס יצירת הקשר בפרופיל.
           </p>
           <div className={styles.row}>
-            <Link href="/biz/billing" className={styles.btnLink}>לשדרוג החבילה</Link>
+            <Link href="/biz/billing" className={styles.btnLink}>לשדרוג המנוי</Link>
             <Link href="/biz/leads" className={styles.btnGhostLink}>לפניות מהפרופיל</Link>
           </div>
         </div>

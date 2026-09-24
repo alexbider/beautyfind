@@ -107,12 +107,12 @@ export function CookieConsent() {
   const foot = (
     <div className={styles.dialogFoot}>
       <button type="button" className={styles.save} onClick={() => save(draft)}>שמירת הבחירה</button>
-      <button type="button" className={styles.secondary} onClick={() => save(ALL)}>אישור הכל</button>
+      <button type="button" className={styles.secondary} onClick={() => save(ALL)}>אישור הכול</button>
     </div>
   );
 
   const n = saved ? CATS.filter(c => saved[c.key]).length : 0;
-  const decidedLabel = n === CATS.length ? 'כל ה־Cookie מאושרים' : n === 1 ? 'הכרחיים בלבד' : 'בחירה מותאמת';
+  const decidedLabel = n === CATS.length ? 'כל קובצי ה־Cookie מאושרים' : n === 1 ? 'הכרחיים בלבד' : 'בחירה מותאמת';
 
   return (
     <div dir="rtl" lang="he">
@@ -123,12 +123,12 @@ export function CookieConsent() {
             <div className={styles.bannerText}>
               <h2 id="ck-h">קובצי Cookie באתר</h2>
               <p>
-                אנחנו משתמשים בקבצים הכרחיים כדי לזכור אזור וסינון, ובקבצי מדידה מצטברת, רק אם תאשרו. איננו משתמשים במידע לפרסום מותאם.{' '}
+                אנחנו משתמשים בקבצים הכרחיים כדי לזכור את האזור והסינון שבחרתם, ובקובצי מדידה מצטברת רק אם תאשרו זאת. איננו משתמשים במידע לפרסום מותאם אישית.{' '}
                 <Link href="/privacy">מדיניות הפרטיות</Link>
               </p>
             </div>
             <div className={styles.bannerBtns}>
-              <button type="button" className={styles.primary} onClick={() => save(ALL)}>אישור הכל</button>
+              <button type="button" className={styles.primary} onClick={() => save(ALL)}>אישור הכול</button>
               <button type="button" className={styles.outline} onClick={() => save(NONE)}>הכרחיים בלבד</button>
               <button type="button" className={styles.linkBtn} onClick={() => setPrefs(true)}>בחירה מפורטת</button>
             </div>

@@ -9,8 +9,8 @@ import styles from './states.module.css';
 
 export function AreaAlertForm({
   action,
-  title = 'שנעדכן כשייפתח משהו באזור?',
-  body = 'נשלח הודעה אחת בוואטסאפ כשקליניקה שמתאימה לסינון שלך תצטרף למדריך.',
+  title = 'לעדכן אתכם כשתיפתח קליניקה באזור?',
+  body = 'נשלח הודעה אחת בוואטסאפ כשקליניקה שמתאימה לסינון שלכם תצטרף למדריך.',
 }: {
   action: (phoneE164: string) => Promise<{ ok: boolean; message?: string }>;
   title?: string;
@@ -30,7 +30,7 @@ export function AreaAlertForm({
     setBusy(true);
     try {
       const res = await action(e164);
-      setMsg(res.ok ? { text: res.message ?? 'נעדכן אותך בוואטסאפ כשתיפתח קליניקה מתאימה', bad: false } : { text: res.message ?? 'לא הצלחנו לשמור את הבקשה. נסו שוב.', bad: true });
+      setMsg(res.ok ? { text: res.message ?? 'נעדכן אתכם בוואטסאפ כשתצטרף קליניקה מתאימה', bad: false } : { text: res.message ?? 'לא הצלחנו לשמור את הבקשה. נסו שוב.', bad: true });
     } catch {
       setMsg({ text: 'לא הצלחנו לשמור את הבקשה. נסו שוב.', bad: true });
     } finally {

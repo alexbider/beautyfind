@@ -15,7 +15,7 @@ import { requireClinic } from '@/lib/server/clinic';
 const Id = z.uuid();
 const PATH = '/clinic/consults';
 const DENIED: ActionResult = { ok: false, error: 'אין לך הרשאה לפעולה הזו. בעלי העסק יכולים לפתוח אותה בהגדרות הצוות.' };
-const BROKEN: ActionResult = { ok: false, error: 'הפעולה נכשלה בצד שלנו. נסו שוב בעוד רגע.' };
+const BROKEN: ActionResult = { ok: false, error: 'הפעולה נכשלה אצלנו. נסו שוב בעוד רגע.' };
 
 async function actor(): Promise<Actor | null> {
   try {

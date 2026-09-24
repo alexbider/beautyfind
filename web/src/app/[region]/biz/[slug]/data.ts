@@ -188,13 +188,16 @@ export async function similarBusinesses(p: PublicProfile, mainCategory: string |
 
 export function metaDescription(p: PublicProfile, v: ProfileView): string {
   const cats = v.cats.map(c => c.name).join(', ');
-  const parts = [`${p.name}, ${p.cityName}${cats ? `: ${cats}` : ''}.`];
-  if (p.description) parts.push(p.description.replace(/\s+/g, ' ').slice(0, 110).trim() + (p.description.length > 110 ? '…' : ''));
-  if (v.google) parts.push(`דירוג ${v.google.rating.toFixed(1)} בגוגל מתוך ${reviewsLabel(v.google.count)}.`);
+  const parts = [`${p.name} ב${p.cityName}${cats ? `: ${cats}` : ''}.`];
+  if (v.google) parts.push(`דירוג ${v.google.rating.toFixed(1)} בגוגל על סמך ${reviewsLabel(v.google.count)}.`);
   if (p.beautyfind) parts.push(`${reviewsLabel(p.beautyfind.count)} מאומתות ב־BeautyFind.`);
-  if (p.treatments.length) parts.push('מחירים לפני מע״מ, שעות פעילות ויצירת קשר ישירה.');
+  if (p.treatments.length) parts.push('מחירים לא כולל מע״מ, שעות פעילות וקביעת תור.');
   if (v.responsible) parts.push(`${v.responsible.label}: ${v.responsible.name}.`);
-  return parts.join(' ').replace(/\s+/g, ' ').slice(0, 300);
+  if (p.description) parts.push(p.description.replace(/\s+/g, ' ').trim());
+  const text = parts.join(' ').replace(/\s+/g, ' ').trim();
+  if (text.length <= 160) return text;
+  const cut = text.slice(0, 159);
+  return `${cut.slice(0, cut.lastIndexOf(' ') > 120 ? cut.lastIndexOf(' ') : 159).trim()}…`;
 }
 
 /**
@@ -241,7 +244,7 @@ export function jsonLd(p: PublicProfile, v: ProfileView) {
     ...(p.beautyfind && p.beautyfind.count > 0
       ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: p.beautyfind.rating.toFixed(1), reviewCount: p.beautyfind.count, bestRating: 5, worstRating: 1 } }
       : {}),
-    ...(v.responsible?.label === 'אחריות רפואית' ? { employee: [{ '@type': 'Person', name: v.responsible.name, jobTitle: 'אחריות רפואית' }] } : {}),
+    ...(v.responsible?.label === 'אחריות רפואית' ? { employee: [{ '@type': 'Person', name: v.responsible.name, jobTitle: 'רופא/ה אחראי/ת' }] } : {}),
   };
   const graph: unknown[] = [
     { '@type': 'BreadcrumbList', itemListElement: crumbs.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, item: c.item })) },

@@ -7,7 +7,7 @@ import styles from './Claim.module.css';
 const METHOD_COPY: Record<ClaimMethod, { name: string; note: string; missingTarget: string; missingNote: string }> = {
   sms: { name: 'קוד ב־SMS', note: 'למספר הרשום בפרופיל', missingTarget: 'אין מספר רשום', missingNote: 'לפרופיל לא רשום מספר טלפון' },
   call: { name: 'שיחה קולית', note: 'הקוד נמסר בשיחה מוקלטת', missingTarget: 'אין מספר רשום', missingNote: 'לפרופיל לא רשום מספר טלפון' },
-  mail: { name: 'דואר אלקטרוני', note: 'לכתובת בדומיין של העסק', missingTarget: 'אין כתובת רשומה', missingNote: 'לפרופיל לא רשומה כתובת דואר' },
+  mail: { name: 'דוא״ל', note: 'לכתובת בדומיין של העסק', missingTarget: 'אין כתובת רשומה', missingNote: 'לפרופיל לא רשומה כתובת דוא״ל' },
 };
 
 interface Props {
@@ -135,7 +135,7 @@ export function VerifyStep(p: Props) {
       <div className={styles.note}>
         <InfoIcon />
         <p>
-          <strong>אין לכם גישה לטלפון או לדואר הרשומים?</strong> אפשר לאמת במסמך: תעודת עוסק, אישור ניהול ספרים או רישיון עסק על שם העסק. שלחו אותו ל
+          <strong>אין לכם גישה לטלפון או לדוא״ל הרשומים?</strong> אפשר לאמת במסמך: תעודת עוסק, אישור ניהול ספרים או רישיון עסק על שם העסק. שלחו אותו לכתובת{' '}
           <a href="mailto:business@beautyfind.co.il">
             <span className="ltr">business@beautyfind.co.il</span>
           </a>{' '}

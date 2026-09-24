@@ -6,7 +6,7 @@ import type { InvoiceAdapter } from './types';
 export const INVOICE_PROVIDERS: ProviderInfo[] = [
   { key: 'green_invoice', name: 'חשבונית ירוקה (Morning)', kind: 'invoicing', available: false, docsUrl: 'https://www.greeninvoice.co.il/api-docs', fields: [{ key: 'apiKeyId', label: 'מזהה מפתח API' }, { key: 'apiKeySecret', label: 'סוד מפתח API', secret: true }] },
   { key: 'icount', name: 'iCount', kind: 'invoicing', available: false, docsUrl: 'https://api.icount.co.il/', fields: [{ key: 'cid', label: 'מזהה חברה' }, { key: 'user', label: 'שם משתמש' }, { key: 'pass', label: 'סיסמה', secret: true }] },
-  { key: 'ezcount', name: 'EZcount', kind: 'invoicing', available: false, docsUrl: 'https://docs.ezcount.co.il/', fields: [{ key: 'apiKey', label: 'מפתח API', secret: true }, { key: 'developerEmail', label: 'דוא״ל מפתח' }] },
+  { key: 'ezcount', name: 'EZcount', kind: 'invoicing', available: false, docsUrl: 'https://docs.ezcount.co.il/', fields: [{ key: 'apiKey', label: 'מפתח API', secret: true }, { key: 'developerEmail', label: 'דוא״ל חשבון המפתחים' }] },
   { key: 'sandbox', name: 'סביבת בדיקה', kind: 'invoicing', available: true, docsUrl: '', fields: [] },
 ];
 

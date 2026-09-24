@@ -8,8 +8,8 @@ import { JoinWizard } from './JoinWizard';
 // Design: project/BeautyFind Onboarding.dc.html
 
 export const metadata: Metadata = {
-  title: 'רישום עסק למדריך',
-  description: 'הצטרפות עסק ל־BeautyFind בשבעה שלבים: פרטי העסק, קטגוריות, אחריות רפואית, טיפולים ומחירים, שעות, תמונות ואימות.',
+  title: 'רישום עסק באינדקס',
+  description: 'הצטרפות עסק ל־BeautyFind בשבעה שלבים: פרטי העסק, קטגוריות, אחריות מקצועית, טיפולים ומחירים, שעות פעילות, תמונות ואימות.',
   alternates: { canonical: ROUTES.join },
   robots: { index: false },
 };

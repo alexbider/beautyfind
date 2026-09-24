@@ -57,11 +57,11 @@ export function EmptyArea({
       <div className={styles.pair}>
         <div className={`${styles.action} ${styles.actionPrimary}`}>
           <h3>יש לכם קליניקה ב{areaName}?</h3>
-          <p>רישום ראשון באזור חדש מקבל ליווי אישי בהקמת הכרטיס.</p>
+          <p>העסק הראשון שנרשם באזור חדש מקבל ליווי אישי בהקמת הכרטיס.</p>
           <Link href={joinHref} className={styles.btnPrimary}>רישום העסק</Link>
         </div>
         <div className={styles.action}>
-          <h3>מכירות מטפלת באזור?</h3>
+          <h3>מכירים מטפלת באזור?</h3>
           <p>ספרו לנו והצוות יפנה אליה. אנחנו בונים את המדריך מלמטה למעלה.</p>
           <Link href={recommendHref} className={styles.btnSecondary}>המלצה על עסק</Link>
         </div>

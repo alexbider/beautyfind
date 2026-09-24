@@ -40,13 +40,13 @@ export function NoResults({
   children?: ReactNode;
 }) {
   const heading = title ?? (filters.length > 1 ? 'אין קליניקה שעונה על כל הסינונים' : 'אין קליניקה שעונה על החיפוש');
-  const lede = body ?? (widen.length ? 'הרחבה אחת בדרך כלל פותרת את זה.' : 'נסו להסיר סינון או לחפש במילה אחרת.');
+  const lede = body ?? (widen.length ? 'בדרך כלל מספיק להרחיב סינון אחד.' : 'נסו להסיר סינון או לחפש במילה אחרת.');
 
   return (
     <div className={styles.enter}>
       {filters.length > 0 && (
         <div className={styles.filters}>
-          <span className={styles.filtersLabel}>החיפוש שלך:</span>
+          <span className={styles.filtersLabel}>החיפוש שלכם:</span>
           {filters.map(f => {
             const inner = (
               <>

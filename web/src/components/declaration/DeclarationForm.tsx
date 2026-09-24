@@ -36,7 +36,7 @@ const STEP_NAMES: Record<Step, string> = { 1: 'שאלון רפואי', 2: 'תר�
 
 const PRIVACY = [
   'רק הצוות המטפל בתור הזה והרופא/ה האחראי/ת, לא הקבלה ולא BeautyFind',
-  'נשמרת מוצפנת בתיק שלך בקליניקה, לא בפרופיל הציבורי',
+  'נשמרת מוצפנת בתיק שלכם בקליניקה, לא בפרופיל הציבורי',
   'אפשר לבקש עותק או תיקון בכל עת דרך הקליניקה',
 ];
 
@@ -134,8 +134,8 @@ export function DeclarationForm(p: DeclarationProps) {
     { step: 1, ok: birthOk, msg: 'תאריך הלידה אינו תקין' },
     { step: 1, ok: idOk, msg: 'יש להקליד 4 ספרות בדיוק' },
     { step: 1, ok: allAns, msg: `יש לענות על כל שאלות השאלון: ${QS.length - answered === 1 ? 'חסרה שאלה אחת' : `חסרות ${QS.length - answered}`}` },
-    { step: 2, ok: medsOk, msg: 'רשמי תרופות קבועות, או סמני ״אין תרופות קבועות״' },
-    { step: 3, ok: nameValid, msg: 'כתבי שם פרטי ושם משפחה' },
+    { step: 2, ok: medsOk, msg: 'רשמו תרופות קבועות, או סמנו ״אין תרופות קבועות״' },
+    { step: 3, ok: nameValid, msg: 'כתבו שם פרטי ושם משפחה' },
     { step: 3, ok: sigOk, msg: mode === 'drawn' ? 'חסרה חתימה' : 'יש לאשר שהקלדת השם מהווה חתימה' },
     { step: 3, ok: attest, msg: 'יש לאשר את ההצהרה בתחתית הטופס' },
   ];
@@ -149,8 +149,8 @@ export function DeclarationForm(p: DeclarationProps) {
   const pregMedical = pregYes && medical;
   const flagTitle = pregMedical ? 'לא מבצעים הזרקה בהריון או בהנקה' : `${plAnswers(yesN)} לבדיקה לפני הטיפול`;
   const flagBody = pregMedical
-    ? `ההזרקה לא תתבצע בתור הזה. ${p.appt.doctor ? `${p.appt.doctor} או הקליניקה ייצרו` : 'הקליניקה תיצור'} איתך קשר לתיאום מועד אחר. אין חיוב על הזזה מסיבה רפואית.`
-    : `הפירוט יגיע אל ${p.appt.who} לפני הטיפול, וייצרו איתך קשר רק אם צריך להתאים משהו. התור נשאר במקומו.`;
+    ? `ההזרקה לא תתבצע בתור הזה. ${p.appt.doctor ? `${p.appt.doctor} או הקליניקה ייצרו` : 'הקליניקה תיצור'} איתכם קשר לתיאום מועד אחר. אין חיוב על העברת מועד מסיבה רפואית.`
+    : `הפירוט יגיע אל ${p.appt.who} לפני הטיפול, וייצרו איתכם קשר רק אם צריך להתאים משהו. התור נשאר במקומו.`;
 
   // ---------- Steps (app shell) ----------
 
@@ -202,7 +202,7 @@ export function DeclarationForm(p: DeclarationProps) {
       const blob = mode === 'drawn' ? await pad.current?.toPng() : await typedSignaturePng(signName);
       if (!blob) {
         haptic('warning');
-        setServerErr('לא הצלחנו לשמור את החתימה. נסי לחתום שוב.');
+        setServerErr('לא הצלחנו לשמור את החתימה. נסו לחתום שוב.');
         return;
       }
       const fd = new FormData();
@@ -235,7 +235,7 @@ export function DeclarationForm(p: DeclarationProps) {
   const saveDraft = () => {
     try {
       localStorage.setItem(draftKey, JSON.stringify({ ans, detail, meds, noMeds, step }));
-      flash('נשמר. הקישור בהודעת התזכורת יחזיר אותך לכאן');
+      flash('נשמר. הקישור בהודעת התזכורת יחזיר אתכם לכאן');
     } catch {
       flash('לא הצלחנו לשמור במכשיר הזה');
     }
@@ -348,7 +348,7 @@ export function DeclarationForm(p: DeclarationProps) {
               <main className={styles.main}>
                 <div ref={paneRef} className={styles.pane}>
                   <section aria-labelledby={`${ids}-h1`} className={`${styles.card} ${on(1)}`}>
-                    <h2 id={`${ids}-h1`} className={styles.h2}>הפרטים שלך</h2>
+                    <h2 id={`${ids}-h1`} className={styles.h2}>הפרטים שלכם</h2>
                     <dl className={styles.meDl}>
                       <dt>שם מלא</dt><dd className={styles.w700}>{p.client.name}</dd>
                       <dt>טלפון</dt><dd><span className="ltr tnum">{p.client.phone}</span></dd>
@@ -366,8 +366,8 @@ export function DeclarationForm(p: DeclarationProps) {
                     <p className={styles.small}>
                       משהו לא נכון?{' '}
                       {p.client.accountHref ? <Link href={p.client.accountHref}>עדכון בחשבון</Link>
-                        : p.clinicPhone ? <>חייגי לקליניקה <a href={p.clinicPhone.href} className="ltr">{p.clinicPhone.display}</a></>
-                        : 'פני לקליניקה'}
+                        : p.clinicPhone ? <>חייגו לקליניקה <a href={p.clinicPhone.href} className="ltr">{p.clinicPhone.display}</a></>
+                        : 'פנו לקליניקה'}
                     </p>
                   </section>
 
@@ -436,7 +436,7 @@ export function DeclarationForm(p: DeclarationProps) {
                     {mode === 'drawn' ? (
                       <>
                         <div className={styles.padHead}>
-                          <span id={`${ids}-pad`} className={styles.padLabel}>חתמי באצבע או בעכבר</span>
+                          <span id={`${ids}-pad`} className={styles.padLabel}>חתמו באצבע או בעכבר</span>
                           <button type="button" className={styles.ghost} onClick={() => pad.current?.clear()}>ניקוי</button>
                         </div>
                         <SignaturePad ref={pad} labelId={`${ids}-pad`} onInk={setInk} hasInk={ink > 0} invalid={tried && !sigOk} />
@@ -453,7 +453,7 @@ export function DeclarationForm(p: DeclarationProps) {
                         <div className={styles.padHead}><span className={styles.padLabel}>חתימה בהקלדת שם מלא</span></div>
                         <div className={styles.typedPreview} data-invalid={(tried && !sigOk) || undefined} aria-hidden="true">{signName.trim() || p.client.name}</div>
                         <Checkbox checked={typedConsent} onToggle={() => setTypedConsent(v => !v)} invalid={tried && !typedConsent}
-                          title="אני מאשרת שהשם שהקלדתי מהווה את חתימתי על ההצהרה" />
+                          title="אני מאשר/ת שהשם שהקלדתי מהווה את חתימתי על ההצהרה" />
                       </>
                     )}
                     <button type="button" className={styles.linkBtn} onClick={() => { setMode(m => (m === 'drawn' ? 'typed' : 'drawn')); setInk(0); setTypedConsent(false); }}>
@@ -461,8 +461,8 @@ export function DeclarationForm(p: DeclarationProps) {
                     </button>
 
                     <Checkbox checked={attest} onToggle={() => setAttest(v => !v)} invalid={tried && !attest}
-                      title="אני מצהירה שהפרטים נכונים ומלאים, ושאעדכן את הקליניקה על כל שינוי במצבי לפני הטיפול"
-                      sub="מסירת מידע חלקי עלולה לסכן אותך. אם משהו לא ברור, כתבי בשדה הפירוט" />
+                      title="אני מצהיר/ה שהפרטים נכונים ומלאים, ושאעדכן את הקליניקה על כל שינוי במצבי לפני הטיפול"
+                      sub="מסירת מידע חלקי עלולה לסכן אתכם. אם משהו לא ברור, כתבו בשדה הפירוט" />
                   </section>
                 </div>
 
@@ -471,7 +471,7 @@ export function DeclarationForm(p: DeclarationProps) {
 
                 <div className={`${styles.actions} bf-desk-only`}>
                   <button type="button" className={styles.primary} onClick={submit} disabled={pending} aria-busy={pending || undefined}>
-                    {pending ? 'שולחת…' : 'חתימה ושליחה לקליניקה'}
+                    {pending ? 'שולחים…' : 'חתימה ושליחה לקליניקה'}
                   </button>
                   {!p.kiosk && <button type="button" className={styles.secondary} onClick={saveDraft}>שמירה והמשך אחר כך</button>}
                 </div>
@@ -481,7 +481,7 @@ export function DeclarationForm(p: DeclarationProps) {
 
             <ActionBar mobileOnly hint={barError ? undefined : hint} error={barError || undefined}>
               <button type="button" className={styles.barBtn} data-off={(step < TOTAL && !!stepBad) || undefined} onClick={next} disabled={pending} aria-busy={pending || undefined}>
-                {step < TOTAL ? 'המשך' : pending ? 'שולחת…' : 'חתימה ושליחה לקליניקה'}
+                {step < TOTAL ? 'המשך' : pending ? 'שולחים…' : 'חתימה ושליחה לקליניקה'}
               </button>
             </ActionBar>
           </div>
@@ -489,10 +489,10 @@ export function DeclarationForm(p: DeclarationProps) {
 
         {view === 'reuse' && p.reusable && (
           <main className={styles.doneCard}>
-            <h1 className={styles.h1done}>יש לך הצהרת בריאות בתוקף</h1>
+            <h1 className={styles.h1done}>יש לכם הצהרת בריאות בתוקף</h1>
             <p className={styles.doneBody}>
-              חתמת על הצהרה בקליניקה ב־<span className="ltr tnum">{p.reusable.signedOn}</span>, והיא בתוקף עד <span className="ltr tnum">{p.reusable.validUntil}</span>.
-              {' '}אם לא השתנה דבר במצבך הבריאותי או בתרופות, אפשר לצרף אותה לתור הזה. אם משהו השתנה, עדכני את התשובות.
+              חתמתם על הצהרה בקליניקה ב־<span className="ltr tnum">{p.reusable.signedOn}</span>, והיא בתוקף עד <span className="ltr tnum">{p.reusable.validUntil}</span>.
+              {' '}אם לא השתנה דבר במצבכם הבריאותי או בתרופות, אפשר לצרף אותה לתור הזה. אם משהו השתנה, עדכנו את התשובות.
             </p>
             {serverErr && <p role="alert" className={styles.error} style={{ marginBottom: 14 }}>{serverErr}</p>}
             <div className={styles.doneActions}>
@@ -507,7 +507,7 @@ export function DeclarationForm(p: DeclarationProps) {
             <span aria-hidden="true" className={styles.doneIcon}><Tick size={27} /></span>
             <h1 className={styles.h1done}>ההצהרה נחתמה</h1>
             <p className={styles.doneBody}>
-              ההצהרה תגיע אל {p.appt.who || 'הצוות המטפל'} לפני הטיפול{done.yes > 0 ? ', וייצרו איתך קשר אם צריך להתאים משהו.' : '.'}
+              ההצהרה תגיע אל {p.appt.who || 'הצוות המטפל'} לפני הטיפול{done.yes > 0 ? ', וייצרו איתכם קשר אם צריך להתאים משהו.' : '.'}
             </p>
             {done.yes > 0 && pregMedical && (
               <div role="status" className={styles.flag} style={{ marginBottom: 16 }}>
@@ -519,7 +519,7 @@ export function DeclarationForm(p: DeclarationProps) {
               <dt>נחתמה</dt><dd><span className="ltr tnum">{done.signedAt}</span></dd>
               <dt>לטיפול</dt><dd>{p.appt.name}</dd>
               {done.yes >= 0 && <><dt>תשובות ״כן״</dt><dd>{done.yes ? `${plAnswers(done.yes)} · עם פירוט` : 'אין'}</dd></>}
-              <dt>בתוקף</dt><dd>12 חודשים, או עד שינוי במצבך</dd>
+              <dt>בתוקף</dt><dd>12 חודשים, או עד שינוי במצבכם</dd>
             </dl>
             <div className={styles.doneActions}>
               {p.kiosk ? (
@@ -537,7 +537,7 @@ export function DeclarationForm(p: DeclarationProps) {
         {view === 'closed' && (
           <main className={styles.doneCard}>
             <h1 className={styles.h1done}>התור הזה כבר לא פתוח לחתימה</h1>
-            <p className={styles.doneBody}>אם יש שינוי במצבך הבריאותי, עדכני את הקליניקה ישירות.</p>
+            <p className={styles.doneBody}>אם חל שינוי במצבכם הבריאותי, עדכנו את הקליניקה ישירות.</p>
             {!p.kiosk && <div className={styles.doneActions}><Link href={bookingHref} className={styles.primarySm}>לפרטי התור</Link></div>}
           </main>
         )}

@@ -34,7 +34,7 @@ const DECISION_TEXT: Record<string, string> = {
   check_in: 'צ׳ק־אין · המטופלת הגיעה',
   start: 'הטיפול התחיל',
   physician_ack: 'ממצאי ההצהרה אושרו על ידי רופא/ה',
-  finish: 'הטיפול הסתיים · הנחיות אחרי נשלחו',
+  finish: 'הטיפול הסתיים · הנחיות אחרי הטיפול נשלחו',
   no_show: 'סומן: לא הגיעה',
   undo_no_show: 'בוטל הסימון ״לא הגיעה״',
   resend_declaration: 'נשלח שוב קישור להצהרת בריאות',
@@ -55,7 +55,7 @@ export default async function ClinicBookingPage({ params }: { params: Promise<{ 
   const now = new Date();
   const reader = readerOf(a, b);
   const pr = b.practitioner;
-  const prName = pr?.displayName ?? 'המטפל/ת';
+  const prName = pr?.displayName ?? 'מטפל/ת';
   const medical = !!b.treatment?.isMedical;
   const token = bookingToken(b.id);
 
@@ -118,7 +118,7 @@ export default async function ClinicBookingPage({ params }: { params: Promise<{ 
     const label = p.purpose === 'deposit' ? 'מקדמה' : p.purpose === 'consult' ? 'תשלום ייעוץ' : 'תשלום';
     if (p.paidAt) {
       const doc = p.documents.find(x => x.type === 'tax_invoice_receipt');
-      log.push({ at: p.paidAt, what: `${label} ${nisFromAgorot(p.grossAgorot)} נגבתה${doc ? ` · קבלה ${doc.number}` : ''}` });
+      log.push({ at: p.paidAt, what: `${label}: נגבו ${nisFromAgorot(p.grossAgorot)}${doc ? ` · קבלה ${doc.number}` : ''}` });
     }
     for (const r of p.refunds) if (r.status !== 'failed') log.push({ at: r.createdAt, what: `${nisFromAgorot(r.amountAgorot)} הוחזרו לכרטיס · ${r.reason}` });
   }
@@ -198,7 +198,7 @@ export default async function ClinicBookingPage({ params }: { params: Promise<{ 
         const allowed = canFinish(a, b) && (!medical || a.profession === 'doctor' || a.profession === 'nurse');
         return {
           kind: 'finish', title: 'סיום טיפול', medical, cta: 'סיום ושליחת הנחיות',
-          body: 'הרישום הקליני נשמר בתיק המטופלת. בסיום תישלח הודעת הנחיות אחרי הטיפול, ובעוד 3 ימים בקשת ביקורת.',
+          body: 'הרישום הקליני נשמר בתיק המטופלת. בסיום תישלח הודעה עם הנחיות אחרי הטיפול, וכעבור 3 ימים בקשה לכתוב ביקורת.',
           blocked: !allowed, blockMsg: allowed ? '' : `רישום קליני וסיום הטיפול שמורים ל${prName}.`,
         };
       }
@@ -206,7 +206,7 @@ export default async function ClinicBookingPage({ params }: { params: Promise<{ 
         return { kind: 'done', title: 'הטיפול הסתיים', body: `הנחיות אחרי הטיפול נשלחו בוואטסאפ${b.finishedAt ? ` ב־${hhmm(b.finishedAt)}` : ''}. בעוד 3 ימים תישלח בקשת ביקורת.` };
       case 'no_show':
         return {
-          kind: 'noshow', title: 'סומן כלא הגיעה',
+          kind: 'noshow', title: 'סומן: לא הגיעה',
           body: dep?.status === 'forfeited' ? `המקדמה ${nisFromAgorot(dep.grossAgorot)} נשמרת לפי מדיניות הביטול. אפשר לבטל את הסימון בתוך 24 שעות.` : 'אפשר לבטל את הסימון בתוך 24 שעות.',
           canUndo: ctx.canManage && !!undo,
         };

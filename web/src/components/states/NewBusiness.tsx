@@ -22,10 +22,10 @@ export interface ZeroKpi {
 }
 
 export const DEFAULT_ZERO_KPIS: ZeroKpi[] = [
-  { label: 'צפיות בפרופיל', note: 'יתחיל להצטבר עם האינדוקס, בדרך כלל תוך 48 שעות' },
+  { label: 'צפיות בפרופיל', note: 'יתחילו להצטבר אחרי האינדוקס, בדרך כלל בתוך 48 שעות' },
   { label: 'פניות', note: 'וואטסאפ, טלפון וטופס: יופיעו כאן עם הפנייה הראשונה' },
-  { label: 'דירוג', note: 'נפתח אחרי הביקורת המאומתת הראשונה' },
-  { label: 'מקומות בחיפוש', note: 'נמדד שבועית מול עסקים באותו אזור' },
+  { label: 'דירוג', note: 'יוצג אחרי הביקורת המאומתת הראשונה' },
+  { label: 'מקומות בחיפוש', note: 'נמדדים מדי שבוע מול עסקים באותו אזור' },
 ];
 
 export function NewBusiness({
@@ -50,7 +50,7 @@ export function NewBusiness({
       <div className={styles.nbHead}>
         <h2 className={styles.h2}>ברוכים הבאים, {businessName}</h2>
         <p className={styles.lede}>
-          {publishedAgo ? `הכרטיס פורסם ${publishedAgo}. ` : ''}אין עוד נתונים להציג, וזה נורמלי. במקום גרפים ריקים, הנה מה שמזיז את המחוג.
+          {publishedAgo ? `הכרטיס פורסם ${publishedAgo}. ` : ''}עדיין אין נתונים להציג, וזה טבעי בהתחלה. בינתיים, אלה המשימות שכדאי להשלים.
         </p>
       </div>
 

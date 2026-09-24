@@ -8,9 +8,9 @@ import { searchLiveBranches } from './data';
 // Design: project/BeautyFind Claim.dc.html
 
 export const metadata: Metadata = {
-  title: 'אישור בעלות',
+  title: 'אישור בעלות על עסק',
   description:
-    'אישור בעלות על עסק ב־BeautyFind: איתור העסק, אימות בעלות בקוד לטלפון או בדואר אלקטרוני, השלמת פרטים ותפריט מחירים, בארבעה שלבים.',
+    'אישור בעלות על עסק ב־BeautyFind בארבעה שלבים: איתור העסק, אימות בקוד שנשלח לטלפון או לדוא״ל, השלמת הפרטים ותפריט המחירים.',
   alternates: { canonical: ROUTES.claim },
 };
 

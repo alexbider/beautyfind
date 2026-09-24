@@ -41,7 +41,7 @@ export function SiteFooter({ note, wide = false }: { note?: string; wide?: boole
       <div className={styles.grid} data-wide={wide || undefined}>
         <div className={styles.about}>
           <Wordmark size={26} onDark />
-          <p>אינדקס היופי והאסתטיקה של ישראל: עסקים מאומתים, ביקורות אמיתיות ותפריטי טיפולים שאפשר להשוות.</p>
+          <p>אינדקס היופי והאסתטיקה של ישראל: עסקים מאומתים, ביקורות מאומתות ותפריטי טיפולים שאפשר להשוות.</p>
         </div>
         {GROUPS.map(g => (
           <nav key={g.name} aria-label={g.name} className={styles.group}>

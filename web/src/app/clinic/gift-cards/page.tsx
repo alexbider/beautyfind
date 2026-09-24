@@ -34,10 +34,10 @@ export default async function ClinicGiftCardsPage({ searchParams }: Props) {
           <h1 className={`${s.clinicH1} bf-desk-only`}>שוברי מתנה</h1>
         </div>
         <div className={s.upgrade}>
-          <h2 className={s.h2}>שוברי מתנה זמינים במסלול המתקדם</h2>
-          <p>מכירת שוברים באתר, מימוש בקבלה עם חשבונית מס, ומעקב אחרי היתרה הפתוחה. השדרוג נכנס לתוקף מיד.</p>
+          <h2 className={s.h2}>שוברי מתנה זמינים ברישום המתקדם</h2>
+          <p>מכירת שוברים באתר, מימוש בקבלה עם חשבונית מס ומעקב אחרי היתרה הפתוחה. השדרוג נכנס לתוקף מיד.</p>
           <div className={s.actions}>
-            <Link href="/biz/billing" className={s.btn}>לשדרוג המסלול</Link>
+            <Link href="/biz/billing" className={s.btn}>לשדרוג המנוי</Link>
           </div>
         </div>
         </div>
@@ -100,12 +100,12 @@ export default async function ClinicGiftCardsPage({ searchParams }: Props) {
 
       {!payments ? (
         <p className={`${s.note} ${s.noteWarn}`} style={{ marginBottom: 14 }}>
-          אין חיבור פעיל לחברת סליקה, ולכן אי אפשר לקנות שוברים חדשים באתר. שוברים קיימים ממשיכים להתממש כרגיל.{' '}
+          אין חיבור פעיל לחברת סליקה, ולכן אי אפשר לרכוש שוברים חדשים באתר. שוברים קיימים ממשיכים להתממש כרגיל.{' '}
           <Link href="/biz/payments">לחיבור חברת סליקה</Link>
         </p>
       ) : ctx.branch ? (
         <p className={s.small} style={{ marginBottom: 12 }}>
-          עמוד הקנייה של הקליניקה: <Link href={`/gift/${ctx.branch.slug}`} className={d.inlineLink}><span className="ltr">/gift/{ctx.branch.slug}</span></Link>
+          עמוד הרכישה של הקליניקה: <Link href={`/gift/${ctx.branch.slug}`} className={d.inlineLink}><span className="ltr">/gift/{ctx.branch.slug}</span></Link>
         </p>
       ) : null}
 

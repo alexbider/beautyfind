@@ -21,9 +21,9 @@ function resultLine(q: string, n: number, failed: boolean) {
   if (failed) return 'החיפוש נכשל. נסו שוב בעוד רגע.';
   const query = q.trim();
   if (!query) return n === 1 ? 'עסק אחד נמצא לפי החיפוש שלכם' : <><span className="ltr">{n}</span> עסקים נמצאו לפי החיפוש שלכם</>;
-  if (n === 0) return `לא נמצאו עסקים תואמים "${query}"`;
-  if (n === 1) return `עסק אחד תואם "${query}"`;
-  return <><span className="ltr">{n}</span> עסקים תואמים &quot;{query}&quot;</>;
+  if (n === 0) return `לא נמצאו עסקים עבור ״${query}״`;
+  if (n === 1) return `נמצא עסק אחד עבור ״${query}״`;
+  return <><span className="ltr">{n}</span> עסקים נמצאו עבור ״{query}״</>;
 }
 
 export function FindStep({ headingRef, q, onQuery, hits, searching, searchFailed, pickedId, onPick }: Props) {
@@ -72,7 +72,7 @@ export function FindStep({ headingRef, q, onQuery, hits, searching, searchFailed
                 <div className={`${styles.note} ${styles.noteInline}`} role="status">
                   <InfoIcon />
                   <p>
-                    <strong>לעסק הזה כבר יש בעלים מאומתים.</strong> אם אתם עובדים בעסק, בקשו מהבעלים הזמנה לצוות: שולחים אותה מלוח הבקרה, תחת צוות והרשאות. חושבים שנפלה טעות?{' '}
+                    <strong>לעסק הזה כבר יש בעלים מאומתים.</strong> אם אתם עובדים בעסק, בקשו מהבעלים הזמנה לצוות. הבעלים שולחים אותה מלוח הבקרה, בלשונית ״צוות והרשאות״. חושבים שנפלה טעות?{' '}
                     <Link href={ROUTES.contact}>פנו אלינו</Link>
                   </p>
                 </div>

@@ -124,7 +124,7 @@ export type SubmitClaimResult =
 const CHECK_TEXT = {
   sms: 'קוד אומת ב־SMS למספר הרשום',
   call: 'קוד אומת בשיחה קולית למספר הרשום',
-  mail: 'קוד אומת בדואר האלקטרוני הרשום',
+  mail: 'קוד אומת בדוא״ל הרשום',
 } as const;
 
 export async function submitClaim(input: ClaimDetails): Promise<SubmitClaimResult> {

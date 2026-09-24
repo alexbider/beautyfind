@@ -26,17 +26,17 @@ const META: Record<Tab, [string, string]> = {
   appts: ['התורים שלי', 'תורים עתידיים וטיפולים שעברו. שינוי או ביטול דרך עמוד התור, לפי מדיניות הקליניקה.'],
   saved: ['מועדפים', 'העסקים שסימנתם בלב, עם הדירוג והאחריות הרפואית שלהם.'],
   reviews: ['הביקורות שלי', 'ביקורות שכתבתם אחרי טיפול. ביקורת חדשה עוברת בדיקה לפני פרסום.'],
-  settings: ['הגדרות ופרטיות', 'פרטים אישיים, הודעות ודיוור, ונתונים.'],
+  settings: ['הגדרות ופרטיות', 'פרטים אישיים, הודעות ודיוור, פרטיות ונתונים.'],
 };
 const CHANNELS: Array<['wa' | 'sms' | 'email', string]> = [
   ['wa', 'וואטסאפ'],
   ['sms', 'SMS'],
-  ['email', 'מייל'],
+  ['email', 'דוא״ל'],
 ];
 const SERVICE_MSGS: Array<[string, string]> = [
   ['אישור ותזכורת לתור', 'בוואטסאפ, ותזכורת לפני התור'],
-  ['הנחיות אחרי טיפול ובקשת ביקורת', 'מהקליניקה שטיפלה בך'],
-  ['קבלות, חשבוניות והחזרים', 'במייל, מהקליניקה'],
+  ['הנחיות אחרי טיפול ובקשת ביקורת', 'מהקליניקה שטיפלה בכם'],
+  ['קבלות, חשבוניות והחזרים', 'בדוא״ל, מהקליניקה'],
 ];
 
 const toneClass = (t: Tone) => styles[`tone_${t}`];
@@ -119,7 +119,7 @@ export function AccountView({ data, initialTab }: { data: AccountData; initialTa
             ))}
           </ul>
         </nav>
-        <p className={styles.sideNote}>שינוי או ביטול ללא חיוב עד חלון הביטול של הקליניקה, בדרך כלל <span className="ltr">24</span> שעות לפני התור. המדיניות שהוצגה לך בהזמנה היא הקובעת.</p>
+        <p className={styles.sideNote}>שינוי או ביטול ללא חיוב עד חלון הביטול של הקליניקה, בדרך כלל <span className="ltr">24</span> שעות לפני התור. המדיניות שהוצגה לכם בהזמנה היא הקובעת.</p>
         <form action="/logout" method="post" className={styles.logoutForm}>
           <button type="submit" className={styles.logout}>יציאה מהחשבון</button>
         </form>
@@ -159,13 +159,13 @@ export function AccountView({ data, initialTab }: { data: AccountData; initialTa
                   {c.responsible && <p className={styles.resp}>{c.responsible}</p>}
                   <div className={styles.actions}>
                     <Link href={c.bookHref} className={styles.btnPrimarySm}>{c.bookLabel === 'לפרופיל' ? 'לפרופיל הקליניקה' : c.bookLabel}</Link>
-                    {c.savedIso && <span className={styles.savedAt}>נשמרה {relHe(new Date(c.savedIso))}</span>}
+                    {c.savedIso && <span className={styles.savedAt}>נוספה למועדפים {relHe(new Date(c.savedIso))}</span>}
                   </div>
                 </article>
               ))}
               {saved.length === 0 && (
                 <div className={`${styles.empty} ${styles.full}`}>
-                  <p className={styles.emptyTitle}>לא שמרתם קליניקות</p>
+                  <p className={styles.emptyTitle}>עוד לא הוספתם קליניקות למועדפים</p>
                   <p className={styles.emptyText}>סמנו קליניקה בלב בתוצאות החיפוש כדי לחזור אליה מכאן.</p>
                 </div>
               )}
@@ -204,7 +204,7 @@ export function AccountView({ data, initialTab }: { data: AccountData; initialTa
             {data.reviews.length === 0 && (
               <div className={styles.empty}>
                 <p className={styles.emptyTitle}>לא כתבתם ביקורות</p>
-                <p className={styles.emptyText}>אחרי טיפול נשלח קישור לכתיבת ביקורת. רק מי שהיתה בטיפול יכולה לכתוב.</p>
+                <p className={styles.emptyText}>אחרי טיפול נשלח קישור לכתיבת ביקורת. ביקורת נכתבת רק אחרי טיפול שהתקיים בפועל.</p>
               </div>
             )}
           </div>
@@ -298,7 +298,7 @@ function Appt({ a }: { a: ApptView }) {
           <p className={styles.muted}>{a.clinic}{a.address && <> · {a.address}</>}</p>
           {(a.price || a.notes.length > 0) && (
             <p className={styles.price}>
-              {a.price && <><span className="ltr tnum">{a.price}</span> לפני מע״מ</>}
+              {a.price && <><span className="ltr tnum">{a.price}</span> לא כולל מע״מ</>}
               {a.notes.map((n, i) => (
                 <span key={i}>{(a.price || i > 0) && ' · '}{n.pre}{n.ltr && <span className="ltr tnum">{n.ltr}</span>}{n.post}</span>
               ))}
@@ -358,7 +358,7 @@ function Settings({ data, show }: { data: AccountData; show: (t: string) => void
         : { ...c, businesses: c.businesses.map(b => (b.id === scope ? { ...b, on: { ...b.on, [ch]: on } } : b)) },
     );
     const r = await setConsentAction(scope, ch, on).catch(() => null);
-    if (r?.ok) show(on ? 'הדיוור הופעל' : 'הדיוור הופסק. זה נכנס לתוקף מיד.');
+    if (r?.ok) show(on ? 'הדיוור הופעל' : 'הדיוור הופסק, בתוקף מיידי.');
     else {
       setConsents(before);
       show('לא הצלחנו לעדכן. נסו שוב.');
@@ -397,7 +397,7 @@ function Settings({ data, show }: { data: AccountData; show: (t: string) => void
           </label>
         </div>
         <p className={styles.hint}>הטלפון והדוא״ל מאומתים בקוד, ולכן משתנים רק דרך <Link href="/contact">פנייה אלינו</Link>.</p>
-        {nameErr && <p className={styles.err} role="alert">שם מלא צריך לכלול לפחות שני תווים.</p>}
+        {nameErr && <p className={styles.err} role="alert">השם המלא צריך לכלול לפחות שני תווים.</p>}
         <div className={styles.saveRow}>
           <button type="button" className={styles.btnPrimary} onClick={saveName} disabled={busy || !dirty}>
             {dirty ? 'שמירת שינויים' : 'נשמר'}
@@ -408,7 +408,7 @@ function Settings({ data, show }: { data: AccountData; show: (t: string) => void
 
       <section className={styles.panel} aria-labelledby="ac-msgs">
         <h2 id="ac-msgs" className={styles.panelTitle}>הודעות ודיוור</h2>
-        <p className={styles.hint}>הודעות שירות נשלחות תמיד, הן חלק מהתור. דיוור ומבצעים נשלחים רק מעסקים שאישרת, ורק בערוצים שבחרת.</p>
+        <p className={styles.hint}>הודעות שירות נשלחות תמיד, כי הן חלק מהתור. דיוור ומבצעים נשלחים רק מעסקים שאישרתם, ורק בערוצים שבחרתם.</p>
         <ul className={styles.prefs}>
           {SERVICE_MSGS.map(([n, note]) => (
             <li key={n} className={styles.pref}>
@@ -457,8 +457,8 @@ function Settings({ data, show }: { data: AccountData; show: (t: string) => void
             </div>
           ))}
         </div>
-        {consents.businesses.length === 0 && <p className={styles.hint}>אחרי תור ראשון, העסקים שביקרת בהם יופיעו כאן ותוכלי לבחור ממי לקבל עדכונים.</p>}
-        {!consents.contacts.email && <p className={styles.hint}>אין דוא״ל בחשבון, ולכן אין דיוור במייל.</p>}
+        {consents.businesses.length === 0 && <p className={styles.hint}>אחרי תור ראשון, העסקים שביקרתם בהם יופיעו כאן, ותוכלו לבחור ממי לקבל עדכונים.</p>}
+        {!consents.contacts.email && <p className={styles.hint}>אין דוא״ל בחשבון, ולכן אין דיוור בדוא״ל.</p>}
       </section>
 
       <section className={styles.panel} aria-labelledby="ac-privacy">
@@ -490,7 +490,7 @@ function Settings({ data, show }: { data: AccountData; show: (t: string) => void
         onConfirm={doDelete}
         onClose={() => setConfirm(false)}
       >
-        <p>נמחק את החשבון, המועדפים, ההעדפות והביקורות שלא פורסמו, תוך <span className="ltr">30</span> יום לפי מדיניות הפרטיות. תורים עתידיים לא יבוטלו אוטומטית, כדאי לבטל אותם קודם.</p>
+        <p>נמחק את החשבון, המועדפים, ההעדפות והביקורות שלא פורסמו, תוך <span className="ltr">30</span> יום לפי מדיניות הפרטיות. תורים עתידיים לא יבוטלו אוטומטית, ולכן כדאי לבטל אותם קודם.</p>
         <p>חשבוניות ורשומות שהקליניקות חייבות לשמור על פי חוק יישארו אצלן.</p>
         <label className={styles.field}>
           סיבה (לא חובה)

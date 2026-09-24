@@ -8,7 +8,7 @@ import styles from './states.module.css';
 // that support can find in the log. At least two ways forward.
 
 export function ErrorState({
-  title = 'משהו נשבר אצלנו, לא אצלכם',
+  title = 'משהו השתבש אצלנו',
   body,
   onRetry,
   retryLabel = 'ניסיון חוזר',
@@ -52,7 +52,7 @@ export function ErrorState({
               <span className="ltr">{time}</span>
             </>
           )}
-          . צטטו את הקוד בפנייה לתמיכה.
+          . ציינו את הקוד בפנייה לתמיכה.
         </p>
       )}
     </div>

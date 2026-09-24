@@ -23,8 +23,8 @@ type Step = 'find' | 'verify' | 'details' | 'done';
 
 const STEPS: Array<{ key: Step; name: string; note: string }> = [
   { key: 'find', name: 'איתור העסק', note: 'חיפוש באינדקס' },
-  { key: 'verify', name: 'אימות בעלות', note: 'קוד לטלפון או לדואר' },
-  { key: 'details', name: 'פרטי העסק', note: 'תחומים, שעות, קשר' },
+  { key: 'verify', name: 'אימות בעלות', note: 'קוד לטלפון או לדוא״ל' },
+  { key: 'details', name: 'פרטי העסק', note: 'תחומים, שעות ופרטי קשר' },
   { key: 'done', name: 'סיום', note: 'בדיקה ואישור' },
 ];
 
@@ -224,7 +224,7 @@ export function ClaimFlow({ initialHits, devCode }: { initialHits: ListingHit[];
       const dev = devCode ? <> בהדגמה הזו הקוד הוא <span className="ltr">{devCode}</span>.</> : null;
       const msg: Record<string, ReactNode> = {
         invalid: <>הקוד שגוי. בדקו את הספרות ונסו שוב.{dev}</>,
-        expired: 'הקוד פג תוקף. בקשו קוד חדש.',
+        expired: 'תוקף הקוד פג. בקשו קוד חדש.',
         too_many_attempts: 'היו יותר מדי ניסיונות שגויים. בקשו קוד חדש.',
       };
       setCodeError(msg[res.error] ?? COMMON_ERRORS[res.error]);
@@ -388,7 +388,7 @@ export function ClaimFlow({ initialHits, devCode }: { initialHits: ListingHit[];
             <div className={styles.railInfo}>
               <div className={styles.railInfoTitle}>מה זה נותן</div>
               <p>
-                אישור בעלות פותח את הפרופיל לעריכה: תפריט מחירים, שעות, טלפון, WhatsApp, תמונות ותגובה לביקורות. האישור עצמו חינם; רישום מלא הוא{' '}
+                אישור בעלות פותח את הפרופיל לעריכה: תפריט מחירים, שעות, טלפון, WhatsApp, תמונות ותגובות לביקורות. האישור עצמו בחינם, ורישום מלא עולה{' '}
                 <span className="ltr">{PRICE}</span> לחודש.
               </p>
               <Link href={ROUTES.listingStandards} className={styles.railLink}>
@@ -467,7 +467,7 @@ export function ClaimFlow({ initialHits, devCode }: { initialHits: ListingHit[];
             )}
 
             <p className={styles.mobileNote}>
-              אישור בעלות פותח את הפרופיל לעריכה: מחירים, שעות, תמונות ותגובה לביקורות. האישור חינם; רישום מלא הוא <span className="ltr">{PRICE}</span> לחודש.{' '}
+              אישור בעלות פותח את הפרופיל לעריכה: מחירים, שעות, תמונות ותגובות לביקורות. האישור בחינם, ורישום מלא עולה <span className="ltr">{PRICE}</span> לחודש.{' '}
               <Link href={ROUTES.listingStandards}>תקן הרישום</Link>
             </p>
           </div>

@@ -7,7 +7,7 @@ import styles from './states.module.css';
 // Rule: say plainly the details are unverified, and offer both an ownership claim and a correction report.
 
 export function UnclaimedBanner({
-  text = 'הכרטיס הזה לא נוהל על ידי העסק. הפרטים נאספו ממקורות פומביים, ועשויים להיות לא מעודכנים.',
+  text = 'הכרטיס הזה אינו מנוהל על ידי העסק. הפרטים נאספו ממקורות פומביים וייתכן שאינם מעודכנים.',
   className,
 }: {
   text?: string;
@@ -60,7 +60,7 @@ export function UnclaimedActions({
     <div className={styles.sug} data-n={3}>
       <div className={`${styles.action} ${styles.actionPrimary}`}>
         <h3>זה העסק שלכם?</h3>
-        <p>קבלו שליטה על הכרטיס, עדכנו טיפולים ושעות, וקבלו פניות ישר אליכם.</p>
+        <p>נהלו את הכרטיס בעצמכם, עדכנו טיפולים ושעות וקבלו פניות ישירות אליכם.</p>
         <Link href={claimHref} className={styles.btnPrimary}>בקשת בעלות</Link>
       </div>
       <div className={styles.action}>

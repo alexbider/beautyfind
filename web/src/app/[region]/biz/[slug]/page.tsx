@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!p) return { title: 'העסק לא נמצא', robots: { index: false } };
   const v = buildView(p);
   const main = v.cats[0]?.name;
-  const title = `${p.name}, ${p.cityName}${main ? `: ${main}` : ''}`;
+  const title = main ? `${p.name}: ${main} ב${p.cityName}` : `${p.name}, ${p.cityName}`;
   const description = metaDescription(p, v);
   return {
     title,
@@ -141,10 +141,10 @@ export default async function BusinessProfilePage({ params }: Props) {
               <section aria-labelledby="h-services">
                 <div className={styles.secHead}>
                   <h2 id="h-services" className={styles.h2}>שירותים ומחירים<span className={styles.dotTeal}>.</span></h2>
-                  {v.pricesUpdated && <span className={styles.secNote}>המחירים כפי שנמסרו על ידי העסק, עודכנו ב־{v.pricesUpdated}</span>}
+                  {v.pricesUpdated && <span className={styles.secNote}>המחירים נמסרו על ידי העסק ועודכנו ב־{v.pricesUpdated}</span>}
                 </div>
                 <Services groups={v.services} />
-                <p className={styles.vat}>כל המחירים לא כולל מע״מ. טיפולים רפואיים נקבעים בתיאום ייעוץ רפואי, והמחיר הסופי נקבע בו.</p>
+                <p className={styles.vat}>כל המחירים לא כוללים מע״מ. טיפולים רפואיים נקבעים אחרי ייעוץ רפואי, ושם נקבע גם המחיר הסופי.</p>
               </section>
             )}
 
@@ -285,7 +285,7 @@ function Identity({ p, v }: { p: PublicProfile; v: View }) {
   const highlights = [
     v.responsible && { name: v.responsible.label === 'אחריות רפואית' ? 'אחריות רפואית מאומתת' : 'איש מקצוע אחראי מאומת', on: true },
     p.treatments.length > 0 && { name: 'מחירים שקופים', on: true },
-    p.freeParking && { name: 'חנייה חינם', on: true },
+    p.freeParking && { name: 'חניה חינם', on: true },
     p.accessible && { name: 'נגיש לכיסא גלגלים', on: true },
     ...v.cats.map(c => ({ name: c.name, on: false })),
   ].filter((h): h is { name: string; on: boolean } => !!h);
@@ -503,7 +503,7 @@ function ReviewsSection({ p, v }: { p: PublicProfile; v: View }) {
 function Location({ p }: { p: PublicProfile }) {
   const full = p.address.includes(p.cityName) ? p.address : `${p.address}, ${p.cityName}`;
   const cells = [
-    p.freeParking && { label: 'חנייה', value: 'חנייה חינם במקום' },
+    p.freeParking && { label: 'חניה', value: 'חניה חינם במקום' },
     p.accessible && { label: 'נגישות', value: 'המקום נגיש לכיסא גלגלים' },
   ].filter((c): c is { label: string; value: string } => !!c);
   return (
@@ -600,7 +600,7 @@ function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null
           )}
           {p.email && (
             <div>
-              <dt>אימייל</dt>
+              <dt>דוא״ל</dt>
               <dd>
                 <TrackedLink branchId={p.id} type="contact_click" href={`mailto:${p.email}`} dir="ltr">
                   {p.email}

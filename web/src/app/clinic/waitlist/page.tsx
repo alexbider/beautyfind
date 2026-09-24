@@ -32,16 +32,16 @@ export default async function ClinicWaitlistPage({ searchParams }: { searchParam
           </div>
         </div>
         <div className={styles.upgrade}>
-          <h2 className={styles.doneH}>{branch ? 'רשימת המתנה היא חלק ממערכת הקליניקה' : 'אין עדיין סניף פעיל'}</h2>
+          <h2 className={styles.doneH}>{branch ? 'רשימת ההמתנה היא חלק ממערכת הקליניקה' : 'אין עדיין סניף פעיל'}</h2>
           <p className={styles.doneP}>
             {branch
-              ? 'ברישום מתקדם + CRM לקוחות מצטרפות לרשימת המתנה מעמוד ההזמנה, וכשמתבטל תור הוא מוצע אוטומטית לראשונה שמתאימה, עם זמן שמירה. בינתיים לקוחות יכולות להתקשר או לשלוח וואטסאפ.'
+              ? 'ברישום מתקדם + CRM, לקוחות מצטרפות לרשימת ההמתנה מעמוד ההזמנה. כשתור מתבטל, הוא מוצע אוטומטית ללקוחה הראשונה שמתאימה לו ונשמר עבורה לזמן מוגדר. בינתיים, לקוחות יכולות להתקשר או לשלוח הודעת וואטסאפ.'
               : 'רשימת ההמתנה תופיע כאן אחרי שהסניף הראשון יעלה לאוויר.'}
           </p>
           {branch && (
             <div className={styles.actions}>
               <Link href="/biz/billing" className={styles.btn}>
-                לשדרוג החבילה
+                לשדרוג המנוי
               </Link>
             </div>
           )}

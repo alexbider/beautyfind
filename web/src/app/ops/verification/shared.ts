@@ -38,7 +38,7 @@ export type DecideActionResult =
   | { ok: false; error: 'not_found' | 'forbidden' | 'closed' | 'reason_required' | 'license_pending' | 'already_owned' | 'invalid' | 'failed'; related?: string };
 
 export const KIND_FILTERS = [
-  { key: 'all', name: 'הכל' },
+  { key: 'all', name: 'הכול' },
   { key: 'business', name: 'רישום עסק חדש' },
   { key: 'license', name: 'רישיונות ותעודות' },
   { key: 'claim', name: 'בעלות' },
@@ -46,7 +46,7 @@ export const KIND_FILTERS = [
 export type KindFilter = (typeof KIND_FILTERS)[number]['key'];
 
 export const STATUS_FILTERS = [
-  { key: 'all', name: 'הכל' },
+  { key: 'all', name: 'הכול' },
   { key: 'open', name: 'פתוחות' },
   { key: 'awaiting_document', name: 'ממתינות למסמך' },
   { key: 'approved', name: 'אושרו' },
@@ -106,7 +106,7 @@ export function errorText(r: Extract<DecideActionResult, { ok: false }>, action:
     case 'closed':
       return 'כבר התקבלה החלטה בבקשה הזו. התור עודכן.';
     case 'not_found':
-      return 'הבקשה לא נמצאה. ייתכן שהוסרה, התור עודכן.';
+      return 'הבקשה לא נמצאה, ייתכן שהוסרה. התור עודכן.';
     case 'forbidden':
       return 'אין לך הרשאה לקבל החלטות אימות.';
     case 'invalid':

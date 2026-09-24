@@ -21,20 +21,20 @@ import {
 import styles from './JoinWizard.module.css';
 
 const TIPS: Record<StepKey, [string, string]> = {
-  basics: ['למה אנחנו מבקשים ח״פ', 'הח״פ מאומת מול רשם החברות ואינו מוצג בכרטיס. עסק ללא ח״פ תקף לא מתפרסם. זה מה שמונע מהמדריך להתמלא בעסקים פיקטיביים.'],
-  cats: ['בחרו רק מה שאתם מבצעים', 'קטגוריה שנבחרה ולא מבוצעת בפועל היא עילה להסרה. עדיף ארבע קטגוריות מדויקות מעשר רחבות.'],
-  medical: ['הזרקות הן פעולה רפואית', 'בוטוקס, מלאנים ומזותרפיה מחייבים רופא/ה. קוסמטיקאית אינה מוסמכת להזריק, ואנחנו בודקים את הרישיון מול משרד הבריאות.'],
-  services: ['מחיר גלוי מכניס פניות', 'שקיפות מחיר היא הסיבה הראשונה שלקוחה פונה. טווח מחירים עדיף על "לפי ייעוץ".'],
-  hours: ['שעות מדויקות חוסכות פניות מבוזבזות', 'לקוחות מסננות לפי "פתוח עכשיו". שעות שגויות מייצרות פניות שלא נענות, וזה פוגע בדירוג התגובה שלכם.'],
+  basics: ['למה אנחנו מבקשים ח״פ', 'הח״פ מאומת מול רשם החברות ואינו מוצג בכרטיס. עסק ללא ח״פ תקף לא מתפרסם, וכך האינדקס נשאר נקי מעסקים פיקטיביים.'],
+  cats: ['בחרו רק טיפולים שאתם מבצעים', 'קטגוריה שנבחרה ואינה מבוצעת בפועל היא עילה להסרה. עדיף לבחור ארבע קטגוריות מדויקות מאשר עשר כלליות.'],
+  medical: ['הזרקות הן פעולה רפואית', 'בוטוקס, חומרי מילוי ומזותרפיה מחייבים רופא/ה. קוסמטיקאית אינה מוסמכת להזריק, ואנחנו בודקים את הרישיון מול משרד הבריאות.'],
+  services: ['מחיר גלוי מביא פניות', 'שקיפות במחיר היא הסיבה הראשונה שבגללה לקוחות פונות. טווח מחירים עדיף על ״לפי ייעוץ״.'],
+  hours: ['שעות מדויקות חוסכות פניות מבוזבזות', 'לקוחות מסננות לפי ״פתוח עכשיו״. שעות שגויות גורמות לפניות שלא נענות, וזה פוגע בדירוג התגובה שלכם.'],
   photos: ['תמונות אמיתיות, לא סטוק', 'תמונות סטוק מזוהות ומוסרות. צילום טלפון של חדר נקי ומואר עובד טוב יותר מתמונה כללית מהאינטרנט.'],
-  verify: ['מה קורה אחרי השליחה', 'בודקים ח״פ, רישיון רופא אם נדרש, וכתובת. בדרך כלל תוך יומיים. אם משהו חסר נפנה בוואטסאפ במקום לדחות.'],
+  verify: ['מה קורה אחרי השליחה', 'אנחנו בודקים את הח״פ, את הכתובת ואת רישיון הרופא/ה אם נדרש, בדרך כלל תוך יומיים. אם חסר משהו, נפנה אליכם בוואטסאפ במקום לדחות את הבקשה.'],
 };
 
 const GALLERY = ['חדר טיפולים', 'פינת המתנה', 'מכשור', 'הצוות', 'תמונה נוספת', 'תמונה נוספת'];
 
 const NEXT_STEPS = [
-  { n: '1', name: 'אימות פרטים', note: 'בודקים ח״פ, כתובת ורישיון רופא אם נדרש. אם חסר משהו נפנה בוואטסאפ.' },
-  { n: '2', name: 'פרסום הכרטיס', note: 'עם האישור הכרטיס עולה לאוויר ומתחיל להופיע בחיפושים באזור שלכם.' },
+  { n: '1', name: 'אימות פרטים', note: 'בודקים את הח״פ, את הכתובת ואת רישיון הרופא/ה אם נדרש. אם חסר משהו, נפנה אליכם בוואטסאפ.' },
+  { n: '2', name: 'פרסום הכרטיס', note: 'עם האישור, הכרטיס עולה לאוויר ומתחיל להופיע בחיפושים באזור שלכם.' },
   { n: '3', name: 'חיבור היומן', note: 'אפשר לחבר יומן קיים או להשתמש ביומן שלנו, כדי שלקוחות יקבעו תור ישירות.' },
 ];
 
@@ -250,7 +250,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
         setRef(res.ref);
         setDone(true);
         window.scrollTo({ top: 0 });
-        flash('הבקשה נשלחה. נעדכן בוואטסאפ');
+        flash('הבקשה נשלחה. נעדכן אתכם בוואטסאפ');
         return;
       }
       if (res.reason === 'auth') {
@@ -295,7 +295,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
 
   const hint =
     st.key === 'verify'
-      ? 'לאחר השליחה נתחיל באימות. בדרך כלל עד יומיים, ואם חסר משהו נפנה בוואטסאפ.'
+      ? 'אחרי השליחה נתחיל באימות, שנמשך בדרך כלל עד יומיים. אם חסר משהו, נפנה אליכם בוואטסאפ.'
       : stepOk
         ? 'הכול מוכן, אפשר להמשיך'
         : 'השלימו את שדות החובה כדי להמשיך';
@@ -378,7 +378,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
             <Wordmark size={21} />
           </Link>
           <span className={styles.headerText}>
-            <span className={styles.headerTitle}>רישום עסק למדריך</span>
+            <span className={styles.headerTitle}>רישום עסק באינדקס</span>
             <span className={styles.headerLine}>
               {done ? 'הושלם' : <>{stepCount} · {st.name}</>}
             </span>
@@ -514,7 +514,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
                     })}
                   </div>
                   {hasMedical && (
-                    <p className={styles.warn}>בחרתם קטגוריות שהן פעולה רפואית. בשלב הבא תידרשו להצהיר על רופא/ה אחראי/ת. קוסמטיקאית אינה מוסמכת להזריק.</p>
+                    <p className={styles.warn}>בחרתם קטגוריות של פעולות רפואיות. בשלב הבא תידרשו להצהיר על רופא/ה אחראי/ת. קוסמטיקאית אינה מוסמכת להזריק.</p>
                   )}
                 </section>
               )}
@@ -524,7 +524,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
                   {hasMedical ? (
                     <>
                       <div className={styles.infoTeal}>
-                        <p>הקטגוריות שבחרתם, {v.medCats.map(c => c.name).join(', ')}, מחייבות רופא/ה. הפרטים יוצגו בכרטיס תחת &quot;אחריות רפואית&quot;.</p>
+                        <p>הקטגוריות שבחרתם, {v.medCats.map(c => c.name).join(', ')}, מחייבות רופא/ה. הפרטים יוצגו בכרטיס תחת ״אחריות רפואית״.</p>
                       </div>
                       <div className={styles.two}>
                         <Field label="שם הרופא/ה האחראי/ת" bad={bad?.docName}>
@@ -550,13 +550,13 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
                           onPick={file => pickPhoto('license', file)}
                           onClear={() => clearPhoto('license')}
                         />
-                        <p className={styles.fine}>המסמך נבדק על ידי צוות המערכת ואינו מוצג בכרטיס הפומבי.</p>
+                        <p className={styles.fine}>צוות BeautyFind בודק את המסמך, והוא אינו מוצג בכרטיס הציבורי.</p>
                       </div>
                     </>
                   ) : (
                     <>
                       <div className={styles.infoOk}>
-                        <p>הקטגוריות שבחרתם אינן פעולות רפואיות, ולכן אין צורך ברופא/ה. בכרטיס יופיע &quot;איש מקצוע אחראי&quot;.</p>
+                        <p>הקטגוריות שבחרתם אינן פעולות רפואיות, ולכן אין צורך ברופא/ה. בכרטיס יופיע ״איש מקצוע אחראי״.</p>
                       </div>
                       <div className={styles.two}>
                         <Field label="שם איש/אשת המקצוע האחראי/ת" bad={bad?.proName}>
@@ -624,7 +624,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
                     הוספת טיפול
                   </button>
                   <p className={styles.fineLg}>
-                    מחירים בשקלים, לא כולל מע״מ. מספיקים שלושה טיפולים כדי לפרסם. אפשר להשלים אחר כך בלוח הבקרה. שקיפות מחיר היא הסיבה מספר אחת שלקוחה פונה.
+                    מחירים בשקלים, לא כולל מע״מ. שלושה טיפולים מספיקים כדי לפרסם, ואת השאר אפשר להוסיף אחר כך בלוח הבקרה. מחיר גלוי הוא הסיבה מספר אחת שלקוחות פונות.
                   </p>
                 </section>
               )}
@@ -673,7 +673,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
                       );
                     })}
                   </ul>
-                  <p className={styles.fineLg}>לקוחות מסננות לפי &quot;פתוח עכשיו&quot;. שעות לא מדויקות עולות בפניות שלא נענות.</p>
+                  <p className={styles.fineLg}>לקוחות מסננות לפי ״פתוח עכשיו״. שעות לא מדויקות גורמות לפניות שלא נענות.</p>
                 </section>
               )}
 
@@ -723,7 +723,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
                       );
                     })}
                   </div>
-                  <p className={styles.fineLg}>כרטיס עם תמונות מקבל פי שלושה פניות. תמונות לפני/אחרי מחייבות הסכמה חתומה של הלקוחה: מנוהלת בכרטיס הלקוח, לא כאן.</p>
+                  <p className={styles.fineLg}>כרטיס עם תמונות מקבל פי שלושה יותר פניות. תמונות לפני ואחרי מחייבות הסכמה חתומה של הלקוחה, וההסכמה מנוהלת בכרטיס הלקוח, לא כאן.</p>
                 </section>
               )}
 
@@ -860,14 +860,14 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
                 <span className={styles.planPrice}>
                   <span className="ltr">{nis(PLAN_MONTHLY_NIS[plan])}</span> לחודש לכל סניף, {PLATFORM_PRICE_NOTE}
                 </span>
-                <span className={styles.planNote}>סניף בטיוטה לא מחויב. החיוב מתחיל כשהכרטיס מתפרסם.</span>
+                <span className={styles.planNote}>על סניף בטיוטה אין חיוב. החיוב מתחיל כשהכרטיס מתפרסם.</span>
               </div>
 
               <div className={styles.tipCard}>
                 <h2 className={styles.tipTitle}>{TIPS[st.key][0]}</h2>
                 <p className={styles.tipBody}>{TIPS[st.key][1]}</p>
                 <p className={styles.tipFoot}>
-                  הקריטריונים המלאים ב־<Link href={ROUTES.listingStandards}>תקן הרישום</Link>. שאלות: <Link href={ROUTES.contact}>צוות ההצטרפות</Link>.
+                  הקריטריונים המלאים ב־<Link href={ROUTES.listingStandards}>תקן הרישום</Link>. יש שאלות? <Link href={ROUTES.contact}>פנו לצוות ההצטרפות</Link>.
                 </p>
               </div>
             </aside>
@@ -882,8 +882,8 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
             <h1 className={styles.doneH1}>הבקשה נשלחה לבדיקה</h1>
             <p className={styles.doneBody}>
               {hasMedical
-                ? 'הבקשה בתור לבדיקה. נאמת את הח״פ, הכתובת ואת רישיון הרופא/ה מול משרד הבריאות. הכרטיס יתפרסם רק לאחר האימות.'
-                : 'הבקשה בתור לבדיקה. נאמת את הח״פ ואת הכתובת, והכרטיס יתפרסם לאחר מכן.'}
+                ? 'הבקשה בתור לבדיקה. נאמת את הח״פ ואת הכתובת, ואת רישיון הרופא/ה מול משרד הבריאות. הכרטיס יתפרסם רק אחרי האימות.'
+                : 'הבקשה בתור לבדיקה. נאמת את הח״פ ואת הכתובת, והכרטיס יתפרסם אחרי האימות.'}
             </p>
             <ol className={styles.nextSteps}>
               {NEXT_STEPS.map(ns => (

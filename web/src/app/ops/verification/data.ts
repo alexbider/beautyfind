@@ -169,7 +169,7 @@ export async function loadQueue(now = new Date()): Promise<QueueItem[]> {
       who = str(sub.doctorName) ?? str(sub.name) ?? license?.nameOnRecord ?? 'ללא שם';
       biz = branchLabel;
     } else if (kind === 'cert') {
-      what = 'תעודת קוסמטיקאית';
+      what = 'תעודת קוסמטיקה';
       who = str(sub.name) ?? license?.nameOnRecord ?? 'ללא שם';
       biz = branchLabel;
     } else if (kind === 'claim') {
@@ -191,14 +191,14 @@ export async function loadQueue(now = new Date()): Promise<QueueItem[]> {
       push(submitted, 'מספר', str(sub.licenseNumber) ? ltr(str(sub.licenseNumber)!) : null);
       push(submitted, 'שם', who);
       push(submitted, 'מומחיות', str(sub.specialty));
-      push(submitted, 'תפקיד', license?.kind === 'nurse' ? 'אחות מוסמכת' : 'רופא/ה · אחריות רפואית');
+      push(submitted, 'תפקיד', license?.kind === 'nurse' ? 'אח/ות מוסמך/ת' : 'רופא/ה · אחריות רפואית');
       push(submitted, 'נוכחות', str(sub.presence));
       push(submitted, 'הוגש ע״י', byLine);
     } else if (kind === 'cert') {
       push(submitted, 'שם', who);
       push(submitted, 'תעודה', str(sub.certificate) ?? license?.number ?? null);
       push(submitted, 'ניסיון', str(sub.years) ? [{ t: str(sub.years)!, ltr: true }, { t: ' שנים' }] : null);
-      push(submitted, 'תפקיד', 'קוסמטיקאית · איש מקצוע אחראי');
+      push(submitted, 'תפקיד', 'קוסמטיקאי/ת · איש מקצוע אחראי');
       push(submitted, 'הוגש ע״י', byLine);
     } else if (kind === 'claim') {
       const d = obj(sub.details), v = obj(sub.verification);
@@ -262,7 +262,7 @@ export async function loadQueue(now = new Date()): Promise<QueueItem[]> {
     }
     if (branch) {
       const claimedByOther = branch.isClaimed && business?.ownerUserId !== r.submittedById;
-      push(context, 'סטטוס הסניף', `${BRANCH_STATUS[branch.status] ?? branch.status} · ${branch.isClaimed ? 'בבעלות מאומתת' : 'לא נתבע'}`, kind === 'claim' && claimedByOther && isActive(status) ? { tone: 'bad' } : undefined);
+      push(context, 'סטטוס הסניף', `${BRANCH_STATUS[branch.status] ?? branch.status} · ${branch.isClaimed ? 'בבעלות מאומתת' : 'ללא בעלות מאומתת'}`, kind === 'claim' && claimedByOther && isActive(status) ? { tone: 'bad' } : undefined);
       const mr = branch.medicalResponsible;
       if (mr) {
         const [ls, lt] = mr.license ? LICENSE_STATUS[mr.license.status] ?? [mr.license.status, 'todo' as Tone] : ['ללא רישיון', 'bad' as Tone];
@@ -284,7 +284,7 @@ export async function loadQueue(now = new Date()): Promise<QueueItem[]> {
     // When one exists, fill sourceLookup and render its rows with ok/warn/bad tones instead.
     const registry =
       kind === 'license' ? (license?.kind === 'nurse' ? 'פנקס האחיות · משרד הבריאות' : 'פנקס הרופאים · משרד הבריאות')
-      : kind === 'cert' ? 'אין מאגר ציבורי, מול המסמך'
+      : kind === 'cert' ? 'אין מאגר ציבורי, בדיקה מול המסמך'
       : kind === 'claim' ? 'רשם החברות ו־Google Business'
       : 'רשם החברות';
     const toCheck =
@@ -352,7 +352,7 @@ export async function loadQueue(now = new Date()): Promise<QueueItem[]> {
         const tail = !last.actorId && kind === 'claim' ? 'בקשת בעלות אחרת על העסק אושרה.' : 'העסק קיבל הסבר ואפשרות להגיש מחדש.';
         outcome = [{ t: `נדחה ${by} · ` }, at, { t: `${reason ? `: ${reason}` : ''}. ${tail}` }];
       } else {
-        outcome = [{ t: `נשלחה בקשה למסמך נוסף ${by} · ` }, at, { t: `: ${reason}. השעון של ה־SLA מושהה עד לתשובה.` }];
+        outcome = [{ t: `נשלחה בקשה למסמך נוסף ${by} · ` }, at, { t: `: ${reason}. שעון ה־SLA מושהה עד לקבלת תשובה.` }];
       }
     }
 

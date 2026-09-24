@@ -109,14 +109,14 @@ function Inner() {
         )
       }
     >
-      <p className={styles.lead}>פתיחה בנגיעה אחת, התורים שלך במקום אחד, וקישורים מוואטסאפ נפתחים ישר באפליקציה.</p>
+      <p className={styles.lead}>פתיחה בנגיעה אחת, כל התורים שלכם במקום אחד, וקישורים מוואטסאפ נפתחים ישר באפליקציה.</p>
       {ios && (
         <ol className={styles.steps}>
           <li>
             לוחצים על כפתור השיתוף <span aria-hidden="true">⎋</span> בתחתית Safari
           </li>
           <li>בוחרים ״הוספה למסך הבית״</li>
-          <li>מאשרים ב״הוספה״</li>
+          <li>מאשרים בלחיצה על ״הוספה״</li>
         </ol>
       )}
     </BottomSheet>
