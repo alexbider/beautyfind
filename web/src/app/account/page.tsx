@@ -12,7 +12,7 @@ import styles from '@/components/account/account.module.css';
 
 export const metadata: Metadata = {
   title: 'החשבון שלי',
-  description: 'החשבון שלי ב־BeautyFind: התורים שלי, קליניקות שמורות, הביקורות שלי, העדפות דיוור ופרטיות.',
+  description: 'החשבון שלי ב־BeautyFind: התורים שלי, מועדפים, הביקורות שלי, העדפות דיוור ופרטיות.',
   robots: { index: false, follow: false },
 };
 

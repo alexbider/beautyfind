@@ -10,7 +10,7 @@ import styles from '@/components/saved/saved.module.css';
 // Signed-in clients: SavedClinic rows. Guests: localStorage['bf-saved'], rendered through a server action.
 
 export const metadata: Metadata = {
-  title: 'קליניקות שמורות',
+  title: 'המועדפים שלי',
   description: 'הקליניקות ששמרתם ב־BeautyFind, והשוואה של עד שלוש קליניקות זו לצד זו.',
   robots: { index: false, follow: false },
 };
@@ -25,7 +25,7 @@ export default async function SavedPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className={styles.page}>
-      <SiteHeader variant="public" largeTitle="שמורות" />
+      <SiteHeader variant="public" largeTitle="מועדפים" />
       <main className={styles.wrap}>
         <SavedView initialCards={cards} initialCmp={cleanIds(raw, MAX_COMPARE)} serverSignedIn={!!user} />
       </main>

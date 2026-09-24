@@ -14,9 +14,9 @@ import styles from './page.module.css';
 // get the same live data from lib/server/public.ts (live listings only).
 
 const SITE = 'https://beautyfind.co.il';
-const TITLE = 'BeautyFind: אינדקס מכוני יופי, אסתטיקה ובריאות בישראל';
+const TITLE = 'מכוני יופי, קליניקות לאסתטיקה וספא בישראל | BeautyFind';
 const DESCRIPTION =
-  'BeautyFind הוא אינדקס לאיתור מכוני יופי, אסתטיקה רפואית, קוסמטיקה, מספרות וספא בכל רחבי ישראל, מהצפון ועד אילת. השוו בין עסקים, גלו טיפולים וקבעו את הפגישה הבאה שלכם.';
+  'מצאו מכוני יופי, קליניקות לאסתטיקה רפואית, מספרות וספא בכל רחבי ישראל, מהצפון ועד אילת. השוו מחירים וביקורות, גלו טיפולים וקבעו את הפגישה הבאה.';
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -51,7 +51,7 @@ const JSON_LD = {
       '@id': `${SITE}/#organization`,
       name: 'BeautyFind',
       url: `${SITE}/`,
-      description: DESCRIPTION,
+      description: 'BeautyFind הוא אינדקס מכוני יופי, קליניקות לאסתטיקה רפואית, מספרות וספא בכל רחבי ישראל, עם מחירים, ביקורות ופרטי קשר של כל עסק.',
       areaServed: { '@type': 'Country', name: 'Israel' },
     },
   ],

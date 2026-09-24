@@ -27,7 +27,7 @@ export const TABS: Record<Exclude<ShellVariant, 'staff'>, ShellTab[]> = {
       key: 'search', label: 'חיפוש', href: '/search', icon: 'search',
       match: ['/search', '/treatments', '/dan', '/sharon', '/haifa', '/jerusalem', '/shfela', '/north', '/south', '/pro'],
     },
-    { key: 'saved', label: 'שמורים', href: '/saved', icon: 'heart', match: ['/saved'] },
+    { key: 'saved', label: 'מועדפים', href: '/saved', icon: 'heart', match: ['/saved'] },
     { key: 'appts', label: 'התורים שלי', href: '/account', icon: 'calendar', match: ['/account', '/b/', '/receipt', '/w/'], badge: 'waitlist' },
     {
       key: 'more', label: 'עוד', href: '/more', icon: 'more',

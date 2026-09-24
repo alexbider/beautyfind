@@ -34,7 +34,7 @@ export function SavedTabs({ current, cmp }: { current: 'list' | 'compare'; cmp: 
     <>
       <nav aria-label="תצוגה" className={`${styles.tabs} bf-desk-only`}>
         <Link href={listHref} className={styles.tab} aria-current={current === 'list' ? 'page' : undefined}>
-          שמורים
+          מועדפים
         </Link>
         <Link href={compareHref(cmp)} className={styles.tab} aria-current={current === 'compare' ? 'page' : undefined}>
           השוואה · <span className="ltr tnum">{cmp.length}</span>
@@ -110,7 +110,7 @@ export function SavedView({ initialCards, initialCmp, serverSignedIn }: { initia
     void setSaved(c.id, false).then(ok => {
       if (!ok) return show('לא הצלחנו להסיר. נסו שוב.');
       setCmp(x => x.filter(id => id !== c.id));
-      show(`${c.name} הוסרה מהשמורים`, { label: 'ביטול', run: () => void setSaved(c.id, true) });
+      show(`${c.name} הוסר מהמועדפים`, { label: 'ביטול', run: () => void setSaved(c.id, true) });
     });
   };
 
@@ -126,9 +126,9 @@ export function SavedView({ initialCards, initialCmp, serverSignedIn }: { initia
     <>
       <div className={styles.head}>
         <div className={styles.headText}>
-          <h1 className={styles.h1}>קליניקות שמורות</h1>
+          <h1 className={styles.h1}>המועדפים שלי</h1>
           <p className={styles.sub}>
-            {store.ready || initialCards.length ? `${saved.length === 1 ? 'קליניקה אחת שמורה' : `${clinicsLabel(saved.length)} שמורות`}. סמנו עד שלוש להשוואה.` : 'טוען את הרשימה…'}
+            {store.ready || initialCards.length ? `${saved.length === 1 ? 'עסק אחד במועדפים' : `${saved.length} עסקים במועדפים`}. סמנו עד שלוש להשוואה.` : 'טוען את הרשימה…'}
           </p>
         </div>
         <SavedTabs current="list" cmp={cmpLive} />
@@ -150,7 +150,7 @@ export function SavedView({ initialCards, initialCmp, serverSignedIn }: { initia
 
       {store.ready && !pending && shown.length === 0 && (
         <div className={styles.empty}>
-          <p className={styles.emptyTitle}>{saved.length ? 'אין קליניקות שמורות בסינון הזה' : 'אין כאן קליניקות שמורות'}</p>
+          <p className={styles.emptyTitle}>{saved.length ? 'אין מועדפים בסינון הזה' : 'עדיין אין כאן מועדפים'}</p>
           <p className={styles.emptyText}>לחצו על הלב בכל כרטיס קליניקה כדי לשמור אותה כאן ולהשוות מאוחר יותר.</p>
           {saved.length ? (
             <button type="button" className={styles.btnPrimary} onClick={() => setFilter('all')}>הצגת הכל</button>
@@ -225,7 +225,7 @@ export function SavedView({ initialCards, initialCmp, serverSignedIn }: { initia
                 ) : (
                   <span className={styles.ph} aria-hidden="true">{c.name}</span>
                 )}
-                <button type="button" className={styles.unsave} aria-pressed="true" aria-label={`הסרת ${c.name} מהשמורים`} onClick={() => unsave(c)}>
+                <button type="button" className={styles.unsave} aria-pressed="true" aria-label={`הסרת ${c.name} מהמועדפים`} onClick={() => unsave(c)}>
                   <HeartIcon />
                 </button>
               </div>

@@ -160,7 +160,7 @@ export function SaveHeart({ id, name, className }: { id: string; name: string; c
     void toggle().then(ok => {
       if (ok) return;
       if (timer.current) clearTimeout(timer.current);
-      setToast(wasSaved ? 'לא הצלחנו להסיר מהשמורים. נסו שוב.' : 'לא הצלחנו לשמור. נסו שוב.');
+      setToast(wasSaved ? 'לא הצלחנו להסיר מהמועדפים. נסו שוב.' : 'לא הצלחנו להוסיף למועדפים. נסו שוב.');
       timer.current = setTimeout(() => setToast(null), 3200);
     });
   };
@@ -172,7 +172,7 @@ export function SaveHeart({ id, name, className }: { id: string; name: string; c
         className={`${styles.heart} ${className ?? ''}`}
         data-on={saved || undefined}
         aria-pressed={saved}
-        aria-label={saved ? `הסרה מהשמורים: ${name}` : `שמירה: ${name}`}
+        aria-label={saved ? `הסרה מהמועדפים: ${name}` : `הוספה למועדפים: ${name}`}
         onClick={onClick}
       >
         <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">

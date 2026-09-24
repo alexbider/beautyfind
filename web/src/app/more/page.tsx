@@ -15,11 +15,11 @@ export default async function MorePage() {
     ? user.kind === 'client'
       ? [
           { kind: 'link', label: 'התורים שלי', href: ROUTES.account },
-          { kind: 'link', label: 'קליניקות שמורות', href: ROUTES.saved },
+          { kind: 'link', label: 'מועדפים', href: ROUTES.saved },
           { kind: 'link', label: 'הביקורות שלי', href: `${ROUTES.account}?tab=reviews` },
           { kind: 'link', label: 'הגדרות ופרטיות', href: `${ROUTES.account}?tab=settings`, note: user.fullName ?? undefined },
         ]
-      : [{ kind: 'link', label: 'קליניקות שמורות', href: ROUTES.saved }]
+      : [{ kind: 'link', label: 'מועדפים', href: ROUTES.saved }]
     : [
         { kind: 'link', label: 'כניסה לחשבון', href: ROUTES.login },
         { kind: 'link', label: 'הרשמה', href: `${ROUTES.login}?view=signup` },

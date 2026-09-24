@@ -194,7 +194,7 @@ export const SIDE: Record<Audience, { title: string; body: string; links: Array<
     body: 'הפעולות שהכי מחפשים.',
     links: [
       { name: 'ניהול תור קיים', href: ROUTES.account },
-      { name: 'קליניקות שמורות', href: PATHS.saved },
+      { name: 'מועדפים', href: PATHS.saved },
       { name: 'בדיקת יתרת שובר', href: PATHS.giftCheck },
     ],
   },

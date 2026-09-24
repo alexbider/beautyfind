@@ -268,7 +268,7 @@ function Menu({ open, section, setSection, onClose, region, pickRegion }: {
               </span>
               <span className={s.helloText}>
                 <span className={s.helloTitle}>שלום!</span>
-                <span className={s.helloSub}>התחברו לניהול תורים ושמורים</span>
+                <span className={s.helloSub}>התחברו לניהול התורים והמועדפים</span>
               </span>
               <Link href={ROUTES.login} className={s.helloBtn} onClick={onClose}>כניסה</Link>
             </div>
@@ -316,7 +316,7 @@ function Menu({ open, section, setSection, onClose, region, pickRegion }: {
               </div>
               {[
                 { href: '/magazine', label: 'מדריכים', d: 'M4 3.5h9a3 3 0 0 1 3 3v10H7a3 3 0 0 1-3-3v-10ZM4 13.5a3 3 0 0 1 3-3h9' },
-                { href: ROUTES.saved, label: 'שמורים', d: 'M10 16.5s-6.5-3.9-6.5-8.6A3.6 3.6 0 0 1 10 5.6a3.6 3.6 0 0 1 6.5 2.3c0 4.7-6.5 8.6-6.5 8.6Z', badge: savedCount },
+                { href: ROUTES.saved, label: 'מועדפים', d: 'M10 16.5s-6.5-3.9-6.5-8.6A3.6 3.6 0 0 1 10 5.6a3.6 3.6 0 0 1 6.5 2.3c0 4.7-6.5 8.6-6.5 8.6Z', badge: savedCount },
                 { href: ROUTES.account, label: 'התורים שלי', d: 'M3.5 5.5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-10ZM3.5 8h13M7 2v3m6-3v3' },
                 { href: ROUTES.listingStandards, label: 'הסטנדרטים שלנו', d: 'M10 2 4 4.5v4.8c0 3.9 2.6 6.7 6 8.2 3.4-1.5 6-4.3 6-8.2V4.5L10 2Zm-2.6 8 1.9 1.9 3.5-3.6' },
                 { href: ROUTES.help, label: 'מרכז עזרה', d: 'M10 17.5a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15ZM7.8 7.6a2.3 2.3 0 0 1 4.4.8c0 1.6-2.2 2-2.2 3.3M10 14.2h.01' },

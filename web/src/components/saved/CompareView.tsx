@@ -83,7 +83,7 @@ export function CompareView({ cols }: { cols: CompareColumn[] }) {
 
       {cols.length < 2 ? (
         <p className={styles.tooFew}>
-          סמנו לפחות שתי קליניקות <Link href="/saved">ברשימת השמורים</Link> כדי להשוות.
+          סמנו לפחות שתי קליניקות <Link href="/saved">ברשימת המועדפים</Link> כדי להשוות.
         </p>
       ) : (
         <div className={styles.cmpWrap}>
