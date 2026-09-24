@@ -43,7 +43,8 @@ async function main() {
     await db.category.upsert({ where: { slug: cat.slug }, create: { slug: cat.slug, ...data }, update: data });
   }
 
-  for (const l of LISTINGS) {
+  // The sample listings are demo data: only with SEED_DEMO=1.
+  for (const l of process.env.SEED_DEMO === '1' ? LISTINGS : []) {
     const city = await db.city.findUniqueOrThrow({ where: { slug: l.city } });
     const existing = await db.branch.findUnique({ where: { slug: l.slug } });
     if (existing) {
@@ -75,7 +76,7 @@ async function main() {
       },
     });
   }
-  console.log(`seeded ${REGIONS.length} regions, ${CITIES.length} cities, ${CATEGORIES.length} categories, ${LISTINGS.length} listings`);
+  console.log(`seeded ${REGIONS.length} regions, ${CITIES.length} cities, ${CATEGORIES.length} categories${process.env.SEED_DEMO === '1' ? `, ${LISTINGS.length} listings` : ''}`);
 }
 
 main().finally(() => db.$disconnect());

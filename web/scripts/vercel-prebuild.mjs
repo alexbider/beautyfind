@@ -18,6 +18,9 @@ const run = cmd => execSync(cmd, { stdio: 'inherit', env });
 console.log('[prebuild] applying database migrations');
 run('npx prisma migrate deploy');
 
+console.log('[prebuild] demo purge (only with PURGE_DEMO=1)');
+run('npx tsx scripts/purge-demo.ts');
+
 console.log('[prebuild] master admin account');
 run('npx tsx scripts/ops-bootstrap.ts');
 

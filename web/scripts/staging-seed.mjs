@@ -1,5 +1,5 @@
 // Runs during the Vercel build, only on test deployments (STAGING=1):
-//  - SEED_DEMO=1 loads the catalog and the fictional demo clinics (safe to repeat: existing rows are skipped)
+//  - always syncs the catalog; SEED_DEMO=1 also loads the fictional demo clinics (safe to repeat)
 //  - OPS_EMAILS="a@x.com,b@y.com" makes those existing accounts BeautyFind ops staff
 // Real deployments never run this: without STAGING=1 it does nothing.
 import { execSync } from 'node:child_process';
@@ -8,11 +8,10 @@ if (process.env.STAGING !== '1') process.exit(0);
 
 const run = cmd => execSync(cmd, { stdio: 'inherit', env: { ...process.env, NODE_ENV: 'development' } });
 
-if (process.env.SEED_DEMO === '1') {
-  console.log('[staging-seed] loading catalog and demo clinics');
-  run('npx tsx prisma/seed.ts');
-  run('npx tsx prisma/seed-demo.ts');
-}
+// The catalog (regions, cities, categories) is always kept in sync; demo clinics only with SEED_DEMO=1.
+console.log(`[staging-seed] catalog${process.env.SEED_DEMO === '1' ? ' and demo clinics' : ''}`);
+run('npx tsx prisma/seed.ts');
+if (process.env.SEED_DEMO === '1') run('npx tsx prisma/seed-demo.ts');
 
 for (const email of (process.env.OPS_EMAILS ?? '').split(',').map(s => s.trim()).filter(Boolean)) {
   try {
