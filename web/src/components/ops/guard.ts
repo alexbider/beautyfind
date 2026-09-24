@@ -22,7 +22,7 @@ export async function verifierOrNull() {
 /** For pages: login redirect when signed out, 404 when signed in without a verifier role. */
 export async function requireVerifier(next: string) {
   const user = await currentUser();
-  if (!user) redirect(`/login?role=biz&next=${encodeURIComponent(next)}`);
+  if (!user) redirect(`/ops/login?next=${encodeURIComponent(next)}`);
   if (!canVerify(user)) notFound();
   return user;
 }
@@ -40,7 +40,17 @@ export async function importerOrNull() {
 
 export async function requireImporter(next: string) {
   const user = await currentUser();
-  if (!user) redirect(`/login?role=biz&next=${encodeURIComponent(next)}`);
+  if (!user) redirect(`/ops/login?next=${encodeURIComponent(next)}`);
   if (!canImport(user)) notFound();
   return user;
+}
+
+/** Any BeautyFind staff role. */
+export const isStaff = (u: Pick<User, 'opsRole'> | null | undefined): boolean => !!u?.opsRole;
+
+/** Where a staff member lands after signing in: the first screen their role can open. */
+export function staffHome(u: Pick<User, 'opsRole'>): string {
+  if (canImport(u)) return '/ops/import';
+  if (canVerify(u)) return '/ops/verification';
+  return '/ops/login?denied=1';
 }

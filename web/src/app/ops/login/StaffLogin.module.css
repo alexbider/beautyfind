@@ -1,0 +1,52 @@
+/* Staff sign-in. Dark, plain and clearly not the public business login. */
+
+.root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: max(24px, var(--safe-t, 0px)) 16px max(24px, var(--safe-b, 0px));
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgba(126, 215, 225, .12), transparent 60%),
+    #0C243E;
+  font-family: var(--font-ui);
+  color: #0C243E;
+}
+.wrap { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 18px; }
+
+.brand { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #fff; }
+.mark { font-family: var(--font-wordmark); font-weight: 300; font-size: 24px; }
+.mark span { color: #7ED7E1; }
+.badge { padding: 4px 10px; border: 1px solid rgba(126, 215, 225, .4); border-radius: 999px; font-size: 12.5px; font-weight: 700; color: #7ED7E1; }
+
+.card {
+  display: flex; flex-direction: column; gap: 14px; padding: clamp(22px, 5vw, 30px); border-radius: 20px; background: #fff;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .28);
+}
+.h1 { margin: 0; font-family: var(--font-display); font-size: 28px; font-weight: 500; letter-spacing: -0.015em; }
+.lead { margin: -6px 0 4px; font-size: 14px; color: #5A6B7B; }
+.info { margin: 0; padding: 9px 11px; border-radius: 10px; background: #EEF6F7; font-size: 13px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; font-weight: 700; }
+.input {
+  width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid #CFD8DF; border-radius: 12px; background: #fff;
+  font: inherit; font-size: 16px; font-weight: 400; color: inherit; text-align: left;
+}
+.input:focus-visible { outline: 2px solid #0E7C86; outline-offset: 1px; border-color: #0E7C86; }
+.input[aria-invalid='true'] { border-color: #A33A31; }
+.pwWrap { position: relative; display: block; }
+.pwWrap .input { padding-right: 70px; }
+.eye {
+  position: absolute; top: 50%; right: 6px; transform: translateY(-50%); min-height: 34px; padding: 0 10px; border: 0; border-radius: 8px;
+  background: #F1F5F7; font: inherit; font-size: 12.5px; font-weight: 700; color: #34495C; cursor: pointer;
+}
+
+.error { margin: 0; padding: 9px 11px; border-radius: 10px; background: #FBEAE8; color: #A33A31; font-size: 13.5px; font-weight: 700; }
+.submit {
+  min-height: 48px; border: 0; border-radius: 12px; background: #0C243E; color: #fff; font: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer;
+}
+.submit:disabled { opacity: .6; cursor: wait; }
+@media (hover: hover) and (pointer: fine) { .submit:not(:disabled):hover { background: #16365A; } }
+.small { margin: 0; font-size: 13px; color: #5A6B7B; text-align: center; }
+.small a, .foot a { color: inherit; font-weight: 700; }
+.foot { margin: 0; text-align: center; font-size: 13px; color: rgba(255, 255, 255, .7); }

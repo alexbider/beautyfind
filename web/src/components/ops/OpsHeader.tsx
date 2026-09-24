@@ -17,7 +17,7 @@ export function OpsHeader({ current, who }: { current: Section; who: string }) {
   return (
     <header className={`${styles.bar} bf-desk-only`}>
       <div className={styles.inner}>
-        <Link href="/ops/verification" dir="ltr" className={styles.mark} aria-label="BeautyFind, ניהול">
+        <Link href="/ops" dir="ltr" className={styles.mark} aria-label="BeautyFind, ניהול">
           beauty<span className={styles.markFind}>find.</span>
         </Link>
         <nav aria-label="צוות BeautyFind" className={styles.nav}>
@@ -34,6 +34,10 @@ export function OpsHeader({ current, who }: { current: Section; who: string }) {
           )}
         </nav>
         <span className={styles.who}>{who}</span>
+        <form action="/logout" method="post" className={styles.out}>
+          <input type="hidden" name="to" value="/ops/login" />
+          <button type="submit" className={styles.link}>יציאה</button>
+        </form>
       </div>
     </header>
   );
