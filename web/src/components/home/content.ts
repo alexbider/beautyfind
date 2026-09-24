@@ -34,3 +34,49 @@ export const ARTICLES = [
   { kind: 'הסבר', title: 'איך להבין מחירי טיפולים בישראל', desc: 'למה הצעות מחיר משתנות לפי יחידה, אזור ומספר מפגשים, ואיך להשוות נכון.', img: '/assets/art-prices.jpg', href: '/magazine' },
   { kind: 'צ׳קליסט', title: 'שאלות לשאול לפני פגישת הייעוץ', desc: 'רשימה קצרה לקחת איתכם: על איש המקצוע, על התוכנית ועל הטיפול שאחרי.', img: '/assets/art-questions.jpg', href: '/magazine' },
 ];
+
+/** Alt text for the site's own photos, keyed by path. Listing photos from businesses are not here. */
+export const IMAGE_ALT: Record<string, string> = {
+  '/assets/hero-facial.jpg': 'טיפול פנים בקליניקה בתל אביב',
+  '/assets/hero-clinic.jpg': 'חדר טיפולים בקליניקה לאסתטיקה',
+  '/assets/hero-consult.jpg': 'פינת ישיבה לפגישת ייעוץ בקליניקה',
+  '/assets/hero-skin.jpg': 'בקבוק סרום לטיפוח העור',
+  '/assets/biz-facial.jpg': 'טיפול פנים אצל קוסמטיקאית',
+  '/assets/biz-hair.jpg': 'עיצוב שיער במספרה',
+  '/assets/biz-laser.jpg': 'טיפול הסרת שיער בלייזר',
+  '/assets/biz-medical.jpg': 'הזרקה אסתטית בקליניקה',
+  '/assets/biz-nails.jpg': 'טיפול ציפורניים במכון',
+  '/assets/biz-spa.jpg': 'חדר טיפולים בספא',
+  '/assets/cat-body.jpg': 'טיפול לעיצוב וחיטוב הגוף',
+  '/assets/cat-dental.jpg': 'טיפול באסתטיקה דנטלית',
+  '/assets/cat-hairrest.jpg': 'פגישת ייעוץ להשתלת שיער',
+  '/assets/cat-lashes.jpg': 'הדבקת תוספות ריסים',
+  '/assets/cat-makeup.jpg': 'איפור כלה',
+  '/assets/cat-plastic.jpg': 'פגישת ייעוץ לפני ניתוח פלסטי',
+  '/assets/cat-pmu.jpg': 'איפור קבוע לגבות',
+  '/assets/art-choose.jpg': 'דלפק קבלה בקליניקה',
+  '/assets/art-prices.jpg': 'מחירון טיפולים',
+  '/assets/art-questions.jpg': 'אישה רושמת שאלות בבית קפה בתל אביב',
+};
+
+/** Alt text for the homepage region cards (landmark-{slug}.jpg). */
+export const LANDMARK_ALT: Record<string, string> = {
+  dan: 'יפו העתיקה וקו הרקיע של תל אביב',
+  north: 'הכנרת במבט מטבריה',
+  haifa: 'הגנים הבהאיים ומפרץ חיפה',
+  sharon: 'המצוקים והחוף בנתניה',
+  jerusalem: 'חומות העיר העתיקה ומגדל דוד בירושלים',
+  shfela: 'כרמים ליד לטרון',
+  south: 'אילת וים סוף',
+};
+
+/** Alt text for the region page heroes (region-{slug}.jpg). */
+export const REGION_IMAGE_ALT: Record<string, string> = {
+  dan: 'שדרות רוטשילד בתל אביב',
+  north: 'ראש הנקרה',
+  haifa: 'המושבה הגרמנית והגנים הבהאיים בחיפה',
+  sharon: 'אמת המים בקיסריה',
+  jerusalem: 'העיר העתיקה בירושלים במבט מהר הזיתים',
+  shfela: 'מערות הפעמונים בבית גוברין',
+  south: 'מכתש רמון',
+};

@@ -8,7 +8,7 @@ import type { RegionSlug } from '@/lib/catalog';
 import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
 import { SaveHeart } from '../../save-heart/SaveHeart';
-import { ARTICLES } from '../content';
+import { ARTICLES, IMAGE_ALT, LANDMARK_ALT } from '../content';
 import {
   Arrow, FALLBACK_REGION, FAQS, Glass, ListingSteps, Pin, QUICK, READ_TIME, REGION_ORDER, Rings, STAR_PATH, TRUST,
   TRUST_STRIP, WhatsApp, nearestRegion, rName, type PhoneCard, type PhoneReview,
@@ -47,7 +47,7 @@ const MORE_CATS = [
   { label: 'איפור קבוע', slug: 'permanent-makeup', img: '/assets/cat-pmu.jpg' },
   { label: 'עיצוב וחיטוב הגוף', slug: 'body-contouring', img: '/assets/cat-body.jpg' },
 ];
-const TRUST_SUB = ['רופא, אחות או תעודת קוסמטיקאית', 'Google ו־BeautyFind בנפרד, בלי ממוצע', 'תשלום לא משפיע על הדירוג'];
+const TRUST_SUB = ['רישיון רופא או אחות, תעודת קוסמטיקאית', 'Google ו־BeautyFind בנפרד, בלי ממוצע', 'תשלום לא משפיע על הדירוג'];
 const REGION_CARDS: RegionSlug[] = ['dan', 'north', 'haifa', 'sharon', 'jerusalem', 'shfela', 'south'];
 const HAND = (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0B7A87" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -113,7 +113,7 @@ function BizCard({ c, last }: { c: PhoneCard; last: boolean }) {
               <span className={s.src}>Google</span>
             </span>
           )}
-          {!bf && !g && <span>אין עדיין חוות דעת</span>}
+          {!bf && !g && <span>עדיין אין ביקורות</span>}
         </div>
         {c.from != null && (
           <div className={s.cardPrice}>החל מ־<strong dir="ltr" className={s.iso}>₪{Math.round(c.from)}</strong><span className={s.vat}>לא כולל מע״מ</span></div>
@@ -227,7 +227,7 @@ function Carousel({ cards, region }: { cards: PhoneCard[]; region: RegionSlug })
           {cards.length === 0 && (
             <div className={s.railEmpty}>
               <strong>עדיין אין עסקים באינדקס ב{rName(region)}.</strong>
-              <span>בקרוב יתווספו כאן מכונים. בינתיים אפשר לחפש בכל הארץ.</span>
+              <span>בינתיים אפשר לחפש בכל הארץ.</span>
               <Link href={ROUTES.search} className={s.textLink}>לחיפוש בכל הארץ<Arrow width={1.7} /></Link>
             </div>
           )}
@@ -290,7 +290,7 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
     <div className={s.root}>
       {/* ---------- Hero ---------- */}
       <section className={s.hero} aria-labelledby="hero-h1">
-        <Image src="/assets/hero-facial.jpg" alt="טיפול פנים במכון קוסמטיקה" fill loading="eager" fetchPriority="high" sizes="(max-width: 767px) 1px, 100vw" className={s.heroImg} />
+        <Image src="/assets/hero-facial.jpg" alt={IMAGE_ALT['/assets/hero-facial.jpg']} fill loading="eager" fetchPriority="high" sizes="(max-width: 767px) 1px, 100vw" className={s.heroImg} />
         <div className={s.heroWash1} />
         <div className={s.heroWash2} />
         <Rings size={300} className={s.ringsA} />
@@ -314,7 +314,7 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
               <span className={s.fieldCol}>
                 <span className={s.fieldLabel}>איפה?</span>
                 <span className={s.locValue} data-set={located ? '' : undefined}>
-                  {locating ? 'מאתרים את המיקום...' : located ? `המיקום שלך, ${rName(located)}` : 'עיר או אזור'}
+                  {locating ? 'מאתרים את המיקום...' : located ? `המיקום שלכם: ${rName(located)}` : 'עיר או אזור'}
                 </span>
               </span>
             </button>
@@ -325,7 +325,7 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
             </button>
           </form>
           <div className={s.quick}>
-            <span className={s.quickLabel}>מבוקשים:</span>
+            <span className={s.quickLabel}>חיפושים נפוצים:</span>
             {QUICK.map(t => <Link key={t} href={`${ROUTES.search}?q=${encodeURIComponent(t)}`} className={s.quickChip}>{t}</Link>)}
           </div>
         </div>
@@ -361,7 +361,7 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
         <div className={s.bento}>
           {CATS.map(c => (
             <Link key={c.slug} href={`/treatments/${c.slug}`} className={s.tile} data-wide={c.wide || undefined}>
-              <Image src={c.img} alt={c.label} fill sizes={c.wide ? '(min-width: 1280px) 610px, 50vw' : '(min-width: 1280px) 300px, 25vw'} className={s.cover} />
+              <Image src={c.img} alt={IMAGE_ALT[c.img] ?? ''} fill sizes={c.wide ? '(min-width: 1280px) 610px, 50vw' : '(min-width: 1280px) 300px, 25vw'} className={s.cover} />
               <span className={s.tileLabel}>{c.label}<Arrow size={12} stroke="#0B7A87" width={1.8} /></span>
             </Link>
           ))}
@@ -369,7 +369,7 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
         <div className={s.moreCats}>
           {MORE_CATS.map(c => (
             <Link key={c.slug} href={`/treatments/${c.slug}`} className={s.moreCat}>
-              <span className={s.moreImg}><Image src={c.img} alt="" fill sizes="200px" className={s.cover} /></span>
+              <span className={s.moreImg}><Image src={c.img} alt={IMAGE_ALT[c.img] ?? ''} fill sizes="200px" className={s.cover} /></span>
               <span className={s.moreRow}><span className={s.moreName}>{c.label}</span><Arrow size={12} stroke="#0B7A87" width={1.8} /></span>
             </Link>
           ))}
@@ -395,7 +395,7 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
                       <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#0C243E" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" /></svg>
                     </button>
                   </span>
-                  <span className={s.adPopText}>עסקים יכולים לשלם על קידום באזור ובתחום הטיפול. עסק מקודם מסומן תמיד בתג ״ממומן״, והקידום משפיע רק על ההופעה ברשימה, לא על הדירוג, על הביקורות או על אימות העסק. מוצגים לכל היותר שני עסקים ממומנים בכל רשימה.</span>
+                  <span className={s.adPopText}>עסקים יכולים לשלם על קידום באזור ובתחום הטיפול. עסק מקודם מסומן תמיד בתג ״ממומן״. הקידום משפיע רק על המיקום ברשימה, ואינו משפיע על הדירוג, על הביקורות או על אימות העסק. בכל רשימה מוצגים לכל היותר שני עסקים ממומנים.</span>
                   <Link href={`${ROUTES.methodology}#ranking`} className={s.textLink}>איך מדרגים<Arrow width={1.7} /></Link>
                 </span>
               )}
@@ -412,7 +412,7 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
             {cards.length > 3 && (
               <div aria-hidden="true" className={s.dragHint}>
                 <span className={s.dragHand}><span className={s.swipe}>{HAND}</span></span>
-                גררו לצפייה בעוד
+                גררו כדי לראות עוד
               </div>
             )}
           </div>
@@ -427,7 +427,7 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
             <div>
               <Kicker>ביקורות מאומתות</Kicker>
               <h2 id="h-rev" className={`${s.h2} ${s.mt10}`}>מה מספרות מי שהגיעו<Dot /></h2>
-              <p className={s.lead62}>רק מי שקבעה תור דרך BeautyFind והגיעה אליו יכולה לכתוב ביקורת. לא עורכים, לא מוחקים ביקורות שליליות.</p>
+              <p className={s.lead62}>רק מי שקבעה תור דרך BeautyFind והגיעה אליו יכולה לכתוב ביקורת. אנחנו לא עורכים ביקורות ולא מוחקים ביקורות שליליות.</p>
             </div>
             <Link href={`${ROUTES.terms}#reviews`} className={s.headLink}>מדיניות הביקורות<Arrow width={1.7} /></Link>
           </div>
@@ -461,10 +461,10 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
       {/* ---------- Guides (TODO(cms): /magazine until articles exist) ---------- */}
       <section aria-labelledby="h-guides" className={`${s.wrap} ${s.pt88}`}>
         <Kicker>מדריכים</Kicker>
-        <h2 id="h-guides" className={`${s.h2} ${s.mt10}`}>קצת ידע. החלטה טובה יותר<Dot /></h2>
+        <h2 id="h-guides" className={`${s.h2} ${s.mt10}`}>קצת ידע לפני שמחליטים<Dot /></h2>
         <div className={s.guides}>
           <Link href={lead.href} className={s.leadGuide}>
-            <figure className={s.leadFig}><span className={s.leadImg}><Image src={lead.img} alt={lead.title} fill sizes="(min-width: 1280px) 680px, 55vw" className={s.cover} /></span></figure>
+            <figure className={s.leadFig}><span className={s.leadImg}><Image src={lead.img} alt={IMAGE_ALT[lead.img] ?? ''} fill sizes="(min-width: 1280px) 680px, 55vw" className={s.cover} /></span></figure>
             <div className={s.guideKind}>{lead.kind} · {READ_TIME[0]}</div>
             <div className={s.leadTitle}>{lead.title}</div>
             <div className={s.leadDesc}>{lead.desc}</div>
@@ -472,7 +472,7 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
           <div className={s.guideList}>
             {ARTICLES.slice(1).map((a, i) => (
               <Link key={a.title} href={a.href} className={s.guideRow}>
-                <span className={s.guideThumb}><Image src={a.img} alt={a.title} fill sizes="132px" className={s.cover} /></span>
+                <span className={s.guideThumb}><Image src={a.img} alt={IMAGE_ALT[a.img] ?? ''} fill sizes="132px" className={s.cover} /></span>
                 <span className={s.guideText}>
                   <span className={s.guideKind}>{a.kind}</span>
                   <span className={s.guideTitle}>{a.title}</span>
@@ -491,7 +491,7 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
           <div>
             <Kicker>הסטנדרטים שלנו</Kicker>
             <h2 id="h-std" className={`${s.h2} ${s.mt10}`}>איך אנחנו בודקים<Dot /></h2>
-            <p className={s.lead64}>BeautyFind הוא אינדקס עצמאי. אנחנו לא מבצעים טיפולים ולא ממליצים על טיפול מסוים. זה מה שכן עושים לפני שעסק עולה לאתר:</p>
+            <p className={s.lead64}>BeautyFind הוא אינדקס עצמאי. אנחנו לא מבצעים טיפולים ולא ממליצים על טיפול מסוים. אלה הבדיקות שאנחנו עושים לפני שעסק עולה לאתר:</p>
           </div>
           <div className={s.stdLinks}>
             <Link href={ROUTES.listingStandards}>הסטנדרטים המלאים</Link>
@@ -539,7 +539,7 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
           {REGION_CARDS.map(r => (
             <div key={r} className={s.regionCard} data-wide={r === 'dan' || undefined}>
               <Link href={`/${r}`} className={s.regionLink}>
-                <span className={s.regionImg}><Image src={`/assets/landmark-${r}.jpg`} alt={rName(r)} fill sizes={r === 'dan' ? '(min-width: 1280px) 610px, 50vw' : '(min-width: 1280px) 300px, 25vw'} className={s.cover} /></span>
+                <span className={s.regionImg}><Image src={`/assets/landmark-${r}.jpg`} alt={LANDMARK_ALT[r]} fill sizes={r === 'dan' ? '(min-width: 1280px) 610px, 50vw' : '(min-width: 1280px) 300px, 25vw'} className={s.cover} /></span>
                 <span className={s.regionName}>{rName(r)}</span>
               </Link>
               <span className={s.regionCities}>
@@ -561,7 +561,7 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
           <div>
             <Kicker tone="teal">לבעלי עסקים</Kicker>
             <h2 id="h-biz" className={`${s.h2} ${s.mt10}`}>איך הרישום באינדקס עובד<Dot /></h2>
-            <p className={s.bizLede}>פרופיל מאומת, יומן מסונכרן עם Google, Outlook או מערכת הקליניקה, ואישורי תור בוואטסאפ, SMS ומייל.</p>
+            <p className={s.bizLede}>פרופיל מאומת, יומן שמסתנכרן עם Google, Outlook או מערכת הקליניקה, ואישורי תור בוואטסאפ, ב־SMS ובמייל.</p>
             <div className={s.bizCtas}>
               <Link href={ROUTES.join} className={s.bizJoin}>הצטרפות לאינדקס<Arrow width={1.7} /></Link>
               <Link href={ROUTES.claim} className={s.bizClaim}>העסק כבר כאן?</Link>

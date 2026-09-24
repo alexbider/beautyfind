@@ -9,7 +9,7 @@ import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
 import { SaveHeart, useSavedIds } from '../../save-heart/SaveHeart';
 import { haptic } from '../../shell/haptics';
-import { ARTICLES } from '../content';
+import { ARTICLES, IMAGE_ALT, LANDMARK_ALT } from '../content';
 import { setRegion as storeRegion, useRegion } from '../regionStore';
 import s from './PhoneHome.module.css';
 
@@ -137,7 +137,7 @@ export const QUICK = ['בוטוקס', 'הסרת שיער', 'טיפול פנים'
 export const TRUST_STRIP = [
   { title: 'רישיונות נבדקים', d: 'M8 1.5 3 3.5v3.8c0 3.1 2.2 5.4 5 6.5 2.8-1.1 5-3.4 5-6.5V3.5L8 1.5ZM5.8 8l1.6 1.6L10.4 6.4' },
   { title: 'ביקורות מאומתות', d: 'M8 2l1.8 3.7 4 .6-2.9 2.8.7 4L8 11.2 4.4 13.1l.7-4-2.9-2.8 4-.6L8 2Z' },
-  { title: 'ממומן מסומן', d: 'M8 14.5A6.5 6.5 0 1 0 8 1.5a6.5 6.5 0 0 0 0 13ZM8 7v4M8 5h.01' },
+  { title: 'תוכן ממומן מסומן', d: 'M8 14.5A6.5 6.5 0 1 0 8 1.5a6.5 6.5 0 0 0 0 13ZM8 7v4M8 5h.01' },
 ];
 
 const CATS = [
@@ -167,24 +167,24 @@ const MENU_CATS = [
 export const READ_TIME = ['6 דקות קריאה', '5 דקות קריאה', '4 דקות קריאה'];
 
 export const TRUST = [
-  { n: '01', title: 'אימות לפני עלייה לאוויר', desc: 'בודקים רישיון רופא או אחות מול משרד הבריאות, ותעודת מקצוע לקוסמטיקאיות. בעלות על העסק מאומתת בנפרד.' },
-  { n: '02', title: 'אחריות רפואית מסומנת', desc: 'הזרקות הן פעולה רפואית. בכל פרופיל מופיע מי הרופא האחראי, וטיפול רפואי עובר קודם לפגישת ייעוץ.' },
-  { n: '03', title: 'ביקורות ממי שהגיעה בפועל', desc: 'ביקורת BeautyFind אפשרית רק אחרי תור שהתקיים. דירוג Google מוצג לצידה, בלי למזג.' },
-  { n: '04', title: 'תוכן שנבדק רפואית', desc: 'כל מדריך נכתב על ידי המערכת ונבדק על ידי איש מקצוע מוסמך, עם תאריך עדכון גלוי.' },
+  { n: '01', title: 'אימות לפני עלייה לאוויר', desc: 'בודקים רישיון רופא או אחות מול משרד הבריאות ותעודת מקצוע של קוסמטיקאיות. הבעלות על העסק מאומתת בנפרד.' },
+  { n: '02', title: 'אחריות רפואית מסומנת', desc: 'הזרקות הן פעולה רפואית. בכל פרופיל מופיע מי הרופא האחראי, וכל טיפול רפואי מתחיל בפגישת ייעוץ.' },
+  { n: '03', title: 'ביקורות ממי שהגיעה בפועל', desc: 'אפשר לכתוב ביקורת ב־BeautyFind רק אחרי תור שהתקיים. דירוג Google מוצג לצידה, בנפרד.' },
+  { n: '04', title: 'תוכן שנבדק רפואית', desc: 'כל מדריך נכתב בידי המערכת ונבדק בידי איש מקצוע מוסמך, ותאריך העדכון מופיע בו.' },
 ];
 
 const STEPS = [
   { label: 'פרטי העסק', text: 'ממלאים שם, עיר ותחומי טיפול. אפשר גם לתבוע פרופיל שכבר קיים באינדקס.' },
   { label: 'אימות', text: 'בודקים רישיון ותעודות. טיפול רפואי מסומן באחריות רפואית של רופא.' },
-  { label: 'פרופיל חי', text: 'הפרופיל עולה עם טיפולים, מחירים, שעות וביקורות Google ו־BeautyFind בנפרד.' },
-  { label: 'תורים', text: 'לקוחות קובעות תור, האישור יוצא בוואטסאפ, SMS ומייל, והתור נכנס ליומן שלכם.' },
+  { label: 'פרופיל באוויר', text: 'הפרופיל עולה לאוויר עם טיפולים, מחירים ושעות פתיחה. ביקורות Google ו־BeautyFind מוצגות בנפרד.' },
+  { label: 'תורים', text: 'לקוחות קובעות תור, האישור נשלח בוואטסאפ, ב־SMS ובמייל, והתור נכנס ליומן שלכם.' },
 ];
 
 export const FAQS = [
-  { q: 'האם השימוש ב־BeautyFind עולה כסף?', a: 'לא. החיפוש, ההשוואה וקביעת התור חינם. התשלום על הטיפול מתבצע מול העסק, שמנפיק חשבונית מס.' },
-  { q: 'עסק יכול לשלם כדי לדרג גבוה יותר?', a: 'לא. מודעה ממומנת מסומנת תמיד, מוגבלת לשתיים בכל רשימה, ולא משנה את הדירוג או את הביקורות.' },
-  { q: 'טיפולים אסתטיים כלולים בסל?', a: 'לא. טיפולים אסתטיים אינם בסל הבריאות. המחירים המוצגים לא כוללים מע״מ.' },
-  { q: 'מי רשאי לבצע הזרקות?', a: 'הזרקות הן פעולה רפואית המחייבת רופא. קוסמטיקאיות אינן רשאיות להזריק, בכל פרופיל מסומן מי נושא באחריות הרפואית.' },
+  { q: 'האם השימוש ב־BeautyFind עולה כסף?', a: 'לא. החיפוש, ההשוואה וקביעת התור בחינם. את הטיפול משלמים ישירות לעסק, והעסק מנפיק חשבונית מס.' },
+  { q: 'האם עסק יכול לשלם כדי לקבל דירוג גבוה יותר?', a: 'לא. מודעות ממומנות מסומנות תמיד, יש לכל היותר שתיים בכל רשימה, והן לא משנות את הדירוג או את הביקורות.' },
+  { q: 'האם טיפולים אסתטיים כלולים בסל הבריאות?', a: 'לא. טיפולים אסתטיים אינם כלולים בסל הבריאות. המחירים המוצגים באתר לא כוללים מע״מ.' },
+  { q: 'מי רשאי לבצע הזרקות?', a: 'רק רופא/ה. הזרקה היא פעולה רפואית, וקוסמטיקאיות אינן רשאיות להזריק. בכל פרופיל מסומן מי נושא באחריות הרפואית.' },
 ];
 
 const FOOT_GROUPS = [
@@ -381,7 +381,7 @@ function BizCard({ c }: { c: PhoneCard }) {
           {c.g && c.g.count > 0 && (
             <span>Google <strong dir="ltr" className={s.iso}>★ {c.g.rating.toFixed(1)}</strong> <span dir="ltr" className={s.iso}>({c.g.count})</span></span>
           )}
-          {!(c.bf && c.bf.count > 0) && !(c.g && c.g.count > 0) && <span>אין עדיין חוות דעת</span>}
+          {!(c.bf && c.bf.count > 0) && !(c.g && c.g.count > 0) && <span>עדיין אין ביקורות</span>}
         </div>
         {c.from != null && (
           <div className={s.cardPrice}>
@@ -581,7 +581,7 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
         {/* ---------- Hero ---------- */}
         <section className={s.hero} aria-labelledby="h1-phone">
           <div className={s.heroArt}>
-            <Image src="/assets/biz-facial.jpg" alt="טיפול פנים במכון קוסמטיקה" fill loading="eager" fetchPriority="high" sizes="(max-width: 1023px) 430px, 1px" className={s.heroImg} />
+            <Image src="/assets/biz-facial.jpg" alt={IMAGE_ALT['/assets/biz-facial.jpg']} fill loading="eager" fetchPriority="high" sizes="(max-width: 1023px) 430px, 1px" className={s.heroImg} />
             <div className={s.heroWash1} />
             <div className={s.heroWash2} />
             <Rings size={200} className={s.ringsA} />
@@ -606,7 +606,7 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
               <span className={s.searchIcon}><Pin size={17} width={1.5} /></span>
               <span className={s.searchCol}>
                 <span className={s.searchLabel}>איפה?</span>
-                <span className={s.locValue} data-set={located ? '' : undefined}>{located ? `המיקום שלך, ${rName(located)}` : 'עיר או אזור'}</span>
+                <span className={s.locValue} data-set={located ? '' : undefined}>{located ? `המיקום שלכם: ${rName(located)}` : 'עיר או אזור'}</span>
               </span>
               <span className={s.useLoc}>{locating ? 'מאתרים...' : 'שימוש במיקום'}</span>
             </button>
@@ -643,7 +643,7 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
           <div className={s.bento}>
             {CATS.map(c => (
               <Link key={c.slug} href={`/treatments/${c.slug}`} className={s.bentoTile} data-tall={c.tall || undefined}>
-                <Image src={c.img} alt={c.label} fill sizes="(max-width: 1023px) 50vw, 1px" className={s.cover} />
+                <Image src={c.img} alt={IMAGE_ALT[c.img] ?? ''} fill sizes="(max-width: 1023px) 50vw, 1px" className={s.cover} />
                 <span className={s.bentoLabel}>{c.label}<Arrow size={12} stroke="#0B7A87" width={1.8} /></span>
               </Link>
             ))}
@@ -671,14 +671,14 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
             {cards.length === 0 && (
               <div className={s.railEmpty}>
                 <strong>עדיין אין עסקים באינדקס ב{rName(region)}.</strong>
-                <span>בקרוב יתווספו כאן מכונים. בינתיים אפשר לחפש בכל הארץ.</span>
+                <span>בינתיים אפשר לחפש בכל הארץ.</span>
                 <Link href={ROUTES.search} className={s.headLink}>לחיפוש בכל הארץ</Link>
               </div>
             )}
           </div>
           <div className={s.disclosure}>
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#8A96A3" strokeWidth="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.5" /><path d="M8 7v4M8 5h.01" /></svg>
-            <span>סדר ההצגה לפי אימות ודירוג. עסק ממומן מסומן תמיד ולא משפיע על הדירוג. <Link href={`${ROUTES.methodology}#ranking`} className={s.strongLink}>איך מדרגים</Link></span>
+            <span>העסקים מוצגים לפי אימות ודירוג. עסק ממומן מסומן תמיד ואינו משפיע על הדירוג. <Link href={`${ROUTES.methodology}#ranking`} className={s.strongLink}>איך מדרגים</Link></span>
           </div>
           <div className={s.allLinkWrap}>
             <Link href={`/${region}`} className={s.textLink}>
@@ -692,7 +692,7 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
           <section className={s.pad40} aria-labelledby="h-rev-m">
             <Kicker>ביקורות מאומתות</Kicker>
             <h2 id="h-rev-m" className={`${s.h2} ${s.mt8}`}>מה מספרות מי שהגיעו<Dot /></h2>
-            <p className={s.sectionLede}>רק מי שקבעה תור דרך BeautyFind והגיעה אליו יכולה לכתוב ביקורת. לא עורכים, לא מוחקים ביקורות שליליות.</p>
+            <p className={s.sectionLede}>רק מי שקבעה תור דרך BeautyFind והגיעה אליו יכולה לכתוב ביקורת. אנחנו לא עורכים ביקורות ולא מוחקים ביקורות שליליות.</p>
             <div className={s.reviews}>
               {reviews.map((r, i) => (
                 <article key={r.id} className={s.review}>
@@ -731,10 +731,10 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
         {/* ---------- Guides (TODO(cms): /magazine until articles exist) ---------- */}
         <section className={s.pad40} aria-labelledby="h-guides-m">
           <Kicker>מדריכים</Kicker>
-          <h2 id="h-guides-m" className={`${s.h2} ${s.mt8} ${s.mb18}`}>קצת ידע. החלטה טובה יותר<Dot /></h2>
+          <h2 id="h-guides-m" className={`${s.h2} ${s.mt8} ${s.mb18}`}>קצת ידע לפני שמחליטים<Dot /></h2>
           <Link href={ARTICLES[0].href} className={s.leadGuide}>
             <figure className={s.leadFig}>
-              <span className={s.leadImg}><Image src={ARTICLES[0].img} alt="" fill sizes="(max-width: 1023px) 400px, 1px" className={s.cover} /></span>
+              <span className={s.leadImg}><Image src={ARTICLES[0].img} alt={IMAGE_ALT[ARTICLES[0].img] ?? ''} fill sizes="(max-width: 1023px) 400px, 1px" className={s.cover} /></span>
             </figure>
             <div className={s.guideKind}>{ARTICLES[0].kind} · {READ_TIME[0]}</div>
             <div className={s.leadTitle}>{ARTICLES[0].title}</div>
@@ -758,7 +758,7 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
         <section className={s.pad44} aria-labelledby="h-std-m">
           <Kicker>הסטנדרטים שלנו</Kicker>
           <h2 id="h-std-m" className={`${s.h2} ${s.mt8}`}>איך אנחנו בודקים<Dot /></h2>
-          <p className={s.stdLede}>BeautyFind הוא אינדקס עצמאי. אנחנו לא מבצעים טיפולים ולא ממליצים על טיפול מסוים. זה מה שכן עושים לפני שעסק עולה לאתר:</p>
+          <p className={s.stdLede}>BeautyFind הוא אינדקס עצמאי. אנחנו לא מבצעים טיפולים ולא ממליצים על טיפול מסוים. אלה הבדיקות שאנחנו עושים לפני שעסק עולה לאתר:</p>
           <div className={s.stdList}>
             {TRUST.map(t => (
               <div key={t.n} className={s.stdRow}>
@@ -785,7 +785,7 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
             {(['dan', 'north', 'haifa', 'sharon', 'jerusalem', 'shfela', 'south'] as RegionSlug[]).map(r => (
               <div key={r} className={s.regionCard} data-wide={r === 'dan' || undefined}>
                 <Link href={`/${r}`} className={s.regionLink}>
-                  <span className={s.regionImg}><Image src={`/assets/landmark-${r}.jpg`} alt={rName(r)} fill sizes={r === 'dan' ? '(max-width: 1023px) 400px, 1px' : '(max-width: 1023px) 200px, 1px'} className={s.cover} /></span>
+                  <span className={s.regionImg}><Image src={`/assets/landmark-${r}.jpg`} alt={LANDMARK_ALT[r]} fill sizes={r === 'dan' ? '(max-width: 1023px) 400px, 1px' : '(max-width: 1023px) 200px, 1px'} className={s.cover} /></span>
                   <span className={s.regionName}>{rName(r)}</span>
                 </Link>
                 <span className={s.regionCities}>
@@ -839,7 +839,7 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
       <footer className={s.footer}>
         <div className={s.footTop}>
           <div dir="ltr" className={s.footMark}>beauty<span className={s.accent}>find</span><span className={s.accentDot}>.</span></div>
-          <p className={s.footLede}>אינדקס עצמאי של מכוני יופי ואסתטיקה בישראל. רישיונות נבדקים, ביקורות מאומתות, מחירים שקופים.</p>
+          <p className={s.footLede}>אינדקס עצמאי של מכוני יופי וקליניקות לאסתטיקה בישראל, עם בדיקת רישיונות, ביקורות מאומתות ומחירים גלויים.</p>
           <div className={`${s.two} ${s.mt18}`}>
             <a href={`mailto:${SUPPORT_EMAIL}`} className={s.btnMail}><Mail />שליחת מייל</a>
             <Link href={ROUTES.contact} className={s.btnWa}><WhatsApp size={16} fill="#1DA851" />צ׳אט תמיכה</Link>

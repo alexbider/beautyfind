@@ -64,7 +64,7 @@ const PILL: Record<ManageData['status'], { text: string; tone: 'ok' | 'warn' | '
   pending_payment: { text: 'ממתין לתשלום דמי קדימה', tone: 'warn' },
   abandoned: { text: 'ההזמנה לא הושלמה', tone: 'neutral' },
   confirmed: { text: 'התור מאושר', tone: 'ok' },
-  checked_in: { text: 'הגעת לקליניקה', tone: 'ok' },
+  checked_in: { text: 'הגעתם לקליניקה', tone: 'ok' },
   in_treatment: { text: 'בטיפול', tone: 'ok' },
   completed: { text: 'הטיפול הסתיים', tone: 'neutral' },
   cancelled_client: { text: 'התור בוטל', tone: 'bad' },
@@ -75,9 +75,9 @@ const PILL: Record<ManageData['status'], { text: string; tone: 'ok' | 'warn' | '
 const MANAGE_ERRORS: Record<ManageError, string> = {
   not_found: 'התור לא נמצא. ייתכן שהקישור שגוי.',
   not_allowed: 'אי אפשר לשנות את התור הזה אונליין. אפשר לפנות לקליניקה בוואטסאפ או בטלפון.',
-  slot_taken: 'השעה שבחרת נתפסה הרגע. בחרי שעה אחרת מהרשימה המעודכנת.',
-  rate_limited: 'נעשו יותר מדי ניסיונות בשעה האחרונה. נסי שוב מאוחר יותר, או פני לקליניקה.',
-  failed: 'משהו השתבש. נסי שוב בעוד רגע.',
+  slot_taken: 'השעה שבחרתם נתפסה הרגע. בחרו שעה אחרת מהרשימה המעודכנת.',
+  rate_limited: 'נעשו יותר מדי ניסיונות בשעה האחרונה. נסו שוב מאוחר יותר או פנו לקליניקה.',
+  failed: 'משהו השתבש. נסו שוב בעוד רגע.',
 };
 
 export function ManageBooking({ data }: { data: ManageData }) {
@@ -234,7 +234,7 @@ export function ManageBooking({ data }: { data: ManageData }) {
   };
   const addCal = () => {
     downloadIcs(cal, `${data.ref}.ics`);
-    flash('קובץ יומן הורד, מתאים ל־Google, Outlook ו־iPhone');
+    flash('קובץ היומן הורד. מתאים ל־Google, ל־Outlook ול־iPhone');
   };
 
   // ---------- Pieces ----------
@@ -282,7 +282,7 @@ export function ManageBooking({ data }: { data: ManageData }) {
         <strong>התשלום לא הושלם.</strong>{' '}
         {deposit.holdUntil ? (
           <>
-            השעה עדיין שמורה עבורך עד <span className="ltr tnum">{timeOfIso(deposit.holdUntil)}</span>, ואפשר לנסות שוב.
+            השעה עדיין שמורה עבורכם עד <span className="ltr tnum">{timeOfIso(deposit.holdUntil)}</span>, ואפשר לנסות שוב.
           </>
         ) : (
           'השעה שוחררה, ואפשר לקבוע תור חדש.'
@@ -334,7 +334,7 @@ export function ManageBooking({ data }: { data: ManageData }) {
         : deposit.state === 'refunded'
           ? <>המקדמה בסך <span className="ltr tnum">{depText}</span> הוחזרה לאמצעי התשלום המקורי.</>
           : deposit.state === 'forfeited'
-            ? 'התור בוטל פחות מהזמן שנקבע במדיניות, והמקדמה לא הוחזרה.'
+            ? 'התור בוטל מאוחר מהמועד שנקבע במדיניות, ולכן המקדמה לא הוחזרה.'
             : 'לא בוצע חיוב.';
     statusCard = (
       <section className={s.statusCard} data-tone="neutral" aria-labelledby="mb-h-cx-st">
@@ -522,7 +522,7 @@ export function ManageBooking({ data }: { data: ManageData }) {
           )}
           {data.status === 'confirmed' && isFuture && (
             <p className={s.calNote}>
-              מעדיפה Google Calendar?{' '}
+              מעדיפים Google Calendar?{' '}
               <a href={googleCalHref(cal)} target="_blank" rel="noopener noreferrer">
                 הוספה ישירה ליומן Google
               </a>
@@ -555,7 +555,7 @@ export function ManageBooking({ data }: { data: ManageData }) {
         <div className={s.empty}>
           <p className={s.emptyTitle}>לא הצלחנו לטעון את השעות הפנויות</p>
           <button type="button" className={s.soft} onClick={() => loadMore(0)}>
-            נסי שוב
+            נסו שוב
           </button>
         </div>
       ) : openDays.length === 0 && loadState === 'loading' ? (
@@ -608,13 +608,13 @@ export function ManageBooking({ data }: { data: ManageData }) {
               })}
             </div>
           ) : (
-            <p className={s.sub}>{openDays.some(d => d.slots.length > 0) ? 'בחרי יום כדי לראות שעות פנויות.' : 'אין שעות פנויות בימים האלה. אפשר לטעון ימים נוספים או לפנות לקליניקה.'}</p>
+            <p className={s.sub}>{openDays.some(d => d.slots.length > 0) ? 'בחרו יום כדי לראות שעות פנויות.' : 'אין שעות פנויות בימים האלה. אפשר לטעון ימים נוספים או לפנות לקליניקה.'}</p>
           )}
         </>
       )}
 
       <button type="button" className={`${s.confirm} bf-desk-only`} onClick={confirmResched} disabled={!slot || pending}>
-        {pending ? 'מעבירים…' : slot ? `העברה ל${longDay(keyOf(slot))}, ${timeOfIso(slot)}` : 'בחרי שעה'}
+        {pending ? 'מעבירים…' : slot ? `העברה ל${longDay(keyOf(slot))}, ${timeOfIso(slot)}` : 'בחרו שעה'}
       </button>
     </section>
   );
@@ -626,8 +626,8 @@ export function ManageBooking({ data }: { data: ManageData }) {
           tone: 'warn',
           title: <>ביטול מאוחר: <LessThan n={win} /> לפני התור</>,
           body: depositPaid
-            ? <>המקדמה בסך <span className="ltr tnum">{depText}</span> לא מוחזרת לפי מדיניות הקליניקה. מסיבה רפואית? כתבי לקליניקה בוואטסאפ לפני הביטול.</>
-            : 'הקליניקה רשאית לחייב דמי ביטול מאוחר. מסיבה רפואית? כתבי לקליניקה בוואטסאפ לפני הביטול.',
+            ? <>המקדמה בסך <span className="ltr tnum">{depText}</span> לא מוחזרת לפי מדיניות הקליניקה. מסיבה רפואית? כתבו לקליניקה בוואטסאפ לפני הביטול.</>
+            : 'הקליניקה רשאית לחייב דמי ביטול מאוחר. מסיבה רפואית? כתבו לקליניקה בוואטסאפ לפני הביטול.',
         }
       : {
           tone: 'ok',
@@ -644,7 +644,7 @@ export function ManageBooking({ data }: { data: ManageData }) {
         <p className={s.policyBody}>{pol.body}</p>
       </div>
       <h2 className={s.reasonH}>
-        מה הסיבה? <span className={s.reasonNote}>· לא חובה, עוזר לקליניקה</span>
+        מה הסיבה? <span className={s.reasonNote}>· לא חובה, אבל זה עוזר לקליניקה</span>
       </h2>
       <div className={s.reasons}>
         {CANCEL_REASONS.map(r => (
@@ -690,7 +690,7 @@ export function ManageBooking({ data }: { data: ManageData }) {
         </h1>
         <p className={s.doneBody}>
           המועד החדש: {longDay(keyOf(done.startsAt))} בשעה <span className="ltr tnum">{timeOfIso(done.startsAt)}</span>. אישור נשלח בוואטסאפ
-          {carry.length ? `, ו${carry.join(' ו')} ${carry.length > 1 ? 'עוברות' : 'עוברת'} איתך.` : '.'}
+          {carry.length ? `, ו${carry.join(' ו')} ${carry.length > 1 ? 'עוברות' : 'עוברת'} איתכם.` : '.'}
         </p>
         <div className={s.doneActions}>
           <button type="button" className={s.primary} onClick={() => { setDone(null); toView(); }}>
@@ -724,7 +724,7 @@ export function ManageBooking({ data }: { data: ManageData }) {
           התור בוטל
         </h1>
         <p className={s.doneBody}>
-          {body} השעה שוחררה, ותודה שעדכנת.
+          {body} השעה שוחררה, ותודה שעדכנתם.
         </p>
         <div className={s.doneActions}>
           <Link href={branch.bookHref} className={s.primary}>
@@ -873,7 +873,7 @@ export function ManageBooking({ data }: { data: ManageData }) {
     );
   } else if (view === 'resched') {
     actionBar = (
-      <ActionBar mobileOnly hint={slot ? undefined : 'בחרי יום ושעה פנויה'} error={sheet ? null : error}>
+      <ActionBar mobileOnly hint={slot ? undefined : 'בחרו יום ושעה פנויה'} error={sheet ? null : error}>
         <button type="button" className={s.barPrimary} data-off={!slot || undefined} onClick={() => (slot ? setSheet('resched') : haptic('warning'))}>
           {slot ? (
             <>
@@ -920,7 +920,7 @@ export function ManageBooking({ data }: { data: ManageData }) {
             {data.status === 'completed' && <Link href={`/b/${data.token}/aftercare`}>הנחיות אחרי הטיפול</Link>}
           </p>
         )}
-        <p className={s.private}>הקישור הזה אישי ונשלח רק אלייך. אל תעבירי אותו הלאה.</p>
+        <p className={s.private}>הקישור הזה אישי ונשלח רק אליכם. אל תעבירו אותו הלאה.</p>
       </div>
     </aside>
   );
@@ -937,7 +937,7 @@ export function ManageBooking({ data }: { data: ManageData }) {
           </Link>
           <span className={s.spacer} />
           <Link href={ROUTES.login} className={s.login}>
-            יש לך חשבון? כניסה
+            יש לכם חשבון? כניסה
           </Link>
         </div>
       </header>

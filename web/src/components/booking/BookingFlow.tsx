@@ -327,7 +327,7 @@ export function BookingFlow({ data }: { data: BookingData }) {
           return next;
         });
         setSlot(null);
-        setStepNotice({ step: 3, text: 'השעה שבחרתם נתפסה הרגע. הנה השעות הפנויות המעודכנות, בחרו שעה אחרת.' });
+        setStepNotice({ step: 3, text: 'השעה שבחרתם נתפסה הרגע. בחרו שעה אחרת מהרשימה המעודכנת.' });
         setDir('back');
         setStep(3);
         return;
@@ -375,7 +375,7 @@ export function BookingFlow({ data }: { data: BookingData }) {
     not_found: 'הטיפול כבר לא זמין לקביעה אונליין. אפשר לבחור טיפול אחר או לפנות לקליניקה.',
     medical_needs_consult: (
       <>
-        הטיפול הזה הוא פעולה רפואית ומחייב ייעוץ לפני קביעה. <Link href={consultHref}>לקביעת ייעוץ רפואי</Link>
+        הטיפול הזה הוא פעולה רפואית, ולכן נדרש ייעוץ לפני קביעת התור. <Link href={consultHref}>לקביעת ייעוץ רפואי</Link>
       </>
     ),
     slot_taken: 'השעה שבחרתם נתפסה הרגע. בחרו שעה אחרת.',
@@ -448,7 +448,7 @@ export function BookingFlow({ data }: { data: BookingData }) {
       </h2>
       <p className={s.lead}>
         המחירים לא כוללים מע״מ.
-        {hasMedical && ' טיפולי הזרקה מחייבים ייעוץ עם רופא לפני הטיפול, ועבורם קובעים קודם פגישת ייעוץ.'}
+        {hasMedical && ' טיפולי הזרקה מחייבים ייעוץ אצל רופא/ה, ולכן קובעים קודם פגישת ייעוץ.'}
       </p>
 
       {data.categories.length > 1 && (
@@ -520,7 +520,7 @@ export function BookingFlow({ data }: { data: BookingData }) {
     ? 'בחרו קודם טיפול.'
     : svcStaff.length > 1
       ? `${COUNT_WORDS[svcStaff.length] ?? svcStaff.length} מטפלות מבצעות את ${svc.name}. בחרו את מי שמתאימה לכם, או כל מטפלת פנויה.`
-      : `${svc.name} מבוצע על ידי מטפלת אחת בקליניקה.`;
+      : 'את הטיפול הזה מבצעת מטפלת אחת בקליניקה.';
 
   const staffCard = (id: string | 'any', body: { name: string; role: string; init: ReactNode; color: string; tint: string }, first: boolean) => {
     const on = staffPick === id;
@@ -660,7 +660,7 @@ export function BookingFlow({ data }: { data: BookingData }) {
           {dayKey && slotGroups.length === 0 && (
             <div className={s.empty}>
               <p className={s.emptyTitle}>אין שעות פנויות ביום הזה</p>
-              <p className={s.emptyText}>נסו יום אחר, או הצטרפו לרשימת ההמתנה ונעדכן בפינוי.</p>
+              <p className={s.emptyText}>נסו יום אחר, או הצטרפו לרשימת ההמתנה ונעדכן אתכם כשיתפנה תור.</p>
               <Link href={waitlistHref} className={s.softBtn}>
                 הצטרפו לרשימת ההמתנה
               </Link>
@@ -669,7 +669,7 @@ export function BookingFlow({ data }: { data: BookingData }) {
           {!dayKey && (
             <div className={s.empty}>
               <p className={s.emptyTitle}>הקליניקה סגורה בשבוע הזה</p>
-              <p className={s.emptyText}>נסו שבוע אחר, או הצטרפו לרשימת ההמתנה ונעדכן בפינוי.</p>
+              <p className={s.emptyText}>נסו שבוע אחר, או הצטרפו לרשימת ההמתנה ונעדכן אתכם כשיתפנה תור.</p>
               <Link href={waitlistHref} className={s.softBtn}>
                 הצטרפו לרשימת ההמתנה
               </Link>
@@ -753,14 +753,14 @@ export function BookingFlow({ data }: { data: BookingData }) {
   const consentDefs: Array<{ key: keyof typeof consents; label: ReactNode; note: ReactNode }> = [
     {
       key: 'health',
-      label: 'קראתי ומאשרת שאדווח על מצב רפואי, תרופות, הריון או הנקה לפני הטיפול',
+      label: 'אני מתחייב/ת לדווח לקליניקה לפני הטיפול על מצב רפואי, תרופות, הריון או הנקה',
       note: svc?.requiresDeclaration ? 'הצהרת בריאות מלאה נשלחת בוואטסאפ ונחתמת דיגיטלית לפני הטיפול' : 'הצהרת בריאות מלאה נחתמת דיגיטלית בקליניקה לפני הטיפול הראשון',
     },
     {
       key: 'policy',
       label: (
         <>
-          אני מאשרת את מדיניות הביטולים: ביטול עד <span className="ltr tnum">{refundH}</span> שעות לפני התור ללא חיוב
+          אני מאשר/ת את מדיניות הביטולים: ביטול עד <span className="ltr tnum">{refundH}</span> שעות לפני התור ללא חיוב
         </>
       ),
       note: policyNote,
@@ -914,7 +914,7 @@ export function BookingFlow({ data }: { data: BookingData }) {
         <Link href={`/b/${done.token}`} className={s.primaryBtn}>
           ניהול התור
         </Link>
-        <button type="button" className={s.ghostBtn} onClick={() => { downloadIcs(calEvent(), `${done.ref}.ics`); flash('קובץ יומן הורד, מתאים ל־Google, Outlook ו־iPhone'); }}>
+        <button type="button" className={s.ghostBtn} onClick={() => { downloadIcs(calEvent(), `${done.ref}.ics`); flash('קובץ היומן הורד. מתאים ל־Google, ל־Outlook ול־iPhone'); }}>
           הוספה ליומן
         </button>
         <p className={s.doneMore}>
@@ -933,7 +933,7 @@ export function BookingFlow({ data }: { data: BookingData }) {
       </div>
 
       <div className={`${s.doneActions} bf-desk-only`}>
-        <button type="button" className={s.primaryBtn} onClick={() => { downloadIcs(calEvent(), `${done.ref}.ics`); flash('קובץ יומן הורד, מתאים ל־Google, Outlook ו־iPhone'); }}>
+        <button type="button" className={s.primaryBtn} onClick={() => { downloadIcs(calEvent(), `${done.ref}.ics`); flash('קובץ היומן הורד. מתאים ל־Google, ל־Outlook ול־iPhone'); }}>
           הוספה ליומן
         </button>
         <a href={wazeHref(branch.wazeUrl, branch.address)} target="_blank" rel="noopener noreferrer" className={s.ghostBtn}>
@@ -950,7 +950,7 @@ export function BookingFlow({ data }: { data: BookingData }) {
       </div>
 
       <p className={s.doneFoot}>
-        ביטול או שינוי עד <span className="ltr tnum">{refundH}</span> שעות לפני התור ללא חיוב. ביטול מאוחר מזה: הקליניקה רשאית לחייב דמי ביטול.
+        ביטול או שינוי עד <span className="ltr tnum">{refundH}</span> שעות לפני התור ללא חיוב. בביטול מאוחר יותר, הקליניקה רשאית לחייב דמי ביטול.
       </p>
     </section>
   );
@@ -966,7 +966,7 @@ export function BookingFlow({ data }: { data: BookingData }) {
     nextHint = !svc
       ? 'בחרו טיפול כדי להמשיך'
       : needsConsult
-        ? `הטיפול שבחרתם הוא פעולה רפואית. בשלב הבא בוחרים מועד לייעוץ${branch.medical ? ` עם ${branch.medical.name}` : ' עם רופא'} ועונים על כמה שאלות קצרות.`
+        ? `הטיפול שבחרתם הוא פעולה רפואית. בשלב הבא בוחרים מועד לייעוץ${branch.medical ? ` עם ${branch.medical.name}` : ' עם רופא/ה'} ועונים על כמה שאלות קצרות.`
         : (
           <>
             {svc.name} · <span className="ltr tnum">{svc.durationMin}</span> דקות
@@ -994,7 +994,7 @@ export function BookingFlow({ data }: { data: BookingData }) {
         אישור יישלח בוואטסאפ למספר <span className="ltr tnum">{form.phone.trim()}</span>
       </>
     ) : (
-      'שדות חובה: שם, טלפון, שני האישורים הראשונים'
+      'שדות חובה: שם, טלפון ושני האישורים הראשונים'
     );
   }
   const busy = pending || redirecting;

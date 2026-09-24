@@ -34,18 +34,18 @@ type Stat = { n: string; label: string };
 
 const ASIDE: Record<Role, { title: string; points: Array<{ name: string; note: string }>; stats?: Stat[] }> = {
   client: {
-    title: 'תור אצל מטפלת מאומתת, בלי טלפונים ובלי לחכות',
+    title: 'תור אצל מטפלת מאומתת, בלי טלפונים ובלי המתנה',
     points: [
       { name: 'יומן אמיתי', note: 'רואים את השעות הפנויות בפועל וקובעים בשלוש נקישות' },
-      { name: 'התורים שלך במקום אחד', note: 'שינוי או ביטול לפי מדיניות הקליניקה, בלי שיחה' },
-      { name: 'ביקורות מאומתות בלבד', note: 'רק מי שהיתה בטיפול יכולה לכתוב' },
+      { name: 'התורים שלכם במקום אחד', note: 'שינוי או ביטול לפי מדיניות הקליניקה, בלי שיחה' },
+      { name: 'ביקורות מאומתות בלבד', note: 'ביקורת נכתבת רק אחרי טיפול שהתקיים בפועל' },
     ],
   },
   biz: {
-    title: 'הפרופיל, היומן והלקוחות, במערכת אחת',
+    title: 'הפרופיל, היומן והלקוחות במערכת אחת',
     points: [
       { name: 'פניות ישר ל־CRM', note: 'כל פנייה מהפרופיל נכנסת לניהול הלקוחות עם מקור' },
-      { name: 'יומן, מלאי ואוטומציות', note: 'תזכורות בוואטסאפ, ניכוי מלאי לכל טיפול' },
+      { name: 'יומן, מלאי ואוטומציות', note: 'תזכורות בוואטסאפ וניכוי מלאי אוטומטי לכל טיפול' },
       { name: 'הרשאות לפי תפקיד', note: 'מזכירה, קוסמטיקאית והנהלת חשבונות רואות רק את שלהן' },
     ],
     // Marketing figures from the design, kept as designed.
@@ -60,11 +60,11 @@ const ASIDE: Record<Role, { title: string; points: Array<{ name: string; note: s
 type TermKey = 'tos' | 'owner' | 'marketing';
 const TERMS: Record<Role, Array<[TermKey, string]>> = {
   client: [
-    ['tos', 'קראתי ואני מאשרת את התקנון ומדיניות הפרטיות'],
+    ['tos', 'קראתי ואני מאשר/ת את התקנון ואת מדיניות הפרטיות'],
     ['marketing', 'אשמח לקבל עדכונים ומבצעים בוואטסאפ (לא חובה)'],
   ],
   biz: [
-    ['tos', 'קראתי ואני מאשר/ת את התקנון, מדיניות הפרטיות ותקן הרישום'],
+    ['tos', 'קראתי ואני מאשר/ת את התקנון, את מדיניות הפרטיות ואת תקן הרישום'],
     ['owner', 'אני בעל/ת העסק או מוסמך/ת לפעול בשמו'],
     ['marketing', 'אשמח לקבל עדכונים מקצועיים בדוא״ל (לא חובה)'],
   ],
@@ -256,10 +256,10 @@ export function AuthScreen({
       if (!phoneOk) return 'מספר טלפון נייד אינו תקין';
       if (!emailOk) return 'כתובת הדוא״ל אינה תקינה';
       if (!signupPassOk) return 'הסיסמה חייבת להכיל לפחות 8 תווים';
-      if (!termsOk) return biz ? 'יש לאשר את התקנון ואת ההצהרה על בעלות בעסק' : 'יש לאשר את התקנון ומדיניות הפרטיות';
+      if (!termsOk) return biz ? 'יש לאשר את התקנון ואת ההצהרה על בעלות בעסק' : 'יש לאשר את התקנון ואת מדיניות הפרטיות';
       return '';
     }
-    if (view === 'otp' && !otpFull) return 'הזינו את שש ספרות הקוד';
+    if (view === 'otp' && !otpFull) return 'הזינו את כל שש הספרות של הקוד';
     if (view === 'forgot' && !resetIdentOk) return 'הזינו דוא״ל או טלפון תקין';
     if (view === 'reset' && !passOk) return 'הסיסמה חייבת להכיל לפחות 8 תווים';
     return '';
@@ -332,7 +332,7 @@ export function AuthScreen({
       otp_expired: { text: 'תוקף הקוד פג. שלחו קוד חדש.' },
       otp_too_many: { text: 'יותר מדי ניסיונות. שלחו קוד חדש.' },
       reset_invalid: {
-        text: 'הקישור לאיפוס אינו תקף, פג תוקפו או שכבר נעשה בו שימוש.',
+        text: 'הקישור לאיפוס אינו תקף. ייתכן שפג תוקפו או שכבר נעשה בו שימוש.',
         action: { label: 'שליחת קישור חדש', run: () => go('forgot', { ident: reset?.email ?? '' }) },
       },
     };
@@ -389,7 +389,7 @@ export function AuthScreen({
     }
     const res = await run(() => passwordSignin({ ident: f.ident, password: f.pass, remember, next }));
     if (!res) return;
-    if (res.ok) finish(res, res.kind === 'business' ? 'מתחברים ללוח הבקרה של העסק' : 'מתחברים לחשבון שלך');
+    if (res.ok) finish(res, res.kind === 'business' ? 'מתחברים ללוח הבקרה של העסק' : 'מתחברים לחשבון שלכם');
     else showError(res, 'signin');
   };
 
@@ -422,7 +422,7 @@ export function AuthScreen({
       otpFlow === 'signin' ? verifySigninCode({ phone: otpPhone, code, remember, next }) : completeSignup({ form: signupForm(), code, remember, next }),
     );
     if (!res) return;
-    if (res.ok) finish(res, res.kind === 'business' ? 'אומת, נכנסים ללוח הבקרה' : 'אומת, נכנסים לחשבון');
+    if (res.ok) finish(res, res.kind === 'business' ? 'הקוד אומת, נכנסים ללוח הבקרה' : 'הקוד אומת, נכנסים לחשבון');
     else if (res.error === 'phone_taken' || res.error === 'email_taken') {
       go('signup');
       showError(res, 'signup');
@@ -482,16 +482,16 @@ export function AuthScreen({
   };
   const subs: Record<AuthView, ReactNode> = {
     signin: biz ? 'לניהול הפרופיל, היומן והלקוחות של העסק.' : 'לצפייה בתורים, בעסקים המועדפים ובביקורות שכתבתם.',
-    signup: biz ? 'אחרי ההרשמה נאמת את הבעלות על העסק ונפתח את לוח הבקרה.' : 'הרשמה לוקחת פחות מדקה ומאפשרת לקבוע תור בנקישה.',
+    signup: biz ? 'אחרי ההרשמה נאמת את הבעלות על העסק ונפתח את לוח הבקרה.' : 'ההרשמה אורכת פחות מדקה, ואחריה קובעים תור בנקישה.',
     otp:
       otpFlow === 'signup'
         ? sms
-          ? 'הקוד נשלח בהודעת SMS לאימות מספר הטלפון.'
-          : 'הקוד נשלח להודעה בוואטסאפ לאימות מספר הטלפון.'
+          ? 'שלחנו קוד ב־SMS לאימות מספר הטלפון.'
+          : 'שלחנו קוד בוואטסאפ לאימות מספר הטלפון.'
         : sms
-          ? 'הקוד נשלח בהודעת SMS, אין צורך בסיסמה.'
-          : 'הקוד נשלח להודעה בוואטסאפ, אין צורך בסיסמה.',
-    forgot: 'נשלח קישור לאיפוס לכתובת או למספר שרשומים בחשבון.',
+          ? 'שלחנו קוד ב־SMS, אין צורך בסיסמה.'
+          : 'שלחנו קוד בוואטסאפ, אין צורך בסיסמה.',
+    forgot: 'נשלח קישור לאיפוס לדוא״ל או לטלפון שרשומים בחשבון.',
     sent: '',
     reset:
       reset && resetValid ? (
@@ -607,7 +607,7 @@ export function AuthScreen({
                     <span aria-hidden="true" className={styles.box}>
                       {remember && <CheckMark />}
                     </span>
-                    <span className={styles.checkText}>זכרו אותי במכשיר הזה</span>
+                    <span className={styles.checkText}>לזכור אותי במכשיר הזה</span>
                   </button>
                   {method === 'password' && (
                     <button type="button" className={`${styles.forgot} ${styles.hit}`} onClick={() => go('forgot', { ident: isEmail(f.ident) ? f.ident : '' })}>
@@ -890,7 +890,7 @@ export function AuthScreen({
                 ) : (
                   <>
                     <p className={styles.error} role="alert">
-                      הקישור לאיפוס אינו תקף, פג תוקפו או שכבר נעשה בו שימוש.
+                      הקישור לאיפוס אינו תקף. ייתכן שפג תוקפו או שכבר נעשה בו שימוש.
                     </p>
                     <button type="button" className={styles.primary} onClick={() => go('forgot', { ident: reset.email })}>
                       שליחת קישור חדש
