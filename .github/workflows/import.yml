@@ -1,0 +1,52 @@
+# Directory import worker. Started from /ops/import (workflow_dispatch through the GitHub API) or by
+# hand from the Actions tab. Runs up to ~5.5 hours, then starts a fresh job if work is left.
+name: Import worker
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Import run id (empty = next queued run)
+        required: false
+        default: ''
+      max_minutes:
+        description: Stop after this many minutes
+        required: false
+        default: '330'
+
+concurrency:
+  group: import-worker
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  work:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - id: work
+        run: npm run import:work -- --max-minutes "${{ inputs.max_minutes || '330' }}" ${{ inputs.run_id && format('--run {0}', inputs.run_id) || '' }}
+        env:
+          DATABASE_URL: ${{ secrets.IMPORT_DATABASE_URL }}
+          DATABASE_URL_UNPOOLED: ${{ secrets.IMPORT_DATABASE_URL }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          IMPORT_MODEL: ${{ vars.IMPORT_MODEL }}
+      - name: Continue in a new job
+        if: steps.work.outputs.more == 'true'
+        run: gh workflow run import.yml --ref "${{ github.ref_name }}" -f run_id="${{ inputs.run_id }}"
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import styles from './OpsHeader.module.css';
 
-type Section = 'admin' | 'moderation' | 'verification';
+type Section = 'admin' | 'moderation' | 'verification' | 'import';
 
 // Admin (/ops) and Moderation (/ops/moderation) join the nav when those screens are built.
 const NAV: Array<{ key: Section; name: string; href: string }> = [
   { key: 'verification', name: 'אימות', href: '/ops/verification' },
+  { key: 'import', name: 'ייבוא עסקים', href: '/ops/import' },
 ];
 
 /**

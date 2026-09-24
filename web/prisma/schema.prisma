@@ -308,6 +308,8 @@ model Branch {
   googleReviewCount Int?      @map("google_review_count")
   googlePlaceUrl    String?   @map("google_place_url")
   googleSyncedAt    DateTime? @map("google_synced_at")
+  // Google Places id. Unique so an import can never create the same place twice.
+  googlePlaceId     String?   @unique @map("google_place_id")
   description String?
   wazeUrl     String?      @map("waze_url")
   websiteUrl  String?      @map("website_url")
@@ -1184,4 +1186,136 @@ model MessageConsent {
 
   @@unique([contact, scope, channel])
   @@map("message_consents")
+}
+
+// ---------- Directory import (scripts/import, /ops/import) ----------
+// A run discovers places on Google, reads each business's own website, extracts the treatment
+// menu with Claude and scores every record. Nothing reaches `branches` until staff approve it.
+
+enum ImportRunStatus {
+  queued
+  running
+  paused
+  done
+  failed
+  canceled
+}
+
+enum ImportPlaceStatus {
+  found // from Google, website not read yet
+  enriched // website read (or there is none)
+  extracted // menu and categories extracted
+  ready // passes every check, no possible existing listing: safe to approve
+  needs_review // passes the checks but something needs a human (possible existing listing, email on another domain, shared phone)
+  incomplete // missing email, phone, category or city
+  duplicate // same business as another import record
+  closed // Google marks it closed
+  approved // created as a new listing
+  merged // folded into an existing listing
+  rejected
+}
+
+model ImportRun {
+  id             String          @id @default(uuid()) @db.Uuid
+  label          String
+  status         ImportRunStatus @default(queued)
+  // { all: boolean, cities: string[], categories: string[], nearby: boolean, text: boolean }
+  scope          Json
+  maxRequests    Int             @map("max_requests") // Google Places calls
+  requestsUsed   Int             @default(0) @map("requests_used")
+  maxExtractions Int?            @map("max_extractions") // Claude calls, null = no cap
+  extractionsUsed Int            @default(0) @map("extractions_used")
+  // counters and notes written by the worker
+  stats          Json            @default("{}")
+  error          String?
+  lockedBy       String?         @map("locked_by")
+  lockedUntil    DateTime?       @map("locked_until")
+  createdById    String?         @map("created_by_id") @db.Uuid
+  startedAt      DateTime?       @map("started_at")
+  finishedAt     DateTime?       @map("finished_at")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  tasks          ImportTask[]
+  places         ImportPlace[]
+
+  @@index([status, createdAt])
+  @@map("import_runs")
+}
+
+// One Google call to make: a map cell (nearby) or a text query page. Makes discovery resumable.
+model ImportTask {
+  id        String    @id @default(uuid()) @db.Uuid
+  runId     String    @map("run_id") @db.Uuid
+  run       ImportRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  key       String // stable, e.g. "n:32.08,34.78,32.09,34.79" or "t:tel-aviv:מספרה"
+  kind      String // nearby | text
+  params    Json
+  status    String    @default("pending") // pending | done | failed
+  found     Int       @default(0)
+  error     String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@unique([runId, key])
+  @@index([runId, status])
+  @@map("import_tasks")
+}
+
+model ImportPlace {
+  id          String            @id @default(uuid()) @db.Uuid
+  placeId     String            @unique @map("place_id")
+  runId       String            @map("run_id") @db.Uuid // last run that found it
+  run         ImportRun         @relation(fields: [runId], references: [id])
+  status      ImportPlaceStatus @default(found)
+  reasons     String[] // why it is not ready: no_email, no_phone, email_domain_mismatch, ...
+  name        String
+  primaryType String?           @map("primary_type")
+  types       String[]
+  address     String
+  cityName    String?           @map("city_name")
+  citySlug    String?           @map("city_slug")
+  regionSlug  RegionSlug?       @map("region_slug")
+  lat         Float
+  lng         Float
+  phone       String? // E.164
+  phoneRaw    String?           @map("phone_raw")
+  whatsapp    String? // E.164, only from a WhatsApp link on the site
+  email       String?
+  emailSource String?           @map("email_source") // site | jsonld | manual
+  emailMx     Boolean?          @map("email_mx")
+  emails      String[] // every address found
+  website     String?
+  instagram   String?
+  facebook    String?
+  hours       Json? // our 7-day format, Sunday first
+  googleRating      Float?      @map("google_rating")
+  googleReviewCount Int?        @map("google_review_count")
+  googleMapsUri     String?     @map("google_maps_uri")
+  businessStatus    String?     @map("business_status")
+  categories  String[]
+  businessType BusinessType?    @map("business_type")
+  description String?
+  // [{ name, category, priceNis, priceType, durationMin, isMedical }]
+  treatments  Json              @default("[]")
+  // pages read, errors, text kept for extraction
+  crawl       Json?
+  dupOfId     String?           @map("dup_of_id") @db.Uuid
+  matchBranchId String?         @map("match_branch_id") @db.Uuid
+  matchScore  Float?            @map("match_score")
+  matchReasons String[]         @map("match_reasons")
+  branchId    String?           @map("branch_id") @db.Uuid // listing created or merged into
+  reviewedById String?          @map("reviewed_by_id") @db.Uuid
+  reviewedAt  DateTime?         @map("reviewed_at")
+  note        String?
+  enrichedAt  DateTime?         @map("enriched_at")
+  extractedAt DateTime?         @map("extracted_at")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  @@index([runId, status])
+  @@index([status, regionSlug])
+  @@index([phone])
+  @@index([email])
+  @@map("import_places")
 }

@@ -26,3 +26,21 @@ export async function requireVerifier(next: string) {
   if (!canVerify(user)) notFound();
   return user;
 }
+
+// Directory import (/ops/import): creates public listings in bulk, so operations staff only.
+export const IMPORT_ROLES: readonly OpsRole[] = ['ops'];
+
+export const canImport = (u: Pick<User, 'opsRole'> | null | undefined): boolean =>
+  !!u?.opsRole && IMPORT_ROLES.includes(u.opsRole);
+
+export async function importerOrNull() {
+  const user = await currentUser();
+  return canImport(user) ? user! : null;
+}
+
+export async function requireImporter(next: string) {
+  const user = await currentUser();
+  if (!user) redirect(`/login?role=biz&next=${encodeURIComponent(next)}`);
+  if (!canImport(user)) notFound();
+  return user;
+}
