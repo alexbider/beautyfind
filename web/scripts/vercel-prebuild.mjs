@@ -18,6 +18,9 @@ const run = cmd => execSync(cmd, { stdio: 'inherit', env });
 console.log('[prebuild] applying database migrations');
 run('npx prisma migrate deploy');
 
+console.log('[prebuild] master admin account');
+run('npx tsx scripts/ops-bootstrap.ts');
+
 console.log(`[prebuild] STAGING=${env.STAGING ?? '(not set)'} SEED_DEMO=${env.SEED_DEMO ?? '(not set)'}`);
 if (env.SEED_DEMO === '1' && env.STAGING !== '1') console.warn('[prebuild] SEED_DEMO is ignored because STAGING is not 1');
 run('node scripts/staging-seed.mjs');

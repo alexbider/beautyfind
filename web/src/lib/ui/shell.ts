@@ -61,7 +61,7 @@ const FOCUSED: RegExp[] = [
   /^\/for-business\/(join|claim)/,
   /^\/invite\//,
   /^\/login/,
-  /^\/ops\/login/,
+  /^\/ops\/(login|setup)/,
   /^\/logout/,
   /^\/review\//,
   /^\/waitlist\//,
