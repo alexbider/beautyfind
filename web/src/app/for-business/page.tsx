@@ -242,7 +242,7 @@ export default function GetListedPage() {
             <h2 id="h-features" className={styles.h2}>
               נרשמים פעם אחת. הפרופיל עושה את השאר<span className={styles.dot}>.</span>
             </h2>
-            <p className={styles.sectionLede}>האימות לוקח כמה דקות. מכאן והלאה אתם שולטים בכל מה שהלקוחות רואים: תמונות, תפריט טיפולים, מחירים, צוות ושעות פעילות.</p>
+            <p className={styles.sectionLede}>ההרשמה לוקחת כמה דקות, והאימות מסתיים תוך עד 2 ימי עסקים. מכאן והלאה אתם שולטים בכל מה שהלקוחות רואים: תמונות, תפריט טיפולים, מחירים, צוות ושעות פעילות.</p>
           </div>
           <ol className={styles.featureGrid}>
             {FEATURES.map((f, i) => (
@@ -380,7 +380,7 @@ export default function GetListedPage() {
               <h2 id="h-cta">
                 מוכנים שלקוחות ימצאו את העסק שלכם<span className={styles.dotLight}>?</span>
               </h2>
-              <p>רשמו את הסניף שלכם היום. האימות מסתיים בדרך כלל באותו יום עסקים.</p>
+              <p>רשמו את הסניף שלכם היום. האימות מסתיים תוך עד 2 ימי עסקים.</p>
             </div>
             <div className={styles.ctaActions}>
               <Link href={ROUTES.join} className={styles.ctaWhite}>

@@ -14,14 +14,14 @@ export function ConsultUnavailable({ branchName, place, contactHref, closeHref }
       <div className={styles.flowBody}>
         <h1 className={styles.h1}>בקשת ייעוץ לפני הזרקה</h1>
         <p className={styles.lead}>
-          בוטוקס וחומרי מילוי הם טיפול רפואי. לפני שקובעים טיפול, רופא/ה צריך/ה לראות אותך, לשמוע מה חשוב לך ולהחליט אם ובאיזו כמות זה מתאים.
+          בוטוקס וחומרי מילוי הם טיפול רפואי. לפני שקובעים טיפול, רופא/ה צריך/ה לבדוק אתכם, לשמוע מה חשוב לכם ולהחליט אם הטיפול מתאים ובאיזה מינון.
         </p>
         <div className={styles.shell}>
           <main className={styles.main}>
             <section aria-labelledby="cs-na" className={styles.card}>
               <h2 id="cs-na" className={`${styles.h2} ${styles.h2Gap}`}>תיאום ייעוץ ישירות מול הקליניקה</h2>
               <p className={styles.hint} style={{ color: 'var(--text)', fontSize: 15 }}>
-                ב{branchName} עדיין אין קביעת ייעוץ אונליין. אפשר לשלוח פנייה לקליניקה, והצוות יחזור אלייך לתיאום מועד לייעוץ.
+                ב{branchName} עדיין אין קביעת ייעוץ אונליין. אפשר לשלוח פנייה לקליניקה, והצוות יחזור אליכם לתיאום מועד לייעוץ.
               </p>
               <div className={styles.row}>
                 <Link href={contactHref} className={styles.btnLink}>פנייה לקליניקה</Link>
@@ -36,7 +36,7 @@ export function ConsultUnavailable({ branchName, place, contactHref, closeHref }
               </dl>
             </div>
             <div className={styles.whyCard}>
-              <h2 className={styles.whyH}>למה ייעוץ ולא תור ישיר</h2>
+              <h2 className={styles.whyH}>למה קודם ייעוץ?</h2>
               <ul className={styles.whyList}>
                 {WHY.map(w => (
                   <li key={w}>

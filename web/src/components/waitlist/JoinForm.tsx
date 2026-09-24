@@ -31,15 +31,15 @@ export type JoinActionResult =
   | { ok: false; error: 'invalid' | 'prefs' | 'name' | 'phone' | 'not_found' | 'plan' | 'server' };
 
 const ERRORS: Record<string, string> = {
-  prefs: 'בחרי לפחות יום אחד וטווח שעות אחד',
-  treatment: 'בחרי טיפול',
-  staff: 'בחרי מטפלת, או סמני שגם מטפלת אחרת מתאימה',
-  name: 'כתבי את השם שלך',
+  prefs: 'בחרו לפחות יום אחד וטווח שעות אחד',
+  treatment: 'בחרו טיפול',
+  staff: 'בחרו מטפלת, או סמנו שגם מטפלת אחרת מתאימה',
+  name: 'כתבו את השם שלכם',
   phone: 'מספר הטלפון לא תקין',
-  not_found: 'הטיפול הזה כבר לא זמין לרשימת המתנה. בחרי טיפול אחר.',
+  not_found: 'הטיפול הזה כבר לא זמין לרשימת המתנה. בחרו טיפול אחר.',
   plan: 'רשימת ההמתנה לא זמינה בקליניקה הזו',
-  invalid: 'משהו בפרטים לא תקין. נסי שוב.',
-  server: 'לא הצלחנו לשמור. נסי שוב בעוד רגע.',
+  invalid: 'משהו בפרטים לא תקין. נסו שוב.',
+  server: 'לא הצלחנו לשמור. נסו שוב בעוד רגע.',
 };
 
 type Field = 'prefs' | 'treatment' | 'staff' | 'name' | 'phone';
@@ -142,7 +142,7 @@ export function JoinForm({
       setDone({ ...res, days: [...days], times: [...times] });
       haptic('success');
       window.scrollTo({ top: 0 });
-      flash(res.updated ? 'העדפות ההמתנה עודכנו' : 'הצטרפת לרשימת ההמתנה');
+      flash(res.updated ? 'העדפות ההמתנה עודכנו' : 'הצטרפתם לרשימת ההמתנה');
       requestAnimationFrame(() => doneRef.current?.focus());
     });
   };
@@ -152,12 +152,12 @@ export function JoinForm({
     start(async () => {
       const r = await leave(done.token).catch(() => ({ ok: false }));
       if (!r.ok) {
-        flash('לא הצלחנו להוציא אותך מהרשימה. נסי שוב.');
+        flash('לא הצלחנו להוציא אתכם מהרשימה. נסו שוב.');
         return;
       }
       setDone(null);
       setTried(false);
-      flash('יצאת מרשימת ההמתנה');
+      flash('יצאתם מרשימת ההמתנה');
     });
   };
 
@@ -170,10 +170,10 @@ export function JoinForm({
             <CheckIcon size={26} />
           </span>
           <h1 className={styles.doneH} ref={doneRef} tabIndex={-1}>
-            את ברשימת ההמתנה
+            אתם ברשימת ההמתנה
           </h1>
           <p className={styles.doneP}>
-            מקום <Ltr className={styles.num}>{done.position}</Ltr> ברשימה לטיפול הזה. נשלח וואטסאפ ברגע שיתפנה תור ב{whenText(done.days, done.times)}.
+            מקום <Ltr className={styles.num}>{done.position}</Ltr> ברשימה לטיפול הזה. נשלח הודעת וואטסאפ ברגע שיתפנה תור ב{whenText(done.days, done.times)}.
           </p>
           <dl className={styles.doneDl}>
             <dt>בתוקף עד</dt>
@@ -206,7 +206,7 @@ export function JoinForm({
           <div>
             <h1 className={styles.h1}>רשימת המתנה</h1>
             <p className={styles.lead}>
-              כשמתפנה תור שמתאים לך, נשלח הודעת וואטסאפ עם קישור. התור נשמר לך <HoldText minutes={holdMinutes} />, ואחר כך עובר לבאה ברשימה.
+              כשמתפנה תור שמתאים לכם, נשלח הודעת וואטסאפ עם קישור. התור נשמר עבורכם <HoldText minutes={holdMinutes} />, ואחר כך מוצע לבאים ברשימה.
             </p>
           </div>
 
@@ -378,15 +378,15 @@ export function JoinForm({
               </p>
             )}
             <button type="button" className={styles.primary} onClick={submit} disabled={pending}>
-              {pending ? 'שומרת…' : 'הצטרפות לרשימה'}
+              {pending ? 'שומרים…' : 'הצטרפות לרשימה'}
             </button>
           </div>
         </div>
 
         <aside className={styles.aside} aria-label="פרטי ההמתנה">
           <div className={styles.asideHead}>
-            <span className={styles.asideLabel}>ממתינה לתור</span>
-            <span className={styles.asideName}>{treatment?.name ?? 'בחרי טיפול'}</span>
+            <span className={styles.asideLabel}>המתנה לתור</span>
+            <span className={styles.asideName}>{treatment?.name ?? 'בחרו טיפול'}</span>
           </div>
           <dl className={styles.dl}>
             <dt>קליניקה</dt>
@@ -404,13 +404,13 @@ export function JoinForm({
               </>
             )}
           </dl>
-          <p className={styles.asideNote}>ההצטרפות לא מחייבת ואינה גובה מקדמה. המקדמה, אם הקליניקה דורשת, נגבית רק כשמאשרים תור.</p>
+          <p className={styles.asideNote}>ההצטרפות אינה מחייבת, ולא נגבית בה מקדמה. אם הקליניקה דורשת מקדמה, היא נגבית רק כשמאשרים תור.</p>
         </aside>
       </div>
 
-      <ActionBar mobileOnly error={error} hint={error ? undefined : `${treatment?.name ?? 'בחרי טיפול'} · ${branch.name}`}>
+      <ActionBar mobileOnly error={error} hint={error ? undefined : `${treatment?.name ?? 'בחרו טיפול'} · ${branch.name}`}>
         <button type="button" className={styles.primary} onClick={submit} disabled={pending}>
-          {pending ? 'שומרת…' : 'הצטרפות לרשימה'}
+          {pending ? 'שומרים…' : 'הצטרפות לרשימה'}
         </button>
       </ActionBar>
     </div>

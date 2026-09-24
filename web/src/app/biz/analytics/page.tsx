@@ -72,7 +72,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
     countKpi('פניות שנרשמו בלוח', leadsCur.total, leadsPrev.total),
   ];
 
-  const noData = anyLive ? 'עדיין אין נתונים בטווח הזה.' : 'הנתונים יופיעו כשהפרופיל יתפרסם ויתחילו צפיות.';
+  const noData = anyLive ? 'עדיין אין נתונים בטווח הזה.' : 'הנתונים יופיעו אחרי שהפרופיל יתפרסם ויתחיל לקבל צפיות.';
 
   // Search queries
   const queryViews = queries.reduce((s, q) => s + q.views, 0);
@@ -105,7 +105,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           <div style={{ minWidth: 0 }}>
             <h1 id="h-an" className={ui.h1}>אנליטיקת פרופיל<span>.</span></h1>
             <p className={ui.h1Sub}>
-              {INTRO[range]}: על מה חיפשו, מי ראה את הכרטיס ומה הפך לפנייה. הנתונים נמדדים ב־BeautyFind בלבד ואינם כוללים תנועה לאתר שלכם.
+              {INTRO[range]}: מה חיפשו, מי ראה את הכרטיס ומה הפך לפנייה. הנתונים נמדדים ב־BeautyFind בלבד ואינם כוללים תנועה לאתר שלכם.
             </p>
           </div>
           <RangeSwitch base="/biz/analytics" current={range} />
@@ -154,22 +154,22 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
                 ))}
               </ul>
               <p className={ui.flushNote}>
-                &quot;{topQ.term}&quot; מביא <span className="ltr">{pctOf(topQ.views, queryViews)}%</span> מהצפיות שהגיעו מחיפוש.
+                ״{topQ.term}״ מביא <span className="ltr">{pctOf(topQ.views, queryViews)}%</span> מהצפיות שהגיעו מחיפוש.
                 {bestRate && bestRate.contacts > 0 ? (
                   <>
-                    {' '}שיעור הפנייה הגבוה ביותר הוא ב&quot;{bestRate.term}&quot;: <span className="ltr">{((bestRate.contacts / bestRate.views) * 100).toFixed(1)}%</span>.
+                    {' '}שיעור הפנייה הגבוה ביותר הוא בביטוי ״{bestRate.term}״: <span className="ltr">{((bestRate.contacts / bestRate.views) * 100).toFixed(1)}%</span>.
                   </>
                 ) : null}
               </p>
             </>
           ) : (
-            <p className={ui.emptyRow}>{anyLive ? 'עדיין אין צפיות שהגיעו מחיפוש בטווח הזה.' : 'ביטויי החיפוש יופיעו כשהפרופיל יתפרסם ויתחילו צפיות.'}</p>
+            <p className={ui.emptyRow}>{anyLive ? 'עדיין אין צפיות שהגיעו מחיפוש בטווח הזה.' : 'ביטויי החיפוש יופיעו אחרי שהפרופיל יתפרסם ויתחיל לקבל צפיות.'}</p>
           )}
         </div>
 
         <div className={`${ui.twoCols} ${ui.alignStart}`}>
           <div className={ui.card}>
-            <h2 className={ui.h2Tight}>מאיפה הצופים</h2>
+            <h2 className={ui.h2Tight}>מאיפה מגיעים הצופים</h2>
             <p className={ui.metaGap}>
               לפי עיר המחפש · <span className="ltr">{nf(cityTotal)}</span> צפיות
             </p>
@@ -297,7 +297,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
 
           <div className={ui.card}>
             <h2 className={ui.h2Tight}>דירוג Google</h2>
-            <p className={ui.metaGap}>מסתנכרן פעם בשבוע ומוצג בנפרד. לעולם אינו משוקלל עם ביקורות BeautyFind.</p>
+            <p className={ui.metaGap}>מסתנכרן פעם בשבוע ומוצג בנפרד, בלי שקלול עם ביקורות BeautyFind.</p>
             {googleBranches.length ? (
               <ul className={a.google}>
                 {googleBranches.map(b => (
@@ -324,14 +324,14 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           <p className={ui.metaGap} style={{ marginBottom: 18 }}>{RANGE_TITLE[range]}</p>
           {funnelSteps.every(x => x.value === 0) ? <EmptyChart height={120}>{noData}</EmptyChart> : <Funnel steps={funnelSteps} />}
           <p className={ui.foot}>
-            צפיות והקלקות נמדדות אוטומטית. משלב &quot;פניות שנרשמו בלוח&quot; ומטה הנתון מגיע ממה שתיעדתם בלשונית לקוחות, ולכן שיחת טלפון שלא נרשמה לא תופיע כאן.
+            צפיות והקלקות נמדדות אוטומטית. משלב ״פניות שנרשמו בלוח״ ומטה הנתון מגיע ממה שתיעדתם בלשונית לקוחות, ולכן שיחת טלפון שלא נרשמה לא תופיע כאן.
           </p>
         </div>
 
         {byTreat.length ? (
           <div className={ui.cardFlush}>
             <div className={ui.cardFlushHead}>
-              <h2 className={ui.h2Tight}>איזה טיפול מייצר פניות</h2>
+              <h2 className={ui.h2Tight}>אילו טיפולים מביאים פניות</h2>
               <p className={ui.meta}>פניות שנרשמו בלוח לפי טיפול, מול כמה מהן נקבע תור</p>
             </div>
             <div aria-hidden="true" className={a.treatHead}>

@@ -51,7 +51,7 @@ export function PlanPicker({
   const askLine: ReactNode = !ask ? null : ask.kind === 'yearly' ? (
     yearlyLine
   ) : cur && ask.plan.rank < cur.rank ? (
-    <>מערכת ניהול הקליניקה (יומן, CRM, מלאי, אוטומציות) תיסגר בסוף מחזור החיוב{when}. עד אז הכול ממשיך לעבוד, והמידע נשמר 90 יום אם תחזרו.</>
+    <>מערכת ניהול הקליניקה (יומן, CRM, מלאי, אוטומציות) תיסגר בסוף מחזור החיוב{when}. עד אז הכול ממשיך לעבוד, והמידע יישמר 90 יום למקרה שתחזרו.</>
   ) : cur ? (
     <>המעבר נכנס לתוקף מיד. החיוב היחסי לתקופה הנוכחית יופיע בחשבונית הבאה{when}.</>
   ) : (
@@ -72,7 +72,7 @@ export function PlanPicker({
             className={s.cycleBtn}
             aria-pressed={cycle === 'monthly'}
             disabled={!canEdit || busy || cycle === 'monthly'}
-            onClick={() => setError('מעבר מחיוב שנתי לחודשי נכנס לתוקף רק בסוף השנה. פנו אלינו ונקבע אותו לתאריך החידוש.')}
+            onClick={() => setError('מעבר מחיוב שנתי לחודשי נכנס לתוקף רק בתאריך החידוש השנתי. פנו אלינו ונקבע את המעבר לתאריך הזה.')}
           >
             חודשי
           </button>

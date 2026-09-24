@@ -113,7 +113,7 @@ export function ProviderCard({ p, otherConnected }: { p: ProviderDTO; otherConne
           </p>
           <div className={s.provActions}>
             <button type="button" className={s.danger} onClick={disconnect} disabled={busy}>ניתוק</button>
-            <button type="button" className={s.ghost} onClick={() => setConfirmOff(false)}>השאר מחובר</button>
+            <button type="button" className={s.ghost} onClick={() => setConfirmOff(false)}>השארת החיבור</button>
           </div>
         </div>
       ) : (
@@ -137,7 +137,7 @@ export function ProviderCard({ p, otherConnected }: { p: ProviderDTO; otherConne
             : 'בלי מערכת חשבוניות מחוברת, חשבוניות מס לא יופקו אוטומטית, והקליניקה תפיק אותן במערכת שלה.'
         }
         confirmLabel="ניתוק"
-        cancelLabel="השאר מחובר"
+        cancelLabel="השארת החיבור"
         pending={busy}
         onConfirm={disconnect}
         onCancel={() => setConfirmOff(false)}

@@ -130,7 +130,7 @@ export async function inviteStaff(input: z.input<typeof InviteInput>): Promise<I
   const email = p.data.email.trim().toLowerCase();
   const name = p.data.name.trim().replace(/\s+/g, ' ') || null;
   if (!email || !EMAIL_RE.test(email) || email.length > 160) {
-    return { ok: false, field: 'email', error: 'נדרשת כתובת דואר אלקטרוני תקינה. ההזמנה נשלחת אליה.' };
+    return { ok: false, field: 'email', error: 'נדרשת כתובת דוא״ל תקינה, כי ההזמנה נשלחת אליה.' };
   }
   if (name && name.length > 80) return { ok: false, field: 'name', error: 'השם ארוך מדי.' };
 

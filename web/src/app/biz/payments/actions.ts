@@ -16,7 +16,7 @@ import { PAYMENT_PROVIDERS, paymentAdapter } from '@/lib/vendors/payments/regist
 
 export type ActionResult = { ok: true; message: string } | { ok: false; error: string };
 
-const FORBIDDEN = 'אין לך הרשאה לשנות את הגדרות התשלומים. שינויים אפשריים לבעלים ולהנהלת החשבונות.';
+const FORBIDDEN = 'אין לכם הרשאה לשנות את הגדרות התשלומים. שינויים אפשריים רק לבעלים ולהנהלת החשבונות.';
 
 async function guard() {
   try {

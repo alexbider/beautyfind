@@ -138,7 +138,7 @@ export function TeamPanel({ members, invites, areas }: { members: MemberDTO[]; i
                 </span>
                 <span className={styles.presetTag}>{PRESET_NAMES[i.preset].name}</span>
                 <span className={styles.last} data-expired={i.expired || undefined}>
-                  {i.expired ? <>פג תוקף ב־<L>{i.expires}</L></> : <>ממתין לאישור · בתוקף עד <L>{i.expires}</L></>}
+                  {i.expired ? <>פג תוקף ב־<L>{i.expires}</L></> : <>ממתינה לאישור · בתוקף עד <L>{i.expires}</L></>}
                 </span>
                 <span className={styles.inviteActions}>
                   <button
@@ -186,14 +186,14 @@ function InviteForm() {
   const submit = () => {
     const v = email.trim();
     if (!v || !EMAIL_RE.test(v)) {
-      setErr({ text: 'נדרשת כתובת דואר אלקטרוני תקינה. ההזמנה נשלחת אליה.', field: 'email' });
+      setErr({ text: 'נדרשת כתובת דוא״ל תקינה, כי ההזמנה נשלחת אליה.', field: 'email' });
       emailRef.current?.focus();
       return;
     }
     start(async () => {
       const r = await inviteStaff({ email: v, name, preset });
       if (r.ok) {
-        const msg = <>הזמנה נשלחה ל־<L>{v.toLowerCase()}</L> בתור {PRESET_NAMES[preset].name}. היא בתוקף לשבעה ימים.</>;
+        const msg = <>ההזמנה נשלחה ל־<L>{v.toLowerCase()}</L> בתפקיד {PRESET_NAMES[preset].name}, והיא בתוקף לשבעה ימים.</>;
         setSent(msg);
         setEmail('');
         setName('');
@@ -212,7 +212,7 @@ function InviteForm() {
       <p id="inv-h" className={styles.inviteTitle}>הזמנת משתמש חדש</p>
       <div className={styles.inviteRow}>
         <label className={`${styles.field} ${styles.g200}`}>
-          <span className={styles.label}>דואר אלקטרוני</span>
+          <span className={styles.label}>דוא״ל</span>
           <input
             ref={emailRef}
             type="email"
@@ -305,7 +305,7 @@ function Matrix({ members, areas }: { members: MemberDTO[]; areas: AreaRow[] }) 
       <div className={styles.matrixHead}>
         <h2 className={styles.h2}>מה כל משתמש רואה ויכול לשנות</h2>
         <p className={styles.matrixNote}>
-          לחיצה על תא מחליפה בין אין גישה, צפייה וצפייה ועריכה. כל משתמש נשמר בנפרד. המנהל הראשי תמיד רואה ומנהל הכול.
+          לחיצה על תא עוברת בין ״אין גישה״, ״צפייה״ ו״צפייה ועריכה״. ההרשאות של כל משתמש נשמרות בנפרד. המנהל הראשי תמיד רואה ומנהל הכול.
         </p>
       </div>
       {staff.length === 0 ? (

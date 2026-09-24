@@ -109,13 +109,13 @@ export default async function PaymentsPage() {
     {
       name: 'מקדמות בקביעת תור',
       on: pay && policyDTO.enabled,
-      why: !pay ? 'נדלק אחרי חיבור חברת סליקה.' : policyDTO.enabled ? 'לפי המדיניות למטה.' : 'חברת הסליקה מחוברת. המקדמה כבויה במדיניות למטה.',
+      why: !pay ? 'יופעל אחרי חיבור חברת סליקה.' : policyDTO.enabled ? 'לפי המדיניות למטה.' : 'חברת הסליקה מחוברת. המקדמה כבויה במדיניות למטה.',
     },
-    { name: 'שוברי מתנה', on: pay, why: pay ? 'נמכרים בעמוד הקליניקה ומתממשים בקבלה.' : 'נדלק אחרי חיבור חברת סליקה.' },
+    { name: 'שוברי מתנה', on: pay, why: pay ? 'נמכרים בעמוד הקליניקה ומתממשים בקבלה.' : 'יופעל אחרי חיבור חברת סליקה.' },
     {
       name: 'ייעוץ בתשלום',
       on: pay && policyDTO.consultFeeShekels > 0,
-      why: !pay ? 'נדלק אחרי חיבור חברת סליקה.' : policyDTO.consultFeeShekels > 0 ? `דמי ייעוץ ₪${policyDTO.consultFeeShekels.toLocaleString('en-US')}, מתקזזים מהטיפול.` : 'דמי הייעוץ מוגדרים ל־₪0.',
+      why: !pay ? 'יופעל אחרי חיבור חברת סליקה.' : policyDTO.consultFeeShekels > 0 ? `דמי ייעוץ ₪${policyDTO.consultFeeShekels.toLocaleString('en-US')}, מתקזזים מהטיפול.` : 'דמי הייעוץ מוגדרים ל־₪0.',
     },
     {
       name: 'חשבוניות מס אוטומטיות',
@@ -153,7 +153,7 @@ export default async function PaymentsPage() {
         <div className={ui.cardHead}>
           <div style={{ minWidth: 0 }}>
             <h2 className={ui.h2Tight}>חברת סליקה</h2>
-            <p className={ui.meta}>דרכה נגבים מקדמות, שוברים וייעוץ, ודרכה עוברים החזרים. ספק פעיל אחד בכל פעם.</p>
+            <p className={ui.meta}>דרכה נגבים מקדמות, שוברים וייעוץ, ודרכה מבוצעים החזרים. ספק פעיל אחד בכל פעם.</p>
           </div>
         </div>
         <div className={s.providers}>

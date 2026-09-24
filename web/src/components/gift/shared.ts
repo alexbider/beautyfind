@@ -14,7 +14,7 @@ export const CANCEL_DAYS = 14;
 export type Channel = 'wa' | 'email' | 'self';
 export const CHANNELS: Array<{ key: Channel; name: string }> = [
   { key: 'wa', name: 'וואטסאפ' },
-  { key: 'email', name: 'מייל' },
+  { key: 'email', name: 'דוא״ל' },
   { key: 'self', name: 'אליי, אמסור בעצמי' },
 ];
 
@@ -42,7 +42,7 @@ export const STATUS: Record<LedgerStatus, { name: string; bg: string; color: str
   partially_redeemed: { name: 'מומש חלקית', bg: '#F0FAFB', color: '#0B7A87' },
   redeemed: { name: 'מומש', bg: '#F0F3F5', color: '#5B6B7B' },
   scheduled: { name: 'מתוזמן', bg: '#FFF8EC', color: '#9A5B15' },
-  refunded: { name: 'בוטל, הוחזר', bg: '#FDEDEC', color: '#A33A31' },
+  refunded: { name: 'בוטל והוחזר', bg: '#FDEDEC', color: '#A33A31' },
   expired: { name: 'פג תוקף', bg: '#F0F3F5', color: '#5B6B7B' },
   pending_payment: { name: 'ממתין לתשלום', bg: '#F0F3F5', color: '#8A96A3' },
 };
@@ -56,7 +56,7 @@ export const daysText = (n: number) => (n === 1 ? 'יום אחד' : n === 2 ? '�
 /** The terms shown before payment (03-states.md, 07-rules-and-tokens.md). */
 export const termsFor = (years: number) => [
   `בתוקף ${yearsText(years)} מיום הקנייה, כנדרש בחוק`,
-  'מימוש בכמה ביקורים, בכל סניף של הקליניקה, עד שהיתרה נגמרת',
+  'מימוש בכמה ביקורים, בכל סניף של הקליניקה, עד לניצול היתרה',
   'בטיפול רפואי, כמו הזרקה, המימוש מותנה בייעוץ רפואי',
   'אי אפשר להמיר לכסף, אבל אפשר להעביר לאדם אחר',
   `ביטול תוך ${CANCEL_DAYS} ימים מהקנייה, כל עוד השובר לא מומש, בהחזר מלא`,

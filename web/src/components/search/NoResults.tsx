@@ -18,10 +18,10 @@ export interface Rescue {
 export function NoResults({ rescues, categories, hasFilters }: { rescues: Rescue[]; categories: Array<{ slug: string; name: string }>; hasFilters: boolean }) {
   return (
     <div className={s.noRes}>
-      <h3 className={s.noResTitle}>אין עסקים שעומדים בכל התנאים</h3>
+      <h3 className={s.noResTitle}>אין עסקים שמתאימים לכל התנאים</h3>
       <p className={s.noResLine}>
         {hasFilters
-          ? 'נסו להסיר סינון אחד, להרחיב לאזור שלם, או לחפש בכל הארץ. הרחבה אחת בדרך כלל פותרת את זה.'
+          ? 'נסו להסיר סינון אחד, להרחיב לאזור שלם, או לחפש בכל הארץ. לרוב מספיק לשנות דבר אחד.'
           : 'לא מצאנו עסק שהשם, העיר או הטיפולים שלו תואמים את החיפוש. נסו מילה אחרת, או עיינו לפי תחום טיפול.'}
       </p>
 

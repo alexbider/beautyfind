@@ -89,12 +89,12 @@ const STATUS: Record<BookingStatus, [string, Tone]> = {
   pending_payment: ['ממתין לתשלום', 'warn'],
   abandoned: ['לא הושלם', 'neutral'],
   confirmed: ['מאושר', 'ok'],
-  checked_in: ['הגעת לקליניקה', 'ok'],
+  checked_in: ['הגעתם לקליניקה', 'ok'],
   in_treatment: ['בטיפול', 'ok'],
   completed: ['הושלם', 'neutral'],
   cancelled_client: ['בוטל', 'neutral'],
   cancelled_clinic: ['בוטל על ידי הקליניקה', 'bad'],
-  no_show: ['לא הגעת', 'warn'],
+  no_show: ['לא הגעתם', 'warn'],
 };
 
 const REVIEW_STATUS: Record<ReviewStatus, [string, Tone]> = {
@@ -203,7 +203,7 @@ export async function loadAccount(user: User, now = new Date()): Promise<Account
     let notice: string | null = null;
     if (b.status === 'pending_payment') notice = 'התור יאושר אחרי תשלום המקדמה. אם התשלום לא יושלם, המועד ישוחרר.';
     else if (upcoming && b.status === 'confirmed' && h > 0 && h < window)
-      notice = `התור בעוד ${hoursLabel(h)}, בתוך חלון הביטול של ${hoursLabel(window)}. ביטול או שינוי עכשיו ייחשבו מאוחרים${deposit ? ' והמקדמה לא תוחזר' : ''}.`;
+      notice = `התור בעוד ${hoursLabel(h)}, בתוך חלון הביטול של ${hoursLabel(window)}. ביטול או שינוי עכשיו ייחשבו ביטול מאוחר${deposit ? ' והמקדמה לא תוחזר' : ''}.`;
 
     const [state, tone] = STATUS[b.status];
     const address = joinAddress(b.branch.address, b.branch.cityName);

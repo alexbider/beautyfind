@@ -33,7 +33,7 @@ export function WhatsAppButton({ branchId, e164, businessName, size = 'md', clas
 }
 
 /** Click-to-call (tel:+972…). Tracks `call_click`. `showNumber` appends the local number (LTR). */
-export function CallButton({ branchId, e164, size = 'md', className, label = 'שיחה', showNumber = false, iconOnly = false }: Base & { e164: string; label?: string; showNumber?: boolean; iconOnly?: boolean }) {
+export function CallButton({ branchId, e164, size = 'md', className, label = 'חיוג', showNumber = false, iconOnly = false }: Base & { e164: string; label?: string; showNumber?: boolean; iconOnly?: boolean }) {
   if (iconOnly) {
     return (
       <a
@@ -70,7 +70,7 @@ export function CallButton({ branchId, e164, size = 'md', className, label = 'ש
 }
 
 /** Waze navigation. Tracks `waze_click`. */
-export function WazeButton({ branchId, href, size = 'sm', className, label = 'ניווט בוויז' }: Base & { href: string; label?: string }) {
+export function WazeButton({ branchId, href, size = 'sm', className, label = 'ניווט ב־Waze' }: Base & { href: string; label?: string }) {
   return (
     <a
       href={href}

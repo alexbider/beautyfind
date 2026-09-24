@@ -54,7 +54,7 @@ type Photo = { file: File; url: string };
 const STEPS = 5;
 const FIELD_STEP: Record<ReviewField, number> = { rating: 1, title: 3, body: 3, declarations: 5 };
 const FIELD_EL: Record<ReviewField, string> = { rating: 'rv-sec-rating', title: 'rv-title', body: 'rv-body', declarations: 'rv-decls' };
-const STEP_HINT = ['', 'דירוג בכוכבים הוא החלק היחיד שחובה כאן', 'לא חובה. אפשר להמשיך בלי', 'כותרת קצרה ולפחות 40 תווים', 'לא חובה. אפשר להמשיך בלי תמונות', 'עוד שתי הצהרות, והביקורת נשלחת לבדיקה'];
+const STEP_HINT = ['', 'בשלב הזה רק הדירוג בכוכבים הוא חובה', 'לא חובה, אפשר לדלג', 'כותרת קצרה ולפחות 40 תווים', 'לא חובה, אפשר להמשיך בלי תמונות', 'עוד שתי הצהרות, והביקורת נשלחת לבדיקה'];
 
 /** Scrolls the page (the scroll container) so the element sits under the top bar; never scrollIntoView. */
 function scrollToEl(id: string) {
@@ -287,7 +287,7 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
       <div className={styles.fade}>
         <div {...at(1)}>
           <h1 className={styles.h1}>איך היה הטיפול?</h1>
-          <p className={styles.lead}>הביקורת שלכם עוזרת ללקוחות הבאות לבחור נכון. אפשר לכתוב רק על טיפול שהיה בפועל: הביקור שלכם אומת מול היומן של הקליניקה.</p>
+          <p className={styles.lead}>הביקורת שלכם עוזרת ללקוחות הבאים לבחור נכון. אפשר לכתוב רק על טיפול שהיה בפועל: הביקור שלכם אומת מול היומן של הקליניקה.</p>
         </div>
 
         <div className={styles.shell} data-flow data-dir={dir}>
@@ -343,7 +343,7 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
               <h2 id="rv-h2" className={`${styles.h2} ${styles.h2Tight}`}>
                 הביקורת שלכם
               </h2>
-              <p className={styles.sub}>ספרו מה עשו, איך הרגשתם ומה הייתם רוצות לדעת מראש. אין צורך בשמות של אנשי צוות בהקשר שלילי. אנחנו לא מפרסמים אותם.</p>
+              <p className={styles.sub}>ספרו מה עשו, איך הרגשתם ומה הייתם רוצים לדעת מראש. אל תציינו שמות של אנשי צוות בהקשר שלילי, כי לא נפרסם אותם.</p>
 
               <label className={styles.field}>
                 כותרת
@@ -453,8 +453,8 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
                   {photoConsent && <CheckIcon />}
                 </span>
                 <span className={styles.optText}>
-                  <span className={styles.consentName}>אני מאשרת פרסום התמונות בפרופיל הקליניקה</span>
-                  <span className={styles.optNote}>ללא אישור התמונות נשמרות בביקורת אך לא מתפרסמות</span>
+                  <span className={styles.consentName}>אני מאשר/ת את פרסום התמונות בפרופיל הקליניקה</span>
+                  <span className={styles.optNote}>ללא אישור, התמונות נשמרות בביקורת אך לא מתפרסמות</span>
                 </span>
               </label>
             </section>
@@ -516,7 +516,7 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
 
               <div className={styles.submitRow}>
                 <button type="button" className={styles.submit} onClick={submit} disabled={sending}>
-                  {sending ? 'שולחת…' : 'שליחת הביקורת'}
+                  {sending ? 'שולחים…' : 'שליחת הביקורת'}
                 </button>
                 <button type="button" className={styles.draft} onClick={saveDraft}>
                   שמירה כטיוטה
@@ -578,7 +578,7 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
                 ))}
               </ul>
               <p className={styles.rulesFoot}>
-                מלא הכללים ב־<Link href={ROUTES.listingStandards}>תקן הרישום</Link>.
+                הכללים המלאים ב־<Link href={ROUTES.listingStandards}>תקן הרישום</Link>.
               </p>
             </div>
           </aside>
@@ -588,7 +588,7 @@ export function ReviewForm({ token, visit, profileHref }: { token: string; visit
 
       <ActionBar mobileOnly error={stepError} hint={stepError ? undefined : STEP_HINT[step]}>
         <button type="button" className={styles.barBtn} onClick={next} disabled={sending}>
-          {step < STEPS ? (stepIsEmpty ? 'דילוג' : 'המשך') : sending ? 'שולחת…' : 'שליחת הביקורת'}
+          {step < STEPS ? (stepIsEmpty ? 'דילוג' : 'המשך') : sending ? 'שולחים…' : 'שליחת הביקורת'}
         </button>
       </ActionBar>
     </>

@@ -65,11 +65,11 @@ export const licenseOk = (v: string) => LIC_RE.test(v.trim()) && digits(v).lengt
 /** Same order as the design: the first failing field wins. */
 export function checkForm(f: InviteForm, need: Need): { field: FormField; error: string } | null {
   if (need.name && !nameOk(f.name)) return { field: 'name', error: 'כתבו שם פרטי ושם משפחה' };
-  if (need.phone && !phoneOk(f.phone)) return { field: 'phone', error: 'מספר הטלפון לא מלא' };
+  if (need.phone && !phoneOk(f.phone)) return { field: 'phone', error: 'מספר הטלפון אינו תקין' };
   if (need.password && !passwordOk(f.password)) return { field: 'password', error: 'הסיסמה חייבת להכיל לפחות 8 תווים' };
   if (!isProf(f.profession)) return { field: 'profession', error: 'בחרו תפקיד בקליניקה' };
   if (needsLicense(f.profession) && !licenseOk(f.license)) return { field: 'license', error: 'חסר מספר רישיון' };
-  if (takesCert(f.profession) && f.cert.trim() && !licenseOk(f.cert)) return { field: 'cert', error: 'מספר התעודה לא תקין' };
+  if (takesCert(f.profession) && f.cert.trim() && !licenseOk(f.cert)) return { field: 'cert', error: 'מספר התעודה אינו תקין' };
   if (f.specialty.length > 120) return { field: 'license', error: 'ההתמחות ארוכה מדי' };
   return null;
 }

@@ -85,7 +85,7 @@ export function PhaseView({ kicker, meta, phases, nowIdx }: {
 
       <div id={`${ids}-panel`} role="tabpanel" aria-labelledby={`${ids}-t${idx}`} className={styles.dd}>
         <section aria-labelledby={`${ids}-do`} className={styles.card}>
-          <h2 id={`${ids}-do`} className={styles.h2} data-tone="ok">כן</h2>
+          <h2 id={`${ids}-do`} className={styles.h2} data-tone="ok">מומלץ</h2>
           <ul className={styles.items}>
             {ph.dos.map(t => <li key={t}><span aria-hidden="true" data-tone="ok">✓</span><span>{t}</span></li>)}
           </ul>

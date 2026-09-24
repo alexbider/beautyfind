@@ -46,7 +46,7 @@ export function MoreMenu({
                   ) : r.kind === 'logout' ? (
                     <form action="/logout" method="post">
                       <button type="submit" className={styles.row} data-danger>
-                        <span className={styles.label}>{r.label ?? 'התנתקות'}</span>
+                        <span className={styles.label}>{r.label ?? 'יציאה מהחשבון'}</span>
                       </button>
                     </form>
                   ) : r.kind === 'cookies' ? (

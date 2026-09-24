@@ -9,8 +9,8 @@ export const LEAD_LIMITS = { name: 80, phone: 20, email: 160, treatment: 120, me
 export const LEAD_RATE_LIMIT = 3;
 
 /** Timeline text written to LeadEvent (kind `form`) when the business was emailed. */
-export const LEAD_EVENT_TEXT = 'פנייה מהטופס בפרופיל, נשלח מייל לעסק';
-export const LEAD_EVENT_TEXT_NO_EMAIL = 'פנייה מהטופס בפרופיל, לעסק אין כתובת מייל לשליחה';
+export const LEAD_EVENT_TEXT = 'פנייה מהטופס בפרופיל, נשלח דוא״ל לעסק';
+export const LEAD_EVENT_TEXT_NO_EMAIL = 'פנייה מהטופס בפרופיל, לעסק אין כתובת דוא״ל לשליחה';
 
 export interface LeadInput {
   branchId: string;
@@ -35,9 +35,9 @@ export function leadErrors(v: Omit<LeadInput, 'branchId' | 'website'>): Partial<
   const email = v.email.trim();
   if (name.length < 2) e.name = 'נא למלא שם';
   else if (name.length > LEAD_LIMITS.name) e.name = 'השם ארוך מדי';
-  if (!phone && !email) e.contact = 'נא להשאיר טלפון או אימייל, כדי שהעסק יוכל לחזור אליכם';
+  if (!phone && !email) e.contact = 'נא להשאיר טלפון או דוא״ל, כדי שהעסק יוכל לחזור אליכם';
   if (phone && (phone.length > LEAD_LIMITS.phone || !validPhone(phone))) e.phone = 'מספר הטלפון לא תקין';
-  if (email && (email.length > LEAD_LIMITS.email || !EMAIL_RE.test(email))) e.email = 'כתובת האימייל לא תקינה';
+  if (email && (email.length > LEAD_LIMITS.email || !EMAIL_RE.test(email))) e.email = 'כתובת הדוא״ל לא תקינה';
   if (v.treatment.trim().length > LEAD_LIMITS.treatment) e.treatment = 'שם הטיפול ארוך מדי';
   if (v.message.trim().length > LEAD_LIMITS.message) e.message = `ההודעה ארוכה מדי (עד ${LEAD_LIMITS.message} תווים)`;
   return e;

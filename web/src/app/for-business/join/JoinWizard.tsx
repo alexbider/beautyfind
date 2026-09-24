@@ -723,7 +723,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
                       );
                     })}
                   </div>
-                  <p className={styles.fineLg}>כרטיס עם תמונות מקבל פי שלושה יותר פניות. תמונות לפני ואחרי מחייבות הסכמה חתומה של הלקוחה, וההסכמה מנוהלת בכרטיס הלקוח, לא כאן.</p>
+                  <p className={styles.fineLg}>כרטיס עם תמונות עוזר ללקוחות לבחור. תמונות לפני ואחרי מחייבות הסכמה חתומה של הלקוחה, וההסכמה מנוהלת בכרטיס הלקוח, לא כאן.</p>
                 </section>
               )}
 

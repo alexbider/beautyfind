@@ -37,7 +37,7 @@ export default function Loading() {
         </div>
         <p role="status" className={s.skelStatus}>
           <span aria-hidden="true" className={s.spinner} />
-          <span>טוען תוצאות…</span>
+          <span>טוענים תוצאות…</span>
         </p>
       </main>
     </div>

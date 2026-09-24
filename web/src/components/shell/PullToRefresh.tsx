@@ -46,7 +46,7 @@ export function PullToRefresh({ children, onRefresh }: { children: React.ReactNo
     <div onTouchStart={onStart} onTouchMove={onMove} onTouchEnd={onEnd} onTouchCancel={onEnd}>
       <div className={styles.ptr} style={{ height: pull }} aria-hidden={!busy}>
         <span className={styles.ptrSpin} data-busy={busy || undefined} style={{ transform: `rotate(${pull * 3}deg)` }} />
-        {busy && <span className="sr-only" role="status">מרענן</span>}
+        {busy && <span className="sr-only" role="status">מרעננים…</span>}
       </div>
       {children}
     </div>

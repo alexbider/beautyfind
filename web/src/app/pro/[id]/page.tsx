@@ -31,8 +31,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const b = pr.branches[0];
   const prof = PROFESSION_NAME[pr.profession as PractitionerProfession];
   return {
-    title: `${pr.displayName}, ${prof}`,
-    description: `${pr.displayName}, ${prof} ב${b.name}, ${b.cityName}. טיפולים ומחירים, רישיון או הסמכה כפי שאומתו ב־BeautyFind, ואיפה אפשר לפגוש.`,
+    title: `${pr.displayName}, ${prof} ב${b.cityName}`,
+    description: `${pr.displayName}, ${prof} ב${b.name}, ${b.cityName}. טיפולים ומחירים, רישיון או הסמכה כפי שאומתו ב־BeautyFind, ואיפה אפשר לקבוע תור.`,
     alternates: { canonical: `/pro/${pr.id}` },
     robots: { index: false, follow: true },
   };

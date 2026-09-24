@@ -164,9 +164,9 @@ function docViews(p: PaymentRow, issuer: Issuer, onlyDocId?: string): DocView[] 
     const original = credit && d.referencesDocumentId ? p.documents.find(x => x.id === d.referencesDocumentId) : null;
     const creditedBy = !credit ? p.documents.filter(x => x.type === 'credit_note' && x.referencesDocumentId === d.id) : [];
     const notes: string[] = [];
-    if (original) notes.push(`מבטלת את ${original.type === 'receipt' ? 'קבלה' : 'חשבונית מס/קבלה'} ${original.number}.`);
-    for (const c of creditedBy) notes.push(`זוכתה בחשבונית זיכוי ${c.number}.`);
-    if (credit) notes.push('ההחזר מופיע בפירוט הכרטיס תוך 7–10 ימי עסקים, לפי חברת האשראי.');
+    if (original) notes.push(`מבטלת את ${original.type === 'receipt' ? 'קבלה' : 'חשבונית מס/קבלה'} מס׳ ${original.number}.`);
+    for (const c of creditedBy) notes.push(`זוכתה בחשבונית זיכוי מס׳ ${c.number}.`);
+    if (credit) notes.push('ההחזר יופיע בפירוט חיובי הכרטיס תוך 7–10 ימי עסקים, בהתאם לחברת האשראי.');
     else if (receiptOnly) notes.push('קבלה בלבד: חשבונית מס תופק כשהשובר ימומש בקליניקה.');
     else {
       notes.push(...statusNotes(p));
@@ -208,7 +208,7 @@ function docViews(p: PaymentRow, issuer: Issuer, onlyDocId?: string): DocView[] 
       ],
       method: methodText(p),
       notes: [
-        `זה אישור על התשלום ולא חשבונית מס. ${issuer.clinic} מנפיקה את חשבונית המס בעצמה ושולחת אותה ישירות. לא קיבלת? אפשר לבקש אותה מהקליניקה.`,
+        `זהו אישור תשלום, לא חשבונית מס. ${issuer.clinic} מנפיקה את חשבונית המס בעצמה ושולחת אותה ישירות. לא קיבלתם? אפשר לבקש אותה מהקליניקה.`,
         ...statusNotes(p),
       ],
       pdfUrl: null,
@@ -236,7 +236,7 @@ function trackViews(p: PaymentRow): TrackView[] {
         ? { name: 'התור בוטל', note: `${ddmm(cancelAt)} · ${hhmm(cancelAt)}`, done: true }
         : { name: 'בקשת ההחזר נפתחה', note: `${ddmm(r.createdAt)} · ${hhmm(r.createdAt)}`, done: true },
     ];
-    if (cn) steps.push({ name: 'חשבונית זיכוי הופקה', note: `מס׳ ${cn.number}${cn.sentTo ? ' · נשלחה למייל' : ''}`, done: true });
+    if (cn) steps.push({ name: 'חשבונית זיכוי הופקה', note: `מס׳ ${cn.number}${cn.sentTo ? ' · נשלחה בדוא״ל' : ''}`, done: true });
     else if (hasInvoice) steps.push({ name: 'חשבונית זיכוי', note: 'הקליניקה מפיקה אותה עם ההחזר', done: false });
     steps.push({
       name: 'ההחזר בדרך לכרטיס',

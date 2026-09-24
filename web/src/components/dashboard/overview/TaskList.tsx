@@ -9,9 +9,9 @@ import s from './overview.module.css';
 function note(t: Task): ReactNode {
   switch (t.key) {
     case 'menu':
-      if (t.done) return 'כל הטיפולים עם מחיר בשקלים, ללא "מחיר בהתאמה"';
+      if (t.done) return 'כל הטיפולים עם מחיר בשקלים, בלי ״מחיר בהתאמה״';
       if (t.missing === undefined) return 'עדיין אין טיפולים בתפריט. הוסיפו טיפולים עם מחיר בשקלים';
-      return <><Count n={t.missing} {...TREATMENTS} /> בלי מחיר. כל טיפול צריך מחיר בשקלים, ללא "מחיר בהתאמה"</>;
+      return <><Count n={t.missing} {...TREATMENTS} /> בלי מחיר. כל טיפול צריך מחיר בשקלים, בלי ״מחיר בהתאמה״</>;
     case 'hours':
       return 'כולל ציון מפורש של סגירה בשבת';
     case 'photos':
@@ -23,7 +23,7 @@ function note(t: Task): ReactNode {
         </>
       );
     case 'waze':
-      return 'מפחית שיחות "איך מגיעים" ומעלה פניות';
+      return 'מפחית שיחות של ״איך מגיעים״ ומגדיל את מספר הפניות';
     case 'medical':
       return 'חובה בכל תחום שכולל הזרקה או פעולה חודרנית';
     case 'reviews': {

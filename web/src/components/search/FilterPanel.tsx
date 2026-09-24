@@ -58,7 +58,7 @@ export function FilterPanel({ counts }: { counts: FacetCounts }) {
               </button>
             )}
             <button type="button" className={s.showBtn} aria-busy={pending || undefined} onClick={() => setPanelOpen(false)}>
-              {pending ? 'מעדכן תוצאות…' : total === 0 ? 'אין תוצאות, חזרה לרשימה' : <>הצגת <ResultCount n={total} /></>}
+              {pending ? 'מעדכנים את התוצאות…' : total === 0 ? 'אין תוצאות, חזרה לרשימה' : <>הצגת <ResultCount n={total} /></>}
             </button>
           </div>
         }

@@ -220,7 +220,7 @@ export function MenuEditor({
 
               {cat?.isMedical && (
                 <p className={s.medNote}>
-                  <strong>טיפול רפואי.</strong> מבוצע על ידי רופא/ה או אחות בפיקוח רופא/ה. לקוחות קובעים ייעוץ לפני הטיפול, ולכן אין לו קביעת תור אונליין ישירה.
+                  <strong>טיפול רפואי.</strong> מבוצע על ידי רופא/ה או אחות בפיקוח רופא/ה. לקוחות קובעים פגישת ייעוץ לפני הטיפול, ולכן אין לטיפול הזה קביעת תור אונליין ישירה.
                 </p>
               )}
 
@@ -250,7 +250,7 @@ export function MenuEditor({
       <div className={s.head}>
         <div className={s.headText}>
           <h1 id="h-menu" className={s.h1}>תפריט מחירים<span>.</span></h1>
-          <p className={s.sub}>מחירים בשקלים, ללא מע״מ, כפי שהם נגבים בפועל מלקוח חדש.</p>
+          <p className={s.sub}>מחירים בשקלים, לא כולל מע״מ, כפי שהם נגבים בפועל מלקוח חדש.</p>
         </div>
         {canEdit && dirty && (
           <div className={`${s.saveBar} bf-desk-only`}>
@@ -355,7 +355,7 @@ export function MenuEditor({
           <span className={s.footLine}>
             {line.head ?? <><span className="ltr">{line.live}</span> טיפולים מוצגים</>} מתוך <span className="ltr">{line.total}</span>
             {updatedAt && <> · עודכן לאחרונה <span className="ltr">{fmtDate(updatedAt)}</span></>}
-            {' · '}המחירים לא כולל מע״מ
+            {' · '}המחירים לא כוללים מע״מ
           </span>
         </div>
       </div>
@@ -419,7 +419,7 @@ export function MenuEditor({
             <div className={s.sheetEditor}>
               <div className={s.sheetTop}>
                 <label className={`${s.field} ${s.sheetPrice}`}>
-                  <span className={s.label}>מחיר בשקלים, לפני מע״מ</span>
+                  <span className={s.label}>מחיר בשקלים, לא כולל מע״מ</span>
                   <input
                     type="text"
                     dir="ltr"
@@ -467,7 +467,7 @@ export function MenuEditor({
           <path d="M10 6.2v.2M10 9v4.6" />
         </svg>
         <p>
-          <strong>למה זה חשוב.</strong> עסקים שמציגים מחיר לכל הטיפולים מקבלים בממוצע פי <span className="ltr">2.4</span> פניות מעסקים עם &quot;מחיר בהתאמה&quot;. פער חוזר בין המחיר כאן למחיר בקליניקה הוא הסיבה השכיחה לאזהרה לפי תקן הרישום.
+          <strong>למה זה חשוב.</strong> לקוחות משווים מחירים לפני שהם פונים, ומחיר גלוי לכל טיפול חוסך שאלות ומגדיל את הסיכוי שיבחרו בכם. פער חוזר בין המחיר כאן למחיר בקליניקה הוא הסיבה השכיחה ביותר לאזהרה לפי תקן הרישום.
         </p>
       </div>
     </section>

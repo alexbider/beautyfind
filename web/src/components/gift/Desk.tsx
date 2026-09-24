@@ -54,7 +54,7 @@ export function Desk({ canManage, invoicing }: { canManage: boolean; invoicing: 
     setErr('');
     setNote('');
     setConfirmCancel(false);
-    if (!code.trim()) return setErr('הקלידי קוד שובר.');
+    if (!code.trim()) return setErr('הקלידו קוד שובר.');
     start(async () => {
       const r = await deskFind(code);
       if (r.ok) setCard(r.card);
@@ -69,8 +69,8 @@ export function Desk({ canManage, invoicing }: { canManage: boolean; invoicing: 
     setErr('');
     setNote('');
     setConfirmCancel(false);
-    if (!code.trim()) return setErr('הקלידי קוד שובר.');
-    if (!amount.trim()) return setErr('הכניסי סכום למימוש.');
+    if (!code.trim()) return setErr('הקלידו קוד שובר.');
+    if (!amount.trim()) return setErr('הזינו סכום למימוש.');
     start(async () => {
       const r = await deskRedeem({ code, amount, bookingRef: bookingRef.trim() || undefined });
       if (r.ok) {
@@ -121,7 +121,7 @@ export function Desk({ canManage, invoicing }: { canManage: boolean; invoicing: 
           </>
         ) : null}
       </form>
-      {!canManage ? <p className={s.small}>בהרשאה שלך אפשר לבדוק שוברים. מימוש וביטול אפשריים בהרשאת ניהול.</p> : null}
+      {!canManage ? <p className={s.small}>בהרשאה שלכם אפשר לבדוק שוברים. מימוש וביטול אפשריים בהרשאת ניהול.</p> : null}
       {err ? <p role="alert" className={s.errorInline}>{err}</p> : null}
       {note ? <p className={`${s.note} ${s.noteWarn}`}>{note}</p> : null}
 
@@ -131,10 +131,10 @@ export function Desk({ canManage, invoicing }: { canManage: boolean; invoicing: 
           {canManage && card.cancellable ? (
             confirmCancel ? (
               <div className={`${s.note} ${s.noteBad}`} role="alertdialog" aria-label="אישור ביטול">
-                <p style={{ margin: '0 0 9px' }}>לבטל את השובר ולהחזיר <span className="ltr">{money(card.valueAgorot)}</span> לכרטיס של הקונה? אי אפשר לבטל את הביטול.</p>
+                <p style={{ margin: '0 0 9px' }}>לבטל את השובר ולהחזיר <span className="ltr">{money(card.valueAgorot)}</span> לכרטיס של הקונה? לא ניתן לבטל את הפעולה.</p>
                 <div className={s.actions}>
                   <button type="button" onClick={doCancel} disabled={busy} className={s.btnDanger}>ביטול והחזר</button>
-                  <button type="button" onClick={() => setConfirmCancel(false)} className={s.btnGhost}>השאר פעיל</button>
+                  <button type="button" onClick={() => setConfirmCancel(false)} className={s.btnGhost}>השארה בתוקף</button>
                 </div>
               </div>
             ) : (
@@ -167,7 +167,7 @@ function CardFacts({ card }: { card: DeskCard }) {
         <div><dt>סוג</dt><dd>{card.treatment ?? 'לפי סכום'}</dd></div>
       </dl>
       {card.medical ? (
-        <p className={`${s.note} ${s.noteWarn}`}>שובר לטיפול רפואי: המימוש רק אחרי ייעוץ שבו הרופא/ה אישר/ה את הטיפול. יש לקשר את מספר התור שנקבע מהייעוץ.</p>
+        <p className={`${s.note} ${s.noteWarn}`}>שובר לטיפול רפואי: המימוש אפשרי רק אחרי ייעוץ שבו הרופא/ה אישר/ה את הטיפול. יש לקשר את מספר התור שנקבע בייעוץ.</p>
       ) : null}
       {card.redemptions.length ? (
         <ul className={s.redList} aria-label="מימושים קודמים">
@@ -216,7 +216,7 @@ export function PhoneLookup() {
     setErr('');
     if (!code.trim()) {
       haptic('warning');
-      return setErr('הקלידי קוד שובר.');
+      return setErr('הקלידו קוד שובר.');
     }
     start(async () => {
       const r = await deskFind(code);
@@ -312,7 +312,7 @@ function CardScreen({ code, canManage, invoicing, onGone }: { code: string; canM
     setNote('');
     if (!amount.trim()) {
       haptic('warning');
-      return setErr('הכניסי סכום למימוש.');
+      return setErr('הזינו סכום למימוש.');
     }
     start(async () => {
       const r = await deskRedeem({ code: card.code, amount, bookingRef: bookingRef.trim() || undefined });
@@ -397,7 +397,7 @@ function CardScreen({ code, canManage, invoicing, onGone }: { code: string; canM
             </label>
           </div>
         )}
-        {!canManage ? <p className={s.small}>בהרשאה שלך אפשר לבדוק שוברים. מימוש וביטול אפשריים בהרשאת ניהול.</p> : null}
+        {!canManage ? <p className={s.small}>בהרשאה שלכם אפשר לבדוק שוברים. מימוש וביטול אפשריים בהרשאת ניהול.</p> : null}
         {note ? <p className={`${s.note} ${s.noteWarn}`}>{note}</p> : null}
         {canManage && card.cancellable ? <p className={s.small}>ביטול עם החזר כספי אפשרי תוך 14 ימים מהקנייה, כל עוד השובר לא מומש.</p> : null}
       </div>
@@ -424,13 +424,13 @@ function CardScreen({ code, canManage, invoicing, onGone }: { code: string; canM
         title="לבטל את השובר?"
         footer={
           <div className={d.sheetBtns}>
-            <button type="button" className={d.barGhost} onClick={() => setConfirm(false)}>השאר פעיל</button>
+            <button type="button" className={d.barGhost} onClick={() => setConfirm(false)}>השארה בתוקף</button>
             <button type="button" className={d.barDangerSolid} disabled={busy} onClick={doCancel}>ביטול והחזר</button>
           </div>
         }
       >
         <p className={d.sheetText}>
-          <span className="ltr">{money(card.valueAgorot)}</span> יוחזרו לכרטיס של הקונה, {card.buyer}. אי אפשר לבטל את הביטול.
+          <span className="ltr">{money(card.valueAgorot)}</span> יוחזרו לכרטיס של הקונה, {card.buyer}. לא ניתן לבטל את הפעולה.
         </p>
       </BottomSheet>
 

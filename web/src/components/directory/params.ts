@@ -20,7 +20,7 @@ export type SortKey = 'recommended' | 'rating' | 'reviews' | 'price';
 export const SORTS: Array<{ key: SortKey; name: string }> = [
   { key: 'recommended', name: 'מומלצים' },
   { key: 'rating', name: 'דירוג גבוה' },
-  { key: 'reviews', name: 'הכי מבוקרים' },
+  { key: 'reviews', name: 'הכי הרבה ביקורות' },
   { key: 'price', name: 'מחיר נמוך' },
 ];
 

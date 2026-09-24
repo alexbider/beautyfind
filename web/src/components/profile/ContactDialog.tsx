@@ -180,7 +180,7 @@ function ContactDialog({ branch, treatments, preset, onClose }: { branch: Contac
             <CheckMark size={26} strokeWidth={2} />
           </span>
           <p className={styles.doneText}>
-            העברנו את הפרטים ל{branch.name}. העסק יחזור אליכם בטלפון או באימייל שהשארתם.
+            העברנו את הפרטים ל{branch.name}. העסק יחזור אליכם בטלפון או בדוא״ל שהשארתם.
           </p>
           <button type="button" className={styles.doneBtn} onClick={onClose} autoFocus>
             סגירה
@@ -226,7 +226,7 @@ function ContactDialog({ branch, treatments, preset, onClose }: { branch: Contac
                 {errs.phone && <span id={fid('phone-e')} className={styles.fieldErr}>{errs.phone}</span>}
               </div>
               <div className={styles.field}>
-                <label htmlFor={fid('email')} className={styles.label}>אימייל</label>
+                <label htmlFor={fid('email')} className={styles.label}>דוא״ל</label>
                 <input
                   id={fid('email')}
                   type="email"
@@ -243,7 +243,7 @@ function ContactDialog({ branch, treatments, preset, onClose }: { branch: Contac
                 {errs.email && <span id={fid('email-e')} className={styles.fieldErr}>{errs.email}</span>}
               </div>
             </div>
-            <span className={styles.hint}>מספיק טלפון או אימייל, אחד מהם.</span>
+            <span className={styles.hint}>מספיק טלפון או דוא״ל.</span>
 
             <div className={styles.field}>
               <label htmlFor={fid('treatment')} className={styles.label}>
@@ -265,7 +265,7 @@ function ContactDialog({ branch, treatments, preset, onClose }: { branch: Contac
               )}
               {errs.treatment && <span className={styles.fieldErr}>{errs.treatment}</span>}
             </div>
-            {medical && <p className={styles.medNote}>טיפול רפואי נקבע בתיאום ייעוץ רפואי. העסק יחזור אליכם לתיאום הייעוץ.</p>}
+            {medical && <p className={styles.medNote}>טיפול רפואי נקבע אחרי ייעוץ רפואי. העסק יחזור אליכם לתיאום הייעוץ.</p>}
 
             <div className={styles.field}>
               <label htmlFor={fid('message')} className={styles.label}>

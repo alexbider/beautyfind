@@ -9,7 +9,7 @@ import { ilDate, roleSummary } from './shared';
 
 export const metadata: Metadata = {
   title: 'הצטרפות לצוות',
-  description: 'הצטרפות לצוות קליניקה ב־BeautyFind: קבלת הזמנה, אימות טלפון והרשאות לפי תפקיד.',
+  description: 'הצטרפות לצוות של קליניקה ב־BeautyFind: קבלת ההזמנה, אימות הטלפון והרשאות לפי תפקיד.',
   robots: { index: false, follow: false },
   // The token is in the path: never hand it to another site in a Referer header.
   referrer: 'no-referrer',

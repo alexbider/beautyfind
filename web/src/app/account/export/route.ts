@@ -47,7 +47,7 @@ export async function GET() {
   const agorot = (n: number | null) => (n == null ? null : n / 100);
   const data = {
     exportedAt: new Date().toISOString(),
-    note: 'כל הסכומים בשקלים. מחירי טיפולים לפני מע״מ; תשלומים ומסמכים כוללים מע״מ כמפורט.',
+    note: 'כל הסכומים בשקלים. מחירי טיפולים לא כולל מע״מ; תשלומים ומסמכים כוללים מע״מ כמפורט.',
     account: {
       fullName: user.fullName, phone: user.phone, email: user.email, createdAt: user.createdAt,
       phoneVerifiedAt: user.phoneVerifiedAt, emailVerifiedAt: user.emailVerifiedAt, termsAcceptedAt: user.termsAcceptedAt, marketingOptIn: user.marketingOptIn,
@@ -69,7 +69,7 @@ export async function GET() {
     messageConsents: consents,
     healthDeclarations: {
       count: declarations,
-      note: 'תשובות הצהרות הבריאות שמורות אצל הקליניקה שטיפלה בך ואינן כלולות בקובץ. אפשר לבקש עותק או תיקון ישירות מהקליניקה.',
+      note: 'תשובות הצהרות הבריאות שמורות אצל הקליניקה שטיפלה בכם ואינן כלולות בקובץ. אפשר לבקש עותק או תיקון ישירות מהקליניקה.',
     },
     privacyRequests: requests,
   };

@@ -159,7 +159,7 @@ export function AccountView({ data, initialTab }: { data: AccountData; initialTa
                   {c.responsible && <p className={styles.resp}>{c.responsible}</p>}
                   <div className={styles.actions}>
                     <Link href={c.bookHref} className={styles.btnPrimarySm}>{c.bookLabel === 'לפרופיל' ? 'לפרופיל הקליניקה' : c.bookLabel}</Link>
-                    {c.savedIso && <span className={styles.savedAt}>נוספה למועדפים {relHe(new Date(c.savedIso))}</span>}
+                    {c.savedIso && <span className={styles.savedAt}>נוספה {relHe(new Date(c.savedIso))}</span>}
                   </div>
                 </article>
               ))}

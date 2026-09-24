@@ -79,7 +79,7 @@ export function LeadsBoard({ leads, canEdit }: { leads: LeadDTO[]; canEdit: bool
     { label: 'פניות פתוחות', value: String(openN), note: 'ממתינות לפעולה שלכם' },
     { label: 'נקבע תור', value: String(bookedN), note: <>מתוך {countPhrase(total)} בלוח</> },
     { label: 'שיעור המרה לתור', value: `${total ? Math.round((bookedN / total) * 100) : 0}%`, note: 'מכלל הפניות שנרשמו' },
-    { label: 'שווי בצנרת', value: nis(pipeline), note: 'לא כולל טיפולים שהסתיימו' },
+    { label: 'שווי הפניות בתהליך', value: nis(pipeline), note: 'לא כולל טיפולים שהסתיימו' },
   ];
 
   const chips = [{ key: 'all' as Filter, name: 'הכול', count: total }].concat(
@@ -101,8 +101,8 @@ export function LeadsBoard({ leads, canEdit }: { leads: LeadDTO[]; canEdit: bool
         <div className={styles.headText}>
           <h1 id="h-leads" ref={headingRef} tabIndex={-1} className={styles.h1}>ניהול לקוחות<span className={styles.dot}>.</span></h1>
           <p className={styles.lede}>
-            טופס יצירת הקשר בפרופיל שולח לכם מייל ובמקביל פותח כרטיס לקוח כאן, עם תאריך ושעה. מי שהתקשר או כתב ב־WhatsApp, הוסיפו ידנית,
-            כדי שכל ההיסטוריה תשב במקום אחד.{CLINIC_HREF && ' לתיק לקוח מלא, יומן וקופה, מעבר ל־CRM של הקליניקה.'}
+            טופס יצירת הקשר בפרופיל שולח לכם מייל ובמקביל פותח כרטיס לקוח כאן, עם תאריך ושעה. את מי שהתקשר או כתב ב־WhatsApp הוסיפו ידנית,
+            כדי שכל ההיסטוריה תהיה במקום אחד.{CLINIC_HREF && ' לתיק לקוח מלא, ליומן ולקופה, עברו ל־CRM של הקליניקה.'}
           </p>
         </div>
         {CLINIC_HREF && (
@@ -220,7 +220,7 @@ export function LeadsBoard({ leads, canEdit }: { leads: LeadDTO[]; canEdit: bool
           total === 0 ? (
             <div className={styles.empty}>
               <p className={styles.emptyTitle}>עדיין אין לקוחות בלוח</p>
-              <p className={styles.emptyNote}>פניות מהטופס בפרופיל יופיעו כאן אוטומטית. מי שהתקשר, כתב או נכנס לקליניקה, הוסיפו ידנית.</p>
+              <p className={styles.emptyNote}>פניות מהטופס בפרופיל יופיעו כאן אוטומטית. את מי שהתקשר, כתב או הגיע לקליניקה, הוסיפו ידנית.</p>
             </div>
           ) : (
             <div className={styles.empty}>

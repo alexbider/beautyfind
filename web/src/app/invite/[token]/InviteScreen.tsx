@@ -188,7 +188,7 @@ function StateCard({
       title = 'פג תוקף ההזמנה';
       body = (
         <>
-          הזמנות לצוות תקפות 7 ימים. ההזמנה הזו ל{invite?.bizName} נשלחה ב־<Ltr className={styles.num}>{invite?.sent}</Ltr>. נבקש מ{invite?.inviterName} לשלוח הזמנה חדשה.
+          הזמנה לצוות תקפה 7 ימים. ההזמנה הזו ל{invite?.bizName} נשלחה ב־<Ltr className={styles.num}>{invite?.sent}</Ltr>. אפשר לבקש מ{invite?.inviterName} הזמנה חדשה.
         </>
       );
       action = requestButton;
@@ -217,7 +217,7 @@ function StateCard({
       break;
     case 'declined':
       title = 'ההזמנה נדחתה';
-      body = <>ההזמנה ל{invite?.bizName} נדחתה והקישור כבר לא פעיל. אם זו טעות, נבקש מ{invite?.inviterName} לשלוח הזמנה חדשה.</>;
+      body = <>ההזמנה ל{invite?.bizName} נדחתה, והקישור כבר לא פעיל. אם זו טעות, אפשר לבקש מ{invite?.inviterName} הזמנה חדשה.</>;
       action = requestButton;
       break;
     case 'revoked':
@@ -451,7 +451,7 @@ const ERR: Record<Fail['error'], string> = {
   cooldown: '',
   otp_invalid: 'הקוד שגוי. בדקו את הספרות ונסו שוב.',
   otp_expired: 'תוקף הקוד פג. שלחו קוד חדש.',
-  otp_too_many: 'יותר מדי ניסיונות. שלחו קוד חדש.',
+  otp_too_many: 'היו יותר מדי ניסיונות. שלחו קוד חדש.',
 };
 
 // Draft (spec §3.4): everything but the password survives a reload of the invite link.
@@ -660,10 +660,10 @@ function JoinForm({
     const doneBody =
       `הצטרפת ל${done.bizName} בהרשאת ${done.roleName}.` +
       (done.verification === 'license'
-        ? ' מספר הרישיון נשלח לאימות: נעדכן במייל כשיאושר, בדרך כלל תוך יום עסקים.' +
-          (done.profession === 'doctor' ? ' השם שלך יופיע בפרופיל כ־אחריות רפואית רק אחרי האישור.' : ' הרישיון יוצג בפרופיל כמאומת רק אחרי האישור.')
+        ? ' מספר הרישיון נשלח לאימות, ונעדכן במייל כשיאושר (בדרך כלל תוך יום עסקים).' +
+          (done.profession === 'doctor' ? ' השם שלך יופיע בפרופיל תחת ״אחריות רפואית״ רק אחרי האישור.' : ' הרישיון יוצג בפרופיל כמאומת רק אחרי האישור.')
         : done.verification === 'cert'
-          ? ' מספר התעודה נשלח לבדיקה: אחרי האישור השם שלך יופיע בפרופיל כ־איש מקצוע אחראי.'
+          ? ' מספר התעודה נשלח לבדיקה, ואחרי האישור השם שלך יופיע בפרופיל תחת ״איש מקצוע אחראי״.'
           : ` שלחנו עדכון ל${done.inviterName}.`);
     return (
       <div className={styles.done}>
@@ -721,7 +721,7 @@ function JoinForm({
         <button type="submit" className={`${styles.submit} bf-desk-only`} disabled={busy} aria-busy={busy || undefined}>
           אימות והצטרפות
         </button>
-        <ActionBar mobileOnly hint="הקוד הגיע ב־SMS">
+        <ActionBar mobileOnly hint="הקוד נשלח ב־SMS">
           <button type="submit" form="inv-code-form" className={styles.submit} disabled={busy} aria-busy={busy || undefined}>
             אימות והצטרפות
           </button>
@@ -870,8 +870,8 @@ function JoinForm({
           </label>
           <p className={styles.licNote}>
             {prof === 'doctor'
-              ? 'נבדק מול פנקס משרד הבריאות לפני שהשם שלך יופיע בפרופיל כ־אחריות רפואית. עד האימות אפשר לעבוד במערכת כרגיל.'
-              : 'נבדק מול פנקס משרד הבריאות לפני שהרישיון יוצג בפרופיל כמאומת. עד האימות אפשר לעבוד במערכת כרגיל.'}
+              ? 'המספר נבדק מול פנקס משרד הבריאות לפני שהשם שלך יופיע בפרופיל תחת ״אחריות רפואית״. עד האימות אפשר לעבוד במערכת כרגיל.'
+              : 'המספר נבדק מול פנקס משרד הבריאות לפני שהרישיון יוצג בפרופיל כמאומת. עד האימות אפשר לעבוד במערכת כרגיל.'}
           </p>
         </div>
       )}
@@ -890,7 +890,7 @@ function JoinForm({
               className={`${styles.input} ${styles.inputLtr} ${styles.num}`}
             />
           </label>
-          <p className={styles.licNote}>תעודה מאומתת מציגה את השם שלך בפרופיל כ־איש מקצוע אחראי. אפשר להוסיף אותה גם מאוחר יותר.</p>
+          <p className={styles.licNote}>עם תעודה מאומתת, השם שלך יוצג בפרופיל תחת ״איש מקצוע אחראי״. אפשר להוסיף אותה גם מאוחר יותר.</p>
         </div>
       )}
 

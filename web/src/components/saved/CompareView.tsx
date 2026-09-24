@@ -33,7 +33,7 @@ export function CompareView({ cols }: { cols: CompareColumn[] }) {
 
   const rows: Array<{ label: string; cells: Cell[] }> = [
     {
-      label: `מחיר החל מ · ${treatName}`,
+      label: `מחיר התחלתי · ${treatName}`,
       cells: cols.map((c, i) =>
         prices[i] != null
           ? { v: <span className="ltr tnum">{nisFromAgorot(prices[i]!)}</span>, sub: 'לא כולל מע״מ', best: prices[i] === bestPrice }
@@ -47,7 +47,7 @@ export function CompareView({ cols }: { cols: CompareColumn[] }) {
     {
       label: 'דירוג Google',
       cells: cols.map(c =>
-        c.google ? { v: <span className="ltr tnum">★ {ratingText(c.google.rating)}</span>, sub: `${reviewsCount(c.google.count)} בגוגל` } : { v: 'אין נתון', dim: true },
+        c.google ? { v: <span className="ltr tnum">★ {ratingText(c.google.rating)}</span>, sub: `${reviewsCount(c.google.count)} ב־Google` } : { v: 'אין נתון', dim: true },
       ),
     },
     {
@@ -76,7 +76,7 @@ export function CompareView({ cols }: { cols: CompareColumn[] }) {
       <div className={styles.head}>
         <div className={styles.headText}>
           <h1 className={styles.h1}>השוואת קליניקות</h1>
-          <p className={styles.sub}>עד שלוש קליניקות, אותם שדות, אותו טיפול.</p>
+          <p className={styles.sub}>השוו עד שלוש קליניקות לפי אותו טיפול ואותם נתונים.</p>
         </div>
         <SavedTabs current="compare" cmp={cmp} />
       </div>
@@ -133,7 +133,7 @@ export function CompareView({ cols }: { cols: CompareColumn[] }) {
             </table>
           </div>
           <p className={styles.foot2}>
-            הנתונים מגיעים מהקליניקות עצמן. המחירים לא כוללים מע״מ. דירוג Google ודירוג BeautyFind מוצגים בנפרד ולא מתמזגים. מקום ממומן לא משפיע על ההשוואה. הערך המודגש בשורת המחיר מסמן את הנמוך ביותר, לא המלצה.
+            הנתונים מגיעים מהקליניקות עצמן. המחירים לא כוללים מע״מ. דירוג Google ודירוג BeautyFind מוצגים בנפרד ואינם מתמזגים. מקום ממומן לא משפיע על ההשוואה. הערך המודגש בשורת המחיר הוא הנמוך ביותר, ואינו המלצה.
           </p>
         </div>
       )}

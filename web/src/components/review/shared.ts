@@ -2,10 +2,10 @@
 // No 'server-only' marker: nothing here touches the database or secrets.
 // Rules: 03-states.md "Review" (rating, title ≥4, body ≥40, both declarations; photos publish only with consent).
 
-export const RATING_LABELS = ['', 'לא הייתי חוזרת. ספרו לנו מה קרה', 'לא עמד בציפיות', 'סביר, היו דברים טובים ופחות', 'טוב, הייתי חוזרת', 'מעולה, הייתי ממליצה לחברה'];
+export const RATING_LABELS = ['', 'חוויה לא טובה. ספרו לנו מה קרה', 'לא עמד בציפיות', 'סביר, היו דברים טובים וגם פחות', 'טוב, שווה לחזור', 'מעולה, מומלץ בחום'];
 
 export const ASPECTS = [
-  { key: 'clean', name: 'נקיון וסטריליזציה' },
+  { key: 'clean', name: 'ניקיון וסטריליזציה' },
   { key: 'explain', name: 'הסבר לפני הטיפול' },
   { key: 'result', name: 'תוצאה בפועל' },
   { key: 'time', name: 'עמידה בזמנים' },
@@ -15,11 +15,11 @@ export const ASPECTS = [
 export type AspectKey = (typeof ASPECTS)[number]['key'];
 
 export const TAGS = [
-  'ייעוץ ללא לחץ למכור',
+  'ייעוץ בלי לחץ מכירה',
   'הוסבר על סיכונים',
   'המתנה קצרה',
-  'מחיר כמו שנאמר מראש',
-  'הנחיות אחרי בוואטסאפ',
+  'מחיר כפי שנאמר מראש',
+  'הנחיות המשך בוואטסאפ',
   'חניה נוחה',
   'התאמה אישית',
   'מכשור נקי ומכוסה',
@@ -41,7 +41,7 @@ export const ANON_NAME = 'לקוחה מאומתת';
 
 export const DECLARATIONS = [
   { key: 'real', label: 'הביקורת מתארת טיפול שעברתי בפועל בקליניקה הזו', note: 'ביקורת שאינה מאומתת לא מתפרסמת' },
-  { key: 'nointerest', label: 'אין לי קשר עסקי לקליניקה ולא קיבלתי תמורה על הביקורת', note: 'תמורה בעד ביקורת אסורה לפי התקן' },
+  { key: 'nointerest', label: 'אין לי קשר עסקי לקליניקה ולא קיבלתי תמורה על הביקורת', note: 'תמורה בעד ביקורת אסורה לפי תקן הרישום' },
 ] as const;
 
 export const RULES: { ok: boolean; text: string }[] = [
@@ -72,7 +72,7 @@ export const nameModeLabel = (mode: NameMode, clientName: string) =>
 export const NAME_MODE_NOTES: Record<NameMode, string> = {
   full: 'הביקורת מקבלת אמינות גבוהה יותר',
   initial: 'ברירת המחדל שלנו',
-  anon: 'מסומנת כ"ביקור אומת" אך בלי שם',
+  anon: 'מסומנת ״ביקור אומת״, בלי שם',
 };
 
 /** How the name will appear, for the success card. */
@@ -98,7 +98,7 @@ export type ReviewField = 'rating' | 'title' | 'body' | 'declarations';
 export function checkReview(r: ReviewInput): { field: ReviewField; error: string } | null {
   if (!(Number.isInteger(r.rating) && r.rating >= 1 && r.rating <= 5)) return { field: 'rating', error: 'בחרו דירוג בכוכבים' };
   if (r.title.trim().length < TITLE_MIN) return { field: 'title', error: 'הוסיפו כותרת קצרה לביקורת' };
-  if (r.body.trim().length < BODY_MIN) return { field: 'body', error: 'כתבו לפחות 40 תווים. ביקורת קצרה מדי לא עוזרת לאף אחת' };
+  if (r.body.trim().length < BODY_MIN) return { field: 'body', error: 'כתבו לפחות 40 תווים. ביקורת קצרה מדי לא עוזרת לאחרים' };
   if (!r.declarations.real || !r.declarations.nointerest) return { field: 'declarations', error: 'יש לאשר את שתי ההצהרות בתחתית הטופס' };
   return null;
 }

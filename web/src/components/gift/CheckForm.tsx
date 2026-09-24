@@ -33,8 +33,8 @@ export function CheckForm({ initial }: { initial: string }) {
   return (
     <div className={`${s.narrow} ${s.fade}`}>
       <div>
-        <h1 className={s.h1}>קיבלת שובר?</h1>
-        <p className={s.lead} style={{ margin: 0 }}>הקלידי את הקוד כדי לראות יתרה, תוקף ואיפה אפשר לממש.</p>
+        <h1 className={s.h1}>קיבלתם שובר?</h1>
+        <p className={s.lead} style={{ margin: 0 }}>הקלידו את הקוד כדי לראות יתרה, תוקף ואיפה אפשר לממש אותו.</p>
       </div>
       <form className={s.codeRow} onSubmit={e => { e.preventDefault(); check(); }}>
         <input
@@ -46,8 +46,8 @@ export function CheckForm({ initial }: { initial: string }) {
       {res && !res.ok ? (
         <p role="alert" className={s.errorInline}>
           {res.error === 'rate'
-            ? 'יותר מדי ניסיונות בזמן קצר. נסי שוב בעוד כמה דקות.'
-            : 'הקוד לא נמצא. בדקי שהעתקת את כל התווים, כולל האותיות שבהתחלה. אפשר גם לפנות לקליניקה שהנפיקה את השובר.'}
+            ? 'יותר מדי ניסיונות בזמן קצר. נסו שוב בעוד כמה דקות.'
+            : 'הקוד לא נמצא. בדקו שהעתקתם את כל התווים, כולל האותיות שבהתחלה. אפשר גם לפנות לקליניקה שהנפיקה את השובר.'}
         </p>
       ) : null}
       {card ? (
@@ -98,7 +98,7 @@ export function CheckForm({ initial }: { initial: string }) {
             </div>
           ) : null}
           <p className={s.resultNote}>
-            השובר מקוזז מהתשלום בקליניקה, ועל כל מימוש מופקת חשבונית מס. בטיפול בהזרקה, המימוש אחרי ייעוץ רפואי, והרופאה מחליטה אם הטיפול מתאים.
+            השובר מקוזז מהתשלום בקליניקה, ועל כל מימוש מופקת חשבונית מס. בטיפול בהזרקה, המימוש מתאפשר אחרי ייעוץ רפואי, והרופא/ה מחליט/ה אם הטיפול מתאים.
             {card.medical ? ' השובר הזה הוא לטיפול רפואי, ולכן יש לקבוע קודם פגישת ייעוץ.' : ''}
           </p>
         </div>

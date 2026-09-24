@@ -10,7 +10,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const sp = await searchParams;
   return {
     title: 'בדיקת יתרה בשובר מתנה',
-    description: 'קיבלת שובר מתנה לקליניקה דרך BeautyFind? הקלידי את הקוד כדי לראות יתרה, תוקף ואיפה אפשר לממש.',
+    description: 'קיבלתם שובר מתנה לקליניקה דרך BeautyFind? הקלידו את הקוד כדי לראות יתרה, תוקף ואיפה אפשר לממש אותו.',
     alternates: { canonical: '/gift/check' },
     // A link that carries a code is personal: never index it.
     robots: sp.code ? { index: false, follow: false } : undefined,

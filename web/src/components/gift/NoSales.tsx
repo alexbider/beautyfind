@@ -9,7 +9,7 @@ export function NoSales({ branch }: { branch: { id: string; name: string; slug: 
     <div className={`${s.empty} ${s.fade}`}>
       <h1 className={s.h1Sm}>שוברי מתנה ל{branch.name}</h1>
       <p>
-        {branch.name} עדיין לא מוכרת שוברי מתנה באתר. אפשר לפנות ישירות לקליניקה ולשאול על שובר או מתנה, והם ישמחו לעזור.
+        {branch.name} עדיין לא מוכרת שוברי מתנה באתר. אפשר לפנות ישירות לקליניקה ולשאול על שובר או מתנה, והצוות ישמח לעזור.
       </p>
       <div className={s.actions}>
         {branch.whatsapp ? <WhatsAppButton branchId={branch.id} e164={branch.whatsapp} businessName={branch.name} /> : null}
@@ -17,7 +17,7 @@ export function NoSales({ branch }: { branch: { id: string; name: string; slug: 
         <Link href={profileHref(branch)} className={s.btnGhost}>לעמוד הקליניקה</Link>
       </div>
       <p className={s.small}>
-        קיבלת שובר? <Link href="/gift/check">לבדיקת יתרה</Link>.
+        קיבלתם שובר? <Link href="/gift/check">לבדיקת יתרה</Link>.
       </p>
     </div>
   );

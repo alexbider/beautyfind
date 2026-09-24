@@ -31,7 +31,7 @@ export function BillingDetails({ initial, canEdit }: { initial: Values; canEdit:
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setTried(true);
-    if (hpBad) return setError('מספר ח.פ או עוסק מורשה צריך להכיל בדיוק 9 ספרות.');
+    if (hpBad) return setError('מספר ח״פ או עוסק מורשה צריך להכיל בדיוק 9 ספרות.');
     if (invBad || cpaBad) return setError('אחת מכתובות הדוא״ל אינה תקינה.');
     start(async () => {
       const r = await saveBillingDetails(v);
@@ -47,7 +47,7 @@ export function BillingDetails({ initial, canEdit }: { initial: Values; canEdit:
     <form onSubmit={submit} noValidate>
       <div className={s.fields}>
         <label className={`${s.field} ${s.fieldNarrow}`}>
-          <span>ח.פ / עוסק מורשה</span>
+          <span>ח״פ או עוסק מורשה</span>
           <input
             type="text" dir="ltr" inputMode="numeric" autoComplete="off" value={v.companyNo} onChange={set('companyNo')}
             disabled={!canEdit} aria-invalid={tried && hpBad} className={`${s.input} ${s.inputBold}`}
@@ -61,14 +61,14 @@ export function BillingDetails({ initial, canEdit }: { initial: Values; canEdit:
           />
         </label>
         <label className={s.field}>
-          <span>משרד ראיית החשבון</span>
+          <span>משרד רואה החשבון</span>
           <input
             type="email" dir="ltr" autoComplete="off" value={v.accountantEmail} onChange={set('accountantEmail')}
             disabled={!canEdit} aria-invalid={tried && cpaBad} className={s.input}
           />
         </label>
       </div>
-      <p className={s.hint}>כשמוזנת כתובת של משרד ראיית החשבון, עותק מכל חשבונית נשלח אליה ישירות ביום החיוב.</p>
+      <p className={s.hint}>כשמוזנת כתובת של משרד רואה החשבון, עותק של כל חשבונית נשלח אליה ישירות ביום החיוב.</p>
       {canEdit ? (
         <div className={s.saveRow}>
           <button type="submit" className={s.primary} disabled={busy || !dirty}>{busy ? 'שומר…' : 'שמירת הפרטים'}</button>

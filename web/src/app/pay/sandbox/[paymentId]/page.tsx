@@ -54,7 +54,7 @@ export default async function SandboxPay({ params, searchParams }: { params: Pro
               <button name="result" value="fail" className={styles.fail}>סימולציית כישלון</button>
             </form>
           ) : (
-            <p className={styles.meta}>התשלום כבר עובד ({p.status}).</p>
+            <p className={styles.meta}>התשלום כבר טופל ({p.status}).</p>
           )}
         </div>
       </main>

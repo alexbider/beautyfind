@@ -118,7 +118,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
 
   const emptyLine = anyLive
     ? 'עדיין אין צפיות בטווח הזה. הגרף יתמלא עם הצפיות הראשונות בפרופיל.'
-    : 'הנתונים יופיעו כשהפרופיל יתפרסם ויתחילו צפיות.';
+    : 'הנתונים יופיעו אחרי שהפרופיל יתפרסם ויתחיל לקבל צפיות.';
   const funnelEmpty = funnelSteps.every(x => x.value === 0);
 
   return (
@@ -150,7 +150,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
           ) : (
             <EmptyChart height={180}>{emptyLine}</EmptyChart>
           )}
-          <p className={ui.foot}>נספרים רק מבקרים שאישרו עוגיות אנליטיקה, ולכן המספרים בפועל גבוהים מעט יותר.</p>
+          <p className={ui.foot}>נספרים רק מבקרים שאישרו עוגיות אנליטיקה, ולכן המספרים בפועל מעט גבוהים יותר.</p>
         </div>
 
         <div className={ui.twoCols}>
@@ -200,7 +200,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
                   </>
                 ) : (
                   <>
-                    הפרופיל עדיין לא מופיע ברשימות. אחרי הפרסום תוצגו ברשימת {listName}, לפי דירוג Google, מספר הביקורות ושלמות הפרופיל. תשלום אינו משפיע על הדירוג האורגני.
+                    הפרופיל עדיין לא מופיע ברשימות. אחרי הפרסום תופיעו ברשימת {listName}, בסדר שנקבע לפי דירוג Google, מספר הביקורות ושלמות הפרופיל. תשלום אינו משפיע על הדירוג האורגני.
                   </>
                 )}
               </p>
@@ -226,13 +226,13 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
               <p className={ui.insight}>
                 הכי הרבה פניות נכנסות בין <span className="ltr">{pad(HOURS[bestAt])}:00</span> ל־<span className="ltr">{pad(HOURS[bestAt] + 3)}:00</span> (
                 <span className="ltr">{nf(bestSum)}</span> מתוך <span className="ltr">{nf(hourTotal)}</span>). שעת השיא היא{' '}
-                <span className="ltr">{pad(peakHour)}:00</span>, כדאי שמישהו יהיה זמין למענה אז.
+                <span className="ltr">{pad(peakHour)}:00</span>, ולכן כדאי שמישהו יהיה זמין למענה בשעה הזו.
                 {outside > 0 ? <> עוד <Count n={outside} one="פנייה אחת הגיעה" two="שתי פניות הגיעו" many="פניות הגיעו" /> מחוץ לשעות האלה.</> : null}
               </p>
             </>
           ) : (
             <EmptyChart height={136}>
-              {anyLive ? 'עדיין אין פניות בימים ראשון–שישי בטווח הזה.' : 'הנתונים יופיעו כשהפרופיל יתפרסם ויתחילו פניות.'}
+              {anyLive ? 'עדיין אין פניות בימים ראשון–שישי בטווח הזה.' : 'הנתונים יופיעו אחרי שהפרופיל יתפרסם ויתחיל לקבל פניות.'}
             </EmptyChart>
           )}
         </div>
@@ -242,7 +242,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
           <p className={ui.metaGap} style={{ marginBottom: 18 }}>{RANGE_TITLE[range]}</p>
           {funnelEmpty ? <EmptyChart height={120}>{emptyLine}</EmptyChart> : <Funnel steps={funnelSteps} />}
           <p className={ui.foot}>
-            צפיות והקלקות נמדדות אוטומטית. משלב &quot;פניות שנרשמו בלוח&quot; ומטה הנתון מגיע ממה שתיעדתם בלשונית לקוחות, ולכן שיחת טלפון שלא נרשמה לא תופיע כאן.
+            צפיות והקלקות נמדדות אוטומטית. משלב ״פניות שנרשמו בלוח״ ומטה הנתון מגיע ממה שתיעדתם בלשונית לקוחות, ולכן שיחת טלפון שלא נרשמה לא תופיע כאן.
             {funnelSteps[0].value > 0 ? <> שיעור הפנייה: <span className="ltr">{pctOf(funnelSteps[1].value, funnelSteps[0].value)}%</span> מהצפיות.</> : null}
           </p>
         </div>

@@ -26,9 +26,9 @@ export default async function UnsubscribePage({ params }: { params: Promise<{ to
     body = (
       <div className={styles.invalid}>
         <h1 className={styles.h1}>הקישור לא תקין</h1>
-        <p>ייתכן שהקישור הועתק חלקית. כדי להפסיק לקבל דיוור, אפשר לשלוח ״הסר״ בתשובה להודעה שקיבלת, וזה נכנס לתוקף מיד.</p>
+        <p>ייתכן שהקישור הועתק חלקית. כדי להפסיק לקבל דיוור, אפשר לשלוח ״הסר״ בתשובה להודעה שקיבלתם, וזה נכנס לתוקף מיד.</p>
         <p>
-          אם יש לך חשבון, אפשר לנהל את כל ההעדפות <Link href="/account?tab=settings">בחשבון שלי</Link>.
+          אם יש לכם חשבון, אפשר לנהל את כל ההעדפות <Link href="/account?tab=settings">בחשבון שלי</Link>.
         </p>
       </div>
     );

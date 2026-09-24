@@ -11,7 +11,7 @@ import styles from '@/components/saved/saved.module.css';
 
 export const metadata: Metadata = {
   title: 'המועדפים שלי',
-  description: 'הקליניקות ששמרתם ב־BeautyFind, והשוואה של עד שלוש קליניקות זו לצד זו.',
+  description: 'הקליניקות שהוספתם למועדפים ב־BeautyFind, והשוואה של עד שלוש קליניקות זו לצד זו לפי מחיר, דירוג, אחריות רפואית ושעות פעילות.',
   robots: { index: false, follow: false },
 };
 

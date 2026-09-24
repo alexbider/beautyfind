@@ -99,7 +99,7 @@ export function ReviewList({ items, canEdit }: { items: ReviewItem[]; canEdit: b
           <span className={s.when}>
             <CountedText c={r.when} />{r.treatment && <> · {r.treatment}</>}
           </span>
-          {needsReply && <span className={s.pendingTag}>ממתין לתגובה</span>}
+          {needsReply && <span className={s.pendingTag}>ממתינה לתגובה</span>}
         </div>
         {r.title && <h3 className={s.revTitle}>{r.title}</h3>}
         <p className={s.body}>{r.body}</p>
@@ -136,7 +136,7 @@ export function ReviewList({ items, canEdit }: { items: ReviewItem[]; canEdit: b
                 {pending ? 'מפרסם…' : reply ? 'עדכון התגובה' : 'פרסום התגובה'}
               </button>
               <button type="button" onClick={cancel} disabled={pending} className={s.ghostBtn}>ביטול</button>
-              <span className={s.note}>אין אפשרות להסיר ביקורת אמיתית, רק להגיב לה.</span>
+              <span className={s.note}>אי אפשר להסיר ביקורת אמיתית, אבל אפשר להגיב לה.</span>
             </div>
           </div>
         )}
@@ -179,7 +179,7 @@ export function ReviewList({ items, canEdit }: { items: ReviewItem[]; canEdit: b
                     <span className={`ltr ${s.stars}`} role="img" aria-label={`דירוג ${r.rating} מתוך 5`}>
                       {'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}
                     </span>
-                    {!reply && <span className={s.pendingTag}>ממתין לתגובה</span>}
+                    {!reply && <span className={s.pendingTag}>ממתינה לתגובה</span>}
                   </span>
                   <span className={s.mBody}>{r.title || r.body}</span>
                   <span className={s.when}><CountedText c={r.when} />{r.treatment && <> · {r.treatment}</>}</span>

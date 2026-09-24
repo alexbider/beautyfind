@@ -22,7 +22,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const s = await sellableBranch(branch);
   if (!s) return { title: 'העמוד לא נמצא', robots: { index: false } };
   const title = `שובר מתנה ל${s.branch.name}, ${s.branch.cityName}`;
-  const description = `שובר מתנה ל${s.branch.name} לפי סכום או לפי טיפול, נשלח בוואטסאפ או במייל. בתוקף ${yearsText(s.years)}, מימוש בכמה ביקורים, ביטול תוך 14 ימים אם לא מומש.`;
+  const description = `שובר מתנה ל${s.branch.name} לפי סכום או לפי טיפול, נשלח בוואטסאפ או בדוא״ל. בתוקף ${yearsText(s.years)}, מימוש בכמה ביקורים, ביטול תוך 14 ימים אם לא מומש.`;
   return {
     title,
     description,

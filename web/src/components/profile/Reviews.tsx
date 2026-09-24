@@ -21,7 +21,7 @@ export interface ReviewView {
 const TRUST = [
   'דירוג Google מגיע מפרופיל Google Business של העסק ומתעדכן מדי שבוע. BeautyFind לא עורך אותו.',
   'ביקורות BeautyFind נכתבות רק אחרי ביקור מאומת ומתפרסמות אחרי בדיקה, גם כשהן שליליות.',
-  'שני הדירוגים מוצגים זה לצד זה ואף פעם לא מתמזגים לציון אחד.',
+  'שני הדירוגים מוצגים זה לצד זה ואינם מתמזגים לציון אחד.',
   'עסקים אינם יכולים למחוק ביקורת דרך BeautyFind. פנייה על ביקורת פוגענית מטופלת מול מקור הביקורת.',
 ];
 
@@ -188,7 +188,7 @@ export function ReviewsRail({ reviews, total }: { reviews: ReviewView[]; total: 
               </div>
               {long && (
                 <button type="button" className={styles.more} aria-expanded={isOpen} onClick={() => setOpen(o => ({ ...o, [r.id]: !o[r.id] }))}>
-                  {isOpen ? 'הצג פחות' : 'קראו את כל הביקורת'}
+                  {isOpen ? 'הצגת פחות' : 'לביקורת המלאה'}
                 </button>
               )}
               {r.reply && (

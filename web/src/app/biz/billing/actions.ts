@@ -102,9 +102,9 @@ export async function saveBillingDetails(input: { companyNo: string; invoiceEmai
   const invoiceEmail = parsed.data.invoiceEmail.trim().toLowerCase();
   const accountantEmail = parsed.data.accountantEmail.trim().toLowerCase();
 
-  if (companyNo && !isCompanyNo(companyNo)) return { ok: false, error: 'מספר ח.פ או עוסק מורשה צריך להכיל בדיוק 9 ספרות.' };
+  if (companyNo && !isCompanyNo(companyNo)) return { ok: false, error: 'מספר ח״פ או עוסק מורשה צריך להכיל בדיוק 9 ספרות.' };
   if (invoiceEmail && !EMAIL_RE.test(invoiceEmail)) return { ok: false, error: 'כתובת הדוא״ל למשלוח חשבונית אינה תקינה.' };
-  if (accountantEmail && !EMAIL_RE.test(accountantEmail)) return { ok: false, error: 'כתובת הדוא״ל של משרד ראיית החשבון אינה תקינה.' };
+  if (accountantEmail && !EMAIL_RE.test(accountantEmail)) return { ok: false, error: 'כתובת הדוא״ל של משרד רואה החשבון אינה תקינה.' };
 
   await db.business.update({
     where: { id: ctx.business.id },

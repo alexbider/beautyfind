@@ -14,7 +14,7 @@ import { ROUTES } from '@/lib/routes';
 // Design: project/BeautyFind Dashboard.dc.html (isBilling; PLANS, INVOICES, QUARTERS, SPEND)
 // Two plans only (08-open-decisions.md A3). The design's add-ons are removed.
 
-export const metadata: Metadata = { title: 'מנוי וחשבונות' };
+export const metadata: Metadata = { title: 'מנוי וחיוב' };
 
 const PLANS: Array<{ key: PlanKey; name: string; line: string; feats: string[] }> = [
   {
@@ -26,7 +26,7 @@ const PLANS: Array<{ key: PlanKey; name: string; line: string; feats: string[] }
   {
     key: 'advanced',
     name: 'רישום מתקדם + CRM',
-    line: 'כל הבסיסי ומערכת ניהול הקליניקה',
+    line: 'כל מה שבבסיסי, וגם מערכת לניהול הקליניקה',
     feats: [
       'כל מה שבמסלול הבסיסי',
       'יומן, CRM וכרטיסי לקוחות',
@@ -72,7 +72,7 @@ export default async function BillingPage() {
   const yearlyUnit = plan ? planPrice(sub?.pendingPlan ?? plan, 'yearly') : 0;
   const monthlyUnit = plan ? PLAN_MONTHLY_NIS[sub?.pendingPlan ?? plan] : 0;
   const yearlyLine =
-    `המעבר נכנס לתוקף מיד: ₪${nf(yearlyUnit)} לסניף לשנה במקום ₪${nf(monthlyUnit)} לחודש, כלומר ${YEARLY_MULTIPLIER === 10 ? 'עשרה' : nf(YEARLY_MULTIPLIER)} חודשים במחיר של שנה. ` +
+    `המעבר נכנס לתוקף מיד: ₪${nf(yearlyUnit)} לסניף לשנה במקום ₪${nf(monthlyUnit)} לחודש, כלומר שנה שלמה במחיר של ${YEARLY_MULTIPLIER === 10 ? 'עשרה' : nf(YEARLY_MULTIPLIER)} חודשים. ` +
     'החיוב היחסי על יתרת החודש הנוכחי יקוזז בחשבונית הבאה.';
 
   return (
@@ -80,9 +80,9 @@ export default async function BillingPage() {
       {!canEdit ? <ReadOnlyBanner roleName={ctx.roleName} /> : null}
       <section aria-labelledby="h-bill" className={ui.section} style={{ gap: 0 }}>
         <div style={{ marginBottom: 14 }}>
-          <h1 id="h-bill" className={ui.h1}>מנוי וחשבונות<span>.</span></h1>
+          <h1 id="h-bill" className={ui.h1}>מנוי וחיוב<span>.</span></h1>
           <p className={ui.h1Sub}>
-            כל הסכומים בשקלים. החשבונית נשלחת אוטומטית לדואר האלקטרוני ביום החיוב, ואפשר להפנות אותה ישירות למשרד ראיית החשבון. {PLATFORM_BILLING_LINE}
+            כל הסכומים בשקלים. החשבונית נשלחת אוטומטית בדוא״ל ביום החיוב, ואפשר להעביר אותה ישירות למשרד רואה החשבון. {PLATFORM_BILLING_LINE}
           </p>
         </div>
 
@@ -100,7 +100,7 @@ export default async function BillingPage() {
           <div className={ui.card}>
             <h2 className={ui.h2Tight}>מקום ממומן</h2>
             <p className={ui.meta} style={{ margin: '0 0 12px', fontSize: 13.5, color: 'var(--muted)', textWrap: 'pretty' }}>
-              נראות נוספת בראש רשימת אזור ותחום, לפי שבוע. נרכש בנפרד, מחויב רק אחרי אישור התוכן, ומופיע בחשבונית נפרדת.
+              נראות נוספת בראש הרשימות לפי אזור ותחום, בחיוב שבועי. נרכש בנפרד, מחויב רק אחרי אישור התוכן ומופיע בחשבונית נפרדת.
             </p>
             {/* TODO(sponsored): list this business's campaigns once the campaigns table exists. */}
             <div className={b.sponsorEmpty}>אין קמפיינים פעילים או מתוכננים.</div>
@@ -167,7 +167,7 @@ export default async function BillingPage() {
           <div className={ui.cardHead}>
             <div style={{ minWidth: 0 }}>
               <h2 className={ui.h2Tight}>הנהלת חשבונות</h2>
-              <p className={ui.meta}>פרטי החשבונית וריכוז רבעוני לראיית החשבון</p>
+              <p className={ui.meta}>פרטי החשבונית וריכוז רבעוני לרואה החשבון</p>
             </div>
           </div>
           <BillingDetails

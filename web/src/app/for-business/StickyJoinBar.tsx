@@ -30,7 +30,7 @@ export function StickyJoinBar({ heroEndId, ctaId }: { heroEndId: string; ctaId: 
 
   if (!pastHero || atCta) return null;
   return (
-    <ActionBar mobileOnly hint="האימות מסתיים בדרך כלל באותו יום עסקים, בלי התחייבות">
+    <ActionBar mobileOnly hint="האימות תוך עד 2 ימי עסקים, בלי התחייבות">
       <Link href={ROUTES.join} className={styles.barCta}>
         רישום העסק
       </Link>

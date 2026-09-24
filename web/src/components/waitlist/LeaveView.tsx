@@ -38,9 +38,9 @@ export function LeaveView({
     return (
       <div className={`${styles.done} ${styles.center}`}>
         <h1 className={styles.doneH} ref={h} tabIndex={-1}>
-          יצאת מרשימת ההמתנה
+          יצאתם מרשימת ההמתנה
         </h1>
-        <p className={styles.doneP}>לא נשלח לך עוד הודעות על תורים שמתפנים לטיפול הזה. אפשר להצטרף שוב בכל זמן.</p>
+        <p className={styles.doneP}>לא נשלח לכם עוד הודעות על תורים שמתפנים לטיפול הזה. אפשר להצטרף שוב בכל זמן.</p>
         <div className={styles.actions}>
           <Link href={rejoinHref} className={styles.btn}>
             הצטרפות מחדש
@@ -60,11 +60,11 @@ export function LeaveView({
       </h1>
       <p className={styles.doneP}>
         {treatmentName ? `${treatmentName} · ` : ''}
-        {branchLabel}. אחרי היציאה לא נשלח לך הצעות לתורים שמתפנים, והמקום שלך ברשימה עובר לבאה בתור.
+        {branchLabel}. אחרי היציאה לא נשלח לכם הצעות לתורים שמתפנים, והמקום שלכם ברשימה יעבור לבאים בתור.
       </p>
       {state === 'error' && (
         <p role="alert" className={`${styles.alert} ${styles.alertGap}`}>
-          לא הצלחנו להוציא אותך מהרשימה. נסי שוב בעוד רגע.
+          לא הצלחנו להוציא אתכם מהרשימה. נסו שוב בעוד רגע.
         </p>
       )}
       <div className={styles.actions}>

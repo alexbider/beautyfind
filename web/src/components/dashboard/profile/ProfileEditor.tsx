@@ -25,7 +25,7 @@ type FlagKey = 'accessible' | 'freeParking' | 'wazeOn' | 'onlineBooking';
 const FLAGS: Array<{ key: FlagKey; name: string; note: string }> = [
   { key: 'accessible', name: 'נגישות לכיסא גלגלים', note: 'הצהרת נגישות מפורטת בפרופיל' },
   { key: 'freeParking', name: 'חניה בחינם', note: 'מוצג כתגית בכרטיס ובפרופיל' },
-  { key: 'wazeOn', name: 'קישור Waze', note: 'מפחית שיחות "איך מגיעים"' },
+  { key: 'wazeOn', name: 'קישור Waze', note: 'מפחית שיחות של ״איך מגיעים״' },
   { key: 'onlineBooking', name: 'קביעת תור אונליין', note: 'כפתור בפרופיל הציבורי' },
 ];
 
@@ -178,7 +178,7 @@ export function ProfileEditor({
                   );
                 })}
               </div>
-              <span id="prof-cats-note" className={s.hint}>הקטגוריה קובעת באילו חיפושים תופיעו ואיזה תקן רישום חל עליכם.</span>
+              <span id="prof-cats-note" className={s.hint}>הקטגוריה קובעת באילו חיפושים תופיעו ואילו כללים מתקן הרישום חלים עליכם.</span>
               {err('cats') && <span className={s.err}>{err('cats')}</span>}
               {needsDoctor && (
                 <p role="status" className={s.warnBox}>
@@ -264,7 +264,7 @@ export function ProfileEditor({
           <h2 className={s.h2Flat}>תמונות הפרופיל</h2>
           <span className={s.meta}>גררו תמונה לכל מסגרת · JPG, PNG או WebP · עד <span className="ltr">8MB</span></span>
         </div>
-        <p className={s.lead}>תמונת הכיסוי והלוגו מופיעים בכרטיס בתוצאות החיפוש ובראש הפרופיל. תמונות לפני/אחרי מחייבות הסכמה חתומה של הלקוח/ה. ההסכמה מנוהלת בכרטיס הלקוח.</p>
+        <p className={s.lead}>תמונת הכיסוי והלוגו מופיעים בכרטיס בתוצאות החיפוש ובראש הפרופיל. תמונות לפני ואחרי מחייבות הסכמה חתומה של הלקוח/ה. ההסכמה מנוהלת בכרטיס הלקוח.</p>
         {err('media') && <p role="alert" className={`${s.err} ${s.mb14}`}>{err('media')}</p>}
 
         <div className={`${s.twoCols} ${s.mb16}`}>
@@ -315,7 +315,7 @@ export function ProfileEditor({
         <div className={`${s.cardHead} ${s.mb10}`}>
           <h3 className={s.h3}>גלריית הקליניקה</h3>
           <span className={s.meta}>
-            {f.gallery.length === 0 ? 'אין עדיין תמונות' : <><span className="ltr">{withAlt} מתוך {f.gallery.length}</span> עם תיאור</>} · מומלץ לפחות ארבע תמונות
+            {f.gallery.length === 0 ? 'אין עדיין תמונות' : <><span className="ltr">{withAlt} מתוך {f.gallery.length}</span> עם תיאור</>} · מומלצות לפחות ארבע תמונות
           </span>
         </div>
         {err('gallery') && <p role="alert" className={`${s.err} ${s.mb10}`}>{err('gallery')}</p>}
@@ -376,7 +376,7 @@ export function ProfileEditor({
       <div className={`${s.card} ${s.mb14}`}>
         <div className={`${s.cardHead} ${s.mb14}`}>
           <h2 className={s.h2Flat}>שעות פעילות</h2>
-          <span className={s.meta}>שבת סגור מוצג במפורש בפרופיל</span>
+          <span className={s.meta}>סגירה בשבת מוצגת בפרופיל במפורש</span>
         </div>
         <ul className={s.hours}>
           {f.hours.map((h, i) => {

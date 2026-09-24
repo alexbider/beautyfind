@@ -2,7 +2,7 @@ import 'server-only';
 import { db } from '@/lib/server/db';
 import type { Channel, UnsubscribeTarget } from './token';
 
-export const CHANNEL_NAME: Record<Channel, string> = { wa: 'וואטסאפ', sms: 'SMS', email: 'מייל' };
+export const CHANNEL_NAME: Record<Channel, string> = { wa: 'וואטסאפ', sms: 'SMS', email: 'דוא״ל' };
 
 const isEmail = (c: string) => c.includes('@');
 

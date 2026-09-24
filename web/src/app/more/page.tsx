@@ -46,7 +46,7 @@ export default async function MorePage() {
             rows: [
               { kind: 'link', label: 'בדיקת יתרת שובר מתנה', href: ROUTES.giftCheck },
               { kind: 'link', label: 'מרכז עזרה', href: ROUTES.help },
-              { kind: 'link', label: 'צור קשר', href: ROUTES.contact },
+              { kind: 'link', label: 'צרו קשר', href: ROUTES.contact },
             ],
           },
           { name: 'לעסקים', rows: business },

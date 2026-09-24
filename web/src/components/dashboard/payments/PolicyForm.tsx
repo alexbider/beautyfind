@@ -138,7 +138,7 @@ export function PolicyForm({ initial, treatments, payments }: { initial: PolicyD
         ) : (
           <div className={s.row} style={{ display: 'block' }}>
             <span className={s.rowTitle}>מקדמה לכל טיפול</span>
-            <span className={s.rowSub}>שדה ריק או <span className="ltr">0</span> = בלי מקדמה לטיפול הזה. המחירים לפני מע״מ, כמו בתפריט המחירים.</span>
+            <span className={s.rowSub}>שדה ריק או <span className="ltr">0</span> = בלי מקדמה לטיפול הזה. המחירים לא כוללים מע״מ, כמו בתפריט המחירים.</span>
             {treatments.length ? (
               <div className={s.overrides}>
                 <div aria-hidden="true" className={s.ovHead}>
@@ -197,7 +197,7 @@ export function PolicyForm({ initial, treatments, payments }: { initial: PolicyD
       <div className={s.row}>
         <div className={s.rowText}>
           <span className={s.rowTitle}>החזקת תור מרשימת ההמתנה</span>
-          <span className={s.rowSub}>כשמתפנה תור, הוא נשמר לממתין/ה הראשון/ה לזמן הזה לפני שעובר הלאה.</span>
+          <span className={s.rowSub}>כשמתפנה תור, הוא נשמר לממתין/ה הראשון/ה למשך הזמן הזה, ורק אחר כך עובר הלאה.</span>
         </div>
         <span className={s.unitInput}>
           <input dir="ltr" inputMode="numeric" value={hold} onChange={e => { setHold(e.target.value.replace(/\D/g, '').slice(0, 3)); setDone(false); }} aria-label="זמן החזקה בדקות" className={s.input} />

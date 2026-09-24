@@ -71,7 +71,7 @@ export default async function AftercarePage({ params }: { params: Promise<{ toke
         </section>
 
         <section aria-labelledby="ac-red" className={styles.red}>
-          <h2 id="ac-red" className={styles.h2} data-tone="bad" style={{ marginBottom: 8 }}>פני לקליניקה מיד אם</h2>
+          <h2 id="ac-red" className={styles.h2} data-tone="bad" style={{ marginBottom: 8 }}>פנו לקליניקה מיד אם</h2>
           <ul className={styles.redList}>
             {set.red.map(r => <li key={r}><span aria-hidden="true" /><span>{r}</span></li>)}
           </ul>
@@ -90,7 +90,7 @@ export default async function AftercarePage({ params }: { params: Promise<{ toke
             )}
           </div>
           <p className={styles.afterHours}>
-            מחוץ לשעות הפעילות ובשבת: {set.after} בקושי בנשימה או בבליעה, חייגי מיד למד״א.
+            מחוץ לשעות הפעילות ובשבת: {set.after} בכל קושי בנשימה או בבליעה, חייגו מיד למד״א.
           </p>
           <a href="tel:101" className={styles.mda}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={PHONE_PATH} /></svg>
@@ -109,7 +109,7 @@ export default async function AftercarePage({ params }: { params: Promise<{ toke
         )}
 
         <p className={styles.foot}>
-          ההנחיות נשלחו מטעם {b.branch.name} ואינן מחליפות ייעוץ רפואי אישי. בעוד 3 ימים נשלח לך בקשה לכתוב ביקורת.
+          ההנחיות נשלחו מטעם {b.branch.name} ואינן מחליפות ייעוץ רפואי אישי. בעוד 3 ימים נשלח לכם בקשה לכתוב ביקורת.
           {' '}<Link href={`/b/${token}`}>לפרטי התור</Link>
         </p>
       </main>

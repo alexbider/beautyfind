@@ -35,7 +35,7 @@ export default async function BizMorePage() {
             name: 'עזרה ומידע',
             rows: [
               { kind: 'link', label: 'מרכז עזרה', href: '/help' },
-              { kind: 'link', label: 'צור קשר', href: '/contact' },
+              { kind: 'link', label: 'יצירת קשר', href: '/contact' },
               { kind: 'link', label: 'תנאי שימוש', href: '/terms' },
               { kind: 'link', label: 'מדיניות פרטיות', href: '/privacy' },
             ],

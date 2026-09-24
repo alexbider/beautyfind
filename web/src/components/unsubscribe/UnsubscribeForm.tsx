@@ -11,8 +11,8 @@ import styles from './unsubscribe.module.css';
 
 // Design: project/BeautyFind Unsubscribe.dc.html (from: wa | email | sms, source). Feminine singular as designed.
 
-const NAME: Record<Channel, string> = { wa: 'וואטסאפ', sms: 'SMS', email: 'מייל' };
-const IN: Record<Channel, string> = { wa: 'בוואטסאפ', sms: 'ב־SMS', email: 'במייל' };
+const NAME: Record<Channel, string> = { wa: 'וואטסאפ', sms: 'SMS', email: 'דוא״ל' };
+const IN: Record<Channel, string> = { wa: 'בוואטסאפ', sms: 'ב־SMS', email: 'בדוא״ל' };
 
 /** "בוואטסאפ, ב־SMS ובמייל" */
 function joinIn(chs: Channel[]) {
@@ -20,7 +20,7 @@ function joinIn(chs: Channel[]) {
   return w.length < 2 ? (w[0] ?? '') : `${w.slice(0, -1).join(', ')} ו${w[w.length - 1]}`;
 }
 
-const NONE_OFF = 'כל הערוצים עדיין פעילים. כבי לפחות אחד, או חזרי מאוחר יותר.';
+const NONE_OFF = 'כל הערוצים עדיין פעילים. כבו לפחות ערוץ אחד, או חזרו מאוחר יותר.';
 
 /** "מקליניקת נועה" / "מ־BeautyFind" */
 const from = (name: string) => (/^[A-Za-z0-9]/.test(name) ? `מ־${name}` : `מ${name}`);
@@ -51,7 +51,7 @@ export function UnsubscribeForm({
     setBusy(false);
     if (!r?.ok) {
       haptic('warning');
-      setFailed(r?.error === 'invalid_link' ? 'הקישור כבר לא תקף. אפשר לשלוח ״הסר״ בתשובה להודעה.' : 'לא הצלחנו לשמור. נסי שוב בעוד רגע.');
+      setFailed(r?.error === 'invalid_link' ? 'הקישור כבר לא תקף. אפשר לשלוח ״הסר״ בתשובה להודעה.' : 'לא הצלחנו לשמור. נסו שוב בעוד רגע.');
       return;
     }
     const who = scope === 'all' ? 'מכל העסקים ומ־BeautyFind' : from(source);
@@ -81,7 +81,7 @@ export function UnsubscribeForm({
         <p className={styles.doneBody} role="status">{done.body}</p>
         {failed && <p className={styles.err} role="alert">{failed}</p>}
         <div className={styles.doneActions}>
-          <button type="button" className={styles.btnGhost} onClick={undo} disabled={busy}>טעות, להחזיר</button>
+          <button type="button" className={styles.btnGhost} onClick={undo} disabled={busy}>ביטול ההסרה</button>
           <Link href="/account?tab=settings" className={styles.btnPrimarySm}>כל ההעדפות בחשבון</Link>
         </div>
       </div>
@@ -89,10 +89,10 @@ export function UnsubscribeForm({
   }
 
   const scopes: Array<['clinic' | 'all', string, string]> = allOnly
-    ? [['all', 'מכל הקליניקות ומ־BeautyFind', 'לא תקבלי דיוור מאף עסק דרכנו']]
+    ? [['all', 'מכל הקליניקות ומ־BeautyFind', 'לא תקבלו דיוור מאף עסק דרכנו']]
     : [
-        ['clinic', `רק ${from(source)}`, 'הודעות שיווק מקליניקות אחרות וממגזין BeautyFind ימשיכו'],
-        ['all', 'מכל הקליניקות ומ־BeautyFind', 'לא תקבלי דיוור מאף עסק דרכנו'],
+        ['clinic', `רק ${from(source)}`, 'הודעות שיווק מקליניקות אחרות וממגזין BeautyFind ימשיכו להגיע'],
+        ['all', 'מכל הקליניקות ומ־BeautyFind', 'לא תקבלו דיוור מאף עסק דרכנו'],
       ];
 
   return (
@@ -100,7 +100,7 @@ export function UnsubscribeForm({
       <div>
         <h1 className={styles.h1}>הסרה מדיוור</h1>
         <p className={styles.lead}>
-          הגעת מהודעה של <strong>{source}</strong> אל <span className={`ltr ${styles.masked}`}>{masked}</span>. בחרי מה להפסיק לקבל.
+          הגעתם מהודעה של <strong>{source}</strong> אל <span className={`ltr ${styles.masked}`}>{masked}</span>. בחרו מה להפסיק לקבל.
         </p>
       </div>
 
@@ -137,7 +137,7 @@ export function UnsubscribeForm({
       </section>
 
       <div className={styles.service}>
-        <strong>ימשיכו להגיע:</strong> אישורי תור, תזכורות, הנחיות אחרי טיפול, קבלות וחשבוניות. אלה הודעות שירות ולא דיוור.
+        <strong>ימשיכו להגיע:</strong> אישורי תור, תזכורות, הנחיות אחרי טיפול, קבלות וחשבוניות. אלה הודעות שירות, לא דיוור.
       </div>
 
       {/* Desktop: in the column. Phones: the same button in the sticky action bar, within thumb reach. */}

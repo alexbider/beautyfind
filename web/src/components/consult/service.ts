@@ -312,7 +312,7 @@ export async function proposeSlot(actor: Actor, id: string, startsAtIso: string)
   if (Number.isNaN(startsAt.getTime())) return { ok: false, error: 'המועד לא תקין.' };
   const doctors = await consultDoctors(req.branchId, req.branch.medicalResponsibleId);
   const doctor = await firstFreeDoctor(req.branchId, doctors, startsAt);
-  if (!doctor) return { ok: false, error: 'המועד כבר לא פנוי. בחרי מועד אחר.' };
+  if (!doctor) return { ok: false, error: 'המועד כבר לא פנוי. בחרו מועד אחר.' };
 
   const ok = await db.$transaction(async tx => {
     const nextStatus = req.status === 'new' ? 'awaiting_client' : req.status;
@@ -339,7 +339,7 @@ export async function confirmProposed(actor: Actor, id: string): Promise<ActionR
   if (!req.proposedSlot) return { ok: false, error: 'לא הוצע מועד לבקשה הזו.' };
   if (!canRebook(req.status, await liveBookingOf(req.id))) return { ok: false, error: 'לבקשה כבר נקבע ייעוץ.' };
   const slot = req.proposedSlot;
-  if (slot.getTime() < Date.now()) return { ok: false, error: 'המועד שהוצע כבר עבר. הציעי מועד חדש.' };
+  if (slot.getTime() < Date.now()) return { ok: false, error: 'המועד שהוצע כבר עבר. הציעו מועד חדש.' };
   const doctors = await consultDoctors(req.branchId, req.branch.medicalResponsibleId);
   const from: ConsultStatus[] = [...FROM.schedule, 'consult_scheduled'];
 
@@ -355,7 +355,7 @@ export async function confirmProposed(actor: Actor, id: string): Promise<ActionR
       return req.id;
     },
   });
-  if (!res.ok) return res.error === 'conflict' ? FAIL_STALE : { ok: false, error: 'המועד כבר לא פנוי. הציעי מועד אחר.' };
+  if (!res.ok) return res.error === 'conflict' ? FAIL_STALE : { ok: false, error: 'המועד כבר לא פנוי. הציעו מועד אחר.' };
   return { ok: true, message: 'הייעוץ נקבע ואישור נשלח' };
 }
 

@@ -149,11 +149,11 @@ export function BuyForm({ slug, businessName, years, expiry, treatments, today, 
     { ok: customOk, msg: `סכום בין ₪${CUSTOM_MIN} ל־₪${CUSTOM_MAX.toLocaleString('en-US')}`, step: 1, el: 'gc-custom' },
     { ok: valueAgorot > 0, msg: 'בחרו סכום או טיפול', step: 1, el: 'gc-sec-1' },
     { ok: toOk, msg: 'למי השובר?', step: 2, el: 'gc-to' },
-    { ok: contactOk, msg: channel === 'wa' ? 'מספר וואטסאפ לא מלא' : 'כתובת מייל לא תקינה', step: 2, el: 'gc-contact' },
+    { ok: contactOk, msg: channel === 'wa' ? 'מספר וואטסאפ לא מלא' : 'כתובת הדוא״ל לא תקינה', step: 2, el: 'gc-contact' },
     { ok: dateOk, msg: 'בחרו תאריך שליחה מהיום ועד שנה קדימה', step: 2, el: 'gc-date' },
-    { ok: bNameOk, msg: 'מה השם שלך?', step: 3, el: 'gc-bname' },
-    { ok: bPhoneOk, msg: 'מספר הטלפון שלך לא תקין', step: 3, el: 'gc-bphone' },
-    { ok: bEmailOk, msg: 'כתובת המייל שלך לא תקינה', step: 3, el: 'gc-bemail' },
+    { ok: bNameOk, msg: 'מה השם שלכם?', step: 3, el: 'gc-bname' },
+    { ok: bPhoneOk, msg: 'מספר הטלפון שלכם לא תקין', step: 3, el: 'gc-bphone' },
+    { ok: bEmailOk, msg: 'כתובת הדוא״ל שלכם לא תקינה', step: 3, el: 'gc-bemail' },
   ];
   const firstBad = checks.find(c => !c.ok) ?? null;
   const ok = !firstBad && msgOk;
@@ -226,7 +226,7 @@ export function BuyForm({ slug, businessName, years, expiry, treatments, today, 
   const at = (n: number) => ({ 'data-step': n, 'data-cur': n === step || undefined });
 
   const cardWhat = kind === 'amount' ? `לכל טיפול ב${businessName}` : treat?.name ?? '';
-  const cardTo = (to.trim() ? 'ל' + to.trim() : 'למי שאת אוהבת') + (msg.trim() ? ', ' + msg.trim() : '');
+  const cardTo = (to.trim() ? 'ל' + to.trim() : 'למי שאתם אוהבים') + (msg.trim() ? ', ' + msg.trim() : '');
   const shownErr = err || serverErr;
   const bad = (cond: boolean) => (tried && cond ? true : undefined);
 
@@ -260,7 +260,7 @@ export function BuyForm({ slug, businessName, years, expiry, treatments, today, 
             <div {...at(1)}>
               <h1 className={s.h1}>שובר מתנה ל{businessName}</h1>
               <p className={s.lead}>
-                השובר מונפק על ידי הקליניקה ובתוקף {yearsText(years)}. אפשר לממש אותו על כל טיפול, בכמה ביקורים, עד שהיתרה נגמרת.
+                השובר מונפק על ידי הקליניקה ובתוקף {yearsText(years)}. אפשר לממש אותו על כל טיפול, בכמה ביקורים, עד לניצול היתרה.
               </p>
             </div>
             <div className={s.shell}>
@@ -333,7 +333,7 @@ export function BuyForm({ slug, businessName, years, expiry, treatments, today, 
                   </div>
                   {needsContact ? (
                     <label className={s.field}>
-                      {channel === 'wa' ? 'מספר הוואטסאפ של המקבל/ת' : 'המייל של המקבל/ת'}
+                      {channel === 'wa' ? 'מספר הוואטסאפ של המקבל/ת' : 'כתובת הדוא״ל של המקבל/ת'}
                       <input
                         id="gc-contact" dir="ltr" type={channel === 'wa' ? 'tel' : 'email'} inputMode={channel === 'wa' ? 'tel' : 'email'} value={contact} onChange={e => setContact(e.target.value)}
                         placeholder={channel === 'wa' ? '050-000-0000' : 'name@example.com'} autoComplete="off" enterKeyHint="next" className={s.input} aria-invalid={bad(!contactOk)}
@@ -357,7 +357,7 @@ export function BuyForm({ slug, businessName, years, expiry, treatments, today, 
                 </section>
 
                 <section aria-labelledby="gc-h3" className={s.card} {...at(3)}>
-                  <h2 id="gc-h3" className={s.h2}>הפרטים שלך</h2>
+                  <h2 id="gc-h3" className={s.h2}>הפרטים שלכם</h2>
                   <p className={s.small}>לקבלה, לעדכון כשהשובר נפתח ולביטול אם יהיה צורך.</p>
                   <label className={s.field}>
                     שם מלא
@@ -369,7 +369,7 @@ export function BuyForm({ slug, businessName, years, expiry, treatments, today, 
                       <input id="gc-bphone" dir="ltr" type="tel" inputMode="tel" value={buyerPhone} onChange={e => setBuyerPhone(e.target.value)} autoComplete="tel" enterKeyHint="next" placeholder="050-000-0000" className={s.input} aria-invalid={bad(!bPhoneOk)} />
                     </label>
                     <label className={s.field}>
-                      מייל לקבלה
+                      דוא״ל לקבלה
                       <input id="gc-bemail" dir="ltr" type="email" inputMode="email" value={buyerEmail} onChange={e => setBuyerEmail(e.target.value)} autoComplete="email" enterKeyHint="done" placeholder="name@example.com" className={s.input} aria-invalid={bad(!bEmailOk)} />
                     </label>
                   </div>
@@ -383,7 +383,7 @@ export function BuyForm({ slug, businessName, years, expiry, treatments, today, 
                   </button>
                 </div>
                 <p className={s.small} {...at(3)}>
-                  בלחיצה על תשלום את/ה מאשר/ת את התנאים שבצד: בקנייה תתקבל קבלה; חשבונית מס מופקת בכל מימוש. ביטול תוך 14 ימים מהקנייה, כל עוד השובר לא מומש, בהחזר מלא. התשלום מתבצע בדף המאובטח של חברת הסליקה של הקליניקה.
+                  בלחיצה על ״תשלום״ אתם מאשרים את התנאים: בקנייה מתקבלת קבלה, וחשבונית מס מופקת בכל מימוש. אפשר לבטל בהחזר מלא תוך 14 ימים מהקנייה, כל עוד השובר לא מומש. התשלום מתבצע בדף המאובטח של חברת הסליקה של הקליניקה.
                 </p>
               </div>
 

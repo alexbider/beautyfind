@@ -96,9 +96,9 @@ export function OfferView({
       }
       if (r.error === 'expired') setState('expired');
       else if (r.error === 'gone') setState('gone');
-      else if (r.error === 'payments') setErr('לא הצלחנו לפתוח את תשלום המקדמה. נסי שוב, או התקשרי לקליניקה.');
+      else if (r.error === 'payments') setErr('לא הצלחנו לפתוח את תשלום המקדמה. נסו שוב או התקשרו לקליניקה.');
       else if (r.error === 'closed' || r.error === 'not_found') router.refresh();
-      else setErr('משהו השתבש. נסי שוב בעוד רגע.');
+      else setErr('משהו השתבש. נסו שוב בעוד רגע.');
     });
   };
 
@@ -112,7 +112,7 @@ export function OfferView({
       }
       else if (r.error === 'expired') setState('expired');
       else if (r.error === 'closed' || r.error === 'not_found') router.refresh();
-      else setErr('משהו השתבש. נסי שוב בעוד רגע.');
+      else setErr('משהו השתבש. נסו שוב בעוד רגע.');
     });
   };
 
@@ -125,21 +125,21 @@ export function OfferView({
     const r =
       state === 'accepted'
         ? {
-            title: 'התור שלך',
+            title: 'התור נקבע',
             body: (
               <>
                 {when}
-                {data.practitioner ? ` עם ${data.practitioner}` : ''}. אישור נשלח בוואטסאפ, ויצאת מרשימת ההמתנה.
+                {data.practitioner ? ` עם ${data.practitioner}` : ''}. אישור נשלח בוואטסאפ, ויצאתם מרשימת ההמתנה.
               </>
             ),
             cta: 'לפרטי התור',
             href: data.bookingPath ?? ROUTES.account,
           }
         : state === 'passed'
-          ? { title: 'בסדר גמור', body: <>נשארת ברשימה במקום שלך, ונעדכן בפינוי הבא שמתאים להעדפות.</>, cta: 'לחשבון שלי', href: ROUTES.account }
+          ? { title: 'בסדר גמור', body: <>נשארתם ברשימה באותו מקום, ונעדכן אתכם כשיתפנה תור נוסף שמתאים להעדפות שלכם.</>, cta: 'לחשבון שלי', href: ROUTES.account }
           : state === 'gone'
-            ? { title: 'התור כבר נתפס', body: <>התור הזה נקבע רגע לפני. את עדיין ברשימה, ונעדכן בפינוי הבא.</>, cta: 'לחשבון שלי', href: ROUTES.account }
-            : { title: 'הזמן לשמירת התור עבר', body: <>התור הוצע לבאה ברשימה. את עדיין ברשימה, ונעדכן בפינוי הבא.</>, cta: 'לחשבון שלי', href: ROUTES.account };
+            ? { title: 'התור כבר נתפס', body: <>מישהו אחר קבע את התור הזה רגע לפני כן. אתם עדיין ברשימה, ונעדכן אתכם כשיתפנה תור נוסף.</>, cta: 'לחשבון שלי', href: ROUTES.account }
+            : { title: 'הזמן לשמירת התור עבר', body: <>התור הוצע לבאים ברשימה. אתם עדיין ברשימה, ונעדכן אתכם כשיתפנה תור נוסף.</>, cta: 'לחשבון שלי', href: ROUTES.account };
     return (
       <div className={styles.offerWrap}>
         <div className={`${styles.done} ${styles.plain}`}>
@@ -167,7 +167,7 @@ export function OfferView({
     <div className={styles.offerWrap}>
       <div className={styles.offer}>
         <div className={styles.offerHead}>
-          <span className={styles.offerTitle}>התפנה תור בשבילך</span>
+          <span className={styles.offerTitle}>התפנה תור בשבילכם</span>
           <span role="timer" aria-label="זמן שנותר לשמירת התור" dir="ltr" className={`${styles.timer} ${low ? styles.timerLow : ''}`}>
             {clock(left)}
           </span>
@@ -187,10 +187,10 @@ export function OfferView({
             · <Ltr className={styles.num}>{data.time}</Ltr>
           </h1>
           <p className={styles.offerSub}>{data.sub}</p>
-          <p className={styles.offerNote}>התור שמור לך עד שהשעון מתאפס. אחר כך הוא מוצע לבאה ברשימה, ואת נשארת ברשימה לתור הבא.</p>
+          <p className={styles.offerNote}>התור שמור עבורכם עד שהשעון יתאפס. אחר כך הוא יוצע לבאים ברשימה, ואתם תישארו ברשימה לתור הבא.</p>
           <div className={styles.offerBtns}>
             <button type="button" className={styles.accept} onClick={onAccept} disabled={pending}>
-              {pending ? 'רגע…' : 'אני לוקחת את התור'}
+              {pending ? 'רגע…' : 'קביעת התור'}
             </button>
             <button type="button" className={styles.pass} onClick={onPass} disabled={pending}>
               לא מתאים הפעם

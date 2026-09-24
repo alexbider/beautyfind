@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await loadJoinPage(branch);
   return {
     title: data ? `רשימת המתנה · ${data.branch.name}` : 'רשימת המתנה',
-    description: 'הצטרפות לרשימת המתנה לתור שמתפנה: ימים, שעות ומשך המתנה. הודעת וואטסאפ עם זמן שמירה.',
+    description: 'הצטרפו לרשימת ההמתנה ובחרו ימים, שעות ומשך המתנה. כשמתפנה תור שמתאים לכם, נשלח הודעת וואטסאפ והתור יישמר עבורכם לזמן קצוב.',
     robots: { index: false, follow: false },
   };
 }
@@ -61,7 +61,7 @@ export default async function WaitlistJoinPage({ params, searchParams }: Props) 
           }
         >
           <p className={styles.doneP}>
-            {branch.name} לא מנהלת רשימת המתנה אונליין. אפשר להתקשר או לשלוח וואטסאפ לקליניקה ולבקש שיעדכנו אותך כשמתפנה תור.
+            {branch.name} לא מנהלת רשימת המתנה אונליין. אפשר להתקשר או לשלוח וואטסאפ לקליניקה ולבקש שיעדכנו אתכם כשמתפנה תור.
           </p>
         </StateCard>
       </PublicShell>

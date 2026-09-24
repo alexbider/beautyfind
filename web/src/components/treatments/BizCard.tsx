@@ -89,7 +89,7 @@ export function BizCard({ card, meta, contact, size = 92, index = 0 }: { card: L
             </span>
           </div>
         ) : null}
-        {!card.google && !card.beautyfind && <span className={styles.noRating}>אין עדיין דירוג</span>}
+        {!card.google && !card.beautyfind && <span className={styles.noRating}>עדיין אין דירוג</span>}
 
         <div className={styles.footer}>
           {card.priceFromShekels != null && (

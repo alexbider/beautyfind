@@ -46,8 +46,8 @@ export const PRICE_TIERS = [
 export const SORTS: Array<{ key: Sort; name: string; short: string }> = [
   { key: 'recommended', name: 'התאמה', short: 'התאמה' },
   { key: 'rating', name: 'דירוג גבוה', short: 'דירוג' },
-  { key: 'reviews', name: 'הכי מבוקרים', short: 'ביקורות' },
-  { key: 'price', name: 'מחיר מהזול', short: 'מחיר' },
+  { key: 'reviews', name: 'הכי הרבה ביקורות', short: 'ביקורות' },
+  { key: 'price', name: 'מחיר, מהזול ליקר', short: 'מחיר' },
 ];
 
 export const DEFAULT_STATE: SearchState = { q: '', region: null, city: null, t: null, f: [], price: null, sort: 'recommended', view: 'list', page: 1 };

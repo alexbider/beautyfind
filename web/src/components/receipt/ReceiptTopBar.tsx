@@ -42,7 +42,7 @@ export function ReceiptTopBar({ title, backHref }: { title: string; backHref: st
           {canShare && (
             <button type="button" className={styles.sheetBtn} onClick={share}>
               שיתוף הקישור
-              <span className={styles.sheetNote}>למייל, לוואטסאפ או להנהלת החשבונות</span>
+              <span className={styles.sheetNote}>לדוא״ל, לוואטסאפ או להנהלת החשבונות</span>
             </button>
           )}
           <button type="button" className={styles.sheetBtn} onClick={print}>

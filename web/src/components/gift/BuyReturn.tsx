@@ -25,8 +25,8 @@ export interface DoneProps {
 /** Design: Gift Cards → view "buy" (buyDone). */
 export function BuyDone(p: DoneProps) {
   const title = p.channel === 'self' ? 'השובר מוכן' : p.scheduled ? 'השובר מתוזמן' : 'השובר נשלח';
-  const via = p.channel === 'wa' ? ' בוואטסאפ' : ' במייל';
-  const receiptLine = p.receipt ? 'הקבלה נשלחה אלייך במייל.' : 'הקבלה על התשלום נשלחת מהקליניקה.';
+  const via = p.channel === 'wa' ? ' בוואטסאפ' : ' בדוא״ל';
+  const receiptLine = p.receipt ? 'הקבלה נשלחה אליכם בדוא״ל.' : 'הקבלה על התשלום נשלחת מהקליניקה.';
   // No haptic here: the page opens from the checkout redirect, without a tap (browsers block vibrate).
   useEffect(() => {
     // The purchase is done: the form draft of this tab is no longer needed.
@@ -46,7 +46,7 @@ export function BuyDone(p: DoneProps) {
       <h1 className={s.h1Sm}>{title}</h1>
       <p className={s.doneBody}>
         {p.channel === 'self' ? (
-          <>שלחנו לך את השובר להדפסה או להעברה. {receiptLine}</>
+          <>שלחנו לכם את השובר להדפסה או להעברה. {receiptLine}</>
         ) : (
           <>
             {p.scheduled ? <>יישלח ב־<span className="ltr">{p.sendDate}</span> בשעה <span className="ltr">09:00</span></> : 'נשלח עכשיו'} ל{p.recipient}{via}. {receiptLine}
@@ -89,7 +89,7 @@ export function BuyWaiting() {
       </div>
       <p className={s.doneBody} style={{ marginTop: 10 }}>
         {tries >= 30
-          ? 'האישור מחברת הסליקה מתעכב. אם החיוב עבר, השובר יישלח ברגע שיתקבל האישור והקבלה תגיע במייל. אפשר לרענן את העמוד בעוד כמה דקות.'
+          ? 'האישור מחברת הסליקה מתעכב. אם החיוב עבר, השובר יישלח ברגע שיתקבל האישור והקבלה תגיע בדוא״ל. אפשר לרענן את העמוד בעוד כמה דקות.'
           : 'זה לוקח בדרך כלל כמה שניות. לא צריך לשלם שוב.'}
       </p>
       {tries >= 30 ? <button type="button" className={s.btnGhost} onClick={() => { setTries(0); router.refresh(); }}>לבדוק שוב</button> : null}

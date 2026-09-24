@@ -32,7 +32,7 @@ export function ReceiptView({ data }: { data: ReceiptData }) {
         <section key={t.key} className={styles.track} aria-labelledby={`rf-${t.key}`} data-noprint>
           <h2 id={`rf-${t.key}`} className={styles.trackTitle}>{t.title}</h2>
           <p className={styles.trackIntro}>{t.intro}</p>
-          {t.failed && <p className={styles.trackFail} role="alert">ההחזר לא עבר בחברת האשראי. הקליניקה מטפלת בזה ותעדכן אותך.</p>}
+          {t.failed && <p className={styles.trackFail} role="alert">ההחזר לא עבר בחברת האשראי. הקליניקה מטפלת בזה ותעדכן אתכם.</p>}
           <ol className={styles.steps}>
             {t.steps.map((s, i) => {
               const cur = !s.done && t.steps.findIndex(x => !x.done) === i;

@@ -138,7 +138,7 @@ export function ResultsToolbar() {
         </h2>
         {/* Announces the new count (or the loading state) after every filter change. */}
         <p role="status" aria-live="polite" className="sr-only">
-          {pending ? 'טוען תוצאות' : `נמצאו ${resultsText(total)}`}
+          {pending ? 'טוענים תוצאות' : `נמצאו ${resultsText(total)}`}
         </p>
         <button type="button" id="open-filters" className={`${s.filterBtn} bf-desk-only`} data-active={filtered || undefined} aria-controls="filters" aria-expanded={panelOpen} onClick={() => setPanelOpen(true)}>
           סינון
@@ -202,7 +202,7 @@ export function ResultsToolbar() {
             </button>
           ))}
           <button type="button" className={s.activeClear} onClick={() => update({ region: null, city: null, t: null, f: [], price: null }, { focus: 'results' })}>
-            נקו הכול
+            ניקוי הכול
           </button>
         </div>
       )}

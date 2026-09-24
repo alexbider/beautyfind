@@ -11,7 +11,7 @@ import { findResetToken, normalizeEmail } from './reset-token';
 
 export const metadata: Metadata = {
   title: 'כניסה והרשמה',
-  description: 'כניסה והרשמה ל־BeautyFind: אימות בוואטסאפ, כניסה לעסקים וללקוחות, ואיפוס סיסמה.',
+  description: 'כניסה והרשמה ל־BeautyFind בקוד בוואטסאפ או בסיסמה: לקוחות קובעים ומנהלים תורים, ובעלי עסקים מנהלים את הפרופיל, היומן והלקוחות.',
   alternates: { canonical: '/login' },
   robots: { index: false, follow: true },
 };

@@ -151,7 +151,7 @@ export function SavedView({ initialCards, initialCmp, serverSignedIn }: { initia
       {store.ready && !pending && shown.length === 0 && (
         <div className={styles.empty}>
           <p className={styles.emptyTitle}>{saved.length ? 'אין מועדפים בסינון הזה' : 'עדיין אין כאן מועדפים'}</p>
-          <p className={styles.emptyText}>לחצו על הלב בכל כרטיס קליניקה כדי לשמור אותה כאן ולהשוות מאוחר יותר.</p>
+          <p className={styles.emptyText}>לחצו על הלב בכל כרטיס קליניקה כדי להוסיף אותה למועדפים ולהשוות מאוחר יותר.</p>
           {saved.length ? (
             <button type="button" className={styles.btnPrimary} onClick={() => setFilter('all')}>הצגת הכל</button>
           ) : (
@@ -248,7 +248,7 @@ export function SavedView({ initialCards, initialCmp, serverSignedIn }: { initia
                   {!c.google && !c.beautyfind && <span className={styles.count}>עדיין אין דירוג</span>}
                 </span>
                 {c.responsible && <span className={styles.note}>{c.responsible}</span>}
-                {c.savedIso && <span className={styles.savedAt}>נשמרה {relHe(new Date(c.savedIso), now)}</span>}
+                {c.savedIso && <span className={styles.savedAt}>נוספה {relHe(new Date(c.savedIso), now)}</span>}
               </div>
               <div className={styles.foot}>
                 <button type="button" role="checkbox" aria-checked={on} aria-disabled={locked || undefined} className={styles.cmpToggle} onClick={() => !locked && toggleCmp(c.id)}>

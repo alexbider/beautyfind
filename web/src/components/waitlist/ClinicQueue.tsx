@@ -378,9 +378,9 @@ export function ClinicQueue({
               </dl>
               <p className={cq.note}>
                 {entry.status === 'offered'
-                  ? 'נשלחה לה הצעה לתור שהתפנה, והיא שמורה לה עד שתענה או שזמן השמירה ייגמר.'
+                  ? 'נשלחה לה הצעה לתור שהתפנה, והתור שמור לה עד שתענה או עד שזמן השמירה יסתיים.'
                   : matchSet.has(entry.id)
-                    ? 'מתאימה לתור שהתפנה. ההצעה נשלחת מהרשימה לראשונה המתאימה לפי סדר ההצטרפות.'
+                    ? 'מתאימה לתור שהתפנה. ההצעה נשלחת לראשונה ברשימה שמתאימה, לפי סדר ההצטרפות.'
                     : 'כשיתפנה תור שמתאים להעדפות שלה, הוא יוצע לה לפי סדר ההצטרפות.'}
               </p>
             </>
@@ -584,7 +584,7 @@ function ManualOffer({ data, branchId, pending, onSend, bare }: { data: QueueDat
           disabled={!slot || !who || !matches || pending}
           onClick={() => slot && who && onSend({ branchId, treatmentId: pick.treatmentId, practitionerId: who.id, startsAt: slot.startsAt })}
         >
-          הצעה לראשונה המתאימה
+          הצעה לראשונה שמתאימה
         </button>
       </div>
     </div>

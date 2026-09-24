@@ -20,7 +20,7 @@ export async function signDeclaration(token: string, fd: FormData): Promise<Subm
   }
   const sig = fd.get('signature');
   if (!(sig instanceof Blob) || sig.size === 0) return { ok: false, error: 'חסרה חתימה' };
-  if (sig.size > MAX_SIGNATURE_BYTES) return { ok: false, error: 'קובץ החתימה גדול מדי. נקי את החתימה ונסי שוב.' };
+  if (sig.size > MAX_SIGNATURE_BYTES) return { ok: false, error: 'קובץ החתימה גדול מדי. נקו את החתימה ונסו שוב.' };
   if (sig.type && sig.type !== 'image/png') return { ok: false, error: 'חסרה חתימה' };
 
   const res = await submitDeclaration(bookingId, payload, Buffer.from(await sig.arrayBuffer()));

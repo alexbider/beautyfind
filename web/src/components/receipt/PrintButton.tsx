@@ -4,7 +4,7 @@
 export function PrintButton({ className }: { className?: string }) {
   return (
     <button type="button" className={className} onClick={() => window.print()}>
-      הדפסה / PDF
+      הדפסה או PDF
     </button>
   );
 }

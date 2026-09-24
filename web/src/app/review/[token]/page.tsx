@@ -34,7 +34,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ token: 
     return (
       <ReviewShell>
         <ReviewState title="הקישור לא תקין" actions={home}>
-          ייתכן שהקישור הועתק חלקית. אפשר לפתוח אותו שוב מההודעה שקיבלת אחרי הביקור.
+          ייתכן שהקישור הועתק חלקית. אפשר לפתוח אותו שוב מההודעה שקיבלתם אחרי הביקור.
         </ReviewState>
       </ReviewShell>
     );
@@ -74,7 +74,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ token: 
             'ב־BeautyFind מתפרסמות רק ביקורות על ביקורים שהתקיימו בפועל, והתור הזה לא התקיים.'
           ) : (
             <>
-              ב־BeautyFind כותבים ביקורת רק על ביקור שהתקיים בפועל. אחרי הטיפול ב{b.branch.name} נשלח לך הודעה, והקישור הזה ייפתח לכתיבה.
+              ב־BeautyFind כותבים ביקורת רק על ביקור שהתקיים בפועל. אחרי הטיפול ב{b.branch.name} נשלח לכם הודעה, והקישור הזה ייפתח לכתיבה.
             </>
           )}
         </ReviewState>

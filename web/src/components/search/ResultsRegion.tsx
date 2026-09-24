@@ -18,7 +18,7 @@ export function ResultsRegion({ hasResults, children }: { hasResults: boolean; c
       {dim && (
         <p className={s.loadingLine} aria-hidden="true">
           <span className={s.spinner} />
-          <span>טוען תוצאות…</span>
+          <span>טוענים תוצאות…</span>
         </p>
       )}
       {mapOn && hasResults && (

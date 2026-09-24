@@ -49,7 +49,7 @@ export function LoadMore({ shown, total, perLoad }: { shown: number; total: numb
       <div className={s.more}>
         {canLoad && (
           <button type="button" className={`${s.moreBtn} bf-desk-only`} disabled={pending} aria-busy={pending} onClick={() => update({ page: state.page + 1 }, { focus: { card: shown } })}>
-            {pending ? 'טוען…' : label}
+            {pending ? 'טוענים…' : label}
           </button>
         )}
         <div role="presentation" className={s.progress}>

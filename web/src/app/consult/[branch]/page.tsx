@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   if (!b) return { title: 'בקשת ייעוץ' };
   return {
     title: `בקשת ייעוץ לפני הזרקה · ${b.name}`,
-    description: `בקשת ייעוץ רפואי לפני טיפול בהזרקה ב${b.name}, ${b.cityName}: בחירת מועד פנוי ביומן הרופא/ה, או העדפות זמן והקליניקה תציע מועד.`,
+    description: `בקשת ייעוץ רפואי לפני טיפול בהזרקה ב${b.name}, ${b.cityName}: בחרו מועד פנוי ביומן הרופא/ה, או סמנו זמנים נוחים והקליניקה תציע מועד.`,
     robots: { index: false },
   };
 }

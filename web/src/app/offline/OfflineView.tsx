@@ -12,7 +12,7 @@ export function OfflineView() {
         <ErrorState
           headingLevel="h1"
           title="אין חיבור לאינטרנט"
-          body="הדף הזה צריך חיבור. קליניקות שצפיתם בהן לאחרונה נפתחות גם בלי רשת. מה שכבר מילאתם בטפסים נשמר במכשיר, ותשלום לא נשלח אף פעם בלי חיבור."
+          body="הדף הזה דורש חיבור לאינטרנט. קליניקות שצפיתם בהן לאחרונה נפתחות גם בלי רשת. מה שכבר מילאתם בטפסים נשמר במכשיר, ותשלום לעולם לא נשלח בלי חיבור."
           onRetry={() => window.location.reload()}
           retryLabel="ניסיון חוזר"
           secondary={<a href="/" className={errorStateClasses.secondary}>לדף הבית</a>}

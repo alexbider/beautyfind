@@ -95,7 +95,7 @@ export async function submitProfileLead(input: LeadInput): Promise<LeadResult> {
       } catch (e) {
         // The lead is saved and visible in the CRM; record the failed email on its timeline.
         console.error('[profile-lead] email failed', e);
-        await db.leadEvent.create({ data: { leadId: lead.id, kind: 'note', text: 'שליחת המייל לעסק נכשלה. הפנייה שמורה כאן.' } }).catch(() => {});
+        await db.leadEvent.create({ data: { leadId: lead.id, kind: 'note', text: 'שליחת הדוא״ל לעסק נכשלה. הפנייה שמורה כאן.' } }).catch(() => {});
       }
     } else {
       console.warn('[profile-lead] no email for branch', branch.id);

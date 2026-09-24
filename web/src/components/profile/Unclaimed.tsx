@@ -19,7 +19,7 @@ export function UnclaimedProfile({ p, v }: { p: PublicProfile; v: ProfileView })
     <main className={styles.bg}>
       <div className={styles.wrap}>
         <div className={styles.card}>
-          <p className={styles.warn}>הכרטיס הזה לא נוהל על ידי העסק. הפרטים נאספו ממקורות פומביים, ועשויים להיות לא מעודכנים.</p>
+          <p className={styles.warn}>הכרטיס הזה אינו מנוהל על ידי העסק. הפרטים נאספו ממקורות פומביים וייתכן שאינם מעודכנים.</p>
 
           <div className={styles.id}>
             <span aria-hidden="true" className={styles.mono}>{initials(p.name)}</span>
@@ -61,8 +61,8 @@ export function UnclaimedProfile({ p, v }: { p: PublicProfile; v: ProfileView })
 
           <div className={styles.sugs}>
             <div className={styles.sug} data-main>
-              <h2>זה העסק שלך?</h2>
-              <p>אפשר לקבל שליטה על הכרטיס, לעדכן טיפולים, מחירים ושעות ולקבל פניות ישר לעסק.</p>
+              <h2>זה העסק שלכם?</h2>
+              <p>אפשר לקבל שליטה על הכרטיס, לעדכן טיפולים, מחירים ושעות, ולקבל פניות ישירות לעסק.</p>
               <Link href={ROUTES.claim} className={styles.go} data-main>אישור בעלות</Link>
             </div>
             <div className={styles.sug}>
