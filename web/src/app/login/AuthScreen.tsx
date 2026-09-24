@@ -24,6 +24,7 @@ import {
 } from './actions';
 import { OTP_LEN, OtpInput } from './OtpInput';
 import styles from './AuthScreen.module.css';
+import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
 
 export type Role = 'client' | 'biz';
 /** forgot = request a reset link; reset = choose a new password from an emailed link. */
@@ -48,11 +49,11 @@ const ASIDE: Record<Role, { title: string; points: Array<{ name: string; note: s
       { name: 'יומן, מלאי ואוטומציות', note: 'תזכורות בוואטסאפ וניכוי מלאי אוטומטי לכל טיפול' },
       { name: 'הרשאות לפי תפקיד', note: 'מזכירה, קוסמטיקאית והנהלת חשבונות רואות רק את שלהן' },
     ],
-    // Marketing figures from the design, kept as designed.
+    // Plain facts only (plan price and terms from lib/pricing.ts), never invented performance numbers.
     stats: [
-      { n: '86%', label: 'פניות נענות' },
-      { n: '4.8', label: 'דירוג ממוצע' },
-      { n: '18%', label: 'צמיחה' },
+      { n: `₪${PLAN_MONTHLY_NIS.basic}`, label: 'לסניף בחודש' },
+      { n: '0%', label: 'עמלה על תורים' },
+      { n: '7', label: 'אזורים בישראל' },
     ],
   },
 };
