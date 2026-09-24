@@ -18,7 +18,7 @@ export interface RunRow {
   requestsUsed: number;
   maxExtractions: number | null;
   extractionsUsed: number;
-  stats: { counters?: Record<string, number>; budgetHit?: boolean; types?: { dropped: string[] } };
+  stats: { counters?: Record<string, number>; budgetHit?: boolean; types?: { dropped: string[] }; lastExtractError?: string };
   error: string | null;
   createdAt: string;
   finishedAt: string | null;
@@ -161,11 +161,14 @@ function Run({ r }: { r: RunRow }) {
   const c = r.stats.counters ?? {};
   const b = r.byStatus;
   const pct = Math.min(100, Math.round((r.requestsUsed / Math.max(1, r.maxRequests)) * 100));
-  const act = (a: 'pause' | 'resume' | 'cancel' | 'kick') =>
+  const act = (a: 'pause' | 'resume' | 'cancel' | 'kick' | 'retry') =>
     start(async () => {
       if (a === 'cancel' && !confirm('לבטל את הריצה? רשומות שכבר נמצאו נשארות בתור הבדיקה.')) return;
+      if (a === 'retry' && !confirm('להריץ שוב את הרשומות החסרות? האתרים ייקראו מחדש, בלי קריאות חדשות ל־Google.')) return;
       const res = await runControlAction(r.id, a);
-      setNote(res.dispatched === false && (a === 'resume' || a === 'kick') ? 'העובד לא הופעל אוטומטית. הפעילו את ה־workflow ב־GitHub.' : '');
+      if (a === 'retry' && !res.count) setNote('אין רשומות חסרות להרצה חוזרת.');
+      else if (res.dispatched === false) setNote('העובד לא הופעל אוטומטית. הפעילו את ה־workflow ב־GitHub.');
+      else setNote(a === 'retry' ? `${res.count} רשומות נשלחו להרצה חוזרת.` : '');
       router.refresh();
     });
 
@@ -193,6 +196,7 @@ function Run({ r }: { r: RunRow }) {
         <span>אושרו <b>{n((b.approved ?? 0) + (b.merged ?? 0))}</b></span>
       </div>
       {r.error ? <p className={styles.error}>{r.error}</p> : null}
+      {r.stats.lastExtractError && !r.error ? <p className={styles.note}>שגיאת Claude אחרונה: <span className={styles.ltr}>{r.stats.lastExtractError}</span></p> : null}
       {r.stats.types?.dropped?.length ? <p className={styles.note}>סוגי מקום שלא נתמכו ודולגו: <span className={styles.ltr}>{r.stats.types.dropped.join(', ')}</span></p> : null}
       {note ? <p className={styles.info}>{note}</p> : null}
       <div className={styles.btnRow}>
@@ -204,6 +208,9 @@ function Run({ r }: { r: RunRow }) {
           </>
         ) : null}
         {r.status === 'paused' || r.status === 'failed' ? <button type="button" className={styles.btn} disabled={pending} onClick={() => act('resume')}>המשך</button> : null}
+        {r.status === 'done' || r.status === 'failed' ? (
+          <button type="button" className={styles.btn} disabled={pending} onClick={() => act('retry')}>הרצה חוזרת לרשומות החסרות</button>
+        ) : null}
         {r.status !== 'done' && r.status !== 'canceled' ? <button type="button" className={`${styles.btn} ${styles.danger}`} disabled={pending} onClick={() => act('cancel')}>ביטול</button> : null}
       </div>
     </article>

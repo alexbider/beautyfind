@@ -56,7 +56,7 @@ export const BLOCKING = ['no_phone', 'no_email', 'email_no_mx', 'no_category', '
 /** Reasons that allow approval but only by a person looking at the record. */
 export const REVIEW = [
   'possible_existing', 'possible_duplicate', 'email_domain_mismatch', 'shared_phone', 'temporarily_closed', 'not_beauty', 'city_not_in_catalog',
-  'extraction_failed', 'medical_without_doctor_info',
+  'extraction_failed', 'medical_without_doctor_info', 'email_from_search',
 ] as const;
 
 export const REASON_NAMES: Record<string, string> = {
@@ -72,7 +72,8 @@ export const REASON_NAMES: Record<string, string> = {
   temporarily_closed: 'סגור זמנית בגוגל',
   not_beauty: 'ייתכן שאינו עסק יופי',
   city_not_in_catalog: 'יישוב שאינו ברשימה',
-  extraction_failed: 'קריאת האתר נכשלה',
+  extraction_failed: 'חילוץ הטיפולים מהאתר נכשל',
+  email_from_search: 'הדוא״ל נמצא בחיפוש, צריך לאמת',
   medical_without_doctor_info: 'טיפול רפואי, צריך לבדוק רופא אחראי',
 };
 
@@ -87,6 +88,7 @@ export interface QualifyInput {
   citySlug: string | null;
   notBeauty: boolean;
   extractionFailed: boolean;
+  emailFromSearch?: boolean;
   possibleExisting: boolean;
   possibleDuplicate?: boolean;
   sharedPhone: boolean;
@@ -108,6 +110,7 @@ export function qualify(p: QualifyInput): { status: 'ready' | 'needs_review' | '
   if (p.notBeauty) r.push('not_beauty');
   if (!p.citySlug) r.push('city_not_in_catalog');
   if (p.extractionFailed) r.push('extraction_failed');
+  if (p.email && p.emailFromSearch) r.push('email_from_search');
   if (p.categories.some(c => CATEGORIES.find(x => x.slug === c)?.isMedical)) r.push('medical_without_doctor_info');
   const status = r.some(x => (BLOCKING as readonly string[]).includes(x)) ? 'incomplete' : r.length ? 'needs_review' : 'ready';
   return { status, reasons: r };

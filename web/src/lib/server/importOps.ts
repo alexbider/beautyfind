@@ -40,6 +40,24 @@ export async function setRunStatus(runId: string, action: 'pause' | 'resume' | '
 }
 
 /**
+ * Sends a finished run's incomplete records (no email, failed extraction, no category) back through
+ * enrichment and extraction. Google is not called again. Records staff already decided on are kept.
+ */
+export async function retryIncomplete(runId: string): Promise<number> {
+  const n = await db.$executeRaw`
+    UPDATE import_places SET status = 'found', reasons = '{}'
+    WHERE run_id = ${runId}::uuid AND reviewed_by_id IS NULL
+      AND (status = 'incomplete' OR (status = 'needs_review' AND 'extraction_failed' = ANY(reasons)))`;
+  if (n) {
+    await db.importRun.updateMany({
+      where: { id: runId, status: { in: ['done', 'failed', 'paused'] } },
+      data: { status: 'queued', error: null, finishedAt: null, extractionsUsed: 0, lockedBy: null, lockedUntil: null },
+    });
+  }
+  return n;
+}
+
+/**
  * Starts the GitHub Actions worker (.github/workflows/import.yml). Needs GITHUB_DISPATCH_TOKEN, a
  * fine-grained token with "Actions: write" on the repository. Without it the run waits in the queue
  * until someone starts the workflow by hand.
@@ -358,6 +376,7 @@ export async function requalify(id: string) {
     citySlug: p.citySlug,
     notBeauty: crawl.notBeauty === true || crawl.skipped === 'off_topic',
     extractionFailed: typeof crawl.extractError === 'string',
+      emailFromSearch: p.emailSource === 'search',
     possibleExisting: possible,
     possibleDuplicate: !!maybeTwin,
     sharedPhone: shared,

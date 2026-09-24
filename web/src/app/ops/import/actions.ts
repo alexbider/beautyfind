@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { importerOrNull } from '@/components/ops/guard';
 import { db } from '@/lib/server/db';
 import {
-  approvePlace, createRun, dispatchWorker, editPlace, markDuplicate, mergePlace, rejectPlace, restorePlace, setRunStatus, type OpResult,
+  approvePlace, createRun, dispatchWorker, editPlace, markDuplicate, mergePlace, rejectPlace, restorePlace, retryIncomplete, setRunStatus, type OpResult,
 } from '@/lib/server/importOps';
 
 const refresh = () => {
@@ -28,13 +28,15 @@ export async function startRunAction(input: { label: string; scope: unknown; max
   }
 }
 
-export async function runControlAction(runId: string, action: 'pause' | 'resume' | 'cancel' | 'kick'): Promise<{ ok: boolean; dispatched?: boolean; reason?: string }> {
+export async function runControlAction(runId: string, action: 'pause' | 'resume' | 'cancel' | 'kick' | 'retry'): Promise<{ ok: boolean; dispatched?: boolean; reason?: string; count?: number }> {
   const user = await importerOrNull();
   if (!user || !z.uuid().safeParse(runId).success) return { ok: false };
-  if (action !== 'kick') await setRunStatus(runId, action);
-  const d = action === 'resume' || action === 'kick' ? await dispatchWorker(runId) : undefined;
+  let count: number | undefined;
+  if (action === 'retry') count = await retryIncomplete(runId);
+  else if (action !== 'kick') await setRunStatus(runId, action);
+  const d = action === 'resume' || action === 'kick' || (action === 'retry' && count) ? await dispatchWorker(runId) : undefined;
   refresh();
-  return { ok: true, ...d };
+  return { ok: true, count, ...d };
 }
 
 const Op = z.discriminatedUnion('op', [

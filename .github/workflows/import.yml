@@ -37,6 +37,8 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
+      # Headless Chromium for sites that block plain requests or build their pages with scripts.
+      - run: npx playwright-core install --with-deps chromium
       - id: work
         run: npm run import:work -- --max-minutes "${{ inputs.max_minutes || '330' }}" ${{ inputs.run_id && format('--run {0}', inputs.run_id) || '' }}
         env:
@@ -45,6 +47,12 @@ jobs:
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           IMPORT_MODEL: ${{ vars.IMPORT_MODEL }}
+          # Optional: an Israeli proxy (http://user:pass@host:port) for sites that refuse visitors from abroad.
+          CRAWL_PROXY: ${{ secrets.CRAWL_PROXY }}
+          # Optional: web search for records without an email (Brave Search API).
+          BRAVE_SEARCH_API_KEY: ${{ secrets.BRAVE_SEARCH_API_KEY }}
+          # Optional: "1" to read public Facebook and Instagram pages (no login).
+          CRAWL_SOCIAL: ${{ vars.CRAWL_SOCIAL }}
       - name: Continue in a new job
         if: steps.work.outputs.more == 'true'
         run: gh workflow run import.yml --ref "${{ github.ref_name }}" -f run_id="${{ inputs.run_id }}"

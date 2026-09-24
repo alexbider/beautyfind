@@ -83,9 +83,39 @@ Rules:
 - description: two or three plain Hebrew sentences in third person about what this business offers and where, based only on the pages. No superlatives, no promises of results, no em dashes, no invented history or awards. null when the pages say too little.
 - isBeautyBusiness: false when the site is clearly not a beauty, hair, nails, spa or aesthetics business.`;
 
-export async function extract(input: { name: string; address: string; types: string[]; text: string }): Promise<
-  { ok: true; data: Extraction; inputTokens: number; outputTokens: number } | { ok: false; error: string }
-> {
+export type ExtractResult =
+  | { ok: true; data: Extraction; inputTokens: number; outputTokens: number }
+  // transient: try the same record again later. fatal: every call will fail the same way (key, credit, model).
+  | { ok: false; error: string; transient?: boolean; fatal?: boolean };
+
+// Request options the account may not have. Each is dropped for the rest of the run the first time
+// the API rejects it, and the call is retried without it.
+let useFallbacks = true;
+let useFormat = true;
+
+const JSON_ONLY = '\n\nReply with only the JSON object, no other text. Keys: isBeautyBusiness, categories, businessType, description, emails, treatments (name, category, priceNis, priceType, durationMin, isMedical).';
+
+function parseJson(text: string): unknown {
+  const t = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
+  const a = t.indexOf('{');
+  const b = t.lastIndexOf('}');
+  return JSON.parse(a >= 0 && b > a ? t.slice(a, b + 1) : t);
+}
+
+async function call(user: string) {
+  const params = {
+    model: MODEL,
+    max_tokens: 16000,
+    system: [{ type: 'text' as const, text: useFormat ? SYSTEM : SYSTEM + JSON_ONLY, cache_control: { type: 'ephemeral' as const } }],
+    output_config: useFormat ? { effort: 'low' as const, format: { type: 'json_schema' as const, schema: SCHEMA } } : { effort: 'low' as const },
+    messages: [{ role: 'user' as const, content: user }],
+  };
+  return useFallbacks
+    ? client.beta.messages.create({ ...params, betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' })
+    : client.beta.messages.create(params);
+}
+
+export async function extract(input: { name: string; address: string; types: string[]; text: string }): Promise<ExtractResult> {
   const user = `Business name on Google: ${input.name}
 Address: ${input.address}
 Google place types: ${input.types.join(', ') || 'none'}
@@ -93,26 +123,51 @@ Google place types: ${input.types.join(', ') || 'none'}
 Website pages:
 ${input.text}`;
 
-  try {
-    const res = await client.beta.messages.create({
-      model: MODEL,
-      max_tokens: 16000,
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
-      system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }],
-      output_config: { effort: 'low', format: { type: 'json_schema', schema: SCHEMA } },
-      messages: [{ role: 'user', content: user }],
-    });
-    if (res.stop_reason === 'refusal') return { ok: false, error: 'refusal' };
-    if (res.stop_reason === 'max_tokens') return { ok: false, error: 'max_tokens' };
-    const text = res.content.find(b => b.type === 'text');
-    if (!text || text.type !== 'text') return { ok: false, error: 'no_text' };
-    const parsed = Out.safeParse(JSON.parse(text.text));
-    if (!parsed.success) return { ok: false, error: 'schema: ' + parsed.error.message.slice(0, 200) };
-    return { ok: true, data: parsed.data, inputTokens: res.usage.input_tokens, outputTokens: res.usage.output_tokens };
-  } catch (e) {
-    if (e instanceof Anthropic.RateLimitError) return { ok: false, error: 'rate_limited' };
-    if (e instanceof Anthropic.APIError) return { ok: false, error: `api_${e.status}: ${e.message.slice(0, 200)}` };
-    return { ok: false, error: e instanceof Error ? e.message.slice(0, 200) : 'failed' };
+  for (let attempt = 0; attempt < 4; attempt++) {
+    try {
+      const res = await call(user);
+      if (res.stop_reason === 'refusal') return { ok: false, error: 'refusal' };
+      if (res.stop_reason === 'max_tokens') return { ok: false, error: 'max_tokens' };
+      const text = res.content.find(b => b.type === 'text');
+      if (!text || text.type !== 'text') return { ok: false, error: 'no_text' };
+      let json: unknown;
+      try {
+        json = parseJson(text.text);
+      } catch {
+        return { ok: false, error: 'bad_json' };
+      }
+      const parsed = Out.safeParse(json);
+      if (!parsed.success) return { ok: false, error: 'schema: ' + parsed.error.message.slice(0, 200) };
+      return { ok: true, data: parsed.data, inputTokens: res.usage.input_tokens, outputTokens: res.usage.output_tokens };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (e instanceof Anthropic.BadRequestError) {
+        // An option this account or model does not accept: drop it and try again right away.
+        if (useFallbacks && /fallback|beta|server-side/i.test(msg)) {
+          useFallbacks = false;
+          console.warn('[extract] server-side fallbacks not accepted, continuing without them:', msg.slice(0, 160));
+          continue;
+        }
+        if (useFormat && /output_config|format|schema|json_schema/i.test(msg)) {
+          useFormat = false;
+          console.warn('[extract] structured output not accepted, asking for plain JSON instead:', msg.slice(0, 160));
+          continue;
+        }
+        if (/credit balance|billing/i.test(msg)) return { ok: false, error: `no_credit: ${msg.slice(0, 200)}`, fatal: true };
+        return { ok: false, error: `api_400: ${msg.slice(0, 240)}` };
+      }
+      if (e instanceof Anthropic.AuthenticationError || e instanceof Anthropic.PermissionDeniedError) return { ok: false, error: `auth: ${msg.slice(0, 200)}`, fatal: true };
+      if (e instanceof Anthropic.NotFoundError) return { ok: false, error: `model_not_found: ${MODEL}`, fatal: true };
+      if (e instanceof Anthropic.RateLimitError || (e instanceof Anthropic.APIError && (e.status === 529 || (e.status ?? 0) >= 500))) {
+        // The SDK already retried; wait longer before our own retry (rate limits reset per minute).
+        const wait = Number((e as InstanceType<typeof Anthropic.APIError>).headers?.get?.('retry-after')) || 20 * (attempt + 1);
+        await new Promise(r => setTimeout(r, Math.min(wait, 90) * 1000));
+        if (attempt < 3) continue;
+        return { ok: false, error: e instanceof Anthropic.RateLimitError ? 'rate_limited' : `api_${e.status}`, transient: true };
+      }
+      if (e instanceof Anthropic.APIConnectionError) return { ok: false, error: 'connection', transient: true };
+      return { ok: false, error: msg.slice(0, 200) };
+    }
   }
+  return { ok: false, error: 'retries_used', transient: true };
 }

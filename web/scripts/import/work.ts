@@ -19,7 +19,8 @@ import { boxSideKm, boxTouchesIsrael, cityBox, ISRAEL_BOX, resolveCity, splitBox
 import { DUPLICATE_AT, isStrong, MatchPool, POSSIBLE_MATCH_AT, type PoolItem } from '../../src/lib/import/match';
 import { normalizeIlPhone } from '../../src/lib/import/phone';
 import { hoursFromGoogle, qualify, RunScope } from '../../src/lib/import/rules';
-import { crawlSite } from './crawl';
+import { closeBrowser, crawlSite, crawlSocial } from './crawl';
+import { searchBusiness } from './search';
 import { extract } from './extract';
 import { locality, PlacesError, searchNearby, searchText, supportedTypes, type GPlace, type Spend } from './places';
 
@@ -254,36 +255,102 @@ async function discover(run: ImportRun, spend: Spend): Promise<boolean> {
 
 // ---------- enrich ----------
 
+type Src = 'site' | 'social' | 'search';
+
+async function enrichOne(p: ImportPlace) {
+  const crawl0 = (p.crawl ?? {}) as Record<string, unknown>;
+  if (crawl0.offTopic && !p.categories.length) {
+    await db.importPlace.update({ where: { id: p.id }, data: { status: 'enriched', enrichedAt: new Date(), crawl: { ...crawl0, skipped: 'off_topic' } } });
+    return;
+  }
+  // 1. The business's own website.
+  const c = await crawlSite(p.website);
+  const found: Record<Src, string[]> = { site: c.emails, social: [], search: [] };
+  const phones = [...c.phones];
+  let facebook = c.facebook ?? p.facebook;
+  let instagram = c.instagram ?? p.instagram;
+  const sources: Record<string, string> = {};
+  let extraText = '';
+
+  // 2. Its public Facebook and Instagram pages, when the site gave no email.
+  const readSocial = async () => {
+    for (const [key, url] of [['facebook', facebook], ['instagram', instagram]] as const) {
+      if (!url || sources[key] || found.site.length || found.social.length) continue;
+      const r = await crawlSocial(url);
+      sources[key] = r.status;
+      found.social.push(...r.emails);
+      phones.push(...r.phones);
+      if (r.text) extraText += `\n\n## ${url}\n${r.text}`;
+    }
+  };
+  await readSocial();
+
+  // 3. A web search, still without an email: finds the email or the social pages.
+  if (!found.site.length && !found.social.length) {
+    const s = await searchBusiness({ name: p.name, city: p.cityName, website: p.website });
+    sources.search = s.status;
+    found.search.push(...s.emails);
+    if (!facebook && s.facebook) facebook = s.facebook;
+    if (!instagram && s.instagram) instagram = s.instagram;
+    if (s.facebook || s.instagram) await readSocial();
+  }
+
+  const emails = [...new Set([...p.emails, ...found.site, ...found.social, ...found.search])];
+  // Own-site addresses first, then the social page, then search results.
+  let pick: { email: string; tier: 'own' | 'free' | 'other'; src: Src } | null = null;
+  for (const src of ['site', 'social', 'search'] as const) {
+    const got = pickEmail(found[src], p.website);
+    if (got) {
+      pick = { ...got, src };
+      break;
+    }
+  }
+  if (!pick && p.email) pick = { ...(pickEmail([p.email], p.website) ?? { email: p.email, tier: 'other' as const }), src: (p.emailSource as Src) ?? 'site' };
+  const manual = p.emailSource === 'manual';
+  const mx = !manual && pick ? await hasMx(emailDomain(pick.email)) : p.emailMx;
+  const sitePhone = phones.find(Boolean) ?? null;
+  const text = [c.text, extraText.trim()].filter(Boolean).join('\n\n');
+
+  await db.importPlace.update({
+    where: { id: p.id },
+    data: {
+      status: 'enriched',
+      enrichedAt: new Date(),
+      emails,
+      email: manual ? p.email : pick?.email ?? null,
+      emailSource: manual ? 'manual' : pick?.src ?? null,
+      emailMx: manual ? p.emailMx : mx,
+      phone: p.phone ?? sitePhone,
+      whatsapp: c.whatsapp ?? p.whatsapp,
+      instagram,
+      facebook,
+      crawl: {
+        ...crawl0,
+        pages: c.pages,
+        skipped: c.skipped ?? null,
+        rendered: c.pages.filter(x => x.via === 'browser').length,
+        sources,
+        emailTier: pick?.tier ?? null,
+        sitePhones: [...new Set(phones)],
+        text,
+        extractError: null,
+      },
+    },
+  });
+}
+
 async function enrich(run: ImportRun): Promise<boolean> {
   const places = await db.importPlace.findMany({ where: { runId: run.id, status: 'found' }, take: 16 });
   if (!places.length) return false;
   await heartbeat(run.id);
-  await pool(places, 8, async p => {
-    const crawl0 = (p.crawl ?? {}) as Record<string, unknown>;
-    if (crawl0.offTopic && !p.categories.length) {
-      await db.importPlace.update({ where: { id: p.id }, data: { status: 'enriched', enrichedAt: new Date(), crawl: { ...crawl0, skipped: 'off_topic' } } });
-      return;
+  await pool(places, 6, async p => {
+    try {
+      await enrichOne(p);
+    } catch (e) {
+      // One broken site must not stop the run: keep the Google data and move on.
+      const msg = e instanceof Error ? e.message.slice(0, 200) : 'enrich_failed';
+      await db.importPlace.update({ where: { id: p.id }, data: { status: 'enriched', enrichedAt: new Date(), crawl: { ...((p.crawl ?? {}) as object), skipped: 'unreachable', enrichError: msg } } });
     }
-    const c = await crawlSite(p.website);
-    const emails = [...new Set([...p.emails, ...c.emails])];
-    const pick = pickEmail(emails, p.website);
-    const mx = pick ? await hasMx(emailDomain(pick.email)) : null;
-    await db.importPlace.update({
-      where: { id: p.id },
-      data: {
-        status: 'enriched',
-        enrichedAt: new Date(),
-        emails,
-        email: p.emailSource === 'manual' ? p.email : pick?.email ?? null,
-        emailSource: p.emailSource === 'manual' ? 'manual' : pick ? 'site' : null,
-        emailMx: p.emailSource === 'manual' ? p.emailMx : mx,
-        phone: p.phone ?? c.phones[0] ?? null,
-        whatsapp: c.whatsapp,
-        instagram: c.instagram,
-        facebook: c.facebook,
-        crawl: { ...crawl0, pages: c.pages, skipped: c.skipped ?? null, emailTier: pick?.tier ?? null, sitePhones: c.phones, text: c.text },
-      },
-    });
   });
   await bump(run.id, { enriched: places.length });
   return true;
@@ -291,11 +358,15 @@ async function enrich(run: ImportRun): Promise<boolean> {
 
 // ---------- extract ----------
 
+let transientStreak = 0;
+
 async function extractBatch(run: ImportRun): Promise<boolean> {
-  const places = await db.importPlace.findMany({ where: { runId: run.id, status: 'enriched' }, take: 8 });
+  const places = await db.importPlace.findMany({ where: { runId: run.id, status: 'enriched' }, orderBy: { enrichedAt: 'asc' }, take: 6 });
   if (!places.length) return false;
   await heartbeat(run.id);
-  await pool(places, 4, async p => {
+  let fatal: string | null = null;
+  await pool(places, 2, async p => {
+    if (fatal) return;
     const crawl = (p.crawl ?? {}) as Record<string, unknown>;
     const text = typeof crawl.text === 'string' ? crawl.text : '';
     const done = (data: Prisma.ImportPlaceUpdateInput) =>
@@ -306,16 +377,29 @@ async function extractBatch(run: ImportRun): Promise<boolean> {
     if (fresh.maxExtractions != null && fresh.extractionsUsed >= fresh.maxExtractions) {
       return void (await done({ crawl: { ...crawl, extractSkipped: 'budget' } }));
     }
-    await db.importRun.update({ where: { id: run.id }, data: { extractionsUsed: { increment: 1 } } });
     const r = await extract({ name: p.name, address: p.address, types: p.types, text });
     if (!r.ok) {
+      if (r.fatal) {
+        fatal = r.error;
+        return;
+      }
+      if (r.transient) {
+        // Busy or rate limited: leave the record for the next pass instead of marking it failed.
+        transientStreak++;
+        await db.importPlace.update({ where: { id: p.id }, data: { enrichedAt: new Date() } });
+        return;
+      }
+      await db.importRun.update({ where: { id: run.id }, data: { extractionsUsed: { increment: 1 } } });
       await bump(run.id, { extractFailed: 1 });
+      await setStats(run.id, { lastExtractError: r.error });
       return void (await done({ crawl: { ...crawl, extractError: r.error } }));
     }
+    transientStreak = 0;
+    await db.importRun.update({ where: { id: run.id }, data: { extractionsUsed: { increment: 1 } } });
     const d = r.data;
-    // Keep only addresses Claude saw that also pass our own checks and appear in the crawl.
-    const siteEmails = new Set(p.emails);
-    const extraEmails = d.emails.map(e => cleanEmail(e)).filter((e): e is string => !!e && siteEmails.has(e));
+    // Keep only addresses Claude saw that also pass our own checks and appear in what we collected.
+    const known = new Set(p.emails);
+    const extraEmails = d.emails.map(e => cleanEmail(e)).filter((e): e is string => !!e && known.has(e));
     const emails = [...new Set([...p.emails, ...extraEmails])];
     await done({
       categories: d.categories.length ? d.categories : p.categories,
@@ -327,6 +411,14 @@ async function extractBatch(run: ImportRun): Promise<boolean> {
     });
     await bump(run.id, { extracted: 1, tokensIn: r.inputTokens, tokensOut: r.outputTokens });
   });
+  // Every call fails the same way (bad key, no credit, unknown model): stop and say why.
+  if (fatal) throw new Error(`Claude: ${fatal}`);
+  if (transientStreak >= 6) {
+    log('Claude is rate limiting, waiting a minute');
+    await setStats(run.id, { lastExtractError: 'rate_limited (waiting)' });
+    await new Promise(r => setTimeout(r, 60_000));
+    transientStreak = 0;
+  }
   return true;
 }
 
@@ -391,6 +483,7 @@ async function check(run: ImportRun) {
       citySlug: p.citySlug,
       notBeauty: crawl.notBeauty === true || crawl.skipped === 'off_topic',
       extractionFailed: typeof crawl.extractError === 'string',
+      emailFromSearch: p.emailSource === 'search',
       possibleExisting: possible,
       possibleDuplicate: !!maybeTwin,
       sharedPhone: false,
@@ -516,4 +609,7 @@ main()
     console.error(e);
     process.exitCode = 1;
   })
-  .finally(() => db.$disconnect());
+  .finally(async () => {
+    await closeBrowser();
+    await db.$disconnect();
+  });

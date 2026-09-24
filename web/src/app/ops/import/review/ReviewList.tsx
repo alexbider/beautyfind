@@ -36,6 +36,10 @@ export interface ReviewRow {
   treatments: ImportedTreatment[];
   pagesRead: number;
   crawlSkipped: string | null;
+  extractError: string | null;
+  rendered: number;
+  sources: Record<string, string>;
+  facebook: string | null;
   note: string | null;
   match: { id: string; name: string; href: string; city: string; score: number; reasons: string[] } | null;
   dup: { id: string; name: string; address: string; status: string; reasons: string[] } | null;
@@ -47,7 +51,11 @@ const MATCH_WHY: Record<string, string> = {
   similar_name: 'שם דומה', same_address: 'אותה כתובת', nearby: 'קרוב מאוד', far_apart: 'רחוקים זה מזה',
 };
 const TYPE_NAME: Record<string, string> = { clinic: 'קליניקה רפואית', medspa: 'קוסמטיקה ורפואה', cosmetics: 'קוסמטיקה', salon: 'סלון' };
-const SKIP_NAME: Record<string, string> = { no_website: 'אין אתר', social: 'רק רשת חברתית', robots: 'האתר חוסם סריקה', unreachable: 'האתר לא נטען', off_topic: 'לא עסק יופי' };
+const SKIP_NAME: Record<string, string> = {
+  no_website: 'אין אתר', social: 'רק רשת חברתית', robots: 'האתר חוסם סריקה ב־robots.txt', unreachable: 'האתר לא נטען', blocked: 'האתר חסם את הגישה', off_topic: 'לא עסק יופי',
+};
+const EMAIL_SRC: Record<string, string> = { manual: 'הוזן ידנית', site: 'מהאתר', social: 'מדף הפייסבוק או האינסטגרם', search: 'מחיפוש ברשת' };
+const SOCIAL_STATUS: Record<string, string> = { ok: 'נקרא', login_wall: 'דורש התחברות', disabled: 'כבוי', no_browser: 'אין דפדפן' };
 const ERR: Record<string, string> = {
   incomplete: 'חסרים פרטי חובה', exists: 'המקום כבר קיים באתר', state: 'הרשומה כבר טופלה', not_found: 'הרשומה לא נמצאה', phone: 'מספר טלפון לא תקין',
   email: 'כתובת דוא״ל לא תקינה', email_mx: 'הדומיין של הדוא״ל לא מקבל דואר', name: 'חסר שם', city: 'יישוב לא מוכר', forbidden: 'אין הרשאה', invalid: 'נתונים לא תקינים',
@@ -152,7 +160,7 @@ function Record({ r, onDone }: { r: ReviewRow; onDone: (d: Done) => void }) {
             <dt>דוא״ל: </dt>
             <dd>
               {r.email ? <span className={styles.ltr}>{r.email}</span> : 'לא נמצא'}
-              {r.email ? <span className={styles.note}> · {r.emailSource === 'manual' ? 'הוזן ידנית' : 'מהאתר'}{r.emailMx === false ? ' · הדומיין לא מקבל דואר' : r.emailMx ? ' · הדומיין תקין' : ''}</span> : null}
+              {r.email ? <span className={styles.note}> · {EMAIL_SRC[r.emailSource ?? ''] ?? 'מהאתר'}{r.emailMx === false ? ' · הדומיין לא מקבל דואר' : r.emailMx ? ' · הדומיין תקין' : ''}</span> : null}
               {r.emails.length > 1 ? <span className={styles.note}> · עוד {r.emails.length - 1} באתר</span> : null}
             </dd>
           </div>
@@ -160,12 +168,22 @@ function Record({ r, onDone }: { r: ReviewRow; onDone: (d: Done) => void }) {
             <dt>אתר: </dt>
             <dd>
               {r.website ? <a href={r.website} target="_blank" rel="noreferrer" className={styles.ltr}>{r.website.replace(/^https?:\/\/(www\.)?/, '').slice(0, 50)}</a> : 'אין'}
-              {r.crawlSkipped !== 'no_website' ? <span className={styles.note}> · {r.crawlSkipped ? SKIP_NAME[r.crawlSkipped] ?? r.crawlSkipped : `${r.pagesRead} עמודים נקראו`}</span> : null}
+              {r.crawlSkipped !== 'no_website' ? <span className={styles.note}> · {r.crawlSkipped ? SKIP_NAME[r.crawlSkipped] ?? r.crawlSkipped : `${r.pagesRead} עמודים נקראו${r.rendered ? `, ${r.rendered} בדפדפן` : ''}`}</span> : null}
             </dd>
           </div>
+          {r.facebook ? (
+            <div>
+              <dt>פייסבוק: </dt>
+              <dd>
+                <a href={r.facebook} target="_blank" rel="noreferrer" className={styles.ltr}>{r.facebook.replace(/^https:\/\/(www\.)?facebook\.com\//, '')}</a>
+                {r.sources.facebook ? <span className={styles.note}> · {SOCIAL_STATUS[r.sources.facebook] ?? r.sources.facebook}</span> : null}
+              </dd>
+            </div>
+          ) : null}
           {r.instagram ? <div><dt>אינסטגרם: </dt><dd><a href={r.instagram} target="_blank" rel="noreferrer" className={styles.ltr}>{r.instagram.replace(/^https:\/\/www\.instagram\.com\//, '@')}</a></dd></div> : null}
         </dl>
         {r.description ? <p className={styles.desc}>{r.description}</p> : null}
+        {r.extractError ? <p className={styles.note}>שגיאת חילוץ: <span className={styles.ltr}>{r.extractError}</span></p> : null}
         {r.note ? <p className={styles.note}>הערה: {r.note}</p> : null}
       </div>
 
