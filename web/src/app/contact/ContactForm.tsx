@@ -214,7 +214,7 @@ export function ContactForm({ initialReason, prefill }: { initialReason: Contact
 
       <div className={styles.submitRow}>
         <button type="submit" disabled={busy} className={styles.submit}>
-          <span>{busy ? 'שולח…' : 'שליחת הפנייה'}</span>
+          <span>{busy ? 'שולחים…' : 'שליחת הפנייה'}</span>
           {!busy && <ArrowForward />}
         </button>
         <span className={styles.sla}>{slaLine(reason)}</span>

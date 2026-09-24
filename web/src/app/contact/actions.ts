@@ -43,7 +43,7 @@ export async function submitContact(input: ContactInput): Promise<ContactResult>
       return {
         ok: false,
         error: 'rate',
-        message: `נשלחו כבר ${RATE_LIMIT_PER_DAY} פניות מהכתובת הזו ב־24 השעות האחרונות. נענה עליהן לפי הסדר; אפשר לשלוח פנייה נוספת מחר.`,
+        message: `נשלחו כבר ${RATE_LIMIT_PER_DAY} פניות מהכתובת הזו ב־24 השעות האחרונות. נענה עליהן לפי הסדר, ואפשר לשלוח פנייה נוספת מחר.`,
       };
     }
 
