@@ -92,7 +92,7 @@ export const CATEGORY_CONTENT: Record<string, CategoryContent> = {
   },
 
   'plastic-surgery': {
-    img: '/assets/hero-clinic.jpg',
+    img: '/assets/cat-plastic.jpg',
     blurb: 'ניתוחים אסתטיים ושחזוריים בחדר ניתוח מורשה',
     tags: ['אף', 'שדיים', 'מיצוק בטן', 'עפעפיים', 'שאיבת שומן', 'ניתוח'],
     examples: 'עפעפיים · אף · שאיבת שומן',
@@ -134,7 +134,7 @@ export const CATEGORY_CONTENT: Record<string, CategoryContent> = {
   },
 
   'dental-aesthetics': {
-    img: '/assets/region-dan.jpg',
+    img: '/assets/cat-dental.jpg',
     blurb: 'ציפויי חרסינה, הלבנה מקצועית ויישור שקוף',
     tags: ['ציפויים', 'הלבנה', 'יישור שקוף', 'שיניים', 'למינייט', 'חרסינה'],
     examples: 'ציפויים · הלבנה · יישור שקוף',
@@ -175,7 +175,7 @@ export const CATEGORY_CONTENT: Record<string, CategoryContent> = {
   },
 
   'hair-restoration': {
-    img: '/assets/art-prices.jpg',
+    img: '/assets/cat-hairrest.jpg',
     blurb: 'השתלה בשיטת FUE, PRP ומזותרפיה לקרקפת',
     tags: ['FUE', 'PRP', 'נשירה', 'השתלת שיער', 'קרקפת', 'התקרחות'],
     examples: 'השתלת FUE · PRP · טיפולי קרקפת',
@@ -335,7 +335,7 @@ export const CATEGORY_CONTENT: Record<string, CategoryContent> = {
   },
 
   'brows-lashes': {
-    img: '/assets/hero-skin.jpg',
+    img: '/assets/cat-lashes.jpg',
     blurb: 'עיצוב וגוון גבות, הרמת ריסים ותוספות ריסים',
     tags: ['למינציה', 'תוספות ריסים', 'גוון', 'הרמת ריסים', 'עיצוב גבות', 'גבות'],
     examples: 'עיצוב גבות · למינציה · תוספות ריסים',
@@ -375,7 +375,7 @@ export const CATEGORY_CONTENT: Record<string, CategoryContent> = {
   },
 
   makeup: {
-    img: '/assets/art-choose.jpg',
+    img: '/assets/cat-makeup.jpg',
     blurb: 'איפור כלות ואירועים, איפור צילום ובמה וסדנאות',
     tags: ['כלות', 'אירועים', 'צילום', 'איפור ערב', 'סדנה', 'מאפרת'],
     examples: 'כלות · ערב · צילום',
@@ -415,7 +415,7 @@ export const CATEGORY_CONTENT: Record<string, CategoryContent> = {
   },
 
   'permanent-makeup': {
-    img: '/assets/art-questions.jpg',
+    img: '/assets/cat-pmu.jpg',
     blurb: 'מיקרובליידינג, פאודר ברואוז, שפתיים ואייליינר',
     tags: ['מיקרובליידינג', 'פאודר', 'שפתיים', 'אייליינר', 'גבות קבועות', 'פיגמנט'],
     examples: 'מיקרובליידינג · פאודר ברואוז · שפתיים',
@@ -535,7 +535,7 @@ export const CATEGORY_CONTENT: Record<string, CategoryContent> = {
   },
 
   'body-contouring': {
-    img: '/assets/hero-consult.jpg',
+    img: '/assets/cat-body.jpg',
     blurb: 'קריוליפוליזה, גלי הלם, רדיו־פרקוונסי והידוק עור',
     tags: ['קריוליפוליזה', 'RF', 'גלי הלם', 'הידוק', 'צלוליט', 'חיטוב'],
     examples: 'קריוליפוליזה · RF · גלי הלם',
@@ -575,7 +575,7 @@ export const CATEGORY_CONTENT: Record<string, CategoryContent> = {
   },
 
   tanning: {
-    img: '/assets/region-south.jpg',
+    img: '/assets/cat-tan.jpg',
     blurb: 'שיזוף בהתזה והדרגתי, ללא חשיפה לקרינת UV',
     tags: ['בהתזה', 'הדרגתי', 'שיזוף', 'ספריי טן', 'ברונזר'],
     examples: 'שיזוף בהתזה · קרם הדרגתי',

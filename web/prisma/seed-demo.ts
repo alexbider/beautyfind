@@ -54,11 +54,11 @@ const ROWS: Row[] = [
 ];
 
 const IMG: Record<string, string> = {
-  facials: '/assets/biz-facial.jpg', 'medical-aesthetics': '/assets/biz-medical.jpg', 'plastic-surgery': '/assets/hero-clinic.jpg',
-  'dental-aesthetics': '/assets/hero-consult.jpg', 'hair-restoration': '/assets/hero-consult.jpg', 'hair-salons': '/assets/biz-hair.jpg',
-  'hair-removal': '/assets/biz-laser.jpg', 'brows-lashes': '/assets/hero-skin.jpg', makeup: '/assets/art-choose.jpg',
-  'permanent-makeup': '/assets/art-questions.jpg', nails: '/assets/biz-nails.jpg', 'spa-massage': '/assets/biz-spa.jpg',
-  'body-contouring': '/assets/hero-consult.jpg', tanning: '/assets/biz-spa.jpg',
+  facials: '/assets/biz-facial.jpg', 'medical-aesthetics': '/assets/biz-medical.jpg', 'plastic-surgery': '/assets/cat-plastic.jpg',
+  'dental-aesthetics': '/assets/cat-dental.jpg', 'hair-restoration': '/assets/cat-hairrest.jpg', 'hair-salons': '/assets/biz-hair.jpg',
+  'hair-removal': '/assets/biz-laser.jpg', 'brows-lashes': '/assets/cat-lashes.jpg', makeup: '/assets/cat-makeup.jpg',
+  'permanent-makeup': '/assets/cat-pmu.jpg', nails: '/assets/biz-nails.jpg', 'spa-massage': '/assets/biz-spa.jpg',
+  'body-contouring': '/assets/cat-body.jpg', tanning: '/assets/cat-tan.jpg',
 };
 
 // [name, shekels, minutes, priceType]

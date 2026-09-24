@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 
 const NOW = [
   { href: ROUTES.treatments, title: 'תחומי טיפול', sub: 'מה כולל כל תחום, מחירים חציוניים ועסקים לפי אזור' },
-  { href: ROUTES.listingStandards, title: 'הסטנדרטים שלנו', sub: 'מה בודקים לפני שעסק עולה לאתר' },
+  { href: ROUTES.listingStandards, title: 'תקן הרישום', sub: 'מה בודקים לפני שעסק עולה לאתר' },
   { href: `${ROUTES.methodology}#ranking`, title: 'איך מדרגים', sub: 'סדר ההצגה, ביקורות ודירוג Google' },
 ];
 

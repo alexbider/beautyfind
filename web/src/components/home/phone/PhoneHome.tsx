@@ -188,7 +188,7 @@ export const FAQS = [
 ];
 
 const FOOT_GROUPS = [
-  { name: 'BeautyFind', links: [['מי אנחנו', '/about'], ['הסטנדרטים שלנו', ROUTES.listingStandards], ['מדיניות עריכה', '/about/editorial'], ['איך מדרגים', `${ROUTES.methodology}#ranking`], ['מדריכים', '/magazine'], ['תחומי טיפול', ROUTES.treatments]] },
+  { name: 'BeautyFind', links: [['מי אנחנו', '/about'], ['תקן הרישום', ROUTES.listingStandards], ['מדיניות עריכה', '/about/editorial'], ['איך מדרגים', `${ROUTES.methodology}#ranking`], ['מדריכים', '/magazine'], ['תחומי טיפול', ROUTES.treatments]] },
   { name: 'לעסקים', links: [['הצטרפות לאינדקס', ROUTES.join], ['תביעת פרופיל', ROUTES.claim], ['מחירים', ROUTES.pricing], ['כניסה לעסקים', ROUTES.bizLogin]] },
   { name: 'עזרה ומשפטי', links: [['מרכז עזרה', ROUTES.help], ['צור קשר', ROUTES.contact], ['תנאי שימוש', ROUTES.terms], ['מדיניות פרטיות', ROUTES.privacy], ['הצהרת נגישות', ROUTES.accessibility]] },
 ] as const;
@@ -318,7 +318,7 @@ function Menu({ open, section, setSection, onClose, region, pickRegion }: {
                 { href: '/magazine', label: 'מדריכים', d: 'M4 3.5h9a3 3 0 0 1 3 3v10H7a3 3 0 0 1-3-3v-10ZM4 13.5a3 3 0 0 1 3-3h9' },
                 { href: ROUTES.saved, label: 'מועדפים', d: 'M10 16.5s-6.5-3.9-6.5-8.6A3.6 3.6 0 0 1 10 5.6a3.6 3.6 0 0 1 6.5 2.3c0 4.7-6.5 8.6-6.5 8.6Z', badge: savedCount },
                 { href: ROUTES.account, label: 'התורים שלי', d: 'M3.5 5.5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-10ZM3.5 8h13M7 2v3m6-3v3' },
-                { href: ROUTES.listingStandards, label: 'הסטנדרטים שלנו', d: 'M10 2 4 4.5v4.8c0 3.9 2.6 6.7 6 8.2 3.4-1.5 6-4.3 6-8.2V4.5L10 2Zm-2.6 8 1.9 1.9 3.5-3.6' },
+                { href: ROUTES.listingStandards, label: 'תקן הרישום', d: 'M10 2 4 4.5v4.8c0 3.9 2.6 6.7 6 8.2 3.4-1.5 6-4.3 6-8.2V4.5L10 2Zm-2.6 8 1.9 1.9 3.5-3.6' },
                 { href: ROUTES.help, label: 'מרכז עזרה', d: 'M10 17.5a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15ZM7.8 7.6a2.3 2.3 0 0 1 4.4.8c0 1.6-2.2 2-2.2 3.3M10 14.2h.01' },
               ].map((l, i) => (
                 <Link key={l.href} href={l.href} className={`${s.menuItem} ${s.menuLink} ${s.stagger}`} style={d(4 + i)} onClick={onClose}>
@@ -587,10 +587,11 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
             <Rings size={200} className={s.ringsA} />
             <Rings size={150} className={s.ringsB} />
             <Kicker>אינדקס היופי והאסתטיקה של ישראל</Kicker>
-            <h1 id="h1-phone" className={s.h1}>
+            {/* The desktop layout holds the page's single <h1> in the same HTML; this one is a level-1 heading for screen readers only. */}
+            <p id="h1-phone" role="heading" aria-level={1} className={s.h1}>
               מצאו את מיטב<br />
               <span className={s.nowrap}>מכוני היופי שלידכם<Dot /></span>
-            </h1>
+            </p>
             <p className={s.lede}>אסתטיקה רפואית, קוסמטיקה, מספרות, ספא ועיצוב הגוף, מקריית שמונה ועד אילת. השוו בין עסקים וקבעו את הפגישה הבאה.</p>
           </div>
           <form role="search" className={s.search} onSubmit={submit}>

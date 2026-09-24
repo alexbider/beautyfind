@@ -15,16 +15,16 @@ export const CATEGORY_TEASER: Record<string, { short: string; icon: string[] }> 
   nails: { short: 'לק ג׳ל, בניית ציפורניים וטיפולי כף רגל.', icon: ['M8 4.6a4 4 0 0 1 8 0v8.2a4 4 0 0 1-8 0z', 'M8 13.8h8v4.2a4 4 0 0 1-8 0z'] },
   'spa-massage': { short: 'עיסוי שוודי, רקמות עמוקות, אבנים חמות וזוגי.', icon: ['M12 4.2c-2.4 2.8-3.6 4.8-3.6 6.6a3.6 3.6 0 0 0 7.2 0c0-1.8-1.2-3.8-3.6-6.6z', 'M3.8 15.6c3-1.6 5.6.8 8.2.8s5.2-2.4 8.2-.8', 'M3.8 19.4c3-1.6 5.6.8 8.2.8s5.2-2.4 8.2-.8'] },
   'body-contouring': { short: 'קריוליפוליזה, HIFU, רדיו־פרקוונסי וחיטוב שרירים.', icon: ['M7.4 3.6c1.9 3.1 1.9 5.3 0 8.4s-1.9 5.3 0 8.4', 'M16.6 3.6c-1.9 3.1-1.9 5.3 0 8.4s1.9 5.3 0 8.4', 'M9.6 12h4.8'] },
-  tanning: { short: 'שיזוף בהתזה, מיטות שיזוף וטיפוח לאחר שמש.', icon: ['M15.4 12a3.4 3.4 0 1 1-6.8 0 3.4 3.4 0 0 1 6.8 0', 'M12 2.6v2.4', 'M12 19v2.4', 'M2.6 12H5', 'M19 12h2.4', 'M5.5 5.5 7.2 7.2', 'M16.8 16.8l1.7 1.7', 'M5.5 18.5l1.7-1.7', 'M16.8 7.2l1.7-1.7'] },
+  tanning: { short: 'שיזוף בהתזה או בקרם הדרגתי, בלי חשיפה לקרינת UV.', icon: ['M15.4 12a3.4 3.4 0 1 1-6.8 0 3.4 3.4 0 0 1 6.8 0', 'M12 2.6v2.4', 'M12 19v2.4', 'M2.6 12H5', 'M19 12h2.4', 'M5.5 5.5 7.2 7.2', 'M16.8 16.8l1.7 1.7', 'M5.5 18.5l1.7-1.7', 'M16.8 7.2l1.7-1.7'] },
 };
 
 /** Fallback card image per first category, when a listing has no cover yet. */
 export const CATEGORY_IMAGE: Record<string, string> = {
-  'medical-aesthetics': '/assets/biz-medical.jpg', 'plastic-surgery': '/assets/biz-medical.jpg', 'dental-aesthetics': '/assets/biz-medical.jpg',
-  'hair-restoration': '/assets/biz-medical.jpg', facials: '/assets/biz-facial.jpg', 'brows-lashes': '/assets/biz-facial.jpg',
-  makeup: '/assets/biz-facial.jpg', 'permanent-makeup': '/assets/biz-facial.jpg', 'hair-removal': '/assets/biz-laser.jpg',
+  'medical-aesthetics': '/assets/biz-medical.jpg', 'plastic-surgery': '/assets/cat-plastic.jpg', 'dental-aesthetics': '/assets/cat-dental.jpg',
+  'hair-restoration': '/assets/cat-hairrest.jpg', facials: '/assets/biz-facial.jpg', 'brows-lashes': '/assets/cat-lashes.jpg',
+  makeup: '/assets/cat-makeup.jpg', 'permanent-makeup': '/assets/cat-pmu.jpg', 'hair-removal': '/assets/biz-laser.jpg',
   'hair-salons': '/assets/biz-hair.jpg', nails: '/assets/biz-nails.jpg', 'spa-massage': '/assets/biz-spa.jpg',
-  'body-contouring': '/assets/biz-spa.jpg', tanning: '/assets/biz-spa.jpg',
+  'body-contouring': '/assets/cat-body.jpg', tanning: '/assets/cat-tan.jpg',
 };
 
 // TODO(cms): no magazine yet. Titles and images from the design; every card links to /magazine
