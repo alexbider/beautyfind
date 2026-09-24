@@ -234,6 +234,7 @@ export function BuyForm({ slug, businessName, years, expiry, treatments, today, 
     <>
       <span aria-hidden="true" className={s.ring1} />
       <span aria-hidden="true" className={s.ring2} />
+      <span aria-hidden="true" className={s.shine} />
       <span className={s.pvTop}>
         <span className={s.pvLabel}>שובר מתנה</span>
         <span dir="ltr" className={s.pvMark}>beauty<span>find.</span></span>
@@ -251,7 +252,7 @@ export function BuyForm({ slug, businessName, years, expiry, treatments, today, 
         <div className={`${s.wrap} ${s.flow}`} data-dir={dir}>
           <div ref={sentinel} className={s.pinSentinel} aria-hidden="true" />
           <div className={`${s.pin} bf-shell-only`} data-compact={compact || undefined}>
-            <div aria-label="תצוגת השובר" className={`${s.preview} ${s.pinCard}`}>
+            <div data-gc-card aria-label="תצוגת השובר" className={`${s.preview} ${s.pinCard}`}>
               {card}
             </div>
           </div>
@@ -388,8 +389,13 @@ export function BuyForm({ slug, businessName, years, expiry, treatments, today, 
               </div>
 
               <aside className={s.side}>
-                <div aria-label="תצוגת השובר" className={`${s.preview} bf-desk-only`}>
-                  {card}
+                <div data-gc-card className={`${s.gcWrap} bf-desk-only`}>
+                  <span aria-hidden="true" className={s.gcShadow} />
+                  <div className={s.gcFloat}>
+                    <div aria-label="תצוגת השובר" className={`${s.preview} ${s.tilt}`}>
+                      {card}
+                    </div>
+                  </div>
                 </div>
                 <div className={s.card} {...at(3)}>
                   <h2 className={s.h2Sm}>חשוב לדעת</h2>
