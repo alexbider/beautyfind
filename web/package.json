@@ -18,7 +18,8 @@
     "import:dryrun": "tsx scripts/import/dryrun.ts",
     "import:simulate": "tsx scripts/import/simulate.ts",
     "import:dfs-categories": "tsx scripts/import/dfsCategories.ts",
-    "test:import": "tsx --test --test-concurrency=1 tests/import/*.test.ts"
+    "test:import": "tsx --test --test-concurrency=1 tests/import/*.test.ts",
+    "import:cleanup": "tsx scripts/import/cleanup.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

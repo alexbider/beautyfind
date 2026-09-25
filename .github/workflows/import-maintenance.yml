@@ -1,0 +1,76 @@
+# One-off import maintenance: checks that the import secrets exist (names only, never values), checks
+# the DataForSEO category ids with one live call, and removes old runs of the given provider.
+# Runs when this file changes on main, or by hand from the Actions tab. Results appear as annotations.
+name: Import maintenance
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/import-maintenance.yml']
+  workflow_dispatch:
+    inputs:
+      cleanup_provider:
+        description: Remove old runs of this provider (empty = no cleanup)
+        required: false
+        default: ''
+
+concurrency:
+  group: import-worker
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  maintain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: web
+    env:
+      DATABASE_URL: ${{ secrets.IMPORT_DATABASE_URL }}
+      DATABASE_URL_UNPOOLED: ${{ secrets.IMPORT_DATABASE_URL }}
+      DATAFORSEO_LOGIN: ${{ secrets.DATAFORSEO_LOGIN }}
+      DATAFORSEO_PASSWORD: ${{ secrets.DATAFORSEO_PASSWORD }}
+      HAS_GOOGLE: ${{ secrets.GOOGLE_MAPS_API_KEY != '' }}
+      HAS_ANTHROPIC: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+      HAS_PROXY: ${{ secrets.CRAWL_PROXY != '' }}
+      HAS_BRAVE: ${{ secrets.BRAVE_SEARCH_API_KEY != '' }}
+      CLEANUP: ${{ github.event_name == 'push' && 'google' || inputs.cleanup_provider }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - name: Secrets present
+        run: |
+          s() { if [ "$2" = "true" ]; then echo "::notice title=secret $1::set"; else echo "::warning title=secret $1::$3"; fi; }
+          s IMPORT_DATABASE_URL "$([ -n "$DATABASE_URL" ] && echo true)" "missing (required)"
+          s DATAFORSEO_LOGIN "$([ -n "$DATAFORSEO_LOGIN" ] && echo true)" "missing (required)"
+          s DATAFORSEO_PASSWORD "$([ -n "$DATAFORSEO_PASSWORD" ] && echo true)" "missing (required)"
+          s GOOGLE_MAPS_API_KEY "$HAS_GOOGLE" "not set (optional)"
+          s ANTHROPIC_API_KEY "$HAS_ANTHROPIC" "not set (optional)"
+          [ "$HAS_PROXY" = "true" ] && echo "::warning title=secret CRAWL_PROXY::still set, no longer used, can be deleted" || true
+          [ "$HAS_BRAVE" = "true" ] && echo "::warning title=secret BRAVE_SEARCH_API_KEY::still set, no longer used, can be deleted" || true
+      - name: DataForSEO categories
+        if: env.DATAFORSEO_LOGIN != ''
+        run: |
+          set +e
+          npm run -s import:dfs-categories -- --confirm > cats.txt 2>&1
+          code=$?
+          cat cats.txt
+          if [ $code -ne 0 ]; then echo "::error title=DataForSEO::$(tail -1 cats.txt)"; exit 1; fi
+          echo "::notice title=DataForSEO login::accepted; $(grep '^cost reported' cats.txt)"
+          echo "::notice title=categories::$(grep -c '^ok' cats.txt) ok, $(grep -c '^MISSING' cats.txt) missing"
+          grep '^MISSING' cats.txt | head -20 | while read -r line; do echo "::warning title=category::${line#MISSING }"; done
+      - name: Remove old runs
+        if: env.CLEANUP != ''
+        run: |
+          npm run -s import:cleanup -- --provider "$CLEANUP" --confirm > clean.txt 2>&1 || { cat clean.txt; echo "::error title=cleanup::$(tail -1 clean.txt)"; exit 1; }
+          cat clean.txt
+          echo "::notice title=cleanup plan::$(grep '^SUMMARY' clean.txt)"
+          echo "::notice title=cleanup done::$(grep '^REMOVED' clean.txt)"
