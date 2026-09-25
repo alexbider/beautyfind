@@ -6,9 +6,10 @@ import { importerOrNull } from '@/components/ops/guard';
 import { db } from '@/lib/server/db';
 import {
   approvePlace, createRun, dispatchWorker, editPlace, enrichSelected, markDuplicate, mergePlace, reconcileTask, rejectPlace, restorePlace, retryIncomplete,
-  saveSettings, setRunStatus, type CreateRunInput, type OpResult,
+  getSettings, saveSettings, setRunStatus, type CreateRunInput, type OpResult,
 } from '@/lib/server/importOps';
 import { googleLookup, type GoogleLookup } from '@/lib/server/googleDisplay';
+import { copyPendingImages } from '@/lib/server/importEnhance';
 import type { ImportSettings } from '@/lib/import/settings';
 
 const refresh = () => {
@@ -160,4 +161,14 @@ export async function enhanceApprovedAction(ids: string[], refresh: boolean): Pr
   } catch {
     return { ok: false, count: 0 };
   }
+}
+
+/** Copies waiting logos and photos for published listings, a small batch per call (the page calls it until none are left). */
+export async function copyPendingImagesAction(): Promise<{ ok: boolean; done: number; logos: number; covers: number; left: number }> {
+  const user = await importerOrNull();
+  if (!user) return { ok: false, done: 0, logos: 0, covers: 0, left: 0 };
+  const r = await copyPendingImages(await getSettings(), user.id);
+  if (r.done) await db.auditLog.create({ data: { actorId: user.id, action: 'import_copy_images', subjectType: 'branch', subjectId: user.id, meta: r } });
+  refresh();
+  return { ok: true, ...r };
 }

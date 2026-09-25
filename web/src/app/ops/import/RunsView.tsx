@@ -8,7 +8,7 @@ import { dfsCategoriesFor } from '@/lib/import/dataforseo';
 import { DEFAULT_ASSUMPTIONS, dfsRunMaxUsd, estimateRun, estimateTable, type EstimateAssumptions } from '@/lib/import/estimate';
 import type { RunScope } from '@/lib/import/rules';
 import type { ImportSettings } from '@/lib/import/settings';
-import { reconcileAction, runControlAction, saveSettingsAction, startRunAction } from './actions';
+import { copyPendingImagesAction, reconcileAction, runControlAction, saveSettingsAction, startRunAction } from './actions';
 import styles from './import.module.css';
 
 export interface RunRow {
@@ -296,7 +296,23 @@ const FILLED: Record<string, string> = {
   gallery: 'גלריה', categories: 'תחומים', services: 'טיפולים', prices: 'מחירים',
 };
 
-function EnhanceRun({ eligible, canDispatch, killSwitch, perRequestUsd, perItemUsd }: { eligible: number; canDispatch: boolean; killSwitch: boolean; perRequestUsd: number; perItemUsd: number }) {
+function EnhanceRun({ eligible, pendingImages, canDispatch, killSwitch, perRequestUsd, perItemUsd }: { eligible: number; pendingImages: number; canDispatch: boolean; killSwitch: boolean; perRequestUsd: number; perItemUsd: number }) {
+  const [copying, setCopying] = useState<{ done: number; logos: number; covers: number; left: number } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const copyImages = async () => {
+    setBusy(true);
+    let total = { done: 0, logos: 0, covers: 0, left: pendingImages };
+    setCopying(total);
+    for (let i = 0; i < 200; i++) {
+      const r = await copyPendingImagesAction();
+      if (!r.ok) break;
+      total = { done: total.done + r.done, logos: total.logos + r.logos, covers: total.covers + r.covers, left: r.left };
+      setCopying(total);
+      if (!r.done || !r.left) break;
+    }
+    setBusy(false);
+    router.refresh();
+  };
   const router = useRouter();
   const [refresh, setRefresh] = useState(true);
   const [limit, setLimit] = useState(String(Math.max(1, Math.min(eligible, 1000))));
@@ -320,6 +336,18 @@ function EnhanceRun({ eligible, canDispatch, killSwitch, perRequestUsd, perItemU
         עוברת על עסקים שאושרו מהייבוא ועדיין לא נתבעו על ידי בעליהם, קוראת שוב את האתר שלהם ומשלימה רק שדות חסרים: שעות, תמונות, לוגו, תיאור, טיפולים ומחירים, נגישות, חניה, שאלות נפוצות ודירוג Google. שום פרט קיים לא נדרס.
       </p>
       <p className={styles.note}>עסקים שאפשר להעשיר: <span className={styles.ltr}>{n(eligible)}</span></p>
+      {pendingImages > 0 || copying ? (
+        <div className={styles.panel}>
+          <p>
+            {copying
+              ? `הועתקו תמונות ל־${n(copying.done)} עסקים (${n(copying.logos)} לוגו, ${n(copying.covers)} תמונות שער). נשארו ${n(copying.left)}.`
+              : `${n(pendingImages)} עסקים שפורסמו מחכים ללוגו ותמונות שכבר נמצאו.`}
+          </p>
+          <button type="button" className={`${styles.btn} ${styles.teal}`} disabled={busy || (!!copying && !copying.left)} onClick={copyImages}>
+            {busy ? 'מעתיקים…' : 'העתקת התמונות לעסקים'}
+          </button>
+        </div>
+      ) : null}
       <label className={styles.check}><input type="checkbox" checked={refresh} onChange={e => setRefresh(e.target.checked)} />רענון נתונים מ־DataForSEO (תמונות, דירוג, תיאור, מאפיינים)</label>
       <div className={styles.editGrid}>
         <label><span className={styles.label}>מספר עסקים</span><input className={styles.input} inputMode="numeric" dir="ltr" value={limit} onChange={e => setLimit(e.target.value)} /></label>
@@ -370,7 +398,7 @@ function Run({ r }: { r: RunRow }) {
       </div>
       <div className={styles.note}>
         הוצאה: <span className={styles.ltr}>{usd(r.spentUsd)}{r.reservedUsd ? ` (+${usd(r.reservedUsd)} שמור)` : ''}{r.budgetUsd != null ? ` / ${usd(r.budgetUsd)}` : ''}</span>
-        {r.recordLimit ? <> · עסקים: <span className={styles.ltr}>{n(staged)} / {n(r.recordLimit)}</span></> : null}
+        {r.recordLimit && r.provider !== 'enhance' ? <> · עסקים: <span className={styles.ltr}>{n(staged)} / {n(r.recordLimit)}</span></> : null}
         {r.stats.budgetHit ? ' · הגיעה לתקרת ההוצאה' : ''}
         {r.stats.recordLimitReached ? ' · הגיעה למספר העסקים' : ''}
       </div>
@@ -382,11 +410,12 @@ function Run({ r }: { r: RunRow }) {
           {Object.entries(c).filter(([k]) => k.startsWith('filled_') && k !== 'filled_images_waiting_for_storage').length
             ? ` · מולאו: ${Object.entries(c).filter(([k]) => k.startsWith('filled_') && k !== 'filled_images_waiting_for_storage').map(([k, v]) => `${FILLED[k.slice(7)] ?? k.slice(7)} ${n(v)}`).join(', ')}`
             : ''}
-          {c.filled_images_waiting_for_storage ? ` · ${n(c.filled_images_waiting_for_storage)} עסקים מחכים לתמונות (חסר BLOB_READ_WRITE_TOKEN ב־GitHub)` : ''}
+          {c.filled_images_waiting_for_storage ? ` · ${n(c.filled_images_waiting_for_storage)} עסקים חיכו לתמונות (העתקה בכרטיס ההעשרה)` : ''}
           {c.failed ? ` · נכשלו ${n(c.failed)}` : ''}
+          {Array.isArray(r.stats.failures) && r.stats.failures.length ? <><br />סיבות: {(r.stats.failures as string[]).slice(0, 3).join(' | ')}</> : null}
         </p>
       ) : null}
-      <div className={styles.counts}>
+      {r.provider === 'enhance' ? null : <div className={styles.counts}>
         <span>הוחזרו <b>{n(c.placesSeen ?? 0)}</b></span>
         <span>ייחודיים <b>{n(staged)}</b></span>
         <span>כפולים <b>{n(b.duplicate ?? 0)}</b></span>
@@ -395,7 +424,7 @@ function Run({ r }: { r: RunRow }) {
         <span>לבדיקה <b>{n(b.needs_review ?? 0)}</b></span>
         <span>חסרים <b>{n(b.incomplete ?? 0)}</b></span>
         <span>פורסמו <b>{n((b.approved ?? 0) + (b.merged ?? 0))}</b></span>
-      </div>
+      </div>}
       {Object.keys(r.noEmailBySite).length ? (
         <p className={styles.note}>
           בלי דוא״ל, לפי תוצאת האתר: {Object.entries(r.noEmailBySite).map(([k, v]) => `${SITE_NAME[k] ?? k} ${n(v)}`).join(' · ')}
@@ -447,6 +476,7 @@ export function RunsView(props: {
   googleMonth: { usd: number; calls: number };
   pricingNote: { version: string; dfs: { perRequestUsd: number; perItemUsd: number }; dfsChecked: string; dfsNote: string; googleChecked: string };
   enhanceEligible: number;
+  pendingImages: number;
 }) {
   const router = useRouter();
   const live = props.runs.some(r => r.status === 'running' || r.status === 'queued');
@@ -460,7 +490,7 @@ export function RunsView(props: {
     <div className={styles.grid2}>
       <div className={styles.stack}>
         <NewRun settings={props.settings} canDispatch={props.canDispatch} dfsConfigured={props.dfsConfigured} />
-        <EnhanceRun eligible={props.enhanceEligible} canDispatch={props.canDispatch} killSwitch={props.settings.killSwitch} perRequestUsd={props.pricingNote.dfs.perRequestUsd} perItemUsd={props.pricingNote.dfs.perItemUsd} />
+        <EnhanceRun eligible={props.enhanceEligible} pendingImages={props.pendingImages} canDispatch={props.canDispatch} killSwitch={props.settings.killSwitch} perRequestUsd={props.pricingNote.dfs.perRequestUsd} perItemUsd={props.pricingNote.dfs.perItemUsd} />
         <Settings settings={props.settings} googleAvailable={props.googleAvailable} googleMonth={props.googleMonth} />
         <Estimator pricingNote={props.pricingNote} />
       </div>

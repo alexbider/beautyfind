@@ -6,8 +6,12 @@ import { fromMicros, pricing } from '@/lib/import/pricing';
 import { db } from '@/lib/server/db';
 import { googleAvailable } from '@/lib/server/googleDisplay';
 import { getSettings } from '@/lib/server/importOps';
+import { countPendingImages } from '@/lib/server/importEnhance';
 import { RunsView, type RunRow } from './RunsView';
 import styles from './import.module.css';
+
+// Copying images for a batch of listings can take several seconds.
+export const maxDuration = 60;
 
 export const metadata: Metadata = {
   title: 'ייבוא עסקים',
@@ -18,7 +22,7 @@ export default async function ImportPage() {
   const user = await requireImporter('/ops/import');
   const [runs, settings] = await Promise.all([db.importRun.findMany({ orderBy: { createdAt: 'desc' }, take: 30 }), getSettings()]);
   const ids = runs.map(r => r.id);
-  const [counts, spend, reconcile, siteStatus, googleSpend, enhanceEligible] = await Promise.all([
+  const [counts, spend, reconcile, siteStatus, googleSpend, enhanceEligible, pendingImages] = await Promise.all([
     db.importPlace.groupBy({ by: ['runId', 'status'], where: { runId: { in: ids } }, _count: true }),
     db.spendEntry.groupBy({ by: ['runId', 'provider', 'status'], where: { runId: { in: ids } }, _sum: { estimatedMicros: true, actualMicros: true }, _count: true }),
     db.importTask.findMany({ where: { runId: { in: ids }, status: 'needs_reconciliation' }, select: { id: true, runId: true, key: true, error: true, params: true } }),
@@ -30,6 +34,7 @@ export default async function ImportPage() {
     db.$queryRaw<Array<{ n: bigint }>>`
       SELECT count(*) AS n FROM import_places p JOIN branches b ON b.id = p.branch_id
       WHERE p.status IN ('approved', 'merged') AND b.is_claimed = false AND b.status = 'live'`.then(r => Number(r[0]?.n ?? 0)),
+    countPendingImages(),
   ]);
 
   const rows: RunRow[] = runs.map(r => {
@@ -86,6 +91,7 @@ export default async function ImportPage() {
           googleAvailable={googleAvailable()}
           googleMonth={{ usd: fromMicros(googleSpend._sum.actualMicros ?? googleSpend._sum.estimatedMicros ?? 0n), calls: googleSpend._count }}
           enhanceEligible={enhanceEligible}
+          pendingImages={pendingImages}
           pricingNote={{ version: p.version, dfs: p.dataforseo.businessListingsSearch, dfsChecked: p.dataforseo.checked, dfsNote: p.dataforseo.note, googleChecked: p.google.checked }}
         />
       </main>

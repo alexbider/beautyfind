@@ -111,3 +111,56 @@ export async function enhanceBranch(branchId: string, p: ImportPlace, s: ImportS
   if (priceFill.length) filled.push('prices');
   return { filled };
 }
+
+// ---------- copying waiting images from the website (no worker storage token needed) ----------
+
+const placeholders = () => Object.values(CATEGORY_IMAGE);
+
+/** Published, unclaimed listings that miss a logo, cover or gallery while their import record has images not yet tried. */
+async function pendingImagePairs(limit: number) {
+  return db.$queryRaw<Array<{ place_id: string; branch_id: string }>>`
+    SELECT p.id AS place_id, b.id AS branch_id FROM import_places p JOIN branches b ON b.id = p.branch_id
+    WHERE p.status IN ('approved', 'merged') AND b.is_claimed = false AND b.status = 'live'
+      AND (p.logo_url IS NOT NULL OR cardinality(p.photo_urls) > 0)
+      AND (p.crawl->>'imageCopyTriedAt') IS NULL
+      AND ((b.logo_url IS NULL AND p.logo_url IS NOT NULL) OR ((b.cover_url IS NULL OR b.cover_url = ANY(${placeholders()}) OR jsonb_array_length(b.gallery) = 0) AND cardinality(p.photo_urls) > 0))
+    LIMIT ${limit}`;
+}
+
+export async function countPendingImages(): Promise<number> {
+  const [r] = await db.$queryRaw<Array<{ n: bigint }>>`
+    SELECT count(*) AS n FROM import_places p JOIN branches b ON b.id = p.branch_id
+    WHERE p.status IN ('approved', 'merged') AND b.is_claimed = false AND b.status = 'live'
+      AND (p.logo_url IS NOT NULL OR cardinality(p.photo_urls) > 0)
+      AND (p.crawl->>'imageCopyTriedAt') IS NULL
+      AND ((b.logo_url IS NULL AND p.logo_url IS NOT NULL) OR ((b.cover_url IS NULL OR b.cover_url = ANY(${placeholders()}) OR jsonb_array_length(b.gallery) = 0) AND cardinality(p.photo_urls) > 0))`;
+  return Number(r?.n ?? 0);
+}
+
+/** Copies images for a batch of waiting listings. Each listing is tried once (a broken image link is not retried forever). */
+export async function copyPendingImages(s: ImportSettings, actorId: string, batch = 6): Promise<{ done: number; logos: number; covers: number; left: number }> {
+  const pairs = await pendingImagePairs(batch);
+  let logos = 0;
+  let covers = 0;
+  await Promise.all(
+    pairs.map(async ({ place_id, branch_id }) => {
+      const [p, b] = await Promise.all([db.importPlace.findUniqueOrThrow({ where: { id: place_id } }), db.branch.findUniqueOrThrow({ where: { id: branch_id } })]);
+      const want = { logo: !b.logoUrl, cover: isPlaceholder(b.coverUrl), gallery: !Array.isArray(b.gallery) || b.gallery.length === 0 };
+      const copied = await copyListingImages({ name: p.name, logoUrl: want.logo ? p.logoUrl : null, photoUrls: want.cover || want.gallery ? p.photoUrls : [] }, actorId, b.businessId, s.maxListingPhotos);
+      const [cover, ...rest] = copied.photos;
+      const data: Prisma.BranchUpdateInput = {};
+      if (want.logo && copied.logoUrl) data.logoUrl = copied.logoUrl;
+      if (want.cover && cover) {
+        data.coverUrl = cover.url;
+        data.coverAlt = p.name;
+      }
+      const gallery = want.cover ? rest : copied.photos;
+      if (want.gallery && gallery.length) data.gallery = gallery as unknown as Prisma.InputJsonValue;
+      if (Object.keys(data).length) await db.branch.update({ where: { id: b.id }, data });
+      if (data.logoUrl) logos++;
+      if (data.coverUrl) covers++;
+      await db.importPlace.update({ where: { id: p.id }, data: { crawl: { ...((p.crawl as object) ?? {}), imageCopyTriedAt: new Date().toISOString(), imageCopy: { logo: !!data.logoUrl, cover: !!data.coverUrl, photos: copied.photos.length } } as Prisma.InputJsonValue } });
+    }),
+  );
+  return { done: pairs.length, logos, covers, left: await countPendingImages() };
+}
