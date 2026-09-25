@@ -19,9 +19,8 @@ export const DFS_MAX_CATEGORIES = 10;
 export const DFS_MAX_OFFSET = 10_000;
 
 /**
- * Our categories to DataForSEO (Google business) category ids. Unverified ids are checked against the
- * provider's category list with `npm run import:dfs-categories` before a live run; unknown ids are
- * reported and skipped, never guessed.
+ * Our categories to DataForSEO (Google business) category ids. All ids were checked against the
+ * provider's category list on 2026-09-25 (`npm run import:dfs-categories`); re-run it after changes.
  */
 export const DFS_CATEGORY_MAP: Record<string, string[]> = {
   facials: ['beauty_salon', 'skin_care_clinic', 'facial_spa', 'beautician'],
@@ -29,15 +28,15 @@ export const DFS_CATEGORY_MAP: Record<string, string[]> = {
   'plastic-surgery': ['plastic_surgeon', 'plastic_surgery_clinic', 'cosmetic_surgeon'],
   'dental-aesthetics': ['cosmetic_dentist', 'teeth_whitening_service'],
   'hair-restoration': ['hair_transplantation_clinic', 'hair_replacement_service'],
-  'hair-salons': ['hair_salon', 'barber_shop', 'hairdresser'],
+  'hair-salons': ['hair_salon', 'barber_shop', 'unisex_hairdresser'],
   'hair-removal': ['hair_removal_service', 'laser_hair_removal_service', 'waxing_hair_removal_service'],
-  'brows-lashes': ['eyelash_salon', 'threading_service', 'eyebrow_bar'],
-  makeup: ['make_up_artist'],
+  'brows-lashes': ['eyelash_salon', 'eyebrow_bar'],
+  makeup: ['makeup_artist'],
   'permanent-makeup': ['permanent_make_up_clinic'],
   nails: ['nail_salon'],
   'spa-massage': ['day_spa', 'spa', 'massage_spa', 'massage_therapist'],
-  'body-contouring': ['weight_loss_service', 'body_contouring_clinic'],
-  tanning: ['tanning_salon', 'tanning_studio'],
+  'body-contouring': ['weight_loss_service'],
+  tanning: ['tanning_studio'],
 };
 
 /** Hebrew names and aliases for matching DataForSEO category labels back to ours (original kept too). */

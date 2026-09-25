@@ -1,6 +1,7 @@
 # One-off import maintenance: checks that the import secrets exist (names only, never values), checks
 # the DataForSEO category ids with one live call, and removes old runs of the given provider.
 # Runs when this file changes on main, or by hand from the Actions tab. Results appear as annotations.
+# Last change: re-check after fixing five category ids (2026-09-25).
 name: Import maintenance
 
 on:

@@ -96,7 +96,7 @@ The worker resumes where it stopped; a lease makes sure only one worker processe
 ## First live pilot
 
 1. Add the DataForSEO secrets. Top up the minimum balance yourself; nothing here buys credits.
-2. Run `import:dfs-categories` and fix any missing ids in `DFS_CATEGORY_MAP` (the current ids are unverified).
+2. Category ids were checked on 2026-09-25 (all 29 exist). Re-run the check from the "Import maintenance" workflow after changing `DFS_CATEGORY_MAP`.
 3. In `/ops/import`: DataForSEO, one city, record limit 100, ceiling $1. Check spend on the run card against the DataForSEO usage log.
 4. Review the records, then decide on a bigger run. There is no automatic national crawl.
 
