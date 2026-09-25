@@ -19,7 +19,8 @@ export function normName(s: string): string {
     .replace(/['"׳״`’]/g, '')
     .replace(/[^a-z0-9א-ת]+/g, ' ')
     .split(' ')
-    .filter(w => w && !NOISE_SET.has(w))
+    // Generic words, also with the Hebrew article or "and"/"of" prefix attached (היופי, והספא).
+    .filter(w => w && !NOISE_SET.has(w) && !(/^[הוש]/.test(w) && w.length > 2 && NOISE_SET.has(w.slice(1))))
     .join(' ')
     .trim();
 }
@@ -128,7 +129,13 @@ export function scoreMatch(a: Comparable, b: Comparable): MatchResult {
 export const DUPLICATE_AT = 0.8;
 /** An automatic duplicate also needs one of these; anything weaker goes to a person. */
 export const STRONG = ['same_place_id', 'same_phone', 'same_email'];
-export const isStrong = (reasons: string[]) => reasons.some(r => STRONG.includes(r));
+/**
+ * Strong enough to set a record aside automatically: the same source id, or a shared phone/email AND a
+ * matching name. A shared domain or a chain's central phone alone never merges two branches.
+ */
+export const isStrong = (reasons: string[]) =>
+  reasons.includes('same_place_id') ||
+  ((reasons.includes('same_phone') || reasons.includes('same_email')) && (reasons.includes('same_name') || reasons.includes('similar_name')));
 /** At or above this, an import record may already be a live listing and needs a human decision. */
 export const POSSIBLE_MATCH_AT = 0.45;
 

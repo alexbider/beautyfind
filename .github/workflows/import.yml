@@ -37,22 +37,24 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
-      # Headless Chromium for sites that block plain requests or build their pages with scripts.
-      - run: npx playwright-core install --with-deps chromium
+      # Optional headless Chromium, used only when the admin turns on the capped browser fallback.
+      - if: vars.IMPORT_BROWSER == '1'
+        run: npx playwright-core install --with-deps chromium
       - id: work
         run: npm run import:work -- --max-minutes "${{ inputs.max_minutes || '330' }}" ${{ inputs.run_id && format('--run {0}', inputs.run_id) || '' }}
         env:
           DATABASE_URL: ${{ secrets.IMPORT_DATABASE_URL }}
           DATABASE_URL_UNPOOLED: ${{ secrets.IMPORT_DATABASE_URL }}
+          # Stage 1 discovery. Server-side only; never printed.
+          DATAFORSEO_LOGIN: ${{ secrets.DATAFORSEO_LOGIN }}
+          DATAFORSEO_PASSWORD: ${{ secrets.DATAFORSEO_PASSWORD }}
+          # Legacy Google discovery runs only (new runs use DataForSEO).
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          # Optional LLM step, off unless enabled in the admin settings.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           IMPORT_MODEL: ${{ vars.IMPORT_MODEL }}
-          # Optional: an Israeli proxy (http://user:pass@host:port) for sites that refuse visitors from abroad.
-          CRAWL_PROXY: ${{ secrets.CRAWL_PROXY }}
-          # Optional: web search for records without an email (Brave Search API).
-          BRAVE_SEARCH_API_KEY: ${{ secrets.BRAVE_SEARCH_API_KEY }}
-          # Optional: "1" to read public Facebook and Instagram pages (no login).
-          CRAWL_SOCIAL: ${{ vars.CRAWL_SOCIAL }}
+          # Optional versioned price override (JSON), see src/lib/import/pricing.ts.
+          IMPORT_PRICING_JSON: ${{ vars.IMPORT_PRICING_JSON }}
       - name: Continue in a new job
         if: steps.work.outputs.more == 'true'
         run: gh workflow run import.yml --ref "${{ github.ref_name }}" -f run_id="${{ inputs.run_id }}"

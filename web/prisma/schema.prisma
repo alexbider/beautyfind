@@ -1221,7 +1221,14 @@ model ImportRun {
   status         ImportRunStatus @default(queued)
   // { all: boolean, cities: string[], categories: string[], nearby: boolean, text: boolean }
   scope          Json
-  maxRequests    Int             @map("max_requests") // Google Places calls
+  // discovery provider: dataforseo (default for new runs) | google (legacy grid search)
+  provider       String          @default("google")
+  recordLimit    Int?            @map("record_limit") // unique businesses to stage, then stop
+  // external API budget for this run, in micro-dollars (1 USD = 1,000,000)
+  budgetMicros   BigInt?         @map("budget_micros")
+  spentMicros    BigInt          @default(0) @map("spent_micros")
+  reservedMicros BigInt          @default(0) @map("reserved_micros")
+  maxRequests    Int             @map("max_requests") // Google Places calls (legacy provider)
   requestsUsed   Int             @default(0) @map("requests_used")
   maxExtractions Int?            @map("max_extractions") // Claude calls, null = no cap
   extractionsUsed Int            @default(0) @map("extractions_used")
@@ -1264,7 +1271,19 @@ model ImportTask {
 
 model ImportPlace {
   id          String            @id @default(uuid()) @db.Uuid
+  // Stable source key: the Google place id when the provider gives one (shared by DataForSEO and
+  // Google), otherwise "<provider>:<id>". Same place from two providers = one record.
   placeId     String            @unique @map("place_id")
+  provider    String            @default("google") // who first supplied it
+  sourceId    String?           @map("source_id") // provider's own id (DataForSEO cid, ...)
+  sourceUrl   String?           @map("source_url")
+  retrievedAt DateTime?         @map("retrieved_at")
+  sourceUpdatedAt DateTime?     @map("source_updated_at")
+  nameNorm    String?           @map("name_norm") // matching string; `name` keeps the display original
+  siteDomain  String?           @map("site_domain")
+  // published | syntax_valid | dns_valid | owner_confirmed (never "deliverable": we do not probe mailboxes)
+  emailStatus String?           @map("email_status")
+  bookingUrl  String?           @map("booking_url")
   runId       String            @map("run_id") @db.Uuid // last run that found it
   run         ImportRun         @relation(fields: [runId], references: [id])
   status      ImportPlaceStatus @default(found)
@@ -1289,8 +1308,10 @@ model ImportPlace {
   instagram   String?
   facebook    String?
   hours       Json? // our 7-day format, Sunday first
+  // Provider rating summary, kept apart from our reviews and published only when the source allows.
   googleRating      Float?      @map("google_rating")
   googleReviewCount Int?        @map("google_review_count")
+  ratingProvider    String?     @map("rating_provider")
   googleMapsUri     String?     @map("google_maps_uri")
   businessStatus    String?     @map("business_status")
   categories  String[]
@@ -1313,9 +1334,114 @@ model ImportPlace {
   createdAt   DateTime          @default(now()) @map("created_at")
   updatedAt   DateTime          @updatedAt @map("updated_at")
 
+  observations FieldObservation[]
+
   @@index([runId, status])
   @@index([status, regionSlug])
   @@index([phone])
   @@index([email])
+  @@index([siteDomain])
   @@map("import_places")
+}
+
+// One observed value of one field, with where it came from. Canonical listing fields are decided
+// from these (owner-confirmed first, then the official website, then providers), conflicts go to review.
+model FieldObservation {
+  id              String       @id @default(uuid()) @db.Uuid
+  importPlaceId   String?      @map("import_place_id") @db.Uuid
+  importPlace     ImportPlace? @relation(fields: [importPlaceId], references: [id], onDelete: Cascade)
+  branchId        String?      @map("branch_id") @db.Uuid
+  field           String // email | phone | website | hours | address | service | social | booking | logo | rating ...
+  value           Json
+  provider        String // dataforseo | website | google | owner | staff | llm
+  sourceUrl       String?      @map("source_url")
+  retrievedAt     DateTime     @map("retrieved_at")
+  sourceUpdatedAt DateTime?    @map("source_updated_at")
+  confidence      Float        @default(0.5)
+  evidence        String? // short supporting text, only where the source allows keeping it
+  retention       String       @default("permanent") // permanent | until_expiry
+  expiresAt       DateTime?    @map("expires_at")
+  publishable     Boolean      @default(true)
+  status          String? // e.g. email: published | syntax_valid | dns_valid
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  @@index([importPlaceId, field])
+  @@index([branchId, field])
+  @@index([expiresAt])
+  @@map("field_observations")
+}
+
+// Website crawl cache per domain: reused across branches, rechecked after 30 days (7 after a failure).
+model SiteFetch {
+  domain      String   @id
+  status      String // ok | no_email | blocked | robots | failed | unsafe
+  fetchedAt   DateTime @map("fetched_at")
+  nextCheckAt DateTime @map("next_check_at")
+  pages       Int      @default(0)
+  // per-URL validators for conditional requests: { url: { etag, lastModified, hash } }
+  validators  Json     @default("{}")
+  contentHash String?  @map("content_hash")
+  result      Json     @default("{}")
+  error       String?
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([nextCheckAt])
+  @@map("site_fetches")
+}
+
+// Every paid call: reserved before dispatch, then committed with the provider's reported cost.
+// Uncertain outcomes (timeouts after sending) stay "needs_reconciliation" and count as spent.
+model SpendEntry {
+  id              String   @id @default(uuid()) @db.Uuid
+  runId           String?  @map("run_id") @db.Uuid
+  provider        String // dataforseo | google
+  endpoint        String
+  sku             String?
+  requestKey      String   @unique @map("request_key") // stable per unit of work: never billed twice by us
+  estimatedMicros BigInt   @map("estimated_micros")
+  actualMicros    BigInt?  @map("actual_micros")
+  status          String // reserved | committed | released | needs_reconciliation
+  error           String?
+  meta            Json?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([runId])
+  @@index([provider, createdAt])
+  @@index([status])
+  @@map("spend_entries")
+}
+
+// Rolling caps per provider and period, e.g. "google:day:2026-09-25", "google:month:2026-09".
+model ProviderBudget {
+  key            String   @id
+  limitMicros    BigInt   @map("limit_micros")
+  usedMicros     BigInt   @default(0) @map("used_micros")
+  reservedMicros BigInt   @default(0) @map("reserved_micros")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("provider_budgets")
+}
+
+// Import settings edited from /ops/import (one row). Values are validated with defaults in code.
+model ImportSettings {
+  id          Int      @id @default(1)
+  values      Json     @default("{}")
+  updatedById String?  @map("updated_by_id") @db.Uuid
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("import_settings")
+}
+
+// Google display data kept only for fields whose policy allows caching, until expiresAt.
+// Never copied into listing fields, exports or analytics.
+model GoogleDisplay {
+  placeId   String   @id @map("place_id")
+  fields    Json
+  sku       String
+  fetchedAt DateTime @map("fetched_at")
+  expiresAt DateTime @map("expires_at")
+
+  @@index([expiresAt])
+  @@map("google_display")
 }

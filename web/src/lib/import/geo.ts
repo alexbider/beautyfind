@@ -156,7 +156,8 @@ export function resolveCity(locality: string | null, lat: number, lng: number): 
     if (!best || d < best.d) best = { slug, d };
   }
   const near = CITIES.find(c => c.slug === best!.slug)!;
-  // Inside a catalog city's own area with no locality from Google: that city.
-  if (!locality && best && best.d <= CITY_AREA[near.slug][2]) return { cityName: near.name, citySlug: near.slug, regionSlug: near.region };
+  // Inside a catalog city's own area: that city, even when the provider spells the locality in
+  // English or transliteration ("Tel Aviv-Yafo"). The coordinates decide, the spelling does not.
+  if (best && best.d <= CITY_AREA[near.slug][2]) return { cityName: near.name, citySlug: near.slug, regionSlug: near.region };
   return { cityName: locality, citySlug: null, regionSlug: near.region };
 }

@@ -1,26 +1,33 @@
-// Israeli phone numbers to E.164. Used by the import worker and the review screen.
-// Accepts local (03-1234567, 050-1234567), international (+972 3 123 4567, 00972...) and
-// the digits-only forms Google and websites use. Returns null for anything that is not a
-// valid Israeli landline, mobile or VoIP number, so a wrong number never reaches a listing.
+// Israeli phone numbers to E.164 with libphonenumber-js (country IL). The original string is always
+// kept by the caller (phoneRaw); this only produces the normalized matching/display value.
+// Returns null for anything that is not a valid Israeli number, so a wrong number never reaches a
+// listing. A mobile number is never assumed to be on WhatsApp.
 
-const LANDLINE = /^(2|3|4|8|9)\d{7}$/; // 02, 03, 04, 08, 09 + 7 digits
-const MOBILE = /^5\d{8}$/; // 05X + 7 digits
-const VOIP = /^7\d{8}$/; // 07X + 7 digits
-const STAR_OR_1800 = /^1(700|800|599|801)\d{6}$/; // 1-700 / 1-800 national numbers
+// Validity uses the pattern-based (min) metadata: the "max" metadata also checks allocated number
+// blocks, which lag real allocations and rejected real numbers such as 050-123-xxxx. "max" is kept only
+// for the number type (mobile or landline).
+import { parsePhoneNumberFromString as parseMin, findPhoneNumbersInText } from 'libphonenumber-js/min';
+import { parsePhoneNumberFromString } from 'libphonenumber-js/max';
 
-/** "+97231234567" or null. `raw` may contain spaces, dashes, dots and brackets. */
+// 1-700 / 1-800 national numbers, which some metadata versions do not validate.
+const NATIONAL_SPECIAL = /^1(700|800|599|801)\d{6}$/;
+
+/** "+97231234567" or null. `raw` may contain spaces, dashes, dots, brackets and the +972/00972 prefix. */
 export function normalizeIlPhone(raw: string | null | undefined): string | null {
   if (!raw) return null;
-  let d = raw.replace(/[^\d+]/g, '');
-  if (d.startsWith('+')) d = d.slice(1);
-  if (d.startsWith('00')) d = d.slice(2);
-  if (d.startsWith('972')) d = d.slice(3);
-  if (d.startsWith('0')) d = d.slice(1);
-  if (LANDLINE.test(d) || MOBILE.test(d) || VOIP.test(d) || STAR_OR_1800.test(d)) return `+972${d}`;
-  return null;
+  const digits = raw.replace(/[^\d+]/g, '');
+  const bare = digits.replace(/^\+?(00)?972/, '').replace(/^0/, '');
+  if (NATIONAL_SPECIAL.test(bare)) return `+972${bare}`;
+  // "00972..." is the international prefix written out; libphonenumber reads it only as "+972".
+  const p = parseMin(raw.trim().replace(/^00\s*-?\s*972/, '+972'), 'IL');
+  if (!p || p.country !== 'IL' || !p.isValid()) return null;
+  return p.number;
 }
 
-export const isMobile = (e164: string) => /^\+9725\d{8}$/.test(e164);
+export function isMobile(e164: string): boolean {
+  const p = parsePhoneNumberFromString(e164, 'IL');
+  return p?.getType() === 'MOBILE';
+}
 
 /** 050-123-4567 / 03-123-4567 for screens. */
 export function formatIlPhone(e164: string): string {
@@ -30,13 +37,11 @@ export function formatIlPhone(e164: string): string {
   return d;
 }
 
-/** Candidate phone strings in free text: 0X-XXXXXXX, 05X-XXX-XXXX, +972..., 1-700-... */
+/** Valid Israeli numbers written in free text. */
 export function findPhones(text: string): string[] {
   const out = new Set<string>();
-  const re = /(?:\+?972[\s.-]?|0)(?:[2-9]\d?)[\s.-]?\d{3}[\s.-]?\d{3,4}|1[\s.-]?(?:700|800|599)[\s.-]?\d{3}[\s.-]?\d{3}/g;
-  for (const m of text.matchAll(re)) {
-    const p = normalizeIlPhone(m[0]);
-    if (p) out.add(p);
+  for (const m of findPhoneNumbersInText(text, 'IL')) {
+    if (m.number.country === 'IL' && m.number.isValid()) out.add(m.number.number);
   }
   return [...out];
 }

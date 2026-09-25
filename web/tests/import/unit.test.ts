@@ -1,0 +1,278 @@
+// Pure tests: no database, no network beyond a loopback server. Run with `npm run test:import`.
+
+import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
+import type { AddressInfo } from 'node:net';
+import { describe, it } from 'node:test';
+import { buildSearch, dfsCategoriesFor, isFatalStatus, isTransientStatus, mapItem } from '../../src/lib/import/dataforseo';
+import { dfsRunMaxUsd, estimateFor } from '../../src/lib/import/estimate';
+import { fieldMask, FieldMaskError, GOOGLE_FEATURES, retentionDays } from '../../src/lib/import/googleFields';
+import { isStrong, nameSimilarity, normName, scoreMatch, DUPLICATE_AT } from '../../src/lib/import/match';
+import { formatIlPhone, normalizeIlPhone } from '../../src/lib/import/phone';
+import { dfsPageMaxUsd, pricing } from '../../src/lib/import/pricing';
+import { qualify, type QualifyInput } from '../../src/lib/import/rules';
+import { checkUrl, guardedLookup, isPrivateAddress, safeFetch, UnsafeUrlError } from '../../src/lib/import/safeFetch';
+import { extractPage, rankEmails } from '../../src/lib/import/siteExtract';
+import { mayPublish } from '../../src/lib/import/sourcePolicy';
+
+describe('Israeli phone normalization', () => {
+  it('normalizes common written forms to E.164', () => {
+    assert.equal(normalizeIlPhone('03-555-1234'), '+97235551234');
+    assert.equal(normalizeIlPhone('050-123-4567'), '+972501234567');
+    assert.equal(normalizeIlPhone('+972 50 123 4567'), '+972501234567');
+    assert.equal(normalizeIlPhone('00972-50-1234567'), '+972501234567');
+    assert.equal(normalizeIlPhone('(03) 555.1234'), '+97235551234');
+    assert.equal(normalizeIlPhone('1-700-500-500'), '+9721700500500');
+  });
+  it('rejects what is not an Israeli number', () => {
+    assert.equal(normalizeIlPhone('123'), null);
+    assert.equal(normalizeIlPhone(''), null);
+    assert.equal(normalizeIlPhone(null), null);
+    assert.equal(normalizeIlPhone('+1 212 555 0100'), null);
+  });
+  it('formats for screens', () => {
+    assert.equal(formatIlPhone('+972501234567'), '050-123-4567');
+    assert.equal(formatIlPhone('+97235551234'), '03-555-1234');
+  });
+});
+
+describe('Hebrew name normalization and duplicates', () => {
+  it('drops niqqud, quotes and generic words', () => {
+    assert.equal(normName('סָלוֹן "יופי" של דנה'), 'דנה');
+    assert.equal(normName('מכון היופי של רותי בע"מ'), normName('רותי'));
+  });
+  it('treats spelling variants as similar', () => {
+    assert.ok(nameSimilarity('קליניקת ד״ר כהן', 'קליניקה דר כהן') >= 0.9);
+  });
+  it('does not merge numbered branches on name alone', () => {
+    assert.ok(nameSimilarity('Nails 1', 'Nails 2') < 0.9);
+  });
+  it('same source id is an automatic duplicate', () => {
+    const a = { name: 'A', lat: 32, lng: 34.8, phone: null, email: null, website: null, googlePlaceId: 'ChIJx' };
+    const m = scoreMatch(a, { ...a, name: 'B' });
+    assert.equal(m.score, 1);
+    assert.ok(isStrong(m.reasons));
+  });
+  it('same phone and name nearby is a duplicate', () => {
+    const a = { name: 'סלון דנה', lat: 32.08, lng: 34.78, phone: '+97235551234', email: null, website: null };
+    const m = scoreMatch(a, { ...a, lat: 32.0801 });
+    assert.ok(m.score >= DUPLICATE_AT && isStrong(m.reasons));
+  });
+  it('keeps chain branches apart: shared website and central phone, different names and towns', () => {
+    const a = { name: 'רשת יופי תל אביב', lat: 32.08, lng: 34.78, phone: '+97235551234', email: null, website: 'https://chain.co.il' };
+    const b = { name: 'רשת יופי חיפה', lat: 32.79, lng: 34.99, phone: '+97235551234', email: null, website: 'https://chain.co.il/haifa' };
+    const m = scoreMatch(a, b);
+    assert.ok(!(m.score >= DUPLICATE_AT && isStrong(m.reasons)), `score ${m.score} ${m.reasons}`);
+  });
+  it('a shared booking platform host is never evidence', () => {
+    const a = { name: 'X', lat: null, lng: null, phone: null, email: null, website: 'https://www.facebook.com/x' };
+    assert.ok(!scoreMatch(a, { ...a, name: 'Y', website: 'https://www.facebook.com/y' }).reasons.includes('same_website'));
+  });
+});
+
+describe('DataForSEO mapping', () => {
+  it('maps a full item', () => {
+    const m = mapItem({
+      title: 'סלון דוגמה', cid: '123', place_id: 'ChIJabc', phone: '+972 3-555-1234', url: 'https://example.test/', domain: 'www.example.test',
+      latitude: 32.08, longitude: 34.78, address_info: { city: 'Tel Aviv-Yafo', country_code: 'IL' }, category: 'Beauty salon', category_ids: ['beauty_salon'],
+      rating: { value: 4.6, votes_count: 12 }, contact_info: [{ type: 'mail', value: 'info@example.test' }],
+      work_time: { work_hours: { timetable: { sunday: [{ open: { hour: 9, minute: 0 }, close: { hour: 18, minute: 30 } }], saturday: null } } },
+      last_updated_time: '2026-09-01 10:00:00 +00:00',
+    })!;
+    assert.equal(m.sourceKey, 'ChIJabc');
+    assert.equal(m.phone, '+97235551234');
+    assert.equal(m.siteDomain, 'example.test');
+    assert.deepEqual(m.emails, ['info@example.test']);
+    assert.deepEqual(m.rating, { value: 4.6, count: 12 });
+    assert.ok(m.hours && m.hours.length === 7);
+    assert.equal(m.sourceUpdatedAt?.toISOString(), '2026-09-01T10:00:00.000Z');
+  });
+  it('survives nulls and unknown fields', () => {
+    const m = mapItem({ title: 'X', cid: '9', phone: undefined, latitude: undefined, rating: undefined, work_time: undefined, contact_info: undefined, unknown_new_field: { a: 1 } } as never)!;
+    assert.equal(m.sourceKey, 'dfs:cid:9');
+    assert.equal(m.phone, null);
+    assert.equal(m.lat, null);
+    assert.equal(m.hours, null);
+    assert.equal(m.rating, null);
+  });
+  it('rejects items without identity', () => {
+    assert.equal(mapItem({ title: 'X' }), null);
+    assert.equal(mapItem({ cid: '1' }), null);
+  });
+  it('builds a request within API limits', () => {
+    const b = buildSearch({ categories: dfsCategoriesFor(['nails', 'facials']), lat: 32.08, lng: 34.78, radiusKm: 0.2, limit: 5000 });
+    assert.ok((b.limit ?? 0) <= 1000 && (b.limit ?? 0) > 0);
+    assert.ok((b.categories?.length ?? 0) <= 10);
+    assert.match(b.location_coordinate!, /^32\.08\d*,34\.78\d*,\d+(\.\d+)?$/);
+    assert.ok(Number(b.location_coordinate!.split(',')[2]) >= 1);
+    assert.ok((b.filters?.length ?? 0) <= 8);
+  });
+  it('classifies status codes', () => {
+    assert.ok(isFatalStatus(40100) && isFatalStatus(40200) && isFatalStatus(40210));
+    assert.ok(!isFatalStatus(40202) && isTransientStatus(40202));
+    assert.ok(isTransientStatus(50000) && !isFatalStatus(50000));
+  });
+});
+
+describe('cost', () => {
+  it('prices a page at request + items', () => {
+    assert.ok(Math.abs(dfsPageMaxUsd(1000, pricing()) - 0.372) < 1e-9);
+    assert.ok(Math.abs(dfsPageMaxUsd(100, pricing()) - 0.048) < 1e-9);
+  });
+  it('pilot maximum stays under the $1 ceiling', () => {
+    assert.ok(dfsRunMaxUsd(100, 1000).usd < 1);
+  });
+  it('estimator scales with volume', () => {
+    const a = estimateFor(100);
+    const b = estimateFor(10_000);
+    assert.ok(b.dfsUsd > a.dfsUsd && b.dfsRequests >= 11);
+    assert.equal(a.googleUsd, 0); // Google off by default
+  });
+});
+
+describe('Google field masks', () => {
+  it('never allows a wildcard', () => {
+    assert.throws(() => fieldMask(['*']), FieldMaskError);
+    assert.throws(() => fieldMask(['places.*']), FieldMaskError);
+    assert.throws(() => fieldMask([]), FieldMaskError);
+    assert.throws(() => fieldMask(['id', 'reviews.text']), FieldMaskError);
+  });
+  it('bills at the highest-tier field', () => {
+    assert.equal(fieldMask(['id']).sku, 'essentials_ids_only');
+    assert.equal(fieldMask(['id', 'location']).sku, 'essentials');
+    assert.equal(fieldMask(['id', 'displayName']).sku, 'pro');
+    assert.equal(fieldMask(['id', 'displayName', 'rating']).sku, 'enterprise');
+    assert.equal(fieldMask([...GOOGLE_FEATURES.verify]).sku, 'pro');
+    assert.equal(fieldMask([...GOOGLE_FEATURES.rating]).sku, 'enterprise');
+  });
+  it('keeps only the place id permanently and location for 30 days', () => {
+    assert.equal(retentionDays('id'), 'permanent');
+    assert.equal(retentionDays('location'), 30);
+    assert.equal(retentionDays('rating'), 0);
+    assert.equal(retentionDays('displayName'), 0);
+  });
+  it('source policy keeps Google content and provider ratings out of listings', () => {
+    assert.equal(mayPublish('google', 'rating'), false);
+    assert.equal(mayPublish('google', 'phone'), false);
+    assert.equal(mayPublish('dataforseo', 'rating'), false);
+    assert.equal(mayPublish('dataforseo', 'rating', { publishProviderRatings: true }), true);
+    assert.equal(mayPublish('dataforseo', 'photo'), false);
+    assert.equal(mayPublish('website', 'logo'), false);
+  });
+});
+
+const base: QualifyInput = {
+  name: 'סלון', phone: '+97235551234', email: 'a@b.co.il', emailMx: true, emailTier: 'own', categories: ['nails'], businessStatus: null, citySlug: 'tel-aviv',
+  notBeauty: false, extractionFailed: false, possibleExisting: false, sharedPhone: false, hasWebsite: true, hasLocation: true,
+};
+
+describe('qualification', () => {
+  it('complete record is ready', () => assert.equal(qualify(base).status, 'ready'));
+  it('conflicts go to review, never straight to publish', () => {
+    const q = qualify({ ...base, phoneConflict: true, hoursConflict: true });
+    assert.equal(q.status, 'needs_review');
+    assert.ok(q.reasons.includes('phone_conflict') && q.reasons.includes('hours_conflict'));
+  });
+  it('missing email blocks when required, not when relaxed', () => {
+    assert.equal(qualify({ ...base, email: null }).status, 'incomplete');
+    assert.equal(qualify({ ...base, email: null }, { requireEmail: false, requirePhoneOrWebsite: true }).status, 'ready');
+  });
+  it('no phone and no website blocks', () => {
+    assert.ok(qualify({ ...base, phone: null, hasWebsite: false }).reasons.includes('no_contact'));
+  });
+  it('no location blocks', () => assert.equal(qualify({ ...base, hasLocation: false }).status, 'incomplete'));
+  it('closed businesses are closed', () => assert.equal(qualify({ ...base, businessStatus: 'CLOSED_PERMANENTLY' }).status, 'closed'));
+});
+
+describe('website extraction', () => {
+  const html = `<html><body>
+    <a href="mailto:info@salon.co.il">info@salon.co.il</a>
+    <a href="tel:03-555-1234">03-555-1234</a>
+    <a href="https://wa.me/972501234567">WhatsApp</a>
+    <a href="https://www.instagram.com/salon_test/">IG</a>
+    <a href="https://www.facebook.com/sharer.php?u=x">share</a>
+    <p>טיפול פנים ₪250</p>
+    <footer>האתר נבנה ע"י סטודיו פיקסל studio@pixel-agency.co.il</footer>
+  </body></html>`;
+  const f = extractPage(html, 'https://salon.co.il/צור-קשר', 'salon.co.il');
+  it('keeps the business email and drops the site builder credit', () => {
+    assert.deepEqual(f.emails.map(e => e.value), ['info@salon.co.il']);
+    assert.deepEqual(f.agencyEmails, ['studio@pixel-agency.co.il']);
+    assert.ok(f.emails[0].onContactPage);
+    assert.ok(f.emails[0].evidence.length > 0);
+  });
+  it('takes phones, explicit WhatsApp links and real profile links only', () => {
+    assert.deepEqual(f.phones.map(p => p.value), ['+97235551234']);
+    assert.deepEqual(f.whatsapp.map(w => w.value), ['+972501234567']);
+    assert.deepEqual(f.socials.map(s => s.value.url), ['https://www.instagram.com/salon_test']);
+  });
+  it('reads explicit prices with the source line', () => {
+    assert.ok(f.services.some(s => s.value.priceNis === 250 && s.evidence.includes('₪250')));
+  });
+  it('ranks own-domain contact-page emails first', () => {
+    const r = rankEmails([
+      { value: 'x@gmail.com', url: 'u', evidence: '', onContactPage: true },
+      { value: 'info@salon.co.il', url: 'u', evidence: '', onContactPage: true },
+    ], 'https://salon.co.il');
+    assert.equal(r[0].value, 'info@salon.co.il');
+  });
+});
+
+describe('SSRF protection', () => {
+  it('refuses private, loopback, metadata and odd forms', () => {
+    for (const u of [
+      'http://127.0.0.1/', 'http://localhost/', 'http://169.254.169.254/latest/meta-data/', 'http://10.0.0.5/', 'http://192.168.1.1/', 'http://[::1]/',
+      'http://2130706433/', 'http://0x7f000001/', 'http://[::ffff:127.0.0.1]/', 'http://100.64.0.1/', 'http://metadata.internal/',
+    ]) assert.throws(() => checkUrl(u), UnsafeUrlError, u);
+  });
+  it('refuses other schemes, ports and embedded credentials', () => {
+    for (const u of ['file:///etc/passwd', 'ftp://example.com/', 'gopher://x/', 'http://example.com:8080/', 'https://user:pw@example.com/']) assert.throws(() => checkUrl(u), UnsafeUrlError, u);
+    assert.doesNotThrow(() => checkUrl('https://example.com/path'));
+  });
+  it('test mode opens loopback and .test only', () => {
+    assert.doesNotThrow(() => checkUrl('http://127.0.0.1:8080/', true));
+    assert.doesNotThrow(() => checkUrl('http://site-1.test:8080/', true));
+    for (const u of ['http://169.254.169.254/', 'http://10.0.0.1/', 'http://192.168.0.1/', 'http://metadata.internal/']) assert.throws(() => checkUrl(u, true), UnsafeUrlError, u);
+    assert.throws(() => checkUrl('http://site-1.test/'), UnsafeUrlError);
+  });
+  it('classifies addresses', () => {
+    assert.ok(isPrivateAddress('127.0.0.1') && isPrivateAddress('::1') && isPrivateAddress('fd00::1') && isPrivateAddress('169.254.1.1'));
+    assert.ok(!isPrivateAddress('8.8.8.8') && !isPrivateAddress('2606:4700:4700::1111'));
+  });
+  it('fails DNS resolution to a private address at connect time', async () => {
+    const err = await new Promise<NodeJS.ErrnoException | null>(res => guardedLookup('localhost', {}, e => res(e)));
+    assert.equal(err?.code, 'EUNSAFE');
+  });
+  it('re-checks every redirect and caps them', async () => {
+    const srv = createServer((req, res) => {
+      if (req.url === '/meta') return void res.writeHead(302, { location: 'http://169.254.169.254/latest/meta-data/' }).end();
+      if (req.url === '/file') return void res.writeHead(302, { location: 'file:///etc/passwd' }).end();
+      if (req.url === '/creds') return void res.writeHead(302, { location: 'http://a:b@127.0.0.1/' }).end();
+      res.writeHead(302, { location: `/loop${Math.random()}` }).end();
+    });
+    await new Promise<void>(r => srv.listen(0, '127.0.0.1', () => r()));
+    const port = (srv.address() as AddressInfo).port;
+    try {
+      // allowPrivate only lets the test reach its own loopback server; redirect checks still apply.
+      await assert.rejects(safeFetch(`http://127.0.0.1:${port}/meta`, { allowPrivate: true }), UnsafeUrlError);
+      await assert.rejects(safeFetch(`http://127.0.0.1:${port}/file`, { allowPrivate: true }), UnsafeUrlError);
+      await assert.rejects(safeFetch(`http://127.0.0.1:${port}/creds`, { allowPrivate: true }), UnsafeUrlError);
+      await assert.rejects(safeFetch(`http://127.0.0.1:${port}/loop`, { allowPrivate: true, maxRedirects: 3 }), /too_many_redirects/);
+      // Without the test flag the loopback server is refused before any request.
+      await assert.rejects(safeFetch(`http://127.0.0.1:${port}/`), UnsafeUrlError);
+    } finally {
+      srv.close();
+    }
+  });
+  it('caps the response size', async () => {
+    const srv = createServer((_req, res) => res.end('x'.repeat(50_000)));
+    await new Promise<void>(r => srv.listen(0, '127.0.0.1', () => r()));
+    const port = (srv.address() as AddressInfo).port;
+    try {
+      const r = await safeFetch(`http://127.0.0.1:${port}/`, { allowPrivate: true, maxBytes: 1000 });
+      assert.ok(r.truncated && r.body.length === 1000);
+    } finally {
+      srv.close();
+    }
+  });
+});

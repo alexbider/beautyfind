@@ -5,8 +5,11 @@ import { z } from 'zod';
 import { importerOrNull } from '@/components/ops/guard';
 import { db } from '@/lib/server/db';
 import {
-  approvePlace, createRun, dispatchWorker, editPlace, markDuplicate, mergePlace, rejectPlace, restorePlace, retryIncomplete, setRunStatus, type OpResult,
+  approvePlace, createRun, dispatchWorker, editPlace, enrichSelected, markDuplicate, mergePlace, reconcileTask, rejectPlace, restorePlace, retryIncomplete,
+  saveSettings, setRunStatus, type CreateRunInput, type OpResult,
 } from '@/lib/server/importOps';
+import { googleLookup, type GoogleLookup } from '@/lib/server/googleDisplay';
+import type { ImportSettings } from '@/lib/import/settings';
 
 const refresh = () => {
   revalidatePath('/ops/import');
@@ -15,7 +18,7 @@ const refresh = () => {
 
 export type StartResult = { ok: true; runId: string; dispatched: boolean; reason?: string } | { ok: false; error: string };
 
-export async function startRunAction(input: { label: string; scope: unknown; maxRequests: number; maxExtractions: number | null }): Promise<StartResult> {
+export async function startRunAction(input: CreateRunInput): Promise<StartResult> {
   const user = await importerOrNull();
   if (!user) return { ok: false, error: 'forbidden' };
   try {
@@ -26,6 +29,43 @@ export async function startRunAction(input: { label: string; scope: unknown; max
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'failed' };
   }
+}
+
+export async function saveSettingsAction(values: Partial<ImportSettings>): Promise<{ ok: boolean; settings?: ImportSettings }> {
+  const user = await importerOrNull();
+  if (!user) return { ok: false };
+  const settings = await saveSettings(user, values);
+  refresh();
+  return { ok: true, settings };
+}
+
+export async function reconcileAction(taskId: string, billed: boolean, retry: boolean): Promise<{ ok: boolean; dispatched?: boolean }> {
+  const user = await importerOrNull();
+  if (!user || !z.uuid().safeParse(taskId).success) return { ok: false };
+  const r = await reconcileTask(user, taskId, billed, retry);
+  if (!r.ok) return { ok: false };
+  const t = retry ? await db.importTask.findUnique({ where: { id: taskId }, select: { runId: true } }) : null;
+  const d = t ? await dispatchWorker(t.runId) : undefined;
+  refresh();
+  return { ok: true, dispatched: d?.dispatched };
+}
+
+export async function enrichSelectedAction(ids: string[]): Promise<{ ok: boolean; count: number; dispatched?: boolean }> {
+  const user = await importerOrNull();
+  const list = z.array(z.uuid()).max(200).safeParse(ids);
+  if (!user || !list.success) return { ok: false, count: 0 };
+  const r = await enrichSelected(user, list.data);
+  let dispatched: boolean | undefined;
+  for (const id of r.runIds) dispatched = (await dispatchWorker(id)).dispatched;
+  refresh();
+  return { ok: true, count: r.count, dispatched };
+}
+
+export async function googleLookupAction(placeId: string, feature: 'verify' | 'rating' | 'photo'): Promise<GoogleLookup> {
+  const user = await importerOrNull();
+  if (!user) return { ok: false, error: 'forbidden' };
+  if (!['verify', 'rating', 'photo'].includes(feature)) return { ok: false, error: 'invalid' };
+  return googleLookup(user, placeId, feature);
 }
 
 export async function runControlAction(runId: string, action: 'pause' | 'resume' | 'cancel' | 'kick' | 'retry'): Promise<{ ok: boolean; dispatched?: boolean; reason?: string; count?: number }> {
@@ -86,4 +126,17 @@ export async function bulkApproveAction(ids: string[]): Promise<{ ok: boolean; a
   for (const { id } of ready) if ((await approvePlace(user, id)).ok) approved++;
   refresh();
   return { ok: true, approved, skipped: list.data.length - approved };
+}
+
+/** Publishes every "ready" record in a run, up to 300 per click so a request never runs too long. */
+export async function publishEligibleAction(runId: string): Promise<{ ok: boolean; approved: number; left: number }> {
+  const user = await importerOrNull();
+  if (!user || !z.uuid().safeParse(runId).success) return { ok: false, approved: 0, left: 0 };
+  const ready = await db.importPlace.findMany({ where: { runId, status: 'ready' }, select: { id: true }, orderBy: { createdAt: 'asc' }, take: 300 });
+  let approved = 0;
+  for (const { id } of ready) if ((await approvePlace(user, id)).ok) approved++;
+  const left = await db.importPlace.count({ where: { runId, status: 'ready' } });
+  await db.auditLog.create({ data: { actorId: user.id, action: 'import_publish_run', subjectType: 'import_run', subjectId: runId, meta: { approved, left } } });
+  refresh();
+  return { ok: true, approved, left };
 }

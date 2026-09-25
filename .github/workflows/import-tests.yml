@@ -1,0 +1,45 @@
+# Import module tests on fixtures: a local Postgres, a mock DataForSEO server and invented websites.
+# No provider credentials are available here and nothing is spent.
+name: Import tests
+
+on:
+  pull_request:
+    paths: ['web/src/lib/import/**', 'web/scripts/import/**', 'web/tests/import/**', 'web/prisma/**', '.github/workflows/import-tests.yml']
+  push:
+    branches: [main]
+    paths: ['web/src/lib/import/**', 'web/scripts/import/**', 'web/tests/import/**', 'web/prisma/**', '.github/workflows/import-tests.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: beautyfind
+          POSTGRES_PASSWORD: beautyfind
+          POSTGRES_DB: beautyfind
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://beautyfind:beautyfind@localhost:5432/beautyfind
+      DATABASE_URL_UNPOOLED: postgresql://beautyfind:beautyfind@localhost:5432/beautyfind
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      - run: npm run test:import
+      - run: npm run import:dryrun
+      - run: npm run import:simulate

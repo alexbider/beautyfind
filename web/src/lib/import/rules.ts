@@ -52,15 +52,19 @@ export function hoursFromGoogle(periods: Array<{ open?: GPoint; close?: GPoint }
 }
 
 /** Reasons that keep a record out of approval until someone fixes the data. */
-export const BLOCKING = ['no_phone', 'no_email', 'email_no_mx', 'no_category', 'no_name'] as const;
+export const BLOCKING = ['no_phone', 'no_contact', 'no_email', 'email_no_mx', 'no_category', 'no_name', 'no_location'] as const;
 /** Reasons that allow approval but only by a person looking at the record. */
 export const REVIEW = [
   'possible_existing', 'possible_duplicate', 'email_domain_mismatch', 'shared_phone', 'temporarily_closed', 'not_beauty', 'city_not_in_catalog',
-  'extraction_failed', 'medical_without_doctor_info', 'email_from_search',
+  'extraction_failed', 'medical_without_doctor_info', 'email_from_search', 'phone_conflict', 'hours_conflict',
 ] as const;
 
 export const REASON_NAMES: Record<string, string> = {
   no_phone: 'אין טלפון תקין',
+  no_contact: 'אין טלפון או אתר',
+  no_location: 'אין מיקום או אזור שירות',
+  phone_conflict: 'הטלפון באתר שונה מהטלפון במקור',
+  hours_conflict: 'שעות הפתיחה באתר שונות מהמקור',
   no_email: 'לא נמצא דוא״ל',
   email_no_mx: 'דומיין הדוא״ל לא מקבל דואר',
   no_category: 'אין תחום טיפול',
@@ -92,15 +96,31 @@ export interface QualifyInput {
   possibleExisting: boolean;
   possibleDuplicate?: boolean;
   sharedPhone: boolean;
+  hasWebsite?: boolean;
+  hasLocation?: boolean; // an address, coordinates or an explicit service area
+  phoneConflict?: boolean;
+  hoursConflict?: boolean;
 }
 
-export function qualify(p: QualifyInput): { status: 'ready' | 'needs_review' | 'incomplete' | 'closed'; reasons: string[] } {
+/** Minimum for publication; staff change these in the import settings. */
+export interface QualifyRules {
+  requireEmail: boolean;
+  requirePhoneOrWebsite: boolean;
+}
+export const DEFAULT_RULES: QualifyRules = { requireEmail: true, requirePhoneOrWebsite: true };
+
+export function qualify(p: QualifyInput, rules: QualifyRules = DEFAULT_RULES): { status: 'ready' | 'needs_review' | 'incomplete' | 'closed'; reasons: string[] } {
   if (p.businessStatus === 'CLOSED_PERMANENTLY') return { status: 'closed', reasons: [] };
   const r: string[] = [];
   if (!p.name.trim()) r.push('no_name');
-  if (!p.phone) r.push('no_phone');
-  if (!p.email) r.push('no_email');
-  else if (p.emailMx === false) r.push('email_no_mx');
+  if (rules.requirePhoneOrWebsite && !p.phone && !p.hasWebsite) r.push('no_contact');
+  else if (!rules.requirePhoneOrWebsite && !p.phone && !p.email && !p.hasWebsite) r.push('no_contact');
+  if (!p.email) {
+    if (rules.requireEmail) r.push('no_email');
+  } else if (p.emailMx === false) r.push('email_no_mx');
+  if (p.hasLocation === false) r.push('no_location');
+  if (p.phoneConflict) r.push('phone_conflict');
+  if (p.hoursConflict) r.push('hours_conflict');
   if (!p.categories.length) r.push('no_category');
   if (p.possibleExisting) r.push('possible_existing');
   if (p.possibleDuplicate) r.push('possible_duplicate');

@@ -10,6 +10,9 @@ import { cleanEmail, emailDomain, pickEmail } from '@/lib/import/email';
 import { DUPLICATE_AT, isStrong, MatchPool, POSSIBLE_MATCH_AT, type PoolItem } from '@/lib/import/match';
 import { normalizeIlPhone } from '@/lib/import/phone';
 import { BLOCKING, qualify, RunScope, type ImportedTreatment } from '@/lib/import/rules';
+import { loadSettings, parseSettings, type ImportSettings } from '@/lib/import/settings';
+import { toMicros } from '@/lib/import/pricing';
+import { commit, release } from '@/lib/import/budget';
 
 export type OpResult = { ok: true; branchId?: string; slug?: string } | { ok: false; error: string };
 type Actor = { id: string };
@@ -18,19 +21,96 @@ const OPEN_FOR_DECISION = ['ready', 'needs_review'] as const;
 
 // ---------- runs ----------
 
-export async function createRun(actor: Actor, input: { label: string; scope: unknown; maxRequests: number; maxExtractions: number | null }) {
+export interface CreateRunInput {
+  label: string;
+  provider: 'dataforseo' | 'google';
+  scope: unknown;
+  recordLimit: number;
+  budgetUsd: number;
+  maxRequests?: number; // legacy Google provider only
+}
+
+export async function createRun(actor: Actor, input: CreateRunInput) {
   const scope = RunScope.parse(input.scope);
-  if (!scope.nearby && !scope.text) throw new Error('no_source');
+  if (input.provider === 'google' && !scope.nearby && !scope.text) throw new Error('no_source');
   if (!scope.all && !scope.cities.length) throw new Error('no_cities');
+  const s = await loadSettings(db);
+  if (s.killSwitch) throw new Error('kill_switch');
+  if (input.provider === 'dataforseo' && !s.dataforseoEnabled) throw new Error('provider_disabled');
   return db.importRun.create({
     data: {
       label: input.label.trim().slice(0, 80) || 'ייבוא',
+      provider: input.provider,
       scope,
-      maxRequests: Math.max(20, Math.min(200_000, Math.round(input.maxRequests))),
-      maxExtractions: input.maxExtractions == null ? null : Math.max(0, Math.round(input.maxExtractions)),
+      recordLimit: Math.max(1, Math.min(100_000, Math.round(input.recordLimit))),
+      budgetMicros: toMicros(Math.max(0, Math.min(10_000, input.budgetUsd))),
+      maxRequests: Math.max(20, Math.min(200_000, Math.round(input.maxRequests ?? 2000))),
       createdById: actor.id,
     },
   });
+}
+
+// ---------- settings ----------
+
+export async function getSettings(): Promise<ImportSettings> {
+  return loadSettings(db);
+}
+
+export async function saveSettings(actor: Actor, values: unknown): Promise<ImportSettings> {
+  const merged = parseSettings({ ...(await loadSettings(db)), ...(values && typeof values === 'object' ? values : {}) });
+  await db.importSettings.upsert({ where: { id: 1 }, create: { id: 1, values: merged, updatedById: actor.id }, update: { values: merged, updatedById: actor.id } });
+  await db.auditLog.create({ data: { actorId: actor.id, action: 'import_settings', subjectType: 'import_settings', subjectId: actor.id, meta: merged as unknown as Prisma.InputJsonValue } });
+  return merged;
+}
+
+// ---------- reconciliation ----------
+
+/**
+ * A page whose outcome was unknown: staff check the provider's usage log, then either keep it as
+ * billed or mark it not billed, and optionally send the page again under a new request key.
+ */
+export async function reconcileTask(actor: Actor, taskId: string, billed: boolean, retry: boolean) {
+  const t = await db.importTask.findUnique({ where: { id: taskId } });
+  if (!t || t.status !== 'needs_reconciliation') return { ok: false as const, error: 'state' };
+  const params = t.params as { requestKey?: string; attempt?: number };
+  if (params.requestKey) {
+    const e = await db.spendEntry.findUnique({ where: { requestKey: params.requestKey } });
+    // Worker stopped mid-call: the hold was never settled.
+    if (e && e.status === 'reserved') {
+      if (billed) await commit(db, e.requestKey, null, e.estimatedMicros);
+      else await release(db, e.requestKey, 'reconciled: not billed');
+    }
+    if (e && e.status === 'needs_reconciliation') {
+      await db.$transaction(async tx => {
+        if (!billed) {
+          // Undo the conservative charge.
+          if (e.runId) await tx.$executeRaw`UPDATE import_runs SET spent_micros = GREATEST(spent_micros - ${e.estimatedMicros}, 0) WHERE id = ${e.runId}::uuid`;
+        }
+        await tx.spendEntry.update({ where: { id: e.id }, data: { status: billed ? 'committed' : 'released', actualMicros: billed ? e.estimatedMicros : 0n, meta: { ...((e.meta as object) ?? {}), reconciledBy: actor.id } } });
+      });
+    }
+  }
+  await db.importTask.update({
+    where: { id: taskId },
+    data: retry ? { status: 'pending', error: null, params: { ...(t.params as object), attempt: (params.attempt ?? 0) + 1, requestKey: undefined } } : { status: 'done', error: 'reconciled' },
+  });
+  if (retry) await db.importRun.updateMany({ where: { id: t.runId, status: { in: ['done', 'failed', 'paused'] } }, data: { status: 'queued', error: null, finishedAt: null } });
+  await db.auditLog.create({ data: { actorId: actor.id, action: 'import_reconcile', subjectType: 'import_task', subjectId: taskId, meta: { billed, retry } } });
+  return { ok: true as const };
+}
+
+/** Sends chosen records back through website enrichment (and the optional LLM) on their runs. */
+export async function enrichSelected(actor: Actor, ids: string[]): Promise<{ count: number; runIds: string[] }> {
+  const places = await db.importPlace.findMany({ where: { id: { in: ids }, status: { notIn: ['approved', 'merged', 'rejected'] } }, select: { id: true, runId: true, siteDomain: true } });
+  if (!places.length) return { count: 0, runIds: [] };
+  // Force a fresh read of those sites.
+  const domains = [...new Set(places.map(p => p.siteDomain).filter((d): d is string => !!d))];
+  if (domains.length) await db.siteFetch.updateMany({ where: { domain: { in: domains } }, data: { nextCheckAt: new Date(0) } });
+  await db.importPlace.updateMany({ where: { id: { in: places.map(p => p.id) } }, data: { status: 'found', reasons: [] } });
+  const runIds = [...new Set(places.map(p => p.runId))];
+  await db.importRun.updateMany({ where: { id: { in: runIds }, status: { in: ['done', 'failed', 'paused'] } }, data: { status: 'queued', error: null, finishedAt: null } });
+  await db.auditLog.create({ data: { actorId: actor.id, action: 'import_enrich_selected', subjectType: 'import_run', subjectId: runIds[0], meta: { ids: places.map(p => p.id) } } });
+  return { count: places.length, runIds };
 }
 
 export async function setRunStatus(runId: string, action: 'pause' | 'resume' | 'cancel') {
@@ -121,7 +201,11 @@ export async function approvePlace(actor: Actor, id: string): Promise<OpResult> 
   if (!p) return { ok: false, error: 'not_found' };
   if (!(OPEN_FOR_DECISION as readonly string[]).includes(p.status)) return { ok: false, error: 'state' };
   if (p.reasons.some(r => (BLOCKING as readonly string[]).includes(r))) return { ok: false, error: 'incomplete' };
-  if (await db.branch.findUnique({ where: { googlePlaceId: p.placeId }, select: { id: true } })) return { ok: false, error: 'exists' };
+  const googleId = p.placeId.startsWith('dfs:') ? null : p.placeId;
+  if (googleId && (await db.branch.findUnique({ where: { googlePlaceId: googleId }, select: { id: true } }))) return { ok: false, error: 'exists' };
+  const settings = await loadSettings(db);
+  // Provider ratings reach the listing only when the source's terms allow it (setting); never Google content.
+  const rating = settings.publishProviderRatings && p.ratingProvider === 'dataforseo' ? { googleRating: p.googleRating, googleReviewCount: p.googleReviewCount } : { googleRating: null, googleReviewCount: null };
 
   const cats = p.categories.filter(c => CATEGORIES.some(x => x.slug === c));
   const city = p.citySlug ? await db.city.findUnique({ where: { slug: p.citySlug }, select: { id: true, name: true } }) : null;
@@ -153,11 +237,10 @@ export async function approvePlace(actor: Actor, id: string): Promise<OpResult> 
           isClaimed: false,
           coverUrl: CATEGORY_IMAGE[cats[0]] ?? null,
           coverAlt: CATEGORY_IMAGE[cats[0]] ? `${CATEGORIES.find(c => c.slug === cats[0])!.name} ב${city?.name ?? p.cityName ?? 'ישראל'}` : null,
-          googleRating: p.googleRating,
-          googleReviewCount: p.googleReviewCount,
-          googlePlaceUrl: p.googleMapsUri,
-          googlePlaceId: p.placeId,
-          googleSyncedAt: new Date(),
+          ...rating,
+          googlePlaceUrl: null,
+          googlePlaceId: googleId,
+          googleSyncedAt: rating.googleRating != null ? new Date() : null,
           description: p.description,
           wazeUrl: `https://waze.com/ul?ll=${p.lat},${p.lng}&navigate=yes`,
           websiteUrl: p.website,
@@ -185,7 +268,10 @@ export async function mergePlace(actor: Actor, id: string, branchId: string): Pr
   if (['approved', 'merged', 'rejected'].includes(p.status)) return { ok: false, error: 'state' };
   const b = await db.branch.findUnique({ where: { id: branchId }, include: { categories: true, _count: { select: { treatments: true } } } });
   if (!b) return { ok: false, error: 'no_branch' };
-  const placeTaken = await db.branch.findUnique({ where: { googlePlaceId: p.placeId }, select: { id: true } });
+  const googleId = p.placeId.startsWith('dfs:') ? null : p.placeId;
+  const placeTaken = googleId ? await db.branch.findUnique({ where: { googlePlaceId: googleId }, select: { id: true } }) : null;
+  const settings = await loadSettings(db);
+  const withRating = settings.publishProviderRatings && p.ratingProvider === 'dataforseo';
   if (placeTaken && placeTaken.id !== b.id) return { ok: false, error: 'exists' };
 
   const cats = p.categories.filter(c => CATEGORIES.some(x => x.slug === c));
@@ -194,11 +280,8 @@ export async function mergePlace(actor: Actor, id: string, branchId: string): Pr
     const claimed = await tx.importPlace.updateMany({ where: { id, status: { notIn: ['approved', 'merged', 'rejected'] } }, data: { status: 'merged' } });
     if (!claimed.count) throw new Error('state');
     const google = {
-      googlePlaceId: b.googlePlaceId ?? p.placeId,
-      googleRating: p.googleRating ?? b.googleRating,
-      googleReviewCount: p.googleReviewCount ?? b.googleReviewCount,
-      googlePlaceUrl: b.googlePlaceUrl ?? p.googleMapsUri,
-      googleSyncedAt: new Date(),
+      googlePlaceId: b.googlePlaceId ?? googleId,
+      ...(withRating ? { googleRating: p.googleRating ?? b.googleRating, googleReviewCount: p.googleReviewCount ?? b.googleReviewCount, googleSyncedAt: new Date() } : {}),
     };
     if (b.isClaimed) {
       // A claimed listing belongs to its owner: link the Google place and rating, nothing else.
@@ -320,8 +403,11 @@ export async function editPlace(actor: Actor, id: string, e: PlaceEdit): Promise
       data.regionSlug = c.region as RegionSlug;
     }
   }
+  const edited = [...new Set([...(((p.crawl as { editedFields?: string[] } | null)?.editedFields ?? []) as string[]), ...Object.keys(e)])];
+  data.crawl = { ...((p.crawl ?? {}) as object), editedFields: edited } as Prisma.InputJsonValue;
+  if (data.email !== undefined) data.emailStatus = data.email ? (data.emailMx ? 'dns_valid' : 'syntax_valid') : null;
   await db.importPlace.update({ where: { id }, data });
-  await audit(actor, 'import_edit', p, { fields: Object.keys(data) });
+  await audit(actor, 'import_edit', p, { fields: Object.keys(e) });
   await requalify(id);
   return { ok: true };
 }
@@ -329,6 +415,7 @@ export async function editPlace(actor: Actor, id: string, e: PlaceEdit): Promise
 /** Re-runs the duplicate, match and completeness checks for one record (same rules as the worker). */
 export async function requalify(id: string) {
   const p = await db.importPlace.findUniqueOrThrow({ where: { id } });
+  const rules = await loadSettings(db);
   if (['approved', 'merged', 'rejected'].includes(p.status) || (p.status === 'duplicate' && p.reviewedById)) return;
   const near = { lat: { gte: p.lat - 0.005, lte: p.lat + 0.005 }, lng: { gte: p.lng - 0.006, lte: p.lng + 0.006 } };
   const or = <T>(xs: Array<T | false>) => xs.filter(Boolean) as T[];
@@ -348,7 +435,7 @@ export async function requalify(id: string) {
       take: 200,
     }),
   ]);
-  const self: PoolItem = { id: p.id, kind: 'import', name: p.name, lat: p.lat, lng: p.lng, phone: p.phone, email: p.email, website: p.website, googlePlaceId: p.placeId };
+  const self: PoolItem = { id: p.id, kind: 'import', name: p.name, lat: p.lat, lng: p.lng, phone: p.phone, email: p.email, website: p.website, googlePlaceId: p.placeId.startsWith('dfs:') ? null : p.placeId };
   const bp = new MatchPool();
   for (const b of branches) bp.add({ id: b.id, kind: 'branch', name: b.name, lat: b.lat, lng: b.lng, phone: b.phone, email: b.email, website: b.websiteUrl, googlePlaceId: b.googlePlaceId });
   const ip = new MatchPool();
@@ -380,7 +467,11 @@ export async function requalify(id: string) {
     possibleExisting: possible,
     possibleDuplicate: !!maybeTwin,
     sharedPhone: shared,
-  });
+    hasWebsite: !!p.website,
+    hasLocation: !!(p.address || p.citySlug || (p.lat != null && p.lng != null)),
+    phoneConflict: crawl.phoneConflict === true,
+    hoursConflict: crawl.hoursConflict === true,
+  }, { requireEmail: rules.requireEmail, requirePhoneOrWebsite: rules.requirePhoneOrWebsite });
   await db.importPlace.update({
     where: { id },
     data: {

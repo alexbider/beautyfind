@@ -14,7 +14,11 @@
     "ops:grant": "tsx scripts/grant-ops.ts",
     "db:seed:demo": "tsx prisma/seed-demo.ts",
     "postinstall": "prisma generate",
-    "import:work": "tsx scripts/import/work.ts"
+    "import:work": "tsx scripts/import/work.ts",
+    "import:dryrun": "tsx scripts/import/dryrun.ts",
+    "import:simulate": "tsx scripts/import/simulate.ts",
+    "import:dfs-categories": "tsx scripts/import/dfsCategories.ts",
+    "test:import": "tsx --test --test-concurrency=1 tests/import/*.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -23,6 +27,7 @@
     "@anthropic-ai/sdk": "^0.128.0",
     "@prisma/client": "^6.19.3",
     "@vercel/blob": "^2.8.0",
+    "libphonenumber-js": "^1.13.14",
     "next": "^16.3.6",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

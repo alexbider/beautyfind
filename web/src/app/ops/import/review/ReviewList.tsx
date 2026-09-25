@@ -6,7 +6,7 @@ import { useState, useTransition } from 'react';
 import { CATEGORIES, CITIES, REGIONS } from '@/lib/catalog';
 import { formatIlPhone } from '@/lib/import/phone';
 import { BLOCKING, REASON_NAMES, type ImportedTreatment } from '@/lib/import/rules';
-import { bulkApproveAction, placeAction } from '../actions';
+import { bulkApproveAction, enrichSelectedAction, googleLookupAction, placeAction, publishEligibleAction } from '../actions';
 import styles from '../import.module.css';
 
 export interface ReviewRow {
@@ -28,6 +28,7 @@ export interface ReviewRow {
   website: string | null;
   instagram: string | null;
   googleRating: number | null;
+  ratingProvider: string | null;
   googleReviewCount: number | null;
   googleMapsUri: string | null;
   categories: string[];
@@ -38,12 +39,30 @@ export interface ReviewRow {
   crawlSkipped: string | null;
   extractError: string | null;
   rendered: number;
-  sources: Record<string, string>;
   facebook: string | null;
   note: string | null;
+  provider: string;
+  placeId: string | null;
+  emailStatus: string | null;
+  bookingUrl: string | null;
+  conflicts: string[];
+  agencyEmails: string[];
+  observations: Obs[];
   match: { id: string; name: string; href: string; city: string; score: number; reasons: string[] } | null;
   dup: { id: string; name: string; address: string; status: string; reasons: string[] } | null;
   created: { name: string; href: string } | null;
+}
+
+export interface Obs {
+  field: string;
+  value: unknown;
+  provider: string;
+  url: string | null;
+  at: string;
+  confidence: number;
+  evidence: string | null;
+  publishable: boolean;
+  status: string | null;
 }
 
 const MATCH_WHY: Record<string, string> = {
@@ -53,9 +72,85 @@ const MATCH_WHY: Record<string, string> = {
 const TYPE_NAME: Record<string, string> = { clinic: 'קליניקה רפואית', medspa: 'קוסמטיקה ורפואה', cosmetics: 'קוסמטיקה', salon: 'סלון' };
 const SKIP_NAME: Record<string, string> = {
   no_website: 'אין אתר', social: 'רק רשת חברתית', robots: 'האתר חוסם סריקה ב־robots.txt', unreachable: 'האתר לא נטען', blocked: 'האתר חסם את הגישה', off_topic: 'לא עסק יופי',
+  no_email: 'נקרא, לא נמצא דוא״ל', failed: 'האתר לא נטען', unsafe: 'כתובת לא בטוחה, לא נסרקה', not_modified: 'לא השתנה מאז הבדיקה הקודמת', skipped_complete: 'לא נדרש, הפרטים כבר מלאים',
 };
-const EMAIL_SRC: Record<string, string> = { manual: 'הוזן ידנית', site: 'מהאתר', social: 'מדף הפייסבוק או האינסטגרם', search: 'מחיפוש ברשת' };
-const SOCIAL_STATUS: Record<string, string> = { ok: 'נקרא', login_wall: 'דורש התחברות', disabled: 'כבוי', no_browser: 'אין דפדפן' };
+const EMAIL_SRC: Record<string, string> = { manual: 'הוזן ידנית', site: 'מהאתר', social: 'מדף הפייסבוק או האינסטגרם', search: 'מחיפוש ברשת', provider: 'מהספק' };
+const EMAIL_STATUS: Record<string, string> = { dns_valid: 'הדומיין מקבל דואר', syntax_valid: 'תקין בתחביר בלבד', published: 'מופיע באתר העסק' };
+const PROVIDER: Record<string, string> = { dataforseo: 'DataForSEO', google: 'Google', website: 'אתר העסק', llm: 'חילוץ AI', staff: 'צוות', owner: 'בעל העסק' };
+const FIELD: Record<string, string> = {
+  email: 'דוא״ל', phone: 'טלפון', whatsapp: 'וואטסאפ', social: 'רשת חברתית', booking: 'הזמנת תור', hours: 'שעות', address: 'כתובת', service: 'טיפול', logo: 'לוגו', website: 'אתר',
+  name: 'שם', category: 'תחום', categories: 'תחומים', rating: 'דירוג',
+};
+const G_ERR: Record<string, string> = {
+  google_disabled: 'Google כבוי', kill_switch: 'מתג העצירה פעיל', no_place_id: 'אין מזהה Google לרשומה', photos_disabled: 'תמונות כבויות', no_answer: 'אין תשובה מ־Google',
+  'budget:day': 'הגעתם לתקרה היומית', 'budget:month': 'הגעתם לתקרה החודשית', forbidden: 'אין הרשאה',
+};
+
+function show(v: unknown): string {
+  if (v == null) return '';
+  if (typeof v === 'string' || typeof v === 'number') return String(v);
+  if (typeof v === 'object') {
+    const o = v as Record<string, unknown>;
+    if (Array.isArray(v)) return v.every(x => typeof x === 'string') ? v.join(', ') : `${v.length} ימים`;
+    if (typeof o.name === 'string') return `${o.name}${o.priceNis ? ` · ₪${o.priceNis}` : ''}`;
+    if (typeof o.url === 'string') return o.url;
+    if (typeof o.e164 === 'string' || typeof o.raw === 'string') return String(o.raw ?? o.e164);
+  }
+  return JSON.stringify(v).slice(0, 80);
+}
+
+function Evidence({ r }: { r: ReviewRow }) {
+  if (!r.observations.length) return <p className={styles.note}>אין תצפיות שמורות לרשומה.</p>;
+  return (
+    <table className={styles.obs}>
+      <thead>
+        <tr><th>שדה</th><th>ערך</th><th>מקור</th><th>ביטחון</th><th>ראיה</th></tr>
+      </thead>
+      <tbody>
+        {r.observations.map((o, i) => {
+          const conflict = (o.field === 'phone' && r.conflicts.includes('phone')) || (o.field === 'hours' && r.conflicts.includes('hours'));
+          return (
+            <tr key={i} className={conflict ? styles.obsConflict : undefined}>
+              <td>{FIELD[o.field] ?? o.field}{o.publishable ? '' : ' · לא לפרסום'}</td>
+              <td className={styles.ltr}>{show(o.value)}</td>
+              <td>
+                {o.url ? <a href={o.url} target="_blank" rel="noreferrer">{PROVIDER[o.provider] ?? o.provider}</a> : PROVIDER[o.provider] ?? o.provider}
+                <span className={styles.note}> · {new Date(o.at).toLocaleDateString('he-IL')}</span>
+              </td>
+              <td className={styles.ltr}>{Math.round(o.confidence * 100)}%</td>
+              <td className={styles.note}>{o.evidence ?? ''}</td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+}
+
+function GoogleView({ placeId }: { placeId: string }) {
+  const [pending, start] = useTransition();
+  const [res, setRes] = useState<Awaited<ReturnType<typeof googleLookupAction>> | null>(null);
+  const go = (feature: 'verify' | 'rating') => start(async () => setRes(await googleLookupAction(placeId, feature)));
+  return (
+    <div className={styles.panel}>
+      <p className={styles.note}>תצוגת Google נפרדת. בתשלום לפי קריאה, לא נשמרת ברשומה ולא מתפרסמת.</p>
+      <div className={styles.btnRow}>
+        <button type="button" className={styles.btn} disabled={pending} onClick={() => go('verify')}>אימות מול Google</button>
+        <button type="button" className={styles.btn} disabled={pending} onClick={() => go('rating')}>דירוג ב־Google</button>
+      </div>
+      {res ? (
+        res.ok ? (
+          <dl className={styles.meta}>
+            {Object.entries(res.fields).filter(([k]) => k !== 'attributions' && k !== 'photos').map(([k, v]) => (
+              <div key={k}><dt>{k}: </dt><dd className={styles.ltr}>{typeof v === 'object' ? JSON.stringify(v).slice(0, 120) : String(v)}</dd></div>
+            ))}
+            <div><dt>מקור: </dt><dd>Google Maps{res.cached ? ' · מהמטמון' : ''}</dd></div>
+          </dl>
+        ) : <p className={`${styles.result} ${styles.resultBad}`}>{G_ERR[res.error] ?? res.error}</p>
+      ) : null}
+    </div>
+  );
+}
 const ERR: Record<string, string> = {
   incomplete: 'חסרים פרטי חובה', exists: 'המקום כבר קיים באתר', state: 'הרשומה כבר טופלה', not_found: 'הרשומה לא נמצאה', phone: 'מספר טלפון לא תקין',
   email: 'כתובת דוא״ל לא תקינה', email_mx: 'הדומיין של הדוא״ל לא מקבל דואר', name: 'חסר שם', city: 'יישוב לא מוכר', forbidden: 'אין הרשאה', invalid: 'נתונים לא תקינים',
@@ -114,10 +209,11 @@ function Edit({ r, onDone }: { r: ReviewRow; onDone: (msg: string, ok: boolean) 
 
 type Done = { ok: boolean; text: string; href?: string; name: string };
 
-function Record({ r, onDone }: { r: ReviewRow; onDone: (d: Done) => void }) {
+function Record({ r, onDone, selected, onSelect, google }: { r: ReviewRow; onDone: (d: Done) => void; selected: boolean; onSelect: () => void; google: boolean }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [editing, setEditing] = useState(false);
+  const [showEvidence, setShowEvidence] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; text: string; href?: string } | null>(null);
   const blocked = r.reasons.some(x => (BLOCKING as readonly string[]).includes(x));
@@ -139,12 +235,16 @@ function Record({ r, onDone }: { r: ReviewRow; onDone: (d: Done) => void }) {
   return (
     <article className={`${styles.card} ${styles.rec}`}>
       <div>
-        <h2 className={styles.recName}>{r.googleMapsUri ? <a href={r.googleMapsUri} target="_blank" rel="noreferrer">{r.name}</a> : r.name}</h2>
+        <h2 className={styles.recName}>
+          <input type="checkbox" checked={selected} onChange={onSelect} aria-label={`בחירת ${r.name}`} className={styles.pick} />
+          {r.googleMapsUri ? <a href={r.googleMapsUri} target="_blank" rel="noreferrer">{r.name}</a> : r.name}
+        </h2>
         <div className={styles.note}>
           {r.address}
           {r.cityName ? ` · ${r.cityName}` : ''}
           {r.regionSlug ? ` · ${regionName(r.regionSlug)}` : ''}
-          {r.googleRating ? <> · Google <span className={styles.ltr}>{r.googleRating.toFixed(1)} ({r.googleReviewCount ?? 0})</span></> : null}
+          {r.googleRating ? <> · {PROVIDER[r.ratingProvider ?? 'google'] ?? r.ratingProvider} <span className={styles.ltr}>{r.googleRating.toFixed(1)} ({r.googleReviewCount ?? 0})</span></> : null}
+          {' · '}מקור: {PROVIDER[r.provider] ?? r.provider}
         </div>
         <div className={styles.reasons}>
           {r.categories.map(c => <span key={c} className={`${styles.chip} ${styles.chipOk}`}>{catName(c)}</span>)}
@@ -160,7 +260,8 @@ function Record({ r, onDone }: { r: ReviewRow; onDone: (d: Done) => void }) {
             <dt>דוא״ל: </dt>
             <dd>
               {r.email ? <span className={styles.ltr}>{r.email}</span> : 'לא נמצא'}
-              {r.email ? <span className={styles.note}> · {EMAIL_SRC[r.emailSource ?? ''] ?? 'מהאתר'}{r.emailMx === false ? ' · הדומיין לא מקבל דואר' : r.emailMx ? ' · הדומיין תקין' : ''}</span> : null}
+              {r.email ? <span className={styles.note}> · {EMAIL_SRC[r.emailSource ?? ''] ?? 'מהאתר'}{r.emailStatus ? ` · ${EMAIL_STATUS[r.emailStatus] ?? r.emailStatus}` : r.emailMx === false ? ' · הדומיין לא מקבל דואר' : r.emailMx ? ' · הדומיין תקין' : ''}</span> : null}
+              {r.agencyEmails.length ? <span className={styles.note}> · הושמט דוא״ל של בונה האתר</span> : null}
               {r.emails.length > 1 ? <span className={styles.note}> · עוד {r.emails.length - 1} באתר</span> : null}
             </dd>
           </div>
@@ -176,12 +277,13 @@ function Record({ r, onDone }: { r: ReviewRow; onDone: (d: Done) => void }) {
               <dt>פייסבוק: </dt>
               <dd>
                 <a href={r.facebook} target="_blank" rel="noreferrer" className={styles.ltr}>{r.facebook.replace(/^https:\/\/(www\.)?facebook\.com\//, '')}</a>
-                {r.sources.facebook ? <span className={styles.note}> · {SOCIAL_STATUS[r.sources.facebook] ?? r.sources.facebook}</span> : null}
               </dd>
             </div>
           ) : null}
           {r.instagram ? <div><dt>אינסטגרם: </dt><dd><a href={r.instagram} target="_blank" rel="noreferrer" className={styles.ltr}>{r.instagram.replace(/^https:\/\/www\.instagram\.com\//, '@')}</a></dd></div> : null}
         </dl>
+        {r.bookingUrl ? <p className={styles.note}>הזמנת תור: <a href={r.bookingUrl} target="_blank" rel="noreferrer" className={styles.ltr}>{r.bookingUrl.replace(/^https?:\/\//, '').slice(0, 50)}</a></p> : null}
+        {r.conflicts.length ? <p className={`${styles.result} ${styles.resultBad}`}>סתירה בין המקורות: {r.conflicts.map(c => (c === 'phone' ? 'טלפון' : 'שעות')).join(', ')}. ראו ראיות.</p> : null}
         {r.description ? <p className={styles.desc}>{r.description}</p> : null}
         {r.extractError ? <p className={styles.note}>שגיאת חילוץ: <span className={styles.ltr}>{r.extractError}</span></p> : null}
         {r.note ? <p className={styles.note}>הערה: {r.note}</p> : null}
@@ -227,6 +329,14 @@ function Record({ r, onDone }: { r: ReviewRow; onDone: (d: Done) => void }) {
             ) : null}
           </div>
         ) : <p className={styles.note}>לא נמצא תפריט טיפולים.</p>}
+
+        <div>
+          <button type="button" className={styles.btn} onClick={() => setShowEvidence(!showEvidence)} aria-expanded={showEvidence}>
+            {showEvidence ? 'הסתרת ראיות' : `ראיות ומקורות (${r.observations.length})`}
+          </button>
+          {showEvidence ? <Evidence r={r} /> : null}
+        </div>
+        {google && r.placeId && !decided ? <GoogleView placeId={r.placeId} /> : null}
 
         {r.created ? <p className={styles.note}>דף באתר: <Link href={r.created.href} target="_blank">{r.created.name}</Link></p> : null}
 
@@ -278,11 +388,18 @@ function Record({ r, onDone }: { r: ReviewRow; onDone: (d: Done) => void }) {
   );
 }
 
-export function ReviewList({ rows, bulk }: { rows: ReviewRow[]; bulk: boolean }) {
+export function ReviewList({ rows, bulk, runId, readyInRun, google }: { rows: ReviewRow[]; bulk: boolean; runId: string | null; readyInRun: number; google: boolean }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [done, setDone] = useState<Done[]>([]);
+  const [picked, setPicked] = useState<Set<string>>(new Set());
   const log = (d: Done) => setDone(list => [d, ...list].slice(0, 6));
+  const toggle = (id: string) => setPicked(s => {
+    const n = new Set(s);
+    if (n.has(id)) n.delete(id);
+    else n.add(id);
+    return n;
+  });
   const recent = done.length ? (
     <div className={`${styles.card} ${styles.stack}`} role="status" aria-live="polite" style={{ gap: 4 }}>
       {done.map((d, i) => (
@@ -302,17 +419,43 @@ export function ReviewList({ rows, bulk }: { rows: ReviewRow[]; bulk: boolean })
       router.refresh();
     });
   };
+  const publishRun = () => {
+    if (!runId || !confirm(`לפרסם את כל ${readyInRun} הרשומות המוכנות בריצה הזו? רשומות ״לבדיקה״ לא יפורסמו.`)) return;
+    start(async () => {
+      const r = await publishEligibleAction(runId);
+      log({ ok: r.ok, name: 'פרסום הריצה', text: r.ok ? `פורסמו ${r.approved} עסקים${r.left ? `, נשארו ${r.left} (הפעילו שוב)` : ''}` : 'הפעולה נכשלה' });
+      router.refresh();
+    });
+  };
+  const enrichPicked = () =>
+    start(async () => {
+      const r = await enrichSelectedAction([...picked]);
+      log({ ok: r.ok, name: 'העשרה מהאתר', text: r.ok ? `${r.count} רשומות נשלחו לבדיקה חוזרת${r.dispatched === false ? ' (העובד לא הופעל, הפעילו אותו מדף הריצות)' : ''}` : 'הפעולה נכשלה' });
+      setPicked(new Set());
+      router.refresh();
+    });
   return (
     <div className={styles.stack}>
       {recent}
-      {bulk ? (
-        <div className={styles.btnRow}>
+      <div className={styles.btnRow}>
+        <button type="button" className={styles.btn} onClick={() => setPicked(picked.size === rows.length ? new Set() : new Set(rows.map(r => r.id)))}>
+          {picked.size === rows.length ? 'ניקוי הבחירה' : 'בחירת כל העמוד'}
+        </button>
+        <button type="button" className={styles.btn} disabled={pending || !picked.size} onClick={enrichPicked}>
+          {`בדיקה חוזרת של האתר (${picked.size})`}
+        </button>
+        {bulk ? (
           <button type="button" className={`${styles.btn} ${styles.primary}`} disabled={pending} onClick={approveAll}>
             {pending ? 'מפרסמים…' : `אישור ופרסום של ${rows.length} המוכנים בעמוד`}
           </button>
-        </div>
-      ) : null}
-      {rows.map(r => <Record key={r.id} r={r} onDone={log} />)}
+        ) : null}
+        {bulk && runId && readyInRun > rows.length ? (
+          <button type="button" className={`${styles.btn} ${styles.primary}`} disabled={pending} onClick={publishRun}>
+            {`פרסום כל ${readyInRun} המוכנים בריצה`}
+          </button>
+        ) : null}
+      </div>
+      {rows.map(r => <Record key={r.id} r={r} onDone={log} selected={picked.has(r.id)} onSelect={() => toggle(r.id)} google={google} />)}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { CATEGORIES, REGIONS } from '@/lib/catalog';
 import { scoreMatch } from '@/lib/import/match';
 import type { ImportedTreatment } from '@/lib/import/rules';
 import { db } from '@/lib/server/db';
+import { googleAvailable } from '@/lib/server/googleDisplay';
 import { ReviewList, type ReviewRow } from './ReviewList';
 import styles from '../import.module.css';
 
@@ -56,9 +57,14 @@ export default async function ReviewPage({ searchParams }: { searchParams: SP })
 
   const branchIds = [...new Set(rows.flatMap(r => [r.matchBranchId, r.branchId]).filter((x): x is string => !!x))];
   const dupIds = [...new Set(rows.map(r => r.dupOfId).filter((x): x is string => !!x))];
-  const [branches, dups] = await Promise.all([
+  const [branches, dups, observations] = await Promise.all([
     db.branch.findMany({ where: { id: { in: branchIds } }, select: { id: true, name: true, slug: true, regionSlug: true, cityName: true, phone: true, email: true, websiteUrl: true, lat: true, lng: true, googlePlaceId: true } }),
     db.importPlace.findMany({ where: { id: { in: dupIds } }, select: { id: true, name: true, address: true, phone: true, email: true, website: true, lat: true, lng: true, placeId: true, status: true } }),
+    db.fieldObservation.findMany({
+      where: { importPlaceId: { in: rows.map(r => r.id) }, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+      orderBy: [{ field: 'asc' }, { confidence: 'desc' }],
+      select: { importPlaceId: true, field: true, value: true, provider: true, sourceUrl: true, retrievedAt: true, confidence: true, evidence: true, publishable: true, status: true },
+    }),
   ]);
 
   const list: ReviewRow[] = rows.map(r => {
@@ -86,6 +92,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: SP })
       website: r.website,
       instagram: r.instagram,
       googleRating: r.googleRating,
+      ratingProvider: r.ratingProvider,
       googleReviewCount: r.googleReviewCount,
       googleMapsUri: r.googleMapsUri,
       categories: r.categories,
@@ -93,10 +100,18 @@ export default async function ReviewPage({ searchParams }: { searchParams: SP })
       description: r.description,
       treatments: (Array.isArray(r.treatments) ? r.treatments : []) as unknown as ImportedTreatment[],
       pagesRead: Array.isArray(crawl.pages) ? crawl.pages.length : 0,
-      crawlSkipped: typeof crawl.skipped === 'string' ? crawl.skipped : null,
+      crawlSkipped: typeof crawl.site === 'string' ? crawl.site : typeof crawl.skipped === 'string' ? crawl.skipped : null,
+      provider: r.provider,
+      placeId: r.placeId.startsWith('dfs:') || r.placeId.includes(':') ? null : r.placeId,
+      emailStatus: r.emailStatus,
+      bookingUrl: r.bookingUrl,
+      conflicts: [crawl.phoneConflict === true ? 'phone' : null, crawl.hoursConflict === true ? 'hours' : null].filter((x): x is string => !!x),
+      agencyEmails: Array.isArray(crawl.agencyEmails) ? (crawl.agencyEmails as string[]) : [],
+      observations: observations
+        .filter(o => o.importPlaceId === r.id)
+        .map(o => ({ field: o.field, value: o.value, provider: o.provider, url: o.sourceUrl, at: o.retrievedAt.toISOString(), confidence: o.confidence, evidence: o.evidence, publishable: o.publishable, status: o.status })),
       extractError: typeof crawl.extractError === 'string' ? crawl.extractError : null,
       rendered: typeof crawl.rendered === 'number' ? crawl.rendered : 0,
-      sources: (crawl.sources && typeof crawl.sources === 'object' ? crawl.sources : {}) as Record<string, string>,
       facebook: r.facebook,
       note: r.note,
       match: mb ? { id: mb.id, name: mb.name, href: `/${mb.regionSlug}/biz/${mb.slug}`, city: mb.cityName, score: r.matchScore ?? 0, reasons: r.matchReasons } : null,
@@ -162,7 +177,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: SP })
           <button type="submit" className={`${styles.btn} ${styles.primary}`} style={{ flex: 'none' }}>סינון</button>
         </form>
 
-        <ReviewList rows={list} bulk={tab.key === 'ready'} />
+        <ReviewList rows={list} bulk={tab.key === 'ready'} runId={run || null} readyInRun={run ? count(TABS[0]) : 0} google={googleAvailable()} />
 
         {pages > 1 ? (
           <div className={styles.pager}>
