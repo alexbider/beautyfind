@@ -30,7 +30,7 @@ const readBody = (req: IncomingMessage) =>
  * DataForSEO Business Listings Search (live) look-alike. Pages through `items` with offset/limit and
  * reports cost the way the real API does (tasks[0].cost), using the reference rates.
  */
-export async function startMockDfs(items: DfsItem[], opts: { perRequestUsd?: number; perItemUsd?: number } = {}): Promise<MockDfs> {
+export async function startMockDfs(items: DfsItem[], opts: { perRequestUsd?: number; perItemUsd?: number; postImageBase?: string } = {}): Promise<MockDfs> {
   const perRequest = opts.perRequestUsd ?? 0.012;
   const perItem = opts.perItemUsd ?? 0.00036;
   let mode: DfsMode = 'ok';
@@ -50,6 +50,16 @@ export async function startMockDfs(items: DfsItem[], opts: { perRequestUsd?: num
     res.setHeader('content-type', 'application/json');
     if (mode === 'fatal') return void res.end(JSON.stringify({ status_code: 40200, status_message: 'Payment Required.', cost: 0, tasks: [] }));
     if (mode === 'transient') return void res.end(JSON.stringify({ status_code: 50000, status_message: 'Internal Error.', cost: 0, tasks: [] }));
+    // Google business updates (posts): tasks are ready at once; each post carries one photo.
+    if ((req.url ?? '').includes('my_business_updates/task_post')) {
+      const tasks = (body as Array<{ keyword?: string; tag?: string }>).map((t, i) => ({ id: `post-${requests.length}-${i}`, status_code: 20100, status_message: 'Task Created.', cost: 0.0015, data: { tag: t.tag, keyword: t.keyword } }));
+      return void res.end(JSON.stringify({ status_code: 20000, status_message: 'Ok.', cost: 0.0015 * tasks.length, tasks }));
+    }
+    if ((req.url ?? '').includes('my_business_updates/task_get/')) {
+      const base = opts.postImageBase;
+      const posts = base ? [1, 2, 3].map(n => ({ type: 'google_business_post', images_url: `${base}/img/photo-${n + 5}.png`, post_text: 'עדכון מהעסק' })) : [];
+      return void res.end(JSON.stringify({ status_code: 20000, status_message: 'Ok.', cost: 0, tasks: [{ id: 'x', status_code: 20000, status_message: 'Ok.', cost: 0, result: [{ items_count: posts.length, items: posts }] }] }));
+    }
     const q = body[0] ?? {};
     const limit = Math.min(q.limit ?? 100, 1000);
     const offset = q.offset_token ? Number(Buffer.from(q.offset_token, 'base64').toString()) : q.offset ?? 0;
@@ -140,6 +150,7 @@ export async function startSites(sites: FixtureSite[]): Promise<{ port: number; 
     if (s.kind === 'blocked') return void res.writeHead(403, { 'content-type': 'text/html' }).end(page('Forbidden', 'Access denied'));
     if (s.kind === 'redirect_private') return void res.writeHead(302, { location: 'http://169.254.169.254/latest/meta-data/' }).end();
     if (path === '/logo.png') return void res.writeHead(200, { 'content-type': 'image/png' }).end(png(240, 240));
+    if (path === '/גלריה') return void res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end(page('גלריה', [4, 5, 6, 7, 8].map(n => `<img src="/img/photo-${n}.png" width="960" height="640" alt="עבודה ${n}">`).join('')));
     if (/^\/img\/photo-\d\.png$/.test(path)) return void res.writeHead(200, { 'content-type': 'image/png' }).end(png(960, 640));
     if (path === '/img/tiny.png') return void res.writeHead(200, { 'content-type': 'image/png' }).end(png(40, 40));
     res.setHeader('content-type', 'text/html; charset=utf-8');
@@ -148,7 +159,7 @@ export async function startSites(sites: FixtureSite[]): Promise<{ port: number; 
       return void res.end(page('חנות רהיטים אחרת', '<h1>חנות רהיטים אחרת</h1><a href="tel:04-8123456">04-8123456</a><p>ספות ושולחנות</p>'));
     }
     const name = `עסק לדוגמה ${host.replace(/\D/g, '')}`;
-    const nav = '<a href="/צור-קשר">צור קשר</a> <a href="/מחירון">מחירון</a> <a href="/blog/post">בלוג</a>';
+    const nav = '<a href="/צור-קשר">צור קשר</a> <a href="/מחירון">מחירון</a> <a href="/גלריה">גלריה</a> <a href="/blog/post">בלוג</a>';
     const footer = s.kind === 'agency_footer' ? '<footer>האתר נבנה ע"י סטודיו דוגמה studio@example-agency.test</footer>' : '';
     const imgs = '<header><img class="logo" src="/logo.png" alt="לוגו"></header><img src="/img/photo-1.png" width="960" height="640" alt="חדר טיפולים"><img src="/img/photo-2.png" width="960" height="640" alt="עמדת עבודה"><img src="/img/tiny.png" alt="אייקון">';
     const menu = '<h2>הטיפולים שלנו</h2><ul><li>טיפול פנים קלאסי</li><li>הרמת ריסים</li><li>עיצוב גבות</li><li>מניקור</li><li>אודות</li></ul>';

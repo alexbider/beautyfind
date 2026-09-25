@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { profileHref } from '@/lib/server/public';
 import { notFound } from 'next/navigation';
 import { AFTERCARE, aftercareKeyFor, phaseNow } from '@/components/aftercare/content';
 import { PhaseView } from '@/components/aftercare/PhaseView';
@@ -33,7 +34,7 @@ export default async function AftercarePage({ params }: { params: Promise<{ toke
     include: {
       treatment: { select: { name: true, categorySlug: true, isMedical: true } },
       practitioner: { select: { displayName: true } },
-      branch: { select: { name: true, phone: true, whatsapp: true, slug: true, regionSlug: true } },
+      branch: { select: { name: true, phone: true, whatsapp: true, slug: true, regionSlug: true, categories: { select: { categorySlug: true } } } },
     },
   });
   // Available only once the treatment is completed.
@@ -104,7 +105,7 @@ export default async function AftercarePage({ params }: { params: Promise<{ toke
               <h2 id="ac-fu" className={styles.h2} style={{ marginBottom: 3 }}>{set.follow.title}</h2>
               <p className={styles.followBody}>{set.follow.body}</p>
             </div>
-            <Link href={`/${b.branch.regionSlug}/biz/${b.branch.slug}`} className={styles.primary}>{set.follow.cta}</Link>
+            <Link href={profileHref(b.branch)} className={styles.primary}>{set.follow.cta}</Link>
           </section>
         )}
 

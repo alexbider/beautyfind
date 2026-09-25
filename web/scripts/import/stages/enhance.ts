@@ -103,8 +103,8 @@ async function actorFor(run: ImportRun): Promise<string | null> {
   return (await db.user.findFirst({ where: { opsRole: 'ops' }, select: { id: true } }))?.id ?? null;
 }
 
-export async function enhanceStage(run: ImportRun): Promise<boolean> {
-  const task = await db.importTask.findFirst({ where: { runId: run.id, status: 'pending' }, orderBy: { createdAt: 'asc' } });
+export async function enhanceStage(run: ImportRun, kind: 'dfs_refresh' | 'enhance'): Promise<boolean> {
+  const task = await db.importTask.findFirst({ where: { runId: run.id, status: 'pending', kind }, orderBy: { createdAt: 'asc' } });
   if (!task) return false;
   await heartbeat(run.id);
   const params = task.params as { cids?: string[]; ids?: string[] };
@@ -143,4 +143,10 @@ export async function enhanceStage(run: ImportRun): Promise<boolean> {
     await setStats(run.id, { failures: [...new Set([...prev, ...failures])].slice(0, 10) });
   }
   return true;
+}
+
+/** Import records covered by an enhance run (for the Google posts photo step). */
+export async function enhancePlaceIds(run: ImportRun): Promise<string[]> {
+  const tasks = await db.importTask.findMany({ where: { runId: run.id, kind: 'enhance' }, select: { params: true } });
+  return tasks.flatMap(t => ((t.params as { ids?: string[] }).ids ?? []));
 }

@@ -89,7 +89,7 @@ export function tabFor(tabs: ShellTab[], path: string): ShellTab | undefined {
       if (hit && (!best || m.length > best.len)) best = { tab, len: m.length };
     }
   }
-  // Region / directory / profile pages ("/sharon/raanana", "/sharon/biz/x") belong to search.
+  // Region / directory / profile pages ("/sharon/raanana", "/sharon/facials/x") belong to search.
   if (!best && /^\/[a-z-]+(\/|$)/.test(path)) return tabs.find(t => t.key === 'search');
   return best?.tab;
 }

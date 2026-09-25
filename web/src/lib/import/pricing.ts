@@ -7,6 +7,9 @@ export interface Pricing {
   version: string;
   dataforseo: {
     businessListingsSearch: { perRequestUsd: number; perItemUsd: number };
+    // Google business updates (posts with photos), per task. Unverified: reserved conservatively, the
+    // cost DataForSEO reports is what is recorded.
+    businessUpdates: { perTaskUsd: number };
     source: string;
     checked: string;
     note: string;
@@ -29,6 +32,7 @@ export const DEFAULT_PRICING: Pricing = {
   version: '2026-09-25',
   dataforseo: {
     businessListingsSearch: { perRequestUsd: 0.012, perItemUsd: 0.00036 },
+    businessUpdates: { perTaskUsd: 0.004 },
     source: 'https://dataforseo.com/pricing/business-data/business-listings-api',
     checked: '2026-09-25',
     note: 'Reference rate supplied by the product owner on 2026-09-25. The pricing page was not reachable from the build environment; confirm before a live run.',

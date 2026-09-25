@@ -18,7 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
 
   const [branches, pairs] = await Promise.all([
-    db.branch.findMany({ where: PUBLIC_WHERE, select: { slug: true, regionSlug: true, updatedAt: true } }),
+    db.branch.findMany({ where: PUBLIC_WHERE, select: { slug: true, regionSlug: true, updatedAt: true, categories: { select: { categorySlug: true } } } }),
     db.branchCategory.findMany({ where: { branch: { ...PUBLIC_WHERE, cityId: { not: null } } }, select: { categorySlug: true, branch: { select: { city: { select: { slug: true } } } } } }),
   ]);
   const cityCats = new Set(pairs.map(p => `${p.branch.city!.slug}|${p.categorySlug}`));

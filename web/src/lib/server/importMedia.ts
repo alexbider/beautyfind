@@ -38,16 +38,30 @@ export interface CopiedImages {
   photos: Array<{ url: string; alt: string }>;
 }
 
+/**
+ * Copies the chosen logo and photos. When a chosen photo cannot be used (broken link, too small, not an
+ * image), the next candidate from the site or the Google profile is tried, until the listing has
+ * maxPhotos photos or the candidates run out. The gallery template shows one large and four small photos.
+ */
 export async function copyListingImages(
-  place: { name: string; logoUrl: string | null; photoUrls: string[] },
+  place: { name: string; logoUrl: string | null; photoUrls: string[]; fallbackPhotos?: string[]; fallbackLogos?: string[] },
   ownerId: string,
   businessId: string,
   maxPhotos: number,
 ): Promise<CopiedImages> {
-  const jobs = [
-    place.logoUrl ? copyOne(place.logoUrl, 'logo', ownerId, businessId, `הלוגו של ${place.name}`) : Promise.resolve(null),
-    ...place.photoUrls.slice(0, maxPhotos).map(u => copyOne(u, 'photo', ownerId, businessId, place.name)),
-  ];
-  const [logo, ...photos] = await Promise.all(jobs);
-  return { logoUrl: logo, photos: photos.filter((x): x is string => !!x).map(url => ({ url, alt: place.name })) };
+  const logoJob = (async () => {
+    for (const u of [place.logoUrl, ...(place.logoUrl ? place.fallbackLogos ?? [] : [])].filter((x): x is string => !!x).slice(0, 4)) {
+      const r = await copyOne(u, 'logo', ownerId, businessId, `הלוגו של ${place.name}`);
+      if (r) return r;
+    }
+    return null;
+  })();
+  const queue = [...new Set([...place.photoUrls, ...(place.fallbackPhotos ?? [])])].slice(0, 30);
+  const photos: string[] = [];
+  while (photos.length < maxPhotos && queue.length) {
+    const batch = queue.splice(0, Math.min(6, maxPhotos - photos.length + 2));
+    const got = await Promise.all(batch.map(u => copyOne(u, 'photo', ownerId, businessId, place.name)));
+    for (const g of got) if (g && photos.length < maxPhotos) photos.push(g);
+  }
+  return { logoUrl: await logoJob, photos: photos.map(url => ({ url, alt: place.name })) };
 }

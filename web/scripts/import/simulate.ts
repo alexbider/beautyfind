@@ -30,12 +30,13 @@ async function main() {
   await sitesSrv.close();
   const web = await startSites(sites);
   const { items: withPort } = fakeItems(N, web.port);
-  const dfs = await startMockDfs(withPort);
+  const dfs = await startMockDfs(withPort, { postImageBase: `http://gimg.test:${web.port}` });
   process.env.DATAFORSEO_BASE_URL = dfs.url;
 
   const ctx = await import('./ctx');
   const { seedDfs, discoverDfs } = await import('./stages/dfsDiscover');
   const { enrich } = await import('./stages/enrich');
+  const { queuePostPhotos, collectPostPhotos } = await import('./stages/googlePosts');
   const { extractStage } = await import('./stages/extractLlm');
   const { check } = await import('./stages/check');
   const { fromMicros } = await import('../../src/lib/import/pricing');
@@ -62,6 +63,8 @@ async function main() {
     await seedDfs(run, scope);
     while (await discoverDfs(run));
     while (await enrich(run));
+    await queuePostPhotos(run, (await db.importPlace.findMany({ where: { runId: run.id }, select: { id: true } })).map(p => p.id));
+    while (await collectPostPhotos(run));
     while (await extractStage(run));
     await check(run);
   } catch (e) {
@@ -104,7 +107,7 @@ async function main() {
   // Enhancing published listings: approve five ready records, blank fields on their listings the way an
   // older listing would look, run an enhancement run and see what comes back.
   const { approvePlace } = await import('../../src/lib/server/importOps');
-  const { seedEnhance, enhanceStage } = await import('./stages/enhance');
+  const { seedEnhance, enhanceStage, enhancePlaceIds } = await import('./stages/enhance');
   // Local database only (checked above): a staff user for the approvals below if there is none.
   const actor = (await db.user.findFirst({ where: { opsRole: 'ops' }, select: { id: true } })) ?? (await db.user.create({ data: { email: 'simulated-ops@beautyfind.test', opsRole: 'ops' }, select: { id: true } }));
   let enhanceLine = 'skipped (no ops user in the local database)';
@@ -118,11 +121,14 @@ async function main() {
     await db.branch.updateMany({ where: { id: { in: branchIds } }, data: { hours: [], description: null, logoUrl: null, coverUrl: null, gallery: [], email: null, accessible: false, freeParking: false, faqs: [] } });
     const er = await db.importRun.create({ data: { label: 'SIMULATED enhance', provider: 'enhance', scope: { branchIds, refresh: true }, recordLimit: branchIds.length, budgetMicros: 500_000n, maxRequests: 0, createdById: actor.id, status: 'running', lockedBy: ctx.WORKER, lockedUntil: new Date(Date.now() + ctx.LEASE_MS) } });
     await seedEnhance(er);
-    while (await enhanceStage(er));
+    while (await enhanceStage(er, 'dfs_refresh'));
+    await queuePostPhotos(er, await enhancePlaceIds(er));
+    while (await collectPostPhotos(er));
+    while (await enhanceStage(er, 'enhance'));
     const done = await db.importRun.findUniqueOrThrow({ where: { id: er.id } });
     const c = ((done.stats as { counters?: Record<string, number> }).counters ?? {}) as Record<string, number>;
     const branches = await db.branch.findMany({ where: { id: { in: branchIds } } });
-    enhanceLine = `${branchIds.length} listings approved and blanked; after enhancing: logo ${branches.filter(b => b.logoUrl).length}, cover ${branches.filter(b => b.coverUrl).length}, hours ${branches.filter(b => Array.isArray(b.hours) && b.hours.length).length}, description ${branches.filter(b => b.description).length}, email ${branches.filter(b => b.email).length} | counters ${Object.entries(c).map(([k, v]) => `${k} ${v}`).join(', ')} | spent $${(Number(done.spentMicros) / 1e6).toFixed(4)}`;
+    enhanceLine = `${branchIds.length} listings approved and blanked; after enhancing: logo ${branches.filter(b => b.logoUrl).length}, cover ${branches.filter(b => b.coverUrl).length}, hours ${branches.filter(b => Array.isArray(b.hours) && b.hours.length).length}, description ${branches.filter(b => b.description).length}, email ${branches.filter(b => b.email).length}, photos per listing (cover + gallery) ${branches.map(b => (b.coverUrl ? 1 : 0) + (Array.isArray(b.gallery) ? b.gallery.length : 0)).join('/')} | counters ${Object.entries(c).map(([k, v]) => `${k} ${v}`).join(', ')} | spent $${(Number(done.spentMicros) / 1e6).toFixed(4)}`;
     await db.importRun.update({ where: { id: er.id }, data: { status: 'done', lockedBy: null, lockedUntil: null } });
   }
 

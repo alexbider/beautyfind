@@ -268,3 +268,10 @@ a.rating { color: inherit; }
 
 /* Footer spacing (design: margin-top clamp(56px,7vw,96px)). */
 .footGap { height: clamp(56px, 7vw, 96px); }
+
+/* Listings no owner has claimed yet: same template, with a plain notice and a claim box instead of the enquiry form. */
+.unclaimedNote { margin-top: 12px; padding: 12px 15px; border: 1px solid #F3D9BE; border-radius: 13px; background: #FDF1E7; font-size: 14px; font-weight: 700; color: var(--warn-text); text-wrap: pretty; }
+.unclaimedNote a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.claimBox { margin: 4px 0 12px; padding: 12px 14px; border: 1px solid var(--teal-border); border-radius: 12px; background: var(--tint); font-size: 13.5px; }
+.claimBox p { margin: 0 0 8px; text-wrap: pretty; }
+.claimLink { font-weight: 700; color: var(--teal-deep); text-decoration: underline; text-underline-offset: 3px; }

@@ -59,7 +59,7 @@ function summarize(c: CrawlOutcome, keepText: boolean): SiteSummary {
     address: all.find(f => f.address)?.address ?? null,
     services: mergeServices(all.flatMap(f => f.services)).slice(0, 100),
     logos: uniq(all.flatMap(f => f.logos), f => f.value).slice(0, 4),
-    photos: uniq(all.flatMap(f => f.photos), f => f.value).slice(0, 24),
+    photos: uniq(all.flatMap(f => f.photos), f => f.value).slice(0, 30),
     names: [...new Set(all.map(f => f.siteName).filter((x): x is string => !!x))].slice(0, 6),
     description: all.find(f => f.description)?.description ?? null,
     faqs: uniq(all.flatMap(f => f.faqs ?? []), f => f.value.q).slice(0, 20),
@@ -131,7 +131,8 @@ export async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap:
     obs.push({ importPlaceId: p.id, field: 'website', value: url, provider: 'website', sourceUrl: url, retrievedAt: now, confidence: 0.1, publishable: false, status: `rejected_${why}`, evidence: why === 'unrelated' ? 'The site shows another business (different phone and name)' : 'Directory or third-party page, not the business website' });
   // Google profile logo and photo (from discovery): candidates in every case, used when the site has none.
   const prov = (crawl0.providerImages ?? {}) as { logo?: string | null; photo?: string | null };
-  const provCandidates = { logos: prov.logo ? [prov.logo] : [], photos: prov.photo ? [prov.photo] : [] };
+  const postImages = (crawl0.postImages ?? []) as string[]; // from the business's Google posts (googlePosts.ts)
+  const provCandidates = { logos: prov.logo ? [prov.logo] : [], photos: [...(prov.photo ? [prov.photo] : []), ...postImages] };
   // No usable website of its own: the Google profile link stands in.
   const mapsFallback = { website: p.googleMapsUri ?? null, websiteKind: p.googleMapsUri ? 'google_profile' : null, siteDomain: null };
   const save = async (data: Prisma.ImportPlaceUpdateInput, extra: Record<string, unknown>) => {

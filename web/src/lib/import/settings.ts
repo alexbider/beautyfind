@@ -36,7 +36,9 @@ export const ImportSettingsSchema = z.object({
   useProviderImages: z.boolean().default(true),
   // Logo and photos from the business's own website, chosen in review and copied on approval.
   useWebsiteImages: z.boolean().default(true),
-  maxListingPhotos: z.number().int().min(0).max(20).default(6),
+  // For listings with fewer than 5 photos: photos from the business's own posts on its Google profile.
+  googlePostPhotos: z.boolean().default(true),
+  maxListingPhotos: z.number().int().min(0).max(20).default(8), // the gallery shows 5 (1 large, 4 small); a few more for the lightbox
 });
 export type ImportSettings = z.infer<typeof ImportSettingsSchema>;
 

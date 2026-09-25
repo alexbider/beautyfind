@@ -214,7 +214,7 @@ export async function crawlSite(website: string, opts: CrawlOptions): Promise<Cr
       // Contact first, then prices and services, then gallery, then the rest.
       const rank = (l: string) => {
         const d = decodeURIComponentSafe(l);
-        return /צור|צרו|קשר|contact/i.test(d) ? 0 : /מחיר|price|pricing/i.test(d) ? 1 : /טיפול|שירות|treat|service|menu/i.test(d) ? 2 : /גלריה|תמונות|gallery|portfolio|עבודות/i.test(d) ? 3 : 4;
+        return /צור|צרו|קשר|contact/i.test(d) ? 0 : /גלריה|תמונות|gallery|portfolio|עבודות/i.test(d) ? 1 : /מחיר|price|pricing/i.test(d) ? 2 : /טיפול|שירות|treat|service|menu/i.test(d) ? 3 : 4;
       };
       const next = facts.links.filter(l => !seen.has(l)).sort((a, b) => rank(a) - rank(b));
       for (const l of next) queue.push({ url: l, depth: depth + 1 });

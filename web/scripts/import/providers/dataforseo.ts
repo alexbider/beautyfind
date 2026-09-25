@@ -54,3 +54,34 @@ export async function dfsSearch(body: DfsSearchRequest): Promise<DfsOutcome> {
   }
   return { kind: 'ok', task, costUsd: cost };
 }
+
+export type DfsRaw = { kind: 'ok'; json: DfsResponse } | { kind: 'error'; fatal: boolean; code: number | null; message: string; costUsd: number | null } | { kind: 'not_sent'; message: string } | { kind: 'uncertain'; message: string };
+
+/** Any DataForSEO v3 call (task_post, task_get): same credentials, timeouts and outcome rules as dfsSearch. */
+export async function dfsRequest(method: 'GET' | 'POST', path: string, body?: unknown): Promise<DfsRaw> {
+  const login = process.env.DATAFORSEO_LOGIN;
+  const password = process.env.DATAFORSEO_PASSWORD;
+  if (!login || !password) return { kind: 'not_sent', message: 'DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD not set' };
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      method,
+      headers: { Authorization: `Basic ${Buffer.from(`${login}:${password}`).toString('base64')}`, 'Content-Type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: AbortSignal.timeout(120_000),
+    });
+  } catch (e) {
+    const code = ((e as { cause?: { code?: string } }).cause?.code ?? '') as string;
+    const msg = `${(e as Error).name}: ${code || (e as Error).message}`.slice(0, 200);
+    return NOT_SENT.has(code) ? { kind: 'not_sent', message: msg } : { kind: 'uncertain', message: msg };
+  }
+  let json: DfsResponse;
+  try {
+    json = (await res.json()) as DfsResponse;
+  } catch {
+    return res.status >= 500 ? { kind: 'uncertain', message: `http_${res.status}` } : { kind: 'error', fatal: res.status === 401, code: res.status, message: `http_${res.status}`, costUsd: null };
+  }
+  if (res.status === 401 || isFatalStatus(json.status_code)) return { kind: 'error', fatal: true, code: json.status_code ?? res.status, message: json.status_message ?? `http_${res.status}`, costUsd: typeof json.cost === 'number' ? json.cost : null };
+  if (json.status_code !== 20000) return { kind: 'error', fatal: false, code: json.status_code ?? null, message: json.status_message ?? 'error', costUsd: typeof json.cost === 'number' ? json.cost : null };
+  return { kind: 'ok', json };
+}

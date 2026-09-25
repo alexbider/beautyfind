@@ -59,7 +59,7 @@ Builds unclaimed listings from public business data at low cost. Records are sta
 | Website | Own site, else social profile, else the Google profile link |
 | WhatsApp, Instagram, Facebook, booking link | The site, the Google profile's reservation link |
 | Opening hours | DataForSEO, then the site (JSON-LD, then hours written as text: "א'-ה' 09:00-19:00", "Sun-Thu…") |
-| Logo, cover, gallery | The site's images, then the Google profile logo and main photo; picked in review, copied on approval |
+| Logo, cover, gallery | The site's images (gallery pages read early), then the Google profile logo and main photo, then photos from the business's own Google posts when it still has fewer than five; picked in review, copied on approval (up to 8; the gallery shows 5). A photo that fails the size check is replaced by the next candidate. |
 | Description | The Google profile description, then the site's own (JSON-LD, meta description), else a factual summary built from the record (categories, city, services, rating) |
 | Services and prices | The Google profile's services, the site's price lists and menus |
 | Categories | Provider categories, plus categories the site clearly offers |
@@ -69,6 +69,10 @@ Builds unclaimed listings from public business data at low cost. Records are sta
 | Waze link | Built from the map pin |
 
 The review screen shows each record's completeness and what is still missing.
+
+**Google post photos** (`stages/googlePosts.ts`, setting `googlePostPhotos`, on). For records with fewer than five photos after the website stage: DataForSEO Google business updates (the business's own posts), up to 100 tasks per request, reserved against the run budget at an unverified $0.004 per task (the reported cost is recorded), collected for up to 20 minutes.
+
+**Listing addresses.** Listings live at `/:region/:category/:slug`, the category being the listing's first category in catalog order. `/:region/biz/:slug` and any other category redirect there permanently (308), so old links keep working. The rewrite in `next.config.ts` only matches category slugs, which never overlap with city slugs.
 
 **Enhancing published listings** (`stages/enhance.ts`, `src/lib/server/importEnhance.ts`). A separate run type, started from `/ops/import` ("העשרת עסקים שפורסמו") or for chosen records on the review screen's approved tab. For live listings that came from the import and that no owner has claimed:
 1. optionally refreshes the DataForSEO data (one request per up to 500 listings, filtered by cid, reserved against the run budget);

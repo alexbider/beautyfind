@@ -298,7 +298,7 @@ function Record({ r, onDone, selected, onSelect, google }: { r: ReviewRow; onDon
       const res = await placeAction(r.id, input);
       if (res.ok) {
         // The record usually leaves this tab after a decision, so the confirmation lives on the list.
-        const href = res.slug && r.regionSlug ? `/${r.regionSlug}/biz/${res.slug}` : undefined;
+        const href = res.href ?? (res.slug && r.regionSlug ? `/${r.regionSlug}/biz/${res.slug}` : undefined);
         onDone({ ok: true, text: okText, href, name: r.name });
         setResult(null);
       } else setResult({ ok: false, text: ERR[res.error] ?? 'הפעולה נכשלה' });

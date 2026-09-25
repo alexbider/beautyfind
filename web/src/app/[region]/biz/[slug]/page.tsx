@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { FaqAccordion } from '@/components/faq/FaqAccordion';
 import { ArrowForward } from '@/components/icons';
 import { ContactProvider, ContactTrigger } from '@/components/profile/ContactDialog';
@@ -12,12 +12,12 @@ import { ProfileHeader, SectionTabs } from '@/components/profile/ProfileMobile';
 import { ProfileView } from '@/components/profile/ProfileView';
 import { ReviewsInfo, ReviewsRail } from '@/components/profile/Reviews';
 import { Services } from '@/components/profile/Services';
-import { UnclaimedProfile } from '@/components/profile/Unclaimed';
 import { SaveHeart } from '@/components/save-heart/SaveHeart';
 import { ActionBar } from '@/components/shell/ActionBar';
 import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { BOOKING_LIVE } from '@/lib/features';
+import { ROUTES } from '@/lib/routes';
 import { fromE164, telHref } from '@/lib/format';
 import { getProfile, type PublicProfile } from '@/lib/server/public';
 import { buildView, jsonLd, ldJson, metaDescription, prosLabel, reviewsLabel, similarBusinesses, type ProfileView as View } from './data';
@@ -29,7 +29,7 @@ import styles from './page.module.css';
 // "Open now", "today" and relative review dates are computed per request in Asia/Jerusalem, so no stale cache.
 export const dynamic = 'force-dynamic';
 
-type Props = { params: Promise<{ region: string; slug: string }> };
+type Props = { params: Promise<{ region: string; slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { region, slug } = await params;
@@ -53,10 +53,15 @@ const FACT_ICONS = {
   clock: ['M10 5.2v5l3.4 2', 'M10 2.2a7.8 7.8 0 1 0 0 15.6 7.8 7.8 0 0 0 0-15.6'],
 };
 
-export default async function BusinessProfilePage({ params }: Props) {
+export default async function BusinessProfilePage({ params, searchParams }: Props) {
   const { region, slug } = await params;
   const p = await getProfile(region, slug);
   if (!p) notFound();
+  // Served at /:region/:category/:slug (see the rewrite in next.config.ts, which passes the category as
+  // "via"). Any other address, including the old /:region/biz/:slug, moves permanently to that one.
+  const via = (await searchParams).via;
+  const canonicalCat = p.href.split('/')[2];
+  if (canonicalCat !== 'biz' && via !== canonicalCat) permanentRedirect(p.href);
   const v = buildView(p);
 
   const parentHref = v.citySlug ? `/${p.regionSlug}/${v.citySlug}` : `/${p.regionSlug}`;
@@ -80,19 +85,6 @@ export default async function BusinessProfilePage({ params }: Props) {
 
   const ld = <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(jsonLd(p, v)) }} />;
 
-  if (!p.isClaimed) {
-    return (
-      <div className={styles.root}>
-        {ld}
-        <SiteHeader variant="public" title={p.name} backHref={parentHref} />
-        {crumbs}
-        <UnclaimedProfile p={p} v={v} />
-        <ProfileView branchId={p.id} />
-        <SiteFooter wide note="מידע כללי בלבד, לא ייעוץ רפואי" />
-      </div>
-    );
-  }
-
   const similar = await similarBusinesses(p, v.cats[0]?.slug);
   const isClinic = p.business.type === 'clinic' || p.business.type === 'medspa';
   const cta = primaryCta(p, v);
@@ -115,6 +107,12 @@ export default async function BusinessProfilePage({ params }: Props) {
       <ProfileHeader name={p.name} watchId="h-name" backHref={parentHref} />
       {crumbs}
       <ProfileView branchId={p.id} />
+      {!p.isClaimed && (
+        <p className={`${styles.wrap} ${styles.unclaimedNote}`} role="note">
+          הכרטיס הזה אינו מנוהל על ידי העסק. הפרטים נאספו ממקורות פומביים וייתכן שאינם מעודכנים.{' '}
+          <Link href={ROUTES.claim}>זה העסק שלכם?</Link>
+        </p>
+      )}
 
       <ContactProvider branch={{ id: p.id, name: p.name, phone: p.phone, whatsapp: p.whatsapp }} treatments={v.treatmentOptions}>
         {v.photos.length > 0 && (
@@ -141,9 +139,11 @@ export default async function BusinessProfilePage({ params }: Props) {
               <section aria-labelledby="h-services">
                 <div className={styles.secHead}>
                   <h2 id="h-services" className={styles.h2}>שירותים ומחירים<span className={styles.dotTeal}>.</span></h2>
-                  {v.pricesUpdated && <span className={styles.secNote}>המחירים נמסרו על ידי העסק ועודכנו ב־{v.pricesUpdated}</span>}
+                  {p.isClaimed
+                    ? v.pricesUpdated && <span className={styles.secNote}>המחירים נמסרו על ידי העסק ועודכנו ב־{v.pricesUpdated}</span>
+                    : <span className={styles.secNote}>נאספו ממקורות פומביים ועשויים להשתנות</span>}
                 </div>
-                <Services groups={v.services} />
+                <Services groups={v.services} contact={p.isClaimed} />
                 <p className={styles.vat}>כל המחירים לא כוללים מע״מ. טיפולים רפואיים נקבעים אחרי ייעוץ רפואי, ושם נקבע גם המחיר הסופי.</p>
               </section>
             )}
@@ -265,11 +265,15 @@ export default async function BusinessProfilePage({ params }: Props) {
             <Link href={cta.href} className={`${btn.primary} ${styles.barCta}`} data-size="lg">
               {cta.label}
             </Link>
-          ) : (
+          ) : p.isClaimed ? (
             <ContactTrigger className={`${btn.primary} ${styles.barCta}`} dataSize="lg">
               קביעת תור
             </ContactTrigger>
-          )}
+          ) : p.websiteUrl ? (
+            <a href={p.websiteUrl} target="_blank" rel="noopener nofollow" className={`${btn.primary} ${styles.barCta}`} data-size="lg">
+              לאתר העסק
+            </a>
+          ) : null}
         </ActionBar>
       </ContactProvider>
 
@@ -550,11 +554,13 @@ function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null
   return (
     <div id="bf-contact" className={styles.book}>
       <div className={styles.bookHead}>
-        <h2 className={styles.bookTitle}>תיאום תור</h2>
-        <span className={styles.verified}>
-          <CheckMark size={12} />
-          מאומת
-        </span>
+        <h2 className={styles.bookTitle}>{p.isClaimed ? 'תיאום תור' : 'יצירת קשר'}</h2>
+        {p.isClaimed ? (
+          <span className={styles.verified}>
+            <CheckMark size={12} />
+            מאומת
+          </span>
+        ) : null}
       </div>
       <p className={styles.bookSub}>
         {place}
@@ -568,11 +574,20 @@ function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null
           <ArrowForward size={15} />
         </Link>
       )}
-      <ContactTrigger className={`${btn.primary} ${styles.bookCta}`} dataTone={cta ? 'quiet' : undefined}>
-        <MessageGlyph />
-        <span>השארת פרטים לתיאום</span>
-      </ContactTrigger>
-      <p className={styles.bookNote}>הפנייה מגיעה ישירות לעסק, והוא חוזר אליכם</p>
+      {p.isClaimed ? (
+        <>
+          <ContactTrigger className={`${btn.primary} ${styles.bookCta}`} dataTone={cta ? 'quiet' : undefined}>
+            <MessageGlyph />
+            <span>השארת פרטים לתיאום</span>
+          </ContactTrigger>
+          <p className={styles.bookNote}>הפנייה מגיעה ישירות לעסק, והוא חוזר אליכם</p>
+        </>
+      ) : (
+        <div className={styles.claimBox}>
+          <p>העסק עוד לא מנהל את הכרטיס, לכן אין כאן תיאום תור. אפשר לפנות לעסק ישירות בטלפון, בוואטסאפ או באתר.</p>
+          <Link href={ROUTES.claim} className={styles.claimLink}>זה העסק שלכם? אישור בעלות</Link>
+        </div>
+      )}
 
       {(p.phone || p.whatsapp) && (
         <div className={styles.bookBtns}>
@@ -663,7 +678,7 @@ type Cta = { href: string; label: string };
  * Null = no online booking: the contact form is the primary action.
  */
 function primaryCta(p: PublicProfile, v: View): Cta | null {
-  if (!(BOOKING_LIVE && p.onlineBooking)) return null;
+  if (!(BOOKING_LIVE && p.onlineBooking && p.isClaimed)) return null;
   const medicalOnly = p.treatments.length > 0 ? p.treatments.every(t => t.isMedical) : v.cats.length > 0 && v.cats.every(c => c.isMedical);
   return medicalOnly ? { href: `/consult/${p.slug}`, label: 'קביעת ייעוץ' } : { href: `/book/${p.slug}`, label: 'קביעת תור' };
 }

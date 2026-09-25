@@ -18,7 +18,8 @@ import { argRun, db, LEASE_MS, log, Stop, timeLeft, WORKER } from './ctx';
 import { check } from './stages/check';
 import { discoverDfs, seedDfs } from './stages/dfsDiscover';
 import { enrich } from './stages/enrich';
-import { enhanceStage, seedEnhance } from './stages/enhance';
+import { enhancePlaceIds, enhanceStage, seedEnhance } from './stages/enhance';
+import { collectPostPhotos, queuePostPhotos } from './stages/googlePosts';
 import { extractStage } from './stages/extractLlm';
 import { discoverGoogle, seedGoogle } from './stages/googleDiscover';
 
@@ -44,7 +45,10 @@ async function work(run: ImportRun): Promise<'done' | 'stopped'> {
   try {
     if (run.provider === 'enhance') {
       await seedEnhance(run);
-      while (await enhanceStage(run));
+      while (await enhanceStage(run, 'dfs_refresh'));
+      await queuePostPhotos(run, await enhancePlaceIds(run));
+      while (await collectPostPhotos(run));
+      while (await enhanceStage(run, 'enhance'));
       await db.importRun.updateMany({ where: { id: run.id, lockedBy: WORKER }, data: { status: 'done', finishedAt: new Date(), lockedBy: null, lockedUntil: null } });
       log('enhance run done');
       return 'done';
@@ -58,6 +62,9 @@ async function work(run: ImportRun): Promise<'done' | 'stopped'> {
       while (await discoverGoogle(run));
     }
     while (await enrich(run));
+    // Records still short of photos: photos from the business's own Google posts.
+    await queuePostPhotos(run, (await db.importPlace.findMany({ where: { runId: run.id, status: { in: ['enriched', 'extracted'] } }, select: { id: true } })).map(p => p.id));
+    while (await collectPostPhotos(run));
     while (await extractStage(run));
     await check(run);
     await db.importRun.updateMany({ where: { id: run.id, lockedBy: WORKER }, data: { status: 'done', finishedAt: new Date(), lockedBy: null, lockedUntil: null } });

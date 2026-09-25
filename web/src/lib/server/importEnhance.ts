@@ -17,7 +17,18 @@ import { VAT_RATE } from '@/lib/pricing';
 // - the logo, cover and gallery are copied to our storage only where the listing has none (or only
 //   our category placeholder).
 
+/** Image candidates found on the site and the Google profile (review picker order). */
+const candidatesOf = (p: ImportPlace) => {
+  const crawl = (p.crawl ?? {}) as { imageCandidates?: { logos?: string[]; photos?: string[] }; editedFields?: string[] };
+  const c = crawl.imageCandidates ?? {};
+  const edited = new Set(crawl.editedFields ?? []);
+  // A choice staff made in review is final: no fallback images on top of it.
+  return { logos: edited.has('logoUrl') ? [] : c.logos ?? [], photos: edited.has('photoUrls') ? [] : c.photos ?? [] };
+};
+
 const netAgorot = (gross: number) => Math.round((gross * 100) / (1 + VAT_RATE));
+/** The profile gallery shows one large photo and four small ones: four gallery photos beside the cover. */
+const GALLERY_MIN = 4;
 const isPlaceholder = (url: string | null) => !url || Object.values(CATEGORY_IMAGE).includes(url);
 
 export async function enhanceBranch(branchId: string, p: ImportPlace, s: ImportSettings, actorId: string): Promise<{ filled: string[]; skipped?: string }> {
@@ -56,13 +67,13 @@ export async function enhanceBranch(branchId: string, p: ImportPlace, s: ImportS
   }
 
   // Images, only where missing.
-  const galleryEmpty = !Array.isArray(b.gallery) || b.gallery.length === 0;
-  const want = { logo: !b.logoUrl, cover: isPlaceholder(b.coverUrl), gallery: galleryEmpty };
+  const galleryCount = Array.isArray(b.gallery) ? b.gallery.length : 0;
+  const want = { logo: !b.logoUrl, cover: isPlaceholder(b.coverUrl), gallery: galleryCount < GALLERY_MIN };
   const imagesWanted = (s.useWebsiteImages || s.useProviderImages) && (want.logo || want.cover || want.gallery) && !!(p.logoUrl || p.photoUrls.length);
   // The worker copies images only when it has access to the image store (BLOB_READ_WRITE_TOKEN).
   if (imagesWanted && process.env.STORAGE_ADAPTER === 'none') filled.push('images_waiting_for_storage');
   else if (imagesWanted) {
-    const copied = await copyListingImages({ name: p.name, logoUrl: want.logo ? p.logoUrl : null, photoUrls: want.cover || want.gallery ? p.photoUrls : [] }, actorId, b.businessId, s.maxListingPhotos);
+    const copied = await copyListingImages({ name: p.name, logoUrl: want.logo ? p.logoUrl : null, photoUrls: want.cover || want.gallery ? p.photoUrls : [], fallbackPhotos: want.cover || want.gallery ? candidatesOf(p).photos : [], fallbackLogos: candidatesOf(p).logos }, actorId, b.businessId, s.maxListingPhotos);
     const [cover, ...rest] = copied.photos;
     if (want.logo && copied.logoUrl) set('logoUrl', copied.logoUrl, 'logo');
     if (want.cover && cover) {
@@ -70,7 +81,7 @@ export async function enhanceBranch(branchId: string, p: ImportPlace, s: ImportS
       data.coverAlt = p.name;
     }
     const gallery = want.cover ? rest : copied.photos;
-    if (want.gallery && gallery.length) set('gallery', gallery as unknown as Prisma.InputJsonValue, 'gallery');
+    if (want.gallery && gallery.length > galleryCount) set('gallery', gallery as unknown as Prisma.InputJsonValue, 'gallery');
   }
 
   // Categories and services.
@@ -122,8 +133,8 @@ async function pendingImagePairs(limit: number) {
     SELECT p.id AS place_id, b.id AS branch_id FROM import_places p JOIN branches b ON b.id = p.branch_id
     WHERE p.status IN ('approved', 'merged') AND b.is_claimed = false AND b.status = 'live'
       AND (p.logo_url IS NOT NULL OR cardinality(p.photo_urls) > 0)
-      AND (p.crawl->>'imageCopyTriedAt') IS NULL
-      AND ((b.logo_url IS NULL AND p.logo_url IS NOT NULL) OR ((b.cover_url IS NULL OR b.cover_url = ANY(${placeholders()}) OR jsonb_array_length(b.gallery) = 0) AND cardinality(p.photo_urls) > 0))
+      AND COALESCE(p.crawl->>'imageCopyVersion', '') <> '2'
+      AND ((b.logo_url IS NULL AND p.logo_url IS NOT NULL) OR ((b.cover_url IS NULL OR b.cover_url = ANY(${placeholders()}) OR jsonb_array_length(b.gallery) < 4) AND cardinality(p.photo_urls) > 0))
     LIMIT ${limit}`;
 }
 
@@ -132,12 +143,12 @@ export async function countPendingImages(): Promise<number> {
     SELECT count(*) AS n FROM import_places p JOIN branches b ON b.id = p.branch_id
     WHERE p.status IN ('approved', 'merged') AND b.is_claimed = false AND b.status = 'live'
       AND (p.logo_url IS NOT NULL OR cardinality(p.photo_urls) > 0)
-      AND (p.crawl->>'imageCopyTriedAt') IS NULL
-      AND ((b.logo_url IS NULL AND p.logo_url IS NOT NULL) OR ((b.cover_url IS NULL OR b.cover_url = ANY(${placeholders()}) OR jsonb_array_length(b.gallery) = 0) AND cardinality(p.photo_urls) > 0))`;
+      AND COALESCE(p.crawl->>'imageCopyVersion', '') <> '2'
+      AND ((b.logo_url IS NULL AND p.logo_url IS NOT NULL) OR ((b.cover_url IS NULL OR b.cover_url = ANY(${placeholders()}) OR jsonb_array_length(b.gallery) < 4) AND cardinality(p.photo_urls) > 0))`;
   return Number(r?.n ?? 0);
 }
 
-/** Copies images for a batch of waiting listings. Each listing is tried once (a broken image link is not retried forever). */
+/** Copies images for a batch of waiting listings. Each listing is tried once per version of this step (a broken image link is not retried forever). */
 export async function copyPendingImages(s: ImportSettings, actorId: string, batch = 6): Promise<{ done: number; logos: number; covers: number; left: number }> {
   const pairs = await pendingImagePairs(batch);
   let logos = 0;
@@ -145,8 +156,9 @@ export async function copyPendingImages(s: ImportSettings, actorId: string, batc
   await Promise.all(
     pairs.map(async ({ place_id, branch_id }) => {
       const [p, b] = await Promise.all([db.importPlace.findUniqueOrThrow({ where: { id: place_id } }), db.branch.findUniqueOrThrow({ where: { id: branch_id } })]);
-      const want = { logo: !b.logoUrl, cover: isPlaceholder(b.coverUrl), gallery: !Array.isArray(b.gallery) || b.gallery.length === 0 };
-      const copied = await copyListingImages({ name: p.name, logoUrl: want.logo ? p.logoUrl : null, photoUrls: want.cover || want.gallery ? p.photoUrls : [] }, actorId, b.businessId, s.maxListingPhotos);
+      const galleryCount = Array.isArray(b.gallery) ? b.gallery.length : 0;
+      const want = { logo: !b.logoUrl, cover: isPlaceholder(b.coverUrl), gallery: galleryCount < GALLERY_MIN };
+      const copied = await copyListingImages({ name: p.name, logoUrl: want.logo ? p.logoUrl : null, photoUrls: want.cover || want.gallery ? p.photoUrls : [], fallbackPhotos: want.cover || want.gallery ? candidatesOf(p).photos : [], fallbackLogos: candidatesOf(p).logos }, actorId, b.businessId, s.maxListingPhotos);
       const [cover, ...rest] = copied.photos;
       const data: Prisma.BranchUpdateInput = {};
       if (want.logo && copied.logoUrl) data.logoUrl = copied.logoUrl;
@@ -155,11 +167,11 @@ export async function copyPendingImages(s: ImportSettings, actorId: string, batc
         data.coverAlt = p.name;
       }
       const gallery = want.cover ? rest : copied.photos;
-      if (want.gallery && gallery.length) data.gallery = gallery as unknown as Prisma.InputJsonValue;
+      if (want.gallery && gallery.length > galleryCount) data.gallery = gallery as unknown as Prisma.InputJsonValue;
       if (Object.keys(data).length) await db.branch.update({ where: { id: b.id }, data });
       if (data.logoUrl) logos++;
       if (data.coverUrl) covers++;
-      await db.importPlace.update({ where: { id: p.id }, data: { crawl: { ...((p.crawl as object) ?? {}), imageCopyTriedAt: new Date().toISOString(), imageCopy: { logo: !!data.logoUrl, cover: !!data.coverUrl, photos: copied.photos.length } } as Prisma.InputJsonValue } });
+      await db.importPlace.update({ where: { id: p.id }, data: { crawl: { ...((p.crawl as object) ?? {}), imageCopyVersion: '2', imageCopyTriedAt: new Date().toISOString(), imageCopy: { logo: !!data.logoUrl, cover: !!data.coverUrl, photos: copied.photos.length } } as Prisma.InputJsonValue } });
     }),
   );
   return { done: pairs.length, logos, covers, left: await countPendingImages() };

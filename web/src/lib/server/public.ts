@@ -1,4 +1,5 @@
 import 'server-only';
+import { CATEGORIES } from '../catalog';
 import { Prisma, type RegionSlug } from '@prisma/client';
 import { cache } from 'react';
 import { BOOKING_LIVE } from '../features';
@@ -29,7 +30,7 @@ export interface ListingFilter {
 export interface ListingCard {
   id: string;
   slug: string;
-  href: string; // /:region/biz/:slug
+  href: string; // /:region/:category/:slug
   name: string;
   regionSlug: RegionSlug;
   cityName: string;
@@ -47,7 +48,15 @@ export interface ListingCard {
   hasMedicalResponsible: boolean;
 }
 
-export const profileHref = (b: { regionSlug: string; slug: string }) => `/${b.regionSlug}/biz/${b.slug}`;
+/** The listing's primary category: the first of its categories in catalog order. */
+export function primaryCategory(cats: Array<string | { categorySlug: string }> | undefined): string | null {
+  const have = new Set((cats ?? []).map(c => (typeof c === 'string' ? c : c.categorySlug)));
+  return CATEGORIES.find(c => have.has(c.slug))?.slug ?? null;
+}
+
+/** /:region/:category/:slug; a listing without categories keeps /:region/biz/:slug. */
+export const profileHref = (b: { regionSlug: string; slug: string; categories?: Array<string | { categorySlug: string }> }) =>
+  `/${b.regionSlug}/${primaryCategory(b.categories) ?? 'biz'}/${b.slug}`;
 
 function where(f: ListingFilter): Prisma.BranchWhereInput {
   const and: Prisma.BranchWhereInput[] = [PUBLIC_WHERE];

@@ -16,8 +16,9 @@ import { commit, release } from '@/lib/import/budget';
 import { classifyWebsite, KEEP_AS_WEBSITE } from '@/lib/import/websiteKind';
 import { composeDescription } from '@/lib/import/completeness';
 import { copyListingImages } from '@/lib/server/importMedia';
+import { profileHref } from '@/lib/server/public';
 
-export type OpResult = { ok: true; branchId?: string; slug?: string } | { ok: false; error: string };
+export type OpResult = { ok: true; branchId?: string; slug?: string; href?: string } | { ok: false; error: string };
 type Actor = { id: string };
 
 const OPEN_FOR_DECISION = ['ready', 'needs_review'] as const;
@@ -218,7 +219,7 @@ async function applyImages(
 ): Promise<{ logo: boolean; photos: number } | null> {
   if (!settings.useWebsiteImages || (!p.logoUrl && !p.photoUrls.length)) return null;
   if (!want.logo && !want.cover && !want.gallery) return null;
-  const copied = await copyListingImages({ name: p.name, logoUrl: want.logo ? p.logoUrl : null, photoUrls: want.cover || want.gallery ? p.photoUrls : [] }, actor.id, businessId, settings.maxListingPhotos);
+  const copied = await copyListingImages({ name: p.name, logoUrl: want.logo ? p.logoUrl : null, photoUrls: want.cover || want.gallery ? p.photoUrls : [], fallbackPhotos: want.cover || want.gallery ? candidatesOf(p).photos : [], fallbackLogos: candidatesOf(p).logos }, actor.id, businessId, settings.maxListingPhotos);
   const [cover, ...rest] = copied.photos;
   const data: Prisma.BranchUpdateInput = {};
   if (want.logo && copied.logoUrl) data.logoUrl = copied.logoUrl;
@@ -231,6 +232,15 @@ async function applyImages(
   if (Object.keys(data).length) await db.branch.update({ where: { id: branchId }, data });
   return { logo: !!data.logoUrl, photos: copied.photos.length };
 }
+
+/** Image candidates found on the site and the Google profile (review picker order). */
+const candidatesOf = (p: ImportPlace) => {
+  const crawl = (p.crawl ?? {}) as { imageCandidates?: { logos?: string[]; photos?: string[] }; editedFields?: string[] };
+  const c = crawl.imageCandidates ?? {};
+  const edited = new Set(crawl.editedFields ?? []);
+  // A choice staff made in review is final: no fallback images on top of it.
+  return { logos: edited.has('logoUrl') ? [] : c.logos ?? [], photos: edited.has('photoUrls') ? [] : c.photos ?? [] };
+};
 
 async function audit(actor: Actor, action: string, p: ImportPlace, meta: Record<string, unknown>) {
   await db.auditLog.create({ data: { actorId: actor.id, action, subjectType: 'import_place', subjectId: p.id, meta: meta as Prisma.InputJsonValue } });
@@ -276,6 +286,7 @@ export async function approvePlace(actor: Actor, id: string): Promise<OpResult> 
           hours: (p.hours ?? []) as Prisma.InputJsonValue,
           status: 'live',
           isClaimed: false,
+          onlineBooking: false, // no owner to take bookings until the listing is claimed
           coverUrl: CATEGORY_IMAGE[cats[0]] ?? null,
           coverAlt: CATEGORY_IMAGE[cats[0]] ? `${CATEGORIES.find(c => c.slug === cats[0])!.name} ב${city?.name ?? p.cityName ?? 'ישראל'}` : null,
           ...rating,
@@ -298,7 +309,7 @@ export async function approvePlace(actor: Actor, id: string): Promise<OpResult> 
     });
     const images = await applyImages(actor, p, branch.id, branch.businessId, settings, { logo: true, cover: true, gallery: true });
     await audit(actor, 'import_approve', p, { branchId: branch.id, images });
-    return { ok: true, branchId: branch.id, slug: branch.slug };
+    return { ok: true, branchId: branch.id, slug: branch.slug, href: profileHref({ regionSlug: branch.regionSlug, slug: branch.slug, categories: cats }) };
   } catch (e) {
     if (e instanceof Error && e.message === 'state') return { ok: false, error: 'state' };
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') return { ok: false, error: 'exists' };
@@ -365,7 +376,7 @@ export async function mergePlace(actor: Actor, id: string, branchId: string): Pr
   const galleryEmpty = !Array.isArray(b.gallery) || b.gallery.length === 0;
   const images = b.isClaimed ? null : await applyImages(actor, p, b.id, b.businessId, settings, { logo: !b.logoUrl, cover: !b.coverUrl || isCategoryImage(b.coverUrl), gallery: galleryEmpty });
   await audit(actor, 'import_merge', p, { branchId: b.id, images });
-  return { ok: true, branchId: b.id, slug: b.slug };
+  return { ok: true, branchId: b.id, slug: b.slug, href: profileHref({ regionSlug: b.regionSlug, slug: b.slug, categories: [...b.categories.map(c => c.categorySlug), ...cats] }) };
 }
 
 export async function rejectPlace(actor: Actor, id: string, note: string | null): Promise<OpResult> {

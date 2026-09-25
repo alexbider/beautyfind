@@ -8,6 +8,7 @@ import { completeness } from '@/lib/import/completeness';
 import { scoreMatch } from '@/lib/import/match';
 import type { ImportedTreatment } from '@/lib/import/rules';
 import { db } from '@/lib/server/db';
+import { profileHref } from '@/lib/server/public';
 import { googleAvailable } from '@/lib/server/googleDisplay';
 import { ReviewList, type ReviewRow } from './ReviewList';
 import styles from '../import.module.css';
@@ -62,7 +63,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: SP })
   const branchIds = [...new Set(rows.flatMap(r => [r.matchBranchId, r.branchId]).filter((x): x is string => !!x))];
   const dupIds = [...new Set(rows.map(r => r.dupOfId).filter((x): x is string => !!x))];
   const [branches, dups, observations] = await Promise.all([
-    db.branch.findMany({ where: { id: { in: branchIds } }, select: { id: true, name: true, slug: true, regionSlug: true, cityName: true, phone: true, email: true, websiteUrl: true, lat: true, lng: true, googlePlaceId: true } }),
+    db.branch.findMany({ where: { id: { in: branchIds } }, select: { id: true, name: true, slug: true, regionSlug: true, categories: { select: { categorySlug: true } }, cityName: true, phone: true, email: true, websiteUrl: true, lat: true, lng: true, googlePlaceId: true } }),
     db.importPlace.findMany({ where: { id: { in: dupIds } }, select: { id: true, name: true, address: true, phone: true, email: true, website: true, lat: true, lng: true, placeId: true, status: true } }),
     db.fieldObservation.findMany({
       where: { importPlaceId: { in: rows.map(r => r.id) }, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
@@ -128,9 +129,9 @@ export default async function ReviewPage({ searchParams }: { searchParams: SP })
       rendered: typeof crawl.rendered === 'number' ? crawl.rendered : 0,
       facebook: r.facebook,
       note: r.note,
-      match: mb ? { id: mb.id, name: mb.name, href: `/${mb.regionSlug}/biz/${mb.slug}`, city: mb.cityName, score: r.matchScore ?? 0, reasons: r.matchReasons } : null,
+      match: mb ? { id: mb.id, name: mb.name, href: profileHref(mb), city: mb.cityName, score: r.matchScore ?? 0, reasons: r.matchReasons } : null,
       dup: d ? { id: d.id, name: d.name, address: d.address, status: d.status, reasons: scoreMatch(me, { ...d, googlePlaceId: d.placeId }).reasons } : null,
-      created: created ? { name: created.name, href: `/${created.regionSlug}/biz/${created.slug}` } : null,
+      created: created ? { name: created.name, href: profileHref(created) } : null,
     };
   });
 
