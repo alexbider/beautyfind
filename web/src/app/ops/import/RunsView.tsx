@@ -211,9 +211,11 @@ function Settings({ settings, googleAvailable, googleMonth }: { settings: Import
           {flag('browserFallback', 'דפדפן כגיבוי לאתרים שדורשים JavaScript')}
           {flag('llmEnabled', 'חילוץ טיפולים עם Claude (עם ציטוט מהאתר)')}
           {flag('googleEnabled', 'Google: תצוגה נפרדת בלבד', !googleAvailable)}
+          {flag('requirePhoneOrEmail', 'טלפון או דוא״ל חובה לפרסום')}
           {flag('requireEmail', 'דוא״ל חובה לפרסום')}
           {flag('requirePhoneOrWebsite', 'טלפון או אתר חובה לפרסום')}
-          {flag('publishProviderRatings', 'פרסום דירוג הספק (רק אחרי אישור תנאי הספק)')}
+          {flag('publishProviderRatings', 'פרסום דירוג Google ומספר הביקורות')}
+          {flag('useProviderImages', 'לוגו ותמונה מפרופיל Google כשאין באתר העסק')}
           {flag('useWebsiteImages', 'לוגו ותמונות מאתר העסק (נבחרים בבדיקה, מועתקים באישור)')}
         </div>
         {!googleAvailable ? <p className={styles.note}>Google כבוי בשרת (GOOGLE_ENRICHMENT_ENABLED אינו true או שאין מפתח).</p> : null}

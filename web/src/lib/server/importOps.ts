@@ -262,7 +262,7 @@ export async function approvePlace(actor: Actor, id: string): Promise<OpResult> 
           coverUrl: CATEGORY_IMAGE[cats[0]] ?? null,
           coverAlt: CATEGORY_IMAGE[cats[0]] ? `${CATEGORIES.find(c => c.slug === cats[0])!.name} ב${city?.name ?? p.cityName ?? 'ישראל'}` : null,
           ...rating,
-          googlePlaceUrl: null,
+          googlePlaceUrl: p.googleMapsUri,
           googlePlaceId: googleId,
           googleSyncedAt: rating.googleRating != null ? new Date() : null,
           description: p.description,
@@ -306,6 +306,7 @@ export async function mergePlace(actor: Actor, id: string, branchId: string): Pr
     if (!claimed.count) throw new Error('state');
     const google = {
       googlePlaceId: b.googlePlaceId ?? googleId,
+      googlePlaceUrl: b.googlePlaceUrl ?? p.googleMapsUri,
       ...(withRating ? { googleRating: p.googleRating ?? b.googleRating, googleReviewCount: p.googleReviewCount ?? b.googleReviewCount, googleSyncedAt: new Date() } : {}),
     };
     if (b.isClaimed) {
@@ -524,7 +525,7 @@ export async function requalify(id: string) {
     phoneConflict: crawl.phoneConflict === true,
     hoursConflict: crawl.hoursConflict === true,
         websiteUnverified: crawl.siteBelongs === 'unknown' && !!p.website,
-  }, { requireEmail: rules.requireEmail, requirePhoneOrWebsite: rules.requirePhoneOrWebsite });
+  }, { requirePhoneOrEmail: rules.requirePhoneOrEmail, requireEmail: rules.requireEmail, requirePhoneOrWebsite: rules.requirePhoneOrWebsite });
   await db.importPlace.update({
     where: { id },
     data: {

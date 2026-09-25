@@ -26,9 +26,14 @@ export const ImportSettingsSchema = z.object({
   googleMonthlyUsd: z.number().min(0).max(10_000).default(20),
   googlePhotoCap: z.number().int().min(0).max(1000).default(0),
   // Publication
-  requireEmail: z.boolean().default(true), // the product owner's rule: email is mandatory to publish
-  requirePhoneOrWebsite: z.boolean().default(true),
-  publishProviderRatings: z.boolean().default(false), // until the source's terms are confirmed
+  // The product owner's rule (2026-09-25): a phone or an email is enough to publish.
+  requirePhoneOrEmail: z.boolean().default(true),
+  requireEmail: z.boolean().default(false),
+  requirePhoneOrWebsite: z.boolean().default(false),
+  // Google rating and review count (from DataForSEO) shown on listings with a link to the Google reviews.
+  publishProviderRatings: z.boolean().default(true),
+  // Logo and main photo from the business's Google profile (via DataForSEO), when its own site has none.
+  useProviderImages: z.boolean().default(true),
   // Logo and photos from the business's own website, chosen in review and copied on approval.
   useWebsiteImages: z.boolean().default(true),
   maxListingPhotos: z.number().int().min(0).max(20).default(6),

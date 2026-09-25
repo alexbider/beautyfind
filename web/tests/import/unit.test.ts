@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { describe, it } from 'node:test';
-import { buildSearch, dfsCategoriesFor, isFatalStatus, isTransientStatus, mapItem } from '../../src/lib/import/dataforseo';
+import { buildSearch, dfsCategoriesFor, googleMapsUrl, isFatalStatus, isTransientStatus, largerGoogleImage, mapItem } from '../../src/lib/import/dataforseo';
 import { dfsRunMaxUsd, estimateFor } from '../../src/lib/import/estimate';
 import { fieldMask, FieldMaskError, GOOGLE_FEATURES, retentionDays } from '../../src/lib/import/googleFields';
 import { isStrong, nameSimilarity, normName, scoreMatch, DUPLICATE_AT } from '../../src/lib/import/match';
@@ -177,12 +177,16 @@ describe('qualification', () => {
     assert.equal(q.status, 'needs_review');
     assert.ok(q.reasons.includes('phone_conflict') && q.reasons.includes('hours_conflict'));
   });
-  it('missing email blocks when required, not when relaxed', () => {
-    assert.equal(qualify({ ...base, email: null }).status, 'incomplete');
-    assert.equal(qualify({ ...base, email: null }, { requireEmail: false, requirePhoneOrWebsite: true }).status, 'ready');
+  it('a phone or an email is enough to publish (default rule)', () => {
+    assert.equal(qualify({ ...base, email: null }).status, 'ready');
+    assert.equal(qualify({ ...base, phone: null }).status, 'ready');
+    assert.equal(qualify({ ...base, phone: null, hasWebsite: false }).status, 'ready');
+    const none = qualify({ ...base, phone: null, email: null });
+    assert.equal(none.status, 'incomplete');
+    assert.ok(none.reasons.includes('no_contact'));
   });
-  it('no phone and no website blocks', () => {
-    assert.ok(qualify({ ...base, phone: null, hasWebsite: false }).reasons.includes('no_contact'));
+  it('email can still be made mandatory in settings', () => {
+    assert.equal(qualify({ ...base, email: null }, { requirePhoneOrEmail: true, requireEmail: true, requirePhoneOrWebsite: false }).status, 'incomplete');
   });
   it('no location blocks', () => assert.equal(qualify({ ...base, hasLocation: false }).status, 'incomplete'));
   it('closed businesses are closed', () => assert.equal(qualify({ ...base, businessStatus: 'CLOSED_PERMANENTLY' }).status, 'closed'));
@@ -371,5 +375,32 @@ describe('images', () => {
     assert.ok(!usable(imageInfo(png(40, 40))!, 'logo'));
     assert.ok(usable(imageInfo(png(240, 240))!, 'logo'));
     assert.equal(imageInfo(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"></svg>'.padEnd(64))), null);
+  });
+});
+
+describe('Google profile data', () => {
+  it('builds the Maps link from the cid, else the place id', () => {
+    assert.equal(googleMapsUrl({ cid: '12345', place_id: 'ChIJx', title: 'X' }), 'https://www.google.com/maps?cid=12345');
+    assert.equal(googleMapsUrl({ place_id: 'ChIJx', title: 'סלון' }), 'https://www.google.com/maps/search/?api=1&query=%D7%A1%D7%9C%D7%95%D7%9F&query_place_id=ChIJx');
+    assert.equal(googleMapsUrl({ title: 'X' }), null);
+  });
+  it('asks Google for larger image renditions', () => {
+    assert.equal(largerGoogleImage('https://lh5.googleusercontent.com/p/AF1Qip=w408-h306-k-no', 'photo'), 'https://lh5.googleusercontent.com/p/AF1Qip=w1600-h1200-k-no');
+    assert.equal(largerGoogleImage('https://lh3.googleusercontent.com/abc=s44-p-k-no', 'logo'), 'https://lh3.googleusercontent.com/abc=s400-k-no');
+    assert.equal(largerGoogleImage('https://noa.co.il/logo.png', 'logo'), 'https://noa.co.il/logo.png');
+  });
+  it('maps the profile link, images, rating and a provider email', () => {
+    const m = mapItem({ title: 'X', cid: '77', latitude: 32, longitude: 34.8, logo: 'https://lh3.googleusercontent.com/l=s44', main_image: 'https://lh5.googleusercontent.com/p/m=w408-h306-k-no', rating: { value: 4.8, votes_count: 212 }, contact_info: [{ type: 'mail', value: 'Info@X.co.il' }] })!;
+    assert.equal(m.googleMapsUrl, 'https://www.google.com/maps?cid=77');
+    assert.equal(m.website, null);
+    assert.ok(m.providerLogo && m.providerPhoto);
+    assert.deepEqual(m.rating, { value: 4.8, count: 212 });
+    assert.deepEqual(m.emails, ['Info@X.co.il']);
+  });
+  it('a Maps link typed as a website is still not a website of its own', () => assert.equal(classifyWebsite('https://www.google.com/maps?cid=77').kind, 'directory'));
+  it('Google rating and profile images are publishable by default', () => {
+    assert.equal(mayPublish('dataforseo', 'rating', { publishProviderRatings: true }), true);
+    assert.equal(mayPublish('dataforseo', 'photo', { useProviderImages: true }), true);
+    assert.equal(mayPublish('dataforseo', 'google_profile'), true);
   });
 });

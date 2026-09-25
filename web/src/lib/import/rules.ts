@@ -61,7 +61,7 @@ export const REVIEW = [
 
 export const REASON_NAMES: Record<string, string> = {
   no_phone: 'אין טלפון תקין',
-  no_contact: 'אין טלפון או אתר',
+  no_contact: 'אין טלפון או דוא״ל',
   no_location: 'אין מיקום או אזור שירות',
   phone_conflict: 'הטלפון באתר שונה מהטלפון במקור',
   hours_conflict: 'שעות הפתיחה באתר שונות מהמקור',
@@ -106,17 +106,20 @@ export interface QualifyInput {
 
 /** Minimum for publication; staff change these in the import settings. */
 export interface QualifyRules {
+  requirePhoneOrEmail: boolean;
   requireEmail: boolean;
   requirePhoneOrWebsite: boolean;
 }
-export const DEFAULT_RULES: QualifyRules = { requireEmail: true, requirePhoneOrWebsite: true };
+export const DEFAULT_RULES: QualifyRules = { requirePhoneOrEmail: true, requireEmail: false, requirePhoneOrWebsite: false };
 
 export function qualify(p: QualifyInput, rules: QualifyRules = DEFAULT_RULES): { status: 'ready' | 'needs_review' | 'incomplete' | 'closed'; reasons: string[] } {
   if (p.businessStatus === 'CLOSED_PERMANENTLY') return { status: 'closed', reasons: [] };
   const r: string[] = [];
   if (!p.name.trim()) r.push('no_name');
-  if (rules.requirePhoneOrWebsite && !p.phone && !p.hasWebsite) r.push('no_contact');
-  else if (!rules.requirePhoneOrWebsite && !p.phone && !p.email && !p.hasWebsite) r.push('no_contact');
+  // A way to reach the business: a phone or an email (default), or stricter/looser per settings.
+  if (rules.requirePhoneOrEmail && !p.phone && !p.email) r.push('no_contact');
+  else if (rules.requirePhoneOrWebsite && !p.phone && !p.hasWebsite) r.push('no_contact');
+  else if (!p.phone && !p.email && !p.hasWebsite) r.push('no_contact');
   if (!p.email) {
     if (rules.requireEmail) r.push('no_email');
   } else if (p.emailMx === false) r.push('email_no_mx');

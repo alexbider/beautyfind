@@ -23,7 +23,9 @@ export function UnclaimedProfile({ p, v }: { p: PublicProfile; v: ProfileView })
   const lowest = v.services.map(g => g.from).filter((x): x is NonNullable<typeof x> => !!x).sort((a, b) => amount(a) - amount(b))[0] ?? null;
   const insta = p.instagram ? (p.instagram.startsWith('http') ? p.instagram : `https://www.instagram.com/${p.instagram.replace(/^@/, '')}`) : null;
   const site = p.websiteUrl && p.websiteUrl !== insta ? p.websiteUrl : null;
-  const siteLabel = site ? (/facebook\.com/.test(site) ? 'פייסבוק' : /instagram\.com/.test(site) ? 'אינסטגרם' : site.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')) : null;
+  const siteLabel = site
+    ? /google\.[a-z.]+\/maps/.test(site) ? 'פרופיל Google' : /facebook\.com/.test(site) ? 'פייסבוק' : /instagram\.com/.test(site) ? 'אינסטגרם' : site.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')
+    : null;
   return (
     <main className={styles.bg}>
       <div className={styles.wrap}>
@@ -42,9 +44,16 @@ export function UnclaimedProfile({ p, v }: { p: PublicProfile; v: ProfileView })
               <h1 className={styles.h1}>{p.name}</h1>
               <p className={styles.sub}>{[full, p.region.name, cats].filter(Boolean).join(' · ')}</p>
               <span className={styles.tag}>לא מאומת</span>
+              {v.google ? (
+                <p className={styles.rating}>
+                  <a href={v.googleHref} target="_blank" rel="noopener nofollow">
+                    <span aria-hidden="true">★</span> <span dir="ltr" className="ltr">{v.google.rating.toFixed(1)}</span> ב־Google · {v.google.count.toLocaleString('he-IL')} ביקורות
+                  </a>
+                </p>
+              ) : null}
               {site || insta ? (
                 <p className={styles.links}>
-                  {site ? <a href={site} target="_blank" rel="noopener nofollow" dir="ltr" className="ltr">{siteLabel}</a> : null}
+                  {site ? <a href={site} target="_blank" rel="noopener nofollow" dir={siteLabel?.startsWith('פרופיל') ? undefined : 'ltr'} className={siteLabel?.startsWith('פרופיל') ? undefined : 'ltr'}>{siteLabel}</a> : null}
                   {insta ? <a href={insta} target="_blank" rel="noopener nofollow">אינסטגרם</a> : null}
                 </p>
               ) : null}

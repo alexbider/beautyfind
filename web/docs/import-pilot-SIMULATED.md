@@ -7,7 +7,7 @@
 > directory and Instagram links given as the website, a repeated place and a record without coordinates).
 > They say nothing about how many Israeli businesses a live run will find.
 
-Generated 2026-09-25T07:18:32.100Z in 1.9s. Pricing reference: $0.012 per request + $0.00036 per record (mock billed at these rates).
+Generated 2026-09-25T07:51:08.742Z in 1.9s. Pricing reference: $0.012 per request + $0.00036 per record (mock billed at these rates).
 
 ## SIMULATED run
 
@@ -15,37 +15,36 @@ Generated 2026-09-25T07:18:32.100Z in 1.9s. Pricing reference: $0.012 per reques
 - Provider requests: 1; simulated spend $0.0480; reserved at end $0.0000
 - Spend entries: committed 0.0480
 - Unique businesses staged: 100
-- With an email: 30 (30%)
-- Ready to publish without edits: 24; conflicts sent to review: 5
+- With an email: 34 (34%)
+- Ready to publish without edits: 85; conflicts sent to review: 5
 - Services: 216 on 36 records (144 with a price)
-- Images: 36 records with a logo, 36 with photos (108 photos chosen)
+- Images: 58 records with a logo, 58 with photos (142 photos chosen)
 - Social profile kept as the website: 4
 - Fixture sites that redirect to the cloud metadata address: 8; of those crawled, refused as unsafe: 6 (records marked unsafe: 6)
 
 ## SIMULATED records by status
 
-- ready: 24
-- needs_review: 5
-- incomplete: 70
+- ready: 85
+- needs_review: 9
+- incomplete: 5
 - merged: 1
 
 ## SIMULATED reasons
 
-- no_email: 70
+- no_contact: 5
 - phone_conflict: 5
-- no_contact: 3
+- email_domain_mismatch: 4
 
 ## SIMULATED website outcomes
 
-- no_website: 33
+- google_profile: 36
 - ok: 30
+- robots: 6
 - unsafe: 6
 - no_email: 6
-- unrelated: 6
 - blocked: 6
-- robots: 6
+- unrelated: 6
 - social_profile: 4
-- directory: 3
 
 ## What a live pilot needs
 

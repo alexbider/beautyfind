@@ -70,7 +70,7 @@ export async function check(run: ImportRun) {
         hoursConflict: crawl.hoursConflict === true,
         websiteUnverified: crawl.siteBelongs === 'unknown' && !!p.website,
       },
-      { requireEmail: s.requireEmail, requirePhoneOrWebsite: s.requirePhoneOrWebsite },
+      { requirePhoneOrEmail: s.requirePhoneOrEmail, requireEmail: s.requireEmail, requirePhoneOrWebsite: s.requirePhoneOrWebsite },
     );
     updates.push({
       id: p.id,

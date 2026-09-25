@@ -191,7 +191,12 @@ export function fakeItems(n: number, sitePort: number | null, opts: { siteShare?
     // The provider sometimes gives a directory page or a social profile instead of a website.
     if (!url && i % 13 === 5) url = `https://www.easy.co.il/page/${1000 + i}`;
     if (!url && i % 13 === 8) url = `https://www.instagram.com/sim_salon_${i}/`;
+    // Google profile images (logo and main photo) served by the fixture image host.
+    const gimg = sitePort != null && i % 3 === 0 ? `http://gimg.test:${sitePort}` : null;
     items.push({
+      logo: gimg ? `${gimg}/logo.png` : undefined,
+      main_image: gimg ? `${gimg}/img/photo-3.png` : undefined,
+      contact_info: i % 17 === 4 ? [{ type: 'mail', value: `hello${i}@mail.test`, source: 'business' }] : undefined,
       type: 'business_listing',
       title: `סלון דוגמה ${i + 1}`,
       category: i % 2 ? 'Nail salon' : 'Beauty salon',
@@ -211,6 +216,7 @@ export function fakeItems(n: number, sitePort: number | null, opts: { siteShare?
       last_updated_time: '2026-09-01 10:00:00 +00:00',
     });
   }
+  if (sitePort != null) sites.push({ host: 'gimg.test', kind: 'full' });
   // Same place twice (a provider repeat): must end up as one record.
   if (n > 3) items.push({ ...items[1] });
   // No coordinates: cannot be placed, skipped.

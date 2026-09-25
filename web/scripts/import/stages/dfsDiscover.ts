@@ -12,10 +12,12 @@
 import { Prisma, type ImportRun, type RegionSlug } from '@prisma/client';
 import { CITIES } from '../../../src/lib/catalog';
 import { BudgetExceeded, commit, release, reserve, uncertain, withCaps } from '../../../src/lib/import/budget';
-import { buildSearch, dfsCategoriesFor, DFS_MAX_CATEGORIES, DFS_MAX_OFFSET, mapItem, type DfsItem, type MappedListing } from '../../../src/lib/import/dataforseo';
+import { buildSearch, dfsCategoriesFor, DFS_MAX_CATEGORIES, DFS_MAX_OFFSET, largerGoogleImage, mapItem, type DfsItem, type MappedListing } from '../../../src/lib/import/dataforseo';
+import { cleanEmail } from '../../../src/lib/import/email';
 import { CITY_AREA, resolveCity } from '../../../src/lib/import/geo';
 import { dfsPageMaxUsd, pricing, toMicros } from '../../../src/lib/import/pricing';
 import type { RunScope } from '../../../src/lib/import/rules';
+import type { ImportSettings } from '../../../src/lib/import/settings';
 import { expiryFor, mayPublish } from '../../../src/lib/import/sourcePolicy';
 import { bump, db, heartbeat, log, setStats, settings, stagedCount, Stop } from '../ctx';
 import { dfsSearch } from '../providers/dataforseo';
@@ -67,7 +69,8 @@ export async function seedDfs(run: ImportRun, scope: RunScope) {
 }
 
 /** Stores one listing. Returns new | seen | skipped. Staff-edited fields are never overwritten. */
-async function upsertListing(run: ImportRun, m: MappedListing, publishRatings: boolean): Promise<'new' | 'seen' | 'skipped'> {
+async function upsertListing(run: ImportRun, m: MappedListing, s: ImportSettings): Promise<'new' | 'seen' | 'skipped'> {
+  const publishRatings = s.publishProviderRatings;
   if (m.lat == null || m.lng == null) return 'skipped'; // cannot be placed on a region or map
   const now = new Date();
   const where = resolveCity(m.locality, m.lat, m.lng);
@@ -82,11 +85,15 @@ async function upsertListing(run: ImportRun, m: MappedListing, publishRatings: b
     sourceUrl: m.sourceUrl,
     retrievedAt: now,
     sourceUpdatedAt: m.sourceUpdatedAt,
+    // Google rating and number of reviews; a business without reviews has none (0 reviews).
     googleRating: m.rating?.value ?? null,
-    googleReviewCount: m.rating?.count ?? null,
+    googleReviewCount: m.rating?.count ?? 0,
     ratingProvider: m.rating ? 'dataforseo' : null,
+    googleMapsUri: m.googleMapsUrl,
   };
-  const existing = await db.importPlace.findUnique({ where: { placeId: m.sourceKey }, select: { id: true, categories: true, crawl: true, phone: true, website: true, hours: true, status: true, bookingUrl: true, whatsapp: true, instagram: true, facebook: true } });
+  const email = m.emails.map(e => cleanEmail(e)).find((e): e is string => !!e) ?? null;
+  const providerImages = { logo: m.providerLogo ? largerGoogleImage(m.providerLogo, 'logo') : null, photo: m.providerPhoto ? largerGoogleImage(m.providerPhoto, 'photo') : null };
+  const existing = await db.importPlace.findUnique({ where: { placeId: m.sourceKey }, select: { id: true, categories: true, crawl: true, phone: true, email: true, website: true, websiteKind: true, hours: true, status: true, reviewedById: true, bookingUrl: true, whatsapp: true, instagram: true, facebook: true, logoUrl: true, photoUrls: true } });
   let id: string;
   let result: 'new' | 'seen';
   if (existing) {
@@ -98,10 +105,28 @@ async function upsertListing(run: ImportRun, m: MappedListing, publishRatings: b
     }
     if (!edited.has('categories')) data.categories = [...new Set([...existing.categories, ...m.categories])];
     if (!edited.has('phone') && !existing.phone && m.phone) data.phone = m.phone;
-    if (!edited.has('website') && !existing.website && m.website) {
+    if (!edited.has('email') && !existing.email && email) {
+      data.email = email;
+      data.emailSource = 'provider';
+      data.emailStatus = 'syntax_valid';
+    }
+    const onlyMaps = !existing.website || existing.websiteKind === 'google_profile';
+    if (!edited.has('website') && onlyMaps && m.website) {
       data.website = m.website;
       data.websiteKind = m.websiteKind;
       data.siteDomain = m.siteDomain;
+    } else if (!edited.has('website') && !existing.website && m.googleMapsUrl) {
+      data.website = m.googleMapsUrl;
+      data.websiteKind = 'google_profile';
+    }
+    if (s.useProviderImages && !edited.has('logoUrl') && !existing.logoUrl && providerImages.logo) data.logoUrl = providerImages.logo;
+    if (s.useProviderImages && !edited.has('photoUrls') && !existing.photoUrls.length && providerImages.photo) data.photoUrls = [providerImages.photo];
+    data.crawl = { ...((existing.crawl as object) ?? {}), providerImages } as Prisma.InputJsonValue;
+    // Seen again: open records go back through the website stage and the checks with fresh provider data.
+    // Staff decisions (approved, merged, rejected, or anything a reviewer touched) stay as they are.
+    if (!existing.reviewedById && ['enriched', 'extracted', 'ready', 'needs_review', 'incomplete', 'duplicate', 'closed'].includes(existing.status)) {
+      data.status = 'found';
+      data.reasons = [];
     }
     if (!existing.bookingUrl && m.bookingUrl) data.bookingUrl = m.bookingUrl;
     if (!existing.whatsapp && m.whatsapp) data.whatsapp = m.whatsapp;
@@ -124,16 +149,22 @@ async function upsertListing(run: ImportRun, m: MappedListing, publishRatings: b
         regionSlug: where.regionSlug as RegionSlug,
         phoneRaw: m.phoneRaw,
         phone: m.phone,
-        website: m.website,
-        websiteKind: m.websiteKind,
+        // No website of its own: the Google profile stands in, so the listing still links somewhere real.
+        website: m.website ?? m.googleMapsUrl,
+        websiteKind: m.website ? m.websiteKind : m.googleMapsUrl ? 'google_profile' : null,
         siteDomain: m.siteDomain,
+        email,
+        emailSource: email ? 'provider' : null,
+        emailStatus: email ? 'syntax_valid' : null,
+        logoUrl: s.useProviderImages ? providerImages.logo : null,
+        photoUrls: s.useProviderImages && providerImages.photo ? [providerImages.photo] : [],
         bookingUrl: m.bookingUrl,
         whatsapp: m.whatsapp,
         instagram: m.social?.network === 'instagram' ? m.social.url : null,
         facebook: m.social?.network === 'facebook' ? m.social.url : null,
         hours: (m.hours ?? undefined) as Prisma.InputJsonValue | undefined,
         categories: m.categories,
-        crawl: { claimedOnProvider: m.claimedOnProvider, rejectedWebsite: m.rejectedWebsite?.url },
+        crawl: { claimedOnProvider: m.claimedOnProvider, rejectedWebsite: m.rejectedWebsite?.url, providerImages },
       },
     });
     id = created.id;
@@ -146,7 +177,7 @@ async function upsertListing(run: ImportRun, m: MappedListing, publishRatings: b
     obs.push({
       importPlaceId: id, field, value: value as Prisma.InputJsonValue, provider: 'dataforseo', sourceUrl: m.sourceUrl, retrievedAt: now,
       sourceUpdatedAt: m.sourceUpdatedAt, confidence: 0.7, retention: expiryFor('dataforseo') ? 'until_expiry' : 'permanent', expiresAt: expiryFor('dataforseo'),
-      publishable: mayPublish('dataforseo', field, { publishProviderRatings: publishRatings }),
+      publishable: mayPublish('dataforseo', field, { publishProviderRatings: publishRatings, useProviderImages: s.useProviderImages }),
     });
   add('name', m.name);
   add('address', m.address);
@@ -155,7 +186,9 @@ async function upsertListing(run: ImportRun, m: MappedListing, publishRatings: b
   add('booking', m.bookingUrl);
   add('whatsapp', m.whatsapp);
   add('social', m.social);
-  for (const img of m.providerImages) add('photo', img); // provider photo policy: not publishable
+  add('logo', providerImages.logo);
+  add('photo', providerImages.photo);
+  add('google_profile', m.googleMapsUrl);
   add('hours', m.hours);
   add('categories', m.categories.length ? m.categories : null);
   add('rating', m.rating);
@@ -261,7 +294,7 @@ export async function discoverDfs(run: ImportRun): Promise<boolean> {
       skipped++;
       continue;
     }
-    const r = await upsertListing(run, m, s.publishProviderRatings);
+    const r = await upsertListing(run, m, s);
     if (r === 'new') fresh++;
     else if (r === 'seen') seen++;
     else skipped++;

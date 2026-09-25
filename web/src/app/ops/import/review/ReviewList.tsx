@@ -76,13 +76,13 @@ const MATCH_WHY: Record<string, string> = {
   similar_name: 'שם דומה', same_address: 'אותה כתובת', nearby: 'קרוב מאוד', far_apart: 'רחוקים זה מזה',
 };
 const TYPE_NAME: Record<string, string> = { clinic: 'קליניקה רפואית', medspa: 'קוסמטיקה ורפואה', cosmetics: 'קוסמטיקה', salon: 'סלון' };
-const KIND_NAME: Record<string, string> = { own: 'אתר העסק', social: 'פרופיל ברשת חברתית', linkhub: 'דף קישורים' };
+const KIND_NAME: Record<string, string> = { own: 'אתר העסק', social: 'פרופיל ברשת חברתית', linkhub: 'דף קישורים', google_profile: 'פרופיל Google (אין אתר אחר)' };
 const SKIP_NAME: Record<string, string> = {
-  directory: 'הקישור הוא אינדקס או אתר צד שלישי, לא נשמר', unrelated: 'האתר שייך לעסק אחר, לא נשמר', social_profile: 'פרופיל ברשת חברתית, לא נסרק', linkhub: 'דף קישורים, לא נמצא אתר עסק',
+  directory: 'הקישור הוא אינדקס או אתר צד שלישי, לא נשמר', google_profile: 'פרופיל Google, לא נסרק', unrelated: 'האתר שייך לעסק אחר, לא נשמר', social_profile: 'פרופיל ברשת חברתית, לא נסרק', linkhub: 'דף קישורים, לא נמצא אתר עסק',
   no_website: 'אין אתר', social: 'רק רשת חברתית', robots: 'האתר חוסם סריקה ב־robots.txt', unreachable: 'האתר לא נטען', blocked: 'האתר חסם את הגישה', off_topic: 'לא עסק יופי',
   no_email: 'נקרא, לא נמצא דוא״ל', failed: 'האתר לא נטען', unsafe: 'כתובת לא בטוחה, לא נסרקה', not_modified: 'לא השתנה מאז הבדיקה הקודמת', skipped_complete: 'לא נדרש, הפרטים כבר מלאים',
 };
-const EMAIL_SRC: Record<string, string> = { manual: 'הוזן ידנית', site: 'מהאתר', social: 'מדף הפייסבוק או האינסטגרם', search: 'מחיפוש ברשת', provider: 'מהספק' };
+const EMAIL_SRC: Record<string, string> = { manual: 'הוזן ידנית', site: 'מהאתר', social: 'מדף הפייסבוק או האינסטגרם', search: 'מחיפוש ברשת', provider: 'מפרופיל Google' };
 const EMAIL_STATUS: Record<string, string> = { dns_valid: 'הדומיין מקבל דואר', syntax_valid: 'תקין בתחביר בלבד', published: 'מופיע באתר העסק' };
 const PROVIDER: Record<string, string> = { dataforseo: 'DataForSEO', google: 'Google', website: 'אתר העסק', llm: 'חילוץ AI', staff: 'צוות', owner: 'בעל העסק' };
 const FIELD: Record<string, string> = {
@@ -135,6 +135,8 @@ function Evidence({ r }: { r: ReviewRow }) {
   );
 }
 
+const isGoogle = (u: string) => /googleusercontent\.com|ggpht\.com/.test(u);
+
 function Images({ r }: { r: ReviewRow }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -157,7 +159,7 @@ function Images({ r }: { r: ReviewRow }) {
       </button>
       {open ? (
         <div className={styles.stack} style={{ marginTop: 8 }}>
-          <p className={styles.note}>התמונות שנבחרו יועתקו לאתר שלנו באישור. הראשונה תהיה תמונת השער. בעל העסק יוכל להחליף אותן.</p>
+          <p className={styles.note}>התמונות שנבחרו יועתקו לאתר שלנו באישור. הראשונה תהיה תמונת השער. תמונות מסומנות Google הגיעו מפרופיל Google של העסק. בעל העסק יוכל להחליף אותן.</p>
           {r.imageCandidates.logos.length ? (
             <fieldset className={styles.thumbs}>
               <legend className={styles.label}>לוגו</legend>
@@ -165,6 +167,7 @@ function Images({ r }: { r: ReviewRow }) {
                 <label key={u} className={styles.thumb} data-on={logo === u || undefined}>
                   <input type="radio" name={`logo-${r.id}`} checked={logo === u} onChange={() => setLogo(u)} />
                   {thumb(u)}
+                  {isGoogle(u) ? <span className={styles.srcTag}>Google</span> : null}
                 </label>
               ))}
               <label className={styles.thumb} data-on={logo === null || undefined}>
@@ -181,6 +184,7 @@ function Images({ r }: { r: ReviewRow }) {
                   <input type="checkbox" checked={photos.includes(u)} onChange={() => toggle(u)} />
                   {thumb(u)}
                   {photos[0] === u ? <span className={styles.coverTag}>שער</span> : null}
+                  {isGoogle(u) ? <span className={styles.srcTag}>Google</span> : null}
                 </label>
               ))}
             </fieldset>
@@ -311,7 +315,7 @@ function Record({ r, onDone, selected, onSelect, google }: { r: ReviewRow; onDon
           {r.address}
           {r.cityName ? ` · ${r.cityName}` : ''}
           {r.regionSlug ? ` · ${regionName(r.regionSlug)}` : ''}
-          {r.googleRating ? <> · {PROVIDER[r.ratingProvider ?? 'google'] ?? r.ratingProvider} <span className={styles.ltr}>{r.googleRating.toFixed(1)} ({r.googleReviewCount ?? 0})</span></> : null}
+          {r.googleRating ? <> · Google <span className={styles.ltr}>★{r.googleRating.toFixed(1)} ({r.googleReviewCount ?? 0} ביקורות)</span></> : <> · Google: אין ביקורות</>}
           {' · '}מקור: {PROVIDER[r.provider] ?? r.provider}
         </div>
         <div className={styles.reasons}>

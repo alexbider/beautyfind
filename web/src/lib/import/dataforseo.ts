@@ -175,7 +175,9 @@ export interface MappedListing {
   whatsapp: string | null;
   social: { network: string; url: string } | null;
   siteDomain: string | null;
-  providerImages: string[]; // provider (Google-sourced) images: observed, never published
+  googleMapsUrl: string | null; // the business's Google profile (Maps), used as the website when there is no other
+  providerLogo: string | null; // Google profile logo (via DataForSEO)
+  providerPhoto: string | null; // Google profile main photo (via DataForSEO)
   categories: string[];
   primaryType: string | null;
   types: string[];
@@ -185,6 +187,24 @@ export interface MappedListing {
   sourceUrl: string | null;
   sourceUpdatedAt: Date | null;
   emails: string[]; // only from contact_info entries of type email
+}
+
+/** The business's Google Maps profile: by cid when known (stable), else by place id. */
+export function googleMapsUrl(item: Pick<DfsItem, 'cid' | 'place_id' | 'title'>): string | null {
+  if (item.cid && /^\d+$/.test(item.cid)) return `https://www.google.com/maps?cid=${item.cid}`;
+  if (item.place_id) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.title ?? 'place')}&query_place_id=${encodeURIComponent(item.place_id)}`;
+  return null;
+}
+
+/**
+ * Google profile images come in small sizes (for example "=w408-h306-k-no" or "=s44-p-k-no"). Asks for
+ * a larger rendition of the same image; other URLs are returned unchanged.
+ */
+export function largerGoogleImage(url: string, as: 'logo' | 'photo'): string {
+  if (!/googleusercontent\.com/.test(url)) return url;
+  const size = as === 'logo' ? 's400' : 'w1600-h1200';
+  if (/=[swh]\d+[^/]*$/.test(url)) return url.replace(/=[swh]\d+[^/]*$/, `=${size}-k-no`);
+  return `${url}=${size}-k-no`;
 }
 
 /** Maps one item. Returns null when it lacks the minimum identity (a name and an id). */
@@ -215,7 +235,9 @@ export function mapItem(item: DfsItem): MappedListing | null {
     whatsapp: w.kind === 'whatsapp' ? (w.phone ?? null) : null,
     social: w.kind === 'social' && w.url ? { network: w.network!, url: w.url } : null,
     siteDomain: w.kind === 'own' && w.url ? new URL(w.url).hostname.replace(/^www\./, '').toLowerCase() : null,
-    providerImages: [item.logo, item.main_image].filter((x): x is string => typeof x === 'string' && /^https?:\/\//.test(x)),
+    googleMapsUrl: googleMapsUrl(item),
+    providerLogo: typeof item.logo === 'string' && /^https?:\/\//.test(item.logo) ? item.logo : null,
+    providerPhoto: typeof item.main_image === 'string' && /^https?:\/\//.test(item.main_image) ? item.main_image : null,
     categories: ourCategoriesFrom(item),
     primaryType: item.category_ids?.[0] ?? null,
     types,

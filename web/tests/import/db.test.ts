@@ -130,9 +130,11 @@ describe('import database behaviour', { skip }, () => {
     const r = await db.importRun.findUniqueOrThrow({ where: { id: run.id } });
     assert.ok(r.spentMicros > 0n && r.spentMicros <= r.budgetMicros!);
     assert.equal(r.reservedMicros, 0n);
-    // Provider ratings are observed but not publishable by default.
+    // The Google rating is publishable by default; a business with no website gets its Google profile link.
     const rating = await db.fieldObservation.findFirst({ where: { importPlace: { runId: run.id }, field: 'rating' } });
-    assert.equal(rating?.publishable, false);
+    assert.equal(rating?.publishable, true);
+    const noSite = await db.importPlace.findFirst({ where: { runId: run.id, websiteKind: 'google_profile' } });
+    assert.ok(noSite?.website?.startsWith('https://www.google.com/maps?cid='));
   });
 
   it('a rerun never overwrites fields staff edited', async () => {

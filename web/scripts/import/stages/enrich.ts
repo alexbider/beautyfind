@@ -120,7 +120,13 @@ async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap: number
     });
   const reject = (url: string, why: string) =>
     obs.push({ importPlaceId: p.id, field: 'website', value: url, provider: 'website', sourceUrl: url, retrievedAt: now, confidence: 0.1, publishable: false, status: `rejected_${why}`, evidence: why === 'unrelated' ? 'The site shows another business (different phone and name)' : 'Directory or third-party page, not the business website' });
+  // Google profile logo and photo (from discovery): candidates in every case, used when the site has none.
+  const prov = (crawl0.providerImages ?? {}) as { logo?: string | null; photo?: string | null };
+  const provCandidates = { logos: prov.logo ? [prov.logo] : [], photos: prov.photo ? [prov.photo] : [] };
+  // No usable website of its own: the Google profile link stands in.
+  const mapsFallback = { website: p.googleMapsUri ?? null, websiteKind: p.googleMapsUri ? 'google_profile' : null, siteDomain: null };
   const save = async (data: Prisma.ImportPlaceUpdateInput, extra: Record<string, unknown>) => {
+    extra.imageCandidates ??= provCandidates;
     await db.$transaction([
       db.fieldObservation.deleteMany({ where: { importPlaceId: p.id, provider: 'website' } }),
       db.fieldObservation.createMany({ data: obs }),
@@ -128,7 +134,8 @@ async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap: number
     ]);
   };
 
-  if (!p.website) return save({}, { site: crawl0.rejectedWebsite ? 'directory' : 'no_website' });
+  if (!p.website) return save(p.googleMapsUri ? mapsFallback : {}, { site: crawl0.rejectedWebsite ? 'directory' : 'no_website' });
+  if (p.websiteKind === 'google_profile') return save({}, { site: 'google_profile' });
 
   // 1. What is the website?
   const w = classifyWebsite(p.website);
@@ -140,7 +147,7 @@ async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap: number
       reject(p.website, 'directory');
       return save(
         {
-          website: null, websiteKind: null, siteDomain: null,
+          ...mapsFallback,
           bookingUrl: kind === 'booking' && !p.bookingUrl ? w.url : undefined,
           whatsapp: kind === 'whatsapp' && !p.whatsapp ? (w.phone ?? null) : undefined,
         },
@@ -182,7 +189,7 @@ async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap: number
 
   // Already complete from the provider: nothing the site could add is missing.
   const haveTreatments = Array.isArray(p.treatments) && p.treatments.length > 0;
-  if (p.email && p.phone && p.hours && haveTreatments && (p.logoUrl || !s.useWebsiteImages)) return save({}, { site: 'skipped_complete' });
+  if (p.email && p.phone && p.hours && haveTreatments && p.photoUrls.length > 1 && (p.logoUrl || !s.useWebsiteImages)) return save({}, { site: 'skipped_complete' });
 
   // 3. Read the site and check it belongs to this business.
   const { summary, fromCache } = await siteFor(site, runBrowser);
@@ -191,12 +198,13 @@ async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap: number
   const belongs = summary.status === 'ok' || summary.status === 'no_email' ? siteBelongs(p, summary, domain) : 'not_read';
   if (belongs === 'no' && !edited.has('website')) {
     reject(site, 'unrelated');
-    return save({ website: null, websiteKind: null, siteDomain: null }, { site: 'unrelated', rejectedWebsite: site, siteNames: summary.names });
+    return save(mapsFallback, { site: 'unrelated', rejectedWebsite: site, siteNames: summary.names });
   }
   const website = site;
 
   // Email: contact-page and own-domain first; the site builder's credit is already excluded.
   const ranked = rankEmails(summary.emails.filter(e => cleanEmail(e.value)), website);
+  // A staff-entered email always stays; otherwise the site's best email, else the provider's.
   let email: string | null = p.emailSource === 'manual' ? p.email : null;
   let emailStatus: string | null = p.emailSource === 'manual' ? p.emailStatus : null;
   let emailMx: boolean | null = p.emailMx;
@@ -258,18 +266,23 @@ async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap: number
   const siteCats = [...perCat.entries()].filter(([, c]) => c.priced >= 1 || c.n >= 2).map(([k]) => k);
   const categories = edited.has('categories') ? undefined : [...new Set([...p.categories, ...siteCats])];
 
-  // Logo and photos: candidates from the site; staff choose in review, copied on approval.
-  const logoUrl = s.useWebsiteImages ? (p.logoUrl ?? summary.logos[0]?.value ?? null) : p.logoUrl;
-  const photoUrls = s.useWebsiteImages && !p.photoUrls.length ? summary.photos.slice(0, s.maxListingPhotos).map(f => f.value) : p.photoUrls;
+  // Logo and photos: the site's own first, then the Google profile's. Staff choose in review; the
+  // choice is copied to our storage on approval. A choice staff already made is kept.
+  const siteLogos = s.useWebsiteImages ? summary.logos.map(f => f.value) : [];
+  const sitePhotos = s.useWebsiteImages ? summary.photos.map(f => f.value) : [];
+  const provLogos = s.useProviderImages ? provCandidates.logos : [];
+  const provPhotos = s.useProviderImages ? provCandidates.photos : [];
+  const logoUrl = edited.has('logoUrl') ? p.logoUrl : (siteLogos[0] ?? provLogos[0] ?? null);
+  const photoUrls = edited.has('photoUrls') ? p.photoUrls : [...new Set([...sitePhotos, ...provPhotos])].slice(0, s.maxListingPhotos);
 
   await save(
     {
       website,
       websiteKind: 'own',
       siteDomain: domain,
-      email,
-      emailSource: p.emailSource === 'manual' ? 'manual' : email ? 'site' : null,
-      emailStatus,
+      email: email ?? (p.emailSource === 'provider' ? p.email : null),
+      emailSource: p.emailSource === 'manual' ? 'manual' : email ? 'site' : p.emailSource === 'provider' && p.email ? 'provider' : null,
+      emailStatus: email ? emailStatus : p.emailSource === 'provider' ? p.emailStatus : null,
       emailMx,
       emails: [...new Set([...p.emails, ...summary.emails.map(e => e.value)])],
       phone,
@@ -294,7 +307,7 @@ async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap: number
       phoneConflict,
       hoursConflict: !sameHours(providerHours, hoursFromSite),
       services: { total: summary.services.length, priced: summary.services.filter(f => f.value.priceNis != null).length },
-      imageCandidates: { logos: summary.logos.map(f => f.value), photos: summary.photos.map(f => f.value) },
+      imageCandidates: { logos: [...new Set([...summary.logos.map(f => f.value), ...provCandidates.logos])], photos: [...new Set([...summary.photos.map(f => f.value), ...provCandidates.photos])] },
       text: summary.text,
       extractError: null,
     },

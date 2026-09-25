@@ -44,3 +44,6 @@
 .services { margin: 0 0 18px; }
 .h2 { margin: 0 0 4px; font-size: 17px; font-weight: 700; }
 .note { margin: 0 0 10px; font-size: 13px; color: var(--muted); text-wrap: pretty; }
+.rating { margin: 8px 0 0; font-size: 14px; font-weight: 700; }
+.rating a { color: var(--navy); }
+.rating span[aria-hidden] { color: #E0A21B; }
