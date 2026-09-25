@@ -1,7 +1,7 @@
 # One-off import maintenance: checks that the import secrets exist (names only, never values), checks
 # the DataForSEO category ids with one live call, and removes old runs of the given provider.
 # Runs when this file changes on main, or by hand from the Actions tab. Results appear as annotations.
-# Last change: re-check after fixing five category ids (2026-09-25).
+# Last change: add the run report (2026-09-25).
 name: Import maintenance
 
 on:
@@ -38,7 +38,7 @@ jobs:
       HAS_ANTHROPIC: ${{ secrets.ANTHROPIC_API_KEY != '' }}
       HAS_PROXY: ${{ secrets.CRAWL_PROXY != '' }}
       HAS_BRAVE: ${{ secrets.BRAVE_SEARCH_API_KEY != '' }}
-      CLEANUP: ${{ github.event_name == 'push' && 'google' || inputs.cleanup_provider }}
+      CLEANUP: ${{ inputs.cleanup_provider }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -57,8 +57,10 @@ jobs:
           s ANTHROPIC_API_KEY "$HAS_ANTHROPIC" "not set (optional)"
           [ "$HAS_PROXY" = "true" ] && echo "::warning title=secret CRAWL_PROXY::still set, no longer used, can be deleted" || true
           [ "$HAS_BRAVE" = "true" ] && echo "::warning title=secret BRAVE_SEARCH_API_KEY::still set, no longer used, can be deleted" || true
+      - name: Run report (counts only)
+        run: npx tsx scripts/import/report.ts
       - name: DataForSEO categories
-        if: env.DATAFORSEO_LOGIN != ''
+        if: env.DATAFORSEO_LOGIN != '' && github.event_name == 'workflow_dispatch'
         run: |
           set +e
           npm run -s import:dfs-categories -- --confirm > cats.txt 2>&1
