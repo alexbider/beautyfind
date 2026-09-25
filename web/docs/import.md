@@ -50,6 +50,32 @@ Builds unclaimed listings from public business data at low cost. Records are sta
 - Google content is shown in a separate, attributed panel and never copied into listing fields, exports, logs or analytics. Only the place id is kept permanently and the location for 30 days (`google_display`, deleted on expiry by the sweep that runs before each lookup and at the start of each worker).
 - Photos: off (`googlePhotoCap` 0). When enabled, one photo URI per lookup, capped per day, never stored.
 
+**Listing template.** Every field the listing page shows has a source, in this order:
+
+| Field | Sources |
+|---|---|
+| Phone, address, map pin | DataForSEO, then the site |
+| Email | The site (contact page first), then DataForSEO contact info |
+| Website | Own site, else social profile, else the Google profile link |
+| WhatsApp, Instagram, Facebook, booking link | The site, the Google profile's reservation link |
+| Opening hours | DataForSEO, then the site (JSON-LD, then hours written as text: "א'-ה' 09:00-19:00", "Sun-Thu…") |
+| Logo, cover, gallery | The site's images, then the Google profile logo and main photo; picked in review, copied on approval |
+| Description | The Google profile description, then the site's own (JSON-LD, meta description), else a factual summary built from the record (categories, city, services, rating) |
+| Services and prices | The Google profile's services, the site's price lists and menus |
+| Categories | Provider categories, plus categories the site clearly offers |
+| Google rating and review count, Google profile link | DataForSEO |
+| Wheelchair access, free parking | Google attributes, then explicit statements on the site |
+| FAQs | The site's FAQ (JSON-LD FAQPage or question/answer blocks) |
+| Waze link | Built from the map pin |
+
+The review screen shows each record's completeness and what is still missing.
+
+**Enhancing published listings** (`stages/enhance.ts`, `src/lib/server/importEnhance.ts`). A separate run type, started from `/ops/import` ("העשרת עסקים שפורסמו") or for chosen records on the review screen's approved tab. For live listings that came from the import and that no owner has claimed:
+1. optionally refreshes the DataForSEO data (one request per up to 500 listings, filtered by cid, reserved against the run budget);
+2. reads each business's website again;
+3. fills only what the listing is missing: contact details, hours, description, FAQs, accessibility, parking, Waze and Google profile links, logo, cover and gallery (copied to storage), categories, services and missing prices. The Google rating is refreshed. Nothing that is already on a listing is overwritten, and claimed listings are never touched.
+The worker needs `BLOB_READ_WRITE_TOKEN` as a GitHub secret to copy images; without it the run fills everything else and reports how many listings are waiting for images.
+
 **Checks** (`stages/check.ts`). Over every open record, not only this run's:
 
 - Duplicates: automatic only for the same place id, or a shared phone/email plus a matching name. A shared domain or a chain's central phone never merges two branches. Weaker matches go to review.
@@ -88,6 +114,7 @@ Prices are versioned in `src/lib/import/pricing.ts` (override with `IMPORT_PRICI
 | `ANTHROPIC_API_KEY`, `IMPORT_MODEL` | GitHub secret / variable | Optional LLM step only. |
 | `IMPORT_BROWSER` | GitHub variable | `1` installs Chromium for the optional browser fallback. |
 | `IMPORT_PRICING_JSON` | GitHub variable / Vercel env | Optional price override. |
+| `BLOB_READ_WRITE_TOKEN` | GitHub secret | Lets the worker copy images when enhancing published listings. The same value as in Vercel. |
 
 No secret is ever sent to the browser or printed in logs.
 

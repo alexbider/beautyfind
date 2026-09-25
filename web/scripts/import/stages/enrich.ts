@@ -35,6 +35,10 @@ interface SiteSummary {
   logos: Fact[];
   photos: Fact[];
   names: string[]; // site names (JSON-LD, og:site_name, titles) for the ownership check
+  description?: Fact | null;
+  faqs?: Fact<{ q: string; a: string }>[];
+  accessible?: Fact<boolean> | null;
+  freeParking?: Fact<boolean> | null;
   outLinks: string[];
   pages: CrawlOutcome['pages'];
   text?: string; // kept only when the optional LLM step is on
@@ -57,6 +61,10 @@ function summarize(c: CrawlOutcome, keepText: boolean): SiteSummary {
     logos: uniq(all.flatMap(f => f.logos), f => f.value).slice(0, 4),
     photos: uniq(all.flatMap(f => f.photos), f => f.value).slice(0, 24),
     names: [...new Set(all.map(f => f.siteName).filter((x): x is string => !!x))].slice(0, 6),
+    description: all.find(f => f.description)?.description ?? null,
+    faqs: uniq(all.flatMap(f => f.faqs ?? []), f => f.value.q).slice(0, 20),
+    accessible: all.find(f => f.accessible)?.accessible ?? null,
+    freeParking: all.find(f => f.freeParking)?.freeParking ?? null,
     outLinks: [...new Set(all.flatMap(f => f.outLinks ?? []))].slice(0, 40),
     pages: c.pages,
     text: keepText ? all.map(f => f.text).join('\n\n').slice(0, 24_000) : undefined,
@@ -106,7 +114,8 @@ const sameHours = (a: DayHours[] | null, b: DayHours[] | null) => !a || !b || JS
 
 type Obs = Prisma.FieldObservationCreateManyInput;
 
-async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap: number }) {
+/** Reads one record's website. keepStatus: for approved records being enhanced (their status stays). */
+export async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap: number }, opts: { keepStatus?: boolean } = {}) {
   const s = await settings();
   const crawl0 = (p.crawl ?? {}) as Record<string, unknown>;
   const edited = new Set((crawl0.editedFields ?? []) as string[]);
@@ -130,7 +139,7 @@ async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap: number
     await db.$transaction([
       db.fieldObservation.deleteMany({ where: { importPlaceId: p.id, provider: 'website' } }),
       db.fieldObservation.createMany({ data: obs }),
-      db.importPlace.update({ where: { id: p.id }, data: { status: 'enriched', enrichedAt: new Date(), ...data, crawl: { ...crawl0, ...extra } as Prisma.InputJsonValue } }),
+      db.importPlace.update({ where: { id: p.id }, data: { ...(opts.keepStatus ? {} : { status: 'enriched' as const }), enrichedAt: new Date(), ...data, crawl: { ...crawl0, ...extra } as Prisma.InputJsonValue } }),
     ]);
   };
 
@@ -231,6 +240,10 @@ async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap: number
   if (summary.hours) add('hours', summary.hours, 0.8);
   if (summary.address) add('address', summary.address, 0.7);
   for (const f of summary.services) add('service', f, f.value.priceNis != null ? 0.8 : 0.6);
+  if (summary.description) add('description', summary.description, 0.7);
+  for (const f of summary.faqs ?? []) add('faq', f, 0.8);
+  if (summary.accessible) add('accessible', summary.accessible, 0.7);
+  if (summary.freeParking) add('free_parking', summary.freeParking, 0.7);
   for (const f of summary.logos) add('logo', f, 0.6);
   for (const f of summary.photos) add('photo', f, 0.5);
 
@@ -296,6 +309,11 @@ async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap: number
       categories,
       logoUrl,
       photoUrls,
+      // Template fields the provider did not give: the site's own words and statements.
+      description: edited.has('description') || p.description ? undefined : summary.description?.value ?? undefined,
+      faqs: Array.isArray(p.faqs) && p.faqs.length ? undefined : (summary.faqs ?? []).length ? ((summary.faqs ?? []).map(f => f.value) as Prisma.InputJsonValue) : undefined,
+      accessible: p.accessible ?? (summary.accessible ? true : undefined),
+      freeParking: p.freeParking ?? (summary.freeParking ? true : undefined),
     },
     {
       site: summary.status,

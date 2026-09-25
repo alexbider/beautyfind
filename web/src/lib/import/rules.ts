@@ -13,6 +13,13 @@ export const RunScope = z.object({
 });
 export type RunScope = z.infer<typeof RunScope>;
 
+/** Scope of an "enhance published listings" run. */
+export const EnhanceScope = z.object({
+  branchIds: z.array(z.uuid()).max(5000).optional(), // none: every live, unclaimed listing that came from the import
+  refresh: z.boolean(), // re-read the provider's data (paid, one request per 1,000 listings)
+});
+export type EnhanceScope = z.infer<typeof EnhanceScope>;
+
 export interface DayHours {
   open: string;
   close: string;

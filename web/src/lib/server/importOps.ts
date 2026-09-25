@@ -9,11 +9,12 @@ import { VAT_RATE } from '@/lib/pricing';
 import { cleanEmail, emailDomain, pickEmail } from '@/lib/import/email';
 import { DUPLICATE_AT, isStrong, MatchPool, POSSIBLE_MATCH_AT, type PoolItem } from '@/lib/import/match';
 import { normalizeIlPhone } from '@/lib/import/phone';
-import { BLOCKING, qualify, RunScope, type ImportedTreatment } from '@/lib/import/rules';
+import { BLOCKING, EnhanceScope, qualify, RunScope, type ImportedTreatment } from '@/lib/import/rules';
 import { loadSettings, parseSettings, type ImportSettings } from '@/lib/import/settings';
 import { toMicros } from '@/lib/import/pricing';
 import { commit, release } from '@/lib/import/budget';
 import { classifyWebsite, KEEP_AS_WEBSITE } from '@/lib/import/websiteKind';
+import { composeDescription } from '@/lib/import/completeness';
 import { copyListingImages } from '@/lib/server/importMedia';
 
 export type OpResult = { ok: true; branchId?: string; slug?: string } | { ok: false; error: string };
@@ -25,7 +26,7 @@ const OPEN_FOR_DECISION = ['ready', 'needs_review'] as const;
 
 export interface CreateRunInput {
   label: string;
-  provider: 'dataforseo' | 'google';
+  provider: 'dataforseo' | 'google' | 'enhance';
   scope: unknown;
   recordLimit: number;
   budgetUsd: number;
@@ -33,6 +34,22 @@ export interface CreateRunInput {
 }
 
 export async function createRun(actor: Actor, input: CreateRunInput) {
+  if (input.provider === 'enhance') {
+    const scope = EnhanceScope.parse(input.scope);
+    const s = await loadSettings(db);
+    if (s.killSwitch && scope.refresh) throw new Error('kill_switch');
+    return db.importRun.create({
+      data: {
+        label: input.label.trim().slice(0, 80) || 'העשרת עסקים שפורסמו',
+        provider: 'enhance',
+        scope,
+        recordLimit: Math.max(1, Math.min(100_000, Math.round(input.recordLimit))),
+        budgetMicros: toMicros(Math.max(0, Math.min(10_000, input.budgetUsd))),
+        maxRequests: 0,
+        createdById: actor.id,
+      },
+    });
+  }
   const scope = RunScope.parse(input.scope);
   if (input.provider === 'google' && !scope.nearby && !scope.text) throw new Error('no_source');
   if (!scope.all && !scope.cities.length) throw new Error('no_cities');
@@ -265,7 +282,10 @@ export async function approvePlace(actor: Actor, id: string): Promise<OpResult> 
           googlePlaceUrl: p.googleMapsUri,
           googlePlaceId: googleId,
           googleSyncedAt: rating.googleRating != null ? new Date() : null,
-          description: p.description,
+          description: p.description ?? composeDescription(p),
+          faqs: Array.isArray(p.faqs) ? (p.faqs as Prisma.InputJsonValue) : [],
+          accessible: p.accessible === true,
+          freeParking: p.freeParking === true,
           wazeUrl: `https://waze.com/ul?ll=${p.lat},${p.lng}&navigate=yes`,
           websiteUrl: p.website,
           instagram: p.instagram,
@@ -323,7 +343,11 @@ export async function mergePlace(actor: Actor, id: string, branchId: string): Pr
         email: b.email ?? p.email,
         websiteUrl: b.websiteUrl ?? p.website,
         instagram: b.instagram ?? p.instagram,
-        description: b.description ?? p.description,
+        description: b.description ?? p.description ?? composeDescription(p),
+        faqs: (!Array.isArray(b.faqs) || !b.faqs.length) && Array.isArray(p.faqs) ? (p.faqs as Prisma.InputJsonValue) : undefined,
+        accessible: b.accessible || p.accessible === true,
+        freeParking: b.freeParking || p.freeParking === true,
+        wazeUrl: b.wazeUrl ?? (p.lat != null ? `https://waze.com/ul?ll=${p.lat},${p.lng}&navigate=yes` : null),
         lat: b.lat ?? p.lat,
         lng: b.lng ?? p.lng,
         hours: emptyHours && p.hours ? (p.hours as Prisma.InputJsonValue) : undefined,

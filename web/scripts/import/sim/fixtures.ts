@@ -152,12 +152,15 @@ export async function startSites(sites: FixtureSite[]): Promise<{ port: number; 
     const footer = s.kind === 'agency_footer' ? '<footer>האתר נבנה ע"י סטודיו דוגמה studio@example-agency.test</footer>' : '';
     const imgs = '<header><img class="logo" src="/logo.png" alt="לוגו"></header><img src="/img/photo-1.png" width="960" height="640" alt="חדר טיפולים"><img src="/img/photo-2.png" width="960" height="640" alt="עמדת עבודה"><img src="/img/tiny.png" alt="אייקון">';
     const menu = '<h2>הטיפולים שלנו</h2><ul><li>טיפול פנים קלאסי</li><li>הרמת ריסים</li><li>עיצוב גבות</li><li>מניקור</li><li>אודות</li></ul>';
-    if (path === '/' || path === '') return void res.end(page(name, `${imgs}<h1>${name}</h1>${nav}<p>ברוכים הבאים</p>${menu}${footer}`));
+    const faq = `<script type="application/ld+json">${JSON.stringify({ '@type': 'FAQPage', mainEntity: [{ '@type': 'Question', name: 'האם צריך לקבוע תור?', acceptedAnswer: { '@type': 'Answer', text: 'כן, בטלפון או בוואטסאפ.' } }] })}</script>`;
+    const meta = '<meta name="description" content="סלון יופי שכונתי עם טיפולי פנים, ריסים וגבות ומניקור, צוות מקצועי ויחס אישי.">';
+    if (path === '/' || path === '') return void res.end(page(name, `${meta}${faq}${imgs}<h1>${name}</h1>${nav}<p>ברוכים הבאים</p>${menu}${footer}`));
     if (path === '/צור-קשר') {
       const email = s.kind === 'no_email' || !s.email ? '' : `<a href="mailto:${s.email}">${s.email}</a>`;
       const phone = s.phone ? `<a href="tel:${s.phone}">${s.phone}</a>` : '';
       const ld = `<script type="application/ld+json">${JSON.stringify({ '@type': 'BeautySalon', name, telephone: s.phone, openingHoursSpecification: [{ dayOfWeek: 'Sunday', opens: '09:00', closes: '18:00' }] })}</script>`;
-      return void res.end(page('צור קשר', `<h1>צור קשר</h1>${email} ${phone} <a href="https://wa.me/972501234567">וואטסאפ</a>${ld}${footer}`));
+      const hours = '<h3>שעות פתיחה</h3><p>א\'-ה\' 09:00-19:00</p><p>שישי 08:00-13:00</p><p>שבת סגור</p><p>חניה חינם ליד הסלון</p>';
+      return void res.end(page('צור קשר', `<h1>צור קשר</h1>${email} ${phone} <a href="https://wa.me/972501234567">וואטסאפ</a>${s.kind === 'no_email' ? hours : ld}${footer}`));
     }
     if (path === '/מחירון') return void res.end(page('מחירון', '<h1>מחירון</h1><p>טיפול פנים קלאסי ₪250</p><p>מניקור ג׳ל 120 ₪</p><div>הרמת ריסים</div><div>₪ 220</div><p>פדיקור 60 דק׳ - 180 ש"ח</p>'));
     res.writeHead(404).end();
@@ -196,6 +199,9 @@ export function fakeItems(n: number, sitePort: number | null, opts: { siteShare?
     items.push({
       logo: gimg ? `${gimg}/logo.png` : undefined,
       main_image: gimg ? `${gimg}/img/photo-3.png` : undefined,
+      description: i % 4 === 1 ? `סלון דוגמה ${i + 1} מציע טיפולי פנים, מניקור ועיצוב גבות באווירה נעימה.` : undefined,
+      attributes: i % 5 === 0 ? { available_attributes: { accessibility: ['has_wheelchair_accessible_entrance'], parking: ['has_free_parking_lot'] } } : undefined,
+      services: i % 6 === 2 ? [{ title: 'טיפול פנים', price: { current: 280, currency: 'ILS' } }, { title: 'מניקור ג׳ל', price: null }] : undefined,
       contact_info: i % 17 === 4 ? [{ type: 'mail', value: `hello${i}@mail.test`, source: 'business' }] : undefined,
       type: 'business_listing',
       title: `סלון דוגמה ${i + 1}`,

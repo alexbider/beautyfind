@@ -95,6 +95,36 @@ async function main() {
   const refused = await db.importPlace.count({ where: { runId: run.id, crawl: { path: ['site'], equals: 'unsafe' } } });
   const refusedSites = await db.siteFetch.count({ where: { domain: { in: sites.filter(x => x.kind === 'redirect_private').map(x => x.host) }, status: 'unsafe' } });
 
+  // Template coverage: how many staged records have each listing field.
+  const { completeness, TEMPLATE_FIELDS } = await import('../../src/lib/import/completeness');
+  const all = await db.importPlace.findMany({ where: { runId: run.id } });
+  const cov = TEMPLATE_FIELDS.map(f => `${f.label} ${all.filter(p => f.ok(p)).length}`);
+  const avg = all.length ? Math.round(all.reduce((n, p) => n + completeness(p).score, 0) / all.length) : 0;
+
+  // Enhancing published listings: approve five ready records, blank fields on their listings the way an
+  // older listing would look, run an enhancement run and see what comes back.
+  const { approvePlace } = await import('../../src/lib/server/importOps');
+  const { seedEnhance, enhanceStage } = await import('./stages/enhance');
+  const actor = await db.user.findFirst({ where: { opsRole: 'ops' }, select: { id: true } });
+  let enhanceLine = 'skipped (no ops user in the local database)';
+  if (actor) {
+    const ready = await db.importPlace.findMany({ where: { runId: run.id, status: 'ready', logoUrl: { not: null } }, take: 5 });
+    const branchIds: string[] = [];
+    for (const p of ready) {
+      const r = await approvePlace(actor, p.id);
+      if (r.ok && r.branchId) branchIds.push(r.branchId);
+    }
+    await db.branch.updateMany({ where: { id: { in: branchIds } }, data: { hours: [], description: null, logoUrl: null, coverUrl: null, gallery: [], email: null, accessible: false, freeParking: false, faqs: [] } });
+    const er = await db.importRun.create({ data: { label: 'SIMULATED enhance', provider: 'enhance', scope: { branchIds, refresh: true }, recordLimit: branchIds.length, budgetMicros: 500_000n, maxRequests: 0, createdById: actor.id, status: 'running', lockedBy: ctx.WORKER, lockedUntil: new Date(Date.now() + ctx.LEASE_MS) } });
+    await seedEnhance(er);
+    while (await enhanceStage(er));
+    const done = await db.importRun.findUniqueOrThrow({ where: { id: er.id } });
+    const c = ((done.stats as { counters?: Record<string, number> }).counters ?? {}) as Record<string, number>;
+    const branches = await db.branch.findMany({ where: { id: { in: branchIds } } });
+    enhanceLine = `${branchIds.length} listings approved and blanked; after enhancing: logo ${branches.filter(b => b.logoUrl).length}, cover ${branches.filter(b => b.coverUrl).length}, hours ${branches.filter(b => Array.isArray(b.hours) && b.hours.length).length}, description ${branches.filter(b => b.description).length}, email ${branches.filter(b => b.email).length} | counters ${Object.entries(c).map(([k, v]) => `${k} ${v}`).join(', ')} | spent $${(Number(done.spentMicros) / 1e6).toFixed(4)}`;
+    await db.importRun.update({ where: { id: er.id }, data: { status: 'done', lockedBy: null, lockedUntil: null } });
+  }
+
   const lines = [
     '# SIMULATED import pilot',
     '',
@@ -131,6 +161,14 @@ async function main() {
     '## SIMULATED website outcomes',
     '',
     ...siteOut.map(x => `- ${x.site ?? 'not checked'}: ${Number(x.n)}`),
+    '',
+    '## SIMULATED listing template coverage',
+    '',
+    `Average completeness ${avg}%. Records with each field: ${cov.join(', ')}.`,
+    '',
+    '## SIMULATED enhancement of published listings',
+    '',
+    enhanceLine,
     '',
     '## What a live pilot needs',
     '',

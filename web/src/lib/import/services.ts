@@ -68,3 +68,16 @@ export function durationOf(line: string): number | null {
 }
 
 export const serviceKey = (name: string) => name.toLowerCase().replace(/[^a-z0-9א-ת]+/g, ' ').trim();
+
+/** Adds services not yet listed and fills missing prices; never drops or overwrites a price. */
+export function mergeTreatments<T extends { name: string; priceNis?: number | null }>(current: unknown, found: T[]): T[] {
+  const list = (Array.isArray(current) ? current : []) as T[];
+  const byKey = new Map(list.map(t => [serviceKey(t.name), { ...t }]));
+  for (const t of found) {
+    const k = serviceKey(t.name);
+    const cur = byKey.get(k);
+    if (!cur) byKey.set(k, t);
+    else if (cur.priceNis == null && t.priceNis != null) Object.assign(cur, t);
+  }
+  return [...byKey.values()].slice(0, 80);
+}

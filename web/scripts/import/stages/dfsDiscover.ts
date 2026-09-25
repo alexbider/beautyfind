@@ -14,6 +14,7 @@ import { CITIES } from '../../../src/lib/catalog';
 import { BudgetExceeded, commit, release, reserve, uncertain, withCaps } from '../../../src/lib/import/budget';
 import { buildSearch, dfsCategoriesFor, DFS_MAX_CATEGORIES, DFS_MAX_OFFSET, largerGoogleImage, mapItem, type DfsItem, type MappedListing } from '../../../src/lib/import/dataforseo';
 import { cleanEmail } from '../../../src/lib/import/email';
+import { mergeTreatments } from '../../../src/lib/import/services';
 import { CITY_AREA, resolveCity } from '../../../src/lib/import/geo';
 import { dfsPageMaxUsd, pricing, toMicros } from '../../../src/lib/import/pricing';
 import type { RunScope } from '../../../src/lib/import/rules';
@@ -68,8 +69,8 @@ export async function seedDfs(run: ImportRun, scope: RunScope) {
   log(`seeded ${tasks.length} DataForSEO search tasks (${ids.length} categories)`);
 }
 
-/** Stores one listing. Returns new | seen | skipped. Staff-edited fields are never overwritten. */
-async function upsertListing(run: ImportRun, m: MappedListing, s: ImportSettings): Promise<'new' | 'seen' | 'skipped'> {
+/** Stores one listing. keepRun: refreshing a known record (enhance runs) without moving it to this run. */
+export async function upsertListing(run: ImportRun, m: MappedListing, s: ImportSettings, opts: { keepRun?: boolean } = {}): Promise<'new' | 'seen' | 'skipped'> {
   const publishRatings = s.publishProviderRatings;
   if (m.lat == null || m.lng == null) return 'skipped'; // cannot be placed on a region or map
   const now = new Date();
@@ -90,15 +91,17 @@ async function upsertListing(run: ImportRun, m: MappedListing, s: ImportSettings
     googleReviewCount: m.rating?.count ?? 0,
     ratingProvider: m.rating ? 'dataforseo' : null,
     googleMapsUri: m.googleMapsUrl,
+    priceLevel: m.priceLevel,
   };
+  const providerTreatments = m.services.map(x => ({ ...x, durationMin: null, sourceText: 'Google profile services', sourceUrl: m.googleMapsUrl ?? undefined }));
   const email = m.emails.map(e => cleanEmail(e)).find((e): e is string => !!e) ?? null;
   const providerImages = { logo: m.providerLogo ? largerGoogleImage(m.providerLogo, 'logo') : null, photo: m.providerPhoto ? largerGoogleImage(m.providerPhoto, 'photo') : null };
-  const existing = await db.importPlace.findUnique({ where: { placeId: m.sourceKey }, select: { id: true, categories: true, crawl: true, phone: true, email: true, website: true, websiteKind: true, hours: true, status: true, reviewedById: true, bookingUrl: true, whatsapp: true, instagram: true, facebook: true, logoUrl: true, photoUrls: true } });
+  const existing = await db.importPlace.findUnique({ where: { placeId: m.sourceKey }, select: { id: true, categories: true, crawl: true, phone: true, email: true, website: true, websiteKind: true, hours: true, status: true, reviewedById: true, bookingUrl: true, whatsapp: true, instagram: true, facebook: true, logoUrl: true, photoUrls: true, description: true, accessible: true, freeParking: true, treatments: true } });
   let id: string;
   let result: 'new' | 'seen';
   if (existing) {
     const edited = new Set(((existing.crawl as { editedFields?: string[] } | null)?.editedFields ?? []) as string[]);
-    const data: Prisma.ImportPlaceUncheckedUpdateInput = { ...provider, runId: run.id };
+    const data: Prisma.ImportPlaceUncheckedUpdateInput = { ...provider, ...(opts.keepRun ? {} : { runId: run.id }) };
     if (edited.has('name')) {
       delete data.name;
       delete data.nameNorm;
@@ -133,6 +136,10 @@ async function upsertListing(run: ImportRun, m: MappedListing, s: ImportSettings
     if (m.social?.network === 'instagram' && !existing.instagram) data.instagram = m.social.url;
     if (m.social?.network === 'facebook' && !existing.facebook) data.facebook = m.social.url;
     if (!existing.hours && m.hours) data.hours = m.hours as unknown as Prisma.InputJsonValue;
+    if (!edited.has('description') && !existing.description && m.description) data.description = m.description;
+    if (existing.accessible == null && m.accessible != null) data.accessible = m.accessible;
+    if (existing.freeParking == null && m.freeParking != null) data.freeParking = m.freeParking;
+    if (providerTreatments.length) data.treatments = mergeTreatments(existing.treatments, providerTreatments) as unknown as Prisma.InputJsonValue;
     await db.importPlace.update({ where: { id: existing.id }, data });
     id = existing.id;
     result = 'seen';
@@ -163,6 +170,10 @@ async function upsertListing(run: ImportRun, m: MappedListing, s: ImportSettings
         instagram: m.social?.network === 'instagram' ? m.social.url : null,
         facebook: m.social?.network === 'facebook' ? m.social.url : null,
         hours: (m.hours ?? undefined) as Prisma.InputJsonValue | undefined,
+        description: m.description,
+        accessible: m.accessible,
+        freeParking: m.freeParking,
+        treatments: providerTreatments.length ? (providerTreatments as unknown as Prisma.InputJsonValue) : undefined,
         categories: m.categories,
         crawl: { claimedOnProvider: m.claimedOnProvider, rejectedWebsite: m.rejectedWebsite?.url, providerImages },
       },
@@ -192,6 +203,10 @@ async function upsertListing(run: ImportRun, m: MappedListing, s: ImportSettings
   add('hours', m.hours);
   add('categories', m.categories.length ? m.categories : null);
   add('rating', m.rating);
+  add('description', m.description);
+  add('accessible', m.accessible);
+  add('free_parking', m.freeParking);
+  for (const x of m.services) add('service', x);
   for (const e of m.emails) add('email', e);
   if (m.rejectedWebsite)
     obs.push({

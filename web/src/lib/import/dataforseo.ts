@@ -10,6 +10,7 @@
 
 import { CATEGORIES } from '../catalog';
 import { normName } from './match';
+import { matchService } from './services';
 import { classifyWebsite, KEEP_AS_WEBSITE, type WebsiteKind } from './websiteKind';
 import { normalizeIlPhone } from './phone';
 import type { DayHours } from './rules';
@@ -117,6 +118,11 @@ export interface DfsItem {
   work_time?: { work_hours?: { timetable?: Record<string, Array<{ open?: { hour?: number; minute?: number }; close?: { hour?: number; minute?: number } }> | null>; current_status?: string } };
   contact_info?: Array<{ type?: string; value?: string; source?: string }>;
   check_url?: string;
+  attributes?: { available_attributes?: Record<string, string[]> | null; unavailable_attributes?: Record<string, string[]> | null } | null;
+  services?: Array<{ title?: string; category?: string; snippet?: string; price?: { current?: number; regular?: number; currency?: string; is_price_range?: boolean; displayed_price?: string } | null }> | null;
+  local_business_links?: Array<{ type?: string; title?: string; url?: string }> | null;
+  price_level?: string;
+  rating_distribution?: Record<string, number> | null;
   last_updated_time?: string;
   first_seen?: string;
   [key: string]: unknown;
@@ -175,6 +181,11 @@ export interface MappedListing {
   whatsapp: string | null;
   social: { network: string; url: string } | null;
   siteDomain: string | null;
+  description: string | null; // the owner's description on the Google profile
+  accessible: boolean | null; // from Google attributes; null when not stated
+  freeParking: boolean | null;
+  priceLevel: string | null;
+  services: Array<{ name: string; priceNis: number | null; priceType: 'fixed' | 'from'; category: string | null; isMedical: boolean }>;
   googleMapsUrl: string | null; // the business's Google profile (Maps), used as the website when there is no other
   providerLogo: string | null; // Google profile logo (via DataForSEO)
   providerPhoto: string | null; // Google profile main photo (via DataForSEO)
@@ -187,6 +198,30 @@ export interface MappedListing {
   sourceUrl: string | null;
   sourceUpdatedAt: Date | null;
   emails: string[]; // only from contact_info entries of type email
+}
+
+/** Google attribute lists ("has_wheelchair_accessible_entrance", "has_free_parking_lot"...) to our flags. */
+export function attributeFlags(a: DfsItem['attributes']): { accessible: boolean | null; freeParking: boolean | null } {
+  const yes = Object.values(a?.available_attributes ?? {}).flat();
+  const no = Object.values(a?.unavailable_attributes ?? {}).flat();
+  const acc = (xs: string[]) => xs.some(x => /wheelchair_accessible_(entrance|seating|restroom)/.test(x));
+  const park = (xs: string[]) => xs.some(x => /free_(parking|street_parking|parking_lot|parking_garage)|has_parking/.test(x) && !/paid/.test(x));
+  return { accessible: acc(yes) ? true : acc(no) ? false : null, freeParking: park(yes) ? true : park(no) ? false : null };
+}
+
+/** Services listed on the Google profile, with a shekel price when shown. */
+export function providerServices(list: DfsItem['services']): MappedListing['services'] {
+  const out: MappedListing['services'] = [];
+  for (const x of list ?? []) {
+    const name = (x.title ?? '').trim();
+    if (!name || name.length > 80) continue;
+    const p = x.price;
+    const ils = !p?.currency || p.currency.toUpperCase() === 'ILS';
+    const price = ils && typeof p?.current === 'number' && p.current > 0 ? p.current : null;
+    const m = matchService(name);
+    out.push({ name, priceNis: price, priceType: p?.is_price_range || /מ[-־]|from|\+/.test(p?.displayed_price ?? '') ? 'from' : 'fixed', category: m?.category ?? null, isMedical: m?.isMedical ?? false });
+  }
+  return out.slice(0, 60);
 }
 
 /** The business's Google Maps profile: by cid when known (stable), else by place id. */
@@ -214,6 +249,8 @@ export function mapItem(item: DfsItem): MappedListing | null {
   if (!name || (!item.place_id && !sourceId)) return null;
   const phoneRaw = item.phone ?? item.contact_info?.find(c => c.type === 'telephone' || c.type === 'phone')?.value ?? null;
   const w = classifyWebsite(item.url ?? (item.domain ? `https://${item.domain}` : null));
+  // A reservation link on the Google profile is the booking link when the website field is not one.
+  const reservation = (item.local_business_links ?? []).find(l => l.type === 'reservation' && l.url)?.url ?? null;
   const keep = w.url && KEEP_AS_WEBSITE.includes(w.kind);
   const website = keep ? w.url : null;
   const types = [item.category, ...(item.additional_categories ?? [])].filter((x): x is string => !!x);
@@ -231,10 +268,14 @@ export function mapItem(item: DfsItem): MappedListing | null {
     website,
     websiteKind: keep ? w.kind : null,
     rejectedWebsite: w.kind === 'directory' && w.url ? { url: w.url, kind: w.kind } : null,
-    bookingUrl: w.kind === 'booking' ? w.url : null,
+    bookingUrl: w.kind === 'booking' ? w.url : reservation && /^https?:\/\//.test(reservation) ? reservation : null,
     whatsapp: w.kind === 'whatsapp' ? (w.phone ?? null) : null,
     social: w.kind === 'social' && w.url ? { network: w.network!, url: w.url } : null,
     siteDomain: w.kind === 'own' && w.url ? new URL(w.url).hostname.replace(/^www\./, '').toLowerCase() : null,
+    description: item.description?.trim() ? item.description.trim().slice(0, 1500) : null,
+    ...attributeFlags(item.attributes),
+    priceLevel: item.price_level ?? null,
+    services: providerServices(item.services),
     googleMapsUrl: googleMapsUrl(item),
     providerLogo: typeof item.logo === 'string' && /^https?:\/\//.test(item.logo) ? item.logo : null,
     providerPhoto: typeof item.main_image === 'string' && /^https?:\/\//.test(item.main_image) ? item.main_image : null,

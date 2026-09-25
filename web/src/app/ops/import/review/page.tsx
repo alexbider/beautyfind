@@ -4,6 +4,7 @@ import type { ImportPlaceStatus, Prisma, RegionSlug } from '@prisma/client';
 import { OpsHeader } from '@/components/ops/OpsHeader';
 import { OPS_ROLE_NAMES, requireImporter } from '@/components/ops/guard';
 import { CATEGORIES, REGIONS } from '@/lib/catalog';
+import { completeness } from '@/lib/import/completeness';
 import { scoreMatch } from '@/lib/import/match';
 import type { ImportedTreatment } from '@/lib/import/rules';
 import { db } from '@/lib/server/db';
@@ -109,6 +110,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: SP })
       emailStatus: r.emailStatus,
       bookingUrl: r.bookingUrl,
       websiteKind: r.websiteKind,
+      template: completeness(r),
       rejectedWebsite: typeof crawl.rejectedWebsite === 'string' ? crawl.rejectedWebsite : null,
       viaLinkhub: typeof crawl.viaLinkhub === 'string' ? crawl.viaLinkhub : null,
       logoUrl: r.logoUrl,
@@ -189,7 +191,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: SP })
           <button type="submit" className={`${styles.btn} ${styles.primary}`} style={{ flex: 'none' }}>סינון</button>
         </form>
 
-        <ReviewList rows={list} bulk={tab.key === 'ready'} runId={run || null} readyInRun={run ? count(TABS[0]) : 0} google={googleAvailable()} />
+        <ReviewList rows={list} tab={tab.key} bulk={tab.key === 'ready'} runId={run || null} readyInRun={run ? count(TABS[0]) : 0} google={googleAvailable()} />
 
         {pages > 1 ? (
           <div className={styles.pager}>

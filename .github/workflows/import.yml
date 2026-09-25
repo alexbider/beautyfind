@@ -53,6 +53,9 @@ jobs:
           # Optional LLM step, off unless enabled in the admin settings.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           IMPORT_MODEL: ${{ vars.IMPORT_MODEL }}
+          # Image storage for listings enhanced by the worker (same store the site uses).
+          STORAGE_ADAPTER: ${{ secrets.BLOB_READ_WRITE_TOKEN != '' && 'blob' || 'none' }}
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
           # Optional versioned price override (JSON), see src/lib/import/pricing.ts.
           IMPORT_PRICING_JSON: ${{ vars.IMPORT_PRICING_JSON }}
       - name: Continue in a new job

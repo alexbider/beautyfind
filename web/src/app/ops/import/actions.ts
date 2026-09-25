@@ -15,6 +15,7 @@ const refresh = () => {
   revalidatePath('/ops/import');
   revalidatePath('/ops/import/review');
 };
+const refreshPaths = refresh;
 
 export type StartResult = { ok: true; runId: string; dispatched: boolean; reason?: string } | { ok: false; error: string };
 
@@ -141,4 +142,22 @@ export async function publishEligibleAction(runId: string): Promise<{ ok: boolea
   await db.auditLog.create({ data: { actorId: user.id, action: 'import_publish_run', subjectType: 'import_run', subjectId: runId, meta: { approved, left } } });
   refresh();
   return { ok: true, approved, left };
+}
+
+/** Starts an enhance run for the chosen approved records' listings (website re-read; provider refresh optional). */
+export async function enhanceApprovedAction(ids: string[], refresh: boolean): Promise<{ ok: boolean; count: number; dispatched?: boolean }> {
+  const user = await importerOrNull();
+  const list = z.array(z.uuid()).max(500).safeParse(ids);
+  if (!user || !list.success) return { ok: false, count: 0 };
+  const places = await db.importPlace.findMany({ where: { id: { in: list.data }, status: { in: ['approved', 'merged'] }, branchId: { not: null } }, select: { branchId: true } });
+  const branchIds = [...new Set(places.map(p => p.branchId!))];
+  if (!branchIds.length) return { ok: true, count: 0 };
+  try {
+    const run = await createRun(user, { label: `העשרת ${branchIds.length} עסקים שנבחרו`, provider: 'enhance', scope: { branchIds, refresh }, recordLimit: branchIds.length, budgetUsd: refresh ? 0.5 : 0 });
+    const d = await dispatchWorker(run.id);
+    refreshPaths();
+    return { ok: true, count: branchIds.length, dispatched: d.dispatched };
+  } catch {
+    return { ok: false, count: 0 };
+  }
 }

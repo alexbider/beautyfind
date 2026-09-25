@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { describe, it } from 'node:test';
-import { buildSearch, dfsCategoriesFor, googleMapsUrl, isFatalStatus, isTransientStatus, largerGoogleImage, mapItem } from '../../src/lib/import/dataforseo';
+import { attributeFlags, buildSearch, dfsCategoriesFor, googleMapsUrl, providerServices, isFatalStatus, isTransientStatus, largerGoogleImage, mapItem } from '../../src/lib/import/dataforseo';
 import { dfsRunMaxUsd, estimateFor } from '../../src/lib/import/estimate';
 import { fieldMask, FieldMaskError, GOOGLE_FEATURES, retentionDays } from '../../src/lib/import/googleFields';
 import { isStrong, nameSimilarity, normName, scoreMatch, DUPLICATE_AT } from '../../src/lib/import/match';
@@ -12,7 +12,8 @@ import { formatIlPhone, normalizeIlPhone } from '../../src/lib/import/phone';
 import { dfsPageMaxUsd, pricing } from '../../src/lib/import/pricing';
 import { qualify, type QualifyInput } from '../../src/lib/import/rules';
 import { checkUrl, guardedLookup, isPrivateAddress, safeFetch, UnsafeUrlError } from '../../src/lib/import/safeFetch';
-import { extractPage, rankEmails } from '../../src/lib/import/siteExtract';
+import { extractPage, hoursFromText, rankEmails } from '../../src/lib/import/siteExtract';
+import { completeness, composeDescription } from '../../src/lib/import/completeness';
 import { imageInfo, usable } from '../../src/lib/import/imageInfo';
 import { matchService } from '../../src/lib/import/services';
 import { mayPublish } from '../../src/lib/import/sourcePolicy';
@@ -403,5 +404,45 @@ describe('Google profile data', () => {
     assert.equal(mayPublish('dataforseo', 'rating', { publishProviderRatings: true }), true);
     assert.equal(mayPublish('dataforseo', 'photo', { useProviderImages: true }), true);
     assert.equal(mayPublish('dataforseo', 'google_profile'), true);
+  });
+});
+
+describe('template fields', () => {
+  it('reads opening hours written as text, Hebrew and English', () => {
+    const show = (t: string) => hoursFromText(t)?.value.map(d => (d.closed ? 'X' : `${d.open}-${d.close}`));
+    assert.deepEqual(show("שעות פתיחה\nא'-ה' 09:00-19:00\nשישי 08:00-13:00\nשבת סגור"), ['09:00-19:00', '09:00-19:00', '09:00-19:00', '09:00-19:00', '09:00-19:00', '08:00-13:00', 'X']);
+    assert.deepEqual(show('ראשון - חמישי: 10:00 עד 20:00\nיום ו׳ 9:00-14:00'), ['10:00-20:00', '10:00-20:00', '10:00-20:00', '10:00-20:00', '10:00-20:00', '09:00-14:00', 'X']);
+    assert.deepEqual(show('Sun-Thu 09:00-18:00\nFri 09:00-13:00\nSat closed'), ['09:00-18:00', '09:00-18:00', '09:00-18:00', '09:00-18:00', '09:00-18:00', '09:00-13:00', 'X']);
+    assert.equal(hoursFromText('טלפון 03-5551234\nמחיר 250 ₪'), null);
+  });
+  it('reads the description, FAQs, accessibility and parking from a site', () => {
+    const html = `<meta name="description" content="סלון יופי שכונתי עם טיפולי פנים, ריסים וגבות, צוות מקצועי ויחס אישי.">
+      <script type="application/ld+json">{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"האם צריך לקבוע תור?","acceptedAnswer":{"@type":"Answer","text":"כן, בטלפון."}}]}</script>
+      <p>הסלון נגיש לנכים</p><p>חניה חינם בחניון הבניין</p><footer><a href="/nagishut">הצהרת נגישות</a></footer>`;
+    const f = extractPage(html, 'https://noa.co.il/', 'noa.co.il');
+    assert.match(f.description!.value, /סלון יופי שכונתי/);
+    assert.deepEqual(f.faqs.map(x => x.value), [{ q: 'האם צריך לקבוע תור?', a: 'כן, בטלפון.' }]);
+    assert.equal(f.accessible?.value, true);
+    assert.equal(f.freeParking?.value, true);
+    const plain = extractPage('<footer><a>הצהרת נגישות</a></footer>', 'https://x.co.il/', 'x.co.il');
+    assert.equal(plain.accessible, null);
+  });
+  it('maps Google attributes and services', () => {
+    assert.deepEqual(attributeFlags({ available_attributes: { accessibility: ['has_wheelchair_accessible_entrance'], parking: ['has_free_parking_lot'] } }), { accessible: true, freeParking: true });
+    assert.deepEqual(attributeFlags({ unavailable_attributes: { accessibility: ['has_wheelchair_accessible_entrance'] } }), { accessible: false, freeParking: null });
+    assert.deepEqual(attributeFlags(undefined), { accessible: null, freeParking: null });
+    const sv = providerServices([{ title: 'טיפול פנים', price: { current: 280, currency: 'ILS' } }, { title: 'Botox', price: { current: 100, currency: 'USD' } }, { title: '' }]);
+    assert.deepEqual(sv.map(x => [x.name, x.priceNis, x.category]), [['טיפול פנים', 280, 'facials'], ['Botox', null, 'medical-aesthetics']]);
+  });
+  it('scores completeness and names what is missing', () => {
+    const base = { name: 'X', address: 'רחוב 1', lat: 32, phone: '+97235551234', email: null, website: null, whatsapp: null, instagram: null, facebook: null, hours: [], logoUrl: null, photoUrls: [], description: null, categories: ['nails'], treatments: [], googleRating: 4.5, accessible: null, freeParking: null, faqs: null };
+    const c = completeness(base);
+    assert.ok(c.score > 0 && c.score < 50);
+    assert.ok(c.missing.some(m => m.key === 'hours') && c.missing.some(m => m.key === 'logo') && !c.missing.some(m => m.key === 'phone'));
+  });
+  it('composes a factual description from the record only', () => {
+    const d = composeDescription({ name: 'סלון נועה', cityName: 'חיפה', categories: ['nails', 'brows-lashes'], treatments: [{ name: 'מניקור' }, { name: 'הרמת ריסים' }], googleRating: 4.8, googleReviewCount: 52 });
+    assert.equal(d, 'סלון נועה הוא עסק בתחום ציפורניים, מניקור ופדיקור, גבות וריסים בחיפה. בין השירותים: מניקור, הרמת ריסים. דירוג 4.8 ב־Google על סמך 52 ביקורות.');
+    assert.equal(composeDescription({ name: 'X', cityName: null, categories: [], treatments: [], googleRating: null, googleReviewCount: null }), null);
   });
 });

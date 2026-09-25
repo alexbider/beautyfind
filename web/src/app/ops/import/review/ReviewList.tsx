@@ -6,7 +6,7 @@ import { useState, useTransition } from 'react';
 import { CATEGORIES, CITIES, REGIONS } from '@/lib/catalog';
 import { formatIlPhone } from '@/lib/import/phone';
 import { BLOCKING, REASON_NAMES, type ImportedTreatment } from '@/lib/import/rules';
-import { bulkApproveAction, enrichSelectedAction, googleLookupAction, placeAction, publishEligibleAction } from '../actions';
+import { bulkApproveAction, enhanceApprovedAction, enrichSelectedAction, googleLookupAction, placeAction, publishEligibleAction } from '../actions';
 import styles from '../import.module.css';
 
 export interface ReviewRow {
@@ -46,6 +46,7 @@ export interface ReviewRow {
   emailStatus: string | null;
   bookingUrl: string | null;
   websiteKind: string | null;
+  template: { score: number; missing: Array<{ key: string; label: string }> };
   rejectedWebsite: string | null;
   viaLinkhub: string | null;
   logoUrl: string | null;
@@ -212,7 +213,7 @@ function GoogleView({ placeId }: { placeId: string }) {
       </div>
       {res ? (
         res.ok ? (
-          <dl className={styles.meta}>
+            <dl className={styles.meta}>
             {Object.entries(res.fields).filter(([k]) => k !== 'attributions' && k !== 'photos').map(([k, v]) => (
               <div key={k}><dt>{k}: </dt><dd className={styles.ltr}>{typeof v === 'object' ? JSON.stringify(v).slice(0, 120) : String(v)}</dd></div>
             ))}
@@ -325,6 +326,10 @@ function Record({ r, onDone, selected, onSelect, google }: { r: ReviewRow; onDon
             <span key={x} className={`${styles.chip} ${(BLOCKING as readonly string[]).includes(x) ? styles.chipBad : styles.chipWarn}`}>{REASON_NAMES[x] ?? x}</span>
           ))}
         </div>
+        <p className={styles.note} style={{ marginTop: 6 }}>
+          שלמות הכרטיס: <span className={styles.ltr}>{r.template.score}%</span>
+          {r.template.missing.length ? <> · חסר: {r.template.missing.map(m => m.label).join(', ')}</> : ' · הכול מלא'}
+        </p>
         <dl className={styles.meta}>
           <div><dt>טלפון: </dt><dd className={styles.ltr}>{r.phone ? formatIlPhone(r.phone) : r.phoneRaw ? `${r.phoneRaw} (לא תקין)` : 'אין'}</dd></div>
           {r.whatsapp ? <div><dt>וואטסאפ: </dt><dd className={styles.ltr}>{formatIlPhone(r.whatsapp)}</dd></div> : null}
@@ -466,7 +471,7 @@ function Record({ r, onDone, selected, onSelect, google }: { r: ReviewRow; onDon
   );
 }
 
-export function ReviewList({ rows, bulk, runId, readyInRun, google }: { rows: ReviewRow[]; bulk: boolean; runId: string | null; readyInRun: number; google: boolean }) {
+export function ReviewList({ rows, tab, bulk, runId, readyInRun, google }: { rows: ReviewRow[]; tab: string; bulk: boolean; runId: string | null; readyInRun: number; google: boolean }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [done, setDone] = useState<Done[]>([]);
@@ -505,6 +510,13 @@ export function ReviewList({ rows, bulk, runId, readyInRun, google }: { rows: Re
       router.refresh();
     });
   };
+  const enhancePicked = (refresh: boolean) =>
+    start(async () => {
+      const r = await enhanceApprovedAction([...picked], refresh);
+      log({ ok: r.ok, name: 'העשרת עסקים שפורסמו', text: r.ok ? (r.count ? `${r.count} עסקים נשלחו להעשרה${r.dispatched === false ? ' (העובד לא הופעל, הפעילו אותו מדף הריצות)' : ''}` : 'אין בבחירה עסקים שפורסמו ולא נתבעו') : 'הפעולה נכשלה' });
+      setPicked(new Set());
+      router.refresh();
+    });
   const enrichPicked = () =>
     start(async () => {
       const r = await enrichSelectedAction([...picked]);
@@ -519,9 +531,20 @@ export function ReviewList({ rows, bulk, runId, readyInRun, google }: { rows: Re
         <button type="button" className={styles.btn} onClick={() => setPicked(picked.size === rows.length ? new Set() : new Set(rows.map(r => r.id)))}>
           {picked.size === rows.length ? 'ניקוי הבחירה' : 'בחירת כל העמוד'}
         </button>
-        <button type="button" className={styles.btn} disabled={pending || !picked.size} onClick={enrichPicked}>
-          {`בדיקה חוזרת של האתר (${picked.size})`}
-        </button>
+        {tab === 'done' ? (
+          <>
+            <button type="button" className={styles.btn} disabled={pending || !picked.size} onClick={() => enhancePicked(false)}>
+              {`העשרת הכרטיסים מהאתר (${picked.size})`}
+            </button>
+            <button type="button" className={styles.btn} disabled={pending || !picked.size} onClick={() => enhancePicked(true)}>
+              {`העשרה עם רענון מ־DataForSEO (${picked.size})`}
+            </button>
+          </>
+        ) : (
+          <button type="button" className={styles.btn} disabled={pending || !picked.size} onClick={enrichPicked}>
+            {`בדיקה חוזרת של האתר (${picked.size})`}
+          </button>
+        )}
         {bulk ? (
           <button type="button" className={`${styles.btn} ${styles.primary}`} disabled={pending} onClick={approveAll}>
             {pending ? 'מפרסמים…' : `אישור ופרסום של ${rows.length} המוכנים בעמוד`}

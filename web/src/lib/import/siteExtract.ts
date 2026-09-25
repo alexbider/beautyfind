@@ -40,6 +40,10 @@ export interface PageFacts {
   logos: Fact[]; // candidate logo image URLs, best first
   photos: Fact[]; // candidate photo URLs from the business's own pages, best first
   siteName: string | null; // og:site_name, JSON-LD name or <title>, for checking the site belongs to the business
+  description: Fact | null; // the business's own short description (meta, og or JSON-LD)
+  faqs: Fact<{ q: string; a: string }>[]; // JSON-LD FAQPage or <details> questions
+  accessible: Fact<boolean> | null; // an explicit accessibility statement about the premises
+  freeParking: Fact<boolean> | null;
   links: string[]; // relevant same-site links to follow
   outLinks: string[]; // links to other sites (used on link-in-bio pages to find the real site)
   text: string;
@@ -107,7 +111,7 @@ function hoursFromLd(spec: unknown): DayHours[] | null {
 function jsonLd(html: string) {
   const out = {
     emails: [] as string[], phones: [] as string[], sameAs: [] as string[], logo: null as string | null, hours: null as DayHours[] | null, address: null as string | null,
-    name: null as string | null, images: [] as string[], offers: [] as Array<{ name: string; price: number | null; from: boolean; evidence: string }>,
+    name: null as string | null, description: null as string | null, faqs: [] as Array<{ q: string; a: string }>, images: [] as string[], offers: [] as Array<{ name: string; price: number | null; from: boolean; evidence: string }>,
   };
   for (const m of html.matchAll(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
     const visit = (v: unknown) => {
@@ -123,6 +127,11 @@ function jsonLd(html: string) {
       const type = ([] as unknown[]).concat(o['@type'] ?? []).map(String);
       const isBusiness = type.some(t => /LocalBusiness|BeautySalon|HairSalon|NailSalon|DaySpa|HealthAndBeautyBusiness|MedicalClinic|Physician|Dentist|Organization|Store/i.test(t));
       if (isBusiness && typeof o.name === 'string') out.name ??= o.name.trim();
+      if (isBusiness && typeof o.description === 'string' && o.description.trim().length > 20) out.description ??= o.description.trim();
+      if (type.some(t => /^Question$/i.test(t)) && typeof o.name === 'string') {
+        const ans = o.acceptedAnswer as { text?: unknown } | undefined;
+        if (typeof ans?.text === 'string') out.faqs.push({ q: o.name.trim(), a: htmlToText(ans.text).slice(0, 800) });
+      }
       if (isBusiness) for (const img of ([] as unknown[]).concat(o.image ?? [])) {
         const u = typeof img === 'string' ? img : img && typeof (img as { url?: unknown }).url === 'string' ? (img as { url: string }).url : null;
         if (u) out.images.push(u);
@@ -152,6 +161,67 @@ function jsonLd(html: string) {
     }
   }
   return out;
+}
+
+// ---------- hours written as text ----------
+
+const DAY_WORDS: Array<[RegExp, number]> = [
+  [/ראשון|יום\s*א['׳]?(?![א-ת])|(?<![א-ת])א['׳](?![א-ת])|\bsun(day)?\b/i, 0],
+  [/שני|יום\s*ב['׳]?(?![א-ת])|(?<![א-ת])ב['׳](?![א-ת])|\bmon(day)?\b/i, 1],
+  [/שלישי|יום\s*ג['׳]?(?![א-ת])|(?<![א-ת])ג['׳](?![א-ת])|\btue(s|sday)?\b/i, 2],
+  [/רביעי|יום\s*ד['׳]?(?![א-ת])|(?<![א-ת])ד['׳](?![א-ת])|\bwed(nesday)?\b/i, 3],
+  [/חמישי|יום\s*ה['׳]?(?![א-ת])|(?<![א-ת])ה['׳](?![א-ת])|\bthu(r|rs|rsday)?\b/i, 4],
+  [/שישי|יום\s*ו['׳]?(?![א-ת])|(?<![א-ת])ו['׳](?![א-ת])|\bfri(day)?\b/i, 5],
+  [/שבת|מוצ["״]?ש|\bsat(urday)?\b/i, 6],
+];
+const TIME_RANGE = /(\d{1,2})[:.](\d{2})\s*(?:-|–|—|עד|to)\s*(\d{1,2})[:.](\d{2})/;
+const pad = (h: string, m: string) => `${h.padStart(2, '0')}:${m}`;
+
+function daysIn(segment: string): number[] {
+  // "א'-ה'", "ראשון עד חמישי", "Sun-Thu": a range between two day words.
+  const found: Array<{ i: number; at: number }> = [];
+  for (const [re, i] of DAY_WORDS) {
+    const g = new RegExp(re.source, 'gi');
+    for (const m of segment.matchAll(g)) found.push({ i, at: m.index ?? 0 });
+  }
+  found.sort((a, b) => a.at - b.at);
+  if (found.length >= 2 && /[-–]|עד|\bto\b/.test(segment.slice(found[0].at, found[found.length - 1].at + 1)) && found.length === 2) {
+    const out: number[] = [];
+    for (let d = found[0].i; ; d = (d + 1) % 7) {
+      out.push(d);
+      if (d === found[1].i || out.length > 7) break;
+    }
+    return out;
+  }
+  return [...new Set(found.map(f => f.i))];
+}
+
+/** Opening hours written on the page ("א'-ה' 09:00-19:00", "שישי 08:00-13:00", "שבת סגור"). Needs two or more days. */
+export function hoursFromText(text: string): { value: DayHours[]; evidence: string } | null {
+  const days: Array<DayHours | null> = Array.from({ length: 7 }, () => null);
+  const lines: string[] = [];
+  for (const raw of text.split('\n')) {
+    const line = raw.trim();
+    if (line.length > 120 || line.length < 4) continue;
+    const t = line.match(TIME_RANGE);
+    const closed = /סגור|closed/i.test(line);
+    if (!t && !closed) continue;
+    const ds = daysIn(t ? line.slice(0, t.index) || line : line);
+    if (!ds.length) continue;
+    for (const d of ds) {
+      if (days[d]) continue;
+      if (t) {
+        const open = pad(t[1], t[2]);
+        const close = pad(t[3], t[4]);
+        if (open >= close && close !== '00:00') continue;
+        days[d] = { open, close: close === '00:00' ? '23:59' : close, closed: false };
+      } else days[d] = { open: '', close: '', closed: true };
+    }
+    lines.push(line);
+  }
+  const set = days.filter(Boolean).length;
+  if (set < 2 || !days.some(d => d && !d.closed)) return null;
+  return { value: days.map(d => d ?? { open: '', close: '', closed: true }), evidence: lines.slice(0, 7).join(' | ').slice(0, 300) };
 }
 
 // ---------- services and prices ----------
@@ -378,6 +448,25 @@ export function extractPage(html: string, url: string, siteHost: string): PageFa
   const ogSite = html.match(/<meta[^>]+property=["']og:site_name["'][^>]+content=["']([^"']+)["']/i)?.[1];
   const siteName = ld.name ?? (ogSite ? decode(ogSite).trim() : null) ?? (title ? decode(title).replace(/\s+/g, ' ').trim().slice(0, 120) : null);
 
+  // The business's own description: JSON-LD, then meta description, then og:description.
+  const metaDesc = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']{30,})["']/i)?.[1] ?? html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']{30,})["']/i)?.[1];
+  const descText = ld.description ?? (metaDesc ? decode(metaDesc).trim() : null);
+  const description = descText && !CREDIT.test(descText) ? { value: descText.slice(0, 1200), url, evidence: ld.description ? 'JSON-LD description' : 'meta description' } : null;
+
+  // FAQs: JSON-LD FAQPage, else <details><summary>question</summary>answer</details>.
+  const faqs: Fact<{ q: string; a: string }>[] = ld.faqs.map(f => ({ value: f, url, evidence: 'JSON-LD FAQPage' }));
+  if (!faqs.length)
+    for (const m of html.matchAll(/<details[^>]*>\s*<summary[^>]*>([\s\S]*?)<\/summary>([\s\S]*?)<\/details>/gi)) {
+      const q = htmlToText(m[1]).trim();
+      const a = htmlToText(m[2]).trim();
+      if (q.length > 5 && q.length < 200 && a.length > 5) faqs.push({ value: { q, a: a.slice(0, 800) }, url, evidence: 'details/summary' });
+    }
+
+  // Premises: only explicit statements.
+  const accLine = text.split('\n').find(l => /נגיש(ה|ות)?\s*(לנכים|לכיסאות|לכסאות|לבעלי מוגבלויות)|הקליניקה נגישה|המקום נגיש|wheelchair accessible/i.test(l) && !/הצהרת נגישות|תקנות|accessibility statement/i.test(l));
+  const parkLine = text.split('\n').find(l => /חני(ה|יה)\s*(חינם|ללא\s*תשלום|חופשית)|free parking/i.test(l));
+  const hoursText = ld.hours ? null : hoursFromText(text);
+
   // Services from structured data first, then from the page text.
   const ldServices: Fact<SiteService>[] = [];
   for (const o of ld.offers) {
@@ -416,7 +505,11 @@ export function extractPage(html: string, url: string, siteHost: string): PageFa
     whatsapp,
     socials,
     booking,
-    hours: ld.hours ? { value: ld.hours, url, evidence: 'JSON-LD openingHoursSpecification' } : null,
+    hours: ld.hours ? { value: ld.hours, url, evidence: 'JSON-LD openingHoursSpecification' } : hoursText ? { value: hoursText.value, url, evidence: hoursText.evidence } : null,
+    description,
+    faqs: faqs.slice(0, 20),
+    accessible: accLine ? { value: true, url, evidence: accLine.slice(0, 200) } : null,
+    freeParking: parkLine ? { value: true, url, evidence: parkLine.slice(0, 200) } : null,
     address: ld.address ? { value: ld.address, url, evidence: 'JSON-LD address' } : null,
     services: mergeServices([...ldServices, ...priceLines(text, url)]),
     logos,

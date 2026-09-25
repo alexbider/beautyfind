@@ -1289,6 +1289,11 @@ model ImportPlace {
   // Images from the business's own site chosen for the listing; copied to our storage on approval.
   logoUrl     String?           @map("logo_url")
   photoUrls   String[]          @default([]) @map("photo_urls")
+  // Template fields beyond contact details (filled from the provider and the business's site)
+  accessible  Boolean?          // wheelchair accessible, when a source says so
+  freeParking Boolean?          @map("free_parking")
+  faqs        Json?             // [{ q, a }] from the business's own site
+  priceLevel  String?           @map("price_level")
   runId       String            @map("run_id") @db.Uuid // last run that found it
   run         ImportRun         @relation(fields: [runId], references: [id])
   status      ImportPlaceStatus @default(found)

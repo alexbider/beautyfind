@@ -14,11 +14,11 @@
     "ops:grant": "tsx scripts/grant-ops.ts",
     "db:seed:demo": "tsx prisma/seed-demo.ts",
     "postinstall": "prisma generate",
-    "import:work": "tsx scripts/import/work.ts",
+    "import:work": "tsx --conditions=react-server scripts/import/work.ts",
     "import:dryrun": "tsx scripts/import/dryrun.ts",
-    "import:simulate": "tsx scripts/import/simulate.ts",
+    "import:simulate": "tsx --conditions=react-server scripts/import/simulate.ts",
     "import:dfs-categories": "tsx scripts/import/dfsCategories.ts",
-    "test:import": "tsx --test --test-concurrency=1 tests/import/*.test.ts",
+    "test:import": "tsx --conditions=react-server --test --test-concurrency=1 tests/import/*.test.ts",
     "import:cleanup": "tsx scripts/import/cleanup.ts"
   },
   "prisma": {

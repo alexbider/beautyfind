@@ -5,23 +5,11 @@
 import { Prisma, type ImportRun } from '@prisma/client';
 import { BudgetExceeded, commit, release, reserve, withCaps } from '../../../src/lib/import/budget';
 import { pricing, toMicros } from '../../../src/lib/import/pricing';
-import { serviceKey } from '../../../src/lib/import/services';
+import { mergeTreatments } from '../../../src/lib/import/services';
 import { bump, db, heartbeat, log, pool, setStats, settings } from '../ctx';
 import { extract, keepEvidenced } from '../extract';
 
 let transientStreak = 0;
-
-/** The website stage's services stay; the model adds new ones and fills missing prices. */
-function mergeTreatments(current: unknown, found: Array<{ name: string; priceNis?: number | null }>): unknown[] {
-  const list = (Array.isArray(current) ? current : []) as Array<{ name: string; priceNis?: number | null }>;
-  const byKey = new Map(list.map(t => [serviceKey(t.name), { ...t }]));
-  for (const t of found) {
-    const cur = byKey.get(serviceKey(t.name));
-    if (!cur) byKey.set(serviceKey(t.name), t);
-    else if (cur.priceNis == null && t.priceNis != null) Object.assign(cur, t);
-  }
-  return [...byKey.values()].slice(0, 80);
-}
 
 export async function extractStage(run: ImportRun): Promise<boolean> {
   const s = await settings();

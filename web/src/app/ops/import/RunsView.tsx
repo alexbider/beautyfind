@@ -290,6 +290,53 @@ function Estimator({ pricingNote }: { pricingNote: { version: string; dfs: { per
   );
 }
 
+const FILLED: Record<string, string> = {
+  phone: 'טלפון', whatsapp: 'וואטסאפ', email: 'דוא״ל', website: 'אתר', instagram: 'אינסטגרם', hours: 'שעות', description: 'תיאור', faqs: 'שאלות נפוצות',
+  accessible: 'נגישות', parking: 'חניה', waze: 'Waze', google_profile: 'פרופיל Google', rating: 'דירוג Google', logo: 'לוגו', cover: 'תמונת שער',
+  gallery: 'גלריה', categories: 'תחומים', services: 'טיפולים', prices: 'מחירים',
+};
+
+function EnhanceRun({ eligible, canDispatch, killSwitch, perRequestUsd, perItemUsd }: { eligible: number; canDispatch: boolean; killSwitch: boolean; perRequestUsd: number; perItemUsd: number }) {
+  const router = useRouter();
+  const [refresh, setRefresh] = useState(true);
+  const [limit, setLimit] = useState(String(Math.max(1, Math.min(eligible, 1000))));
+  const [budget, setBudget] = useState('1');
+  const [pending, start] = useTransition();
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const count = Math.max(1, Math.min(eligible, Number(limit) || 0));
+  const est = refresh ? Math.ceil(count / 500) * perRequestUsd + count * perItemUsd : 0;
+  const go = () =>
+    start(async () => {
+      setMsg(null);
+      const r = await startRunAction({ label: 'העשרת עסקים שפורסמו', provider: 'enhance', scope: { refresh }, recordLimit: count, budgetUsd: Number(budget) || 0 });
+      if (!r.ok) return setMsg({ ok: false, text: r.error === 'kill_switch' ? 'מתג החירום פעיל. כבו אותו בהגדרות.' : 'לא הצלחנו ליצור את הריצה.' });
+      setMsg({ ok: true, text: r.dispatched ? 'ההעשרה התחילה.' : 'הריצה נוצרה ומחכה בתור. הפעילו את ה־workflow ב־GitHub.' });
+      router.refresh();
+    });
+  return (
+    <section className={`${styles.card} ${styles.stack}`} aria-labelledby="enhance-run">
+      <h2 id="enhance-run" className={styles.h2}>העשרת עסקים שפורסמו</h2>
+      <p className={styles.note}>
+        עוברת על עסקים שאושרו מהייבוא ועדיין לא נתבעו על ידי בעליהם, קוראת שוב את האתר שלהם ומשלימה רק שדות חסרים: שעות, תמונות, לוגו, תיאור, טיפולים ומחירים, נגישות, חניה, שאלות נפוצות ודירוג Google. שום פרט קיים לא נדרס.
+      </p>
+      <p className={styles.note}>עסקים שאפשר להעשיר: <span className={styles.ltr}>{n(eligible)}</span></p>
+      <label className={styles.check}><input type="checkbox" checked={refresh} onChange={e => setRefresh(e.target.checked)} />רענון נתונים מ־DataForSEO (תמונות, דירוג, תיאור, מאפיינים)</label>
+      <div className={styles.editGrid}>
+        <label><span className={styles.label}>מספר עסקים</span><input className={styles.input} inputMode="numeric" dir="ltr" value={limit} onChange={e => setLimit(e.target.value)} /></label>
+        <label><span className={styles.label}>תקרת הוצאה (USD)</span><input className={styles.input} inputMode="decimal" dir="ltr" value={budget} onChange={e => setBudget(e.target.value)} /></label>
+      </div>
+      <p className={styles.note}>עלות מקסימלית משוערת: <span className={styles.ltr}>{usd(est)}</span>{refresh ? '' : ' (קריאת אתרים בלבד, בלי עלות ספק)'}</p>
+      <div className={styles.btnRow}>
+        <button type="button" className={`${styles.btn} ${styles.primary}`} disabled={pending || !eligible || killSwitch || (refresh && Number(budget) < est)} onClick={go}>
+          {pending ? 'מתחילים…' : 'התחלת העשרה'}
+        </button>
+        {!canDispatch ? <span className={styles.note}>בלי GITHUB_DISPATCH_TOKEN הריצה תחכה להפעלה ידנית.</span> : null}
+      </div>
+      {msg ? <p className={`${styles.result} ${msg.ok ? styles.resultOk : styles.resultBad}`} role="status">{msg.text}</p> : null}
+    </section>
+  );
+}
+
 function Run({ r }: { r: RunRow }) {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -317,7 +364,7 @@ function Run({ r }: { r: RunRow }) {
     <article className={styles.card}>
       <div className={styles.runHead}>
         <span className={styles.runTitle}>{r.label}</span>
-        <span className={styles.chip}>{r.provider === 'dataforseo' ? 'DataForSEO' : 'Google'}</span>
+        <span className={styles.chip}>{r.provider === 'dataforseo' ? 'DataForSEO' : r.provider === 'enhance' ? 'העשרה' : 'Google'}</span>
         <span className={`${styles.chip} ${STATUS_CHIP[r.status]}`}>{STATUS_NAME[r.status]}</span>
         <span className={styles.note}>{new Date(r.createdAt).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' })}</span>
       </div>
@@ -328,6 +375,17 @@ function Run({ r }: { r: RunRow }) {
         {r.stats.recordLimitReached ? ' · הגיעה למספר העסקים' : ''}
       </div>
       <div className={styles.bar} aria-hidden="true"><span style={{ width: `${pct}%` }} /></div>
+      {r.provider === 'enhance' ? (
+        <p className={styles.note}>
+          עסקים: <span className={styles.ltr}>{n(Number(r.stats.listings ?? 0))}</span> · שופרו {n(c.improved ?? 0)} · אין מה להוסיף {n(c.nothing_to_add ?? 0)}
+          {c.refreshed ? ` · רועננו מ־DataForSEO ${n(c.refreshed)}` : ''}
+          {Object.entries(c).filter(([k]) => k.startsWith('filled_') && k !== 'filled_images_waiting_for_storage').length
+            ? ` · מולאו: ${Object.entries(c).filter(([k]) => k.startsWith('filled_') && k !== 'filled_images_waiting_for_storage').map(([k, v]) => `${FILLED[k.slice(7)] ?? k.slice(7)} ${n(v)}`).join(', ')}`
+            : ''}
+          {c.filled_images_waiting_for_storage ? ` · ${n(c.filled_images_waiting_for_storage)} עסקים מחכים לתמונות (חסר BLOB_READ_WRITE_TOKEN ב־GitHub)` : ''}
+          {c.failed ? ` · נכשלו ${n(c.failed)}` : ''}
+        </p>
+      ) : null}
       <div className={styles.counts}>
         <span>הוחזרו <b>{n(c.placesSeen ?? 0)}</b></span>
         <span>ייחודיים <b>{n(staged)}</b></span>
@@ -388,6 +446,7 @@ export function RunsView(props: {
   googleAvailable: boolean;
   googleMonth: { usd: number; calls: number };
   pricingNote: { version: string; dfs: { perRequestUsd: number; perItemUsd: number }; dfsChecked: string; dfsNote: string; googleChecked: string };
+  enhanceEligible: number;
 }) {
   const router = useRouter();
   const live = props.runs.some(r => r.status === 'running' || r.status === 'queued');
@@ -401,6 +460,7 @@ export function RunsView(props: {
     <div className={styles.grid2}>
       <div className={styles.stack}>
         <NewRun settings={props.settings} canDispatch={props.canDispatch} dfsConfigured={props.dfsConfigured} />
+        <EnhanceRun eligible={props.enhanceEligible} canDispatch={props.canDispatch} killSwitch={props.settings.killSwitch} perRequestUsd={props.pricingNote.dfs.perRequestUsd} perItemUsd={props.pricingNote.dfs.perItemUsd} />
         <Settings settings={props.settings} googleAvailable={props.googleAvailable} googleMonth={props.googleMonth} />
         <Estimator pricingNote={props.pricingNote} />
       </div>

@@ -18,7 +18,7 @@ export default async function ImportPage() {
   const user = await requireImporter('/ops/import');
   const [runs, settings] = await Promise.all([db.importRun.findMany({ orderBy: { createdAt: 'desc' }, take: 30 }), getSettings()]);
   const ids = runs.map(r => r.id);
-  const [counts, spend, reconcile, siteStatus, googleSpend] = await Promise.all([
+  const [counts, spend, reconcile, siteStatus, googleSpend, enhanceEligible] = await Promise.all([
     db.importPlace.groupBy({ by: ['runId', 'status'], where: { runId: { in: ids } }, _count: true }),
     db.spendEntry.groupBy({ by: ['runId', 'provider', 'status'], where: { runId: { in: ids } }, _sum: { estimatedMicros: true, actualMicros: true }, _count: true }),
     db.importTask.findMany({ where: { runId: { in: ids }, status: 'needs_reconciliation' }, select: { id: true, runId: true, key: true, error: true, params: true } }),
@@ -27,6 +27,9 @@ export default async function ImportPage() {
       SELECT run_id, crawl->>'site' AS site, count(*) AS n FROM import_places
       WHERE run_id = ANY(${ids}::uuid[]) AND email IS NULL GROUP BY run_id, crawl->>'site'`,
     db.spendEntry.aggregate({ where: { provider: 'google', createdAt: { gte: new Date(new Date().toISOString().slice(0, 7) + '-01') } }, _sum: { actualMicros: true, estimatedMicros: true }, _count: true }),
+    db.$queryRaw<Array<{ n: bigint }>>`
+      SELECT count(*) AS n FROM import_places p JOIN branches b ON b.id = p.branch_id
+      WHERE p.status IN ('approved', 'merged') AND b.is_claimed = false AND b.status = 'live'`.then(r => Number(r[0]?.n ?? 0)),
   ]);
 
   const rows: RunRow[] = runs.map(r => {
@@ -82,6 +85,7 @@ export default async function ImportPage() {
           dfsConfigured={!!process.env.DATAFORSEO_LOGIN}
           googleAvailable={googleAvailable()}
           googleMonth={{ usd: fromMicros(googleSpend._sum.actualMicros ?? googleSpend._sum.estimatedMicros ?? 0n), calls: googleSpend._count }}
+          enhanceEligible={enhanceEligible}
           pricingNote={{ version: p.version, dfs: p.dataforseo.businessListingsSearch, dfsChecked: p.dataforseo.checked, dfsNote: p.dataforseo.note, googleChecked: p.google.checked }}
         />
       </main>

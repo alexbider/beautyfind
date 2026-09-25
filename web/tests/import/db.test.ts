@@ -172,3 +172,80 @@ describe('import database behaviour', { skip }, () => {
     await db.googleDisplay.deleteMany({ where: { placeId: { startsWith: id } } });
   });
 });
+
+describe('enhancing published listings', { skip }, () => {
+  let web: { port: number; close: () => Promise<void> };
+  let pdb: PrismaClient;
+  const made: { businesses: string[]; places: string[]; runs: string[] } = { businesses: [], places: [], runs: [] };
+  before(async () => {
+    process.env.IMPORT_TEST_ALLOW_PRIVATE = '1';
+    process.env.UPLOAD_DIR = `${process.env.TMPDIR ?? '/tmp'}/bf-test-uploads`;
+    const { startSites } = await import('../../scripts/import/sim/fixtures');
+    web = await startSites([{ host: 'enh.test', kind: 'full' }]);
+    pdb = (await import('../../scripts/import/ctx')).db;
+  });
+  after(async () => {
+    await pdb.importPlace.deleteMany({ where: { id: { in: made.places } } });
+    await pdb.business.deleteMany({ where: { id: { in: made.businesses } } });
+    await pdb.importRun.deleteMany({ where: { id: { in: made.runs } } });
+    await web.close();
+  });
+
+  async function listing(claimed: boolean) {
+    const biz = await pdb.business.create({ data: { status: 'live', type: 'salon' } });
+    made.businesses.push(biz.id);
+    const b = await pdb.branch.create({
+      data: {
+        businessId: biz.id, name: 'סלון להעשרה', slug: `enh-${biz.id.slice(0, 8)}`, regionSlug: 'dan', cityName: 'תל אביב', address: 'רחוב 1', lat: 32.08, lng: 34.78,
+        status: 'live', isClaimed: claimed, phone: '+97235550000', description: 'תיאור שכתב הצוות',
+        categories: { create: [{ categorySlug: 'nails' }] }, treatments: { create: [{ name: 'מניקור', priceAgorot: 0, isPublished: false }] },
+      },
+    });
+    const u = `http://enh.test:${web.port}`;
+    const run = await pdb.importRun.create({ data: { label: 'enhance test', provider: 'dataforseo', scope: {}, maxRequests: 0 } });
+    made.runs.push(run.id);
+    const p = await pdb.importPlace.create({
+      data: {
+        runId: run.id,
+        placeId: `enh-${b.id}`, provider: 'dataforseo', name: 'סלון להעשרה', address: 'רחוב 1', lat: 32.08, lng: 34.78, status: 'approved', branchId: b.id,
+        phone: '+97239999999', email: 'info@enh.test', website: `${u}/`, hours: [{ open: '09:00', close: '19:00', closed: false }], description: 'תיאור מהמקור',
+        categories: ['nails', 'brows-lashes'], treatments: [{ name: 'מניקור', priceNis: 120, priceType: 'fixed', category: 'nails', isMedical: false, durationMin: null }, { name: 'הרמת ריסים', priceNis: 220, priceType: 'fixed', category: 'brows-lashes', isMedical: false, durationMin: null }],
+        logoUrl: `${u}/logo.png`, photoUrls: [`${u}/img/photo-1.png`, `${u}/img/photo-2.png`], accessible: true, freeParking: true, faqs: [{ q: 'ש', a: 'ת' }],
+        googleRating: 4.6, googleReviewCount: 40, ratingProvider: 'dataforseo', googleMapsUri: 'https://www.google.com/maps?cid=1',
+      },
+    });
+    made.places.push(p.id);
+    return { b, p };
+  }
+
+  it('fills only what is missing and never overwrites', async () => {
+    const { enhanceBranch } = await import('../../src/lib/server/importEnhance');
+    const { DEFAULT_SETTINGS } = await import('../../src/lib/import/settings');
+    const actor = await pdb.user.findFirst({ select: { id: true } });
+    assert.ok(actor, 'needs one user in the local database');
+    const { b, p } = await listing(false);
+    const r = await enhanceBranch(b.id, p, DEFAULT_SETTINGS, actor!.id);
+    const after = await pdb.branch.findUniqueOrThrow({ where: { id: b.id }, include: { treatments: true, categories: true } });
+    assert.equal(after.phone, '+97235550000'); // kept
+    assert.equal(after.description, 'תיאור שכתב הצוות'); // kept
+    assert.equal(after.email, 'info@enh.test');
+    assert.ok(after.logoUrl?.startsWith('/media/') && after.coverUrl?.startsWith('/media/'));
+    assert.equal(after.accessible && after.freeParking, true);
+    assert.equal(after.googleRating, 4.6);
+    assert.deepEqual(after.categories.map(c => c.categorySlug).sort(), ['brows-lashes', 'nails']);
+    assert.equal(after.treatments.length, 2);
+    assert.ok(after.treatments.find(t => t.name === 'מניקור')!.priceAgorot > 0); // missing price filled
+    assert.ok(r.filled.includes('logo') && r.filled.includes('services') && r.filled.includes('prices'));
+  });
+
+  it('leaves claimed listings alone', async () => {
+    const { enhanceBranch } = await import('../../src/lib/server/importEnhance');
+    const { DEFAULT_SETTINGS } = await import('../../src/lib/import/settings');
+    const actor = await pdb.user.findFirst({ select: { id: true } });
+    const { b, p } = await listing(true);
+    const r = await enhanceBranch(b.id, p, DEFAULT_SETTINGS, actor!.id);
+    assert.equal(r.skipped, 'claimed');
+    const after = await pdb.branch.findUniqueOrThrow({ where: { id: b.id } });
+    assert.equal(after.email, null);
+  });
+});

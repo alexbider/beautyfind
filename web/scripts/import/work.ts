@@ -18,6 +18,7 @@ import { argRun, db, LEASE_MS, log, Stop, timeLeft, WORKER } from './ctx';
 import { check } from './stages/check';
 import { discoverDfs, seedDfs } from './stages/dfsDiscover';
 import { enrich } from './stages/enrich';
+import { enhanceStage, seedEnhance } from './stages/enhance';
 import { extractStage } from './stages/extractLlm';
 import { discoverGoogle, seedGoogle } from './stages/googleDiscover';
 
@@ -39,9 +40,16 @@ async function claim(runId?: string): Promise<ImportRun | null> {
 }
 
 async function work(run: ImportRun): Promise<'done' | 'stopped'> {
-  const scope = RunScope.parse(run.scope);
   log(`run ${run.id} "${run.label}" (${run.provider})`);
   try {
+    if (run.provider === 'enhance') {
+      await seedEnhance(run);
+      while (await enhanceStage(run));
+      await db.importRun.updateMany({ where: { id: run.id, lockedBy: WORKER }, data: { status: 'done', finishedAt: new Date(), lockedBy: null, lockedUntil: null } });
+      log('enhance run done');
+      return 'done';
+    }
+    const scope = RunScope.parse(run.scope);
     if (run.provider === 'dataforseo') {
       await seedDfs(run, scope);
       while (await discoverDfs(run));
