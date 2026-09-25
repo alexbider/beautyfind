@@ -221,8 +221,7 @@ describe('enhancing published listings', { skip }, () => {
   it('fills only what is missing and never overwrites', async () => {
     const { enhanceBranch } = await import('../../src/lib/server/importEnhance');
     const { DEFAULT_SETTINGS } = await import('../../src/lib/import/settings');
-    const actor = await pdb.user.findFirst({ select: { id: true } });
-    assert.ok(actor, 'needs one user in the local database');
+    const actor = (await pdb.user.findFirst({ select: { id: true } })) ?? (await pdb.user.create({ data: {}, select: { id: true } }));
     const { b, p } = await listing(false);
     const r = await enhanceBranch(b.id, p, DEFAULT_SETTINGS, actor!.id);
     const after = await pdb.branch.findUniqueOrThrow({ where: { id: b.id }, include: { treatments: true, categories: true } });

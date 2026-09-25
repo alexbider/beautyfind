@@ -105,7 +105,8 @@ async function main() {
   // older listing would look, run an enhancement run and see what comes back.
   const { approvePlace } = await import('../../src/lib/server/importOps');
   const { seedEnhance, enhanceStage } = await import('./stages/enhance');
-  const actor = await db.user.findFirst({ where: { opsRole: 'ops' }, select: { id: true } });
+  // Local database only (checked above): a staff user for the approvals below if there is none.
+  const actor = (await db.user.findFirst({ where: { opsRole: 'ops' }, select: { id: true } })) ?? (await db.user.create({ data: { email: 'simulated-ops@beautyfind.test', opsRole: 'ops' }, select: { id: true } }));
   let enhanceLine = 'skipped (no ops user in the local database)';
   if (actor) {
     const ready = await db.importPlace.findMany({ where: { runId: run.id, status: 'ready', logoUrl: { not: null } }, take: 5 });

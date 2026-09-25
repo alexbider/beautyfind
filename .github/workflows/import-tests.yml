@@ -40,6 +40,8 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm ci
       - run: npx prisma migrate deploy
+      # Catalog only (regions, cities, categories); demo listings stay off.
+      - run: npx tsx prisma/seed.ts
       - run: npm run test:import
       - run: npm run import:dryrun
       - run: npm run import:simulate
