@@ -116,6 +116,7 @@ export async function enhanceStage(run: ImportRun): Promise<boolean> {
   const actor = await actorFor(run);
   const runBrowser = { used: 0, cap: s.browserMaxPerRun };
   const counts: Record<string, number> = {};
+  const failures: string[] = [];
   for (const id of params.ids ?? []) {
     const p = await db.importPlace.findUnique({ where: { id } });
     if (!p?.branchId) continue;
@@ -129,10 +130,17 @@ export async function enhanceStage(run: ImportRun): Promise<boolean> {
     } catch (e) {
       if (e instanceof Stop) throw e;
       counts.failed = (counts.failed ?? 0) + 1;
-      log('enhance failed', id, e instanceof Error ? e.message.slice(0, 200) : e);
+      const msg = (e instanceof Error ? e.message : String(e)).replace(/https?:\/\/\S+/g, '<url>').replace(/\s+/g, ' ').slice(0, 160);
+      failures.push(msg);
+      log('enhance failed', id, msg);
     }
   }
   await db.importTask.update({ where: { id: task.id }, data: { status: 'done', found: (params.ids ?? []).length } });
   await bump(run.id, counts);
+  if (failures.length) {
+    const cur = await db.importRun.findUniqueOrThrow({ where: { id: run.id }, select: { stats: true } });
+    const prev = ((cur.stats as { failures?: string[] }).failures ?? []) as string[];
+    await setStats(run.id, { failures: [...new Set([...prev, ...failures])].slice(0, 10) });
+  }
   return true;
 }

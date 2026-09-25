@@ -6,6 +6,7 @@ import type { PublicProfile } from '@/lib/server/public';
 import { initials } from './format';
 import { Gallery } from './Gallery';
 import { Price, Services } from './Services';
+import { FaqAccordion } from '@/components/faq/FaqAccordion';
 import styles from './Unclaimed.module.css';
 
 /**
@@ -89,6 +90,20 @@ export function UnclaimedProfile({ p, v }: { p: PublicProfile; v: ProfileView })
             </div>
           </dl>
 
+          {v.description.length > 0 && (
+            <section aria-labelledby="h-un-about" className={styles.services}>
+              <h2 id="h-un-about" className={styles.h2}>על העסק</h2>
+              {v.description.map((para, i) => <p key={i} className={styles.para}>{para}</p>)}
+            </section>
+          )}
+
+          {(p.accessible || p.freeParking) && (
+            <ul className={styles.amenities} aria-label="נוחות">
+              {p.accessible ? <li>נגיש לכיסא גלגלים</li> : null}
+              {p.freeParking ? <li>חניה חינם</li> : null}
+            </ul>
+          )}
+
           {v.services.length > 0 && (
             <section aria-labelledby="h-un-services" className={styles.services}>
               <h2 id="h-un-services" className={styles.h2}>שירותים ומחירים</h2>
@@ -96,6 +111,38 @@ export function UnclaimedProfile({ p, v }: { p: PublicProfile; v: ProfileView })
               <Services groups={v.services} contact={false} />
             </section>
           )}
+
+          {v.hoursRows && (
+            <section aria-labelledby="h-un-hours" className={styles.services}>
+              <h2 id="h-un-hours" className={styles.h2}>שעות פעילות</h2>
+              <table className={styles.hours}>
+                <tbody>
+                  {v.hoursRows.map(h => (
+                    <tr key={h.day} data-today={h.today || undefined}>
+                      <th scope="row">{h.day}{h.today ? ' · היום' : ''}</th>
+                      <td>{h.range ? <span dir="ltr" className="ltr">{h.range}</span> : 'סגור'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          )}
+
+          {v.faqs.length > 0 && (
+            <section aria-labelledby="h-un-faq" className={styles.services}>
+              <h2 id="h-un-faq" className={styles.h2}>שאלות נפוצות</h2>
+              <FaqAccordion items={v.faqs} />
+            </section>
+          )}
+
+          <section aria-labelledby="h-un-loc" className={styles.services}>
+            <h2 id="h-un-loc" className={styles.h2}>הגעה</h2>
+            <p className={styles.para}>{full}</p>
+            <p className={styles.links}>
+              {p.wazeUrl ? <a href={p.wazeUrl} target="_blank" rel="noopener nofollow">ניווט ב־Waze</a> : null}
+              {p.lat != null && p.lng != null ? <a href={`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`} target="_blank" rel="noopener nofollow">פתיחה במפות</a> : null}
+            </p>
+          </section>
 
           <div className={styles.sugs}>
             <div className={styles.sug} data-main>

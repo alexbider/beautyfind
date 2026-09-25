@@ -28,6 +28,16 @@ async function main() {
     const n = (k: string) => Number(row[k] ?? 0);
     note(`run ${r.createdAt.toISOString().slice(0, 16)} ${r.provider} ${r.status}`,
       `records ${n('records')}: ready ${n('ready')}, review ${n('review')}, incomplete ${n('incomplete')} | phone ${n('phone')}, email ${n('email')}, website ${n('website')}, rating ${n('rating')} | services ${n('services')}, logo ${n('logo')}, photos ${n('photos')} | read by current website stage ${n('read_by_new_code')} | spent $${(Number(r.spentMicros) / 1e6).toFixed(4)}`);
+    if (r.provider === 'enhance') {
+      const tasks = await db.importTask.findMany({ where: { runId: r.id }, select: { kind: true, status: true, error: true, found: true } });
+      const summary = new Map<string, number>();
+      for (const t of tasks) summary.set(`${t.kind}/${t.status}${t.error ? `: ${t.error.replace(/https?:\/\/\S+/g, '<url>').slice(0, 140)}` : ''}${t.kind === 'dfs_refresh' ? ` (found ${t.found})` : ''}`, (summary.get(`${t.kind}/${t.status}${t.error ? `: ${t.error.replace(/https?:\/\/\S+/g, '<url>').slice(0, 140)}` : ''}${t.kind === 'dfs_refresh' ? ` (found ${t.found})` : ''}`) ?? 0) + 1);
+      note(`enhance tasks ${r.createdAt.toISOString().slice(0, 16)}`, [...summary].map(([k, v]) => `${k} x${v}`).join(' | '));
+      note(`enhance counters ${r.createdAt.toISOString().slice(0, 16)}`, JSON.stringify((r.stats as { counters?: unknown }).counters ?? {}));
+      const spend = await db.spendEntry.findMany({ where: { runId: r.id }, select: { status: true, estimatedMicros: true, actualMicros: true, error: true } });
+      note(`enhance spend ${r.createdAt.toISOString().slice(0, 16)}`, spend.map(x => `${x.status} est ${Number(x.estimatedMicros) / 1e6} actual ${x.actualMicros != null ? Number(x.actualMicros) / 1e6 : '-'} ${x.error ?? ''}`).join(' | ') || 'none');
+      continue;
+    }
     const sites = await db.$queryRaw<Array<{ site: string | null; n: bigint }>>`
       SELECT crawl->>'site' AS site, count(*) AS n FROM import_places WHERE run_id = ${r.id}::uuid GROUP BY 1 ORDER BY 2 DESC`;
     note(`websites ${r.createdAt.toISOString().slice(0, 16)}`, sites.map(s => `${s.site ?? 'not read'} ${Number(s.n)}`).join(', '));

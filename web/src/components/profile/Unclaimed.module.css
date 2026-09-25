@@ -47,3 +47,11 @@
 .rating { margin: 8px 0 0; font-size: 14px; font-weight: 700; }
 .rating a { color: var(--navy); }
 .rating span[aria-hidden] { color: #E0A21B; }
+
+.para { margin: 0 0 8px; font-size: 14.5px; color: var(--text); text-wrap: pretty; }
+.amenities { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; padding: 0; list-style: none; }
+.amenities li { padding: 5px 11px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg-soft); font-size: 13px; font-weight: 700; color: var(--navy); }
+.hours { width: 100%; max-width: 420px; border-collapse: collapse; font-size: 14px; }
+.hours th, .hours td { padding: 7px 0; border-bottom: 1px solid var(--divider); text-align: start; font-weight: 600; }
+.hours th { font-weight: 700; color: var(--navy); }
+.hours tr[data-today] th, .hours tr[data-today] td { color: var(--teal-deep); }
