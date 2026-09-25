@@ -11,6 +11,9 @@ import { googleAvailable } from '@/lib/server/googleDisplay';
 import { ReviewList, type ReviewRow } from './ReviewList';
 import styles from '../import.module.css';
 
+// Approving copies each listing's chosen images, which can take a few seconds per record.
+export const maxDuration = 60;
+
 export const metadata: Metadata = {
   title: 'בדיקת עסקים מיובאים',
   robots: { index: false, follow: false },
@@ -105,6 +108,15 @@ export default async function ReviewPage({ searchParams }: { searchParams: SP })
       placeId: r.placeId.startsWith('dfs:') || r.placeId.includes(':') ? null : r.placeId,
       emailStatus: r.emailStatus,
       bookingUrl: r.bookingUrl,
+      websiteKind: r.websiteKind,
+      rejectedWebsite: typeof crawl.rejectedWebsite === 'string' ? crawl.rejectedWebsite : null,
+      viaLinkhub: typeof crawl.viaLinkhub === 'string' ? crawl.viaLinkhub : null,
+      logoUrl: r.logoUrl,
+      photoUrls: r.photoUrls,
+      imageCandidates: {
+        logos: ((crawl.imageCandidates as { logos?: string[] } | undefined)?.logos ?? []).slice(0, 4),
+        photos: ((crawl.imageCandidates as { photos?: string[] } | undefined)?.photos ?? []).slice(0, 24),
+      },
       conflicts: [crawl.phoneConflict === true ? 'phone' : null, crawl.hoursConflict === true ? 'hours' : null].filter((x): x is string => !!x),
       agencyEmails: Array.isArray(crawl.agencyEmails) ? (crawl.agencyEmails as string[]) : [],
       observations: observations

@@ -18,18 +18,27 @@ Builds unclaimed listings from public business data at low cost. Records are sta
 - Each place is stored once: the key is the Google place id when DataForSEO returns one, otherwise `dfs:cid:<cid>`. Items without coordinates are skipped. The number shown is "matching records in the provider's database", not the number of businesses in Israel.
 - What the provider said is kept as **field observations** (value, source URL, retrieval and source-update times, confidence, publishable flag). Ratings and photos are stored as observations but are not publishable until the provider's terms are confirmed (setting `publishProviderRatings`).
 
-**Stage 2A: the business's own website** (`scripts/import/crawl.ts`, `stages/enrich.ts`, extraction `src/lib/import/siteExtract.ts`).
+**Stage 2A: the business's own website** (`scripts/import/crawl.ts`, `stages/enrich.ts`, extraction `src/lib/import/siteExtract.ts`, classification `src/lib/import/websiteKind.ts`, service vocabulary `src/lib/import/services.ts`).
 
-- Plain HTTP only, as `BeautyFindBot/1.0`, respecting robots.txt, with a pause between pages. Home page plus at most 4 relevant pages (contact, about, services, prices, branches), depth 2 or less, stopping early once an email and a phone are found.
-- Skipped when there is no website or the record already has email, phone and hours.
-- Reads mailto/tel links, JSON-LD (`telephone`, `email`, `address`, `openingHoursSpecification`, `sameAs`, `logo`), explicit WhatsApp links, social profile links, known booking hosts and explicit ₪ price lines. Every fact keeps its page URL and a short evidence snippet.
+- **What counts as the website.** Every website value (from the provider or typed by staff) is classified first:
+  - *own site* or *social profile* (Facebook, Instagram, TikTok, YouTube page): kept as the website;
+  - *link-in-bio page* (Linktree and similar): read once to find the real site, socials and booking link;
+  - *booking page* (Tor4You, Fresha, Calendly…) and *WhatsApp link*: moved to the booking and WhatsApp fields;
+  - *directory or third party* (easy, b144, Dapei Zahav, Google Maps, Waze, health funds, gov.il, review and delivery sites, shorteners): never kept. The link is recorded as a rejected observation and shown on the record.
+  Staff edits are validated the same way.
+- **The site must belong to the business.** After reading it, its phones, site name and domain are compared with the listing. A site that shows its own phones and another name is dropped as *unrelated* (its emails and phones are not used). A site with nothing to compare is kept and flagged "website unverified" for review.
+- Social profiles are kept as links but not read (login walls and platform terms).
+- Plain HTTP only, as `BeautyFindBot/1.0`, respecting robots.txt, with a pause between pages. Home page plus up to 5 relevant pages (contact, prices, services, gallery, about), depth 2 or less; it stops early once it has an email, a phone and at least three priced services.
+- **Services.** Read from JSON-LD offers, price lines with the name before or after the price, card layouts (name, then price on the next line), ranges and "from" prices, and short menu items that name a known treatment (listed without a price). Each service gets one of our categories, a medical flag, a duration when written, and the line it came from. Services are merged with what the record already has (a price fills a missing one; nothing is dropped). A category is added when the site has one priced or two listed services in it (unless staff edited the categories). On approval, unpriced services are saved but hidden until the owner prices them.
+- **Logo and photos.** Logo candidates (JSON-LD logo, header logo images, touch icon) and photos (large content images, lazy-loaded and srcset images at their largest size, og:image, JSON-LD images) are collected; icons, SVG, GIF, tracking pixels and social or payment badges are skipped. The best logo and up to `maxListingPhotos` photos are pre-selected; staff can change the choice in review. On approval the chosen files are downloaded through the same SSRF-safe fetch, checked to be real JPEG/PNG/WebP files of a usable size, stored in our own storage and set as the listing's logo, cover and gallery. Nothing is hotlinked. Controlled by `useWebsiteImages` (on by default).
+- Reads mailto/tel links, JSON-LD (`telephone`, `email`, `address`, `openingHoursSpecification`, `sameAs`), explicit WhatsApp links, social profile links and known booking hosts. Every fact keeps its page URL and a short evidence snippet.
 - The site builder's footer email ("נבנה ע"י…", "powered by…") is set aside, never used.
 - Emails get a status: `dns_valid` (the domain accepts mail) or `syntax_valid`. Mailboxes are never probed over SMTP.
 - The provider's phone stays. The site's number fills it only when the site shows exactly one number. A different number, or hours that disagree, is a **conflict** and sends the record to review.
 - An explicit block (401, 403, 429, 451, a challenge page) stops that site. No proxies, no challenge bypassing.
 - Results are cached per domain (`site_fetches`): one crawl serves every branch on the same domain; conditional requests (ETag, Last-Modified) and content hashes avoid re-reading unchanged pages; rechecks after 30 days, or 7 after a failure (negative cache).
 - SSRF protection (`src/lib/import/safeFetch.ts`): only http/https on ports 80/443, no credentials in URLs, DNS checked at connect time so the address connected is the address checked, every redirect (at most 5) checked again, private/loopback/link-local/metadata ranges refused, size and time caps.
-- Optional and off by default: a capped headless-browser render (`browserFallback`, `browserMaxPerRun`) and an LLM step (`llmEnabled`, `llmBudgetUsd`) that returns categories and treatments only with a quote from the page; anything the quote does not support is dropped.
+- Optional and off by default: a capped headless-browser render (`browserFallback`, `browserMaxPerRun`) and an LLM step (`llmEnabled`, `llmBudgetUsd`) that returns categories and treatments only with a quote from the page; it adds services and fills missing prices but never replaces what the site stage found.
 
 **Stage 2B: Google Places (New), selective** (`src/lib/server/googleDisplay.ts`, `src/lib/import/googleFields.ts`).
 
@@ -53,7 +62,7 @@ Only the `ops` staff role. Every action is written to `audit_logs`.
 - **Run card**: pause, resume, cancel, retry incomplete, spend and reservations per provider, pages needing reconciliation, website outcomes for records without an email, CSV exports.
 - **Settings**: kill switch, provider switches, pilot defaults, crawl limits, recheck days, browser and LLM switches and caps, Google caps, publication minimum, provider ratings.
 - **Estimator**: cost for 100, 1,000 and 10,000 businesses with the assumptions shown.
-- **Review** (`/ops/import/review`): per record the source, email status, website outcome, conflicts, and an evidence table (value, source link, date, confidence, quote). Select records and "בדיקה חוזרת של האתר" to re-read their sites. Approve, merge, edit, reject, mark duplicate, restore. Publish the ready records on the page, or every ready record in a run. "Needs review" records are never bulk-published.
+- **Review** (`/ops/import/review`): per record the source, the website and what kind it is (or the directory link that was dropped), email status, website outcome, conflicts, services with category and price, a logo and photo picker, and an evidence table (value, source link, date, confidence, quote). Select records and "בדיקה חוזרת של האתר" to re-read their sites. Approve, merge, edit, reject, mark duplicate, restore. Publish the ready records on the page, or every ready record in a run. "Needs review" records are never bulk-published.
 - **Exports** (`/ops/import/export?run=<id>&kind=canonical|audit`): the canonical CSV has only publishable fields (no Google content, no Maps links, provider ratings only when enabled); the audit CSV has counts, reasons, website outcomes, spend per provider and open reconciliation items.
 
 ## Costs
@@ -102,7 +111,8 @@ The worker resumes where it stopped; a lease makes sure only one worker processe
 
 ## Source-use constraints
 
-- `src/lib/import/sourcePolicy.ts` says what is kept and published per source. DataForSEO ratings and photos, and website logos, stay unpublished until the terms are confirmed; record any change in `docs/decisions.md`.
+- `src/lib/import/sourcePolicy.ts` says what is kept and published per source. DataForSEO ratings and photos (which come from Google) stay unpublished until the terms are confirmed; record any change in `docs/decisions.md`.
+- Logos and photos come only from the business's own website, are chosen by staff, and are copied to our storage. The listing says it is not managed by the business, and the owner can replace or remove them after claiming. Turn `useWebsiteImages` off if that is not acceptable.
 - Google content only through the attributed provider view, with the retention above.
 - Business contact details of sole traders are personal data under the Israeli Privacy Protection Law (Amendment 13). Confirm the database registration and notice duties with counsel before launch.
 - Outreach by email or SMS is subject to section 30A of the Communications Law.

@@ -10,6 +10,7 @@
 
 import { CATEGORIES } from '../catalog';
 import { normName } from './match';
+import { classifyWebsite, KEEP_AS_WEBSITE, type WebsiteKind } from './websiteKind';
 import { normalizeIlPhone } from './phone';
 import type { DayHours } from './rules';
 
@@ -167,8 +168,14 @@ export interface MappedListing {
   lng: number | null;
   phoneRaw: string | null;
   phone: string | null;
-  website: string | null;
+  website: string | null; // own site, social profile or link page only
+  websiteKind: WebsiteKind | null;
+  rejectedWebsite: { url: string; kind: WebsiteKind } | null; // a directory or unrelated link the provider gave
+  bookingUrl: string | null;
+  whatsapp: string | null;
+  social: { network: string; url: string } | null;
   siteDomain: string | null;
+  providerImages: string[]; // provider (Google-sourced) images: observed, never published
   categories: string[];
   primaryType: string | null;
   types: string[];
@@ -186,7 +193,9 @@ export function mapItem(item: DfsItem): MappedListing | null {
   const sourceId = item.cid ?? item.feature_id ?? null;
   if (!name || (!item.place_id && !sourceId)) return null;
   const phoneRaw = item.phone ?? item.contact_info?.find(c => c.type === 'telephone' || c.type === 'phone')?.value ?? null;
-  const website = item.url ?? (item.domain ? `https://${item.domain}` : null);
+  const w = classifyWebsite(item.url ?? (item.domain ? `https://${item.domain}` : null));
+  const keep = w.url && KEEP_AS_WEBSITE.includes(w.kind);
+  const website = keep ? w.url : null;
   const types = [item.category, ...(item.additional_categories ?? [])].filter((x): x is string => !!x);
   return {
     sourceKey: item.place_id ?? `dfs:cid:${sourceId}`,
@@ -200,7 +209,13 @@ export function mapItem(item: DfsItem): MappedListing | null {
     phoneRaw,
     phone: normalizeIlPhone(phoneRaw),
     website,
-    siteDomain: item.domain?.replace(/^www\./, '').toLowerCase() ?? null,
+    websiteKind: keep ? w.kind : null,
+    rejectedWebsite: w.kind === 'directory' && w.url ? { url: w.url, kind: w.kind } : null,
+    bookingUrl: w.kind === 'booking' ? w.url : null,
+    whatsapp: w.kind === 'whatsapp' ? (w.phone ?? null) : null,
+    social: w.kind === 'social' && w.url ? { network: w.network!, url: w.url } : null,
+    siteDomain: w.kind === 'own' && w.url ? new URL(w.url).hostname.replace(/^www\./, '').toLowerCase() : null,
+    providerImages: [item.logo, item.main_image].filter((x): x is string => typeof x === 'string' && /^https?:\/\//.test(x)),
     categories: ourCategoriesFrom(item),
     primaryType: item.category_ids?.[0] ?? null,
     types,

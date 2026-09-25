@@ -12,7 +12,7 @@ export const ImportSettingsSchema = z.object({
   pilotBudgetUsd: z.number().min(0).max(10_000).default(1),
   dfsPageSize: z.number().int().min(10).max(1000).default(1000),
   // Stage 2A: websites
-  crawlMaxPages: z.number().int().min(1).max(10).default(5),
+  crawlMaxPages: z.number().int().min(1).max(10).default(6),
   recheckOkDays: z.number().int().min(1).max(365).default(30),
   recheckFailDays: z.number().int().min(1).max(90).default(7),
   browserFallback: z.boolean().default(false),
@@ -29,6 +29,9 @@ export const ImportSettingsSchema = z.object({
   requireEmail: z.boolean().default(true), // the product owner's rule: email is mandatory to publish
   requirePhoneOrWebsite: z.boolean().default(true),
   publishProviderRatings: z.boolean().default(false), // until the source's terms are confirmed
+  // Logo and photos from the business's own website, chosen in review and copied on approval.
+  useWebsiteImages: z.boolean().default(true),
+  maxListingPhotos: z.number().int().min(0).max(20).default(6),
 });
 export type ImportSettings = z.infer<typeof ImportSettingsSchema>;
 

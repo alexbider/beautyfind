@@ -214,6 +214,7 @@ function Settings({ settings, googleAvailable, googleMonth }: { settings: Import
           {flag('requireEmail', 'דוא״ל חובה לפרסום')}
           {flag('requirePhoneOrWebsite', 'טלפון או אתר חובה לפרסום')}
           {flag('publishProviderRatings', 'פרסום דירוג הספק (רק אחרי אישור תנאי הספק)')}
+          {flag('useWebsiteImages', 'לוגו ותמונות מאתר העסק (נבחרים בבדיקה, מועתקים באישור)')}
         </div>
         {!googleAvailable ? <p className={styles.note}>Google כבוי בשרת (GOOGLE_ENRICHMENT_ENABLED אינו true או שאין מפתח).</p> : null}
         <div className={styles.editGrid}>
@@ -221,6 +222,7 @@ function Settings({ settings, googleAvailable, googleMonth }: { settings: Import
           {num('pilotBudgetUsd', 'ברירת מחדל: תקרה לריצה (USD)', '0.01')}
           {num('dfsPageSize', 'גודל עמוד DataForSEO (עד 1,000)')}
           {num('crawlMaxPages', 'עמודים לאתר (עד 10)')}
+          {num('maxListingPhotos', 'תמונות מאתר העסק לכל עסק (עד 20)')}
           {num('recheckOkDays', 'ימים עד בדיקה חוזרת של אתר')}
           {num('recheckFailDays', 'ימים עד ניסיון חוזר אחרי כישלון')}
           {num('browserMaxPerRun', 'עמודי דפדפן לריצה')}

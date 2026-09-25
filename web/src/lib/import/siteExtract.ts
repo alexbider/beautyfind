@@ -3,6 +3,10 @@
 
 import { cleanEmail, extractEmails, sameDomain } from './email';
 import { findPhones, normalizeIlPhone } from './phone';
+import { durationOf, looksLikeServiceName, matchService, serviceKey } from './services';
+import { BOOKING_HOSTS, socialOf } from './websiteKind';
+
+export { socialOf };
 import type { DayHours } from './rules';
 
 export interface Fact<T = string> {
@@ -10,6 +14,17 @@ export interface Fact<T = string> {
   url: string;
   evidence: string;
   onContactPage?: boolean;
+}
+
+export type PriceType = 'fixed' | 'from' | 'per_unit' | 'per_ml' | 'per_area';
+export interface SiteService {
+  name: string;
+  priceNis: number | null; // null: the service is listed without a price
+  priceType: PriceType;
+  currency: 'ILS';
+  category: string | null;
+  isMedical: boolean;
+  durationMin: number | null;
 }
 
 export interface PageFacts {
@@ -21,17 +36,19 @@ export interface PageFacts {
   booking: Fact[];
   hours: Fact<DayHours[]> | null;
   address: Fact | null;
-  services: Fact<{ name: string; priceNis: number; priceType: 'fixed' | 'from' | 'per_unit' | 'per_ml' | 'per_area'; currency: 'ILS' }>[];
-  logos: Fact[]; // candidates only: reuse rights are not established
+  services: Fact<SiteService>[];
+  logos: Fact[]; // candidate logo image URLs, best first
+  photos: Fact[]; // candidate photo URLs from the business's own pages, best first
+  siteName: string | null; // og:site_name, JSON-LD name or <title>, for checking the site belongs to the business
   links: string[]; // relevant same-site links to follow
+  outLinks: string[]; // links to other sites (used on link-in-bio pages to find the real site)
   text: string;
 }
 
 const CONTACT_PAGE = /(contact|צור|צרו|קשר)/i;
-export const FOLLOW = /(contact|about|service|treat|price|pricing|menu|branch|location|צור|צרו|קשר|אודות|שירות|טיפול|מחיר|מחירון|סניפ|מיקום)/i;
+export const FOLLOW = /(contact|about|service|treat|price|pricing|menu|branch|location|gallery|portfolio|צור|צרו|קשר|אודות|שירות|טיפול|מחיר|מחירון|סניפ|מיקום|גלריה|תמונות|עבודות)/i;
 const SKIP = /(blog|news|post|tag\/|category\/|calendar|events?\/|search|cart|checkout|login|signin|wp-admin|wp-json|feed|privacy|terms|accessibility|נגישות|תקנון|מדיניות|\.(pdf|jpe?g|png|gif|webp|zip|mp4)$)/i;
 const CREDIT = /(נבנה\s*(ע["״]?י|על ידי)|בניית\s*אתרים|עיצוב\s*ו?בניית|פיתוח\s*אתרים|developed by|designed by|powered by|created by|website by|site by|web design)/i;
-const BOOKING_HOSTS = /(^|\.)(tor4you\.co\.il|mytor\.co\.il|calendly\.com|setmore\.com|fresha\.com|booksy\.com|simplybook\.(me|it)|vagaro\.com|easyapp\.co\.il|bizonline\.co\.il|picktime\.com|appointy\.com)$/i;
 
 const decode = (s: string) =>
   s
@@ -88,7 +105,10 @@ function hoursFromLd(spec: unknown): DayHours[] | null {
 }
 
 function jsonLd(html: string) {
-  const out = { emails: [] as string[], phones: [] as string[], sameAs: [] as string[], logo: null as string | null, hours: null as DayHours[] | null, address: null as string | null };
+  const out = {
+    emails: [] as string[], phones: [] as string[], sameAs: [] as string[], logo: null as string | null, hours: null as DayHours[] | null, address: null as string | null,
+    name: null as string | null, images: [] as string[], offers: [] as Array<{ name: string; price: number | null; from: boolean; evidence: string }>,
+  };
   for (const m of html.matchAll(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
     const visit = (v: unknown) => {
       if (Array.isArray(v)) return v.forEach(visit);
@@ -100,6 +120,24 @@ function jsonLd(html: string) {
       if (typeof o.logo === 'string') out.logo ??= o.logo;
       else if (o.logo && typeof (o.logo as { url?: unknown }).url === 'string') out.logo ??= (o.logo as { url: string }).url;
       if (o.openingHoursSpecification) out.hours ??= hoursFromLd(o.openingHoursSpecification);
+      const type = ([] as unknown[]).concat(o['@type'] ?? []).map(String);
+      const isBusiness = type.some(t => /LocalBusiness|BeautySalon|HairSalon|NailSalon|DaySpa|HealthAndBeautyBusiness|MedicalClinic|Physician|Dentist|Organization|Store/i.test(t));
+      if (isBusiness && typeof o.name === 'string') out.name ??= o.name.trim();
+      if (isBusiness) for (const img of ([] as unknown[]).concat(o.image ?? [])) {
+        const u = typeof img === 'string' ? img : img && typeof (img as { url?: unknown }).url === 'string' ? (img as { url: string }).url : null;
+        if (u) out.images.push(u);
+      }
+      // Services and offers: "Service", "Offer", "Product" with a name, and a price when given.
+      if (type.some(t => /^(Service|Offer|Product|MedicalProcedure|IndividualProduct)$/i.test(t))) {
+        const item = (o.itemOffered && typeof o.itemOffered === 'object' ? o.itemOffered : o) as Record<string, unknown>;
+        const name = typeof item.name === 'string' ? item.name.trim() : typeof o.name === 'string' ? o.name.trim() : '';
+        const offer = ([] as unknown[]).concat(o.offers ?? o)[0] as Record<string, unknown> | undefined;
+        const spec = (offer?.priceSpecification ?? {}) as Record<string, unknown>;
+        const cur = String(offer?.priceCurrency ?? spec.priceCurrency ?? 'ILS').toUpperCase();
+        const raw = offer?.price ?? spec.price ?? offer?.lowPrice ?? spec.minPrice;
+        const price = cur === 'ILS' && raw != null && Number.isFinite(Number(raw)) && Number(raw) > 0 ? Number(raw) : null;
+        if (name) out.offers.push({ name, price, from: offer?.lowPrice != null || spec.minPrice != null, evidence: `JSON-LD ${type[0]}: ${name}${price ? ` ${price} ILS` : ''}` });
+      }
       if (o.address && typeof o.address === 'object') {
         const a = o.address as Record<string, unknown>;
         const parts = [a.streetAddress, a.addressLocality].filter(x => typeof x === 'string' && x.trim());
@@ -116,29 +154,164 @@ function jsonLd(html: string) {
   return out;
 }
 
-// ---------- prices ----------
+// ---------- services and prices ----------
 
-const PRICE_RE = /(?:₪\s*(\d{2,6}(?:[.,]\d{1,2})?)|(\d{2,6}(?:[.,]\d{1,2})?)\s*(?:₪|ש["״']?ח|שקלים|שקל|nis|ils))/i;
+const NUM = String.raw`(\d{1,3}(?:,\d{3})+|\d{2,6})(?:[.,]\d{1,2})?`;
+const PRICE_RE = new RegExp(String.raw`(?:₪\s*${NUM}(?:\s*[-–]\s*₪?\s*${NUM})?|${NUM}(?:\s*[-–]\s*${NUM})?\s*(?:₪|ש["״']?ח|שקלים|שקל|nis\b|ils\b))`, 'i');
+const PRICE_ONLY = new RegExp(String.raw`^(?:החל\s*מ[-־]?\s*|מ[-־]\s*|from\s*)?(?:₪\s*)?${NUM}(?:\s*[-–]\s*${NUM})?\s*(?:₪|ש["״']?ח|שקלים|שקל|nis|ils)?\s*$`, 'i');
+const toNum = (s: string | undefined) => (s ? Number(s.replace(/,(?=\d{3})/g, '').replace(',', '.')) : NaN);
 
-/** Lines with an explicit shekel price: "name ... 250 ₪". The line itself is kept as evidence. */
+function priceOf(m: RegExpMatchArray): { price: number; range: boolean } | null {
+  const nums = m.slice(1).filter(Boolean).map(toNum).filter(Number.isFinite);
+  if (!nums.length) return null;
+  const price = nums[0];
+  if (price < 10 || price > 200_000) return null;
+  return { price, range: nums.length > 1 };
+}
+
+function priceTypeOf(line: string, range: boolean): PriceType {
+  if (/ליחידה|per\s*unit/i.test(line)) return 'per_unit';
+  if (/למ["״]?ל|per\s*ml/i.test(line)) return 'per_ml';
+  if (/לאזור|per\s*area/i.test(line)) return 'per_area';
+  return range || /החל\s*מ|(^|\s)מ[-־]\s*\d|\bfrom\b|\+\s*$/i.test(line) ? 'from' : 'fixed';
+}
+
+const cleanName = (s: string) =>
+  s
+    .replace(/[•·●▪■◆★✓✔►▶➤*|:–\-]+\s*$/u, '')
+    .replace(/^\s*[•·●▪■◆★✓✔►▶➤*|:–\-]+/u, '')
+    .replace(/\s*(החל\s*מ[-־]?|מ[-־]|from)\s*$/iu, '')
+    .replace(/\.{2,}|…/g, ' ')
+    .replace(/[-–(]?\s*\d{2,3}\s*(?:דק(?:ות|['׳])?|min(?:utes)?)\s*\)?/giu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+function service(name: string, price: number | null, type: PriceType, line: string, url: string): Fact<SiteService> | null {
+  const n = cleanName(name);
+  if (n.length < 2 || n.length > 80 || /^\d/.test(n) || !/[a-zA-Zא-ת]/.test(n)) return null;
+  const m = matchService(n);
+  // A priced line is a service even when our vocabulary does not know the treatment.
+  if (!m && price == null) return null;
+  return { value: { name: n, priceNis: price, priceType: type, currency: 'ILS', category: m?.category ?? null, isMedical: m?.isMedical ?? false, durationMin: durationOf(line) }, url, evidence: line.slice(0, 200) };
+}
+
+/**
+ * Services on one page:
+ * - lines with a shekel price, name before or after the price ("טיפול פנים 250 ₪", "₪250 טיפול פנים"),
+ *   ranges ("250-400 ₪") and "from" prices;
+ * - a name line followed by a price-only line (card layouts);
+ * - short lines that name a known treatment, without a price.
+ */
 export function priceLines(text: string, url: string): PageFacts['services'] {
   const out: PageFacts['services'] = [];
-  for (const raw of text.split('\n')) {
-    const line = raw.trim();
-    if (line.length < 4 || line.length > 160) continue;
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const used = new Set<number>();
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.length > 160) continue;
+    const priceOnly = PRICE_ONLY.test(line) && /₪|ש["״']?ח|שקל|nis|ils/i.test(line);
+    if (priceOnly) {
+      // "name" then "price" on the next line.
+      const prev = lines[i - 1];
+      const m = line.match(PRICE_RE);
+      const p = m && priceOf(m);
+      if (p && prev && !used.has(i - 1) && !PRICE_RE.test(prev) && looksLikeServiceName(prev)) {
+        const f = service(prev, p.price, priceTypeOf(line, p.range), `${prev} ${line}`, url);
+        if (f) {
+          out.push(f);
+          used.add(i - 1);
+        }
+      }
+      continue;
+    }
     const m = line.match(PRICE_RE);
-    if (!m) continue;
-    const price = Number((m[1] ?? m[2]).replace(',', '.'));
-    if (!Number.isFinite(price) || price < 10 || price > 100_000) continue;
-    const name = line
-      .slice(0, m.index)
-      .replace(/(החל\s*מ[-־]?|מ[-־]\s*$|:|-|–|\||\.{2,})\s*$/u, '')
-      .trim();
-    if (name.length < 2 || name.length > 80 || /^\d/.test(name)) continue;
-    const priceType = /החל\s*מ|^מ[-־]|\bfrom\b/i.test(line) ? 'from' : /ליחידה|per unit/i.test(line) ? 'per_unit' : /למ["״]?ל|per ml/i.test(line) ? 'per_ml' : /לאזור|per area/i.test(line) ? 'per_area' : 'fixed';
-    out.push({ value: { name, priceNis: price, priceType, currency: 'ILS' }, url, evidence: line });
+    if (m && m.index != null) {
+      const p = priceOf(m);
+      if (!p) continue;
+      const before = line.slice(0, m.index);
+      const after = line.slice(m.index + m[0].length);
+      const name = cleanName(before).length >= 2 ? before : after;
+      const f = service(name, p.price, priceTypeOf(line, p.range), line, url);
+      if (f) {
+        out.push(f);
+        used.add(i);
+      }
+      continue;
+    }
+    if (looksLikeServiceName(line)) {
+      const f = service(line, null, 'fixed', line, url);
+      if (f) out.push(f);
+    }
   }
-  return out.slice(0, 80);
+  // One entry per service name; a priced entry wins.
+  const byName = new Map<string, Fact<SiteService>>();
+  for (const f of out) {
+    const k = serviceKey(f.value.name);
+    const cur = byName.get(k);
+    if (!cur || (cur.value.priceNis == null && f.value.priceNis != null)) byName.set(k, f);
+  }
+  return [...byName.values()].slice(0, 120);
+}
+
+// ---------- images ----------
+
+const IMG_EXT = /\.(jpe?g|png|webp)(\?|#|$)/i;
+const IMG_HOST_OK = /(wixstatic\.com|squarespace-cdn\.com|shopify|cloudinary\.com|imgix\.net|wp-content\/uploads|googleusercontent\.com\/(?!.*=s\d{2}-)|cdn|images?|media|uploads|static)/i;
+const IMG_BAD = /(sprite|icon|favicon|placeholder|spinner|loader|pixel|blank|spacer|avatar|emoji|flag|payment|visa|mastercard|paypal|bit-logo|google-play|app-store|whatsapp|facebook|instagram|tiktok|waze|accessib|nagish|captcha|banner-ad|\/ads?\/|gravatar|1x1|\.svg|\.gif|data:)/i;
+const LOGO_HINT = /logo|לוגו/i;
+
+function attr(tag: string, name: string): string | null {
+  const m = tag.match(new RegExp(`\\s${name}\\s*=\\s*["']([^"']+)["']`, 'i'));
+  return m ? decode(m[1]).trim() : null;
+}
+
+function bestFromSrcset(srcset: string): string | null {
+  let best: { url: string; w: number } | null = null;
+  for (const part of srcset.split(',')) {
+    const [u, d] = part.trim().split(/\s+/);
+    const w = d?.endsWith('w') ? Number(d.slice(0, -1)) : d?.endsWith('x') ? Number(d.slice(0, -1)) * 1000 : 0;
+    if (u && (!best || w > best.w)) best = { url: u, w };
+  }
+  return best?.url ?? null;
+}
+
+function images(html: string, url: string, ldImages: string[], ldLogo: string | null) {
+  const logos: Fact[] = [];
+  const photos: Fact[] = [];
+  const add = (list: Fact[], raw: string | null, evidence: string) => {
+    if (!raw) return;
+    const abs = absolute(raw, url);
+    if (!/^https?:\/\//i.test(abs) || IMG_BAD.test(abs)) return;
+    if (!list.some(x => x.value === abs) && !logos.some(x => x.value === abs) && !photos.some(x => x.value === abs)) list.push({ value: abs, url, evidence });
+  };
+  if (ldLogo) add(logos, ldLogo, 'JSON-LD logo');
+  for (const m of html.matchAll(/<img\b[^>]*>/gi)) {
+    const tag = m[0];
+    const src = attr(tag, 'data-src') ?? attr(tag, 'data-lazy-src') ?? (attr(tag, 'srcset') ? bestFromSrcset(attr(tag, 'srcset')!) : null) ?? attr(tag, 'src');
+    if (!src) continue;
+    const hint = `${attr(tag, 'class') ?? ''} ${attr(tag, 'id') ?? ''} ${attr(tag, 'alt') ?? ''} ${src}`;
+    if (LOGO_HINT.test(hint)) {
+      if (logos.length < 3) add(logos, src, `img ${attr(tag, 'alt') ?? 'logo'}`.slice(0, 120));
+      continue;
+    }
+    const w = Number(attr(tag, 'width') ?? 0);
+    const h = Number(attr(tag, 'height') ?? 0);
+    if ((w && w < 250) || (h && h < 200)) continue; // thumbnails and icons
+    if (!IMG_EXT.test(src) && !IMG_HOST_OK.test(src)) continue;
+    if (photos.length < 20) add(photos, src, `img ${attr(tag, 'alt') ?? ''}`.trim().slice(0, 120));
+  }
+  // Social preview image and structured data images come last among photos (often a logo or banner).
+  for (const m of html.matchAll(/<meta[^>]+(?:property|name)=["'](?:og:image|twitter:image)(?::url)?["'][^>]*>/gi)) add(photos, attr(m[0], 'content'), 'og:image');
+  for (const i of ldImages) add(photos, i, 'JSON-LD image');
+  // Touch icons are square logos at a usable size.
+  for (const m of html.matchAll(/<link[^>]+rel=["'][^"']*apple-touch-icon[^"']*["'][^>]*>/gi)) {
+    const href = attr(m[0], 'href');
+    if (href && !IMG_BAD.test(href.replace(/icon/gi, ''))) {
+      const abs = absolute(href, url);
+      if (!logos.some(x => x.value === abs)) logos.push({ value: abs, url, evidence: 'apple-touch-icon' });
+    }
+  }
+  return { logos: logos.slice(0, 4), photos: photos.slice(0, 20) };
 }
 
 // ---------- page ----------
@@ -195,11 +368,17 @@ export function extractPage(html: string, url: string, siteHost: string): PageFa
     }
   }
 
-  const logos: Fact[] = [];
-  if (ld.logo) logos.push({ value: absolute(ld.logo, url), url, evidence: 'JSON-LD logo' });
-  const og = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)?.[1];
-  if (og) logos.push({ value: absolute(decode(og), url), url, evidence: 'og:image' });
+  const { logos, photos } = images(html, url, ld.images, ld.logo);
+  const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1];
+  const ogSite = html.match(/<meta[^>]+property=["']og:site_name["'][^>]+content=["']([^"']+)["']/i)?.[1];
+  const siteName = ld.name ?? (ogSite ? decode(ogSite).trim() : null) ?? (title ? decode(title).replace(/\s+/g, ' ').trim().slice(0, 120) : null);
 
+  // Services from structured data first, then from the page text.
+  const ldServices: Fact<SiteService>[] = [];
+  for (const o of ld.offers) {
+    const m = matchService(o.name);
+    ldServices.push({ value: { name: o.name.slice(0, 80), priceNis: o.price, priceType: o.from ? 'from' : 'fixed', currency: 'ILS', category: m?.category ?? null, isMedical: m?.isMedical ?? false, durationMin: null }, url, evidence: o.evidence });
+  }
   const links: string[] = [];
   for (const m of html.matchAll(/<a\b[^>]*href=["']([^"'#]+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
     try {
@@ -214,7 +393,18 @@ export function extractPage(html: string, url: string, siteHost: string): PageFa
     }
   }
 
+  const outLinks: string[] = [];
+  for (const h of hrefs) {
+    try {
+      const u = new URL(h, url);
+      if (/^https?:$/.test(u.protocol) && u.hostname.replace(/^www\./, '') !== siteHost && !outLinks.includes(u.toString())) outLinks.push(u.toString());
+    } catch {
+      /* bad href */
+    }
+  }
+
   return {
+    outLinks: outLinks.slice(0, 40),
     emails,
     agencyEmails: [...agency],
     phones,
@@ -223,11 +413,23 @@ export function extractPage(html: string, url: string, siteHost: string): PageFa
     booking,
     hours: ld.hours ? { value: ld.hours, url, evidence: 'JSON-LD openingHoursSpecification' } : null,
     address: ld.address ? { value: ld.address, url, evidence: 'JSON-LD address' } : null,
-    services: priceLines(text, url),
+    services: mergeServices([...ldServices, ...priceLines(text, url)]),
     logos,
+    photos,
+    siteName,
     links: [...new Set(links)],
     text,
   };
+}
+
+export function mergeServices(list: Fact<SiteService>[]): Fact<SiteService>[] {
+  const byName = new Map<string, Fact<SiteService>>();
+  for (const f of list) {
+    const k = serviceKey(f.value.name);
+    const cur = byName.get(k);
+    if (!cur || (cur.value.priceNis == null && f.value.priceNis != null)) byName.set(k, f);
+  }
+  return [...byName.values()];
 }
 
 function decodeURIComponentSafe(s: string) {
@@ -246,22 +448,6 @@ const absolute = (href: string, base: string) => {
   }
 };
 
-export function socialOf(href: string): { network: string; url: string } | null {
-  let u: URL;
-  try {
-    u = new URL(href);
-  } catch {
-    return null;
-  }
-  const host = u.hostname.replace(/^(www|m|he-il|he)\./, '');
-  const first = u.pathname.split('/').filter(Boolean)[0] ?? '';
-  if (!first) return null;
-  if (host === 'instagram.com' && !['p', 'reel', 'reels', 'explore', 'accounts', 'stories'].includes(first)) return { network: 'instagram', url: `https://www.instagram.com/${first}` };
-  if ((host === 'facebook.com' || host === 'fb.com') && !['sharer', 'sharer.php', 'share', 'plugins', 'tr', 'dialog', 'login'].includes(first)) return { network: 'facebook', url: `https://www.facebook.com/${u.pathname.replace(/^\/|\/$/g, '')}` };
-  if (host === 'tiktok.com' && first.startsWith('@')) return { network: 'tiktok', url: `https://www.tiktok.com/${first}` };
-  if (host === 'youtube.com' && (first.startsWith('@') || first === 'channel' || first === 'c')) return { network: 'youtube', url: `https://www.youtube.com${u.pathname}` };
-  return null;
-}
 
 /** Best email for a branch: own-domain on a contact page, then own-domain, then contact page, then any. */
 export function rankEmails(facts: Fact[], website: string | null): Fact[] {

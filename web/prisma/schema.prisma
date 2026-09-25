@@ -1284,6 +1284,11 @@ model ImportPlace {
   // published | syntax_valid | dns_valid | owner_confirmed (never "deliverable": we do not probe mailboxes)
   emailStatus String?           @map("email_status")
   bookingUrl  String?           @map("booking_url")
+  // own | social | linkhub (directories and unrelated sites are never kept as the website)
+  websiteKind String?           @map("website_kind")
+  // Images from the business's own site chosen for the listing; copied to our storage on approval.
+  logoUrl     String?           @map("logo_url")
+  photoUrls   String[]          @default([]) @map("photo_urls")
   runId       String            @map("run_id") @db.Uuid // last run that found it
   run         ImportRun         @relation(fields: [runId], references: [id])
   status      ImportPlaceStatus @default(found)

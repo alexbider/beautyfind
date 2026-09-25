@@ -13,7 +13,11 @@ import { dfsPageMaxUsd, pricing } from '../../src/lib/import/pricing';
 import { qualify, type QualifyInput } from '../../src/lib/import/rules';
 import { checkUrl, guardedLookup, isPrivateAddress, safeFetch, UnsafeUrlError } from '../../src/lib/import/safeFetch';
 import { extractPage, rankEmails } from '../../src/lib/import/siteExtract';
+import { imageInfo, usable } from '../../src/lib/import/imageInfo';
+import { matchService } from '../../src/lib/import/services';
 import { mayPublish } from '../../src/lib/import/sourcePolicy';
+import { classifyWebsite, siteBelongs } from '../../src/lib/import/websiteKind';
+import { png } from '../../scripts/import/sim/fixtures';
 
 describe('Israeli phone normalization', () => {
   it('normalizes common written forms to E.164', () => {
@@ -274,5 +278,98 @@ describe('SSRF protection', () => {
     } finally {
       srv.close();
     }
+  });
+});
+
+describe('website classification', () => {
+  const k = (u: string) => classifyWebsite(u);
+  it('keeps own sites and social profiles', () => {
+    assert.deepEqual(k('http://noa.co.il/he/'), { kind: 'own', url: 'http://noa.co.il/' });
+    assert.equal(k('noa-beauty.com').kind, 'own');
+    assert.equal(k('https://sites.google.com/view/noa').kind, 'own');
+    assert.deepEqual(k('https://www.facebook.com/noa.studio/posts/123'), { kind: 'social', url: 'https://www.facebook.com/noa.studio', network: 'facebook' });
+    assert.equal(k('https://facebook.com/profile.php?id=1000123').url, 'https://www.facebook.com/profile.php?id=1000123');
+    assert.equal(k('https://www.instagram.com/noa_studio/?hl=he').url, 'https://www.instagram.com/noa_studio');
+    assert.equal(k('https://linktr.ee/noa').kind, 'linkhub');
+  });
+  it('never keeps directories, maps or other third parties', () => {
+    for (const u of ['https://www.easy.co.il/page/123', 'https://www.b144.co.il/b144_sip/x', 'https://www.d.co.il/80123/', 'https://www.google.com/maps/place/x', 'https://goo.gl/maps/x', 'https://g.page/noa', 'https://www.waze.com/ul?ll=1,2', 'https://www.doctors.co.il/doctor/x', 'https://www.maccabi4u.co.il/x', 'https://www.gov.il/he', 'https://www.tripadvisor.com/x', 'https://bit.ly/abc', 'https://x.com/noa', 'https://noa.business.site/'])
+      assert.equal(k(u).kind, 'directory', u);
+  });
+  it('moves booking and WhatsApp links to their own fields', () => {
+    assert.equal(k('https://tor4you.co.il/noa').kind, 'booking');
+    assert.equal(k('https://www.fresha.com/a/noa').kind, 'booking');
+    assert.deepEqual(k('https://wa.me/972501234567'), { kind: 'whatsapp', url: 'https://wa.me/972501234567', phone: '+972501234567' });
+  });
+  it('rejects posts, groups and junk', () => {
+    for (const u of ['https://www.instagram.com/p/abc/', 'https://www.facebook.com/groups/123', 'https://www.facebook.com/sharer.php?u=x', 'mailto:a@b.c', 'javascript:alert(1)', 'not a url', '']) assert.equal(k(u).kind, 'invalid', u);
+  });
+});
+
+describe('site ownership', () => {
+  const p = { name: 'סטודיו נועה לקוסמטיקה', phone: '+97235551234' };
+  it('a matching phone or name belongs', () => {
+    assert.equal(siteBelongs(p, { phones: [{ value: '+97235551234' }], whatsapp: [], names: ['Home'] }, 'x.co.il'), 'yes');
+    assert.equal(siteBelongs(p, { phones: [{ value: '+97249999999' }], whatsapp: [], names: ['נועה - קוסמטיקה ויופי'] }, 'x.co.il'), 'yes');
+  });
+  it('another business with its own phone and name does not', () => {
+    assert.equal(siteBelongs(p, { phones: [{ value: '+97248123456' }], whatsapp: [], names: ['חנות רהיטים אחרת'] }, 'furniture.co.il'), 'no');
+  });
+  it('nothing to compare is unknown, not dropped', () => {
+    assert.equal(siteBelongs(p, { phones: [], whatsapp: [], names: ['Welcome'] }, 'abc.co.il'), 'unknown');
+  });
+});
+
+describe('services from websites', () => {
+  const html = `<html><head><title>סטודיו נועה</title>
+    <script type="application/ld+json">{"@type":"BeautySalon","name":"סטודיו נועה","hasOfferCatalog":{"itemListElement":[{"@type":"Offer","itemOffered":{"@type":"Service","name":"הרמת ריסים"},"price":"220","priceCurrency":"ILS"}]}}</script></head>
+    <body><ul><li>טיפול פנים קלאסי</li><li>מיקרובליידינג</li><li>אודות</li><li>צור קשר</li></ul>
+    <div>ניקוי עמוק</div><div>₪ 280</div>
+    <p>פדיקור רפואי 60 דק׳ - 180 ש"ח</p><p>₪350 הסרת שיער בלייזר רגליים מלאות</p><p>בוטוקס החל מ-900 ₪</p><p>החלקה אורגנית 800-1,200 ₪</p>
+    <p>אנחנו מזמינות אתכן ליהנות מטיפול פנים מפנק. קבעו תור עוד היום!</p></body></html>`;
+  const f = extractPage(html, 'https://noa.co.il/', 'noa.co.il');
+  const by = (n: string) => f.services.find(s => s.value.name === n)?.value;
+  it('reads structured offers, prices before or after the name, card layouts and ranges', () => {
+    assert.equal(by('הרמת ריסים')?.priceNis, 220);
+    assert.equal(by('ניקוי עמוק')?.priceNis, 280);
+    assert.deepEqual([by('פדיקור רפואי')?.priceNis, by('פדיקור רפואי')?.durationMin], [180, 60]);
+    assert.equal(by('הסרת שיער בלייזר רגליים מלאות')?.priceNis, 350);
+    assert.deepEqual([by('בוטוקס')?.priceNis, by('בוטוקס')?.priceType, by('בוטוקס')?.isMedical], [900, 'from', true]);
+    assert.deepEqual([by('החלקה אורגנית')?.priceNis, by('החלקה אורגנית')?.priceType], [800, 'from']);
+  });
+  it('lists known treatments without a price and ignores menus and sentences', () => {
+    assert.equal(by('טיפול פנים קלאסי')?.priceNis, null);
+    assert.equal(by('מיקרובליידינג')?.category, 'permanent-makeup');
+    assert.ok(!by('אודות') && !by('צור קשר'));
+    assert.ok(!f.services.some(s => s.value.name.includes('מזמינות')));
+  });
+  it('maps services to our categories', () => {
+    assert.equal(by('הסרת שיער בלייזר רגליים מלאות')?.category, 'hair-removal');
+    assert.equal(by('החלקה אורגנית')?.category, 'hair-salons');
+    assert.equal(matchService('מניקור ג׳ל')?.category, 'nails');
+    assert.equal(matchService('ספה תלת מושבית'), null);
+  });
+  it('reads the site name for the ownership check', () => assert.equal(f.siteName, 'סטודיו נועה'));
+});
+
+describe('images', () => {
+  const html = `<head><meta property="og:image" content="https://static.wixstatic.com/media/abc~mv2.jpg"><link rel="apple-touch-icon" href="/apple-touch-icon.png"></head>
+    <body><img class="site-logo" src="/logo.png" alt="לוגו"><img src="/uploads/room.jpg" width="800" height="600" alt="חדר">
+    <img src="/icons/phone.png" width="24"><img src="/a.svg"><img data-src="/uploads/lazy.webp" alt="lazy"><img srcset="/s-400.jpg 400w, /s-1200.jpg 1200w" alt="set"></body>`;
+  const f = extractPage(html, 'https://noa.co.il/', 'noa.co.il');
+  it('finds logo candidates', () => assert.deepEqual(f.logos.map(l => l.value), ['https://noa.co.il/logo.png', 'https://noa.co.il/apple-touch-icon.png']));
+  it('finds photos, prefers large sources and skips icons and SVG', () => {
+    const urls = f.photos.map(p => p.value);
+    assert.ok(urls.includes('https://noa.co.il/uploads/room.jpg') && urls.includes('https://noa.co.il/uploads/lazy.webp') && urls.includes('https://noa.co.il/s-1200.jpg'));
+    assert.ok(!urls.some(u => /phone\.png|\.svg|s-400/.test(u)));
+    assert.equal(urls.at(-1), 'https://static.wixstatic.com/media/abc~mv2.jpg'); // og:image last
+  });
+  it('reads real image sizes and rejects small ones', () => {
+    const big = imageInfo(png(960, 640))!;
+    assert.deepEqual(big, { mime: 'image/png', width: 960, height: 640 });
+    assert.ok(usable(big, 'photo'));
+    assert.ok(!usable(imageInfo(png(40, 40))!, 'logo'));
+    assert.ok(usable(imageInfo(png(240, 240))!, 'logo'));
+    assert.equal(imageInfo(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"></svg>'.padEnd(64))), null);
   });
 });

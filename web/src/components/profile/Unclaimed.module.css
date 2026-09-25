@@ -36,3 +36,11 @@
 @media (hover: hover) and (pointer: fine) { .go:hover { border-color: var(--navy); color: var(--navy); } }
 .go[data-main] { padding: 0 15px; border-color: var(--teal-deep); background: var(--teal-deep); color: #ffffff; }
 @media (hover: hover) and (pointer: fine) { .go[data-main]:hover { background: var(--navy); border-color: var(--navy); color: #ffffff; } }
+
+.photos { margin: 0 0 18px; border-radius: 14px; overflow: hidden; }
+.mono img { width: 100%; height: 100%; object-fit: contain; border-radius: inherit; background: #ffffff; }
+.links { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 8px 0 0; font-size: 13.5px; font-weight: 700; }
+.links a { color: var(--teal-deep); text-decoration: underline; text-underline-offset: 3px; }
+.services { margin: 0 0 18px; }
+.h2 { margin: 0 0 4px; font-size: 17px; font-weight: 700; }
+.note { margin: 0 0 10px; font-size: 13px; color: var(--muted); text-wrap: pretty; }

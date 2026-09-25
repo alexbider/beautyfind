@@ -7,6 +7,7 @@ import { BudgetExceeded, commit, release, reserve, withCaps } from '../../../src
 import { categoriesFromGoogle, NEARBY_TYPES, OFF_TOPIC_TYPES, TEXT_QUERIES } from '../../../src/lib/import/categories';
 import { boxKey, boxSideKm, boxTouchesIsrael, cityBox, ISRAEL_BOX, resolveCity, splitBox, tileBox, type Box } from '../../../src/lib/import/geo';
 import { normName } from '../../../src/lib/import/match';
+import { classifyWebsite, KEEP_AS_WEBSITE } from '../../../src/lib/import/websiteKind';
 import { normalizeIlPhone } from '../../../src/lib/import/phone';
 import { toMicros } from '../../../src/lib/import/pricing';
 import { hoursFromGoogle, type RunScope } from '../../../src/lib/import/rules';
@@ -21,6 +22,10 @@ const TEXT_PAGES = 3;
 const SEARCH_CALL_USD = Number(process.env.GOOGLE_SEARCH_CALL_USD ?? 0.04);
 
 class Exhausted extends Error {}
+const siteOf = (u: string | undefined) => {
+  const w = classifyWebsite(u);
+  return w.url && KEEP_AS_WEBSITE.includes(w.kind) ? w.url : null;
+};
 const BEAUTY_TYPES = new Set([...NEARBY_TYPES, 'doctor', 'medical_clinic', 'dentist', 'dental_clinic', 'plastic_surgeon', 'health']);
 
 let seq = 0;
@@ -121,7 +126,8 @@ async function upsertGoogle(runId: string, g: GPlace, hint: string | null): Prom
       regionSlug: where.regionSlug as RegionSlug,
       phoneRaw,
       phone: normalizeIlPhone(phoneRaw),
-      website: g.websiteUri ?? null,
+      website: siteOf(g.websiteUri),
+      websiteKind: siteOf(g.websiteUri) ? classifyWebsite(g.websiteUri).kind : null,
       hours: (hoursFromGoogle(g.regularOpeningHours?.periods) ?? undefined) as Prisma.InputJsonValue | undefined,
       categories: cats,
       crawl: { offTopic: !beautySignal && types.some(t => OFF_TOPIC_TYPES.has(t)) },

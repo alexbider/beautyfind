@@ -53,6 +53,7 @@ export interface SafeResponse {
   status: number;
   headers: Headers;
   body: string;
+  bytes: Buffer; // raw body, for images
   truncated: boolean;
   redirects: string[];
 }
@@ -143,7 +144,8 @@ export async function safeFetch(raw: string, opts: SafeFetchOptions = {}): Promi
         chunks.push(value);
       }
     }
-    const body = new TextDecoder('utf-8').decode(Buffer.concat(chunks));
-    return { url: url.toString(), status: res.status, headers: res.headers, body, truncated, redirects };
+    const bytes = Buffer.concat(chunks);
+    const body = new TextDecoder('utf-8').decode(bytes);
+    return { url: url.toString(), status: res.status, headers: res.headers, body, bytes, truncated, redirects };
   }
 }

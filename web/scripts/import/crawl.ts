@@ -35,6 +35,13 @@ export interface CrawlOutcome {
   error?: string;
 }
 
+const decodeURIComponentSafe = (s: string) => {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s;
+  }
+};
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 let browserP: Promise<Browser | null> | null = null;
@@ -197,15 +204,21 @@ export async function crawlSite(website: string, opts: CrawlOptions): Promise<Cr
     out.validators[finalUrl] = { etag: res.headers.get('etag') ?? undefined, lastModified: res.headers.get('last-modified') ?? undefined, hash: pageHash };
     out.facts.push(facts);
 
-    // Enough: an email and a phone are what the listing needs; stop spending requests.
+    // Enough: contact details plus a service list are what the listing needs; stop spending requests.
     const haveEmail = out.facts.some(f => f.emails.length);
     const havePhone = out.facts.some(f => f.phones.length);
-    if (haveEmail && havePhone && out.pages.length >= 2) break;
+    const priced = out.facts.reduce((n, f) => n + f.services.filter(x => x.value.priceNis != null).length, 0);
+    if (haveEmail && havePhone && priced >= 3 && out.pages.length >= 3) break;
 
     if (depth < 2) {
-      // Contact pages first, then the rest.
-      const next = facts.links.filter(l => !seen.has(l)).sort((a, b) => Number(/צור|צרו|קשר|contact/i.test(decodeURIComponent(b))) - Number(/צור|צרו|קשר|contact/i.test(decodeURIComponent(a))));
+      // Contact first, then prices and services, then gallery, then the rest.
+      const rank = (l: string) => {
+        const d = decodeURIComponentSafe(l);
+        return /צור|צרו|קשר|contact/i.test(d) ? 0 : /מחיר|price|pricing/i.test(d) ? 1 : /טיפול|שירות|treat|service|menu/i.test(d) ? 2 : /גלריה|תמונות|gallery|portfolio|עבודות/i.test(d) ? 3 : 4;
+      };
+      const next = facts.links.filter(l => !seen.has(l)).sort((a, b) => rank(a) - rank(b));
       for (const l of next) queue.push({ url: l, depth: depth + 1 });
+      queue.sort((a, b) => a.depth - b.depth || rank(a.url) - rank(b.url));
     }
   }
 

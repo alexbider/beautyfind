@@ -13,6 +13,8 @@ import { BLOCKING, qualify, RunScope, type ImportedTreatment } from '@/lib/impor
 import { loadSettings, parseSettings, type ImportSettings } from '@/lib/import/settings';
 import { toMicros } from '@/lib/import/pricing';
 import { commit, release } from '@/lib/import/budget';
+import { classifyWebsite, KEEP_AS_WEBSITE } from '@/lib/import/websiteKind';
+import { copyListingImages } from '@/lib/server/importMedia';
 
 export type OpResult = { ok: true; branchId?: string; slug?: string } | { ok: false; error: string };
 type Actor = { id: string };
@@ -191,6 +193,28 @@ function treatmentRows(p: ImportPlace, cats: string[]): Prisma.TreatmentCreateWi
   }));
 }
 
+const isCategoryImage = (url: string) => Object.values(CATEGORY_IMAGE).includes(url);
+
+/** Copies the chosen website logo and photos to our storage and sets them on the branch. */
+async function applyImages(
+  actor: Actor, p: ImportPlace, branchId: string, businessId: string, settings: ImportSettings, want: { logo: boolean; cover: boolean; gallery: boolean },
+): Promise<{ logo: boolean; photos: number } | null> {
+  if (!settings.useWebsiteImages || (!p.logoUrl && !p.photoUrls.length)) return null;
+  if (!want.logo && !want.cover && !want.gallery) return null;
+  const copied = await copyListingImages({ name: p.name, logoUrl: want.logo ? p.logoUrl : null, photoUrls: want.cover || want.gallery ? p.photoUrls : [] }, actor.id, businessId, settings.maxListingPhotos);
+  const [cover, ...rest] = copied.photos;
+  const data: Prisma.BranchUpdateInput = {};
+  if (want.logo && copied.logoUrl) data.logoUrl = copied.logoUrl;
+  if (want.cover && cover) {
+    data.coverUrl = cover.url;
+    data.coverAlt = p.name;
+  }
+  const gallery = want.cover ? rest : copied.photos;
+  if (want.gallery && gallery.length) data.gallery = gallery as unknown as Prisma.InputJsonValue;
+  if (Object.keys(data).length) await db.branch.update({ where: { id: branchId }, data });
+  return { logo: !!data.logoUrl, photos: copied.photos.length };
+}
+
 async function audit(actor: Actor, action: string, p: ImportPlace, meta: Record<string, unknown>) {
   await db.auditLog.create({ data: { actorId: actor.id, action, subjectType: 'import_place', subjectId: p.id, meta: meta as Prisma.InputJsonValue } });
 }
@@ -252,7 +276,8 @@ export async function approvePlace(actor: Actor, id: string): Promise<OpResult> 
       await tx.importPlace.update({ where: { id }, data: { branchId: b.id, reviewedById: actor.id, reviewedAt: new Date() } });
       return b;
     });
-    await audit(actor, 'import_approve', p, { branchId: branch.id });
+    const images = await applyImages(actor, p, branch.id, branch.businessId, settings, { logo: true, cover: true, gallery: true });
+    await audit(actor, 'import_approve', p, { branchId: branch.id, images });
     return { ok: true, branchId: branch.id, slug: branch.slug };
   } catch (e) {
     if (e instanceof Error && e.message === 'state') return { ok: false, error: 'state' };
@@ -311,7 +336,10 @@ export async function mergePlace(actor: Actor, id: string, branchId: string): Pr
     if (!b._count.treatments) for (const t of treatmentRows(p, [...have, ...add])) await tx.treatment.create({ data: { ...t, branch: { connect: { id: b.id } } } });
     await tx.importPlace.update({ where: { id }, data: { branchId: b.id, reviewedById: actor.id, reviewedAt: new Date() } });
   });
-  await audit(actor, 'import_merge', p, { branchId: b.id });
+  // Images only fill what an unclaimed listing is missing; a claimed listing's photos belong to its owner.
+  const galleryEmpty = !Array.isArray(b.gallery) || b.gallery.length === 0;
+  const images = b.isClaimed ? null : await applyImages(actor, p, b.id, b.businessId, settings, { logo: !b.logoUrl, cover: !b.coverUrl || isCategoryImage(b.coverUrl), gallery: galleryEmpty });
+  await audit(actor, 'import_merge', p, { branchId: b.id, images });
   return { ok: true, branchId: b.id, slug: b.slug };
 }
 
@@ -362,6 +390,8 @@ async function mxOk(domain: string): Promise<boolean | null> {
 }
 
 export interface PlaceEdit {
+  logoUrl?: string | null;
+  photoUrls?: string[];
   name?: string;
   phone?: string;
   email?: string;
@@ -392,7 +422,29 @@ export async function editPlace(actor: Actor, id: string, e: PlaceEdit): Promise
     data.emailMx = em ? await mxOk(emailDomain(em)) : null;
     if (em && data.emailMx === false) return { ok: false, error: 'email_mx' };
   }
-  if (e.website !== undefined) data.website = e.website.trim() || null;
+  if (e.website !== undefined) {
+    if (e.website.trim()) {
+      const w = classifyWebsite(e.website);
+      if (!w.url || !KEEP_AS_WEBSITE.includes(w.kind)) return { ok: false, error: w.kind === 'booking' ? 'website_booking' : 'website_directory' };
+      data.website = w.url;
+      data.websiteKind = w.kind;
+    } else {
+      data.website = null;
+      data.websiteKind = null;
+    }
+  }
+  if (e.logoUrl !== undefined || e.photoUrls !== undefined) {
+    const cand = ((p.crawl as { imageCandidates?: { logos?: string[]; photos?: string[] } } | null)?.imageCandidates ?? {}) as { logos?: string[]; photos?: string[] };
+    const allowed = new Set([...(cand.logos ?? []), ...(cand.photos ?? []), ...(p.logoUrl ? [p.logoUrl] : []), ...p.photoUrls]);
+    if (e.logoUrl !== undefined) {
+      if (e.logoUrl && !allowed.has(e.logoUrl)) return { ok: false, error: 'invalid' };
+      data.logoUrl = e.logoUrl;
+    }
+    if (e.photoUrls !== undefined) {
+      if (e.photoUrls.some(u => !allowed.has(u))) return { ok: false, error: 'invalid' };
+      data.photoUrls = e.photoUrls.slice(0, 20);
+    }
+  }
   if (e.categories !== undefined) data.categories = e.categories.filter(c => CATEGORIES.some(x => x.slug === c));
   if (e.citySlug !== undefined) {
     const c = CITIES.find(x => x.slug === e.citySlug);
@@ -471,6 +523,7 @@ export async function requalify(id: string) {
     hasLocation: !!(p.address || p.citySlug || (p.lat != null && p.lng != null)),
     phoneConflict: crawl.phoneConflict === true,
     hoursConflict: crawl.hoursConflict === true,
+        websiteUnverified: crawl.siteBelongs === 'unknown' && !!p.website,
   }, { requireEmail: rules.requireEmail, requirePhoneOrWebsite: rules.requirePhoneOrWebsite });
   await db.importPlace.update({
     where: { id },

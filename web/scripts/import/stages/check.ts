@@ -68,6 +68,7 @@ export async function check(run: ImportRun) {
         hasLocation: !!(p.address || p.citySlug || (p.lat != null && p.lng != null)),
         phoneConflict: crawl.phoneConflict === true,
         hoursConflict: crawl.hoursConflict === true,
+        websiteUnverified: crawl.siteBelongs === 'unknown' && !!p.website,
       },
       { requireEmail: s.requireEmail, requirePhoneOrWebsite: s.requirePhoneOrWebsite },
     );

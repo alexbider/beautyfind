@@ -56,7 +56,7 @@ export const BLOCKING = ['no_phone', 'no_contact', 'no_email', 'email_no_mx', 'n
 /** Reasons that allow approval but only by a person looking at the record. */
 export const REVIEW = [
   'possible_existing', 'possible_duplicate', 'email_domain_mismatch', 'shared_phone', 'temporarily_closed', 'not_beauty', 'city_not_in_catalog',
-  'extraction_failed', 'medical_without_doctor_info', 'email_from_search', 'phone_conflict', 'hours_conflict',
+  'extraction_failed', 'medical_without_doctor_info', 'email_from_search', 'phone_conflict', 'hours_conflict', 'website_unverified',
 ] as const;
 
 export const REASON_NAMES: Record<string, string> = {
@@ -65,6 +65,7 @@ export const REASON_NAMES: Record<string, string> = {
   no_location: 'אין מיקום או אזור שירות',
   phone_conflict: 'הטלפון באתר שונה מהטלפון במקור',
   hours_conflict: 'שעות הפתיחה באתר שונות מהמקור',
+  website_unverified: 'לא ברור שהאתר שייך לעסק (אין בו טלפון או שם תואמים)',
   no_email: 'לא נמצא דוא״ל',
   email_no_mx: 'דומיין הדוא״ל לא מקבל דואר',
   no_category: 'אין תחום טיפול',
@@ -100,6 +101,7 @@ export interface QualifyInput {
   hasLocation?: boolean; // an address, coordinates or an explicit service area
   phoneConflict?: boolean;
   hoursConflict?: boolean;
+  websiteUnverified?: boolean;
 }
 
 /** Minimum for publication; staff change these in the import settings. */
@@ -121,6 +123,7 @@ export function qualify(p: QualifyInput, rules: QualifyRules = DEFAULT_RULES): {
   if (p.hasLocation === false) r.push('no_location');
   if (p.phoneConflict) r.push('phone_conflict');
   if (p.hoursConflict) r.push('hours_conflict');
+  if (p.websiteUnverified) r.push('website_unverified');
   if (!p.categories.length) r.push('no_category');
   if (p.possibleExisting) r.push('possible_existing');
   if (p.possibleDuplicate) r.push('possible_duplicate');
@@ -139,8 +142,10 @@ export function qualify(p: QualifyInput, rules: QualifyRules = DEFAULT_RULES): {
 export interface ImportedTreatment {
   name: string;
   category: string | null;
-  priceNis: number | null;
+  priceNis: number | null; // null: listed on the site without a price
   priceType: 'fixed' | 'from' | 'per_unit' | 'per_ml' | 'per_area';
   durationMin: number | null;
   isMedical: boolean;
+  sourceText?: string; // the line on the site it came from
+  sourceUrl?: string;
 }

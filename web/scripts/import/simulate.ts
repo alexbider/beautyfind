@@ -43,6 +43,13 @@ async function main() {
   const { db } = ctx;
   const s = await loadSettings(db);
 
+  // Start from a clean slate: earlier simulated records would otherwise be "seen again" and keep old results.
+  const old = await db.importRun.findMany({ where: { label: 'SIMULATED pilot' }, select: { id: true } });
+  await db.importPlace.deleteMany({ where: { OR: [{ runId: { in: old.map(r => r.id) } }, { placeId: { startsWith: 'ChIJsim' } }, { placeId: { startsWith: 'dfs:cid:9000000' } }] } });
+  await db.spendEntry.deleteMany({ where: { runId: { in: old.map(r => r.id) } } });
+  await db.importRun.deleteMany({ where: { id: { in: old.map(r => r.id) } } });
+  await db.siteFetch.deleteMany({ where: { domain: { endsWith: '.test' } } });
+
   const scope = { all: false, cities: ['tel-aviv', 'haifa', 'jerusalem'], categories: ['nails', 'facials'], nearby: false, text: false };
   const run = await db.importRun.create({
     data: {
@@ -72,6 +79,16 @@ async function main() {
     db.importPlace.count({ where: { runId: run.id, reasons: { hasSome: ['phone_conflict', 'hours_conflict'] } } }),
   ]);
   const staged = byStatus.reduce((n, x) => n + x._count, 0);
+  const media = await db.$queryRaw<Array<{ with_services: bigint; services: bigint; priced: bigint; with_logo: bigint; with_photos: bigint; photos: bigint; social: bigint }>>`
+    SELECT count(*) FILTER (WHERE jsonb_array_length(COALESCE(treatments, '[]'::jsonb)) > 0) AS with_services,
+           COALESCE(sum(jsonb_array_length(COALESCE(treatments, '[]'::jsonb))), 0) AS services,
+           COALESCE(sum((SELECT count(*) FROM jsonb_array_elements(COALESCE(treatments, '[]'::jsonb)) t WHERE t->>'priceNis' IS NOT NULL)), 0) AS priced,
+           count(*) FILTER (WHERE logo_url IS NOT NULL) AS with_logo,
+           count(*) FILTER (WHERE cardinality(photo_urls) > 0) AS with_photos,
+           COALESCE(sum(cardinality(photo_urls)), 0) AS photos,
+           count(*) FILTER (WHERE website_kind = 'social') AS social
+    FROM import_places WHERE run_id = ${run.id}::uuid`;
+  const m = media[0];
   const ready = byStatus.find(x => x.status === 'ready')?._count ?? 0;
   const spent = fromMicros(r.spentMicros);
   const privateRedirects = sites.filter(x => x.kind === 'redirect_private').length;
@@ -84,8 +101,9 @@ async function main() {
     '> **SIMULATED. Not a live result.** Produced by `npm run import:simulate` against a local mock of the DataForSEO',
     '> Business Listings API and invented fixture websites. No provider was contacted and no money was spent.',
     '> The counts below describe the fixtures (built to include blocked sites, robots.txt refusals, missing emails,',
-    '> site-builder footer emails, phone conflicts, a redirect to a cloud metadata address, a repeated place and a',
-    '> record without coordinates). They say nothing about how many Israeli businesses a live run will find.',
+    '> site-builder footer emails, phone conflicts, a redirect to a cloud metadata address, a site of another business,',
+    '> directory and Instagram links given as the website, a repeated place and a record without coordinates).',
+    '> They say nothing about how many Israeli businesses a live run will find.',
     '',
     `Generated ${new Date().toISOString()} in ${secs}s. Pricing reference: $0.012 per request + $0.00036 per record (mock billed at these rates).`,
     '',
@@ -97,6 +115,9 @@ async function main() {
     `- Unique businesses staged: ${staged}`,
     `- With an email: ${emails} (${staged ? Math.round((emails / staged) * 100) : 0}%)`,
     `- Ready to publish without edits: ${ready}; conflicts sent to review: ${conflicts}`,
+    `- Services: ${Number(m.services)} on ${Number(m.with_services)} records (${Number(m.priced)} with a price)`,
+    `- Images: ${Number(m.with_logo)} records with a logo, ${Number(m.with_photos)} with photos (${Number(m.photos)} photos chosen)`,
+    `- Social profile kept as the website: ${Number(m.social)}`,
     `- Fixture sites that redirect to the cloud metadata address: ${privateRedirects}; of those crawled, refused as unsafe: ${refusedSites} (records marked unsafe: ${refused})`,
     '',
     '## SIMULATED records by status',

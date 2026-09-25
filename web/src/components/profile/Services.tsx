@@ -35,7 +35,7 @@ export function Price({ p }: { p: PriceView }) {
 }
 
 /** Services & prices accordion, one card per category, first open (design: openSvc = 0). */
-export function Services({ groups }: { groups: ServiceGroupView[] }) {
+export function Services({ groups, contact = true }: { groups: ServiceGroupView[]; contact?: boolean }) {
   const [open, setOpen] = useState(0);
   return (
     <div className={styles.list}>
@@ -92,9 +92,11 @@ export function Services({ groups }: { groups: ServiceGroupView[] }) {
                   ) : (
                     <span />
                   )}
-                  <ContactTrigger className={styles.ask} treatment={g.name}>
-                    {g.medical ? 'פנייה לתיאום ייעוץ רפואי' : 'פנייה לעסק על הטיפול'}
-                  </ContactTrigger>
+                  {contact ? (
+                    <ContactTrigger className={styles.ask} treatment={g.name}>
+                      {g.medical ? 'פנייה לתיאום ייעוץ רפואי' : 'פנייה לעסק על הטיפול'}
+                    </ContactTrigger>
+                  ) : null}
                 </div>
               </div>
             )}

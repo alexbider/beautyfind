@@ -9,6 +9,7 @@
   --bad-bg: #FBEAE8;
   --line: #DCE3E8;
   --muted: #5A6B7B;
+  --accent: #0E7C86;
   min-height: 100vh;
   overflow-x: clip;
   background: #F6F8F9;
@@ -55,7 +56,7 @@
 }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 .primary { background: #0C243E; border-color: #0C243E; color: #fff; }
-.teal { background: #0E7C86; border-color: #0E7C86; color: #fff; }
+.teal { background: var(--accent); border-color: var(--accent); color: #fff; }
 .danger { color: var(--bad); }
 .btnRow { display: flex; flex-wrap: wrap; gap: 8px; }
 @media (hover: hover) and (pointer: fine) {
@@ -121,3 +122,14 @@
   .obs tr { padding: 6px 0; border-bottom: 1px solid var(--line); }
   .obs td { border: 0; padding: 1px 0; }
 }
+
+.thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; border: 0; }
+.thumbs legend { margin-bottom: 6px; }
+.thumb {
+  position: relative; display: flex; align-items: center; justify-content: center; gap: 6px; width: 104px; height: 80px; padding: 4px;
+  border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 12px; cursor: pointer; overflow: hidden;
+}
+.thumb[data-on] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.thumb input { position: absolute; top: 4px; inset-inline-start: 4px; margin: 0; }
+.thumbImg { max-width: 100%; max-height: 100%; object-fit: contain; }
+.coverTag { position: absolute; bottom: 3px; inset-inline-end: 3px; padding: 1px 6px; border-radius: 999px; background: #0C243E; color: #fff; font-size: 11px; }

@@ -94,6 +94,8 @@ const Op = z.discriminatedUnion('op', [
       website: z.string().max(300).optional(),
       categories: z.array(z.string()).max(14).optional(),
       citySlug: z.string().max(40).nullable().optional(),
+      logoUrl: z.string().url().max(2000).nullable().optional(),
+      photoUrls: z.array(z.string().url().max(2000)).max(20).optional(),
     }),
   }),
 ]);
@@ -128,11 +130,11 @@ export async function bulkApproveAction(ids: string[]): Promise<{ ok: boolean; a
   return { ok: true, approved, skipped: list.data.length - approved };
 }
 
-/** Publishes every "ready" record in a run, up to 300 per click so a request never runs too long. */
+/** Publishes every "ready" record in a run, up to 40 per click (each one copies its images) so a request never runs too long. */
 export async function publishEligibleAction(runId: string): Promise<{ ok: boolean; approved: number; left: number }> {
   const user = await importerOrNull();
   if (!user || !z.uuid().safeParse(runId).success) return { ok: false, approved: 0, left: 0 };
-  const ready = await db.importPlace.findMany({ where: { runId, status: 'ready' }, select: { id: true }, orderBy: { createdAt: 'asc' }, take: 300 });
+  const ready = await db.importPlace.findMany({ where: { runId, status: 'ready' }, select: { id: true }, orderBy: { createdAt: 'asc' }, take: 40 });
   let approved = 0;
   for (const { id } of ready) if ((await approvePlace(user, id)).ok) approved++;
   const left = await db.importPlace.count({ where: { runId, status: 'ready' } });

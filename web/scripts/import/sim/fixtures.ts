@@ -4,6 +4,7 @@
 // safeFetch resolves to loopback only when IMPORT_TEST_ALLOW_PRIVATE=1.
 
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
+import { deflateSync } from 'node:zlib';
 import type { AddressInfo } from 'node:net';
 import type { DfsItem } from '../../../src/lib/import/dataforseo';
 
@@ -74,13 +75,48 @@ export async function startMockDfs(items: DfsItem[], opts: { perRequestUsd?: num
   };
 }
 
-export type SiteKind = 'full' | 'no_email' | 'agency_footer' | 'blocked' | 'robots' | 'conflict_phone' | 'redirect_private';
+export type SiteKind = 'full' | 'no_email' | 'agency_footer' | 'blocked' | 'robots' | 'conflict_phone' | 'redirect_private' | 'unrelated';
 
 export interface FixtureSite {
   host: string; // site-N.test
   kind: SiteKind;
   email?: string;
   phone?: string; // national format shown on the site
+}
+
+// A real PNG of the given size (solid colour), so image checks see genuine dimensions.
+const pngCache = new Map<string, Buffer>();
+export function png(w: number, h: number): Buffer {
+  const k = `${w}x${h}`;
+  if (pngCache.has(k)) return pngCache.get(k)!;
+  const crcTable = Array.from({ length: 256 }, (_, n) => {
+    let c = n;
+    for (let i = 0; i < 8; i++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    return c >>> 0;
+  });
+  const crc = (b: Buffer) => {
+    let c = 0xffffffff;
+    for (const x of b) c = crcTable[(c ^ x) & 0xff] ^ (c >>> 8);
+    return (c ^ 0xffffffff) >>> 0;
+  };
+  const chunk = (type: string, data: Buffer) => {
+    const len = Buffer.alloc(4);
+    len.writeUInt32BE(data.length);
+    const td = Buffer.concat([Buffer.from(type), data]);
+    const c = Buffer.alloc(4);
+    c.writeUInt32BE(crc(td));
+    return Buffer.concat([len, td, c]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(w, 0);
+  ihdr.writeUInt32BE(h, 4);
+  ihdr[8] = 8;
+  ihdr[9] = 2;
+  const row = Buffer.concat([Buffer.from([0]), Buffer.alloc(w * 3, 0xc8)]);
+  const raw = Buffer.concat(Array.from({ length: h }, () => row));
+  const out = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
+  pngCache.set(k, out);
+  return out;
 }
 
 function page(title: string, body: string) {
@@ -103,18 +139,27 @@ export async function startSites(sites: FixtureSite[]): Promise<{ port: number; 
     }
     if (s.kind === 'blocked') return void res.writeHead(403, { 'content-type': 'text/html' }).end(page('Forbidden', 'Access denied'));
     if (s.kind === 'redirect_private') return void res.writeHead(302, { location: 'http://169.254.169.254/latest/meta-data/' }).end();
+    if (path === '/logo.png') return void res.writeHead(200, { 'content-type': 'image/png' }).end(png(240, 240));
+    if (/^\/img\/photo-\d\.png$/.test(path)) return void res.writeHead(200, { 'content-type': 'image/png' }).end(png(960, 640));
+    if (path === '/img/tiny.png') return void res.writeHead(200, { 'content-type': 'image/png' }).end(png(40, 40));
     res.setHeader('content-type', 'text/html; charset=utf-8');
+    if (s.kind === 'unrelated') {
+      // A different business entirely: its own name and phone.
+      return void res.end(page('חנות רהיטים אחרת', '<h1>חנות רהיטים אחרת</h1><a href="tel:04-8123456">04-8123456</a><p>ספות ושולחנות</p>'));
+    }
     const name = `עסק לדוגמה ${host.replace(/\D/g, '')}`;
     const nav = '<a href="/צור-קשר">צור קשר</a> <a href="/מחירון">מחירון</a> <a href="/blog/post">בלוג</a>';
     const footer = s.kind === 'agency_footer' ? '<footer>האתר נבנה ע"י סטודיו דוגמה studio@example-agency.test</footer>' : '';
-    if (path === '/' || path === '') return void res.end(page(name, `<h1>${name}</h1>${nav}<p>ברוכים הבאים</p>${footer}`));
+    const imgs = '<header><img class="logo" src="/logo.png" alt="לוגו"></header><img src="/img/photo-1.png" width="960" height="640" alt="חדר טיפולים"><img src="/img/photo-2.png" width="960" height="640" alt="עמדת עבודה"><img src="/img/tiny.png" alt="אייקון">';
+    const menu = '<h2>הטיפולים שלנו</h2><ul><li>טיפול פנים קלאסי</li><li>הרמת ריסים</li><li>עיצוב גבות</li><li>מניקור</li><li>אודות</li></ul>';
+    if (path === '/' || path === '') return void res.end(page(name, `${imgs}<h1>${name}</h1>${nav}<p>ברוכים הבאים</p>${menu}${footer}`));
     if (path === '/צור-קשר') {
       const email = s.kind === 'no_email' || !s.email ? '' : `<a href="mailto:${s.email}">${s.email}</a>`;
       const phone = s.phone ? `<a href="tel:${s.phone}">${s.phone}</a>` : '';
       const ld = `<script type="application/ld+json">${JSON.stringify({ '@type': 'BeautySalon', name, telephone: s.phone, openingHoursSpecification: [{ dayOfWeek: 'Sunday', opens: '09:00', closes: '18:00' }] })}</script>`;
       return void res.end(page('צור קשר', `<h1>צור קשר</h1>${email} ${phone} <a href="https://wa.me/972501234567">וואטסאפ</a>${ld}${footer}`));
     }
-    if (path === '/מחירון') return void res.end(page('מחירון', '<h1>מחירון</h1><p>טיפול פנים קלאסי ₪250</p><p>מניקור ג׳ל 120 ₪</p>'));
+    if (path === '/מחירון') return void res.end(page('מחירון', '<h1>מחירון</h1><p>טיפול פנים קלאסי ₪250</p><p>מניקור ג׳ל 120 ₪</p><div>הרמת ריסים</div><div>₪ 220</div><p>פדיקור 60 דק׳ - 180 ש"ח</p>'));
     res.writeHead(404).end();
   });
   const port = await listen(srv, '0.0.0.0');
@@ -128,7 +173,7 @@ export function fakeItems(n: number, sitePort: number | null, opts: { siteShare?
     { city: 'Haifa', lat: 32.794, lng: 34.9896 },
     { city: 'Jerusalem', lat: 31.7683, lng: 35.2137 },
   ];
-  const kinds: SiteKind[] = ['full', 'full', 'full', 'no_email', 'agency_footer', 'blocked', 'robots', 'conflict_phone', 'redirect_private'];
+  const kinds: SiteKind[] = ['full', 'full', 'full', 'no_email', 'agency_footer', 'blocked', 'robots', 'conflict_phone', 'redirect_private', 'unrelated'];
   const items: DfsItem[] = [];
   const sites: FixtureSite[] = [];
   const siteShare = opts.siteShare ?? 0.6;
@@ -143,6 +188,9 @@ export function fakeItems(n: number, sitePort: number | null, opts: { siteShare?
       sites.push({ host, kind, email: `info@${host}`, phone: kind === 'conflict_phone' ? '03-7654321' : phone });
       url = `http://${host}:${sitePort}/`;
     }
+    // The provider sometimes gives a directory page or a social profile instead of a website.
+    if (!url && i % 13 === 5) url = `https://www.easy.co.il/page/${1000 + i}`;
+    if (!url && i % 13 === 8) url = `https://www.instagram.com/sim_salon_${i}/`;
     items.push({
       type: 'business_listing',
       title: `סלון דוגמה ${i + 1}`,
@@ -154,7 +202,7 @@ export function fakeItems(n: number, sitePort: number | null, opts: { siteShare?
       address_info: { city: c.city, country_code: 'IL' },
       phone: i % 11 === 0 ? undefined : phone,
       url,
-      domain: url ? new URL(url).hostname : undefined,
+      domain: url ? new URL(url).hostname.replace(/^www\./, '') : undefined,
       latitude: c.lat + (i % 10) * 0.001,
       longitude: c.lng + (i % 10) * 0.001,
       rating: { value: 4 + (i % 10) / 10, votes_count: 10 + i },

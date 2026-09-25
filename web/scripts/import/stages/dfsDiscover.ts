@@ -86,7 +86,7 @@ async function upsertListing(run: ImportRun, m: MappedListing, publishRatings: b
     googleReviewCount: m.rating?.count ?? null,
     ratingProvider: m.rating ? 'dataforseo' : null,
   };
-  const existing = await db.importPlace.findUnique({ where: { placeId: m.sourceKey }, select: { id: true, categories: true, crawl: true, phone: true, website: true, hours: true, status: true } });
+  const existing = await db.importPlace.findUnique({ where: { placeId: m.sourceKey }, select: { id: true, categories: true, crawl: true, phone: true, website: true, hours: true, status: true, bookingUrl: true, whatsapp: true, instagram: true, facebook: true } });
   let id: string;
   let result: 'new' | 'seen';
   if (existing) {
@@ -98,7 +98,15 @@ async function upsertListing(run: ImportRun, m: MappedListing, publishRatings: b
     }
     if (!edited.has('categories')) data.categories = [...new Set([...existing.categories, ...m.categories])];
     if (!edited.has('phone') && !existing.phone && m.phone) data.phone = m.phone;
-    if (!edited.has('website') && !existing.website && m.website) data.website = m.website;
+    if (!edited.has('website') && !existing.website && m.website) {
+      data.website = m.website;
+      data.websiteKind = m.websiteKind;
+      data.siteDomain = m.siteDomain;
+    }
+    if (!existing.bookingUrl && m.bookingUrl) data.bookingUrl = m.bookingUrl;
+    if (!existing.whatsapp && m.whatsapp) data.whatsapp = m.whatsapp;
+    if (m.social?.network === 'instagram' && !existing.instagram) data.instagram = m.social.url;
+    if (m.social?.network === 'facebook' && !existing.facebook) data.facebook = m.social.url;
     if (!existing.hours && m.hours) data.hours = m.hours as unknown as Prisma.InputJsonValue;
     await db.importPlace.update({ where: { id: existing.id }, data });
     id = existing.id;
@@ -117,10 +125,15 @@ async function upsertListing(run: ImportRun, m: MappedListing, publishRatings: b
         phoneRaw: m.phoneRaw,
         phone: m.phone,
         website: m.website,
+        websiteKind: m.websiteKind,
         siteDomain: m.siteDomain,
+        bookingUrl: m.bookingUrl,
+        whatsapp: m.whatsapp,
+        instagram: m.social?.network === 'instagram' ? m.social.url : null,
+        facebook: m.social?.network === 'facebook' ? m.social.url : null,
         hours: (m.hours ?? undefined) as Prisma.InputJsonValue | undefined,
         categories: m.categories,
-        crawl: { claimedOnProvider: m.claimedOnProvider },
+        crawl: { claimedOnProvider: m.claimedOnProvider, rejectedWebsite: m.rejectedWebsite?.url },
       },
     });
     id = created.id;
@@ -139,10 +152,19 @@ async function upsertListing(run: ImportRun, m: MappedListing, publishRatings: b
   add('address', m.address);
   add('phone', m.phoneRaw ? { raw: m.phoneRaw, e164: m.phone } : null);
   add('website', m.website);
+  add('booking', m.bookingUrl);
+  add('whatsapp', m.whatsapp);
+  add('social', m.social);
+  for (const img of m.providerImages) add('photo', img); // provider photo policy: not publishable
   add('hours', m.hours);
   add('categories', m.categories.length ? m.categories : null);
   add('rating', m.rating);
   for (const e of m.emails) add('email', e);
+  if (m.rejectedWebsite)
+    obs.push({
+      importPlaceId: id, field: 'website', value: m.rejectedWebsite.url, provider: 'dataforseo', sourceUrl: m.sourceUrl, retrievedAt: now,
+      confidence: 0.1, publishable: false, status: `rejected_${m.rejectedWebsite.kind}`, evidence: 'Directory or third-party page, not the business website',
+    });
   // The latest provider answer replaces the previous one for this record.
   await db.$transaction([
     db.fieldObservation.deleteMany({ where: { importPlaceId: id, provider: 'dataforseo' } }),

@@ -45,6 +45,12 @@ export interface ReviewRow {
   placeId: string | null;
   emailStatus: string | null;
   bookingUrl: string | null;
+  websiteKind: string | null;
+  rejectedWebsite: string | null;
+  viaLinkhub: string | null;
+  logoUrl: string | null;
+  photoUrls: string[];
+  imageCandidates: { logos: string[]; photos: string[] };
   conflicts: string[];
   agencyEmails: string[];
   observations: Obs[];
@@ -70,7 +76,9 @@ const MATCH_WHY: Record<string, string> = {
   similar_name: 'שם דומה', same_address: 'אותה כתובת', nearby: 'קרוב מאוד', far_apart: 'רחוקים זה מזה',
 };
 const TYPE_NAME: Record<string, string> = { clinic: 'קליניקה רפואית', medspa: 'קוסמטיקה ורפואה', cosmetics: 'קוסמטיקה', salon: 'סלון' };
+const KIND_NAME: Record<string, string> = { own: 'אתר העסק', social: 'פרופיל ברשת חברתית', linkhub: 'דף קישורים' };
 const SKIP_NAME: Record<string, string> = {
+  directory: 'הקישור הוא אינדקס או אתר צד שלישי, לא נשמר', unrelated: 'האתר שייך לעסק אחר, לא נשמר', social_profile: 'פרופיל ברשת חברתית, לא נסרק', linkhub: 'דף קישורים, לא נמצא אתר עסק',
   no_website: 'אין אתר', social: 'רק רשת חברתית', robots: 'האתר חוסם סריקה ב־robots.txt', unreachable: 'האתר לא נטען', blocked: 'האתר חסם את הגישה', off_topic: 'לא עסק יופי',
   no_email: 'נקרא, לא נמצא דוא״ל', failed: 'האתר לא נטען', unsafe: 'כתובת לא בטוחה, לא נסרקה', not_modified: 'לא השתנה מאז הבדיקה הקודמת', skipped_complete: 'לא נדרש, הפרטים כבר מלאים',
 };
@@ -127,6 +135,66 @@ function Evidence({ r }: { r: ReviewRow }) {
   );
 }
 
+function Images({ r }: { r: ReviewRow }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [logo, setLogo] = useState<string | null>(r.logoUrl);
+  const [photos, setPhotos] = useState<string[]>(r.photoUrls);
+  const [pending, start] = useTransition();
+  const [msg, setMsg] = useState<string | null>(null);
+  const toggle = (u: string) => setPhotos(ps => (ps.includes(u) ? ps.filter(x => x !== u) : [...ps, u]));
+  const save = () =>
+    start(async () => {
+      const res = await placeAction(r.id, { op: 'edit', fields: { logoUrl: logo, photoUrls: photos } });
+      setMsg(res.ok ? 'נשמר' : 'השמירה נכשלה');
+      router.refresh();
+    });
+  const thumb = (u: string) => <img src={u} alt="" loading="lazy" referrerPolicy="no-referrer" className={styles.thumbImg} />;
+  return (
+    <div>
+      <button type="button" className={styles.btn} onClick={() => setOpen(!open)} aria-expanded={open}>
+        {open ? 'הסתרת תמונות' : `לוגו ותמונות מהאתר (${r.logoUrl ? 'לוגו, ' : ''}${r.photoUrls.length} נבחרו)`}
+      </button>
+      {open ? (
+        <div className={styles.stack} style={{ marginTop: 8 }}>
+          <p className={styles.note}>התמונות שנבחרו יועתקו לאתר שלנו באישור. הראשונה תהיה תמונת השער. בעל העסק יוכל להחליף אותן.</p>
+          {r.imageCandidates.logos.length ? (
+            <fieldset className={styles.thumbs}>
+              <legend className={styles.label}>לוגו</legend>
+              {r.imageCandidates.logos.map(u => (
+                <label key={u} className={styles.thumb} data-on={logo === u || undefined}>
+                  <input type="radio" name={`logo-${r.id}`} checked={logo === u} onChange={() => setLogo(u)} />
+                  {thumb(u)}
+                </label>
+              ))}
+              <label className={styles.thumb} data-on={logo === null || undefined}>
+                <input type="radio" name={`logo-${r.id}`} checked={logo === null} onChange={() => setLogo(null)} />
+                בלי לוגו
+              </label>
+            </fieldset>
+          ) : null}
+          {r.imageCandidates.photos.length ? (
+            <fieldset className={styles.thumbs}>
+              <legend className={styles.label}>תמונות ({photos.length} נבחרו)</legend>
+              {r.imageCandidates.photos.map(u => (
+                <label key={u} className={styles.thumb} data-on={photos.includes(u) || undefined}>
+                  <input type="checkbox" checked={photos.includes(u)} onChange={() => toggle(u)} />
+                  {thumb(u)}
+                  {photos[0] === u ? <span className={styles.coverTag}>שער</span> : null}
+                </label>
+              ))}
+            </fieldset>
+          ) : null}
+          <div className={styles.btnRow}>
+            <button type="button" className={`${styles.btn} ${styles.primary}`} disabled={pending} onClick={save}>{pending ? 'שומרים…' : 'שמירת הבחירה'}</button>
+            {msg ? <span className={styles.note} role="status">{msg}</span> : null}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function GoogleView({ placeId }: { placeId: string }) {
   const [pending, start] = useTransition();
   const [res, setRes] = useState<Awaited<ReturnType<typeof googleLookupAction>> | null>(null);
@@ -154,7 +222,7 @@ function GoogleView({ placeId }: { placeId: string }) {
 const ERR: Record<string, string> = {
   incomplete: 'חסרים פרטי חובה', exists: 'המקום כבר קיים באתר', state: 'הרשומה כבר טופלה', not_found: 'הרשומה לא נמצאה', phone: 'מספר טלפון לא תקין',
   email: 'כתובת דוא״ל לא תקינה', email_mx: 'הדומיין של הדוא״ל לא מקבל דואר', name: 'חסר שם', city: 'יישוב לא מוכר', forbidden: 'אין הרשאה', invalid: 'נתונים לא תקינים',
-  no_branch: 'הדף הקיים לא נמצא',
+  no_branch: 'הדף הקיים לא נמצא', website_directory: 'זה אינדקס או אתר צד שלישי, לא אתר העסק', website_booking: 'זה דף הזמנת תורים, לא אתר העסק',
 };
 const catName = (s: string) => CATEGORIES.find(c => c.slug === s)?.name ?? s;
 const regionName = (s: string | null) => REGIONS.find(r => r.slug === s)?.name ?? '';
@@ -269,6 +337,8 @@ function Record({ r, onDone, selected, onSelect, google }: { r: ReviewRow; onDon
             <dt>אתר: </dt>
             <dd>
               {r.website ? <a href={r.website} target="_blank" rel="noreferrer" className={styles.ltr}>{r.website.replace(/^https?:\/\/(www\.)?/, '').slice(0, 50)}</a> : 'אין'}
+              {r.website && r.websiteKind ? <span className={styles.note}> · {KIND_NAME[r.websiteKind] ?? r.websiteKind}</span> : null}
+              {r.viaLinkhub ? <span className={styles.note}> · נמצא דרך דף הקישורים</span> : null}
               {r.crawlSkipped !== 'no_website' ? <span className={styles.note}> · {r.crawlSkipped ? SKIP_NAME[r.crawlSkipped] ?? r.crawlSkipped : `${r.pagesRead} עמודים נקראו${r.rendered ? `, ${r.rendered} בדפדפן` : ''}`}</span> : null}
             </dd>
           </div>
@@ -282,6 +352,7 @@ function Record({ r, onDone, selected, onSelect, google }: { r: ReviewRow; onDon
           ) : null}
           {r.instagram ? <div><dt>אינסטגרם: </dt><dd><a href={r.instagram} target="_blank" rel="noreferrer" className={styles.ltr}>{r.instagram.replace(/^https:\/\/www\.instagram\.com\//, '@')}</a></dd></div> : null}
         </dl>
+        {r.rejectedWebsite ? <p className={styles.note}>קישור שלא נשמר כאתר: <span className={styles.ltr}>{r.rejectedWebsite.replace(/^https?:\/\/(www\.)?/, '').slice(0, 60)}</span></p> : null}
         {r.bookingUrl ? <p className={styles.note}>הזמנת תור: <a href={r.bookingUrl} target="_blank" rel="noreferrer" className={styles.ltr}>{r.bookingUrl.replace(/^https?:\/\//, '').slice(0, 50)}</a></p> : null}
         {r.conflicts.length ? <p className={`${styles.result} ${styles.resultBad}`}>סתירה בין המקורות: {r.conflicts.map(c => (c === 'phone' ? 'טלפון' : 'שעות')).join(', ')}. ראו ראיות.</p> : null}
         {r.description ? <p className={styles.desc}>{r.description}</p> : null}
@@ -314,13 +385,13 @@ function Record({ r, onDone, selected, onSelect, google }: { r: ReviewRow; onDon
         {r.treatments.length ? (
           <div>
             <button type="button" className={styles.btn} onClick={() => setShowMenu(!showMenu)} aria-expanded={showMenu}>
-              {showMenu ? 'הסתרת' : 'הצגת'} {r.treatments.length} טיפולים
+              {showMenu ? 'הסתרת' : 'הצגת'} {r.treatments.length} טיפולים ({r.treatments.filter(t => t.priceNis).length} עם מחיר)
             </button>
             {showMenu ? (
               <ul className={styles.treats}>
                 {r.treatments.map((t, i) => (
                   <li key={i}>
-                    <span>{t.name}{t.isMedical ? ' · רפואי' : ''}</span>
+                    <span title={(t as { sourceText?: string }).sourceText}>{t.name}{t.category ? ` · ${catName(t.category)}` : ''}{t.isMedical ? ' · רפואי' : ''}</span>
                     <span className={styles.ltr}>{t.priceNis ? `${t.priceType === 'from' ? 'מ־' : ''}₪${t.priceNis}` : 'ללא מחיר'}</span>
                     <span>{t.durationMin ? `${t.durationMin} דק׳` : ''}</span>
                   </li>
@@ -329,6 +400,9 @@ function Record({ r, onDone, selected, onSelect, google }: { r: ReviewRow; onDon
             ) : null}
           </div>
         ) : <p className={styles.note}>לא נמצא תפריט טיפולים.</p>}
+
+        {!decided && (r.imageCandidates.logos.length || r.imageCandidates.photos.length) ? <Images r={r} /> : null}
+        {decided ? null : !r.imageCandidates.logos.length && !r.imageCandidates.photos.length ? <p className={styles.note}>לא נמצאו לוגו או תמונות באתר העסק.</p> : null}
 
         <div>
           <button type="button" className={styles.btn} onClick={() => setShowEvidence(!showEvidence)} aria-expanded={showEvidence}>
