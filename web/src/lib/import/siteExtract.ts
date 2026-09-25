@@ -300,6 +300,11 @@ function images(html: string, url: string, ldImages: string[], ldLogo: string | 
     if (!IMG_EXT.test(src) && !IMG_HOST_OK.test(src)) continue;
     if (photos.length < 20) add(photos, src, `img ${attr(tag, 'alt') ?? ''}`.trim().slice(0, 120));
   }
+  // Hero and section backgrounds set inline (common in Wix and Elementor pages).
+  for (const m of html.matchAll(/background(?:-image)?\s*:\s*url\(\s*['"]?([^'")]+)['"]?\s*\)/gi)) {
+    const u = decode(m[1]);
+    if (IMG_EXT.test(u) && photos.length < 20 && !LOGO_HINT.test(u)) add(photos, u, 'background image');
+  }
   // Social preview image and structured data images come last among photos (often a logo or banner).
   for (const m of html.matchAll(/<meta[^>]+(?:property|name)=["'](?:og:image|twitter:image)(?::url)?["'][^>]*>/gi)) add(photos, attr(m[0], 'content'), 'og:image');
   for (const i of ldImages) add(photos, i, 'JSON-LD image');

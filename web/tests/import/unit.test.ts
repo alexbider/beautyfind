@@ -359,12 +359,13 @@ describe('services from websites', () => {
 describe('images', () => {
   const html = `<head><meta property="og:image" content="https://static.wixstatic.com/media/abc~mv2.jpg"><link rel="apple-touch-icon" href="/apple-touch-icon.png"></head>
     <body><img class="site-logo" src="/logo.png" alt="לוגו"><img src="/uploads/room.jpg" width="800" height="600" alt="חדר">
-    <img src="/icons/phone.png" width="24"><img src="/a.svg"><img data-src="/uploads/lazy.webp" alt="lazy"><img srcset="/s-400.jpg 400w, /s-1200.jpg 1200w" alt="set"></body>`;
+    <img src="/icons/phone.png" width="24"><img src="/a.svg"><img data-src="/uploads/lazy.webp" alt="lazy"><img srcset="/s-400.jpg 400w, /s-1200.jpg 1200w" alt="set"><section style="background-image: url('/uploads/hero.jpg')"></section></body>`;
   const f = extractPage(html, 'https://noa.co.il/', 'noa.co.il');
   it('finds logo candidates', () => assert.deepEqual(f.logos.map(l => l.value), ['https://noa.co.il/logo.png', 'https://noa.co.il/apple-touch-icon.png']));
   it('finds photos, prefers large sources and skips icons and SVG', () => {
     const urls = f.photos.map(p => p.value);
     assert.ok(urls.includes('https://noa.co.il/uploads/room.jpg') && urls.includes('https://noa.co.il/uploads/lazy.webp') && urls.includes('https://noa.co.il/s-1200.jpg'));
+    assert.ok(urls.includes('https://noa.co.il/uploads/hero.jpg'));
     assert.ok(!urls.some(u => /phone\.png|\.svg|s-400/.test(u)));
     assert.equal(urls.at(-1), 'https://static.wixstatic.com/media/abc~mv2.jpg'); // og:image last
   });

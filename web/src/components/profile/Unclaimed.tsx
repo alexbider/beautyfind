@@ -47,7 +47,7 @@ export function UnclaimedProfile({ p, v }: { p: PublicProfile; v: ProfileView })
               {v.google ? (
                 <p className={styles.rating}>
                   <a href={v.googleHref} target="_blank" rel="noopener nofollow">
-                    <span aria-hidden="true">★</span> <span dir="ltr" className="ltr">{v.google.rating.toFixed(1)}</span> ב־Google · {v.google.count.toLocaleString('he-IL')} ביקורות
+                    <span aria-hidden="true">★</span> <bdi>{v.google.rating.toFixed(1)}</bdi> · <bdi>{v.google.count.toLocaleString('he-IL')}</bdi> ביקורות ב־<bdi>Google</bdi>
                   </a>
                 </p>
               ) : null}
