@@ -17,6 +17,10 @@ export interface EstimateAssumptions {
   googleSkuPer1000: number;
   photoShare: number; // records with one optional photo lookup
   llmShare: number; // records sent to the optional LLM (0 when off)
+  editorialShare: number; // usable records that get an editorial draft (one structured call)
+  editorialRepairShare: number; // drafts that need the one repair call
+  photosPerProfile: number; // copied images per usable record (WebP derivatives)
+  videoShare: number; // usable records with YouTube ids to validate (Data API: 1 unit per 50 ids; oEmbed: none)
 }
 
 export const DEFAULT_ASSUMPTIONS: EstimateAssumptions = {
@@ -30,6 +34,10 @@ export const DEFAULT_ASSUMPTIONS: EstimateAssumptions = {
   googleSkuPer1000: 17,
   photoShare: 0,
   llmShare: 0,
+  editorialShare: 1,
+  editorialRepairShare: 0.25,
+  photosPerProfile: 6,
+  videoShare: 0.15,
 };
 
 export interface EstimateRow {
@@ -41,6 +49,9 @@ export interface EstimateRow {
   googleUsd: number;
   photoUsd: number;
   llmUsd: number;
+  editorialUsd: number; // gross, before the token-based settlement
+  youtubeQuota: number; // Data API units (no charge; the default daily quota is 10,000)
+  storageMb: number; // WebP derivatives plus safe originals, roughly
   totalUsd: number;
   usable: number;
   perUsableUsd: number;
@@ -57,9 +68,13 @@ export function estimateFor(n: number, a: EstimateAssumptions = DEFAULT_ASSUMPTI
   const googleUsd = (n * a.googleCallsPerRecord * a.googleSkuPer1000) / 1000;
   const photoUsd = (n * a.photoShare * p.google.placePhotoPer1000) / 1000;
   const llmUsd = n * a.websiteShare * a.llmShare * p.llm.perRecordUsd;
-  const totalUsd = dfsUsd + googleUsd + photoUsd + llmUsd;
   const usable = Math.round(n * a.usableShare);
-  return { businesses: n, dfsRequests, dfsRecords, dfsUsd, websiteRequests, googleUsd, photoUsd, llmUsd, totalUsd, usable, perUsableUsd: usable ? totalUsd / usable : 0 };
+  // One call per profile at the gross allowance; the repair call is a second full call for that share.
+  const editorialUsd = usable * a.editorialShare * p.editorial.perProfileUsd * (1 + a.editorialRepairShare);
+  const youtubeQuota = Math.ceil(usable * a.videoShare); // one videos.list unit per profile (ids batched)
+  const storageMb = Math.round((usable * a.photosPerProfile * 0.45) / 1); // ~150KB derivative + ~300KB original per image
+  const totalUsd = dfsUsd + googleUsd + photoUsd + llmUsd + editorialUsd;
+  return { businesses: n, dfsRequests, dfsRecords, dfsUsd, websiteRequests, googleUsd, photoUsd, llmUsd, editorialUsd, youtubeQuota, storageMb, totalUsd, usable, perUsableUsd: usable ? totalUsd / usable : 0 };
 }
 
 export const estimateTable = (a?: EstimateAssumptions) => [100, 1000, 10000].map(n => estimateFor(n, a));

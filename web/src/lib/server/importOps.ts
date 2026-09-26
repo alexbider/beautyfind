@@ -5,17 +5,17 @@ import { Prisma, type ImportPlace, type RegionSlug } from '@prisma/client';
 import { CATEGORIES, CITIES } from '@/lib/catalog';
 import { CATEGORY_IMAGE } from '@/components/home/content';
 import { db } from '@/lib/server/db';
-import { VAT_RATE } from '@/lib/pricing';
 import { cleanEmail, emailDomain, pickEmail } from '@/lib/import/email';
 import { DUPLICATE_AT, isStrong, MatchPool, POSSIBLE_MATCH_AT, type PoolItem } from '@/lib/import/match';
 import { normalizeIlPhone } from '@/lib/import/phone';
-import { BLOCKING, EnhanceScope, qualify, RunScope, type ImportedTreatment } from '@/lib/import/rules';
+import { BLOCKING, EnhanceScope, qualify, RunScope } from '@/lib/import/rules';
 import { loadSettings, parseSettings, type ImportSettings } from '@/lib/import/settings';
 import { toMicros } from '@/lib/import/pricing';
 import { commit, release } from '@/lib/import/budget';
 import { classifyWebsite, KEEP_AS_WEBSITE } from '@/lib/import/websiteKind';
 import { composeDescription } from '@/lib/import/completeness';
-import { copyListingImages } from '@/lib/server/importMedia';
+import { copyListingImages, type Candidate, type MediaProvenance } from '@/lib/server/importMedia';
+import { branchCoverage, editorialText, profileFields, socialCounts, treatmentRows } from '@/lib/server/importPublish';
 import { profileHref } from '@/lib/server/public';
 
 export type OpResult = { ok: true; branchId?: string; slug?: string; href?: string } | { ok: false; error: string };
@@ -192,25 +192,6 @@ async function uniqueSlug(p: ImportPlace): Promise<string> {
   }
 }
 
-const netAgorot = (nis: number) => Math.round((nis * 100) / (1 + VAT_RATE)); // site prices include VAT
-
-function treatmentRows(p: ImportPlace, cats: string[]): Prisma.TreatmentCreateWithoutBranchInput[] {
-  const list = (Array.isArray(p.treatments) ? p.treatments : []) as unknown as ImportedTreatment[];
-  return list.slice(0, 80).map((t, i) => ({
-    name: t.name.slice(0, 120),
-    category: t.category && cats.includes(t.category) ? { connect: { slug: t.category } } : undefined,
-    priceType: t.priceType,
-    priceAgorot: t.priceNis ? netAgorot(t.priceNis) : 0,
-    durationMin: t.durationMin ?? null,
-    isMedical: t.isMedical,
-    requiresDeclaration: t.isMedical,
-    onlineBookable: !t.isMedical,
-    // No price on the site: kept for the owner to complete, hidden until then.
-    isPublished: !!t.priceNis,
-    sortOrder: i,
-  }));
-}
-
 const isCategoryImage = (url: string) => Object.values(CATEGORY_IMAGE).includes(url);
 
 /** Copies the chosen website logo and photos to our storage and sets them on the branch. */
@@ -219,18 +200,42 @@ async function applyImages(
 ): Promise<{ logo: boolean; photos: number } | null> {
   if (!settings.useWebsiteImages || (!p.logoUrl && !p.photoUrls.length)) return null;
   if (!want.logo && !want.cover && !want.gallery) return null;
-  const copied = await copyListingImages({ name: p.name, logoUrl: want.logo ? p.logoUrl : null, photoUrls: want.cover || want.gallery ? p.photoUrls : [], fallbackPhotos: want.cover || want.gallery ? candidatesOf(p).photos : [], fallbackLogos: candidatesOf(p).logos }, actor.id, businessId, settings.maxListingPhotos);
+  const copied = await copyListingImages({ name: p.name, cityName: p.cityName, logoUrl: want.logo ? p.logoUrl : null, photoUrls: want.cover || want.gallery ? p.photoUrls : [], fallbackPhotos: want.cover || want.gallery ? candidatesOf(p).photos : [], fallbackLogos: candidatesOf(p).logos, candidates: mediaCandidatesOf(p) }, actor.id, businessId, settings.maxListingPhotos);
   const [cover, ...rest] = copied.photos;
   const data: Prisma.BranchUpdateInput = {};
   if (want.logo && copied.logoUrl) data.logoUrl = copied.logoUrl;
   if (want.cover && cover) {
     data.coverUrl = cover.url;
-    data.coverAlt = p.name;
+    data.coverAlt = cover.alt;
   }
   const gallery = want.cover ? rest : copied.photos;
   if (want.gallery && gallery.length) data.gallery = gallery as unknown as Prisma.InputJsonValue;
+  if (copied.provenance.length) {
+    const b = await db.branch.findUnique({ where: { id: branchId }, select: { mediaProvenance: true } });
+    const prev = (Array.isArray(b?.mediaProvenance) ? b!.mediaProvenance : []) as unknown as MediaProvenance[];
+    data.mediaProvenance = [...prev, ...copied.provenance] as unknown as Prisma.InputJsonValue;
+  }
   if (Object.keys(data).length) await db.branch.update({ where: { id: branchId }, data });
+  await db.importPlace.update({ where: { id: p.id }, data: { mediaProvenance: copied.provenance as unknown as Prisma.InputJsonValue } });
   return { logo: !!data.logoUrl, photos: copied.photos.length };
+}
+
+/** Where each image candidate was found (page, provider, alt), for the provenance record of the copy. */
+export const mediaCandidatesOf = (p: ImportPlace): Candidate[] => {
+  const list = ((p.crawl as { mediaCandidates?: Array<{ url: string; pageUrl?: string | null; provider?: string; evidence?: string }> } | null)?.mediaCandidates ?? []);
+  return list.map(c => ({ url: c.url, pageUrl: c.pageUrl ?? null, provider: c.provider === 'google_profile' ? 'google_profile' : 'website', alt: c.evidence?.replace(/^img\s*/, '').trim() || null }));
+};
+
+/** Recomputes and stores the readiness classification and checklist of a listing that came from the import. */
+export async function refreshProfileStatus(branchId: string, p: ImportPlace): Promise<void> {
+  const b = await db.branch.findUnique({ where: { id: branchId }, include: { categories: true, treatments: { where: { isPublished: true }, select: { priceAgorot: true } } } });
+  if (!b) return;
+  const verifiedStaff = await db.staffMember.count({ where: { businessId: b.businessId, status: 'active', branchIds: { has: b.id }, license: { status: 'verified' } } });
+  const crawl = (p.crawl ?? {}) as Record<string, unknown>;
+  const conflicts = [crawl.phoneConflict === true ? 'phone' : null, crawl.hoursConflict === true ? 'hours' : null].filter((x): x is string => !!x);
+  const cov = branchCoverage(b, { verifiedStaff, conflicts, reviewReasons: p.reasons.filter(r => !['medical_without_doctor_info', 'no_email'].includes(r)), socials: socialCounts(p) });
+  await db.branch.update({ where: { id: b.id }, data: { profileStatus: cov.status, profileChecklist: { ...cov, at: new Date().toISOString() } as unknown as Prisma.InputJsonValue } });
+  await db.importPlace.update({ where: { id: p.id }, data: { profileStatus: cov.status, coverage: cov as unknown as Prisma.InputJsonValue } });
 }
 
 /** Image candidates found on the site and the Google profile (review picker order). */
@@ -262,6 +267,8 @@ export async function approvePlace(actor: Actor, id: string): Promise<OpResult> 
   const city = p.citySlug ? await db.city.findUnique({ where: { slug: p.citySlug }, select: { id: true, name: true } }) : null;
   const slug = await uniqueSlug(p);
   const medical = cats.some(c => CATEGORIES.find(x => x.slug === c)?.isMedical);
+  const text = editorialText(p, null);
+  const fields = profileFields(p, { maxVideos: settings.youtubeMaxVideos });
 
   try {
     const branch = await db.$transaction(async tx => {
@@ -293,13 +300,14 @@ export async function approvePlace(actor: Actor, id: string): Promise<OpResult> 
           googlePlaceUrl: p.googleMapsUri,
           googlePlaceId: googleId,
           googleSyncedAt: rating.googleRating != null ? new Date() : null,
-          description: p.description ?? composeDescription(p),
-          faqs: Array.isArray(p.faqs) ? (p.faqs as Prisma.InputJsonValue) : [],
+          description: text.description ?? p.description ?? composeDescription(p),
+          faqs: text.faqs ?? (Array.isArray(p.faqs) ? (p.faqs as Prisma.InputJsonValue) : []),
           accessible: p.accessible === true,
           freeParking: p.freeParking === true,
           wazeUrl: `https://waze.com/ul?ll=${p.lat},${p.lng}&navigate=yes`,
           websiteUrl: p.website,
           instagram: p.instagram,
+          ...fields,
           categories: { create: cats.map(c => ({ categorySlug: c })) },
           treatments: { create: treatmentRows(p, cats) },
         },
@@ -308,6 +316,7 @@ export async function approvePlace(actor: Actor, id: string): Promise<OpResult> 
       return b;
     });
     const images = await applyImages(actor, p, branch.id, branch.businessId, settings, { logo: true, cover: true, gallery: true });
+    await refreshProfileStatus(branch.id, p);
     await audit(actor, 'import_approve', p, { branchId: branch.id, images });
     return { ok: true, branchId: branch.id, slug: branch.slug, href: profileHref({ regionSlug: branch.regionSlug, slug: branch.slug, categories: cats }) };
   } catch (e) {
@@ -332,6 +341,8 @@ export async function mergePlace(actor: Actor, id: string, branchId: string): Pr
 
   const cats = p.categories.filter(c => CATEGORIES.some(x => x.slug === c));
   const emptyHours = !Array.isArray(b.hours) || b.hours.length === 0;
+  const text = editorialText(p, b);
+  const fields = profileFields(p, { maxVideos: settings.youtubeMaxVideos });
   await db.$transaction(async tx => {
     const claimed = await tx.importPlace.updateMany({ where: { id, status: { notIn: ['approved', 'merged', 'rejected'] } }, data: { status: 'merged' } });
     if (!claimed.count) throw new Error('state');
@@ -354,8 +365,20 @@ export async function mergePlace(actor: Actor, id: string, branchId: string): Pr
         email: b.email ?? p.email,
         websiteUrl: b.websiteUrl ?? p.website,
         instagram: b.instagram ?? p.instagram,
-        description: b.description ?? p.description ?? composeDescription(p),
-        faqs: (!Array.isArray(b.faqs) || !b.faqs.length) && Array.isArray(p.faqs) ? (p.faqs as Prisma.InputJsonValue) : undefined,
+        description: text.description ?? b.description ?? p.description ?? composeDescription(p),
+        faqs: text.faqs ?? ((!Array.isArray(b.faqs) || !b.faqs.length) && Array.isArray(p.faqs) ? (p.faqs as Prisma.InputJsonValue) : undefined),
+        // Profile facts only where the listing has none.
+        team: Array.isArray(b.team) && b.team.length ? undefined : fields.team,
+        videos: Array.isArray(b.videos) && b.videos.length ? undefined : fields.videos,
+        languages: b.languages.length ? undefined : fields.languages,
+        establishedYear: b.establishedYear ?? fields.establishedYear,
+        facebook: b.facebook ?? fields.facebook,
+        tiktok: b.tiktok ?? fields.tiktok,
+        youtube: b.youtube ?? fields.youtube,
+        attributes: fields.attributes,
+        editorial: b.editorial ? undefined : fields.editorial,
+        metaTitle: b.metaTitle ?? fields.metaTitle,
+        metaDescription: b.metaDescription ?? fields.metaDescription,
         accessible: b.accessible || p.accessible === true,
         freeParking: b.freeParking || p.freeParking === true,
         wazeUrl: b.wazeUrl ?? (p.lat != null ? `https://waze.com/ul?ll=${p.lat},${p.lng}&navigate=yes` : null),
@@ -375,6 +398,7 @@ export async function mergePlace(actor: Actor, id: string, branchId: string): Pr
   // Images only fill what an unclaimed listing is missing; a claimed listing's photos belong to its owner.
   const galleryEmpty = !Array.isArray(b.gallery) || b.gallery.length === 0;
   const images = b.isClaimed ? null : await applyImages(actor, p, b.id, b.businessId, settings, { logo: !b.logoUrl, cover: !b.coverUrl || isCategoryImage(b.coverUrl), gallery: galleryEmpty });
+  if (!b.isClaimed) await refreshProfileStatus(b.id, p);
   await audit(actor, 'import_merge', p, { branchId: b.id, images });
   return { ok: true, branchId: b.id, slug: b.slug, href: profileHref({ regionSlug: b.regionSlug, slug: b.slug, categories: [...b.categories.map(c => c.categorySlug), ...cats] }) };
 }

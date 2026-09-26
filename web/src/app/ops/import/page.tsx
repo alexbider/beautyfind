@@ -92,7 +92,7 @@ export default async function ImportPage() {
           googleMonth={{ usd: fromMicros(googleSpend._sum.actualMicros ?? googleSpend._sum.estimatedMicros ?? 0n), calls: googleSpend._count }}
           enhanceEligible={enhanceEligible}
           pendingImages={pendingImages}
-          pricingNote={{ version: p.version, dfs: p.dataforseo.businessListingsSearch, dfsChecked: p.dataforseo.checked, dfsNote: p.dataforseo.note, googleChecked: p.google.checked }}
+          pricingNote={{ version: p.version, dfs: p.dataforseo.businessListingsSearch, dfsChecked: p.dataforseo.checked, dfsNote: p.dataforseo.note, googleChecked: p.google.checked, editorialUsd: p.editorial.perProfileUsd }}
         />
       </main>
     </div>

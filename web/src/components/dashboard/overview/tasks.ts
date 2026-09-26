@@ -4,7 +4,7 @@ import type { Area } from '@/lib/permissions';
 // Pure: the overview uses it for the current branch and analytics uses it for the regional benchmark.
 
 export type TaskInput = {
-  treatments: Array<{ priceAgorot: number; isPublished: boolean }>;
+  treatments: Array<{ priceAgorot: number | null; isPublished: boolean }>;
   hours: unknown;
   gallery: unknown;
   wazeUrl: string | null;
@@ -46,7 +46,7 @@ export const galleryCount = (gallery: unknown) =>
 
 export function profileTasks(b: TaskInput): Task[] {
   const published = b.treatments.filter(t => t.isPublished);
-  const unpriced = published.filter(t => !(t.priceAgorot > 0)).length;
+  const unpriced = published.filter(t => !((t.priceAgorot ?? 0) > 0)).length;
   const photos = galleryCount(b.gallery);
   const tasks: Task[] = [
     { key: 'menu', name: 'תפריט מחירים מלא', done: published.length > 0 && unpriced === 0, area: 'menu', href: '/biz/menu', missing: published.length === 0 ? undefined : unpriced },

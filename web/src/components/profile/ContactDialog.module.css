@@ -81,3 +81,8 @@
   font: inherit; font-size: 15px; font-weight: 700; color: var(--text); cursor: pointer; transition: border-color .18s;
 }
 @media (hover: hover) and (pointer: fine) { .doneBtn:hover { border-color: var(--navy); } }
+
+/* Direct-contact panel for unclaimed listings (no inbox behind the form). */
+.direct { display: flex; flex-direction: column; gap: 14px; }
+.directList { display: flex; flex-direction: column; gap: 10px; }
+.directLink { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; color: var(--navy); font-weight: 700; }

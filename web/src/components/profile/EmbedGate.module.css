@@ -1,0 +1,13 @@
+.gate {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px;
+  background: linear-gradient(#F4F7F8, #E9EFF1); text-align: center;
+}
+.text { margin: 0; font-size: 14px; line-height: 1.5; color: var(--muted); max-width: 420px; text-wrap: pretty; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.activate {
+  min-height: 44px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--navy); color: #fff; font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer;
+}
+@media (hover: hover) and (pointer: fine) { .activate:hover { background: var(--teal-deep); } }
+.prefs {
+  min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+}

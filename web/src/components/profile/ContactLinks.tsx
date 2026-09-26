@@ -14,10 +14,10 @@ interface Base {
 }
 
 /** WhatsApp chat with a prefilled Hebrew message. Tracks `whatsapp_click`. */
-export function WhatsAppButton({ branchId, e164, businessName, size = 'md', className, label = 'וואטסאפ', iconOnly = false }: Base & { e164: string; businessName: string; label?: string; iconOnly?: boolean }) {
+export function WhatsAppButton({ branchId, e164, businessName, size = 'md', className, label = 'וואטסאפ', iconOnly = false, about }: Base & { e164: string; businessName: string; label?: string; iconOnly?: boolean; about?: string }) {
   return (
     <a
-      href={waHref(e164, businessName)}
+      href={waHref(e164, businessName, about)}
       target="_blank"
       rel="noopener noreferrer"
       className={`${styles.btn} ${styles.wa} ${className ?? ''}`}

@@ -33,7 +33,7 @@
 .row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 11px 0; border-top: 1px solid var(--divider); }
 .rowName { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; min-width: 0; font-size: 15px; color: var(--text); }
 .dur { font-size: 13px; color: var(--subtle); }
-.rowPrice { display: flex; align-items: baseline; gap: 8px; flex: none; font-size: 15px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rowPrice { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; flex: none; max-width: 55%; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .medTag {
   display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 7px; background: #FDF1E7;
   font-size: 12px; font-weight: 700; color: var(--warn-text); white-space: nowrap;
@@ -54,3 +54,17 @@
   .name { font-size: 16.5px; line-height: 1.35; text-wrap: pretty; }
   .from { font-size: 14px; }
 }
+
+/* Unknown price state (feature request §7): the cost is unknown, never zero, with a quote action. */
+.unknown { font-weight: 600; color: var(--muted); }
+.fromUnknown { color: var(--muted); font-weight: 600; }
+.summary { display: block; font-size: 13.5px; font-weight: 400; line-height: 1.5; color: var(--muted); margin-top: 3px; text-wrap: pretty; }
+.quote {
+  display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border: 1px solid var(--teal-border, #CDEFF3); border-radius: 10px;
+  background: var(--tint); color: var(--teal-deep); font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer;
+}
+@media (hover: hover) and (pointer: fine) { .quote:hover { background: #E2F5F8; } }
+.book { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border-radius: 10px; background: var(--navy); color: #fff; font-size: 13.5px; font-weight: 700; }
+.quoteNote { margin: 10px 18px 0; font-size: 13px; color: var(--subtle); }
+.emptyBox { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; padding: 18px 20px; border: 1px dashed var(--line-strong); border-radius: 18px; background: var(--bg-soft); }
+.emptyText { margin: 0; font-size: 15px; line-height: 1.6; color: var(--text); text-wrap: pretty; max-width: 560px; }

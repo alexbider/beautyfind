@@ -3,6 +3,7 @@
 
 import { cleanEmail, extractEmails, sameDomain } from './email';
 import { findPhones, normalizeIlPhone } from './phone';
+import { BEFORE_AFTER_HINT, establishedFrom, languagesFrom, teamFrom, videosFrom, type TeamMember, type VideoCandidate } from './profileExtract';
 import { durationOf, looksLikeServiceName, matchService, serviceKey } from './services';
 import { BOOKING_HOSTS, socialOf } from './websiteKind';
 
@@ -16,15 +17,18 @@ export interface Fact<T = string> {
   onContactPage?: boolean;
 }
 
-export type PriceType = 'fixed' | 'from' | 'per_unit' | 'per_ml' | 'per_area';
+export type PriceType = 'fixed' | 'from' | 'per_unit' | 'per_ml' | 'per_area' | 'range' | 'package' | 'free' | 'on_request';
 export interface SiteService {
   name: string;
-  priceNis: number | null; // null: the service is listed without a price
+  priceNis: number | null; // null: the service is listed without a price (priceType on_request). Never 0 for unknown.
+  priceMaxNis?: number | null; // upper bound of a range
+  priceNote?: string | null; // package or unit wording as published ("6 מפגשים")
   priceType: PriceType;
   currency: 'ILS';
   category: string | null;
   isMedical: boolean;
   durationMin: number | null;
+  description?: string | null; // a factual line about the service from the same page, when there is one
 }
 
 export interface PageFacts {
@@ -44,13 +48,21 @@ export interface PageFacts {
   faqs: Fact<{ q: string; a: string }>[]; // JSON-LD FAQPage or <details> questions
   accessible: Fact<boolean> | null; // an explicit accessibility statement about the premises
   freeParking: Fact<boolean> | null;
+  team: Fact<TeamMember>[]; // people named on the page with a role (and a biography when one follows)
+  videos: Fact<VideoCandidate>[]; // YouTube ids embedded or linked on the page (validated later)
+  channels: Fact[]; // YouTube channel links
+  languages: Fact<string[]> | null; // only an explicit "we speak" statement
+  establishedYear: Fact<number> | null;
+  beforeAfter: Fact[]; // image URLs on a before/after page or section: never published without the owner's confirmation
+  isTeamPage: boolean;
   links: string[]; // relevant same-site links to follow
   outLinks: string[]; // links to other sites (used on link-in-bio pages to find the real site)
   text: string;
 }
 
 const CONTACT_PAGE = /(contact|צור|צרו|קשר)/i;
-export const FOLLOW = /(contact|about|service|treat|price|pricing|menu|branch|location|gallery|portfolio|צור|צרו|קשר|אודות|שירות|טיפול|מחיר|מחירון|סניפ|מיקום|גלריה|תמונות|עבודות)/i;
+export const FOLLOW = /(contact|about|service|treat|price|pricing|menu|branch|location|gallery|portfolio|team|staff|our-team|doctors|video|צור|צרו|קשר|אודות|שירות|טיפול|מחיר|מחירון|סניפ|מיקום|גלריה|תמונות|עבודות|הצוות|צוות|רופאים|סרטונים|וידאו|מי אנחנו|עלינו)/i;
+const TEAM_PAGE = /(team|staff|our-team|doctors|הצוות|צוות|רופאים|המטפלים|מי אנחנו|עלינו|about)/i;
 const SKIP = /(blog|news|post|tag\/|category\/|calendar|events?\/|search|cart|checkout|login|signin|wp-admin|wp-json|feed|privacy|terms|accessibility|נגישות|תקנון|מדיניות|\.(pdf|jpe?g|png|gif|webp|zip|mp4)$)/i;
 const CREDIT = /(נבנה\s*(ע["״]?י|על ידי)|בניית\s*אתרים|עיצוב\s*ו?בניית|פיתוח\s*אתרים|developed by|designed by|powered by|created by|website by|site by|web design)/i;
 
@@ -231,20 +243,26 @@ const PRICE_RE = new RegExp(String.raw`(?:₪\s*${NUM}(?:\s*[-–]\s*₪?\s*${NU
 const PRICE_ONLY = new RegExp(String.raw`^(?:החל\s*מ[-־]?\s*|מ[-־]\s*|from\s*)?(?:₪\s*)?${NUM}(?:\s*[-–]\s*${NUM})?\s*(?:₪|ש["״']?ח|שקלים|שקל|nis|ils)?\s*$`, 'i');
 const toNum = (s: string | undefined) => (s ? Number(s.replace(/,(?=\d{3})/g, '').replace(',', '.')) : NaN);
 
-function priceOf(m: RegExpMatchArray): { price: number; range: boolean } | null {
+function priceOf(m: RegExpMatchArray): { price: number; range: boolean; max: number | null } | null {
   const nums = m.slice(1).filter(Boolean).map(toNum).filter(Number.isFinite);
   if (!nums.length) return null;
   const price = nums[0];
   if (price < 10 || price > 200_000) return null;
-  return { price, range: nums.length > 1 };
+  const max = nums.length > 1 && nums[1] > price && nums[1] <= 200_000 ? nums[1] : null;
+  return { price, range: max != null, max };
 }
 
+const PACKAGE_RE = /((?:חבילה|חבילת|סדרה\s*של|סדרת|מנוי)(?:\s*(?:של\s*)?\d+\s*(?:מפגשים|טיפולים|פגישות))?|\d+\s*(?:מפגשים|טיפולים|פגישות)|package(?:\s*of\s*\d+\s*sessions)?|course\s*of\s*\d+|\d+\s*sessions)/i;
 function priceTypeOf(line: string, range: boolean): PriceType {
   if (/ליחידה|per\s*unit/i.test(line)) return 'per_unit';
   if (/למ["״]?ל|per\s*ml/i.test(line)) return 'per_ml';
   if (/לאזור|per\s*area/i.test(line)) return 'per_area';
-  return range || /החל\s*מ|(^|\s)מ[-־]\s*\d|\bfrom\b|\+\s*$/i.test(line) ? 'from' : 'fixed';
+  if (PACKAGE_RE.test(line)) return 'package';
+  if (range) return 'range';
+  return /החל\s*מ|(^|\s)מ[-־]\s*\d|\bfrom\b|\+\s*$/i.test(line) ? 'from' : 'fixed';
 }
+const packageNote = (line: string) => line.match(PACKAGE_RE)?.[0].replace(/\s+/g, ' ').slice(0, 40) ?? null;
+const FREE_RE = /(ללא\s*עלות|ללא\s*תשלום|בחינם|חינם|free\b)/i;
 
 const cleanName = (s: string) =>
   s
@@ -256,13 +274,21 @@ const cleanName = (s: string) =>
     .replace(/\s+/g, ' ')
     .trim();
 
-function service(name: string, price: number | null, type: PriceType, line: string, url: string): Fact<SiteService> | null {
+function service(name: string, price: number | null, type: PriceType, line: string, url: string, max: number | null = null): Fact<SiteService> | null {
   const n = cleanName(name);
   if (n.length < 2 || n.length > 80 || /^\d/.test(n) || !/[a-zA-Zא-ת]/.test(n)) return null;
   const m = matchService(n);
   // A priced line is a service even when our vocabulary does not know the treatment.
   if (!m && price == null) return null;
-  return { value: { name: n, priceNis: price, priceType: type, currency: 'ILS', category: m?.category ?? null, isMedical: m?.isMedical ?? false, durationMin: durationOf(line) }, url, evidence: line.slice(0, 200) };
+  const priceType: PriceType = price == null ? 'on_request' : type;
+  return {
+    value: {
+      name: n, priceNis: price, priceMaxNis: priceType === 'range' ? max : null, priceNote: priceType === 'package' ? packageNote(line) : null, priceType, currency: 'ILS',
+      category: m?.category ?? null, isMedical: m?.isMedical ?? false, durationMin: durationOf(line),
+    },
+    url,
+    evidence: line.slice(0, 200),
+  };
 }
 
 /**
@@ -286,7 +312,7 @@ export function priceLines(text: string, url: string): PageFacts['services'] {
       const m = line.match(PRICE_RE);
       const p = m && priceOf(m);
       if (p && prev && !used.has(i - 1) && !PRICE_RE.test(prev) && looksLikeServiceName(prev)) {
-        const f = service(prev, p.price, priceTypeOf(line, p.range), `${prev} ${line}`, url);
+        const f = service(prev, p.price, priceTypeOf(`${prev} ${line}`, p.range), `${prev} ${line}`, url, p.max);
         if (f) {
           out.push(f);
           used.add(i - 1);
@@ -301,15 +327,26 @@ export function priceLines(text: string, url: string): PageFacts['services'] {
       const before = line.slice(0, m.index);
       const after = line.slice(m.index + m[0].length);
       const name = cleanName(before).length >= 2 ? before : after;
-      const f = service(name, p.price, priceTypeOf(line, p.range), line, url);
+      const f = service(name, p.price, priceTypeOf(line, p.range), line, url, p.max);
       if (f) {
         out.push(f);
         used.add(i);
       }
       continue;
     }
+    // "ייעוץ ראשון ללא עלות": a known service the business publishes as free (price 0, type free), not an unknown price.
+    if (FREE_RE.test(line) && line.length <= 90) {
+      const name = line.replace(FREE_RE, '').replace(/[-–:]+\s*$/, '');
+      // A known treatment, or a consultation, that the business publishes as free of charge.
+      const f = matchService(name) || /ייעוץ|consult/i.test(name) ? service(name, 0, 'free', line, url) : null;
+      if (f) {
+        f.value.priceType = 'free';
+        out.push(f);
+        continue;
+      }
+    }
     if (looksLikeServiceName(line)) {
-      const f = service(line, null, 'fixed', line, url);
+      const f = service(line, null, 'on_request', line, url);
       if (f) out.push(f);
     }
   }
@@ -345,9 +382,10 @@ function bestFromSrcset(srcset: string): string | null {
   return best?.url ?? null;
 }
 
-function images(html: string, url: string, ldImages: string[], ldLogo: string | null) {
+function images(html: string, url: string, ldImages: string[], ldLogo: string | null, baPage = false) {
   const logos: Fact[] = [];
   const photos: Fact[] = [];
+  const beforeAfter: Fact[] = [];
   const add = (list: Fact[], raw: string | null, evidence: string) => {
     if (!raw) return;
     const abs = absolute(raw, url);
@@ -368,6 +406,11 @@ function images(html: string, url: string, ldImages: string[], ldLogo: string | 
     const h = Number(attr(tag, 'height') ?? 0);
     if ((w && w < 250) || (h && h < 200)) continue; // thumbnails and icons
     if (!IMG_EXT.test(src) && !IMG_HOST_OK.test(src)) continue;
+    // Treatment results are not premises photos and need the owner's consent record before they show.
+    if (baPage || BEFORE_AFTER_HINT.test(hint)) {
+      if (beforeAfter.length < 12) add(beforeAfter, src, `before/after ${attr(tag, 'alt') ?? ''}`.trim().slice(0, 120));
+      continue;
+    }
     if (photos.length < 20) add(photos, src, `img ${attr(tag, 'alt') ?? ''}`.trim().slice(0, 120));
   }
   // Hero and section backgrounds set inline (common in Wix and Elementor pages).
@@ -386,7 +429,7 @@ function images(html: string, url: string, ldImages: string[], ldLogo: string | 
       if (!logos.some(x => x.value === abs)) logos.push({ value: abs, url, evidence: 'apple-touch-icon' });
     }
   }
-  return { logos: logos.slice(0, 4), photos: photos.slice(0, 20) };
+  return { logos: logos.slice(0, 4), photos: photos.slice(0, 20), beforeAfter };
 }
 
 // ---------- page ----------
@@ -443,8 +486,12 @@ export function extractPage(html: string, url: string, siteHost: string): PageFa
     }
   }
 
-  const { logos, photos } = images(html, url, ld.images, ld.logo);
+  const path = decodeURIComponentSafe(new URL(url).pathname);
   const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1];
+  const h1 = htmlToText(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1] ?? '');
+  const baPage = BEFORE_AFTER_HINT.test(path) || BEFORE_AFTER_HINT.test(h1);
+  const isTeamPage = TEAM_PAGE.test(path) || TEAM_PAGE.test(h1) || /הצוות שלנו|meet the team/i.test(text.slice(0, 600));
+  const { logos, photos, beforeAfter } = images(html, url, ld.images, ld.logo, baPage);
   const ogSite = html.match(/<meta[^>]+property=["']og:site_name["'][^>]+content=["']([^"']+)["']/i)?.[1];
   const siteName = ld.name ?? (ogSite ? decode(ogSite).trim() : null) ?? (title ? decode(title).replace(/\s+/g, ' ').trim().slice(0, 120) : null);
 
@@ -514,6 +561,12 @@ export function extractPage(html: string, url: string, siteHost: string): PageFa
     services: mergeServices([...ldServices, ...priceLines(text, url)]),
     logos,
     photos,
+    beforeAfter,
+    team: teamFrom(text, url, { teamPage: isTeamPage }),
+    ...videosFrom(html, url),
+    languages: languagesFrom(text, url),
+    establishedYear: establishedFrom(text, url),
+    isTeamPage,
     siteName,
     links: [...new Set(links)],
     text,

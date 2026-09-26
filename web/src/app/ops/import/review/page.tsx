@@ -5,6 +5,8 @@ import { OpsHeader } from '@/components/ops/OpsHeader';
 import { OPS_ROLE_NAMES, requireImporter } from '@/components/ops/guard';
 import { CATEGORIES, REGIONS } from '@/lib/catalog';
 import { completeness } from '@/lib/import/completeness';
+import type { Coverage } from '@/lib/import/coverage';
+import type { EditorialRecord } from '@/lib/import/editorial';
 import { scoreMatch } from '@/lib/import/match';
 import type { ImportedTreatment } from '@/lib/import/rules';
 import { db } from '@/lib/server/db';
@@ -33,6 +35,43 @@ const TABS: Array<{ key: string; name: string; statuses: ImportPlaceStatus[] }> 
 ];
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
+
+/** The per-profile checklist data (feature request §12) from the record's columns and crawl notes. */
+function profileInfo(r: { editorial: unknown; coverage: unknown; profileStatus: string | null; team: unknown; languages: string[]; establishedYear: number | null; videos: unknown; socials: unknown; mediaProvenance: unknown; costs: unknown; youtube?: string | null }, crawl: Record<string, unknown>): ReviewRow['profile'] {
+  const ed = r.editorial as (Partial<EditorialRecord> & { error?: string; skipped?: string }) | null;
+  const hasDraft = !!ed && typeof ed.description === 'string';
+  const vids = Array.isArray(r.videos) ? (r.videos as Array<{ id: string; title: string | null; status: string }>) : [];
+  const yt = (crawl.youtube ?? {}) as { checked?: number; playable?: number; channel?: string | null; unverifiedChannel?: string | null };
+  const socials = Object.entries((r.socials ?? {}) as Record<string, { url: string; verified: boolean; via: string }>).map(([network, a]) => ({ network, ...a }));
+  const cands = Array.isArray(crawl.mediaCandidates) ? (crawl.mediaCandidates as unknown[]).length : 0;
+  const copied = Array.isArray(r.mediaProvenance) ? (r.mediaProvenance as unknown[]).length : 0;
+  const ba = Array.isArray(crawl.beforeAfterCandidates) ? (crawl.beforeAfterCandidates as unknown[]).length : 0;
+  const cb = crawl.crawlBudget as { pages?: number; sitemapUrls?: number; extended?: boolean } | undefined;
+  const retries: Array<{ at: string; what: string }> = [];
+  if (typeof crawl.imageCopyTriedAt === 'string') retries.push({ at: crawl.imageCopyTriedAt, what: 'העתקת תמונות' });
+  if (ed?.generatedAt) retries.push({ at: ed.generatedAt, what: ed.skipped ? `כתיבה דולגה (${ed.skipped})` : `כתיבה (${ed.repairs ? 'עם תיקון' : 'ללא תיקון'})` });
+  return {
+    status: (r.profileStatus as ReviewRow['profile']['status']) ?? null,
+    coverage: (r.coverage as Coverage | null) ?? null,
+    editorial: hasDraft
+      ? {
+          words: ed!.words ?? 0, faqs: ed!.faqs?.length ?? 0, needsMoreInfo: !!ed!.needsMoreInfo, missing: ed!.missing ?? [], model: ed!.model ?? '?', violations: ed!.violations ?? [], repairs: ed!.repairs ?? 0,
+          costUsd: ed!.costUsd ?? 0, generatedAt: ed!.generatedAt ?? new Date(0).toISOString(), description: ed!.description!, heading: ed!.heading ?? 'על העסק', error: ed!.error ?? null, skipped: ed!.skipped ?? null, faqList: ed!.faqs ?? [],
+        }
+      : null,
+    team: (Array.isArray(r.team) ? r.team : []) as ReviewRow['profile']['team'],
+    languages: r.languages,
+    establishedYear: r.establishedYear,
+    videos: { checked: yt.checked ?? vids.length, playable: yt.playable ?? vids.filter(v => v.status === 'ok').length, channel: yt.channel ?? null, unverifiedChannel: yt.unverifiedChannel ?? null, list: vids.slice(0, 6) },
+    socials,
+    media: { candidates: cands, copied, beforeAfterPending: ba, heroMissing: copied === 0 && cands === 0 },
+    crawl: cb ? { pages: cb.pages ?? 0, sitemapUrls: cb.sitemapUrls ?? 0, extended: !!cb.extended } : null,
+    map: process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY ? 'configured' : 'not_configured',
+    costs: (r.costs ?? {}) as Record<string, number>,
+    conflicts: [crawl.phoneConflict === true ? 'טלפון' : null, crawl.hoursConflict === true ? 'שעות' : null].filter((x): x is string => !!x),
+    retries,
+  };
+}
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? '';
 
 export default async function ReviewPage({ searchParams }: { searchParams: SP }) {
@@ -132,6 +171,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: SP })
       match: mb ? { id: mb.id, name: mb.name, href: profileHref(mb), city: mb.cityName, score: r.matchScore ?? 0, reasons: r.matchReasons } : null,
       dup: d ? { id: d.id, name: d.name, address: d.address, status: d.status, reasons: scoreMatch(me, { ...d, googlePlaceId: d.placeId }).reasons } : null,
       created: created ? { name: created.name, href: profileHref(created) } : null,
+      profile: profileInfo(r, crawl),
     };
   });
 

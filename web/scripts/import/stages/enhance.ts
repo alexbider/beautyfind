@@ -14,6 +14,7 @@ import { enhanceBranch } from '../../../src/lib/server/importEnhance';
 import { bump, db, heartbeat, log, setStats, settings, Stop } from '../ctx';
 import { dfsSearch } from '../providers/dataforseo';
 import { upsertListing } from './dfsDiscover';
+import { editorialFor } from './editorial';
 import { enrichOne } from './enrich';
 
 const REFRESH_BATCH = 500;
@@ -114,14 +115,22 @@ export async function enhanceStage(run: ImportRun, kind: 'dfs_refresh' | 'enhanc
   }
   const s = await settings();
   const actor = await actorFor(run);
-  const runBrowser = { used: 0, cap: s.browserMaxPerRun };
+  const stats = (run.stats ?? {}) as { counters?: Record<string, number> };
+  const runBrowser = { used: stats.counters?.browserPages ?? 0, cap: s.browserMaxPerRun };
+  const youtubeQuota = { used: stats.counters?.youtubeQuota ?? 0, cap: s.youtubeQuotaPerRun };
+  const editorialCounter = { calls: stats.counters?.editorialCalls ?? 0 };
+  const editorialBefore = editorialCounter.calls;
+  const scope = EnhanceScope.parse(run.scope);
   const counts: Record<string, number> = {};
   const failures: string[] = [];
   for (const id of params.ids ?? []) {
     const p = await db.importPlace.findUnique({ where: { id } });
     if (!p?.branchId) continue;
     try {
-      await enrichOne(p, runBrowser, { keepStatus: true });
+      await enrichOne(p, runBrowser, { keepStatus: true, youtubeQuota, onCost: c => Object.entries(c).forEach(([k, v]) => (counts[k] = (counts[k] ?? 0) + (v ?? 0))) });
+      const afterSite = await db.importPlace.findUniqueOrThrow({ where: { id } });
+      const ed = await editorialFor(afterSite, run, { counter: editorialCounter, force: scope.regenerate === true });
+      counts[`editorial_${ed}`] = (counts[`editorial_${ed}`] ?? 0) + 1;
       const fresh = await db.importPlace.findUniqueOrThrow({ where: { id } });
       const r = actor ? await enhanceBranch(p.branchId, fresh, s, actor) : { filled: [], skipped: 'no_actor' };
       for (const f of r.filled) counts[`filled_${f}`] = (counts[`filled_${f}`] ?? 0) + 1;
@@ -136,7 +145,7 @@ export async function enhanceStage(run: ImportRun, kind: 'dfs_refresh' | 'enhanc
     }
   }
   await db.importTask.update({ where: { id: task.id }, data: { status: 'done', found: (params.ids ?? []).length } });
-  await bump(run.id, counts);
+  await bump(run.id, { ...counts, editorialCalls: editorialCounter.calls - editorialBefore });
   if (failures.length) {
     const cur = await db.importRun.findUniqueOrThrow({ where: { id: run.id }, select: { stats: true } });
     const prev = ((cur.stats as { failures?: string[] }).failures ?? []) as string[];

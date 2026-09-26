@@ -85,7 +85,7 @@ function where(f: ListingFilter): Prisma.BranchWhereInput {
 const CARD_INCLUDE = {
   city: { select: { slug: true } },
   categories: { include: { category: true } },
-  treatments: { where: { isPublished: true }, select: { priceAgorot: true } },
+  treatments: { where: { isPublished: true }, select: { priceAgorot: true, priceType: true } },
   medicalResponsible: { select: { license: { select: { status: true } } } },
 } satisfies Prisma.BranchInclude;
 
@@ -103,7 +103,8 @@ async function reviewStats(branchIds: string[]) {
 }
 
 function toCard(b: CardRow, stats: Map<string, { rating: number; count: number }>): ListingCard {
-  const prices = b.treatments.map(t => t.priceAgorot);
+  // "From" price: comparable published amounts only (no per-unit, per-ml, per-area or package totals, no unknown prices).
+  const prices = b.treatments.filter(t => t.priceAgorot != null && t.priceAgorot > 0 && ['fixed', 'from', 'range'].includes(t.priceType)).map(t => t.priceAgorot as number);
   const cats = [...b.categories].sort((a, c) => a.category.sortOrder - c.category.sortOrder);
   return {
     id: b.id,

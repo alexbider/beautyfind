@@ -10,6 +10,8 @@ export interface DayHours {
   open: string; // HH:MM
   close: string; // HH:MM
   closed: boolean;
+  /** The source said nothing about this day. Unknown is not closed: no open state is claimed for it. */
+  unknown?: boolean;
 }
 
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -17,14 +19,20 @@ const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 /** Branch.hours JSON → exactly 7 entries (Sunday first), or null when the business never set hours. */
 export function parseHours(json: unknown): DayHours[] | null {
   if (!Array.isArray(json) || json.length !== 7) return null;
-  return json.map(d => {
+  const days = json.map(d => {
     const o = (d ?? {}) as Record<string, unknown>;
     const open = typeof o.open === 'string' ? o.open : '';
     const close = typeof o.close === 'string' ? o.close : '';
+    if (o.unknown === true) return { open: '', close: '', closed: false, unknown: true };
     const closed = o.closed === true || !HHMM.test(open) || !HHMM.test(close);
     return { open, close, closed };
   });
+  // Nothing known about any day is the same as no hours at all.
+  return days.every(d => d.unknown) ? null : days;
 }
+
+/** True when at least one day has known hours (an empty array or all-unknown days means unknown). */
+export const hoursKnown = (hours: DayHours[] | null) => !!hours && hours.some(d => !d.unknown && !d.closed);
 
 const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
 
@@ -43,6 +51,7 @@ export function openState(hours: DayHours[] | null, now = new Date()): OpenState
   if (!hours) return null;
   const { day, minutes } = jerusalemNow(now);
   const h = hours[day];
+  if (h.unknown) return null; // no claim for a day the source did not cover
   if (h.closed) return { open: false, label: 'סגור היום' };
   const a = toMin(h.open);
   const b = toMin(h.close);
@@ -55,7 +64,7 @@ export function openingHoursSpec(hours: DayHours[] | null) {
   if (!hours) return undefined;
   const out: Array<{ '@type': 'OpeningHoursSpecification'; dayOfWeek: string | string[]; opens: string; closes: string }> = [];
   hours.forEach((h, i) => {
-    if (h.closed) return;
+    if (h.closed || h.unknown) return;
     const last = out[out.length - 1];
     const prev = hours[i - 1];
     if (last && prev && !prev.closed && prev.open === h.open && prev.close === h.close) {
@@ -70,7 +79,7 @@ export function openingHoursSpec(hours: DayHours[] | null) {
 /** "ראשון עד חמישי" for a consecutive run of open days, otherwise a comma list. */
 export function openDaysLabel(hours: DayHours[] | null): string | null {
   if (!hours) return null;
-  const open = hours.map((h, i) => (h.closed ? -1 : i)).filter(i => i >= 0);
+  const open = hours.map((h, i) => (h.closed || h.unknown ? -1 : i)).filter(i => i >= 0);
   if (open.length === 0) return null;
   if (open.length === 7) return 'כל ימות השבוע';
   const consecutive = open.every((d, k) => k === 0 || d === open[k - 1] + 1);
@@ -106,23 +115,42 @@ export const shortDate = (d: Date) =>
 
 // ---------- Prices (before VAT) ----------
 
-export type PriceType = 'fixed' | 'from' | 'per_unit' | 'per_ml' | 'per_area';
+export type PriceType = 'fixed' | 'from' | 'per_unit' | 'per_ml' | 'per_area' | 'range' | 'package' | 'free' | 'on_request';
 
 /** Hebrew text around the amount. The amount itself always renders in an LTR span. */
-export function priceParts(type: PriceType, agorot: number): { pre: string; amount: string; post: string } {
+export function priceParts(type: PriceType, agorot: number, opts: { max?: number | null; note?: string | null } = {}): { pre: string; amount: string; post: string } {
   const amount = nisFromAgorot(agorot);
   switch (type) {
     case 'from':
       return { pre: 'החל מ־', amount, post: '' };
+    case 'range':
+      return opts.max && opts.max > agorot ? { pre: '', amount: `${amount} עד ${nisFromAgorot(opts.max)}`, post: '' } : { pre: 'החל מ־', amount, post: '' };
     case 'per_unit':
       return { pre: '', amount, post: ' ליחידה' };
     case 'per_ml':
       return { pre: '', amount, post: ' למ״ל' };
     case 'per_area':
       return { pre: '', amount, post: ' לאזור' };
+    case 'package':
+      return { pre: '', amount, post: opts.note ? ` (${opts.note})` : ' לחבילה' };
     default:
       return { pre: '', amount, post: '' };
   }
+}
+
+/** Unknown-price wording (feature request §7). The cost is unknown, not free: never "ללא עלות" here. */
+export const PRICE_UNKNOWN = 'המחיר לא פורסם';
+export const PRICE_UNKNOWN_ACTION = 'לקבלת מחיר ופרטים';
+export const PRICE_UNKNOWN_NOTE = 'לקבלת הצעת מחיר, צרו קשר עם העסק.';
+
+/** How one service's price shows: an amount with wording, a published free service, or the unknown state. */
+export type PriceView = { kind: 'amount'; pre: string; amount: string; post: string } | { kind: 'free' } | { kind: 'unknown' };
+
+export function servicePrice(t: { priceType: string; priceAgorot: number | null; priceMaxAgorot?: number | null; priceNote?: string | null }): PriceView {
+  if (t.priceType === 'free') return { kind: 'free' };
+  if (t.priceAgorot == null || t.priceType === 'on_request') return { kind: 'unknown' };
+  if (t.priceAgorot === 0) return { kind: 'free' }; // owner-entered free service (legacy 0)
+  return { kind: 'amount', ...priceParts(t.priceType as PriceType, t.priceAgorot, { max: t.priceMaxAgorot, note: t.priceNote }) };
 }
 
 export const priceText = (type: PriceType, agorot: number) => {
@@ -130,11 +158,14 @@ export const priceText = (type: PriceType, agorot: number) => {
   return p.pre + p.amount + p.post;
 };
 
+/** Prices comparable for a category's "from" line: no per-unit, per-ml, per-area or package totals, no unknowns. */
+export const COMPARABLE_PRICE_TYPES = new Set(['fixed', 'from', 'range']);
+
 // ---------- Contact links ----------
 
 /** https://wa.me/9725… with a prefilled Hebrew message. */
-export function waHref(e164: string, businessName: string): string {
-  const text = `שלום ${businessName}, הגעתי אליכם דרך BeautyFind ואשמח לקבל פרטים.`;
+export function waHref(e164: string, businessName: string, about?: string): string {
+  const text = `שלום ${businessName}, הגעתי אליכם דרך BeautyFind ואשמח לקבל פרטים${about ? ` על ${about}` : ''}.`;
   return `https://wa.me/${e164.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`;
 }
 

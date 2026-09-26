@@ -170,7 +170,7 @@ export interface BookTreatment {
   catSlug: string;
   catName: string;
   priceType: PriceType;
-  priceAgorot: number; // before VAT
+  priceAgorot: number | null; // before VAT; null = the business publishes no price (not bookable online)
   durationMin: number;
   isMedical: boolean;
   requiresDeclaration: boolean;

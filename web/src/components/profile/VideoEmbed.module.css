@@ -1,0 +1,18 @@
+.grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+@media (min-width: 620px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1280px) { .grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); } }
+/* Phones (mobile v2 §12): a horizontal rail, 84% cards. */
+@media (max-width: 759px) {
+  .grid { grid-auto-flow: column; grid-auto-columns: 84%; grid-template-columns: none; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 calc(-1 * var(--gutter)); padding: 0 var(--gutter); scrollbar-width: none; }
+  .grid::-webkit-scrollbar { height: 0; }
+  .card { scroll-snap-align: start; min-width: 0; }
+}
+.card { display: flex; flex-direction: column; gap: 12px; }
+.frame { position: relative; aspect-ratio: 16 / 9; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: repeating-linear-gradient(135deg, #E9EEF1 0 10px, #F4F7F8 10px 20px); }
+.poster { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; border: 0; background: transparent; cursor: pointer; }
+.play { width: 56px; height: 56px; border-radius: 50%; background: var(--navy); color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 14px 30px rgba(12, 36, 62, .25); transition: transform .2s; }
+@media (hover: hover) and (pointer: fine) { .poster:hover .play { transform: scale(1.06); } }
+.player { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.gate { position: absolute; inset: 0; }
+.title { font-size: 16.5px; font-weight: 700; line-height: 1.4; text-wrap: pretty; }
+.source { font-size: 13px; color: var(--subtle); }

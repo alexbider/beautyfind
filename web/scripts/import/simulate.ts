@@ -11,6 +11,10 @@ process.env.IMPORT_TEST_ALLOW_PRIVATE = '1';
 process.env.IMPORT_CRAWL_PAUSE_MS = '0';
 process.env.DATAFORSEO_LOGIN = 'simulated';
 process.env.DATAFORSEO_PASSWORD = 'simulated';
+// The editorial writer and YouTube are stood in for locally: no API call leaves the machine.
+process.env.IMPORT_EDITORIAL_MOCK = '1';
+process.env.STORAGE_ADAPTER ??= 'local';
+process.env.UPLOAD_DIR ??= `${process.env.TMPDIR ?? '/tmp'}/bf-sim-uploads`;
 
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -32,20 +36,26 @@ async function main() {
   const { items: withPort } = fakeItems(N, web.port);
   const dfs = await startMockDfs(withPort, { postImageBase: `http://gimg.test:${web.port}` });
   process.env.DATAFORSEO_BASE_URL = dfs.url;
+  process.env.YOUTUBE_OEMBED_BASE = `http://yt.test:${web.port}/oembed`;
 
   const ctx = await import('./ctx');
   const { seedDfs, discoverDfs } = await import('./stages/dfsDiscover');
   const { enrich } = await import('./stages/enrich');
   const { queuePostPhotos, collectPostPhotos } = await import('./stages/googlePosts');
   const { extractStage } = await import('./stages/extractLlm');
+  const { editorialStage } = await import('./stages/editorial');
   const { check } = await import('./stages/check');
+  const { countWords, WORDS_MIN } = await import('../../src/lib/import/editorial');
   const { fromMicros } = await import('../../src/lib/import/pricing');
   const { loadSettings } = await import('../../src/lib/import/settings');
   const { db } = ctx;
   const s = await loadSettings(db);
 
   // Start from a clean slate: earlier simulated records would otherwise be "seen again" and keep old results.
-  const old = await db.importRun.findMany({ where: { label: 'SIMULATED pilot' }, select: { id: true } });
+  const old = await db.importRun.findMany({ where: { label: { in: ['SIMULATED pilot', 'SIMULATED enhance'] } }, select: { id: true } });
+  // Listings approved by earlier simulations (and their businesses) go too, so approvals below start fresh.
+  const oldBranches = await db.$queryRaw<Array<{ business_id: string }>>`SELECT DISTINCT b.business_id FROM branches b JOIN import_places p ON p.branch_id = b.id WHERE p.place_id LIKE 'ChIJsim%' OR p.place_id LIKE 'dfs:cid:9000000%' OR p.run_id = ANY(${old.map(r => r.id)}::uuid[])`;
+  if (oldBranches.length) await db.business.deleteMany({ where: { id: { in: oldBranches.map(r => r.business_id) } } });
   await db.importPlace.deleteMany({ where: { OR: [{ runId: { in: old.map(r => r.id) } }, { placeId: { startsWith: 'ChIJsim' } }, { placeId: { startsWith: 'dfs:cid:9000000' } }] } });
   await db.spendEntry.deleteMany({ where: { runId: { in: old.map(r => r.id) } } });
   await db.importRun.deleteMany({ where: { id: { in: old.map(r => r.id) } } });
@@ -66,6 +76,7 @@ async function main() {
     await queuePostPhotos(run, (await db.importPlace.findMany({ where: { runId: run.id }, select: { id: true } })).map(p => p.id));
     while (await collectPostPhotos(run));
     while (await extractStage(run));
+    while (await editorialStage(run));
     await check(run);
   } catch (e) {
     console.error('simulation stopped:', e);
@@ -104,6 +115,62 @@ async function main() {
   const cov = TEMPLATE_FIELDS.map(f => `${f.label} ${all.filter(p => f.ok(p)).length}`);
   const avg = all.length ? Math.round(all.reduce((n, p) => n + completeness(p).score, 0) / all.length) : 0;
 
+  // The 10-business pilot (feature request §12): richly sourced clinics, chain branches, a site without
+  // prices, sparse listings without a site. Approved through the real path, then measured.
+  const { branchCoverage } = await import('../../src/lib/server/importPublish');
+  const kindOf = (p: { website: string | null }) => sites.find(x => p.website?.includes(`//${x.host}:`))?.kind ?? null;
+  const open = (p: { status: string }) => ['ready', 'needs_review'].includes(p.status);
+  const richOrChain = all.filter(p => (kindOf(p) === 'rich' || kindOf(p) === 'chain') && open(p));
+  const noPrices = all.filter(p => kindOf(p) === 'no_prices' && open(p));
+  const sparse = all.filter(p => !p.website && p.status === 'ready');
+  const plain = all.filter(p => p.status === 'ready' && !richOrChain.includes(p) && !noPrices.includes(p) && !sparse.includes(p));
+  const pilotPicks = [...richOrChain.slice(0, 4), ...noPrices.slice(0, 1), ...sparse.slice(0, 2), ...plain.slice(0, 3)].slice(0, 10);
+  const { approvePlace: approveForPilot } = await import('../../src/lib/server/importOps');
+  const pilotActor = (await db.user.findFirst({ where: { opsRole: 'ops' }, select: { id: true } })) ?? (await db.user.create({ data: { email: 'simulated-ops@beautyfind.test', opsRole: 'ops' }, select: { id: true } }));
+  const pilotRows: string[] = [];
+  const pilotTotals = { words: [] as number[], faqs: [] as number[], photos: 0, videos: 0, unpriced: 0, services: 0, statuses: {} as Record<string, number>, needsMore: 0 };
+  for (const p of pilotPicks) {
+    const r = await approveForPilot(pilotActor, p.id);
+    if (!r.ok || !r.branchId) {
+      pilotRows.push(`- ${p.name}: not approved (${r.ok ? 'no branch' : r.error})`);
+      continue;
+    }
+    const b = await db.branch.findUniqueOrThrow({ where: { id: r.branchId }, include: { categories: true, treatments: { where: { isPublished: true }, select: { priceAgorot: true, priceType: true } } } });
+    const staff = await db.staffMember.count({ where: { businessId: b.businessId } });
+    const cov = branchCoverage(b, { verifiedStaff: 0, conflicts: [], reviewReasons: [] });
+    const ed = (b.editorial ?? null) as { words?: number; faqs?: unknown[]; needsMoreInfo?: boolean; model?: string } | null;
+    const words = ed?.words ?? countWords(b.description ?? '');
+    const faqs = Array.isArray(b.faqs) ? b.faqs.length : 0;
+    const photos = (b.coverUrl?.startsWith('/media/') ? 1 : 0) + (Array.isArray(b.gallery) ? b.gallery.length : 0);
+    const videos = Array.isArray(b.videos) ? b.videos.length : 0;
+    const unpriced = b.treatments.filter(t => t.priceAgorot == null).length;
+    pilotTotals.words.push(words);
+    pilotTotals.faqs.push(faqs);
+    pilotTotals.photos += photos;
+    pilotTotals.videos += videos;
+    pilotTotals.unpriced += unpriced;
+    pilotTotals.services += b.treatments.length;
+    pilotTotals.statuses[cov.status] = (pilotTotals.statuses[cov.status] ?? 0) + 1;
+    if (ed?.needsMoreInfo) pilotTotals.needsMore++;
+    const zero = b.treatments.filter(t => t.priceAgorot === 0 && t.priceType !== 'free').length;
+    pilotRows.push(`- ${b.name} (${b.cityName}; ${b.categories.map(c => c.categorySlug).join(', ') || 'no category'}): ${cov.status}, coverage ${cov.templateCoverage}%, readiness ${cov.readiness}%, description ${words} words (${ed?.model ?? 'source'}${ed?.needsMoreInfo ? ', needs_more_business_information' : ''}), ${faqs} FAQs, ${b.treatments.length} services (${unpriced} without a published price, ${zero} zero-priced), ${photos} photos, ${videos} videos, team ${Array.isArray(b.team) ? b.team.length : 0} from the site / ${staff} staff logins created, hours ${Array.isArray(b.hours) && b.hours.length ? 'known' : 'unknown'}, map ${process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY ? 'embed' : 'not configured (links only)'}`);
+  }
+  const editorialSpend = await db.spendEntry.aggregate({ where: { runId: run.id, provider: 'anthropic' }, _sum: { actualMicros: true }, _count: true });
+  const pilotLines = [
+    '## SIMULATED 10-business pilot',
+    '',
+    `Approved through the real approve path (${pilotPicks.length} records: rich clinic sites, a two-branch chain, a site without prices, sparse listings without a site, plain sites). The editorial writer ran in mock mode (model "template": a deterministic draft built from the evidence packet, so word counts show the packet's richness, not Claude's writing). YouTube ids were validated against a local oEmbed stand-in.`,
+    '',
+    ...pilotRows,
+    '',
+    `- Descriptions: ${pilotTotals.words.filter(w => w >= WORDS_MIN).length} of ${pilotTotals.words.length} reach ${WORDS_MIN} words; ${pilotTotals.needsMore} flagged needs_more_business_information (kept short, not padded). FAQs: ${pilotTotals.faqs.filter(n => n >= 5).length} of ${pilotTotals.faqs.length} have five or more.`,
+    `- Services: ${pilotTotals.services} published, ${pilotTotals.unpriced} shown as "המחיר לא פורסם" with a quote action; zero-priced unknowns: 0 by construction (checked per row above).`,
+    `- Media: ${pilotTotals.photos} copied photos (WebP derivatives when sharp is available), ${pilotTotals.videos} playable videos; before/after candidates are never published.`,
+    `- Readiness: ${Object.entries(pilotTotals.statuses).map(([k, v]) => `${k} ${v}`).join(', ') || 'none'}.`,
+    `- Editorial cost recorded for the run: $${fromMicros(editorialSpend._sum.actualMicros ?? 0n).toFixed(4)} over ${editorialSpend._count} calls (mock: $0). A live Sonnet call is estimated at about $0.06 per profile plus 25% for repairs.`,
+    '',
+  ];
+
   // Enhancing published listings: approve five ready records, blank fields on their listings the way an
   // older listing would look, run an enhancement run and see what comes back.
   const { approvePlace } = await import('../../src/lib/server/importOps');
@@ -113,6 +180,8 @@ async function main() {
   let enhanceLine = 'skipped (no ops user in the local database)';
   if (actor) {
     const ready = await db.importPlace.findMany({ where: { runId: run.id, status: 'ready', logoUrl: { not: null } }, take: 5 });
+    const { editorialStage: _unused } = { editorialStage };
+    void _unused;
     const branchIds: string[] = [];
     for (const p of ready) {
       const r = await approvePlace(actor, p.id);
@@ -173,6 +242,7 @@ async function main() {
     '',
     `Average completeness ${avg}%. Records with each field: ${cov.join(', ')}.`,
     '',
+    ...pilotLines,
     '## SIMULATED enhancement of published listings',
     '',
     enhanceLine,
@@ -181,7 +251,8 @@ async function main() {
     '',
     '1. DATAFORSEO_LOGIN and DATAFORSEO_PASSWORD as GitHub Actions secrets (the worker runs there).',
     '2. `npm run import:dfs-categories` once, to confirm the category ids in src/lib/import/dataforseo.ts.',
-    '3. A pilot run from /ops/import: DataForSEO, one city, record limit 100, ceiling $1.',
+    '3. ANTHROPIC_API_KEY as a GitHub Actions secret for the editorial writer (IMPORT_EDITORIAL_MODEL optional), YOUTUBE_API_KEY optional, NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY on Vercel for the map.',
+    '4. A pilot run from /ops/import: DataForSEO, one city, record limit 10, ceiling $2 (the editorial allowance is reserved per profile and settled at the reported token cost).',
     '',
   ];
   const out = join(process.cwd(), 'docs', 'import-pilot-SIMULATED.md');

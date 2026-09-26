@@ -217,13 +217,22 @@ function Settings({ settings, googleAvailable, googleMonth }: { settings: Import
           {flag('publishProviderRatings', 'פרסום דירוג Google ומספר הביקורות')}
           {flag('useProviderImages', 'לוגו ותמונה מפרופיל Google כשאין באתר העסק')}
           {flag('useWebsiteImages', 'לוגו ותמונות מאתר העסק (נבחרים בבדיקה, מועתקים באישור)')}
+          {flag('editorialEnabled', 'כתיבת תיאור ושאלות נפוצות מחבילת הראיות (קריאה אחת לעסק, תיקון אחד לכל היותר)')}
+          {flag('youtubeEnabled', 'סרטוני YouTube רשמיים (oEmbed ללא מפתח; Data API עם YOUTUBE_API_KEY)')}
+          {flag('imageDerivatives', 'נגזרות WebP לתמונות מאושרות')}
+          {flag('mapsEmbedEnabled', 'מפת Google Maps Embed בעמוד (דורש NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY)')}
         </div>
         {!googleAvailable ? <p className={styles.note}>Google כבוי בשרת (GOOGLE_ENRICHMENT_ENABLED אינו true או שאין מפתח).</p> : null}
         <div className={styles.editGrid}>
           {num('pilotRecordLimit', 'ברירת מחדל: עסקים לריצה')}
           {num('pilotBudgetUsd', 'ברירת מחדל: תקרה לריצה (USD)', '0.01')}
           {num('dfsPageSize', 'גודל עמוד DataForSEO (עד 1,000)')}
-          {num('crawlMaxPages', 'עמודים לאתר (עד 10)')}
+          {num('crawlMaxPages', 'עמודים לאתר בשלב הראשון (עד 12)')}
+          {num('crawlMaxPagesExtended', 'עמודים לאתר כשחסרים שדות (עד 20)')}
+          {num('editorialBudgetUsd', 'תקציב כתיבה לריצה (USD)', '0.01')}
+          {num('editorialMaxPerRun', 'קריאות כתיבה לריצה')}
+          {num('youtubeQuotaPerRun', 'YouTube: יחידות מכסה לריצה')}
+          {num('youtubeMaxVideos', 'סרטונים לעסק (עד 6)')}
           {num('maxListingPhotos', 'תמונות מאתר העסק לכל עסק (עד 20)')}
           {num('recheckOkDays', 'ימים עד בדיקה חוזרת של אתר')}
           {num('recheckFailDays', 'ימים עד ניסיון חוזר אחרי כישלון')}
@@ -244,7 +253,7 @@ function Settings({ settings, googleAvailable, googleMonth }: { settings: Import
   );
 }
 
-function Estimator({ pricingNote }: { pricingNote: { version: string; dfs: { perRequestUsd: number; perItemUsd: number }; dfsChecked: string; dfsNote: string; googleChecked: string } }) {
+function Estimator({ pricingNote }: { pricingNote: { version: string; dfs: { perRequestUsd: number; perItemUsd: number }; dfsChecked: string; dfsNote: string; googleChecked: string; editorialUsd: number } }) {
   const [a, setA] = useState<EstimateAssumptions>(DEFAULT_ASSUMPTIONS);
   const rows = estimateTable(a);
   const field = (k: keyof EstimateAssumptions, label: string, step = '0.05') => (
@@ -269,22 +278,26 @@ function Estimator({ pricingNote }: { pricingNote: { version: string; dfs: { per
           {field('googleCallsPerRecord', 'קריאות Google לעסק')}
           {field('photoShare', 'שיעור תמונות Google')}
           {field('llmShare', 'שיעור שנשלח ל־Claude')}
+          {field('editorialShare', 'שיעור עם כתיבת תיאור')}
+          {field('editorialRepairShare', 'שיעור עם תיקון')}
+          {field('photosPerProfile', 'תמונות לעסק', '1')}
+          {field('videoShare', 'שיעור עם סרטונים')}
         </div>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ textAlign: 'start' }}>
-              <th>עסקים</th><th>בקשות DataForSEO</th><th>DataForSEO</th><th>בקשות לאתרים</th><th>Google</th><th>תמונות</th><th>Claude</th><th>סה״כ</th><th>לעסק שמיש</th>
+              <th>עסקים</th><th>בקשות DataForSEO</th><th>DataForSEO</th><th>בקשות לאתרים</th><th>Google</th><th>תמונות Google</th><th>חילוץ Claude</th><th>כתיבה</th><th>YouTube (מכסה)</th><th>אחסון (MB)</th><th>סה״כ</th><th>לעסק שמיש</th>
             </tr>
           </thead>
           <tbody className={styles.ltr}>
             {rows.map(r => (
               <tr key={r.businesses}>
-                <td>{n(r.businesses)}</td><td>{n(r.dfsRequests)}</td><td>{usd(r.dfsUsd)}</td><td>{n(r.websiteRequests)}</td><td>{usd(r.googleUsd)}</td><td>{usd(r.photoUsd)}</td><td>{usd(r.llmUsd)}</td><td><b>{usd(r.totalUsd)}</b></td><td>{usd(r.perUsableUsd)}</td>
+                <td>{n(r.businesses)}</td><td>{n(r.dfsRequests)}</td><td>{usd(r.dfsUsd)}</td><td>{n(r.websiteRequests)}</td><td>{usd(r.googleUsd)}</td><td>{usd(r.photoUsd)}</td><td>{usd(r.llmUsd)}</td><td>{usd(r.editorialUsd)}</td><td>{n(r.youtubeQuota)}</td><td>{n(r.storageMb)}</td><td><b>{usd(r.totalUsd)}</b></td><td>{usd(r.perUsableUsd)}</td>
               </tr>
             ))}
           </tbody>
         </table>
-        <p className={styles.note}>ללא: מינימום טעינה של DataForSEO, מסים, אחסון ושרת, ניסיונות חוזרים. בקשות לאתרים ללא עלות לספק, רק זמן מחשב ותעבורה.</p>
+        <p className={styles.note}>הכתיבה מחושבת לפי <span className={styles.ltr}>${pricingNote.editorialUsd}</span> לעסק (Sonnet, חבילת ראיות דחוסה, תיקון אחד לכל היותר) ומסולקת לפי הטוקנים בפועל. מכסת YouTube ללא חיוב (10,000 יחידות ליום). Maps Embed ללא חיוב. ללא: מינימום טעינה של DataForSEO, מסים, שרת, ניסיונות חוזרים. בקשות לאתרים ללא עלות לספק, רק זמן מחשב ותעבורה; האחסון מוצג בנפח (WebP, כ־150KB לתמונה).</p>
       </div>
     </details>
   );
@@ -296,7 +309,7 @@ const FILLED: Record<string, string> = {
   gallery: 'גלריה', categories: 'תחומים', services: 'טיפולים', prices: 'מחירים',
 };
 
-function EnhanceRun({ eligible, pendingImages, canDispatch, killSwitch, perRequestUsd, perItemUsd }: { eligible: number; pendingImages: number; canDispatch: boolean; killSwitch: boolean; perRequestUsd: number; perItemUsd: number }) {
+function EnhanceRun({ eligible, pendingImages, canDispatch, killSwitch, perRequestUsd, perItemUsd, editorialUsd }: { eligible: number; pendingImages: number; canDispatch: boolean; killSwitch: boolean; perRequestUsd: number; perItemUsd: number; editorialUsd: number }) {
   const [copying, setCopying] = useState<{ done: number; logos: number; covers: number; left: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const copyImages = async () => {
@@ -320,7 +333,8 @@ function EnhanceRun({ eligible, pendingImages, canDispatch, killSwitch, perReque
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const count = Math.max(1, Math.min(eligible, Number(limit) || 0));
-  const est = refresh ? Math.ceil(count / 500) * perRequestUsd + count * perItemUsd : 0;
+  // Gross ceiling: provider refresh plus the editorial writing allowance per listing (settled at the reported token cost, cached by evidence).
+  const est = (refresh ? Math.ceil(count / 500) * perRequestUsd + count * perItemUsd : 0) + count * editorialUsd;
   const go = () =>
     start(async () => {
       setMsg(null);
@@ -412,10 +426,15 @@ function Run({ r }: { r: RunRow }) {
             : ''}
           {c.filled_images_waiting_for_storage ? ` · ${n(c.filled_images_waiting_for_storage)} עסקים חיכו לתמונות (העתקה בכרטיס ההעשרה)` : ''}
           {c.failed ? ` · נכשלו ${n(c.failed)}` : ''}
+          {c.editorialCalls ? ` · כתיבה: ${n(c.editorialCalls)} קריאות (${n(c.editorial_written ?? 0)} נכתבו, ${n(c.editorial_cached ?? 0)} מהמטמון${c.editorial_budget ? `, ${n(c.editorial_budget)} מעבר לתקציב` : ''})` : ''}
+          {c.youtubeQuota ? ` · YouTube: ${n(c.youtubeQuota)} יחידות מכסה` : ''}
           {Array.isArray(r.stats.failures) && r.stats.failures.length ? <><br />סיבות: {(r.stats.failures as string[]).slice(0, 3).join(' | ')}</> : null}
         </p>
       ) : null}
       {r.provider === 'enhance' ? null : <div className={styles.counts}>
+        {c.editorialCalls ? <span>כתיבה <b>{n(c.editorialCalls)}</b> קריאות{c.editorial_written ? `, ${n(c.editorial_written)} נכתבו` : ''}</span> : null}
+        {c.youtubeQuota || c.youtubeRequests ? <span>YouTube <b>{n(c.youtubeQuota ?? 0)}</b> מכסה, {n(c.youtubeRequests ?? 0)} בקשות</span> : null}
+        {c.browserPages ? <span>דפדפן <b>{n(c.browserPages)}</b> עמודים</span> : null}
         <span>הוחזרו <b>{n(c.placesSeen ?? 0)}</b></span>
         <span>ייחודיים <b>{n(staged)}</b></span>
         <span>כפולים <b>{n(b.duplicate ?? 0)}</b></span>
@@ -474,7 +493,7 @@ export function RunsView(props: {
   dfsConfigured: boolean;
   googleAvailable: boolean;
   googleMonth: { usd: number; calls: number };
-  pricingNote: { version: string; dfs: { perRequestUsd: number; perItemUsd: number }; dfsChecked: string; dfsNote: string; googleChecked: string };
+  pricingNote: { version: string; dfs: { perRequestUsd: number; perItemUsd: number }; dfsChecked: string; dfsNote: string; googleChecked: string; editorialUsd: number };
   enhanceEligible: number;
   pendingImages: number;
 }) {
@@ -490,7 +509,7 @@ export function RunsView(props: {
     <div className={styles.grid2}>
       <div className={styles.stack}>
         <NewRun settings={props.settings} canDispatch={props.canDispatch} dfsConfigured={props.dfsConfigured} />
-        <EnhanceRun eligible={props.enhanceEligible} pendingImages={props.pendingImages} canDispatch={props.canDispatch} killSwitch={props.settings.killSwitch} perRequestUsd={props.pricingNote.dfs.perRequestUsd} perItemUsd={props.pricingNote.dfs.perItemUsd} />
+        <EnhanceRun eligible={props.enhanceEligible} pendingImages={props.pendingImages} canDispatch={props.canDispatch} killSwitch={props.settings.killSwitch} perRequestUsd={props.pricingNote.dfs.perRequestUsd} perItemUsd={props.pricingNote.dfs.perItemUsd} editorialUsd={props.settings.editorialEnabled ? props.pricingNote.editorialUsd : 0} />
         <Settings settings={props.settings} googleAvailable={props.googleAvailable} googleMonth={props.googleMonth} />
         <Estimator pricingNote={props.pricingNote} />
       </div>

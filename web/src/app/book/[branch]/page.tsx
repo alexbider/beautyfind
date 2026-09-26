@@ -77,7 +77,8 @@ export default async function BookPage({ params, searchParams }: Props) {
         isMedical: t.isMedical,
         requiresDeclaration: t.requiresDeclaration,
         depositAgorot: deposit,
-        bookable: b.onlineBooking && !t.isMedical && t.onlineBookable && staff.length > 0 && (deposit === 0 || paymentsReady),
+        // A service without a published price needs a quote first: it is never booked online.
+        bookable: b.onlineBooking && !t.isMedical && t.onlineBookable && t.priceAgorot != null && staff.length > 0 && (deposit === 0 || paymentsReady),
         staffIds: staff.map(s => s.id),
       };
     }),

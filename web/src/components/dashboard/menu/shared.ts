@@ -12,6 +12,9 @@ export const UNITS: Array<{ type: PriceType; label: string }> = [
   { type: 'per_area', label: 'לאזור' },
   { type: 'per_ml', label: 'למ״ל' },
   { type: 'from', label: 'החל מ־' },
+  { type: 'package', label: 'לחבילה' },
+  // No published price: the profile shows "המחיר לא פורסם" with a quote action. The price field stays empty.
+  { type: 'on_request', label: 'לפי הצעת מחיר' },
 ];
 export const PRICE_TYPES = UNITS.map(u => u.type) as [PriceType, ...PriceType[]];
 export const unitLabel = (t: PriceType) => UNITS.find(u => u.type === t)?.label ?? 'לטיפול';
@@ -56,7 +59,7 @@ export function validateMenu(rows: MenuRow[], allowedCats: string[], savedCats: 
     const e: RowErrors = {};
     const name = r.name.trim();
     if (name.length < 2 || name.length > 120) e.name = 'נדרש שם טיפול, בין 2 ל־120 תווים';
-    if (parsePrice(r.price) === null) e.price = 'מחיר בשקלים שלמים, גדול מאפס';
+    if (r.priceType === 'on_request' ? r.price.trim() !== '' : parsePrice(r.price) === null) e.price = r.priceType === 'on_request' ? 'לפי הצעת מחיר: השאירו את המחיר ריק' : 'מחיר בשקלים שלמים, גדול מאפס';
     if (r.duration.trim() && parseDuration(r.duration) === null) e.duration = 'משך בדקות, עד 600';
     if (r.categorySlug && !allowedCats.includes(r.categorySlug) && !(r.id && savedCats[r.id] === r.categorySlug)) {
       e.category = 'הקטגוריה אינה ברשימת הקטגוריות של העסק';

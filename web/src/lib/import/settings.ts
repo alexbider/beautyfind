@@ -11,14 +11,27 @@ export const ImportSettingsSchema = z.object({
   pilotRecordLimit: z.number().int().min(1).max(100_000).default(100),
   pilotBudgetUsd: z.number().min(0).max(10_000).default(1),
   dfsPageSize: z.number().int().min(10).max(1000).default(1000),
-  // Stage 2A: websites
-  crawlMaxPages: z.number().int().min(1).max(10).default(6),
+  // Stage 2A: websites. Progressive budget: crawlMaxPages relevant pages first, extended once to
+  // crawlMaxPagesExtended only while template fields are still missing (docs/coverage-manifest.md).
+  crawlMaxPages: z.number().int().min(1).max(12).default(5),
+  crawlMaxPagesExtended: z.number().int().min(1).max(20).default(12),
   recheckOkDays: z.number().int().min(1).max(365).default(30),
   recheckFailDays: z.number().int().min(1).max(90).default(7),
   browserFallback: z.boolean().default(false),
   browserMaxPerRun: z.number().int().min(0).max(5000).default(25),
   llmEnabled: z.boolean().default(false),
   llmBudgetUsd: z.number().min(0).max(1000).default(0),
+  // Stage 2C: editorial writing (description, FAQs, meta, service summaries) from the evidence packet.
+  // One structured call per changed evidence packet, at most one repair call, cached by evidence hash.
+  editorialEnabled: z.boolean().default(true),
+  editorialBudgetUsd: z.number().min(0).max(1000).default(3),
+  editorialMaxPerRun: z.number().int().min(0).max(20_000).default(300),
+  // Stage 2D: media and video
+  youtubeEnabled: z.boolean().default(true), // oEmbed without a key; Data API when YOUTUBE_API_KEY is set
+  youtubeQuotaPerRun: z.number().int().min(0).max(100_000).default(2_000), // Data API units (daily quota is 10,000 by default)
+  youtubeMaxVideos: z.number().int().min(0).max(6).default(3),
+  imageDerivatives: z.boolean().default(true), // WebP derivatives for approved images (sharp)
+  mapsEmbedEnabled: z.boolean().default(true), // the public map needs NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY as well
   // Stage 2B: Google (display data only)
   googleEnabled: z.boolean().default(false),
   googleRunCallCap: z.number().int().min(0).max(10_000).default(50),

@@ -50,9 +50,12 @@ jobs:
           DATAFORSEO_PASSWORD: ${{ secrets.DATAFORSEO_PASSWORD }}
           # Legacy Google discovery runs only (new runs use DataForSEO).
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
-          # Optional LLM step, off unless enabled in the admin settings.
+          # Editorial writing (description, FAQs, meta) and the optional extraction step. Server-side only.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           IMPORT_MODEL: ${{ vars.IMPORT_MODEL }}
+          IMPORT_EDITORIAL_MODEL: ${{ vars.IMPORT_EDITORIAL_MODEL }}
+          # Optional YouTube Data API key (video validation and channel discovery); without it oEmbed validates videos found on the site.
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           # Image storage for listings enhanced by the worker (same store the site uses).
           STORAGE_ADAPTER: ${{ secrets.BLOB_READ_WRITE_TOKEN != '' && 'blob' || 'none' }}
           BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}

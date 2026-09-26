@@ -233,7 +233,7 @@ describe('enhancing published listings', { skip }, () => {
     assert.equal(after.googleRating, 4.6);
     assert.deepEqual(after.categories.map(c => c.categorySlug).sort(), ['brows-lashes', 'nails']);
     assert.equal(after.treatments.length, 2);
-    assert.ok(after.treatments.find(t => t.name === 'מניקור')!.priceAgorot > 0); // missing price filled
+    assert.ok((after.treatments.find(t => t.name === 'מניקור')!.priceAgorot ?? 0) > 0); // missing price filled
     assert.ok(r.filled.includes('logo') && r.filled.includes('services') && r.filled.includes('prices'));
   });
 

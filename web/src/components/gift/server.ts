@@ -185,7 +185,7 @@ export async function giftTreatments(branchId: string) {
     orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     select: { id: true, name: true, priceAgorot: true, durationMin: true, isMedical: true },
   });
-  return rows.map(t => ({ id: t.id, name: t.name, valueAgorot: grossOf(t.priceAgorot), durationMin: t.durationMin, isMedical: t.isMedical }));
+  return rows.map(t => ({ id: t.id, name: t.name, valueAgorot: grossOf(t.priceAgorot ?? 0), durationMin: t.durationMin, isMedical: t.isMedical }));
 }
 
 /** Prices are stored before VAT; a treatment card is worth what the client would pay. */

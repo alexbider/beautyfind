@@ -132,7 +132,7 @@ export async function compareColumns(ids: string[], now = new Date()): Promise<C
     const priceFrom: Record<string, number> = {};
     for (const t of b.treatments) {
       for (const k of ['all', t.categorySlug].filter((x): x is string => !!x)) {
-        if (priceFrom[k] == null || t.priceAgorot < priceFrom[k]) priceFrom[k] = t.priceAgorot;
+        if (t.priceAgorot != null && (priceFrom[k] == null || t.priceAgorot < priceFrom[k])) priceFrom[k] = t.priceAgorot;
       }
     }
     const hours = parseHours(b.hours);

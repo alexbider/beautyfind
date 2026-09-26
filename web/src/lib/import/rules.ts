@@ -17,6 +17,7 @@ export type RunScope = z.infer<typeof RunScope>;
 export const EnhanceScope = z.object({
   branchIds: z.array(z.uuid()).max(5000).optional(), // none: every live, unclaimed listing that came from the import
   refresh: z.boolean(), // re-read the provider's data (paid, one request per 1,000 listings)
+  regenerate: z.boolean().optional(), // rewrite the editorial draft even when the evidence has not changed
 });
 export type EnhanceScope = z.infer<typeof EnhanceScope>;
 
@@ -24,6 +25,7 @@ export interface DayHours {
   open: string;
   close: string;
   closed: boolean;
+  unknown?: boolean; // the source said nothing about this day (not closed)
 }
 
 interface GPoint {
@@ -149,13 +151,20 @@ export function qualify(p: QualifyInput, rules: QualifyRules = DEFAULT_RULES): {
   return { status, reasons: r };
 }
 
+export type ImportedPriceType = 'fixed' | 'from' | 'per_unit' | 'per_ml' | 'per_area' | 'range' | 'package' | 'free' | 'on_request';
+
 export interface ImportedTreatment {
   name: string;
   category: string | null;
-  priceNis: number | null; // null: listed on the site without a price
-  priceType: 'fixed' | 'from' | 'per_unit' | 'per_ml' | 'per_area';
+  priceNis: number | null; // null: listed on the site without a price (on_request). Never 0 for an unknown price.
+  priceMaxNis?: number | null; // range upper bound
+  priceNote?: string | null; // package wording as published
+  priceType: ImportedPriceType;
   durationMin: number | null;
   isMedical: boolean;
+  description?: string | null;
+  source?: 'website' | 'dataforseo' | 'llm';
   sourceText?: string; // the line on the site it came from
   sourceUrl?: string;
+  sourceAt?: string; // ISO time of retrieval
 }

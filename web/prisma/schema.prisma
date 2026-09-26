@@ -317,6 +317,30 @@ model Branch {
   // [{ q, a }]
   faqs        Json         @default("[]")
 
+  // ---- Complete-profile fields (imported with evidence, or entered by the owner) ----
+  facebook    String?
+  tiktok      String?
+  youtube     String? // channel URL
+  establishedYear Int?     @map("established_year")
+  languages   String[]     @default([]) // only when a source states the languages spoken
+  teamSize    Int?         @map("team_size") // only with explicit evidence, never the number of cards found
+  // People named on the business's own site: [{ name, role, bio, sourceUrl }]. Never a login or a badge.
+  team        Json         @default("[]")
+  // Official YouTube videos: [{ id, title, channelId, channelTitle, durationSec, thumbnail, source, validatedAt, embeddable, status }]
+  videos      Json         @default("[]")
+  // Tri-state attributes with evidence: { accessible: { value, source, url }, parking: {...}, ... } (null value = unknown)
+  attributes  Json         @default("{}")
+  // Generated editorial content and its provenance: { heading, words, evidenceHash, promptVersion, model, generatedAt,
+  //   needsMoreInfo, missing[], serviceSummaries, ownerApproved, metaTitle, metaDescription }
+  editorial   Json?
+  metaTitle   String?      @map("meta_title")
+  metaDescription String?  @map("meta_description")
+  // [{ url, kind, sourceUrl, pageUrl, provider, retrievedAt, width, height, bytes, hash, alt, reuse, status }]
+  mediaProvenance Json     @default("[]") @map("media_provenance")
+  // ready | ready_with_disclosed_gaps | needs_owner_information | needs_review (see src/lib/import/coverage.ts)
+  profileStatus String?    @map("profile_status")
+  profileChecklist Json?   @map("profile_checklist")
+
   categories  BranchCategory[]
   treatments  Treatment[]
   leads       Lead[]
@@ -348,6 +372,10 @@ enum PriceType {
   per_unit
   per_ml
   per_area
+  range // priceAgorot..priceMaxAgorot
+  package // a bundle of sessions (priceNote says how many)
+  free // the business published the service as free of charge
+  on_request // the business publishes no price: shown as "המחיר לא פורסם", never as 0
 }
 
 model Treatment {
@@ -359,7 +387,16 @@ model Treatment {
   name                String
   description         String?
   priceType           PriceType @default(fixed) @map("price_type")
-  priceAgorot         Int       @map("price_agorot") // before VAT
+  // Null = the business publishes no price (priceType on_request). Never 0 for an unknown price.
+  priceAgorot         Int?      @map("price_agorot")
+  priceMaxAgorot      Int?      @map("price_max_agorot") // upper bound of a range
+  priceNote           String?   @map("price_note") // unit or package wording as published ("6 מפגשים")
+  // Null = unknown (imported prices are shown as published); owner-entered prices are before VAT (false).
+  taxIncluded         Boolean?  @map("tax_included")
+  // Where an imported service came from. Null for owner-entered services.
+  source              String?   // website | dataforseo | owner
+  sourceUrl           String?   @map("source_url")
+  sourceAt            DateTime? @map("source_at")
   durationMin         Int?      @map("duration_min")
   isMedical           Boolean   @default(false) @map("is_medical")
   requiresDeclaration Boolean   @default(false) @map("requires_declaration")
@@ -1294,6 +1331,22 @@ model ImportPlace {
   freeParking Boolean?          @map("free_parking")
   faqs        Json?             // [{ q, a }] from the business's own site
   priceLevel  String?           @map("price_level")
+  // ---- Complete-profile enrichment (see docs/coverage-manifest.md) ----
+  tiktok      String?
+  youtube     String?
+  establishedYear Int?          @map("established_year")
+  languages   String[]          @default([])
+  teamSize    Int?              @map("team_size")
+  team        Json              @default("[]") // [{ name, role, bio, sourceUrl }]
+  videos      Json              @default("[]") // candidates and validated videos
+  // Social channels with how they were verified: { instagram: { url, verified, via }, ... }
+  socials     Json              @default("{}")
+  // Generated draft: { description, heading, faqs, metaTitle, metaDescription, serviceSummaries, words, evidenceHash, promptVersion, model, generatedAt, needsMoreInfo, missing, repairs, violations }
+  editorial   Json?
+  mediaProvenance Json          @default("[]") @map("media_provenance")
+  profileStatus String?         @map("profile_status")
+  coverage    Json?             // coverage manifest result at the last check
+  costs       Json              @default("{}") // per-record spend by kind (usd, tokens, quota, pages)
   runId       String            @map("run_id") @db.Uuid // last run that found it
   run         ImportRun         @relation(fields: [runId], references: [id])
   status      ImportPlaceStatus @default(found)

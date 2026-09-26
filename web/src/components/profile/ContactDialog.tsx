@@ -17,11 +17,15 @@ export interface ContactBranch {
   name: string;
   phone: string | null; // E.164
   whatsapp: string | null; // E.164
+  website?: string | null;
+  email?: string | null;
+  /** No lead inbox (unclaimed listing): the popup shows the business's direct contact details instead of a form. */
+  direct?: boolean;
 }
 
 interface Ctx {
-  /** Opens the contact popup, optionally with a treatment prefilled. Returns focus to the opener on close. */
-  openContact: (treatment?: string) => void;
+  /** Opens the contact popup, optionally with a treatment (and its id) prefilled. Returns focus to the opener on close. */
+  openContact: (treatment?: string, serviceId?: string) => void;
 }
 
 const ContactCtx = createContext<Ctx | null>(null);
@@ -40,12 +44,14 @@ export function useContact(): Ctx {
 export function ContactProvider({ branch, treatments, children }: { branch: ContactBranch; treatments: Array<{ name: string; isMedical: boolean }>; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [preset, setPreset] = useState('');
+  const [serviceId, setServiceId] = useState<string | undefined>(undefined);
   const opener = useRef<HTMLElement | null>(null);
 
   const openContact = useCallback(
-    (treatment?: string) => {
+    (treatment?: string, id?: string) => {
       opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       setPreset(treatment ?? '');
+      setServiceId(id);
       setOpen(true);
       track(branch.id, 'contact_click');
     },
@@ -70,16 +76,16 @@ export function ContactProvider({ branch, treatments, children }: { branch: Cont
   return (
     <ContactCtx.Provider value={{ openContact }}>
       {children}
-      {open && <ContactDialog branch={branch} treatments={treatments} preset={preset} onClose={close} />}
+      {open && <ContactDialog branch={branch} treatments={treatments} preset={preset} serviceId={serviceId} onClose={close} />}
     </ContactCtx.Provider>
   );
 }
 
 /** Button that opens the popup. Styling comes from the caller. */
-export function ContactTrigger({ treatment, className, children, dataSize, dataTone }: { treatment?: string; className?: string; children: React.ReactNode; dataSize?: string; dataTone?: string }) {
+export function ContactTrigger({ treatment, serviceId, className, children, dataSize, dataTone }: { treatment?: string; serviceId?: string; className?: string; children: React.ReactNode; dataSize?: string; dataTone?: string }) {
   const { openContact } = useContact();
   return (
-    <button type="button" className={className} data-size={dataSize} data-tone={dataTone} aria-haspopup="dialog" onClick={() => openContact(treatment)}>
+    <button type="button" className={className} data-size={dataSize} data-tone={dataTone} aria-haspopup="dialog" onClick={() => openContact(treatment, serviceId)}>
       {children}
     </button>
   );
@@ -89,7 +95,7 @@ type Values = { name: string; phone: string; email: string; treatment: string; m
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([tabindex="-1"]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-function ContactDialog({ branch, treatments, preset, onClose }: { branch: ContactBranch; treatments: Array<{ name: string; isMedical: boolean }>; preset: string; onClose: () => void }) {
+function ContactDialog({ branch, treatments, preset, serviceId, onClose }: { branch: ContactBranch; treatments: Array<{ name: string; isMedical: boolean }>; preset: string; serviceId?: string; onClose: () => void }) {
   const uid = useId();
   const panel = useRef<HTMLDivElement>(null);
   const first = useRef<HTMLInputElement>(null);
@@ -152,7 +158,7 @@ function ContactDialog({ branch, treatments, preset, onClose }: { branch: Contac
     }
     setSending(true);
     setFormError(null);
-    const res = await submitProfileLead({ branchId: branch.id, ...v, website }).catch(() => ({ ok: false as const, error: 'failed' as const }));
+    const res = await submitProfileLead({ branchId: branch.id, ...v, website, ...(serviceId ? { serviceId } : {}) }).catch(() => ({ ok: false as const, error: 'failed' as const }));
     setSending(false);
     if (res.ok) {
       track(branch.id, 'form_submit');
@@ -172,7 +178,24 @@ function ContactDialog({ branch, treatments, preset, onClose }: { branch: Contac
   const fid = (k: string) => `${uid}-${k}`;
 
   const title = done ? 'הפנייה נשלחה' : `פנייה ל${branch.name}`;
-  const content = (
+  // Unclaimed listing: no inbox receives a form, so the popup hands the visitor the business's own channels.
+  // It never claims that a request was sent.
+  const content = branch.direct ? (
+    <div className={styles.direct}>
+      <p className={styles.sub}>העסק עוד לא מנהל את הכרטיס שלו ב־BeautyFind, לכן הפנייה מתבצעת ישירות מולו{preset ? ` בנוגע ל${preset}` : ''}.</p>
+      <div className={styles.directList}>
+        {branch.whatsapp && <WhatsAppButton branchId={branch.id} e164={branch.whatsapp} businessName={branch.name} about={preset || undefined} />}
+        {branch.phone && <CallButton branchId={branch.id} e164={branch.phone} showNumber />}
+        {branch.email && <a href={`mailto:${branch.email}${preset ? `?subject=${encodeURIComponent(`פנייה דרך BeautyFind: ${preset}`)}` : ''}`} className={styles.directLink} dir="ltr">{branch.email}</a>}
+        {branch.website && <a href={branch.website} target="_blank" rel="noopener nofollow" className={styles.directLink}>לאתר העסק</a>}
+        {!branch.whatsapp && !branch.phone && !branch.email && !branch.website && <p className={styles.fine}>לעסק הזה לא פורסמו פרטי קשר במקורות שנבדקו.</p>}
+      </div>
+      <p className={styles.fine}>
+        זה העסק שלכם? <Link href={ROUTES.claim}>אישור בעלות</Link> יאפשר לקבל פניות ישירות מהעמוד.
+      </p>
+      <button type="button" className={styles.doneBtn} onClick={onClose}>סגירה</button>
+    </div>
+  ) : (
     <>
       {done ? (
         <div className={styles.done} role="status">

@@ -1,0 +1,5 @@
+.map { display: block; width: 100%; height: 300px; border: 0; background: #E9EFF1; }
+.gate { height: 300px; }
+@media (max-width: 767px) {
+  .map, .gate { height: 200px; min-height: 200px; }
+}

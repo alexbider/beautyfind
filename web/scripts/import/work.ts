@@ -1,5 +1,6 @@
 // Directory import worker. Picks up a queued run from /ops/import and takes it through
-//   discover (DataForSEO, or the legacy Google grid) -> website enrichment -> optional LLM -> checks.
+//   discover (DataForSEO, or the legacy Google grid) -> website enrichment (contact, services, team,
+//   images, videos) -> optional LLM extraction -> editorial writing -> checks.
 // Safe to stop at any point and start again: every step reads its state from the database, paid
 // calls are checkpointed around the request, and a lease stops two workers from working the same run.
 //
@@ -20,6 +21,7 @@ import { discoverDfs, seedDfs } from './stages/dfsDiscover';
 import { enrich } from './stages/enrich';
 import { enhancePlaceIds, enhanceStage, seedEnhance } from './stages/enhance';
 import { collectPostPhotos, queuePostPhotos } from './stages/googlePosts';
+import { editorialStage } from './stages/editorial';
 import { extractStage } from './stages/extractLlm';
 import { discoverGoogle, seedGoogle } from './stages/googleDiscover';
 
@@ -66,6 +68,7 @@ async function work(run: ImportRun): Promise<'done' | 'stopped'> {
     await queuePostPhotos(run, (await db.importPlace.findMany({ where: { runId: run.id, status: { in: ['enriched', 'extracted'] } }, select: { id: true } })).map(p => p.id));
     while (await collectPostPhotos(run));
     while (await extractStage(run));
+    while (await editorialStage(run));
     await check(run);
     await db.importRun.updateMany({ where: { id: run.id, lockedBy: WORKER }, data: { status: 'done', finishedAt: new Date(), lockedBy: null, lockedUntil: null } });
     log('run done');

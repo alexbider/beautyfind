@@ -52,7 +52,7 @@ export function depositFor(policy: DepositPolicy | null, t: Pick<Treatment, 'isM
   if (policy.scope === 'per_treatment') return t.depositOverrideAgorot ?? 0;
   if (policy.scope === 'medical_only' && !t.isMedical) return 0;
   // Prices are before VAT; a percent deposit is taken from the VAT-inclusive price the client pays.
-  if (policy.mode === 'percent') return Math.round((t.priceAgorot * 1.18 * policy.value) / 100 / 100) * 100;
+  if (policy.mode === 'percent') return Math.round(((t.priceAgorot ?? 0) * 1.18 * policy.value) / 100 / 100) * 100;
   return policy.value;
 }
 

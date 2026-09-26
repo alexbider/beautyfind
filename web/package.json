@@ -19,7 +19,9 @@
     "import:simulate": "tsx --conditions=react-server scripts/import/simulate.ts",
     "import:dfs-categories": "tsx scripts/import/dfsCategories.ts",
     "test:import": "tsx --conditions=react-server --test --test-concurrency=1 tests/import/*.test.ts",
-    "import:cleanup": "tsx scripts/import/cleanup.ts"
+    "import:cleanup": "tsx scripts/import/cleanup.ts",
+    "import:manifest": "tsx scripts/import/manifest.ts",
+    "import:screenshots": "tsx scripts/import/screenshots.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

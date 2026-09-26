@@ -340,10 +340,11 @@ describe('services from websites', () => {
     assert.deepEqual([by('פדיקור רפואי')?.priceNis, by('פדיקור רפואי')?.durationMin], [180, 60]);
     assert.equal(by('הסרת שיער בלייזר רגליים מלאות')?.priceNis, 350);
     assert.deepEqual([by('בוטוקס')?.priceNis, by('בוטוקס')?.priceType, by('בוטוקס')?.isMedical], [900, 'from', true]);
-    assert.deepEqual([by('החלקה אורגנית')?.priceNis, by('החלקה אורגנית')?.priceType], [800, 'from']);
+    assert.deepEqual([by('החלקה אורגנית')?.priceNis, by('החלקה אורגנית')?.priceMaxNis, by('החלקה אורגנית')?.priceType], [800, 1200, 'range']);
   });
   it('lists known treatments without a price and ignores menus and sentences', () => {
     assert.equal(by('טיפול פנים קלאסי')?.priceNis, null);
+    assert.equal(by('טיפול פנים קלאסי')?.priceType, 'on_request');
     assert.equal(by('מיקרובליידינג')?.category, 'permanent-makeup');
     assert.ok(!by('אודות') && !by('צור קשר'));
     assert.ok(!f.services.some(s => s.value.name.includes('מזמינות')));

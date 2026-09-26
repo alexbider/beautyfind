@@ -275,3 +275,27 @@ a.rating { color: inherit; }
 .claimBox { margin: 4px 0 12px; padding: 12px 14px; border: 1px solid var(--teal-border); border-radius: 12px; background: var(--tint); font-size: 13.5px; }
 .claimBox p { margin: 0 0 8px; text-wrap: pretty; }
 .claimLink { font-weight: 700; color: var(--teal-deep); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---- Honest states (feature request §10): concise on the public page, details live in admin ---- */
+.emptyState { margin: 0; padding: 16px 20px; border: 1px dashed var(--line-strong); border-radius: 18px; background: var(--bg-soft); font-size: 15px; line-height: 1.6; color: var(--muted); text-wrap: pretty; }
+.emptyState a { color: var(--teal-deep); font-weight: 700; }
+.emptyBox { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; padding: 18px 20px; border: 1px dashed var(--line-strong); border-radius: 18px; background: var(--bg-soft); }
+.emptyText { margin: 0; font-size: 15px; line-height: 1.6; color: var(--text); text-wrap: pretty; max-width: 560px; }
+.emptyAction { min-height: 44px; padding: 0 16px; border: 1px solid var(--line-strong); border-radius: 12px; background: #fff; color: var(--navy); font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
+.secFoot { margin: 12px 0 0; font-size: 13px; color: var(--subtle); }
+.fact[data-unknown] dd { color: var(--muted); font-weight: 600; }
+.ratingNone { font-size: 14px; color: var(--muted); }
+.hours td[data-unknown] { color: var(--subtle); font-style: italic; }
+.personSite { color: inherit; }
+.personBio { font-size: 14px; line-height: 1.65; color: var(--muted); text-wrap: pretty; }
+.dlMissing { color: var(--subtle); }
+
+/* Hero fallback when no approved photo exists: neutral branded monogram, never a stock image. */
+.heroFallback {
+  display: flex; align-items: center; gap: 18px; min-height: 180px; padding: 24px; border: 1px solid var(--line); border-radius: 20px;
+  background: linear-gradient(135deg, #F0FAFB, #F6F8F9);
+}
+.heroMono { flex: none; width: 96px; height: 96px; border-radius: 24px; background: var(--navy); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 36px; }
+.heroText { font-size: 15px; line-height: 1.6; color: var(--muted); text-wrap: pretty; }
+.heroText a { color: var(--teal-deep); font-weight: 700; }
+@media (max-width: 767px) { .heroFallback { min-height: 160px; } }

@@ -5,8 +5,8 @@ import { ArrowForward } from '@/components/icons';
 import { licenseNote, licenseView } from '@/components/practitioner/license';
 import { CallButton, TrackedLink, WhatsAppButton } from '@/components/profile/ContactLinks';
 import {
-  PROFESSION_NAME, initials, isMedicalProfession, openDaysLabel, parseHours, priceParts, ratingText, shortDate,
-  type PractitionerProfession, type PriceType,
+  PROFESSION_NAME, initials, isMedicalProfession, openDaysLabel, parseHours, ratingText, shortDate,
+  type PractitionerProfession, PRICE_UNKNOWN, servicePrice,
 } from '@/components/profile/format';
 import { CheckMark } from '@/components/profile/icons';
 import btn from '@/components/profile/buttons.module.css';
@@ -169,16 +169,20 @@ export default async function PractitionerPage({ params }: Props) {
                 <div className={styles.tx}>
                   {treatments.map(t => {
                     const isMed = t.isMedical || !!t.category?.isMedical;
-                    const pp = priceParts(t.priceType as PriceType, t.priceAgorot);
+                    const pv = servicePrice(t);
                     const note = [t.durationMin ? `כ־${t.durationMin} דקות` : null, multi ? t.branchName : null].filter(Boolean).join(' · ');
                     return (
                       <div key={t.id} className={styles.txCard}>
                         <span className={styles.txTop}>
                           <span className={styles.txName}>{t.name}</span>
                           <span className={styles.txPrice}>
-                            {pp.pre}
-                            <span className="ltr">{pp.amount}</span>
-                            {pp.post}
+                            {pv.kind === 'amount' ? (
+                              <>
+                                {pv.pre}
+                                <span className="ltr">{pv.amount}</span>
+                                {pv.post}
+                              </>
+                            ) : pv.kind === 'free' ? 'ללא עלות לפי פרסום העסק' : PRICE_UNKNOWN}
                           </span>
                         </span>
                         {note && <span className={styles.txNote}>{note}</span>}

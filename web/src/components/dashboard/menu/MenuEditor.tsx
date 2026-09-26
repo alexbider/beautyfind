@@ -285,7 +285,7 @@ export function MenuEditor({
           const cat = r.categorySlug ? categoryBySlug(r.categorySlug) : undefined;
           const open = openKey === r.key && canEdit;
           const e = rowErr(r.key);
-          const priceBad = !r.price.trim() || !!e.price;
+          const priceBad = (r.priceType !== 'on_request' && !r.price.trim()) || !!e.price;
           const label = r.name.trim() || 'טיפול חדש';
           const editorId = `menu-edit-${r.key}`;
           return (
@@ -426,7 +426,7 @@ export function MenuEditor({
                     inputMode="numeric"
                     maxLength={7}
                     value={sheetRow.price}
-                    aria-invalid={(tried && (!sheetRow.price.trim() || !!rowErr(sheetRow.key).price)) || undefined}
+                    aria-invalid={(tried && ((sheetRow.priceType !== 'on_request' && !sheetRow.price.trim()) || !!rowErr(sheetRow.key).price)) || undefined}
                     onChange={ev => patchRow(sheetRow.key, { price: ev.target.value.replace(/[^0-9]/g, '') })}
                     className={`${s.input} ${s.inputLtr}`}
                   />

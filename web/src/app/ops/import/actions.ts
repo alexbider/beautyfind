@@ -10,6 +10,7 @@ import {
 } from '@/lib/server/importOps';
 import { googleLookup, type GoogleLookup } from '@/lib/server/googleDisplay';
 import { copyPendingImages } from '@/lib/server/importEnhance';
+import { pricing } from '@/lib/import/pricing';
 import type { ImportSettings } from '@/lib/import/settings';
 
 const refresh = () => {
@@ -154,7 +155,29 @@ export async function enhanceApprovedAction(ids: string[], refresh: boolean): Pr
   const branchIds = [...new Set(places.map(p => p.branchId!))];
   if (!branchIds.length) return { ok: true, count: 0 };
   try {
-    const run = await createRun(user, { label: `העשרת ${branchIds.length} עסקים שנבחרו`, provider: 'enhance', scope: { branchIds, refresh }, recordLimit: branchIds.length, budgetUsd: refresh ? 0.5 : 0 });
+    // Ceiling: the provider refresh plus the editorial allowance per listing (reserved per call, settled at the reported token cost).
+    const s = await getSettings();
+    const editorial = s.editorialEnabled ? Math.min(s.editorialBudgetUsd, branchIds.length * pricing().editorial.perProfileUsd) : 0;
+    const run = await createRun(user, { label: `העשרת ${branchIds.length} עסקים שנבחרו`, provider: 'enhance', scope: { branchIds, refresh }, recordLimit: branchIds.length, budgetUsd: (refresh ? 0.5 : 0) + editorial });
+    const d = await dispatchWorker(run.id);
+    refreshPaths();
+    return { ok: true, count: branchIds.length, dispatched: d.dispatched };
+  } catch {
+    return { ok: false, count: 0 };
+  }
+}
+
+/** Rewrites the editorial draft of the chosen published records (an enhance run with regenerate), ignoring the evidence cache. */
+export async function regenerateEditorialAction(ids: string[]): Promise<{ ok: boolean; count: number; dispatched?: boolean }> {
+  const user = await importerOrNull();
+  const list = z.array(z.uuid()).max(200).safeParse(ids);
+  if (!user || !list.success) return { ok: false, count: 0 };
+  const places = await db.importPlace.findMany({ where: { id: { in: list.data }, status: { in: ['approved', 'merged'] }, branchId: { not: null } }, select: { branchId: true } });
+  const branchIds = [...new Set(places.map(p => p.branchId!))];
+  if (!branchIds.length) return { ok: true, count: 0 };
+  try {
+    const s = await getSettings();
+    const run = await createRun(user, { label: `כתיבה מחדש: ${branchIds.length} עסקים`, provider: 'enhance', scope: { branchIds, refresh: false, regenerate: true }, recordLimit: branchIds.length, budgetUsd: Math.min(s.editorialBudgetUsd, branchIds.length * pricing().editorial.perProfileUsd * 1.3) });
     const d = await dispatchWorker(run.id);
     refreshPaths();
     return { ok: true, count: branchIds.length, dispatched: d.dispatched };

@@ -3,15 +3,17 @@
 // - Ordinary HTTP requests through safeFetch (SSRF-safe, size and time limits, manual redirects).
 // - Identifies itself as BeautyFindBot and follows robots.txt. An explicit block (401/403/429/451,
 //   a challenge page) stops the crawl for that site: no proxies, no challenge bypass.
-// - Homepage plus relevant same-site pages (contact, about, services, prices, branches), at most
-//   `maxPages` pages and depth 2, and stops early once an email and a phone are found.
+// - Homepage plus relevant same-site pages (contact, about, services, prices, team, branches, gallery,
+//   videos), found through same-site links and one bounded look at the sitemap. Progressive budget: the
+//   first `maxPages` (five) relevant pages, extended once to `maxPagesExtended` (twelve) only while
+//   template fields the profile needs are still missing; stops as soon as they are complete.
 // - Conditional requests (ETag / Last-Modified) and a content hash avoid re-reading unchanged pages.
 // - A headless browser is an optional, capped fallback only for pages whose content needs JavaScript.
 
 import { createHash } from 'node:crypto';
 import type { Browser } from 'playwright-core';
 import { checkUrl, safeFetch, UnsafeUrlError } from '../../src/lib/import/safeFetch';
-import { extractPage, type PageFacts } from '../../src/lib/import/siteExtract';
+import { extractPage, FOLLOW, type PageFacts } from '../../src/lib/import/siteExtract';
 
 const UA = 'BeautyFindBot/1.0 (+https://beautyfind.co.il/bot; business directory listing check)';
 const HEADERS = { 'User-Agent': UA, Accept: 'text/html,application/xhtml+xml', 'Accept-Language': 'he-IL,he;q=0.9,en;q=0.6' };
@@ -28,6 +30,8 @@ export interface Validators {
 export interface CrawlOutcome {
   status: SiteStatus;
   pages: Array<{ url: string; status: number | string; via: 'fetch' | 'browser' | 'cache'; depth: number }>;
+  sitemapUrls?: number; // same-site URLs taken from the sitemap (0 when none was read)
+  extended?: boolean; // the page budget was raised because template fields were still missing
   facts: PageFacts[];
   validators: Validators;
   contentHash: string | null;
@@ -124,12 +128,71 @@ const looksScripted = (facts: PageFacts, html: string) => facts.text.length < 40
 
 export interface CrawlOptions {
   maxPages: number;
+  /** Raised to this many pages only while `needMore` still says template fields are missing. */
+  maxPagesExtended?: number;
+  /** Which profile fields are still missing after the pages read so far. Empty = stop reading. */
+  needMore?: (facts: PageFacts[]) => string[];
   browserAllowed: () => boolean; // asks the run whether one more rendered page is within its cap
   prior?: Validators;
+  sitemap?: boolean; // default true
+}
+
+/** What the profile template still lacks, given the pages read so far. Contact and prices first. */
+export function missingTemplateFields(facts: PageFacts[]): string[] {
+  const miss: string[] = [];
+  if (!facts.some(f => f.phones.length)) miss.push('phone');
+  if (!facts.some(f => f.emails.length)) miss.push('email');
+  if (!facts.some(f => f.hours)) miss.push('hours');
+  const services = new Set(facts.flatMap(f => f.services.map(x => x.value.name)));
+  if (services.size < 3) miss.push('services');
+  if (!facts.some(f => f.services.some(x => x.value.priceNis != null))) miss.push('prices');
+  if (new Set(facts.flatMap(f => f.photos.map(x => x.value))).size < 5) miss.push('gallery');
+  if (!facts.some(f => f.team.length)) miss.push('team');
+  if (!facts.some(f => f.description)) miss.push('description');
+  // A videos page is worth one more request only when the site has one and no video was seen yet.
+  if (!facts.some(f => f.videos.length) && facts.some(f => f.links.some(l => /video|סרטונים|וידאו/i.test(decodeURIComponentSafe(l))))) miss.push('videos');
+  return miss;
+}
+
+const SITEMAP_MAX_BYTES = 400_000;
+/** Same-site URLs from /sitemap.xml (or the first child of a sitemap index) that look like profile pages. Bounded, one or two requests. */
+async function sitemapUrls(origin: string, host: string): Promise<string[]> {
+  const read = async (url: string) => {
+    try {
+      const r = await safeFetch(url, { headers: { ...HEADERS, Accept: 'application/xml,text/xml' }, maxBytes: SITEMAP_MAX_BYTES, timeoutMs: 10_000, allowPrivate: ALLOW_PRIVATE });
+      return r.status === 200 ? r.body : '';
+    } catch {
+      return '';
+    }
+  };
+  let xml = await read(`${origin}/sitemap.xml`);
+  if (!xml) return [];
+  const locs = [...xml.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/gi)].map(m => m[1]);
+  // A sitemap index: read the first child that is not a post/news/product sitemap.
+  if (/<sitemapindex/i.test(xml)) {
+    const child = locs.find(l => !/post|news|blog|product|tag|category|image|video/i.test(l)) ?? locs[0];
+    xml = child ? await read(child) : '';
+    if (!xml) return [];
+  }
+  const out: string[] = [];
+  for (const m of xml.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/gi)) {
+    try {
+      const u = new URL(m[1]);
+      if (u.hostname.replace(/^www\./, '') !== host) continue;
+      const path = decodeURIComponentSafe(u.pathname);
+      if (FOLLOW.test(path) && !/blog|post|news|tag\/|category\/|product/i.test(path)) out.push(u.toString().split('#')[0]);
+    } catch {
+      /* bad loc */
+    }
+    if (out.length >= 30) break;
+  }
+  return out;
 }
 
 export async function crawlSite(website: string, opts: CrawlOptions): Promise<CrawlOutcome> {
-  const out: CrawlOutcome = { status: 'failed', pages: [], facts: [], validators: {}, contentHash: null, browserUsed: 0 };
+  const out: CrawlOutcome = { status: 'failed', pages: [], facts: [], validators: {}, contentHash: null, browserUsed: 0, sitemapUrls: 0, extended: false };
+  const needMore = opts.needMore ?? missingTemplateFields;
+  let cap = opts.maxPages;
   let start: URL;
   try {
     start = checkUrl(/^https?:\/\//i.test(website) ? website : `https://${website}`, ALLOW_PRIVATE);
@@ -145,7 +208,7 @@ export async function crawlSite(website: string, opts: CrawlOptions): Promise<Cr
   const hash = createHash('sha256');
   let anyChanged = false;
 
-  while (queue.length && out.pages.length < opts.maxPages) {
+  while (queue.length && out.pages.length < cap) {
     const { url, depth } = queue.shift()!;
     if (seen.has(url)) continue;
     seen.add(url);
@@ -204,17 +267,26 @@ export async function crawlSite(website: string, opts: CrawlOptions): Promise<Cr
     out.validators[finalUrl] = { etag: res.headers.get('etag') ?? undefined, lastModified: res.headers.get('last-modified') ?? undefined, hash: pageHash };
     out.facts.push(facts);
 
-    // Enough: contact details plus a service list are what the listing needs; stop spending requests.
-    const haveEmail = out.facts.some(f => f.emails.length);
-    const havePhone = out.facts.some(f => f.phones.length);
-    const priced = out.facts.reduce((n, f) => n + f.services.filter(x => x.value.priceNis != null).length, 0);
-    if (haveEmail && havePhone && priced >= 3 && out.pages.length >= 3) break;
+    // After the homepage: the sitemap names the profile pages a menu may hide (team, prices, branches).
+    if (out.pages.length === 1 && opts.sitemap !== false) {
+      const extra = await sitemapUrls(new URL(finalUrl).origin, host);
+      out.sitemapUrls = extra.length;
+      for (const l of extra) if (!seen.has(l)) queue.push({ url: l, depth: 1 });
+    }
+
+    // Stop as soon as the template's fields are covered; extend the budget once while they are not.
+    const missing = needMore(out.facts);
+    if (missing.length === 0 && out.pages.length >= 2) break;
+    if (out.pages.length >= cap && opts.maxPagesExtended && opts.maxPagesExtended > cap && missing.length) {
+      cap = opts.maxPagesExtended;
+      out.extended = true;
+    }
 
     if (depth < 2) {
       // Contact first, then prices and services, then gallery, then the rest.
       const rank = (l: string) => {
         const d = decodeURIComponentSafe(l);
-        return /צור|צרו|קשר|contact/i.test(d) ? 0 : /גלריה|תמונות|gallery|portfolio|עבודות/i.test(d) ? 1 : /מחיר|price|pricing/i.test(d) ? 2 : /טיפול|שירות|treat|service|menu/i.test(d) ? 3 : 4;
+        return /צור|צרו|קשר|contact/i.test(d) ? 0 : /מחיר|price|pricing/i.test(d) ? 1 : /טיפול|שירות|treat|service|menu/i.test(d) ? 2 : /גלריה|תמונות|gallery|portfolio|עבודות/i.test(d) ? 3 : /צוות|team|staff|רופאים|doctors/i.test(d) ? 4 : /אודות|about|עלינו|מי אנחנו/i.test(d) ? 5 : /סניפ|branch|סרטונים|video/i.test(d) ? 6 : 7;
       };
       const next = facts.links.filter(l => !seen.has(l)).sort((a, b) => rank(a) - rank(b));
       for (const l of next) queue.push({ url: l, depth: depth + 1 });

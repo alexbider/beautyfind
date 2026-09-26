@@ -15,9 +15,12 @@ import { Prisma, type ImportPlace, type ImportRun } from '@prisma/client';
 import { cleanEmail, emailDomain, sameDomain, siteHost } from '../../../src/lib/import/email';
 import type { DayHours, ImportedTreatment } from '../../../src/lib/import/rules';
 import { serviceKey } from '../../../src/lib/import/services';
+import type { TeamMember, VideoCandidate } from '../../../src/lib/import/profileExtract';
 import { mergeServices, rankEmails, type Fact, type PageFacts, type SiteService } from '../../../src/lib/import/siteExtract';
+import { publishableSocials, verifySocials, type SocialInput } from '../../../src/lib/import/socials';
 import { expiryFor, mayPublish } from '../../../src/lib/import/sourcePolicy';
 import { classifyWebsite, siteBelongs, type WebsiteKind } from '../../../src/lib/import/websiteKind';
+import { channelUploads, chooseVideos, validateVideos, type VideoRecord } from '../../../src/lib/import/youtube';
 import { crawlSite, type CrawlOutcome, type SiteStatus } from '../crawl';
 import { bump, db, hasMx, heartbeat, log, pool, settings } from '../ctx';
 
@@ -39,6 +42,14 @@ interface SiteSummary {
   faqs?: Fact<{ q: string; a: string }>[];
   accessible?: Fact<boolean> | null;
   freeParking?: Fact<boolean> | null;
+  team?: Fact<TeamMember>[];
+  videos?: Fact<VideoCandidate>[];
+  channels?: Fact[];
+  languages?: Fact<string[]> | null;
+  establishedYear?: Fact<number> | null;
+  beforeAfter?: Fact[];
+  sitemapUrls?: number;
+  extended?: boolean;
   outLinks: string[];
   pages: CrawlOutcome['pages'];
   text?: string; // kept only when the optional LLM step is on
@@ -65,6 +76,15 @@ function summarize(c: CrawlOutcome, keepText: boolean): SiteSummary {
     faqs: uniq(all.flatMap(f => f.faqs ?? []), f => f.value.q).slice(0, 20),
     accessible: all.find(f => f.accessible)?.accessible ?? null,
     freeParking: all.find(f => f.freeParking)?.freeParking ?? null,
+    // Team pages first, so a card on the about page does not shadow the full team page.
+    team: uniq([...all.filter(f => f.isTeamPage), ...all.filter(f => !f.isTeamPage)].flatMap(f => f.team ?? []), f => f.value.name.toLowerCase()).slice(0, 12),
+    videos: uniq(all.flatMap(f => f.videos ?? []), f => f.value.id).slice(0, 20),
+    channels: uniq(all.flatMap(f => f.channels ?? []), f => f.value).slice(0, 3),
+    languages: all.find(f => f.languages)?.languages ?? null,
+    establishedYear: all.find(f => f.establishedYear)?.establishedYear ?? null,
+    beforeAfter: uniq(all.flatMap(f => f.beforeAfter ?? []), f => f.value).slice(0, 12),
+    sitemapUrls: c.sitemapUrls ?? 0,
+    extended: c.extended ?? false,
     outLinks: [...new Set(all.flatMap(f => f.outLinks ?? []))].slice(0, 40),
     pages: c.pages,
     text: keepText ? all.map(f => f.text).join('\n\n').slice(0, 24_000) : undefined,
@@ -88,6 +108,8 @@ async function siteFor(website: string, runBrowser: { used: number; cap: number 
       const s = await settings();
       const c = await crawlSite(website, {
         maxPages: maxPages ?? s.crawlMaxPages,
+        maxPagesExtended: maxPages ? undefined : s.crawlMaxPagesExtended,
+        sitemap: !maxPages,
         prior: (cached?.validators ?? {}) as Record<string, { etag?: string; lastModified?: string; hash?: string }>,
         browserAllowed: () => s.browserFallback && runBrowser.used < runBrowser.cap && (++runBrowser.used, true),
       });
@@ -115,7 +137,19 @@ const sameHours = (a: DayHours[] | null, b: DayHours[] | null) => !a || !b || JS
 type Obs = Prisma.FieldObservationCreateManyInput;
 
 /** Reads one record's website. keepStatus: for approved records being enhanced (their status stays). */
-export async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap: number }, opts: { keepStatus?: boolean } = {}) {
+export interface EnrichCosts {
+  youtubeQuota?: number;
+  youtubeRequests?: number;
+  sitemapRequests?: number;
+}
+
+/** Per-run YouTube quota accounting shared by every record of a run. */
+export interface RunQuota {
+  used: number;
+  cap: number;
+}
+
+export async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap: number }, opts: { keepStatus?: boolean; youtubeQuota?: RunQuota; onCost?: (c: EnrichCosts) => void } = {}) {
   const s = await settings();
   const crawl0 = (p.crawl ?? {}) as Record<string, unknown>;
   const edited = new Set((crawl0.editedFields ?? []) as string[]);
@@ -137,6 +171,17 @@ export async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap:
   const mapsFallback = { website: p.googleMapsUri ?? null, websiteKind: p.googleMapsUri ? 'google_profile' : null, siteDomain: null };
   const save = async (data: Prisma.ImportPlaceUpdateInput, extra: Record<string, unknown>) => {
     extra.imageCandidates ??= provCandidates;
+    // Records that never reach the website step: the provider's social links are verified on their own
+    // (a claimed Google profile names its accounts; an unclaimed one is a same-name account at best).
+    if (data.socials === undefined) {
+      const src = (crawl0.claimedOnProvider === true ? 'owner' : 'dataforseo') as SocialInput['source'];
+      const inputs: SocialInput[] = [p.instagram && { network: 'instagram', url: p.instagram, source: src }, p.facebook && { network: 'facebook', url: p.facebook, source: src }].filter((x): x is SocialInput => !!x);
+      const v = verifySocials(inputs, null);
+      const pub = publishableSocials(v);
+      data.socials = v as unknown as Prisma.InputJsonValue;
+      if (!edited.has('instagram') && data.instagram === undefined) data.instagram = pub.instagram ?? null;
+      if (!edited.has('facebook') && data.facebook === undefined) data.facebook = pub.facebook ?? null;
+    }
     await db.$transaction([
       db.fieldObservation.deleteMany({ where: { importPlaceId: p.id, provider: 'website' } }),
       db.fieldObservation.createMany({ data: obs }),
@@ -166,9 +211,14 @@ export async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap:
     }
   }
   if (kind === 'social') {
+    // The provider's website field names a social profile. On a claimed Google profile the owner set
+    // that field, which counts as the business naming its own account; otherwise it stays unverified.
     const net = w.network;
+    const claimed = crawl0.claimedOnProvider === true;
+    const socials = verifySocials([{ network: net ?? '', url: w.url ?? p.website, source: claimed ? 'owner' : 'dataforseo' }], null);
+    const pub = publishableSocials(socials);
     return save(
-      { websiteKind: 'social', instagram: net === 'instagram' && !p.instagram ? w.url : undefined, facebook: net === 'facebook' && !p.facebook ? w.url : undefined },
+      { websiteKind: 'social', socials: socials as unknown as Prisma.InputJsonValue, instagram: pub.instagram ?? (p.instagram || undefined), facebook: pub.facebook ?? (p.facebook || undefined), tiktok: pub.tiktok, youtube: pub.youtube },
       { site: 'social_profile' },
     );
   }
@@ -247,6 +297,53 @@ export async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap:
   if (summary.freeParking) add('free_parking', summary.freeParking, 0.7);
   for (const f of summary.logos) add('logo', f, 0.6);
   for (const f of summary.photos) add('photo', f, 0.5);
+  for (const f of summary.team ?? []) add('team', f, 0.7);
+  if (summary.languages) add('languages', summary.languages, 0.8);
+  if (summary.establishedYear) add('established', summary.establishedYear, 0.8);
+  for (const f of summary.videos ?? []) add('video', f, 0.7);
+  for (const f of summary.channels ?? []) add('social', { value: { network: 'youtube', url: f.value }, url: f.url, evidence: f.evidence }, 0.8);
+
+  // Social accounts: the site's own links verify an account; the provider's alone does not.
+  const socialInputs: SocialInput[] = [
+    ...summary.socials.map(x => ({ network: x.value.network, url: x.value.url, source: 'website' as const })),
+    ...(summary.channels ?? []).map(x => ({ network: 'youtube', url: x.value, source: 'website' as const })),
+    ...(hub?.socials ?? []).map(x => ({ network: x.value.network, url: x.value.url, source: 'linkhub' as const })),
+    ...[p.instagram && { network: 'instagram', url: p.instagram }, p.facebook && { network: 'facebook', url: p.facebook }]
+      .filter((x): x is { network: string; url: string } => !!x)
+      .map(x => ({ ...x, source: (crawl0.claimedOnProvider === true ? 'owner' : 'dataforseo') as SocialInput['source'] })),
+  ];
+  const socials = verifySocials(socialInputs, domain);
+  const pubSocial = publishableSocials(socials);
+
+  // Official YouTube videos: ids on the site first; a channel link is followed only with the Data API key.
+  const ytCosts: EnrichCosts = {};
+  let videos: VideoRecord[] = (Array.isArray(p.videos) ? (p.videos as unknown as VideoRecord[]) : []).filter(v => v.source === 'owner');
+  if (s.youtubeEnabled && !edited.has('videos')) {
+    const yt = {
+      apiKey: process.env.YOUTUBE_API_KEY || null, apiBase: process.env.YOUTUBE_API_BASE, oembedBase: process.env.YOUTUBE_OEMBED_BASE, allowPrivate: process.env.IMPORT_TEST_ALLOW_PRIVATE === '1',
+      quota: (units: number) => {
+        const q = opts.youtubeQuota;
+        if (q && q.used + units > q.cap) return false;
+        if (q) q.used += units;
+        ytCosts.youtubeQuota = (ytCosts.youtubeQuota ?? 0) + units;
+        return true;
+      },
+    };
+    const ids = (summary.videos ?? []).map(v => v.value.id).slice(0, 12);
+    const fromSite = ids.length ? await validateVideos(ids, yt, 'website', (summary.videos ?? [])[0]?.url ?? website) : { videos: [], quotaUsed: 0 };
+    ytCosts.youtubeRequests = (ytCosts.youtubeRequests ?? 0) + (yt.apiKey ? fromSite.quotaUsed : ids.length);
+    videos = [...videos, ...fromSite.videos];
+    const channel = pubSocial.youtube ?? null;
+    if (channel && chooseVideos(videos, s.youtubeMaxVideos).length < s.youtubeMaxVideos && yt.apiKey) {
+      const up = await channelUploads(channel, yt, 10);
+      if (up.ids.length) {
+        const fresh = up.ids.filter(id => !videos.some(v => v.id === id));
+        const r = await validateVideos(fresh, yt, 'channel', channel);
+        videos = [...videos, ...r.videos];
+      }
+    }
+  }
+  opts.onCost?.(ytCosts);
 
   const hoursFromSite = summary.hours?.value ?? null;
   const providerHours = (p.hours ?? null) as DayHours[] | null;
@@ -258,12 +355,12 @@ export async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap:
     const k = serviceKey(f.value.name);
     const cur = byKey.get(k);
     if (cur) {
-      if (cur.priceNis == null && f.value.priceNis != null) Object.assign(cur, { priceNis: f.value.priceNis, priceType: f.value.priceType, sourceText: f.evidence, sourceUrl: f.url });
+      if (cur.priceNis == null && f.value.priceNis != null) Object.assign(cur, { priceNis: f.value.priceNis, priceMaxNis: f.value.priceMaxNis ?? null, priceNote: f.value.priceNote ?? null, priceType: f.value.priceType, source: 'website', sourceText: f.evidence, sourceUrl: f.url, sourceAt: now.toISOString() });
       continue;
     }
     byKey.set(k, {
-      name: f.value.name, category: f.value.category, priceNis: f.value.priceNis, priceType: f.value.priceType, durationMin: f.value.durationMin,
-      isMedical: f.value.isMedical, sourceText: f.evidence, sourceUrl: f.url,
+      name: f.value.name, category: f.value.category, priceNis: f.value.priceNis, priceMaxNis: f.value.priceMaxNis ?? null, priceNote: f.value.priceNote ?? null, priceType: f.value.priceType, durationMin: f.value.durationMin,
+      isMedical: f.value.isMedical, source: 'website', sourceText: f.evidence, sourceUrl: f.url, sourceAt: now.toISOString(),
     });
   }
   const treatments = [...byKey.values()].slice(0, 80);
@@ -301,8 +398,16 @@ export async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap:
       emails: [...new Set([...p.emails, ...summary.emails.map(e => e.value)])],
       phone,
       whatsapp: p.whatsapp ?? summary.whatsapp[0]?.value ?? null,
-      instagram: p.instagram ?? [...summary.socials, ...(hub?.socials ?? [])].find(x => x.value.network === 'instagram')?.value.url ?? null,
-      facebook: p.facebook ?? [...summary.socials, ...(hub?.socials ?? [])].find(x => x.value.network === 'facebook')?.value.url ?? null,
+      // Only verified accounts reach the listing fields; the rest stay in `socials` for review.
+      instagram: edited.has('instagram') ? p.instagram : pubSocial.instagram ?? null,
+      facebook: edited.has('facebook') ? p.facebook : pubSocial.facebook ?? null,
+      tiktok: pubSocial.tiktok ?? null,
+      youtube: pubSocial.youtube ?? null,
+      socials: socials as unknown as Prisma.InputJsonValue,
+      team: edited.has('team') ? undefined : ((summary.team ?? []).map(f => ({ ...f.value, sourceUrl: f.url })) as unknown as Prisma.InputJsonValue),
+      languages: edited.has('languages') ? undefined : summary.languages?.value ?? [],
+      establishedYear: edited.has('establishedYear') ? undefined : summary.establishedYear?.value ?? null,
+      videos: videos as unknown as Prisma.InputJsonValue,
       bookingUrl: p.bookingUrl ?? summary.booking[0]?.value ?? hub?.booking[0]?.value ?? null,
       // Official website hours fill a gap; a disagreement goes to review instead of overwriting.
       hours: providerHours ? undefined : (hoursFromSite as unknown as Prisma.InputJsonValue) ?? undefined,
@@ -327,6 +432,14 @@ export async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap:
       hoursConflict: !sameHours(providerHours, hoursFromSite),
       services: { total: summary.services.length, priced: summary.services.filter(f => f.value.priceNis != null).length },
       imageCandidates: { logos: [...new Set([...summary.logos.map(f => f.value), ...provCandidates.logos])], photos: [...new Set([...summary.photos.map(f => f.value), ...provCandidates.photos])] },
+      // Where each candidate came from (kept with the copy on approval). Before/after images wait for the owner.
+      mediaCandidates: [
+        ...summary.photos.map(f => ({ url: f.value, pageUrl: f.url, provider: 'website', evidence: f.evidence, retrievedAt: now.toISOString() })),
+        ...provCandidates.photos.map(u => ({ url: u, pageUrl: p.googleMapsUri ?? null, provider: 'google_profile', evidence: 'Google Business Profile photo (via DataForSEO)', retrievedAt: now.toISOString() })),
+      ].slice(0, 40),
+      beforeAfterCandidates: (summary.beforeAfter ?? []).map(f => ({ url: f.value, pageUrl: f.url, evidence: f.evidence, status: 'needs_owner_confirmation' })),
+      crawlBudget: { pages: summary.pages.length, sitemapUrls: summary.sitemapUrls ?? 0, extended: summary.extended ?? false },
+      youtube: { checked: videos.length, playable: chooseVideos(videos, s.youtubeMaxVideos).length, channel: pubSocial.youtube ?? null, unverifiedChannel: socials.youtube && !socials.youtube.verified ? socials.youtube.url : null },
       text: summary.text,
       extractError: null,
     },
@@ -341,16 +454,18 @@ export async function enrich(run: ImportRun): Promise<boolean> {
   const stats = (run.stats ?? {}) as { counters?: Record<string, number> };
   const runBrowser = { used: stats.counters?.browserPages ?? 0, cap: s.browserMaxPerRun };
   const before = runBrowser.used;
+  const youtubeQuota = { used: stats.counters?.youtubeQuota ?? 0, cap: s.youtubeQuotaPerRun };
+  const costs: Record<string, number> = {};
   // Different domains in parallel, each domain one request at a time (crawl.ts pauses between pages).
   await pool(places, 4, async p => {
     try {
-      await enrichOne(p, runBrowser);
+      await enrichOne(p, runBrowser, { youtubeQuota, onCost: c => Object.entries(c).forEach(([k, v]) => (costs[k] = (costs[k] ?? 0) + (v ?? 0))) });
     } catch (e) {
       const msg = e instanceof Error ? e.message.slice(0, 200) : 'enrich_failed';
       log('enrich failed', p.name, msg);
       await db.importPlace.update({ where: { id: p.id }, data: { status: 'enriched', enrichedAt: new Date(), crawl: { ...((p.crawl ?? {}) as object), site: 'failed', enrichError: msg } } });
     }
   });
-  await bump(run.id, { enriched: places.length, browserPages: runBrowser.used - before });
+  await bump(run.id, { enriched: places.length, browserPages: runBrowser.used - before, ...costs });
   return true;
 }

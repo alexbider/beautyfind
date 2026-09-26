@@ -13,7 +13,7 @@ export async function loadMenu(branchId: string): Promise<{ rows: MenuRow[]; upd
       name: t.name,
       categorySlug: t.categorySlug,
       priceType: t.priceType,
-      price: String(Math.round(t.priceAgorot / 100)),
+      price: t.priceAgorot == null ? '' : String(Math.round(t.priceAgorot / 100)),
       duration: t.durationMin ? String(t.durationMin) : '',
       isPublished: t.isPublished,
     })),

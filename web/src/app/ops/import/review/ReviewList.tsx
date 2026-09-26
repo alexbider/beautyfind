@@ -7,6 +7,7 @@ import { CATEGORIES, CITIES, REGIONS } from '@/lib/catalog';
 import { formatIlPhone } from '@/lib/import/phone';
 import { BLOCKING, REASON_NAMES, type ImportedTreatment } from '@/lib/import/rules';
 import { bulkApproveAction, enhanceApprovedAction, enrichSelectedAction, googleLookupAction, placeAction, publishEligibleAction } from '../actions';
+import { Checklist, type ProfileInfo } from './Checklist';
 import styles from '../import.module.css';
 
 export interface ReviewRow {
@@ -58,6 +59,7 @@ export interface ReviewRow {
   match: { id: string; name: string; href: string; city: string; score: number; reasons: string[] } | null;
   dup: { id: string; name: string; address: string; status: string; reasons: string[] } | null;
   created: { name: string; href: string } | null;
+  profile: ProfileInfo;
 }
 
 export interface Obs {
@@ -88,7 +90,7 @@ const EMAIL_STATUS: Record<string, string> = { dns_valid: 'הדומיין מקב
 const PROVIDER: Record<string, string> = { dataforseo: 'DataForSEO', google: 'Google', website: 'אתר העסק', llm: 'חילוץ AI', staff: 'צוות', owner: 'בעל העסק' };
 const FIELD: Record<string, string> = {
   email: 'דוא״ל', phone: 'טלפון', whatsapp: 'וואטסאפ', social: 'רשת חברתית', booking: 'הזמנת תור', hours: 'שעות', address: 'כתובת', service: 'טיפול', logo: 'לוגו', website: 'אתר',
-  name: 'שם', category: 'תחום', categories: 'תחומים', rating: 'דירוג',
+  name: 'שם', category: 'תחום', categories: 'תחומים', rating: 'דירוג', team: 'איש צוות', languages: 'שפות', established: 'שנת הקמה', video: 'סרטון', photo: 'תמונה', faq: 'שאלה נפוצה', description: 'תיאור', accessible: 'נגישות', free_parking: 'חניה',
 };
 const G_ERR: Record<string, string> = {
   google_disabled: 'Google כבוי', kill_switch: 'מתג העצירה פעיל', no_place_id: 'אין מזהה Google לרשומה', photos_disabled: 'תמונות כבויות', no_answer: 'אין תשובה מ־Google',
@@ -401,7 +403,7 @@ function Record({ r, onDone, selected, onSelect, google }: { r: ReviewRow; onDon
                 {r.treatments.map((t, i) => (
                   <li key={i}>
                     <span title={(t as { sourceText?: string }).sourceText}>{t.name}{t.category ? ` · ${catName(t.category)}` : ''}{t.isMedical ? ' · רפואי' : ''}</span>
-                    <span className={styles.ltr}>{t.priceNis ? `${t.priceType === 'from' ? 'מ־' : ''}₪${t.priceNis}` : 'ללא מחיר'}</span>
+                    <span className={styles.ltr}>{t.priceNis != null && t.priceType !== 'free' ? `${t.priceType === 'from' ? 'מ־' : ''}₪${t.priceNis}${t.priceType === 'range' && t.priceMaxNis ? ` עד ₪${t.priceMaxNis}` : ''}${t.priceType === 'package' ? ' (חבילה)' : ''}` : t.priceType === 'free' ? 'ללא עלות (לפי העסק)' : 'המחיר לא פורסם'}</span>
                     <span>{t.durationMin ? `${t.durationMin} דק׳` : ''}</span>
                   </li>
                 ))}
@@ -420,6 +422,8 @@ function Record({ r, onDone, selected, onSelect, google }: { r: ReviewRow; onDon
           {showEvidence ? <Evidence r={r} /> : null}
         </div>
         {google && r.placeId && !decided ? <GoogleView placeId={r.placeId} /> : null}
+
+        <Checklist id={r.id} decided={decided} info={r.profile} />
 
         {r.created ? <p className={styles.note}>דף באתר: <Link href={r.created.href} target="_blank">{r.created.name}</Link></p> : null}
 

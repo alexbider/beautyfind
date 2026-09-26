@@ -1,15 +1,17 @@
 import 'server-only';
 import { categoryBySlug, regionBySlug } from '@/lib/catalog';
 import { nisFromAgorot } from '@/lib/format';
+import { BOOKING_LIVE } from '@/lib/features';
 import { listBranches, type ListingCard, type PublicProfile } from '@/lib/server/public';
 import {
-  DAY_NAMES, PROFESSION_NAME, jerusalemNow, longDateHe, openState, openingHoursSpec, parseHours, priceParts, relHe,
-  type DayHours, type OpenState, type PractitionerProfession, type PriceType,
+  COMPARABLE_PRICE_TYPES, DAY_NAMES, PROFESSION_NAME, hoursKnown, jerusalemNow, longDateHe, openState, openingHoursSpec, parseHours, priceParts, relHe, servicePrice,
+  type DayHours, type OpenState, type PractitionerProfession, type PriceView,
 } from '@/components/profile/format';
 import { CATEGORY_ICONS, DEFAULT_CATEGORY_ICON } from '@/components/profile/icons';
 import type { Photo } from '@/components/profile/Gallery';
 import type { ReviewView } from '@/components/profile/Reviews';
 import type { ServiceGroupView } from '@/components/profile/Services';
+import type { VideoView } from '@/components/profile/VideoEmbed';
 
 export const BEFORE_AFTER_TAG = 'לפני/אחרי';
 
@@ -34,11 +36,41 @@ export function parseFaqs(json: unknown): Array<{ q: string; a: string }> {
   });
 }
 
+/** People named on the business's own site (imported): shown without a link, badge or login. */
+export function parseTeam(json: unknown): Array<{ name: string; role: string; bio: string | null; sourceUrl: string | null }> {
+  if (!Array.isArray(json)) return [];
+  return json.flatMap(t => {
+    const o = (t ?? {}) as Record<string, unknown>;
+    if (typeof o.name !== 'string' || !o.name.trim()) return [];
+    return [{ name: o.name.trim(), role: typeof o.role === 'string' ? o.role.trim() : '', bio: typeof o.bio === 'string' && o.bio.trim() ? o.bio.trim() : null, sourceUrl: typeof o.sourceUrl === 'string' ? o.sourceUrl : null }];
+  }).slice(0, 12);
+}
+
+export function parseVideos(json: unknown): VideoView[] {
+  if (!Array.isArray(json)) return [];
+  return json.flatMap(v => {
+    const o = (v ?? {}) as Record<string, unknown>;
+    if (typeof o.id !== 'string' || !/^[A-Za-z0-9_-]{11}$/.test(o.id) || o.status !== 'ok' || o.embeddable !== true) return [];
+    return [{ id: o.id, title: typeof o.title === 'string' ? o.title : null, channelTitle: typeof o.channelTitle === 'string' ? o.channelTitle : null, durationSec: typeof o.durationSec === 'number' ? o.durationSec : null, thumbnail: typeof o.thumbnail === 'string' ? o.thumbnail : null, status: 'ok' as const }];
+  }).slice(0, 6);
+}
+
+type Tri = boolean | null;
+/** Tri-state attributes with their source; the legacy booleans mean "true" only. */
+export function parseAttributes(json: unknown, legacy: { accessible: boolean; freeParking: boolean }): { accessible: Tri; parking: Tri } {
+  const o = (json && typeof json === 'object' ? json : {}) as Record<string, { value?: unknown } | undefined>;
+  const tri = (v: unknown): Tri => (v === true ? true : v === false ? false : null);
+  const acc = o.accessible ? tri(o.accessible.value) : null;
+  const park = o.parking ? tri(o.parking.value) : null;
+  return { accessible: acc ?? (legacy.accessible ? true : null), parking: park ?? (legacy.freeParking ? true : null) };
+}
+
 // ---------- Hebrew counts ----------
 
 export const optionsLabel = (n: number) => (n === 1 ? 'אפשרות אחת' : n === 2 ? 'שתי אפשרויות' : `${n} אפשרויות`);
 export const prosLabel = (n: number) => (n === 1 ? 'איש מקצוע אחד' : n === 2 ? 'שני אנשי מקצוע' : `${n} אנשי מקצוע`);
 export const reviewsLabel = (n: number) => (n === 1 ? 'ביקורת אחת' : `${n.toLocaleString('en-US')} ביקורות`);
+const yearsLabel = (n: number) => (n === 1 ? 'שנת פעילות אחת' : n === 2 ? 'שנתיים של פעילות' : `${n} שנות פעילות`);
 
 // ---------- Responsibility (04-permissions: only verified claims are public) ----------
 
@@ -65,19 +97,32 @@ export function staffBadge(lic: { kind: string; status: string } | null): string
 export interface HoursRow {
   day: string;
   range: string | null; // "09:00–19:00", null = closed
+  unknown: boolean; // the source said nothing about this day
   today: boolean;
 }
 
 export function hoursRows(hours: DayHours[] | null, now: Date): HoursRow[] | null {
   if (!hours) return null;
   const { day } = jerusalemNow(now);
-  return hours.map((h, i) => ({ day: DAY_NAMES[i], range: h.closed ? null : `${h.open}–${h.close}`, today: i === day }));
+  return hours.map((h, i) => ({ day: DAY_NAMES[i], range: h.closed || h.unknown ? null : `${h.open}–${h.close}`, unknown: !!h.unknown, today: i === day }));
 }
+
+export interface Fact {
+  key: 'established' | 'team' | 'languages' | 'responsible' | 'hours' | 'rating' | 'unknown';
+  label: string;
+  value: string;
+  note: string | null;
+  href?: string;
+  ltr?: boolean;
+}
+
+export const HEADINGS = ['על הקליניקה', 'על המספרה', 'על הספא', 'על הסטודיו', 'על העסק'] as const;
 
 export function buildView(p: PublicProfile, now = new Date()) {
   const region = regionBySlug(p.regionSlug);
   const hours = parseHours(p.hours);
-  const open: OpenState = openState(hours, now);
+  const known = hoursKnown(hours);
+  const open: OpenState = known ? openState(hours, now) : null;
   const gallery = parseGallery(p.gallery);
   const ba = gallery.filter(g => g.tag === BEFORE_AFTER_TAG);
   const plain = gallery.filter(g => g.tag !== BEFORE_AFTER_TAG);
@@ -90,6 +135,7 @@ export function buildView(p: PublicProfile, now = new Date()) {
   const cats = [...p.categories].sort((a, b) => a.category.sortOrder - b.category.sortOrder).map(c => c.category);
   const medicalBiz = cats.some(c => c.isMedical);
   const citySlug = p.city?.slug ?? null;
+  const bookingOnline = BOOKING_LIVE && p.onlineBooking && p.isClaimed;
 
   // Services grouped by category, in the branch's category order; uncategorised last.
   const order = new Map(cats.map((c, i) => [c.slug, i]));
@@ -102,26 +148,31 @@ export function buildView(p: PublicProfile, now = new Date()) {
     .sort(([a], [b]) => (order.get(a) ?? 99) - (order.get(b) ?? 99))
     .map(([k, items]) => {
       const cat = items[0].category;
-      const min = Math.min(...items.map(t => t.priceAgorot));
-      const onlyOne = items.length === 1;
+      // The category's "from" line: comparable published amounts only (never per-unit, per-ml, per-area or package totals).
+      const comparable = items.filter(t => t.priceAgorot != null && t.priceAgorot > 0 && COMPARABLE_PRICE_TYPES.has(t.priceType)).map(t => t.priceAgorot as number);
+      const from: PriceView | null = comparable.length ? { kind: 'amount', ...priceParts(comparable.length === 1 && items.length === 1 ? (items[0].priceType as 'fixed' | 'from') : 'from', Math.min(...comparable)) } : null;
       return {
         key: k,
         name: cat?.name ?? 'טיפולים נוספים',
         meta: optionsLabel(items.length),
         icon: CATEGORY_ICONS[k] ?? DEFAULT_CATEGORY_ICON,
-        from: onlyOne ? priceParts(items[0].priceType as PriceType, min) : priceParts('from', min),
+        from,
+        quoteCount: items.filter(t => t.priceAgorot == null || t.priceType === 'on_request').length,
         medical: items.some(t => t.isMedical),
         compare: cat ? { href: citySlug ? `/${p.regionSlug}/${citySlug}/${cat.slug}` : `/treatments/${cat.slug}`, label: `השוו עסקים ל${cat.name} ב${p.cityName}` } : null,
         items: items.map(t => ({
           id: t.id,
           name: t.name,
-          price: priceParts(t.priceType as PriceType, t.priceAgorot),
+          price: servicePrice(t),
           duration: t.durationMin ? `${t.durationMin} דק׳` : null,
           medical: t.isMedical,
+          summary: t.description?.trim() || null,
+          bookable: bookingOnline && !t.isMedical && t.onlineBookable && t.priceAgorot != null,
         })),
       };
     });
-  const pricesUpdated = p.treatments.length ? new Date(Math.max(...p.treatments.map(t => t.updatedAt.getTime()))) : null;
+  const pricesUpdated = p.treatments.length ? new Date(Math.max(...p.treatments.map(t => (t.sourceAt ?? t.updatedAt).getTime()))) : null;
+  const importedPrices = p.treatments.some(t => t.source && t.source !== 'owner');
 
   const responsible = responsibleOf(p);
   const staff = p.staff.map(s => ({
@@ -130,6 +181,9 @@ export function buildView(p: PublicProfile, now = new Date()) {
     role: [PROFESSION_NAME[s.profession as PractitionerProfession], s.license?.status === 'verified' ? s.license.specialty : null].filter(Boolean).join(' · '),
     badge: staffBadge(s.license),
   }));
+  // People named on the business's own site, minus anyone who is already a verified staff member.
+  const staffNames = new Set(staff.map(s => s.name.replace(/^(ד["״]?ר|דר['׳]|פרופ['׳]?)\s+/, '').toLowerCase()));
+  const siteTeam = parseTeam(p.team).filter(t => !staffNames.has(t.name.replace(/^(ד["״]?ר|דר['׳]|פרופ['׳]?)\s+/, '').toLowerCase()));
 
   const reviews: ReviewView[] = p.reviews.map(r => ({
     id: r.id,
@@ -149,6 +203,29 @@ export function buildView(p: PublicProfile, now = new Date()) {
   const googleSync = p.googleSyncedAt ? relHe(p.googleSyncedAt, now) : null;
 
   const today = hours ? hours[jerusalemNow(now).day] : null;
+  const todayRange = today && !today.unknown ? (today.closed ? null : `${today.open}–${today.close}`) : undefined;
+
+  const attributes = parseAttributes(p.attributes, { accessible: p.accessible, freeParking: p.freeParking });
+  const videos = parseVideos(p.videos);
+  const editorial = (p.editorial && typeof p.editorial === 'object' ? (p.editorial as { heading?: string; words?: number; needsMoreInfo?: boolean }) : null);
+  const heading = (HEADINGS as readonly string[]).includes(editorial?.heading ?? '') ? (editorial!.heading as string) : p.business.type === 'clinic' || p.business.type === 'medspa' ? 'על הקליניקה' : cats.some(c => c.slug === 'hair-salons') && cats.length === 1 ? 'על המספרה' : cats.some(c => c.slug === 'spa-massage') && cats.length === 1 ? 'על הספא' : 'על העסק';
+
+  // Three fact cards (design: established, team, languages). A slot without a sourced value takes a
+  // known alternate fact; the last resort says the detail was not updated, never a made-up value.
+  const thisYear = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jerusalem', year: 'numeric' }).format(now));
+  const primary: Array<Fact | null> = [
+    p.establishedYear ? { key: 'established', label: 'פועל מאז', value: String(p.establishedYear), note: thisYear - p.establishedYear >= 1 ? `${yearsLabel(thisYear - p.establishedYear)} לפי אתר העסק` : 'לפי אתר העסק', ltr: true } : null,
+    staff.length + siteTeam.length > 0
+      ? { key: 'team', label: 'צוות', value: p.teamSize ? prosLabel(p.teamSize) : staff.length ? prosLabel(staff.length) : `${siteTeam.length === 1 ? 'איש מקצוע אחד' : `${siteTeam.length} אנשי מקצוע`} באתר העסק`, note: [...new Set([...staff.map(s => s.role.split(' · ')[0]), ...siteTeam.map(t => t.role)])].filter(Boolean).slice(0, 3).join(', ') || null }
+      : null,
+    p.languages.length ? { key: 'languages', label: 'שפות', value: p.languages.join(' · '), note: 'לפי אתר העסק' } : null,
+  ];
+  const alternates: Fact[] = [
+    ...(responsible ? [{ key: 'responsible' as const, label: responsible.label, value: responsible.name, note: responsible.note, href: `/pro/${responsible.staffId}` }] : []),
+    ...(known ? [{ key: 'hours' as const, label: 'שעות היום', value: todayRange ?? (todayRange === null ? 'סגור היום' : 'לא פורסם להיום'), note: open?.label ?? null, ltr: !!todayRange }] : []),
+    ...(google && google.count > 0 ? [{ key: 'rating' as const, label: 'דירוג בגוגל', value: `${google.rating.toFixed(1)} מתוך 5`, note: reviewsLabel(google.count), ltr: false }] : []),
+  ];
+  const facts: Fact[] = primary.map(f => f ?? alternates.shift() ?? { key: 'unknown', label: 'פרטים', value: 'פרטים טרם עודכנו', note: null });
 
   return {
     region,
@@ -156,15 +233,19 @@ export function buildView(p: PublicProfile, now = new Date()) {
     cats,
     medicalBiz,
     hours,
+    hoursKnown: known,
     hoursRows: hoursRows(hours, now),
     open,
-    todayRange: today ? (today.closed ? null : `${today.open}–${today.close}`) : undefined,
+    todayRange,
     photos,
     beforeAfter,
     services,
     pricesUpdated: pricesUpdated ? longDateHe(pricesUpdated) : null,
+    importedPrices,
     responsible,
     staff,
+    siteTeam,
+    videos,
     reviews,
     dist,
     google,
@@ -172,7 +253,17 @@ export function buildView(p: PublicProfile, now = new Date()) {
     googleSync,
     faqs: parseFaqs(p.faqs),
     description: (p.description ?? '').split(/\n\s*\n|\r?\n/).map(s => s.trim()).filter(Boolean),
+    heading,
+    attributes,
+    facts,
+    bookingOnline,
     treatmentOptions: p.treatments.map(t => ({ name: t.name, isMedical: t.isMedical })),
+    socials: [
+      p.instagram && { network: 'instagram', url: p.instagram.startsWith('http') ? p.instagram : `https://instagram.com/${encodeURIComponent(p.instagram.replace(/^@/, ''))}`, label: 'אינסטגרם' },
+      p.facebook && { network: 'facebook', url: p.facebook, label: 'פייסבוק' },
+      p.tiktok && { network: 'tiktok', url: p.tiktok, label: 'טיקטוק' },
+      p.youtube && { network: 'youtube', url: p.youtube, label: 'יוטיוב' },
+    ].filter((s): s is { network: string; url: string; label: string } => !!s),
   };
 }
 
@@ -186,12 +277,19 @@ export async function similarBusinesses(p: PublicProfile, mainCategory: string |
 
 // ---------- SEO ----------
 
+export function metaTitle(p: PublicProfile, v: ProfileView): string {
+  if (p.metaTitle && p.metaTitle.trim().length >= 10) return p.metaTitle.trim().slice(0, 70);
+  const main = v.cats[0]?.name;
+  return main ? `${p.name}: ${main} ב${p.cityName}` : `${p.name}, ${p.cityName}`;
+}
+
 export function metaDescription(p: PublicProfile, v: ProfileView): string {
+  if (p.metaDescription && p.metaDescription.trim().length >= 60) return p.metaDescription.trim().slice(0, 170);
   const cats = v.cats.map(c => c.name).join(', ');
   const parts = [`${p.name} ב${p.cityName}${cats ? `: ${cats}` : ''}.`];
-  if (v.google) parts.push(`דירוג ${v.google.rating.toFixed(1)} בגוגל על סמך ${reviewsLabel(v.google.count)}.`);
+  if (v.google && v.google.count > 0) parts.push(`דירוג ${v.google.rating.toFixed(1)} בגוגל על סמך ${reviewsLabel(v.google.count)}.`);
   if (p.beautyfind) parts.push(`${reviewsLabel(p.beautyfind.count)} מאומתות ב־BeautyFind.`);
-  if (p.treatments.length) parts.push('מחירים לא כולל מע״מ, שעות פעילות וקביעת תור.');
+  if (p.treatments.length) parts.push(`${p.treatments.slice(0, 3).map(t => t.name).join(', ')}${p.treatments.length > 3 ? ' ועוד' : ''}.`);
   if (v.responsible) parts.push(`${v.responsible.label}: ${v.responsible.name}.`);
   if (p.description) parts.push(p.description.replace(/\s+/g, ' ').trim());
   const text = parts.join(' ').replace(/\s+/g, ' ').trim();
@@ -201,8 +299,9 @@ export function metaDescription(p: PublicProfile, v: ProfileView): string {
 }
 
 /**
- * LocalBusiness (MedicalBusiness when a medical category is listed) + BreadcrumbList.
- * aggregateRating comes from BeautyFind reviews only, never from Google (Google's structured-data policy).
+ * LocalBusiness (MedicalBusiness when a medical category is listed) + BreadcrumbList, FAQPage when
+ * FAQs are visible. Only visible, sourced facts: no offers for unpublished prices, no aggregate rating
+ * from Google (its structured-data policy), sameAs only for verified accounts.
  */
 export function jsonLd(p: PublicProfile, v: ProfileView) {
   const url = `${SITE}${p.href}`;
@@ -211,33 +310,41 @@ export function jsonLd(p: PublicProfile, v: ProfileView) {
     ...(v.citySlug ? [{ name: p.cityName, item: `${SITE}/${p.regionSlug}/${v.citySlug}` }] : []),
     { name: p.name, item: url },
   ];
-  const prices = p.treatments.map(t => t.priceAgorot);
+  const priced = p.treatments.filter(t => t.priceAgorot != null && t.priceAgorot > 0);
+  const comparable = priced.filter(t => COMPARABLE_PRICE_TYPES.has(t.priceType)).map(t => t.priceAgorot as number);
   const images = v.photos.map(ph => (ph.url.startsWith('http') ? ph.url : `${SITE}${ph.url}`));
+  const sameAs = [...(p.websiteUrl ? [p.websiteUrl] : []), ...v.socials.map(s => s.url)];
   const biz: Record<string, unknown> = {
     '@type': v.medicalBiz ? 'MedicalBusiness' : 'LocalBusiness',
     '@id': `${url}#biz`,
     name: p.name,
     url,
-    ...(p.websiteUrl ? { sameAs: [p.websiteUrl, ...(p.instagram ? [`https://instagram.com/${p.instagram.replace(/^@/, '')}`] : [])] } : p.instagram ? { sameAs: [`https://instagram.com/${p.instagram.replace(/^@/, '')}`] } : {}),
+    ...(sameAs.length ? { sameAs } : {}),
     ...(p.phone ? { telephone: p.phone } : {}),
     ...(p.email && p.isClaimed ? { email: p.email } : {}),
     ...(images.length ? { image: images } : {}),
-    ...(p.description ? { description: p.description } : {}),
+    ...(p.description ? { description: p.description.slice(0, 5000) } : {}),
     address: { '@type': 'PostalAddress', streetAddress: p.address, addressLocality: p.cityName, addressRegion: v.region?.name, addressCountry: 'IL' },
     ...(p.lat != null && p.lng != null ? { geo: { '@type': 'GeoCoordinates', latitude: p.lat, longitude: p.lng } } : {}),
-    ...(prices.length ? { priceRange: prices.length > 1 && Math.min(...prices) !== Math.max(...prices) ? `${nisFromAgorot(Math.min(...prices))}–${nisFromAgorot(Math.max(...prices))}` : nisFromAgorot(prices[0]) } : {}),
+    ...(comparable.length ? { priceRange: comparable.length > 1 && Math.min(...comparable) !== Math.max(...comparable) ? `${nisFromAgorot(Math.min(...comparable))}–${nisFromAgorot(Math.max(...comparable))}` : nisFromAgorot(comparable[0]) } : {}),
     ...(openingHoursSpec(v.hours) ? { openingHoursSpecification: openingHoursSpec(v.hours) } : {}),
+    ...(p.establishedYear ? { foundingDate: String(p.establishedYear) } : {}),
     ...(p.treatments.length
       ? {
           makesOffer: p.treatments.map(t => ({
             '@type': 'Offer',
             itemOffered: { '@type': 'Service', name: t.name, ...(t.category ? { category: t.category.name } : {}) },
-            priceSpecification: {
-              '@type': 'PriceSpecification',
-              ...(t.priceType === 'from' ? { minPrice: t.priceAgorot / 100 } : { price: t.priceAgorot / 100 }),
-              priceCurrency: 'ILS',
-              valueAddedTaxIncluded: false,
-            },
+            // Unknown prices carry no priceSpecification at all; published free services carry price 0.
+            ...(t.priceAgorot != null && t.priceType !== 'on_request'
+              ? {
+                  priceSpecification: {
+                    '@type': 'PriceSpecification',
+                    ...(t.priceType === 'from' || t.priceType === 'range' ? { minPrice: t.priceAgorot / 100, ...(t.priceMaxAgorot ? { maxPrice: t.priceMaxAgorot / 100 } : {}) } : { price: t.priceAgorot / 100 }),
+                    priceCurrency: 'ILS',
+                    ...(t.taxIncluded != null ? { valueAddedTaxIncluded: t.taxIncluded } : {}),
+                  },
+                }
+              : {}),
           })),
         }
       : {}),

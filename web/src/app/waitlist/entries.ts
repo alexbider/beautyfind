@@ -76,7 +76,7 @@ export async function loadJoinPage(slug: string) {
   const treatments: JoinTreatment[] = branch.treatments.map(t => ({
     id: t.id,
     name: t.name,
-    price: priceText(t.priceAgorot, t.priceType),
+    price: t.priceAgorot == null ? 'המחיר לא פורסם' : priceText(t.priceAgorot, t.priceType),
     practitioners: staff.filter(s => !t.practitionerIds.length || t.practitionerIds.includes(s.id)).map(s => ({ id: s.id, name: s.displayName })),
   }));
   return { branch, advanced, holdMinutes: holdFromSettings(branch.business.settings), treatments };

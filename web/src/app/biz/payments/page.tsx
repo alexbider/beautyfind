@@ -100,7 +100,7 @@ export default async function PaymentsPage() {
     consultFeeShekels: num(settings.consult_fee, DEFAULT_CONSULT_FEE),
   };
   const treatmentRows: TreatmentDepositDTO[] = treatments.map(t => ({
-    id: t.id, name: t.name, branch: t.branch.name, priceShekels: Math.round(t.priceAgorot / 100), isMedical: t.isMedical,
+    id: t.id, name: t.name, branch: t.branch.name, priceShekels: Math.round((t.priceAgorot ?? 0) / 100), isMedical: t.isMedical,
     depositShekels: t.depositOverrideAgorot == null ? null : Math.round(t.depositOverrideAgorot / 100),
   }));
 

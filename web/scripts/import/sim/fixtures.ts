@@ -85,7 +85,9 @@ export async function startMockDfs(items: DfsItem[], opts: { perRequestUsd?: num
   };
 }
 
-export type SiteKind = 'full' | 'no_email' | 'agency_footer' | 'blocked' | 'robots' | 'conflict_phone' | 'redirect_private' | 'unrelated';
+// rich: a complete clinic site (team page, videos, languages, founding year, price ranges and packages, sitemap, gallery);
+// no_prices: services listed without any price; chain: one domain shared by two branches (branch pages).
+export type SiteKind = 'full' | 'no_email' | 'agency_footer' | 'blocked' | 'robots' | 'conflict_phone' | 'redirect_private' | 'unrelated' | 'rich' | 'no_prices' | 'chain';
 
 export interface FixtureSite {
   host: string; // site-N.test
@@ -96,8 +98,8 @@ export interface FixtureSite {
 
 // A real PNG of the given size (solid colour), so image checks see genuine dimensions.
 const pngCache = new Map<string, Buffer>();
-export function png(w: number, h: number): Buffer {
-  const k = `${w}x${h}`;
+export function png(w: number, h: number, seed = 0): Buffer {
+  const k = `${w}x${h}:${seed}`;
   if (pngCache.has(k)) return pngCache.get(k)!;
   const crcTable = Array.from({ length: 256 }, (_, n) => {
     let c = n;
@@ -122,7 +124,8 @@ export function png(w: number, h: number): Buffer {
   ihdr.writeUInt32BE(h, 4);
   ihdr[8] = 8;
   ihdr[9] = 2;
-  const row = Buffer.concat([Buffer.from([0]), Buffer.alloc(w * 3, 0xc8)]);
+  // A different shade per seed: identical bytes would be dropped as duplicates by the media copy.
+  const row = Buffer.concat([Buffer.from([0]), Buffer.alloc(w * 3, 0x60 + ((seed * 37) % 0x80))]);
   const raw = Buffer.concat(Array.from({ length: h }, () => row));
   const out = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
   pngCache.set(k, out);
@@ -147,18 +150,36 @@ export async function startSites(sites: FixtureSite[]): Promise<{ port: number; 
       res.setHeader('content-type', 'text/plain');
       return void res.end(s.kind === 'robots' ? 'User-agent: *\nDisallow: /\n' : 'User-agent: *\nAllow: /\n');
     }
+    // A stand-in for YouTube's oEmbed endpoint (host "yt.test"): one public video, one private, one unknown id.
+    if (host === 'yt.test' && path === '/oembed') {
+      const id = new URL(req.url ?? '/', 'http://x').searchParams.get('url')?.match(/v=([A-Za-z0-9_-]{11})/)?.[1];
+      if (id === 'simTour0001') return void res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({ title: 'סיור בקליניקה לדוגמה', author_name: 'קליניקה לדוגמה', thumbnail_url: 'https://i.ytimg.com/vi/simTour0001/hqdefault.jpg' }));
+      if (id === 'simTeam0002') return void res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({ title: 'הצוות מספר על הטיפולים', author_name: 'קליניקה לדוגמה', thumbnail_url: 'https://i.ytimg.com/vi/simTeam0002/hqdefault.jpg' }));
+      if (id === 'simPriv0003') return void res.writeHead(401).end('Unauthorized');
+      return void res.writeHead(404).end('Not Found');
+    }
+    if (path === '/sitemap.xml' && (s.kind === 'rich' || s.kind === 'chain')) {
+      res.setHeader('content-type', 'application/xml');
+      const base = `http://${host}:${(req.socket.localPort as number) || 80}`;
+      const urls = s.kind === 'rich' ? ['/', '/הצוות', '/מחירון', '/צור-קשר', '/גלריה', '/סרטונים', '/blog/post-1'] : ['/', '/סניפים/תל-אביב', '/סניפים/חיפה', '/מחירון', '/צור-קשר'];
+      return void res.end(`<?xml version="1.0"?><urlset>${urls.map(u => `<url><loc>${base}${encodeURI(u)}</loc></url>`).join('')}</urlset>`);
+    }
     if (s.kind === 'blocked') return void res.writeHead(403, { 'content-type': 'text/html' }).end(page('Forbidden', 'Access denied'));
     if (s.kind === 'redirect_private') return void res.writeHead(302, { location: 'http://169.254.169.254/latest/meta-data/' }).end();
     if (path === '/logo.png') return void res.writeHead(200, { 'content-type': 'image/png' }).end(png(240, 240));
+    if (/^\/img\/ba-\d\.png$/.test(path)) return void res.writeHead(200, { 'content-type': 'image/png' }).end(png(1200, 800, 90 + Number(path.replace(/\D/g, ''))));
     if (path === '/גלריה') return void res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end(page('גלריה', [4, 5, 6, 7, 8].map(n => `<img src="/img/photo-${n}.png" width="960" height="640" alt="עבודה ${n}">`).join('')));
-    if (/^\/img\/photo-\d\.png$/.test(path)) return void res.writeHead(200, { 'content-type': 'image/png' }).end(png(960, 640));
+    if (/^\/img\/photo-\d\.png$/.test(path)) return void res.writeHead(200, { 'content-type': 'image/png' }).end(png(960, 640, Number(path.replace(/\D/g, '')) + host.length));
     if (path === '/img/tiny.png') return void res.writeHead(200, { 'content-type': 'image/png' }).end(png(40, 40));
     res.setHeader('content-type', 'text/html; charset=utf-8');
     if (s.kind === 'unrelated') {
       // A different business entirely: its own name and phone.
       return void res.end(page('חנות רהיטים אחרת', '<h1>חנות רהיטים אחרת</h1><a href="tel:04-8123456">04-8123456</a><p>ספות ושולחנות</p>'));
     }
-    const name = `עסק לדוגמה ${host.replace(/\D/g, '')}`;
+    const name = s.kind === 'rich' ? `קליניקה לדוגמה ${host.replace(/\D/g, '')}` : s.kind === 'chain' ? 'רשת ציפורניים לדוגמה' : `עסק לדוגמה ${host.replace(/\D/g, '')}`;
+    if (s.kind === 'rich') return void richSite(res, path, name, s, host);
+    if (s.kind === 'chain') return void chainSite(res, path, name, s);
+    if (s.kind === 'no_prices' && path === '/מחירון') return void res.end(page('השירותים שלנו', '<h1>השירותים שלנו</h1><ul><li>טיפול פנים קלאסי</li><li>ניקוי פנים עמוק</li><li>פילינג</li><li>עיצוב גבות</li><li>הרמת ריסים</li></ul><p>לקבלת מחיר צרו קשר</p>'));
     const nav = '<a href="/צור-קשר">צור קשר</a> <a href="/מחירון">מחירון</a> <a href="/גלריה">גלריה</a> <a href="/blog/post">בלוג</a>';
     const footer = s.kind === 'agency_footer' ? '<footer>האתר נבנה ע"י סטודיו דוגמה studio@example-agency.test</footer>' : '';
     const imgs = '<header><img class="logo" src="/logo.png" alt="לוגו"></header><img src="/img/photo-1.png" width="960" height="640" alt="חדר טיפולים"><img src="/img/photo-2.png" width="960" height="640" alt="עמדת עבודה"><img src="/img/tiny.png" alt="אייקון">';
@@ -180,6 +201,34 @@ export async function startSites(sites: FixtureSite[]): Promise<{ port: number; 
   return { port, hits, close: () => new Promise(r => srv.close(() => r())) };
 }
 
+/** A complete clinic site: the case where every template section has real evidence. Nothing here is a real business. */
+function richSite(res: ServerResponse, path: string, name: string, s: FixtureSite, host: string) {
+  const nav = '<nav><a href="/הצוות">הצוות</a> <a href="/מחירון">מחירון</a> <a href="/צור-קשר">צור קשר</a> <a href="/גלריה">גלריה</a> <a href="/סרטונים">סרטונים</a> <a href="/blog/post-1">בלוג</a></nav>';
+  const socials = `<footer><a href="https://www.instagram.com/${host.replace(/\W/g, '')}">אינסטגרם</a> <a href="https://www.facebook.com/${host.replace(/\W/g, '')}">פייסבוק</a> <a href="https://www.youtube.com/@${host.replace(/\W/g, '')}">יוטיוב</a></footer>`;
+  const meta = `<meta name="description" content="${name} היא קליניקה לאסתטיקה רפואית וטיפולי פנים בהנהלת רופאה, הפועלת במרכז העיר עם צוות של אחיות מוסמכות וקוסמטיקאיות.">`;
+  const ld = `<script type="application/ld+json">${JSON.stringify({ '@type': 'MedicalClinic', name, telephone: s.phone, email: s.email, address: { streetAddress: 'רחוב הדוגמה 12', addressLocality: 'תל אביב' }, openingHoursSpecification: [{ dayOfWeek: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'], opens: '09:00', closes: '20:00' }, { dayOfWeek: 'Friday', opens: '09:00', closes: '14:00' }] })}</script>`;
+  const imgs = ['reception', 'room-1', 'room-2', 'laser', 'lounge', 'products'].map((n, i) => `<img src="/img/photo-${i + 1}.png" width="1200" height="800" alt="${['הקבלה של הקליניקה', 'חדר טיפולים', 'חדר טיפולי פנים', 'חדר הלייזר', 'פינת ההמתנה', 'מדף מוצרי הטיפוח'][i]}">`).join('');
+  if (path === '/' || path === '') return res.end(page(name, `${meta}${ld}<header><img class="logo" src="/logo.png" alt="לוגו ${name}"></header><h1>${name}</h1>${nav}<p>הקליניקה פועלת מאז 2014 בלב תל אביב.</p><p>הצוות דובר עברית, אנגלית ורוסית.</p><p>הקליניקה נגישה לכיסאות גלגלים. חניה חינם בחניון הבניין.</p>${imgs}${socials}`));
+  if (path === '/הצוות') return res.end(page('הצוות', `<h1>הצוות שלנו</h1><article><h3>ד"ר יעל לוינסון</h3><p>מנהלת רפואית</p><p>רופאת עור עם ניסיון באסתטיקה רפואית, מפקחת על פרוטוקולי ההזרקות והלייזר בקליניקה.</p></article><article><h3>נועה בן דוד</h3><p>אחות מוסמכת</p><p>אחות מזריקה, מלווה את המטופלות לפני הטיפול ואחריו.</p></article><article><h3>שירה מזרחי</h3><p>קוסמטיקאית פרא-רפואית</p><p>מתמחה בטיפולי פנים מתקדמים ופילינג.</p></article>${socials}`));
+  if (path === '/מחירון') return res.end(page('מחירון', `<h1>מחירון</h1><p>בוטוקס אזור אחד ₪900</p><p>בוטוקס שלושה אזורים 2,200 ₪</p><p>חומר מילוי 1 מ"ל 1,600 ₪ למ"ל</p><p>ניקוי פנים עמוק ₪350</p><p>הידרו-פייסיאל 590 ש"ח</p><p>פילינג כימי 400-600 ₪</p><p>הסרת שיער בלייזר חבילת 6 מפגשים 1,800 ₪</p><p>ייעוץ ראשון ללא עלות</p><ul><li>מזותרפיה</li><li>הרמת ריסים</li></ul>`));
+  if (path === '/צור-קשר') return res.end(page('צור קשר', `<h1>צור קשר</h1><a href="mailto:${s.email}">${s.email}</a> <a href="tel:${s.phone}">${s.phone}</a> <a href="https://wa.me/972501234567">וואטסאפ</a><p>רחוב הדוגמה 12, תל אביב</p>${socials}`));
+  if (path === '/גלריה') return res.end(page('גלריה', [4, 5, 6, 7, 8].map(n => `<img src="/img/photo-${n}.png" width="1200" height="800" alt="חדר טיפולים ${n}">`).join('') + '<h2>לפני ואחרי</h2><img src="/img/ba-1.png" width="1200" height="800" alt="לפני ואחרי מילוי שפתיים">'));
+  if (path === '/סרטונים') return res.end(page('סרטונים', '<h1>סרטונים</h1><iframe src="https://www.youtube.com/embed/simTour0001" title="סיור"></iframe><a href="https://youtu.be/simTeam0002">הצוות</a><iframe src="https://www.youtube.com/embed/simPriv0003"></iframe>'));
+  if (path === '/blog/post-1') return res.end(page('בלוג', '<h1>פוסט</h1><p>טקסט</p>'));
+  res.writeHead(404).end();
+}
+
+/** One domain, two branches: shared central phone on the homepage, each branch page with its own number and hours. */
+function chainSite(res: ServerResponse, path: string, name: string, s: FixtureSite) {
+  const nav = '<nav><a href="/סניפים/תל-אביב">סניף תל אביב</a> <a href="/סניפים/חיפה">סניף חיפה</a> <a href="/מחירון">מחירון</a> <a href="/צור-קשר">צור קשר</a></nav>';
+  if (path === '/' || path === '') return res.end(page(name, `<meta name="description" content="${name}: מניקור, פדיקור ובניית ציפורניים בשני סניפים."><h1>${name}</h1>${nav}<p>מוקד ארצי <a href="tel:1-700-500-500">1-700-500-500</a></p><img src="/img/photo-1.png" width="960" height="640" alt="סניף"><img src="/img/photo-2.png" width="960" height="640" alt="עמדת עבודה">`));
+  if (path === '/סניפים/תל-אביב') return res.end(page('סניף תל אביב', `<h1>סניף תל אביב</h1><a href="tel:03-5550101">03-5550101</a><p>א'-ה' 09:00-20:00</p><p>שישי 09:00-14:00</p>`));
+  if (path === '/סניפים/חיפה') return res.end(page('סניף חיפה', `<h1>סניף חיפה</h1><a href="tel:04-8550202">04-8550202</a><p>א'-ה' 10:00-19:00</p>`));
+  if (path === '/מחירון') return res.end(page('מחירון', '<h1>מחירון</h1><p>מניקור ג׳ל ₪120</p><p>פדיקור ₪160</p><p>בניית ציפורניים החל מ-250 ₪</p>'));
+  if (path === '/צור-קשר') return res.end(page('צור קשר', `<h1>צור קשר</h1><a href="mailto:${s.email}">${s.email}</a>`));
+  res.writeHead(404).end();
+}
+
 /** Invented DataForSEO items: city centres, Israeli phone formats, a few deliberate edge cases. */
 export function fakeItems(n: number, sitePort: number | null, opts: { siteShare?: number } = {}): { items: DfsItem[]; sites: FixtureSite[] } {
   const cities = [
@@ -187,7 +236,7 @@ export function fakeItems(n: number, sitePort: number | null, opts: { siteShare?
     { city: 'Haifa', lat: 32.794, lng: 34.9896 },
     { city: 'Jerusalem', lat: 31.7683, lng: 35.2137 },
   ];
-  const kinds: SiteKind[] = ['full', 'full', 'full', 'no_email', 'agency_footer', 'blocked', 'robots', 'conflict_phone', 'redirect_private', 'unrelated'];
+  const kinds: SiteKind[] = ['full', 'rich', 'full', 'no_email', 'agency_footer', 'blocked', 'robots', 'conflict_phone', 'redirect_private', 'unrelated', 'no_prices', 'chain', 'chain'];
   const items: DfsItem[] = [];
   const sites: FixtureSite[] = [];
   const siteShare = opts.siteShare ?? 0.6;
@@ -197,8 +246,9 @@ export function fakeItems(n: number, sitePort: number | null, opts: { siteShare?
     const withSite = sitePort != null && i % 10 < siteShare * 10 && sites.length < 250;
     let url: string | undefined;
     if (withSite) {
-      const host = `site-${i}.test`;
       const kind = kinds[sites.length % kinds.length];
+      // Two consecutive "chain" branches share one domain (and its central phone) with different names and towns.
+      const host = kind === 'chain' && sites.length && sites[sites.length - 1].kind === 'chain' ? sites[sites.length - 1].host : `site-${i}.test`;
       sites.push({ host, kind, email: `info@${host}`, phone: kind === 'conflict_phone' ? '03-7654321' : phone });
       url = `http://${host}:${sitePort}/`;
     }
@@ -233,7 +283,7 @@ export function fakeItems(n: number, sitePort: number | null, opts: { siteShare?
       last_updated_time: '2026-09-01 10:00:00 +00:00',
     });
   }
-  if (sitePort != null) sites.push({ host: 'gimg.test', kind: 'full' });
+  if (sitePort != null) sites.push({ host: 'gimg.test', kind: 'full' }, { host: 'yt.test', kind: 'full' });
   // Same place twice (a provider repeat): must end up as one record.
   if (n > 3) items.push({ ...items[1] });
   // No coordinates: cannot be placed, skipped.

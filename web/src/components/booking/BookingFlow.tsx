@@ -53,6 +53,7 @@ const RESUME_SLOT_MARGIN_MS = 15 * 60 * 1000;
 
 /** Price with its Hebrew prefix/suffix; the amount itself always sits in an LTR span. */
 function Price({ t, className }: { t: Pick<BookTreatment, 'priceType' | 'priceAgorot'>; className?: string }) {
+  if (t.priceAgorot == null) return <span className={className}>המחיר לא פורסם</span>;
   if (t.priceAgorot === 0) return <span className={className}>ללא עלות</span>;
   const p = priceParts(t.priceType, t.priceAgorot);
   return (
@@ -728,9 +729,9 @@ export function BookingFlow({ data }: { data: BookingData }) {
         ))}
       </dl>
       <p className={s.foldNote}>
-        {svc.priceAgorot > 0 ? (
+        {(svc.priceAgorot ?? 0) > 0 ? (
           <>
-            המחיר לא כולל מע״מ · <span className="ltr tnum">{nisFromAgorot(vatIncl(svc.priceAgorot))}</span> כולל מע״מ · תשלום בקליניקה
+            המחיר לא כולל מע״מ · <span className="ltr tnum">{nisFromAgorot(vatIncl(svc.priceAgorot ?? 0))}</span> כולל מע״מ · תשלום בקליניקה
             {dep > 0 && ' · דמי הקדימה מקוזזים מהסכום'}
           </>
         ) : (
@@ -1081,9 +1082,9 @@ export function BookingFlow({ data }: { data: BookingData }) {
             {svc ? <Price t={svc} className={s.totalText} /> : <span className={s.totalEmpty}>טרם נבחר טיפול</span>}
           </div>
           <p className={s.totalNote}>
-            {svc && svc.priceAgorot > 0 ? (
+            {svc && (svc.priceAgorot ?? 0) > 0 ? (
               <>
-                לא כולל מע״מ · <span className="ltr tnum">{nisFromAgorot(vatIncl(svc.priceAgorot))}</span> כולל מע״מ · תשלום בקליניקה, תשלומים לפי הקליניקה · חשבונית מס מהקליניקה
+                לא כולל מע״מ · <span className="ltr tnum">{nisFromAgorot(vatIncl(svc.priceAgorot ?? 0))}</span> כולל מע״מ · תשלום בקליניקה, תשלומים לפי הקליניקה · חשבונית מס מהקליניקה
                 {dep > 0 && ' · דמי הקדימה מקוזזים מהסכום'}
               </>
             ) : (

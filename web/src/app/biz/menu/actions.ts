@@ -54,7 +54,7 @@ export async function saveMenu(input: { rows: MenuRow[]; deleted: string[] }): P
       name: r.name.trim(),
       categorySlug: cat?.slug ?? null,
       priceType: r.priceType,
-      priceAgorot: parsePrice(r.price)! * 100,
+      priceAgorot: r.priceType === 'on_request' ? null : parsePrice(r.price)! * 100,
       durationMin: r.duration.trim() ? parseDuration(r.duration) : null,
       // Medical treatments go through a consult, never straight to online booking.
       isMedical,

@@ -5,28 +5,32 @@ import { FaqAccordion } from '@/components/faq/FaqAccordion';
 import { ArrowForward } from '@/components/icons';
 import { ContactProvider, ContactTrigger } from '@/components/profile/ContactDialog';
 import { CallButton, TrackedLink, WazeButton, WhatsAppButton } from '@/components/profile/ContactLinks';
-import { displayUrl, initials, instagramHref, mapsHref, ratingText } from '@/components/profile/format';
+import { displayUrl, initials, mapsHref, ratingText } from '@/components/profile/format';
 import { BeforeAfter, Gallery } from '@/components/profile/Gallery';
 import { CheckMark, ExternalGlyph, INSTAGRAM_PATH, MessageGlyph, PinGlyph, RatingStars } from '@/components/profile/icons';
+import { MapEmbed } from '@/components/profile/MapEmbed';
+import { mapQuery } from '@/lib/mapsEmbed';
 import { ProfileHeader, SectionTabs } from '@/components/profile/ProfileMobile';
 import { ProfileView } from '@/components/profile/ProfileView';
 import { ReviewsInfo, ReviewsRail } from '@/components/profile/Reviews';
-import { Services } from '@/components/profile/Services';
+import { Services, ServicesEmpty } from '@/components/profile/Services';
+import { VideoGrid } from '@/components/profile/VideoEmbed';
 import { SaveHeart } from '@/components/save-heart/SaveHeart';
 import { ActionBar } from '@/components/shell/ActionBar';
 import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
-import { BOOKING_LIVE } from '@/lib/features';
 import { ROUTES } from '@/lib/routes';
 import { fromE164, telHref } from '@/lib/format';
 import { getProfile, type PublicProfile } from '@/lib/server/public';
-import { buildView, jsonLd, ldJson, metaDescription, prosLabel, reviewsLabel, similarBusinesses, type ProfileView as View } from './data';
+import { buildView, jsonLd, ldJson, metaDescription, metaTitle, reviewsLabel, similarBusinesses, type ProfileView as View } from './data';
 import btn from '@/components/profile/buttons.module.css';
 import rv from '@/components/profile/Reviews.module.css';
 import styles from './page.module.css';
 
-// Design: project/BeautyFind Business Profile.dc.html (+ States.dc.html "unclaimed" for isClaimed = false).
-// "Open now", "today" and relative review dates are computed per request in Asia/Jerusalem, so no stale cache.
+// Design: project/BeautyFind Business Profile.dc.html and Business Profile Mobile v2 (docs/coverage-manifest.md
+// maps every element). "Open now", "today" and relative review dates are computed per request in
+// Asia/Jerusalem, so no stale cache. Unclaimed listings use the same template: every section stays, with a
+// truthful state where the data is missing.
 export const dynamic = 'force-dynamic';
 
 type Props = { params: Promise<{ region: string; slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -36,8 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const p = await getProfile(region, slug);
   if (!p) return { title: 'העסק לא נמצא', robots: { index: false } };
   const v = buildView(p);
-  const main = v.cats[0]?.name;
-  const title = main ? `${p.name}: ${main} ב${p.cityName}` : `${p.name}, ${p.cityName}`;
+  const title = metaTitle(p, v);
   const description = metaDescription(p, v);
   return {
     title,
@@ -47,11 +50,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-const FACT_ICONS = {
-  shield: ['M10 2.4 4 4.8v4.4c0 3.8 2.6 6.6 6 7.8 3.4-1.2 6-4 6-7.8V4.8z', 'M7.4 9.8l1.9 1.9 3.4-3.6'],
+const FACT_ICONS: Record<string, string[]> = {
+  established: ['M10 5.2v5l3.4 2', 'M10 2.2a7.8 7.8 0 1 0 0 15.6 7.8 7.8 0 0 0 0-15.6'],
   team: ['M13.8 17.5v-1.6a3 3 0 0 0-3-3H5.2a3 3 0 0 0-3 3v1.6', 'M8 9.8a3 3 0 1 0 0-6 3 3 0 0 0 0 6', 'M17.8 17.5v-1.6a3 3 0 0 0-2.3-2.9', 'M12.8 3.9a3 3 0 0 1 0 5.8'],
-  clock: ['M10 5.2v5l3.4 2', 'M10 2.2a7.8 7.8 0 1 0 0 15.6 7.8 7.8 0 0 0 0-15.6'],
+  languages: ['M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16', 'M2 10h16', 'M10 2c2.2 2.4 2.2 13.2 0 16', 'M10 2c-2.2 2.4-2.2 13.2 0 16'],
+  responsible: ['M10 2.4 4 4.8v4.4c0 3.8 2.6 6.6 6 7.8 3.4-1.2 6-4 6-7.8V4.8z', 'M7.4 9.8l1.9 1.9 3.4-3.6'],
+  hours: ['M10 5.2v5l3.4 2', 'M10 2.2a7.8 7.8 0 1 0 0 15.6 7.8 7.8 0 0 0 0-15.6'],
+  rating: ['M10 2.6l2.3 4.7 5.2.8-3.8 3.7.9 5.2-4.6-2.4-4.6 2.4.9-5.2-3.8-3.7 5.2-.8z'],
+  unknown: ['M10 2.2a7.8 7.8 0 1 0 0 15.6 7.8 7.8 0 0 0 0-15.6', 'M10 13.6h.01', 'M8 7.6a2 2 0 1 1 2.8 1.8c-.6.3-.8.7-.8 1.4'],
 };
+
+const EMBED_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY || '';
 
 export default async function BusinessProfilePage({ params, searchParams }: Props) {
   const { region, slug } = await params;
@@ -86,20 +95,22 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
   const ld = <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(jsonLd(p, v)) }} />;
 
   const similar = await similarBusinesses(p, v.cats[0]?.slug);
-  const isClinic = p.business.type === 'clinic' || p.business.type === 'medspa';
   const cta = primaryCta(p, v);
+  const bookHref = cta?.kind === 'book' ? cta.href : null;
 
-  // Phone section chips (mobile v2 §4), in page order. Only sections this profile has.
+  // Phone section chips (mobile v2 §4), in page order. Every section keeps its anchor; the chips list the ones with content.
   const tabs = [
-    v.services.length > 0 && { key: 'services', label: 'מחירים', target: 'h-services' },
+    { key: 'services', label: 'מחירים', target: 'h-services' },
     { key: 'reviews', label: 'ביקורות', target: 'h-reviews' },
-    v.staff.length > 0 && { key: 'team', label: 'צוות', target: 'h-team' },
-    v.hoursRows && { key: 'hours', label: 'שעות', target: 'h-hours' },
+    (v.staff.length > 0 || v.siteTeam.length > 0) && { key: 'team', label: 'צוות', target: 'h-team' },
+    v.videos.length > 0 && { key: 'video', label: 'סרטונים', target: 'h-video' },
+    { key: 'hours', label: 'שעות', target: 'h-hours' },
     v.faqs.length > 0 && { key: 'faq', label: 'שאלות', target: 'h-faq' },
     { key: 'loc', label: 'הגעה', target: 'h-loc' },
     { key: 'contact', label: 'יצירת קשר', target: 'bf-contact' },
   ].filter((t): t is { key: string; label: string; target: string } => !!t);
-  const status = v.open ? v.open.label : v.hoursRows ? 'סגור היום' : null;
+  // The bar's status line makes no claim when hours are unknown.
+  const status = v.open ? v.open.label : v.hoursKnown && v.todayRange === null ? 'סגור היום' : null;
 
   return (
     <div className={styles.root}>
@@ -114,10 +125,20 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
         </p>
       )}
 
-      <ContactProvider branch={{ id: p.id, name: p.name, phone: p.phone, whatsapp: p.whatsapp }} treatments={v.treatmentOptions}>
-        {v.photos.length > 0 && (
+      <ContactProvider branch={{ id: p.id, name: p.name, phone: p.phone, whatsapp: p.whatsapp, email: p.email, website: p.websiteUrl, direct: !p.isClaimed }} treatments={v.treatmentOptions}>
+        {v.photos.length > 0 ? (
           <section aria-label="תמונות העסק" className={`${styles.wrap} ${styles.gallery}`}>
             <Gallery photos={v.photos} />
+          </section>
+        ) : (
+          <section aria-label="תמונות העסק" className={`${styles.wrap} ${styles.gallery}`}>
+            <div className={styles.heroFallback} role="img" aria-label={`${p.name}: עדיין אין תמונות מהעסק`}>
+              <span aria-hidden="true" className={styles.heroMono}>{initials(p.name)}</span>
+              <span className={styles.heroText}>
+                {p.isClaimed ? 'העסק טרם העלה תמונות.' : 'לא נמצאו תמונות מהעסק במקורות שנבדקו.'}{' '}
+                {p.isClaimed ? <Link href="/biz/profile">העלאת תמונות</Link> : <Link href={ROUTES.claim}>בעלי העסק יכולים להוסיף תמונות אחרי אישור בעלות</Link>}
+              </span>
+            </div>
           </section>
         )}
         <SectionTabs items={tabs} />
@@ -126,72 +147,111 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
           <div className={styles.col}>
             <Identity p={p} v={v} />
 
-            {v.description.length > 0 && (
-              <section aria-labelledby="h-about">
-                <h2 id="h-about" className={styles.h2}>{isClinic ? 'על הקליניקה' : 'על העסק'}<span className={styles.dotTeal}>.</span></h2>
+            <section aria-labelledby="h-about">
+              <h2 id="h-about" className={styles.h2}>{v.heading}<span className={styles.dotTeal}>.</span></h2>
+              {v.description.length > 0 ? (
                 <div className={styles.about}>
                   {v.description.map((para, i) => <p key={i}>{para}</p>)}
                 </div>
-              </section>
-            )}
+              ) : (
+                <p className={styles.emptyState}>{p.isClaimed ? 'העסק טרם כתב תיאור.' : 'לא נמצא תיאור של העסק במקורות שנבדקו. הפרטים שנמצאו מופיעים בהמשך העמוד.'}</p>
+              )}
+            </section>
 
-            {v.services.length > 0 && (
-              <section aria-labelledby="h-services">
-                <div className={styles.secHead}>
-                  <h2 id="h-services" className={styles.h2}>שירותים ומחירים<span className={styles.dotTeal}>.</span></h2>
-                  {p.isClaimed
-                    ? v.pricesUpdated && <span className={styles.secNote}>המחירים נמסרו על ידי העסק ועודכנו ב־{v.pricesUpdated}</span>
-                    : <span className={styles.secNote}>נאספו ממקורות פומביים ועשויים להשתנות</span>}
-                </div>
-                <Services groups={v.services} contact={p.isClaimed} />
-                <p className={styles.vat}>כל המחירים לא כוללים מע״מ. טיפולים רפואיים נקבעים אחרי ייעוץ רפואי, ושם נקבע גם המחיר הסופי.</p>
-              </section>
-            )}
+            <section aria-labelledby="h-services">
+              <div className={styles.secHead}>
+                <h2 id="h-services" className={styles.h2}>שירותים ומחירים<span className={styles.dotTeal}>.</span></h2>
+                {v.services.length > 0 && (p.isClaimed && !v.importedPrices
+                  ? v.pricesUpdated && <span className={styles.secNote}>המחירים נמסרו על ידי העסק ועודכנו ב־{v.pricesUpdated}</span>
+                  : <span className={styles.secNote}>{v.pricesUpdated ? `כפי שפורסמו על ידי העסק, נאספו ב־${v.pricesUpdated}` : 'כפי שפורסמו על ידי העסק'}</span>)}
+              </div>
+              {v.services.length > 0 ? (
+                <>
+                  <Services groups={v.services} contact={p.isClaimed} bookHref={bookHref} />
+                  <p className={styles.vat}>
+                    {p.isClaimed && !v.importedPrices
+                      ? 'כל המחירים לא כוללים מע״מ.'
+                      : 'המחירים כפי שפרסם העסק; כדאי לוודא מול העסק אם הם כוללים מע״מ.'}
+                    {v.medicalBiz ? ' טיפולים רפואיים נקבעים אחרי ייעוץ רפואי, ושם נקבע גם המחיר הסופי.' : ''}
+                  </p>
+                </>
+              ) : (
+                <ServicesEmpty contact={p.isClaimed} />
+              )}
+            </section>
 
             <ReviewsSection p={p} v={v} />
 
-            {v.beforeAfter.length > 0 && (
-              <section aria-labelledby="h-ba">
-                <div className={styles.secHead}>
-                  <h2 id="h-ba" className={styles.h2}>לפני ואחרי<span className={styles.dotTeal}>.</span></h2>
-                  <span className={styles.secNote}>פורסם על ידי העסק בהסכמת המטופלים</span>
-                </div>
-                <BeforeAfter photos={v.beforeAfter} />
-              </section>
-            )}
+            <section aria-labelledby="h-ba">
+              <div className={styles.secHead}>
+                <h2 id="h-ba" className={styles.h2}>לפני ואחרי<span className={styles.dotTeal}>.</span></h2>
+                {v.beforeAfter.length > 0 && <span className={styles.secNote}>פורסם על ידי העסק בהסכמת המטופלים</span>}
+              </div>
+              {v.beforeAfter.length > 0 ? <BeforeAfter photos={v.beforeAfter} /> : <p className={styles.emptyState}>{p.isClaimed ? 'העסק טרם פרסם תמונות לפני ואחרי.' : 'תמונות לפני ואחרי מתפרסמות רק על ידי העסק עצמו, בהסכמת המטופלים.'}</p>}
+            </section>
 
-            {v.staff.length > 0 && (
-              <section aria-labelledby="h-team">
-                <h2 id="h-team" className={styles.h2}>הצוות שלנו<span className={styles.dotTeal}>.</span></h2>
-                <div className={styles.team}>
-                  {v.staff.map(s => (
-                    <Link key={s.id} href={`/pro/${s.id}`} className={styles.person}>
-                      <span aria-hidden="true" className={styles.personPic} />
-                      <span className={styles.personText}>
-                        <span className={styles.personName}>{s.name}</span>
-                        <span className={styles.personRole}>{s.role}</span>
-                      </span>
-                      {s.badge && (
-                        <span className={styles.personBadge}>
-                          <CheckMark size={12} strokeWidth={2.1} />
-                          {s.badge}
+            <section aria-labelledby="h-team">
+              <h2 id="h-team" className={styles.h2}>הצוות שלנו<span className={styles.dotTeal}>.</span></h2>
+              {v.staff.length > 0 || v.siteTeam.length > 0 ? (
+                <>
+                  <div className={styles.team}>
+                    {v.staff.map(s => (
+                      <Link key={s.id} href={`/pro/${s.id}`} className={styles.person}>
+                        <span aria-hidden="true" className={styles.personPic} />
+                        <span className={styles.personText}>
+                          <span className={styles.personName}>{s.name}</span>
+                          <span className={styles.personRole}>{s.role}</span>
                         </span>
-                      )}
-                      <span className={styles.personMore}>
-                        לעמוד איש המקצוע
-                        <ArrowForward size={13} />
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            )}
+                        {s.badge && (
+                          <span className={styles.personBadge}>
+                            <CheckMark size={12} strokeWidth={2.1} />
+                            {s.badge}
+                          </span>
+                        )}
+                        <span className={styles.personMore}>
+                          לעמוד איש המקצוע
+                          <ArrowForward size={13} />
+                        </span>
+                      </Link>
+                    ))}
+                    {v.siteTeam.map(t => (
+                      <article key={t.name} className={`${styles.person} ${styles.personSite}`}>
+                        <span aria-hidden="true" className={styles.personPic} />
+                        <span className={styles.personText}>
+                          <span className={styles.personName}>{t.name}</span>
+                          {t.role && <span className={styles.personRole}>{t.role}</span>}
+                        </span>
+                        {t.bio && <span className={styles.personBio}>{t.bio}</span>}
+                      </article>
+                    ))}
+                  </div>
+                  {v.siteTeam.length > 0 && <p className={styles.secFoot}>פרטי הצוות לקוחים מאתר העסק. הסמכות ורישיונות מאומתים מופיעים רק אחרי אימות ב־BeautyFind.</p>}
+                </>
+              ) : (
+                <p className={styles.emptyState}>{p.isClaimed ? 'העסק טרם הוסיף את אנשי הצוות.' : 'פרטי הצוות טרם עודכנו.'}</p>
+              )}
+            </section>
 
-            {v.hoursRows && (
-              <section aria-labelledby="h-hours">
-                <h2 id="h-hours" className={styles.h2}>שעות פעילות<span className={styles.dotTeal}>.</span></h2>
+            <section aria-labelledby="h-video">
+              <h2 id="h-video" className={styles.h2}>סרטונים<span className={styles.dotTeal}>.</span></h2>
+              {v.videos.length > 0 ? (
+                <VideoGrid videos={v.videos} />
+              ) : (
+                <p className={styles.emptyState}>
+                  {p.youtube ? (
+                    <>
+                      לא נמצאו סרטונים שאפשר להציג כאן. <a href={p.youtube} target="_blank" rel="noopener nofollow">לערוץ היוטיוב של העסק</a>
+                    </>
+                  ) : p.isClaimed ? 'העסק טרם הוסיף סרטונים.' : 'לא נמצאו סרטונים רשמיים של העסק.'}
+                </p>
+              )}
+            </section>
+
+            <section aria-labelledby="h-hours">
+              <h2 id="h-hours" className={styles.h2}>שעות פעילות<span className={styles.dotTeal}>.</span></h2>
+              {v.hoursRows && v.hoursKnown ? (
                 <table className={styles.hours}>
-                  <caption>היום מסומן. השעות לפי שעון ישראל.</caption>
+                  <caption>היום מסומן. השעות לפי שעון ישראל{v.hoursRows.some(h => h.unknown) ? '; ימים שלא פורסמו מסומנים כך.' : '.'}</caption>
                   <tbody>
                     {v.hoursRows.map(h => (
                       <tr key={h.day} data-today={h.today || undefined}>
@@ -199,24 +259,27 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
                           {h.day}
                           {h.today && <span className={styles.todayBadge}> · היום</span>}
                         </th>
-                        <td data-closed={!h.range || undefined}>
-                          {h.range ? <span dir="ltr" className={`ltr ${styles.range}`}>{h.range}</span> : 'סגור'}
+                        <td data-closed={(!h.range && !h.unknown) || undefined} data-unknown={h.unknown || undefined}>
+                          {h.range ? <span dir="ltr" className={`ltr ${styles.range}`}>{h.range}</span> : h.unknown ? 'לא פורסם' : 'סגור'}
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-              </section>
-            )}
+              ) : (
+                <div className={styles.emptyBox}>
+                  <p className={styles.emptyText}>שעות הפעילות לא פורסמו במקורות שנבדקו. כדאי לבדוק מול העסק לפני ההגעה.</p>
+                  <ContactTrigger className={styles.emptyAction}>{p.isClaimed ? 'פנייה לעסק' : 'בירור מול העסק'}</ContactTrigger>
+                </div>
+              )}
+            </section>
 
-            {v.faqs.length > 0 && (
-              <section aria-labelledby="h-faq">
-                <h2 id="h-faq" className={styles.h2}>שאלות נפוצות<span className={styles.dotTeal}>.</span></h2>
-                <FaqAccordion items={v.faqs} />
-              </section>
-            )}
+            <section aria-labelledby="h-faq">
+              <h2 id="h-faq" className={styles.h2}>שאלות נפוצות<span className={styles.dotTeal}>.</span></h2>
+              {v.faqs.length > 0 ? <FaqAccordion items={v.faqs} /> : <p className={styles.emptyState}>עוד לא נאספו שאלות ותשובות על העסק הזה. אפשר לפנות לעסק ישירות דרך פרטי הקשר.</p>}
+            </section>
 
-            <Location p={p} />
+            <Location p={p} v={v} />
 
             {similar.length > 0 && (
               <section aria-labelledby="h-similar">
@@ -248,32 +311,30 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
           </aside>
         </main>
 
-        {/* Phones (mobile v2 §16): today's status, call, WhatsApp, then the primary action. */}
+        {/* Phones (mobile v2 §16): today's status, call, WhatsApp, then the primary action. No sample copy. */}
         <ActionBar mobileOnly className={styles.actionBar}>
-          {status && (
-            <span className={styles.barStatus}>
+          <span className={styles.barStatus}>
+            {status ? (
               <span className={styles.barState} data-closed={!v.open?.open || undefined}>
                 <span aria-hidden="true" className={styles.barDot} />
                 {status}
               </span>
-              <span className={styles.barSub}>{v.todayRange ? <span dir="ltr" className="ltr">{v.todayRange}</span> : p.cityName}</span>
-            </span>
-          )}
+            ) : (
+              <span className={styles.barState} data-closed>{p.name}</span>
+            )}
+            <span className={styles.barSub}>{v.todayRange ? <span dir="ltr" className="ltr">{v.todayRange}</span> : p.cityName}</span>
+          </span>
           {p.phone && <CallButton branchId={p.id} e164={p.phone} size="lg" iconOnly />}
           {p.whatsapp && <WhatsAppButton branchId={p.id} e164={p.whatsapp} businessName={p.name} size="lg" iconOnly />}
-          {cta ? (
+          {cta?.kind === 'book' ? (
             <Link href={cta.href} className={`${btn.primary} ${styles.barCta}`} data-size="lg">
               {cta.label}
             </Link>
-          ) : p.isClaimed ? (
+          ) : (
             <ContactTrigger className={`${btn.primary} ${styles.barCta}`} dataSize="lg">
-              קביעת תור
+              {cta?.label ?? 'בירור זמינות'}
             </ContactTrigger>
-          ) : p.websiteUrl ? (
-            <a href={p.websiteUrl} target="_blank" rel="noopener nofollow" className={`${btn.primary} ${styles.barCta}`} data-size="lg">
-              לאתר העסק
-            </a>
-          ) : null}
+          )}
         </ActionBar>
       </ContactProvider>
 
@@ -286,53 +347,22 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
 // ---------- Sections ----------
 
 function Identity({ p, v }: { p: PublicProfile; v: View }) {
+  // Highlight chips are tri-state: an evidenced "yes" is highlighted, an evidenced "no" shows plainly, unknown is not shown.
   const highlights = [
     v.responsible && { name: v.responsible.label === 'אחריות רפואית' ? 'אחריות רפואית מאומתת' : 'איש מקצוע אחראי מאומת', on: true },
-    p.treatments.length > 0 && { name: 'מחירים שקופים', on: true },
-    p.freeParking && { name: 'חניה חינם', on: true },
-    p.accessible && { name: 'נגיש לכיסא גלגלים', on: true },
+    p.treatments.some(t => t.priceAgorot != null && t.priceAgorot > 0) && { name: 'מחירים מפורסמים', on: true },
+    v.bookingOnline && { name: 'קביעת תור אונליין', on: true },
+    v.attributes.parking === true && { name: 'חניה חינם', on: true },
+    v.attributes.parking === false && { name: 'ללא חניה חינם', on: false },
+    v.attributes.accessible === true && { name: 'נגיש לכיסא גלגלים', on: true },
+    v.attributes.accessible === false && { name: 'לא נגיש לכיסא גלגלים', on: false },
+    p.languages.length > 0 && { name: p.languages.join(' · '), on: true },
     ...v.cats.map(c => ({ name: c.name, on: false })),
   ].filter((h): h is { name: string; on: boolean } => !!h);
 
-  // One line under the name: Google and BeautyFind combined, weighted by review count. The reviews
-  // section below still shows each source on its own (score, count, distribution).
+  // One line under the name: Google and BeautyFind side by side, never one merged number (locked product rule).
   const g = v.google && v.google.count > 0 ? v.google : null;
   const bf = p.beautyfind && p.beautyfind.count > 0 ? p.beautyfind : null;
-  const total = (g?.count ?? 0) + (bf?.count ?? 0);
-  const combined = total > 0
-    ? (() => {
-        const rating = ((g ? g.rating * g.count : 0) + (bf ? bf.rating * bf.count : 0)) / total;
-        const parts = [g && `${g.count} בגוגל`, bf && `${bf.count} ב־BeautyFind`].filter(Boolean).join(' ו־');
-        return {
-          rating,
-          count: total,
-          sources: g && bf ? 'Google ו־BeautyFind' : g ? 'Google' : 'BeautyFind',
-          aria: `דירוג ${ratingText(rating)} מתוך 5 מ־${reviewsLabel(total)}: ${parts}. מעבר לביקורות`,
-        };
-      })()
-    : null;
-
-  type Fact = { label: string; value: React.ReactNode; note: string | null; icon: string[] };
-  const facts = ([
-    v.responsible && {
-      label: v.responsible.label,
-      value: <Link href={`/pro/${v.responsible.staffId}`}>{v.responsible.name}</Link>,
-      note: v.responsible.note,
-      icon: FACT_ICONS.shield,
-    },
-    v.staff.length > 0 && {
-      label: 'צוות',
-      value: prosLabel(v.staff.length),
-      note: [...new Set(v.staff.map(s => s.role.split(' · ')[0]))].join(', '),
-      icon: FACT_ICONS.team,
-    },
-    v.hoursRows && {
-      label: 'שעות היום',
-      value: v.todayRange ? <span dir="ltr" className={`ltr ${styles.range}`}>{v.todayRange}</span> : 'סגור היום',
-      note: v.open?.label ?? null,
-      icon: FACT_ICONS.clock,
-    },
-  ] as Array<Fact | false | null>).filter((f): f is Fact => !!f);
 
   return (
     <section className={styles.identity} aria-labelledby="h-name">
@@ -348,17 +378,24 @@ function Identity({ p, v }: { p: PublicProfile; v: View }) {
       </div>
 
       <div className={styles.metaRow}>
-        {combined && (
-          <>
-            <a href="#h-reviews" className={styles.rating} aria-label={combined.aria}>
-              <RatingStars rating={combined.rating} />
-              <span className={`ltr ${styles.ratingNum}`}>{ratingText(combined.rating)}</span>
-              <span className={styles.ratingCount}>({reviewsLabel(combined.count)})</span>
-              <span className={styles.ratingSrc}>{combined.sources}</span>
-            </a>
-            <span aria-hidden="true" className={styles.sep} />
-          </>
+        {g && (
+          <a href="#h-reviews" className={styles.rating} aria-label={`דירוג ${ratingText(g.rating)} מתוך 5 בגוגל, ${reviewsLabel(g.count)}. מעבר לביקורות`}>
+            <RatingStars rating={g.rating} />
+            <span className={`ltr ${styles.ratingNum}`}>{ratingText(g.rating)}</span>
+            <span className={styles.ratingCount}>({reviewsLabel(g.count)})</span>
+            <span className={styles.ratingSrc}>בגוגל</span>
+          </a>
         )}
+        {bf && (
+          <a href="#h-reviews" className={styles.rating} aria-label={`דירוג ${ratingText(bf.rating)} מתוך 5 ב־BeautyFind, ${reviewsLabel(bf.count)}. מעבר לביקורות`}>
+            <RatingStars rating={bf.rating} />
+            <span className={`ltr ${styles.ratingNum}`}>{ratingText(bf.rating)}</span>
+            <span className={styles.ratingCount}>({reviewsLabel(bf.count)})</span>
+            <span className={styles.ratingSrc}>ב־BeautyFind</span>
+          </a>
+        )}
+        {!g && !bf && <a href="#h-reviews" className={styles.ratingNone}>אין עדיין דירוג</a>}
+        <span aria-hidden="true" className={styles.sep} />
         <span className={styles.addr}>
           <PinGlyph />
           {p.address}
@@ -383,24 +420,22 @@ function Identity({ p, v }: { p: PublicProfile; v: View }) {
         </ul>
       )}
 
-      {facts.length > 0 && (
-        <dl className={styles.facts} style={{ '--n': facts.length } as React.CSSProperties}>
-          {facts.map(f => (
-            <div key={f.label} className={styles.fact}>
-              <span aria-hidden="true" className={styles.factIcon}>
-                <svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="#0B7A87" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  {f.icon.map(d => <path key={d} d={d} />)}
-                </svg>
-              </span>
-              <span className={styles.factBody}>
-                <dt>{f.label}</dt>
-                <dd>{f.value}</dd>
-                {f.note && <span className={styles.factNote}>{f.note}</span>}
-              </span>
-            </div>
-          ))}
-        </dl>
-      )}
+      <dl className={styles.facts} style={{ '--n': 3 } as React.CSSProperties}>
+        {v.facts.map((f, i) => (
+          <div key={`${f.key}-${i}`} className={styles.fact} data-unknown={f.key === 'unknown' || undefined}>
+            <span aria-hidden="true" className={styles.factIcon}>
+              <svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="#0B7A87" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                {(FACT_ICONS[f.key] ?? FACT_ICONS.unknown).map(d => <path key={d} d={d} />)}
+              </svg>
+            </span>
+            <span className={styles.factBody}>
+              <dt>{f.label}</dt>
+              <dd>{f.href ? <Link href={f.href}>{f.value}</Link> : f.ltr ? <span dir="ltr" className={`ltr ${styles.range}`}>{f.value}</span> : f.value}</dd>
+              {f.note && <span className={styles.factNote}>{f.note}</span>}
+            </span>
+          </div>
+        ))}
+      </dl>
     </section>
   );
 }
@@ -504,25 +539,36 @@ function ReviewsSection({ p, v }: { p: PublicProfile; v: View }) {
   );
 }
 
-function Location({ p }: { p: PublicProfile }) {
+function Location({ p, v }: { p: PublicProfile; v: View }) {
   const full = p.address.includes(p.cityName) ? p.address : `${p.address}, ${p.cityName}`;
+  // Travel cells only for sourced facts; nothing about parking, transit or access is guessed.
   const cells = [
-    p.freeParking && { label: 'חניה', value: 'חניה חינם במקום' },
-    p.accessible && { label: 'נגישות', value: 'המקום נגיש לכיסא גלגלים' },
+    v.attributes.parking === true && { label: 'חניה', value: 'חניה חינם במקום, לפי פרסום העסק' },
+    v.attributes.parking === false && { label: 'חניה', value: 'העסק מציין שאין חניה חינם במקום' },
+    v.attributes.accessible === true && { label: 'נגישות', value: 'המקום נגיש לכיסא גלגלים, לפי הצהרת העסק' },
+    v.attributes.accessible === false && { label: 'נגישות', value: 'העסק מציין שהמקום אינו נגיש לכיסא גלגלים' },
   ].filter((c): c is { label: string; value: string } => !!c);
+  const directions = p.googlePlaceId
+    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${p.name}, ${full}`)}&destination_place_id=${encodeURIComponent(p.googlePlaceId)}`
+    : mapsHref(`${p.name} ${full}`);
+  const wazeUrl = p.wazeUrl ?? (p.lat != null && p.lng != null ? `https://waze.com/ul?ll=${p.lat},${p.lng}&navigate=yes` : null);
   return (
     <section aria-labelledby="h-loc">
       <h2 id="h-loc" className={styles.h2}>איך מגיעים<span className={styles.dotTeal}>.</span></h2>
       <div className={styles.loc}>
-        <div role="img" aria-label={`מפה סכמטית: ${p.name}, ${full}`} className={styles.map}>
-          <span aria-hidden="true" className={styles.mapGrid} />
-          <span aria-hidden="true" className={styles.mapRoadH} />
-          <span aria-hidden="true" className={styles.mapRoadV} />
-          <span aria-hidden="true" className={styles.mapPin}>
-            <span className={styles.mapLabel}>{p.name}</span>
-            <span className={styles.mapDot} />
-          </span>
-        </div>
+        {EMBED_KEY ? (
+          <MapEmbed embedKey={EMBED_KEY} query={mapQuery(p)} title={`מפה: ${p.name}, ${full}`} />
+        ) : (
+          <div role="img" aria-label={`מפה סכמטית: ${p.name}, ${full}. המפה האינטראקטיבית טרם הופעלה.`} className={styles.map}>
+            <span aria-hidden="true" className={styles.mapGrid} />
+            <span aria-hidden="true" className={styles.mapRoadH} />
+            <span aria-hidden="true" className={styles.mapRoadV} />
+            <span aria-hidden="true" className={styles.mapPin}>
+              <span className={styles.mapLabel}>{p.name}</span>
+              <span className={styles.mapDot} />
+            </span>
+          </div>
+        )}
         {cells.length > 0 && (
           <div className={styles.travel} style={{ '--n': cells.length } as React.CSSProperties}>
             {cells.map(c => (
@@ -536,8 +582,8 @@ function Location({ p }: { p: PublicProfile }) {
         <div className={styles.locFoot}>
           <address>{full}</address>
           <div className={styles.locActions}>
-            {p.wazeUrl && <WazeButton branchId={p.id} href={p.wazeUrl} />}
-            <a href={mapsHref(`${p.name} ${full}`)} target="_blank" rel="noopener noreferrer" className={styles.directions}>
+            {wazeUrl && <WazeButton branchId={p.id} href={wazeUrl} />}
+            <a href={directions} target="_blank" rel="noopener noreferrer" className={styles.directions}>
               <span>הוראות הגעה</span>
               <ArrowForward size={14} />
             </a>
@@ -547,6 +593,13 @@ function Location({ p }: { p: PublicProfile }) {
     </section>
   );
 }
+
+const SOCIAL_PATHS: Record<string, string> = {
+  instagram: INSTAGRAM_PATH,
+  facebook: 'M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.1 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12',
+  tiktok: 'M16.6 2h-3.1v13.2a2.6 2.6 0 1 1-1.9-2.5V9.5a5.7 5.7 0 1 0 5 5.6V8.3a6.4 6.4 0 0 0 3.6 1.1V6.3a3.5 3.5 0 0 1-3.6-3.5V2z',
+  youtube: 'M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8zM10 15.2V8.8l5.2 3.2z',
+};
 
 /** The ONE sticky sidebar card: contact CTA, WhatsApp/phone, details, socials, and the Google rating at its end. */
 function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null }) {
@@ -567,8 +620,7 @@ function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null
         {v.open && ` · ${v.open.label}`}
       </p>
 
-      {/* Online booking (phase 4): shown only once BOOKING_LIVE is flipped. The contact form below stays. */}
-      {cta && (
+      {cta?.kind === 'book' && (
         <Link href={cta.href} className={`${btn.primary} ${styles.bookCta}`}>
           <span>{cta.label}</span>
           <ArrowForward size={15} />
@@ -576,9 +628,9 @@ function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null
       )}
       {p.isClaimed ? (
         <>
-          <ContactTrigger className={`${btn.primary} ${styles.bookCta}`} dataTone={cta ? 'quiet' : undefined}>
+          <ContactTrigger className={`${btn.primary} ${styles.bookCta}`} dataTone={cta?.kind === 'book' ? 'quiet' : undefined}>
             <MessageGlyph />
-            <span>השארת פרטים לתיאום</span>
+            <span>{cta?.kind === 'book' ? 'השארת פרטים לתיאום' : cta?.label ?? 'השארת פרטים לתיאום'}</span>
           </ContactTrigger>
           <p className={styles.bookNote}>הפנייה מגיעה ישירות לעסק, והוא חוזר אליכם</p>
         </>
@@ -601,48 +653,48 @@ function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null
         </div>
       )}
 
-      {(p.phone || p.email || p.websiteUrl) && (
-        <dl className={styles.bookDl}>
-          {p.phone && (
-            <div>
-              <dt>טלפון</dt>
-              <dd>
-                <TrackedLink branchId={p.id} type="call_click" href={telHref(p.phone)} dir="ltr">
-                  {fromE164(p.phone)}
-                </TrackedLink>
-              </dd>
-            </div>
-          )}
-          {p.email && (
-            <div>
-              <dt>דוא״ל</dt>
-              <dd>
-                <TrackedLink branchId={p.id} type="contact_click" href={`mailto:${p.email}`} dir="ltr">
-                  {p.email}
-                </TrackedLink>
-              </dd>
-            </div>
-          )}
-          {p.websiteUrl && (
-            <div>
-              <dt>אתר</dt>
-              <dd>
-                <TrackedLink branchId={p.id} type="contact_click" href={p.websiteUrl} dir="ltr" external>
-                  {displayUrl(p.websiteUrl)}
-                </TrackedLink>
-              </dd>
-            </div>
-          )}
-        </dl>
-      )}
+      <dl className={styles.bookDl}>
+        <div>
+          <dt>טלפון</dt>
+          <dd>
+            {p.phone ? (
+              <TrackedLink branchId={p.id} type="call_click" href={telHref(p.phone)} dir="ltr">
+                {fromE164(p.phone)}
+              </TrackedLink>
+            ) : <span className={styles.dlMissing}>טלפון לא פורסם</span>}
+          </dd>
+        </div>
+        <div>
+          <dt>דוא״ל</dt>
+          <dd>
+            {p.email ? (
+              <TrackedLink branchId={p.id} type="contact_click" href={`mailto:${p.email}`} dir="ltr">
+                {p.email}
+              </TrackedLink>
+            ) : <span className={styles.dlMissing}>אימייל לא פורסם</span>}
+          </dd>
+        </div>
+        {p.websiteUrl && (
+          <div>
+            <dt>אתר</dt>
+            <dd>
+              <TrackedLink branchId={p.id} type="contact_click" href={p.websiteUrl} dir="ltr" external>
+                {displayUrl(p.websiteUrl)}
+              </TrackedLink>
+            </dd>
+          </div>
+        )}
+      </dl>
 
-      {p.instagram && (
+      {v.socials.length > 0 && (
         <div className={styles.bookBlock}>
           <div className={styles.blockLabel}>עקבו אחרינו</div>
           <div className={styles.socials}>
-            <a href={instagramHref(p.instagram)} target="_blank" rel="noopener noreferrer" aria-label="אינסטגרם" title="אינסטגרם" className={styles.social}>
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={INSTAGRAM_PATH} /></svg>
-            </a>
+            {v.socials.map(s => (
+              <a key={s.network} href={s.url} target="_blank" rel="noopener noreferrer" aria-label={s.label} title={s.label} className={styles.social}>
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={SOCIAL_PATHS[s.network] ?? INSTAGRAM_PATH} /></svg>
+              </a>
+            ))}
           </div>
         </div>
       )}
@@ -664,21 +716,21 @@ function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null
             <ArrowForward size={13} />
           </a>
         </div>
-        <p className={styles.gNote}>הדירוגים מגיעים מפרופיל Google Business של העסק ומתעדכנים מדי שבוע. BeautyFind אינו עורך או משנה את סדר הביקורות.</p>
+        <p className={styles.gNote}>הדירוג מגיע מפרופיל Google Business של העסק{v.googleSync ? ` ועודכן ${v.googleSync}` : ''}. BeautyFind אינו עורך או משנה את סדר הביקורות.</p>
       </div>
     </div>
   );
 }
 
-type Cta = { href: string; label: string };
+type Cta = { kind: 'book' | 'ask'; href: string; label: string };
 
 /**
- * Online booking CTA, only when booking is live and the branch takes it. A clinic whose published
- * treatments are all medical books a consult instead (the booking flow would hand off to it anyway).
- * Null = no online booking: the contact form is the primary action.
+ * Primary action. Native booking only when booking is live, the branch takes it and an owner runs the
+ * listing; a clinic whose published treatments are all medical books a consult instead. Otherwise the
+ * action asks for availability (or a consultation for medical businesses) through the contact flow.
  */
 function primaryCta(p: PublicProfile, v: View): Cta | null {
-  if (!(BOOKING_LIVE && p.onlineBooking && p.isClaimed)) return null;
   const medicalOnly = p.treatments.length > 0 ? p.treatments.every(t => t.isMedical) : v.cats.length > 0 && v.cats.every(c => c.isMedical);
-  return medicalOnly ? { href: `/consult/${p.slug}`, label: 'קביעת ייעוץ' } : { href: `/book/${p.slug}`, label: 'קביעת תור' };
+  if (v.bookingOnline) return medicalOnly ? { kind: 'book', href: `/consult/${p.slug}`, label: 'קביעת ייעוץ' } : { kind: 'book', href: `/book/${p.slug}`, label: 'קביעת תור' };
+  return { kind: 'ask', href: '#bf-contact', label: medicalOnly ? 'בקשת ייעוץ' : 'בירור זמינות' };
 }

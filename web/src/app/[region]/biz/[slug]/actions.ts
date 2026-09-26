@@ -23,6 +23,7 @@ export async function submitProfileLead(input: LeadInput): Promise<LeadResult> {
     treatment: String(input?.treatment ?? ''),
     message: String(input?.message ?? ''),
     website: String(input?.website ?? ''),
+    ...(input?.serviceId ? { serviceId: String(input.serviceId) } : {}),
   };
   const parsed = LeadSchema.safeParse(raw);
   if (!parsed.success) {
@@ -58,6 +59,10 @@ export async function submitProfileLead(input: LeadInput): Promise<LeadResult> {
     if (recent >= LEAD_RATE_LIMIT) return { ok: false, error: 'rate_limited' };
 
     const to = branch.email?.trim() || branch.business.owner?.email?.trim() || null;
+    // A quote request names the service (business, branch and service context travel with the lead).
+    const service = d.serviceId ? await db.treatment.findFirst({ where: { id: d.serviceId, branchId: branch.id }, select: { id: true, name: true, priceAgorot: true } }) : null;
+    const treatmentName = service?.name ?? (d.treatment || null);
+    const notes = [service ? `בקשת מחיר ופרטים לשירות: ${service.name}${service.priceAgorot == null ? ' (המחיר לא פורסם)' : ''} [${service.id}]` : null, d.message || null].filter(Boolean).join('\n') || null;
     const lead = await db.lead.create({
       data: {
         businessId: branch.businessId,
@@ -65,8 +70,8 @@ export async function submitProfileLead(input: LeadInput): Promise<LeadResult> {
         name: d.name,
         phone,
         email,
-        treatment: d.treatment || null,
-        notes: d.message || null,
+        treatment: treatmentName,
+        notes,
         source: 'form',
         stage: 'new',
         events: { create: { kind: 'form', text: to ? LEAD_EVENT_TEXT : LEAD_EVENT_TEXT_NO_EMAIL } },
@@ -85,8 +90,8 @@ export async function submitProfileLead(input: LeadInput): Promise<LeadResult> {
             name: d.name,
             phone: phone ? fromE164(phone) : '',
             email: email ?? '',
-            treatment: d.treatment,
-            message: d.message,
+            treatment: treatmentName ?? '',
+            message: notes ?? '',
             leads_link: `${siteUrl()}/biz/leads`,
             profile_link: `${siteUrl()}${profileHref(branch)}`,
           },

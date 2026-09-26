@@ -21,6 +21,8 @@ export interface LeadInput {
   message: string;
   /** Honeypot. Humans never see it; bots fill it. */
   website: string;
+  /** Treatment id the request is about (quote requests from the services accordion). */
+  serviceId?: string;
 }
 
 export type LeadField = 'name' | 'phone' | 'email' | 'contact' | 'treatment' | 'message';
@@ -52,6 +54,7 @@ export const LeadSchema = z
     treatment: z.string().trim().max(LEAD_LIMITS.treatment),
     message: z.string().trim().max(LEAD_LIMITS.message),
     website: z.string().max(200),
+    serviceId: z.uuid().optional(),
   })
   .superRefine((v, ctx) => {
     const errs = leadErrors(v);
