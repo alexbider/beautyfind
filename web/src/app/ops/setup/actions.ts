@@ -6,9 +6,9 @@ import { db } from '@/lib/server/db';
 import { createSession } from '@/lib/server/session';
 import { setupState } from './state';
 
-// One-time password setup for the master admin (OPS_BOOTSTRAP_EMAIL). The link carries a token whose
-// SHA-256 is in OPS_SETUP_TOKEN_HASH. It works only while that account has no password, so it
-// is single use: once a password is set, the same link is refused.
+// Password setup and reset for the master admin (OPS_BOOTSTRAP_EMAIL). The link carries a token whose
+// SHA-256 is in OPS_SETUP_TOKEN_HASH. Each token works once: after it sets the password its hash is
+// written to the audit log and the same link is refused. A new token (new hash on Vercel) resets.
 
 const Input = z.object({ token: z.string().max(200), password: z.string().min(12).max(200), confirm: z.string() });
 
@@ -19,11 +19,18 @@ export async function completeSetup(input: z.input<typeof Input>): Promise<{ ok:
   const s = await setupState(p.data.token);
   if (!s.ok) return { ok: false, error: 'invalid_link' };
   const hash = await hashPassword(p.data.password);
-  // Only if still unset: two tabs racing cannot both set it.
-  const r = await db.user.updateMany({ where: { email: s.email, passwordHash: null }, data: { passwordHash: hash } });
-  if (!r.count) return { ok: false, error: 'invalid_link' };
   const user = await db.user.findUniqueOrThrow({ where: { email: s.email }, select: { id: true } });
-  await db.auditLog.create({ data: { actorId: user.id, action: 'staff_password_setup', subjectType: 'user', subjectId: user.id } });
+  // The token is spent inside the same transaction as the password, so two tabs cannot both use it.
+  const ok = await db.$transaction(async tx => {
+    const again = await tx.auditLog.findFirst({ where: { action: 'staff_password_setup', subjectType: 'user', subjectId: user.id, meta: { path: ['tokenHash'], equals: s.tokenHash } }, select: { id: true } });
+    if (again) return false;
+    await tx.user.update({ where: { id: user.id }, data: { passwordHash: hash } });
+    await tx.auditLog.create({ data: { actorId: user.id, action: 'staff_password_setup', subjectType: 'user', subjectId: user.id, meta: { tokenHash: s.tokenHash, reset: s.reset } } });
+    return true;
+  });
+  if (!ok) return { ok: false, error: 'invalid_link' };
+  // Any older sessions of that account end with the reset.
+  if (s.reset) await db.session.deleteMany({ where: { userId: user.id } }).catch(() => {});
   await createSession(user.id, false);
   return { ok: true };
 }
