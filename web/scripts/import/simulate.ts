@@ -18,7 +18,7 @@ process.env.UPLOAD_DIR ??= `${process.env.TMPDIR ?? '/tmp'}/bf-sim-uploads`;
 
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { fakeItems, startMockDfs, startSites } from './sim/fixtures';
+import { fakeItems, startMockApify, startMockDfs, startSites } from './sim/fixtures';
 
 const LOCAL = /@(localhost|127\.0\.0\.1)(:\d+)?\//;
 
@@ -37,6 +37,26 @@ async function main() {
   const dfs = await startMockDfs(withPort, { postImageBase: `http://gimg.test:${web.port}` });
   process.env.DATAFORSEO_BASE_URL = dfs.url;
   process.env.YOUTUBE_OEMBED_BASE = `http://yt.test:${web.port}/oembed`;
+  // Apify look-alike: Google Maps details (hours, photos, accessibility) for every fixture place, and the
+  // Instagram profiles the provider named (they show the business phone, so they verify).
+  const apify = await startMockApify({
+    'compass~crawler-google-places': withPort.filter(it => it.place_id || it.cid).map((it, i) => ({
+      placeId: it.place_id ?? null, cid: it.cid, title: it.title, phone: it.phone ?? null, website: it.url ?? null, totalScore: it.rating?.value ?? null, reviewsCount: it.rating?.votes_count ?? null,
+      openingHours: [{ day: 'Sunday', hours: '9 AM to 6 PM' }, { day: 'Monday', hours: '9 AM to 6 PM' }, { day: 'Tuesday', hours: '9 AM to 6 PM' }, { day: 'Wednesday', hours: '9 AM to 6 PM' }, { day: 'Thursday', hours: '9 AM to 6 PM' }, { day: 'Friday', hours: '9 AM to 1 PM' }, { day: 'Saturday', hours: 'Closed' }],
+      additionalInfo: { Accessibility: [{ 'Wheelchair accessible entrance': i % 2 === 0 }], Parking: [{ 'Free street parking': i % 3 === 0 }] },
+      imageUrls: [`http://gimg.test:${web.port}/img/photo-${(i % 6) + 1}.png`, `http://gimg.test:${web.port}/img/photo-${(i % 6) + 2}.png`],
+      description: i % 4 === 2 ? `${it.title} הוא סלון יופי שכונתי עם צוות קטן, טיפולי ציפורניים ופנים, ושעות נוחות גם בערב.` : null,
+      url: it.check_url,
+    })),
+    'apify~instagram-profile-scraper': withPort.filter(it => /instagram\.com/.test(it.url ?? '')).map(it => ({
+      username: it.url!.replace(/.*instagram\.com\//, '').replace(/\/.*$/, ''), fullName: it.title, biography: `${it.title}. תורים בהודעה. ${it.phone ?? ''}`, businessPhoneNumber: it.phone ?? null,
+      profilePicUrlHD: `http://gimg.test:${web.port}/logo.png`, latestPosts: [{ type: 'Image', displayUrl: `http://gimg.test:${web.port}/img/photo-4.png`, url: 'https://www.instagram.com/p/sim1/', caption: 'עבודה מהשבוע' }],
+    })),
+    'apify~facebook-pages-scraper': [],
+    'apify~website-content-crawler': [],
+  }, { usdPerItem: 0.004 });
+  process.env.APIFY_API_BASE = apify.url;
+  process.env.APIFY_TOKEN = 'simulated';
 
   const ctx = await import('./ctx');
   const { seedDfs, discoverDfs } = await import('./stages/dfsDiscover');
@@ -44,6 +64,8 @@ async function main() {
   const { queuePostPhotos, collectPostPhotos } = await import('./stages/googlePosts');
   const { extractStage } = await import('./stages/extractLlm');
   const { editorialStage } = await import('./stages/editorial');
+  const { seedSources, requeueAfterSources } = await import('./stages/sources');
+  const { APIFY_KINDS, apifyStage } = await import('./stages/apify');
   const { check } = await import('./stages/check');
   const { countWords, WORDS_MIN } = await import('../../src/lib/import/editorial');
   const { fromMicros } = await import('../../src/lib/import/pricing');
@@ -73,6 +95,9 @@ async function main() {
     await seedDfs(run, scope);
     while (await discoverDfs(run));
     while (await enrich(run));
+    await seedSources(run);
+    for (const kind of APIFY_KINDS) while (await apifyStage(run, kind));
+    if (await requeueAfterSources(run)) while (await enrich(run));
     await queuePostPhotos(run, (await db.importPlace.findMany({ where: { runId: run.id }, select: { id: true } })).map(p => p.id));
     while (await collectPostPhotos(run));
     while (await extractStage(run));

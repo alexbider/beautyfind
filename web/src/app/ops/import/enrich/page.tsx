@@ -10,6 +10,7 @@ import { runErrorKind } from '@/lib/import/runErrors';
 import { db } from '@/lib/server/db';
 import { enrichQueue, TARGETABLE } from '@/lib/server/enrichQueue';
 import { getSettings } from '@/lib/server/importOps';
+import { ImportNav } from '../ImportNav';
 import { EnrichList, type BatchRow } from './EnrichList';
 import styles from '../import.module.css';
 
@@ -95,14 +96,11 @@ export default async function EnrichPage({ searchParams }: { searchParams: SP })
       <OpsHeader current="import" who={who} />
       <main className={styles.page}>
         <div className={styles.titleRow}>
-          <h1 className={styles.h1}>העשרה לפי חוסרים</h1>
-          <div className={styles.btnRow}>
-            <Link href="/ops/import/review" className={styles.btn}>לתור הבדיקה</Link>
-            <Link href="/ops/import" className={styles.btn}>לריצות</Link>
-          </div>
+          <h1 className={styles.h1}>השלמות לעסקים שפורסמו</h1>
         </div>
+        <ImportNav current="enrich" counts={{ enrich: total }} />
         <p className={styles.lead}>
-          כל עסק שפורסם מהייבוא ולא נתבע, עם ציון מוכנות מול התבנית, מה חסר בו ואילו מקורות יכולים להשלים את החסר: DataForSEO, Google Maps, הפייסבוק והאינסטגרם של העסק (דרך Apify), אתר העסק, וכתיבת התיאור. בחרו עסקים, השאירו ״כל ההעשרות הנדרשות״ או סמנו צעדים, והריצו אצווה. אצוות מסתיימות אפשר למחוק.
+          כל עסק שפורסם מהייבוא ולא נתבע, עם מה שחסר בו ומאיזה מקור אפשר להשלים. בוחרים עסקים ולוחצים ״השלמת כל החוסרים״: כל מקור רץ רק לעסקים שהוא יכול לעזור להם. אצווה שהסתיימה אפשר למחוק.
           {truncated ? ` מוצגים ${total} העסקים הראשונים.` : ''}
         </p>
 

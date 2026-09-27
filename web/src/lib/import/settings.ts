@@ -43,6 +43,8 @@ export const ImportSettingsSchema = z.object({
   apifyMaxImages: z.number().int().min(0).max(30).default(10), // Google profile photos per place
   apifyMaxPosts: z.number().int().min(0).max(12).default(6), // recent Instagram image posts kept as gallery candidates (verified accounts only)
   apifyRenderPages: z.number().int().min(1).max(20).default(8), // pages per site for the browser crawl
+  // Written by the worker at every start: which server-side keys it had. The admin shows it as the connection status.
+  workerStatus: z.object({ at: z.string(), dataforseo: z.boolean(), anthropic: z.boolean(), apify: z.boolean(), youtube: z.boolean(), blob: z.boolean(), browser: z.boolean() }).optional(),
   // Stage 2B: Google (display data only)
   googleEnabled: z.boolean().default(false),
   googleRunCallCap: z.number().int().min(0).max(10_000).default(50),

@@ -5,6 +5,7 @@ import { Prisma, type ImportPlace, type ImportRun } from '@prisma/client';
 import { pickEmail } from '../../../src/lib/import/email';
 import { DUPLICATE_AT, isStrong, MatchPool, POSSIBLE_MATCH_AT, type PoolItem } from '../../../src/lib/import/match';
 import { qualify } from '../../../src/lib/import/rules';
+import { placeCoverage } from '../../../src/lib/import/placeCoverage';
 import { ratingProviderOk } from '../../../src/lib/import/sourcePolicy';
 import { db, heartbeat, log, setStats, settings } from '../ctx';
 
@@ -108,6 +109,17 @@ export async function check(run: ImportRun) {
       await db.branch.updateMany({ where: { id: p.branchId!, googlePlaceId: p.placeId }, data: { googleRating: p.googleRating, googleReviewCount: p.googleReviewCount, googleSyncedAt: new Date() } });
     }
   }
+
+  // Readiness against the profile template, so review shows the score the listing will have.
+  const mine = await db.importPlace.findMany({ where: { runId: run.id, status: { in: ['ready', 'needs_review', 'incomplete'] } } });
+  for (let i = 0; i < mine.length; i += 100) {
+    await db.$transaction(mine.slice(i, i + 100).map(p => {
+      const cov = placeCoverage(p, { mapConfigured: true });
+      return db.importPlace.update({ where: { id: p.id }, data: { profileStatus: cov.status, coverage: cov as unknown as Prisma.InputJsonValue } });
+    }));
+  }
+  const readiness = mine.length ? Math.round(mine.reduce((n, p) => n + placeCoverage(p, { mapConfigured: true }).readiness, 0) / mine.length) : null;
+  await setStats(run.id, { readiness, byProfileStatus: Object.fromEntries(['ready', 'ready_with_disclosed_gaps', 'needs_owner_information', 'needs_review'].map(k => [k, mine.filter(p => placeCoverage(p, { mapConfigured: true }).status === k).length])) });
 
   const counts = await db.importPlace.groupBy({ by: ['status'], where: { runId: run.id }, _count: true });
   await setStats(run.id, { byStatus: Object.fromEntries(counts.map(c => [c.status, c._count])) });

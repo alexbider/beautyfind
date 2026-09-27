@@ -10,6 +10,7 @@ export const RunScope = z.object({
   categories: z.array(z.enum(CATEGORIES.map(c => c.slug) as [string, ...string[]])).min(1),
   nearby: z.boolean(), // map grid by Google place type
   text: z.boolean(), // text queries per category and city
+  autoPublish: z.boolean().optional(), // publish records that pass every check without a person looking (off by default)
 });
 export type RunScope = z.infer<typeof RunScope>;
 

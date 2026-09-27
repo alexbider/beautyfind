@@ -46,6 +46,26 @@ export interface PlanSignals {
   hasEditorial: boolean;
 }
 
+/** Source signals of an import record, for the plan. */
+export function planSignals(p: { placeId: string; sourceId: string | null; provider: string; website: string | null; websiteKind: string | null; instagram: string | null; facebook: string | null; socials: unknown; crawl: unknown; editorial: unknown }): PlanSignals {
+  const crawl = (p.crawl ?? {}) as Record<string, unknown>;
+  const socials = (p.socials ?? {}) as Record<string, { url?: string } | undefined>;
+  const services = (crawl.services as { total?: number } | undefined)?.total ?? 0;
+  const photos = ((crawl.imageCandidates as { photos?: string[] } | undefined)?.photos ?? []).length;
+  const pages = Array.isArray(crawl.pages) ? crawl.pages.length : 0;
+  const readable = crawl.site === 'ok' || crawl.site === 'no_email';
+  return {
+    hasSite: !!p.website && (p.websiteKind === 'own' || p.websiteKind === null || p.websiteKind === 'linkhub'),
+    siteOutcome: typeof crawl.site === 'string' ? crawl.site : null,
+    siteThin: readable && pages <= 2 && services === 0 && photos === 0,
+    placeId: !p.placeId.startsWith('dfs:'),
+    cid: p.provider === 'dataforseo' && !!p.sourceId && /^\d+$/.test(p.sourceId),
+    instagram: !!(p.instagram || socials.instagram?.url),
+    facebook: !!(p.facebook || socials.facebook?.url),
+    hasEditorial: !!p.editorial && typeof (p.editorial as { description?: unknown }).description === 'string',
+  };
+}
+
 /** Sections (coverage ids) each step can help with. */
 const HELPS: Record<StepId, string[]> = {
   dfs: ['rating', 'chips', 'hours', 'hero'],

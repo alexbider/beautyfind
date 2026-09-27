@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { OpsHeader } from '@/components/ops/OpsHeader';
 import { OPS_ROLE_NAMES, requireImporter } from '@/components/ops/guard';
 import { fromMicros, pricing } from '@/lib/import/pricing';
@@ -7,6 +6,7 @@ import { db } from '@/lib/server/db';
 import { googleAvailable } from '@/lib/server/googleDisplay';
 import { getSettings } from '@/lib/server/importOps';
 import { countPendingImages } from '@/lib/server/importEnhance';
+import { ImportNav } from './ImportNav';
 import { RunsView, type RunRow } from './RunsView';
 import styles from './import.module.css';
 
@@ -22,7 +22,7 @@ export default async function ImportPage() {
   const user = await requireImporter('/ops/import');
   const [runs, settings] = await Promise.all([db.importRun.findMany({ orderBy: { createdAt: 'desc' }, take: 30 }), getSettings()]);
   const ids = runs.map(r => r.id);
-  const [counts, spend, reconcile, siteStatus, googleSpend, enhanceEligible, pendingImages] = await Promise.all([
+  const [counts, spend, reconcile, siteStatus, enhanceEligible, pendingImages, reviewOpen] = await Promise.all([
     db.importPlace.groupBy({ by: ['runId', 'status'], where: { runId: { in: ids } }, _count: true }),
     db.spendEntry.groupBy({ by: ['runId', 'provider', 'status'], where: { runId: { in: ids } }, _sum: { estimatedMicros: true, actualMicros: true }, _count: true }),
     db.importTask.findMany({ where: { runId: { in: ids }, status: 'needs_reconciliation' }, select: { id: true, runId: true, key: true, error: true, params: true } }),
@@ -30,11 +30,11 @@ export default async function ImportPage() {
     db.$queryRaw<Array<{ run_id: string; site: string | null; n: bigint }>>`
       SELECT run_id, crawl->>'site' AS site, count(*) AS n FROM import_places
       WHERE run_id = ANY(${ids}::uuid[]) AND email IS NULL GROUP BY run_id, crawl->>'site'`,
-    db.spendEntry.aggregate({ where: { provider: 'google', createdAt: { gte: new Date(new Date().toISOString().slice(0, 7) + '-01') } }, _sum: { actualMicros: true, estimatedMicros: true }, _count: true }),
     db.$queryRaw<Array<{ n: bigint }>>`
       SELECT count(*) AS n FROM import_places p JOIN branches b ON b.id = p.branch_id
       WHERE p.status IN ('approved', 'merged') AND b.is_claimed = false AND b.status = 'live'`.then(r => Number(r[0]?.n ?? 0)),
     countPendingImages(),
+    db.importPlace.count({ where: { status: { in: ['ready', 'needs_review'] } } }),
   ]);
 
   const rows: RunRow[] = runs.map(r => {
@@ -79,24 +79,18 @@ export default async function ImportPage() {
       <main className={styles.page}>
         <div className={styles.titleRow}>
           <h1 className={styles.h1}>ייבוא עסקים</h1>
-          <div className={styles.btnRow}>
-            <Link href="/ops/import/enrich" className={styles.btn}>העשרה לפי חוסרים ואצוות</Link>
-            <Link href="/ops/import/review" className={`${styles.btn} ${styles.primary}`}>לתור הבדיקה</Link>
-          </div>
         </div>
+        <ImportNav current="runs" counts={{ review: reviewOpen, enrich: enhanceEligible }} />
         <p className={styles.lead}>
-          שלב 1 מאתר עסקים ב־DataForSEO. שלב 2 משלים פרטים חסרים מהאתר הרשמי של העסק. Google משמש רק לתצוגה נפרדת ומבוקרת, ורק כשמפעילים אותו. שום דבר לא עולה לאתר לפני אישור.
+          שלושה מסכים: כאן מתחילים ייבוא ועוקבים אחרי הריצות, בתור הבדיקה מאשרים רשומות, ובהשלמות ממלאים חוסרים בעסקים שכבר פורסמו. ריצת ייבוא אחת אוספת הכול מכל המקורות; שום דבר לא עולה לאתר לפני אישור, אלא אם ביקשתם פרסום אוטומטי.
         </p>
         <RunsView
           runs={rows}
           settings={settings}
-          canDispatch={!!process.env.GITHUB_DISPATCH_TOKEN}
-          dfsConfigured={!!process.env.DATAFORSEO_LOGIN}
-          googleAvailable={googleAvailable()}
-          googleMonth={{ usd: fromMicros(googleSpend._sum.actualMicros ?? googleSpend._sum.estimatedMicros ?? 0n), calls: googleSpend._count }}
+          flags={{ canDispatch: !!process.env.GITHUB_DISPATCH_TOKEN, mapKey: !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY, googleAvailable: googleAvailable() }}
           enhanceEligible={enhanceEligible}
           pendingImages={pendingImages}
-          pricingNote={{ version: p.version, dfs: p.dataforseo.businessListingsSearch, dfsChecked: p.dataforseo.checked, dfsNote: p.dataforseo.note, googleChecked: p.google.checked, editorialUsd: p.editorial.perProfileUsd }}
+          pricingNote={{ version: p.version, dfs: p.dataforseo.businessListingsSearch, dfsChecked: p.dataforseo.checked, dfsNote: p.dataforseo.note, googleChecked: p.google.checked, editorialUsd: p.editorial.perProfileUsd, apifyChecked: p.apify.checked }}
         />
       </main>
     </div>

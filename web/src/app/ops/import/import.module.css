@@ -81,6 +81,22 @@
 .error { margin: 8px 0; padding: 8px 10px; border-radius: 10px; background: var(--bad-bg); color: var(--bad); font-size: 13px; overflow-wrap: anywhere; }
 .info { margin: 8px 0; padding: 8px 10px; border-radius: 10px; background: #EEF6F7; font-size: 13px; }
 
+.tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 16px; }
+.tab { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: inherit; text-decoration: none; }
+.tab[aria-current='page'] { border-color: #0C243E; background: #0C243E; color: #fff; }
+.tabName { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+.tabCount { padding: 0 7px; border-radius: 999px; background: rgba(255,255,255,.18); font-size: 12px; }
+.tab:not([aria-current='page']) .tabCount { background: #EEF2F5; color: #34495C; }
+.tabHint { font-size: 12px; opacity: .8; }
+@media (max-width: 560px) { .tabs { grid-template-columns: 1fr; } .tabHint { display: none; } }
+
+.stages { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; list-style: none; counter-reset: st; }
+.stages li { position: relative; padding: 3px 10px 3px 8px; border-radius: 999px; background: #EEF2F5; color: #5A6B7B; font-size: 12px; font-weight: 700; }
+.stages li::before { counter-increment: st; content: counter(st) ' '; opacity: .7; }
+.stageDone { background: var(--ok-bg) !important; color: var(--ok) !important; }
+.stageNow { background: #0C243E !important; color: #fff !important; }
+.stageStopped { background: var(--warn-bg) !important; color: var(--warn) !important; }
+
 /* ---------- Review ---------- */
 
 .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; margin-bottom: 14px; }

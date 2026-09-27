@@ -242,7 +242,7 @@ export function EnrichList({ rows, allFiltered, focus, costs, flags, canDispatch
       <Batches batches={batches} canDispatch={canDispatch} />
 
       <section className={`${styles.card} ${styles.stack}`} aria-labelledby="plan-h">
-        <h2 id="plan-h" className={styles.h2} style={{ margin: 0 }}>אצווה חדשה</h2>
+        <h2 id="plan-h" className={styles.h2} style={{ margin: 0 }}>השלמה חדשה</h2>
         <div className={styles.btnRow}>
           <button type="button" className={styles.btn} onClick={() => setPicked(picked.size === rows.length ? new Set() : new Set(rows.map(r => r.branchId)))}>
             {picked.size === rows.length && rows.length ? 'ניקוי הבחירה' : `בחירת העמוד (${n(rows.length)})`}
@@ -252,8 +252,13 @@ export function EnrichList({ rows, allFiltered, focus, costs, flags, canDispatch
           </button>
           <span className={styles.note}>{n(count)} נבחרו{focus.length ? ` · מיקוד: ${focus.join(', ')}` : ''}</span>
         </div>
-        <div className={styles.checks}>
-          <label className={styles.check}><input type="radio" name="mode" checked={auto} onChange={() => setAuto(true)} />כל ההעשרות הנדרשות: כל צעד רץ רק לעסקים שהוא יכול להשלים בהם חסר</label>
+        <p className={styles.note} style={{ margin: 0 }}>
+          {count ? <>לעסקים שנבחרו יופעלו: {STEP_ORDER.filter(s => est.per[s].listings).map(s => `${STEP_SHORT[s]} (${n(est.per[s].listings)})`).join(', ') || 'אין צעד שיכול לעזור'}.</> : 'בחרו עסקים למטה; כל מקור יופעל רק למי שהוא יכול להשלים לו חסר.'}
+        </p>
+        <details>
+        <summary className={styles.label} style={{ cursor: 'pointer' }}>התאמה אישית של הצעדים</summary>
+        <div className={styles.checks} style={{ margin: '8px 0' }}>
+          <label className={styles.check}><input type="radio" name="mode" checked={auto} onChange={() => setAuto(true)} />כל צעד רק לעסקים שהוא יכול להשלים בהם חסר</label>
           <label className={styles.check}><input type="radio" name="mode" checked={!auto} onChange={() => setAuto(false)} />הצעדים שסימנתי, לכל העסקים שנבחרו</label>
         </div>
         <div className={styles.checks}>
@@ -269,6 +274,7 @@ export function EnrichList({ rows, allFiltered, focus, costs, flags, canDispatch
             );
           })}
         </div>
+        </details>
         <label>
           <span className={styles.label}>שם האצווה (רשות)</span>
           <input className={styles.input} value={label} onChange={e => setLabel(e.target.value)} maxLength={60} placeholder={`לדוגמה: ${focus[0] ?? 'חיפה'}, השלמת תמונות ושעות`} />
@@ -280,7 +286,7 @@ export function EnrichList({ rows, allFiltered, focus, costs, flags, canDispatch
           {mapConfigured ? '' : ' מפתח Maps Embed לא מוגדר, לכן ״מפה והגעה״ מסומן כחסר בכל העסקים.'}
         </p>
         <div className={styles.btnRow}>
-          <button type="button" className={`${styles.btn} ${styles.primary}`} disabled={pending || !count || !stepsChosen.length || flags.killSwitch} onClick={go}>{pending ? 'שולחים…' : `הרצת אצווה ל־${n(count)} העסקים שנבחרו`}</button>
+          <button type="button" className={`${styles.btn} ${styles.primary}`} disabled={pending || !count || !stepsChosen.length || flags.killSwitch} onClick={go}>{pending ? 'שולחים…' : `השלמת כל החוסרים ל־${n(count)} העסקים שנבחרו`}</button>
           <button type="button" className={styles.btn} disabled={pending} onClick={copyImages}>העתקת תמונות ממתינות</button>
           {copy ? <span className={styles.note} role="status">{copy}</span> : null}
           {flags.killSwitch ? <span className={`${styles.chip} ${styles.chipBad}`}>מתג החירום פעיל</span> : null}

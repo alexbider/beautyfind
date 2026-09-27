@@ -17,7 +17,7 @@ import type { ImportRun } from '@prisma/client';
 import { sweepExpired } from '../../src/lib/import/retention';
 import { RunScope } from '../../src/lib/import/rules';
 import { closeBrowser } from './crawl';
-import { argRun, db, LEASE_MS, log, Stop, timeLeft, WORKER } from './ctx';
+import { argRun, db, LEASE_MS, log, setStats, Stop, timeLeft, WORKER } from './ctx';
 import { check } from './stages/check';
 import { discoverDfs, seedDfs } from './stages/dfsDiscover';
 import { enrich } from './stages/enrich';
@@ -27,6 +27,13 @@ import { collectPostPhotos, queuePostPhotos } from './stages/googlePosts';
 import { editorialStage } from './stages/editorial';
 import { extractStage } from './stages/extractLlm';
 import { discoverGoogle, seedGoogle } from './stages/googleDiscover';
+import { requeueAfterSources, seedSources } from './stages/sources';
+import { publishReady } from './stages/publish';
+import { apifyConfigured } from './providers/apify';
+import { dfsConfigured } from './providers/dataforseo';
+
+/** The stage a run is in, shown on the run card as plain progress. */
+const stage = (runId: string, name: string) => setStats(runId, { stage: name, stageAt: new Date().toISOString() });
 
 async function claim(runId?: string): Promise<ImportRun | null> {
   const now = new Date();
@@ -49,18 +56,24 @@ async function work(run: ImportRun): Promise<'done' | 'stopped'> {
   log(`run ${run.id} "${run.label}" (${run.provider})`);
   try {
     if (run.provider === 'enhance') {
+      await stage(run.id, 'refresh');
       await seedEnhance(run);
       while (await enhanceStage(run, 'dfs_refresh'));
       // Apify actors (Google Maps, Facebook, Instagram, then rendered sites) before the website stage reads the results.
+      await stage(run.id, 'sources');
       for (const kind of APIFY_KINDS) while (await apifyStage(run, kind));
+      await stage(run.id, 'photos');
       await queuePostPhotos(run, await enhancePlaceIds(run));
       while (await collectPostPhotos(run));
+      await stage(run.id, 'fill');
       while (await enhanceStage(run, 'enhance'));
+      await stage(run.id, 'done');
       await db.importRun.updateMany({ where: { id: run.id, lockedBy: WORKER }, data: { status: 'done', finishedAt: new Date(), lockedBy: null, lockedUntil: null } });
       log('enhance run done');
       return 'done';
     }
     const scope = RunScope.parse(run.scope);
+    await stage(run.id, 'discover');
     if (run.provider === 'dataforseo') {
       await seedDfs(run, scope);
       while (await discoverDfs(run));
@@ -68,13 +81,27 @@ async function work(run: ImportRun): Promise<'done' | 'stopped'> {
       await seedGoogle(run, scope);
       while (await discoverGoogle(run));
     }
+    await stage(run.id, 'sites');
     while (await enrich(run));
+    // Google Maps, the business's social profiles and a browser read of unreadable sites, for whatever the site left missing.
+    await stage(run.id, 'sources');
+    await seedSources(run);
+    for (const kind of APIFY_KINDS) while (await apifyStage(run, kind));
+    if (await requeueAfterSources(run)) while (await enrich(run));
     // Records still short of photos: photos from the business's own Google posts.
+    await stage(run.id, 'photos');
     await queuePostPhotos(run, (await db.importPlace.findMany({ where: { runId: run.id, status: { in: ['enriched', 'extracted'] } }, select: { id: true } })).map(p => p.id));
     while (await collectPostPhotos(run));
     while (await extractStage(run));
+    await stage(run.id, 'writing');
     while (await editorialStage(run));
+    await stage(run.id, 'checks');
     await check(run);
+    if (scope.autoPublish) {
+      await stage(run.id, 'publish');
+      await publishReady(run);
+    }
+    await stage(run.id, 'done');
     await db.importRun.updateMany({ where: { id: run.id, lockedBy: WORKER }, data: { status: 'done', finishedAt: new Date(), lockedBy: null, lockedUntil: null } });
     log('run done');
     return 'done';
@@ -91,9 +118,21 @@ async function work(run: ImportRun): Promise<'done' | 'stopped'> {
   }
 }
 
+/** What this worker can reach, for the admin's connection status. Presence only; no values are stored. */
+async function reportWorkerStatus() {
+  const status = {
+    at: new Date().toISOString(), dataforseo: dfsConfigured(), anthropic: !!process.env.ANTHROPIC_API_KEY, apify: apifyConfigured(), youtube: !!process.env.YOUTUBE_API_KEY,
+    blob: !!process.env.BLOB_READ_WRITE_TOKEN && process.env.STORAGE_ADAPTER !== 'none', browser: process.env.IMPORT_BROWSER === '1' || !!process.env.CRAWL_CHROMIUM_PATH,
+  };
+  const row = await db.importSettings.findUnique({ where: { id: 1 } });
+  const values = { ...((row?.values as object) ?? {}), workerStatus: status };
+  await db.importSettings.upsert({ where: { id: 1 }, create: { id: 1, values }, update: { values } });
+}
+
 async function main() {
   const only = argRun();
   let more = false;
+  await reportWorkerStatus().catch(e => log('worker status not written:', e instanceof Error ? e.message : e));
   const swept = await sweepExpired(db);
   if (swept.google || swept.observations) log(`deleted expired restricted data: ${swept.google} Google, ${swept.observations} observations`);
   while (timeLeft()) {

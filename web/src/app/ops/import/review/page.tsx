@@ -13,6 +13,7 @@ import { db } from '@/lib/server/db';
 import { profileHref } from '@/lib/server/public';
 import { googleAvailable } from '@/lib/server/googleDisplay';
 import { ReviewList, type ReviewRow } from './ReviewList';
+import { ImportNav } from '../ImportNav';
 import styles from '../import.module.css';
 
 // Approving copies each listing's chosen images, which can take a few seconds per record.
@@ -190,12 +191,9 @@ export default async function ReviewPage({ searchParams }: { searchParams: SP })
       <OpsHeader current="import" who={who} />
       <main className={styles.page}>
         <div className={styles.titleRow}>
-          <h1 className={styles.h1}>בדיקת עסקים מיובאים</h1>
-          <div className={styles.btnRow}>
-            <Link href="/ops/import/enrich" className={styles.btn}>העשרה לפי חוסרים</Link>
-            <Link href="/ops/import" className={styles.btn}>לריצות</Link>
-          </div>
+          <h1 className={styles.h1}>תור הבדיקה</h1>
         </div>
+        <ImportNav current="review" counts={{ review: tabCounts.filter(c => c.status === 'ready' || c.status === 'needs_review').reduce((n, c) => n + c._count, 0) }} />
 
         <nav className={styles.seg} aria-label="מצב">
           {TABS.map(t => (
