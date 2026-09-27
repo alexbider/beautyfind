@@ -296,6 +296,7 @@ async function main() {
   }
   await db.$disconnect();
   await dfs.close();
+  await apify.close();
   await web.close();
 }
 
