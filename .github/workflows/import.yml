@@ -54,6 +54,8 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           IMPORT_MODEL: ${{ vars.IMPORT_MODEL }}
           IMPORT_EDITORIAL_MODEL: ${{ vars.IMPORT_EDITORIAL_MODEL }}
+          # Apify actors for enhance runs (Google Maps, Facebook, Instagram, rendered sites). Server-side only.
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
           # Optional YouTube Data API key (video validation and channel discovery); without it oEmbed validates videos found on the site.
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           # Image storage for listings enhanced by the worker (same store the site uses).

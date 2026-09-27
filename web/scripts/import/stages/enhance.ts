@@ -1,18 +1,26 @@
 // "Enhance published listings" runs. For live listings that came from the import and that no owner has
-// claimed:
-//   1. optionally refresh the provider data (DataForSEO, one request per up to 500 listings, reserved
-//      against the run budget like discovery; an unknown outcome waits for reconciliation);
-//   2. read each business's website again (cached per domain as usual);
-//   3. fill only what the listing is missing (see src/lib/server/importEnhance.ts).
+// claimed, a run carries a set of steps (src/lib/import/enrichPlan.ts):
+//   dfs        refresh the provider data (DataForSEO, one request per up to 500 listings);
+//   maps, facebook, instagram, render   Apify actors (stages/apify.ts);
+//   site       read the business's website again (the 30-day cache is ignored for those domains);
+//   editorial  write the description and FAQs when the evidence changed; regenerate: even when it did not;
+//   images     copy the images that were found.
+// In automatic mode each step runs only for the listings whose missing template sections it can fill;
+// otherwise every step runs for every listing. The fill itself (src/lib/server/importEnhance.ts) only
+// adds what a listing is missing.
 
 import { Prisma, type ImportRun } from '@prisma/client';
 import { BudgetExceeded, commit, release, reserve, uncertain, withCaps } from '../../../src/lib/import/budget';
 import { mapItem, type DfsItem } from '../../../src/lib/import/dataforseo';
+import { planFor, scopeSteps, STEP_ORDER, stepApplies, type StepId } from '../../../src/lib/import/enrichPlan';
 import { pricing, toMicros } from '../../../src/lib/import/pricing';
 import { EnhanceScope } from '../../../src/lib/import/rules';
+import { enrichQueue } from '../../../src/lib/server/enrichQueue';
 import { enhanceBranch } from '../../../src/lib/server/importEnhance';
 import { bump, db, heartbeat, log, setStats, settings, Stop } from '../ctx';
+import { apifyConfigured } from '../providers/apify';
 import { dfsSearch } from '../providers/dataforseo';
+import { seedApifyTasks } from './apify';
 import { upsertListing } from './dfsDiscover';
 import { editorialFor } from './editorial';
 import { enrichOne } from './enrich';
@@ -23,6 +31,7 @@ const ENHANCE_BATCH = 8;
 export async function seedEnhance(run: ImportRun) {
   if ((run.stats as { seeded?: boolean }).seeded) return;
   const scope = EnhanceScope.parse(run.scope);
+  const { steps, auto } = scopeSteps(scope);
   // Live listings no owner has claimed, that came from the import.
   const open = await db.$queryRaw<Array<{ id: string }>>`
     SELECT b.id FROM branches b JOIN import_places p ON p.branch_id = b.id
@@ -31,22 +40,54 @@ export async function seedEnhance(run: ImportRun) {
   const ids = (scope.branchIds ?? [...allowed]).filter(id => allowed.has(id));
   const places = await db.importPlace.findMany({
     where: { status: { in: ['approved', 'merged'] }, branchId: { in: ids } },
-    select: { id: true, sourceId: true, provider: true },
+    select: { id: true, branchId: true, sourceId: true, provider: true, placeId: true, website: true, websiteKind: true, siteDomain: true, instagram: true, facebook: true, socials: true, crawl: true, editorial: true },
     orderBy: { reviewedAt: 'asc' },
     take: run.recordLimit ?? 1000,
   });
-  const tasks: Prisma.ImportTaskCreateManyInput[] = [];
   const s = await settings();
-  if (scope.refresh && s.dataforseoEnabled) {
-    const cids = places.filter(p => p.provider === 'dataforseo' && p.sourceId && /^\d+$/.test(p.sourceId)).map(p => p.sourceId!);
+  const opts = { settings: s, apifyConfigured: apifyConfigured(), allowed: [...steps] };
+
+  // The plan per record: automatic from the listing's gaps, or every allowed step that applies.
+  const plans = new Map<string, Set<string>>();
+  if (auto) {
+    const q = await enrichQueue({ branchIds: places.map(p => p.branchId!) });
+    const byBranch = new Map(q.rows.map(r => [r.branchId, r]));
+    for (const p of places) {
+      const row = byBranch.get(p.branchId!);
+      const plan = new Set<string>(row ? planFor(row.missing, row.signals, opts) : []);
+      if (steps.has('regenerate') && row && stepApplies('regenerate', row.signals, opts)) plan.add('regenerate');
+      plans.set(p.id, plan);
+    }
+  } else {
+    const q = await enrichQueue({ branchIds: places.map(p => p.branchId!) });
+    const byBranch = new Map(q.rows.map(r => [r.branchId, r]));
+    for (const p of places) {
+      const row = byBranch.get(p.branchId!);
+      plans.set(p.id, new Set(STEP_ORDER.filter(st => steps.has(st) && (!row || stepApplies(st, row.signals, opts)))));
+    }
+  }
+  const planCounts = Object.fromEntries(STEP_ORDER.map(st => [st, [...plans.values()].filter(pl => pl.has(st)).length]));
+
+  // A website read again: the domain's cache expires now (only for the records whose plan says so).
+  const domains = [...new Set(places.filter(p => plans.get(p.id)?.has('site')).map(p => p.siteDomain).filter((d): d is string => !!d))];
+  if (domains.length) await db.siteFetch.updateMany({ where: { domain: { in: domains } }, data: { nextCheckAt: new Date(0) } });
+
+  const tasks: Prisma.ImportTaskCreateManyInput[] = [];
+  if (s.dataforseoEnabled) {
+    const cids = places.filter(p => plans.get(p.id)?.has('dfs') && p.provider === 'dataforseo' && p.sourceId && /^\d+$/.test(p.sourceId)).map(p => p.sourceId!);
     for (let i = 0; i < cids.length; i += REFRESH_BATCH) tasks.push({ runId: run.id, key: `refresh:${i}`, kind: 'dfs_refresh', params: { cids: cids.slice(i, i + REFRESH_BATCH) } });
   }
-  for (let i = 0; i < places.length; i += ENHANCE_BATCH) tasks.push({ runId: run.id, key: `enhance:${i}`, kind: 'enhance', params: { ids: places.slice(i, i + ENHANCE_BATCH).map(p => p.id) } });
   // Refresh tasks first so the website stage and the fill use fresh provider data.
-  for (const t of tasks.filter(t => t.kind === 'dfs_refresh')) await db.importTask.create({ data: t });
-  await db.importTask.createMany({ data: tasks.filter(t => t.kind === 'enhance'), skipDuplicates: true });
-  await setStats(run.id, { seeded: true, listings: places.length, refreshTasks: tasks.filter(t => t.kind === 'dfs_refresh').length });
-  log(`enhance: ${places.length} published listings, ${tasks.length} tasks`);
+  for (const t of tasks) await db.importTask.create({ data: t });
+  const apify = await seedApifyTasks(run, plans, places);
+  const enhance: Prisma.ImportTaskCreateManyInput[] = [];
+  for (let i = 0; i < places.length; i += ENHANCE_BATCH) {
+    const slice = places.slice(i, i + ENHANCE_BATCH);
+    enhance.push({ runId: run.id, key: `enhance:${i}`, kind: 'enhance', params: { ids: slice.map(p => p.id), steps: Object.fromEntries(slice.map(p => [p.id, [...(plans.get(p.id) ?? [])]])) } as unknown as Prisma.InputJsonValue });
+  }
+  await db.importTask.createMany({ data: enhance, skipDuplicates: true });
+  await setStats(run.id, { seeded: true, listings: places.length, refreshTasks: tasks.length, plan: planCounts, apifyTasks: apify, auto, apifyConfigured: apifyConfigured(), stepsAllowed: [...steps] });
+  log(`enhance: ${places.length} published listings, plan ${JSON.stringify(planCounts)}`);
 }
 
 async function refresh(run: ImportRun, taskId: string, cids: string[]) {
@@ -108,7 +149,7 @@ export async function enhanceStage(run: ImportRun, kind: 'dfs_refresh' | 'enhanc
   const task = await db.importTask.findFirst({ where: { runId: run.id, status: 'pending', kind }, orderBy: { createdAt: 'asc' } });
   if (!task) return false;
   await heartbeat(run.id);
-  const params = task.params as { cids?: string[]; ids?: string[] };
+  const params = task.params as { cids?: string[]; ids?: string[]; steps?: Record<string, string[]> };
   if (task.kind === 'dfs_refresh') {
     await refresh(run, task.id, params.cids ?? []);
     return true;
@@ -121,21 +162,26 @@ export async function enhanceStage(run: ImportRun, kind: 'dfs_refresh' | 'enhanc
   const editorialCounter = { calls: stats.counters?.editorialCalls ?? 0 };
   const editorialBefore = editorialCounter.calls;
   const scope = EnhanceScope.parse(run.scope);
+  const legacy = scopeSteps(scope);
   const counts: Record<string, number> = {};
   const failures: string[] = [];
   for (const id of params.ids ?? []) {
     const p = await db.importPlace.findUnique({ where: { id } });
     if (!p?.branchId) continue;
+    // Older runs have no per-record steps: they wrote and copied for everyone.
+    const steps = new Set<string>(params.steps?.[id] ?? [...legacy.steps]);
     try {
       await enrichOne(p, runBrowser, { keepStatus: true, youtubeQuota, onCost: c => Object.entries(c).forEach(([k, v]) => (counts[k] = (counts[k] ?? 0) + (v ?? 0))) });
       const afterSite = await db.importPlace.findUniqueOrThrow({ where: { id } });
-      const ed = await editorialFor(afterSite, run, { counter: editorialCounter, force: scope.regenerate === true });
-      counts[`editorial_${ed}`] = (counts[`editorial_${ed}`] ?? 0) + 1;
+      if (steps.has('editorial') || steps.has('regenerate')) {
+        const ed = await editorialFor(afterSite, run, { counter: editorialCounter, force: steps.has('regenerate') });
+        counts[`editorial_${ed}`] = (counts[`editorial_${ed}`] ?? 0) + 1;
+      }
       const fresh = await db.importPlace.findUniqueOrThrow({ where: { id } });
-      const r = actor ? await enhanceBranch(p.branchId, fresh, s, actor) : { filled: [], skipped: 'no_actor' };
+      const r = actor ? await enhanceBranch(p.branchId, fresh, s, actor, { images: steps.has('images') }) : { filled: [], skipped: 'no_actor' };
       for (const f of r.filled) counts[`filled_${f}`] = (counts[`filled_${f}`] ?? 0) + 1;
       counts[r.filled.length ? 'improved' : r.skipped ? `skipped_${r.skipped}` : 'nothing_to_add'] = (counts[r.filled.length ? 'improved' : r.skipped ? `skipped_${r.skipped}` : 'nothing_to_add'] ?? 0) + 1;
-      await db.auditLog.create({ data: { actorId: actor, action: 'import_enhance', subjectType: 'branch', subjectId: p.branchId, meta: { runId: run.id, filled: r.filled } } });
+      await db.auditLog.create({ data: { actorId: actor, action: 'import_enhance', subjectType: 'branch', subjectId: p.branchId, meta: { runId: run.id, filled: r.filled, steps: [...steps] as StepId[] } } });
     } catch (e) {
       if (e instanceof Stop) throw e;
       counts.failed = (counts.failed ?? 0) + 1;

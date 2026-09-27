@@ -5,9 +5,11 @@ import { z } from 'zod';
 import { importerOrNull } from '@/components/ops/guard';
 import { db } from '@/lib/server/db';
 import {
-  approvePlace, createRun, dispatchWorker, editPlace, enrichSelected, markDuplicate, mergePlace, reconcileTask, recoverRun, rejectPlace, restorePlace, retryIncomplete,
+  approvePlace, createRun, deleteRun, dispatchWorker, editPlace, enrichSelected, markDuplicate, mergePlace, reconcileTask, recoverRun, rejectPlace, restorePlace, retryIncomplete,
   getSettings, saveSettings, setRunStatus, type CreateRunInput, type OpResult,
 } from '@/lib/server/importOps';
+import { estimatePlans, planFor, STEP_ORDER, stepApplies, type StepId } from '@/lib/import/enrichPlan';
+import { enrichQueue } from '@/lib/server/enrichQueue';
 import { googleLookup, type GoogleLookup } from '@/lib/server/googleDisplay';
 import { copyPendingImages } from '@/lib/server/importEnhance';
 import { pricing } from '@/lib/import/pricing';
@@ -172,40 +174,77 @@ export async function enhanceApprovedAction(ids: string[], refresh: boolean): Pr
   }
 }
 
+const StepList = z.array(z.enum(['dfs', 'maps', 'facebook', 'instagram', 'site', 'render', 'editorial', 'regenerate', 'images'])).max(9);
+
+export type EnhanceListingsResult = { ok: true; count: number; dispatched?: boolean; runId: string | null; budgetUsd: number; plan: Record<string, number> } | { ok: false; count: 0; error: string };
+
 /**
- * Targeted enhancement from the enrichment tab: chosen published listings (by branch id) with the steps
- * to run. rereadSite ignores the 30-day site cache; refresh re-reads DataForSEO (paid); regenerate
- * rewrites the editorial draft even when the evidence did not change.
+ * A batch from the enrichment tab: chosen published listings (by branch id) and the steps staff allowed.
+ * auto: each step runs only for the listings whose gaps it can fill (the same rule the tab shows);
+ * otherwise every allowed step runs for every listing. The run's ceiling is the plan estimate with a
+ * margin, so a batch never spends more than what the tab showed.
  */
-export async function enhanceListingsAction(branchIds: string[], opts: { refresh?: boolean; regenerate?: boolean; rereadSite?: boolean; focus?: string[] }): Promise<{ ok: boolean; count: number; dispatched?: boolean; runId?: string; error?: string }> {
+export async function enhanceListingsAction(branchIds: string[], opts: { steps?: string[]; auto?: boolean; label?: string; focus?: string[]; refresh?: boolean; regenerate?: boolean; rereadSite?: boolean }): Promise<EnhanceListingsResult> {
   const user = await importerOrNull();
   const list = z.array(z.uuid()).min(1).max(1000).safeParse(branchIds);
   if (!user || !list.success) return { ok: false, count: 0, error: 'invalid' };
-  const places = await db.importPlace.findMany({ where: { branchId: { in: list.data }, status: { in: ['approved', 'merged'] } }, select: { branchId: true, siteDomain: true } });
-  const ids = [...new Set(places.map(p => p.branchId!))];
-  if (!ids.length) return { ok: true, count: 0 };
-  if (opts.rereadSite) {
-    const domains = [...new Set(places.map(p => p.siteDomain).filter((d): d is string => !!d))];
-    if (domains.length) await db.siteFetch.updateMany({ where: { domain: { in: domains } }, data: { nextCheckAt: new Date(0) } });
-  }
+  // Legacy booleans map onto steps; a call without any step means the default set.
+  const requested = new Set<StepId>((StepList.safeParse(opts.steps ?? []).data ?? []) as StepId[]);
+  if (opts.rereadSite) requested.add('site');
+  if (opts.refresh) requested.add('dfs');
+  if (opts.regenerate) requested.add('regenerate');
+  if (!opts.steps) for (const st of ['site', 'editorial', 'images'] as StepId[]) requested.add(st);
+  const steps = STEP_ORDER.filter(st => requested.has(st));
+  const auto = opts.auto !== false;
+  const q = await enrichQueue({ branchIds: list.data });
+  if (!q.rows.length) return { ok: true, count: 0, runId: null, budgetUsd: 0, plan: {} };
+  const ids = q.rows.map(r => r.branchId);
+  const s = await getSettings();
+  const planOpts = { settings: s, apifyConfigured: true, allowed: steps };
+  const plans = q.rows.map(r => {
+    const plan = auto ? planFor(r.missing, r.signals, planOpts) : steps.filter(st => stepApplies(st, r.signals, planOpts));
+    if (auto && requested.has('regenerate') && stepApplies('regenerate', r.signals, planOpts)) plan.push('regenerate');
+    return plan;
+  });
+  const est = estimatePlans(plans, pricing(), { renderPages: s.apifyRenderPages, editorialEnabled: s.editorialEnabled });
+  const planCounts = Object.fromEntries(Object.entries(est.perStep).filter(([, v]) => v.listings > 0).map(([k, v]) => [k, v.listings]));
+  // Ceiling: the estimate plus a quarter, at least the editorial allowance for a few new drafts; never above the per-run caps.
+  const editorialCap = s.editorialEnabled ? Math.min(s.editorialBudgetUsd, ids.length * pricing().editorial.perProfileUsd * 1.3) : 0;
+  const budgetUsd = Math.min(10_000, Math.max(0.05, est.totalUsd * 1.25 + (planCounts.editorial || planCounts.regenerate ? editorialCap * 0.5 : 0)));
   try {
-    const s = await getSettings();
-    const editorial = s.editorialEnabled ? Math.min(s.editorialBudgetUsd, ids.length * pricing().editorial.perProfileUsd * (opts.regenerate ? 1.3 : 1)) : 0;
     const focus = (opts.focus ?? []).slice(0, 30);
+    const label = (opts.label ?? '').trim().slice(0, 60) || `העשרה: ${ids.length} עסקים${focus.length ? ` (${focus.join(', ')})` : ''}`;
     const run = await createRun(user, {
-      label: `העשרה ממוקדת: ${ids.length} עסקים${focus.length ? ` (${focus.join(', ')})` : ''}`,
+      label,
       provider: 'enhance',
-      scope: { branchIds: ids, refresh: !!opts.refresh, regenerate: !!opts.regenerate, rereadSite: !!opts.rereadSite, focus },
+      scope: { branchIds: ids, steps, auto, refresh: steps.includes('dfs'), regenerate: steps.includes('regenerate'), rereadSite: steps.includes('site'), focus },
       recordLimit: ids.length,
-      budgetUsd: (opts.refresh ? Math.ceil(ids.length / 500) * 0.012 + ids.length * 0.00036 + 0.05 : 0) + editorial,
+      budgetUsd,
     });
     const d = await dispatchWorker(run.id);
     refreshPaths();
     revalidatePath('/ops/import/enrich');
-    return { ok: true, count: ids.length, dispatched: d.dispatched, runId: run.id };
+    return { ok: true, count: ids.length, dispatched: d.dispatched, runId: run.id, budgetUsd, plan: planCounts };
   } catch (e) {
     return { ok: false, count: 0, error: e instanceof Error ? e.message : 'failed' };
   }
+}
+
+/** Deletes finished or stopped runs ("batches"). Running runs and discovery runs that still own records are skipped and reported. */
+export async function deleteRunsAction(runIds: string[]): Promise<{ ok: boolean; deleted: number; skipped: Array<{ id: string; error: string }> }> {
+  const user = await importerOrNull();
+  const list = z.array(z.uuid()).min(1).max(100).safeParse(runIds);
+  if (!user || !list.success) return { ok: false, deleted: 0, skipped: [] };
+  let deleted = 0;
+  const skipped: Array<{ id: string; error: string }> = [];
+  for (const id of list.data) {
+    const r = await deleteRun(user, id);
+    if (r.ok) deleted++;
+    else skipped.push({ id, error: r.error });
+  }
+  refreshPaths();
+  revalidatePath('/ops/import/enrich');
+  return { ok: true, deleted, skipped };
 }
 
 /** Rewrites the editorial draft of the chosen published records (an enhance run with regenerate), ignoring the evidence cache. */

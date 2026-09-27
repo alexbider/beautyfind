@@ -85,6 +85,67 @@ export async function startMockDfs(items: DfsItem[], opts: { perRequestUsd?: num
   };
 }
 
+export type ApifyMode = 'ok' | 'funds' | 'auth' | 'fail_run' | 'hang';
+
+export interface MockApify {
+  url: string;
+  starts: Array<{ actor: string; input: Record<string, unknown>; at: number }>;
+  setMode: (m: ApifyMode) => void;
+  /** Items each actor returns; keyed by the actor id as the client sends it (owner~name). */
+  datasets: Record<string, unknown[]>;
+  close: () => Promise<void>;
+}
+
+/**
+ * Apify API look-alike: actor start, run status and dataset items. Runs succeed at once and report a
+ * usage of `usdPerItem` per item, so the budget code sees a real (mock) cost.
+ */
+export async function startMockApify(datasets: Record<string, unknown[]>, opts: { usdPerItem?: number } = {}): Promise<MockApify> {
+  let mode: ApifyMode = 'ok';
+  const starts: MockApify['starts'] = [];
+  const runs = new Map<string, { actor: string; items: unknown[] }>();
+  const srv = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+    const raw = await readBody(req);
+    const url = new URL(req.url ?? '/', 'http://x');
+    res.setHeader('content-type', 'application/json');
+    if (!/^Bearer /.test(req.headers.authorization ?? '') || mode === 'auth') return void res.writeHead(401).end(JSON.stringify({ error: { type: 'token-not-found', message: 'Authentication token is not valid' } }));
+    if (mode === 'hang') return void req.socket.destroy();
+    const start = url.pathname.match(/^\/v2\/acts\/([^/]+)\/runs$/);
+    if (start && req.method === 'POST') {
+      const actor = decodeURIComponent(start[1]);
+      let input: Record<string, unknown> = {};
+      try {
+        input = JSON.parse(raw || '{}');
+      } catch {
+        /* empty */
+      }
+      starts.push({ actor, input, at: Date.now() });
+      if (mode === 'funds') return void res.writeHead(402).end(JSON.stringify({ error: { type: 'platform-usage-limit-exceeded', message: 'Monthly usage hard limit exceeded' } }));
+      const id = `run-${starts.length}`;
+      runs.set(id, { actor, items: datasets[actor] ?? [] });
+      return void res.writeHead(201).end(JSON.stringify({ data: { id, actId: actor, status: 'RUNNING', defaultDatasetId: `ds-${id}`, usageTotalUsd: 0 } }));
+    }
+    const get = url.pathname.match(/^\/v2\/actor-runs\/([^/]+)$/);
+    if (get) {
+      const r = runs.get(decodeURIComponent(get[1]));
+      if (!r) return void res.writeHead(404).end(JSON.stringify({ error: { type: 'record-not-found', message: 'Run not found' } }));
+      const failed = mode === 'fail_run';
+      return void res.end(JSON.stringify({ data: { id: get[1], status: failed ? 'FAILED' : 'SUCCEEDED', defaultDatasetId: `ds-${get[1]}`, usageTotalUsd: (opts.usdPerItem ?? 0.001) * Math.max(1, r.items.length), statusMessage: failed ? 'Actor failed' : 'Finished' } }));
+    }
+    const ds = url.pathname.match(/^\/v2\/datasets\/ds-([^/]+)\/items$/);
+    if (ds) {
+      const r = runs.get(decodeURIComponent(ds[1]));
+      const offset = Number(url.searchParams.get('offset') ?? 0);
+      const limit = Number(url.searchParams.get('limit') ?? 1000);
+      return void res.end(JSON.stringify((r?.items ?? []).slice(offset, offset + limit)));
+    }
+    if (/\/abort$/.test(url.pathname)) return void res.end(JSON.stringify({ data: { status: 'ABORTED' } }));
+    res.writeHead(404).end(JSON.stringify({ error: { type: 'not-found', message: url.pathname } }));
+  });
+  const port = await listen(srv);
+  return { url: `http://127.0.0.1:${port}`, starts, setMode: m => (mode = m), datasets, close: () => new Promise(r => srv.close(() => r())) };
+}
+
 // rich: a complete clinic site (team page, videos, languages, founding year, price ranges and packages, sitemap, gallery);
 // no_prices: services listed without any price; chain: one domain shared by two branches (branch pages).
 export type SiteKind = 'full' | 'no_email' | 'agency_footer' | 'blocked' | 'robots' | 'conflict_phone' | 'redirect_private' | 'unrelated' | 'rich' | 'no_prices' | 'chain';

@@ -67,6 +67,7 @@ export default async function ImportPage() {
       spend: byProvider,
       noEmailBySite: Object.fromEntries(siteStatus.filter(x => x.run_id === r.id).map(x => [x.site ?? 'pending', Number(x.n)])),
       reconcile: reconcile.filter(t => t.runId === r.id).map(t => ({ id: t.id, key: t.key, error: t.error, page: (t.params as { page?: number }).page ?? 0 })),
+      places: Object.values(byStatus).reduce((s, x) => s + x, 0),
     };
   });
   const who = `${user.fullName ?? user.email ?? 'צוות BeautyFind'} · ${OPS_ROLE_NAMES[user.opsRole!]}`;
@@ -79,7 +80,7 @@ export default async function ImportPage() {
         <div className={styles.titleRow}>
           <h1 className={styles.h1}>ייבוא עסקים</h1>
           <div className={styles.btnRow}>
-            <Link href="/ops/import/enrich" className={styles.btn}>העשרה לפי חוסרים</Link>
+            <Link href="/ops/import/enrich" className={styles.btn}>העשרה לפי חוסרים ואצוות</Link>
             <Link href="/ops/import/review" className={`${styles.btn} ${styles.primary}`}>לתור הבדיקה</Link>
           </div>
         </div>

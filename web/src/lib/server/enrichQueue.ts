@@ -3,6 +3,8 @@ import type { Prisma, RegionSlug } from '@prisma/client';
 import { CATEGORIES } from '@/lib/catalog';
 import { MANIFEST, type ProfileStatus } from '@/lib/import/coverage';
 import type { EditorialRecord } from '@/lib/import/editorial';
+import { planFor, type PlanSignals, type StepId } from '@/lib/import/enrichPlan';
+import { loadSettings } from '@/lib/import/settings';
 import { db } from '@/lib/server/db';
 import { branchCoverage, socialCounts } from '@/lib/server/importPublish';
 import { profileHref } from '@/lib/server/public';
@@ -32,6 +34,8 @@ export interface EnrichRow {
   siteOutcome: string | null;
   lastEnriched: string | null;
   lastEditorial: string | null;
+  signals: PlanSignals;
+  plan: StepId[]; // steps that can fill this listing's gaps ("all enrichments needed")
 }
 
 export interface EnrichFilter {
@@ -40,6 +44,28 @@ export interface EnrichFilter {
   status?: string;
   missing?: string;
   q?: string;
+  branchIds?: string[]; // only these listings (the worker seeding a run)
+  step?: string; // only listings whose automatic plan includes this step
+}
+
+/** Source signals of an import record, for the plan. */
+export function planSignals(p: { placeId: string; sourceId: string | null; provider: string; website: string | null; websiteKind: string | null; instagram: string | null; facebook: string | null; socials: unknown; crawl: unknown; editorial: unknown }): PlanSignals {
+  const crawl = (p.crawl ?? {}) as Record<string, unknown>;
+  const socials = (p.socials ?? {}) as Record<string, { url?: string } | undefined>;
+  const services = (crawl.services as { total?: number } | undefined)?.total ?? 0;
+  const photos = ((crawl.imageCandidates as { photos?: string[] } | undefined)?.photos ?? []).length;
+  const pages = Array.isArray(crawl.pages) ? crawl.pages.length : 0;
+  const readable = crawl.site === 'ok' || crawl.site === 'no_email';
+  return {
+    hasSite: !!p.website && (p.websiteKind === 'own' || p.websiteKind === null || p.websiteKind === 'linkhub'),
+    siteOutcome: typeof crawl.site === 'string' ? crawl.site : null,
+    siteThin: readable && pages <= 2 && services === 0 && photos === 0,
+    placeId: !p.placeId.startsWith('dfs:'),
+    cid: p.provider === 'dataforseo' && !!p.sourceId && /^\d+$/.test(p.sourceId),
+    instagram: !!(p.instagram || socials.instagram?.url),
+    facebook: !!(p.facebook || socials.facebook?.url),
+    hasEditorial: !!p.editorial && typeof (p.editorial as { description?: unknown }).description === 'string',
+  };
 }
 
 /** Section ids staff can target, in template order, with the weight the score gives them. */
@@ -55,10 +81,15 @@ export async function enrichQueue(f: EnrichFilter = {}): Promise<{ rows: EnrichR
     ...(f.region ? { regionSlug: f.region as RegionSlug } : {}),
     ...(f.q ? { OR: [{ name: { contains: f.q, mode: 'insensitive' } }, { cityName: { contains: f.q, mode: 'insensitive' } }] } : {}),
   };
-  const places = await db.importPlace.findMany({
-    where: { status: { in: ['approved', 'merged'] }, branchId: { not: null } },
-    select: { id: true, branchId: true, crawl: true, reasons: true, socials: true, enrichedAt: true, editorial: true, website: true },
-  });
+  const [places, settings] = await Promise.all([
+    db.importPlace.findMany({
+      where: { status: { in: ['approved', 'merged'] }, branchId: f.branchIds ? { in: f.branchIds } : { not: null } },
+      select: { id: true, branchId: true, crawl: true, reasons: true, socials: true, enrichedAt: true, editorial: true, website: true, websiteKind: true, placeId: true, sourceId: true, provider: true, instagram: true, facebook: true },
+    }),
+    loadSettings(db),
+  ]);
+  // The admin plans as if the worker has its token; the worker itself checks APIFY_TOKEN when it seeds the run.
+  const planOpts = { settings, apifyConfigured: true };
   const byBranch = new Map(places.filter(p => p.branchId).map(p => [p.branchId!, p]));
   const branches = await db.branch.findMany({
     where: { ...where, id: { in: [...byBranch.keys()] } },
@@ -76,7 +107,10 @@ export async function enrichQueue(f: EnrichFilter = {}): Promise<{ rows: EnrichR
     const conflicts = [crawl.phoneConflict === true ? 'phone' : null, crawl.hoursConflict === true ? 'hours' : null].filter((x): x is string => !!x);
     const cov = branchCoverage(b, { verifiedStaff: verifiedBy.get(b.businessId) ?? 0, conflicts, reviewReasons: p.reasons.filter(r => !['medical_without_doctor_info', 'no_email'].includes(r)), socials: socialCounts(p as never) });
     const ed = (b.editorial ?? null) as (EditorialRecord & { generatedAt?: string }) | null;
+    const signals = planSignals(p);
     rows.push({
+      signals,
+      plan: planFor(cov.missing, signals, planOpts),
       branchId: b.id,
       placeId: p.id,
       name: b.name,
@@ -100,7 +134,7 @@ export async function enrichQueue(f: EnrichFilter = {}): Promise<{ rows: EnrichR
     });
   }
   const filtered = rows
-    .filter(r => (!f.status || r.status === f.status) && (!f.missing || r.missing.includes(f.missing)))
+    .filter(r => (!f.status || r.status === f.status) && (!f.missing || r.missing.includes(f.missing)) && (!f.step || (r.plan as string[]).includes(f.step)))
     .sort((a, b) => a.readiness - b.readiness || a.name.localeCompare(b.name, 'he'));
   return { rows: filtered, total: rows.length, truncated };
 }

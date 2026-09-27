@@ -6,6 +6,7 @@ import { composeDescription } from '@/lib/import/completeness';
 import type { ImportedTreatment } from '@/lib/import/rules';
 import { serviceKey } from '@/lib/import/services';
 import type { ImportSettings } from '@/lib/import/settings';
+import { ratingProviderOk } from '@/lib/import/sourcePolicy';
 import { db } from '@/lib/server/db';
 import { copyListingImages, type MediaProvenance } from '@/lib/server/importMedia';
 import { mediaCandidatesOf, refreshProfileStatus } from '@/lib/server/importOps';
@@ -31,7 +32,7 @@ const candidatesOf = (p: ImportPlace) => {
 const GALLERY_MIN = 4;
 const isPlaceholder = (url: string | null) => !url || Object.values(CATEGORY_IMAGE).includes(url);
 
-export async function enhanceBranch(branchId: string, p: ImportPlace, s: ImportSettings, actorId: string): Promise<{ filled: string[]; skipped?: string }> {
+export async function enhanceBranch(branchId: string, p: ImportPlace, s: ImportSettings, actorId: string, opts: { images?: boolean } = {}): Promise<{ filled: string[]; skipped?: string }> {
   const b = await db.branch.findUnique({ where: { id: branchId }, include: { categories: true, treatments: { select: { name: true, priceAgorot: true, isPublished: true, id: true } } } });
   if (!b) return { filled: [], skipped: 'no_branch' };
   if (b.isClaimed) return { filled: [], skipped: 'claimed' };
@@ -76,7 +77,7 @@ export async function enhanceBranch(branchId: string, p: ImportPlace, s: ImportS
   if (!b.freeParking && p.freeParking === true) set('freeParking', true, 'parking');
   if (!b.wazeUrl && p.lat != null && p.lng != null) set('wazeUrl', `https://waze.com/ul?ll=${p.lat},${p.lng}&navigate=yes`, 'waze');
   if (!b.googlePlaceUrl && p.googleMapsUri) set('googlePlaceUrl', p.googleMapsUri, 'google_profile');
-  if (s.publishProviderRatings && p.ratingProvider === 'dataforseo' && p.googleRating != null && (b.googleRating !== p.googleRating || b.googleReviewCount !== p.googleReviewCount)) {
+  if (s.publishProviderRatings && ratingProviderOk(p.ratingProvider) && p.googleRating != null && (b.googleRating !== p.googleRating || b.googleReviewCount !== p.googleReviewCount)) {
     data.googleRating = p.googleRating;
     data.googleReviewCount = p.googleReviewCount;
     data.googleSyncedAt = new Date();
@@ -86,7 +87,7 @@ export async function enhanceBranch(branchId: string, p: ImportPlace, s: ImportS
   // Images, only where missing.
   const galleryCount = Array.isArray(b.gallery) ? b.gallery.length : 0;
   const want = { logo: !b.logoUrl, cover: isPlaceholder(b.coverUrl), gallery: galleryCount < GALLERY_MIN };
-  const imagesWanted = (s.useWebsiteImages || s.useProviderImages) && (want.logo || want.cover || want.gallery) && !!(p.logoUrl || p.photoUrls.length);
+  const imagesWanted = opts.images !== false && (s.useWebsiteImages || s.useProviderImages) && (want.logo || want.cover || want.gallery) && !!(p.logoUrl || p.photoUrls.length);
   // The worker copies images only when it has access to the image store (BLOB_READ_WRITE_TOKEN).
   if (imagesWanted && process.env.STORAGE_ADAPTER === 'none') filled.push('images_waiting_for_storage');
   else if (imagesWanted) {

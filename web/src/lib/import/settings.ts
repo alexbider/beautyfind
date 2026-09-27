@@ -32,6 +32,17 @@ export const ImportSettingsSchema = z.object({
   youtubeMaxVideos: z.number().int().min(0).max(6).default(3),
   imageDerivatives: z.boolean().default(true), // WebP derivatives for approved images (sharp)
   mapsEmbedEnabled: z.boolean().default(true), // the public map needs NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY as well
+  // Stage 2E: Apify actors for the gaps the site and DataForSEO leave (needs APIFY_TOKEN on the worker).
+  apifyEnabled: z.boolean().default(true),
+  apifyMaps: z.boolean().default(true), // Google Maps place details and profile photos
+  apifyInstagram: z.boolean().default(true), // the business's Instagram profile (verifies the account, bio, posts)
+  apifyFacebook: z.boolean().default(true), // the business's Facebook page
+  apifyRender: z.boolean().default(true), // browser crawl of sites our crawler could not read (never blocked or robots sites)
+  apifyBudgetUsd: z.number().min(0).max(1000).default(5), // per run
+  apifyMonthlyUsd: z.number().min(0).max(10_000).default(50),
+  apifyMaxImages: z.number().int().min(0).max(30).default(10), // Google profile photos per place
+  apifyMaxPosts: z.number().int().min(0).max(12).default(6), // recent Instagram image posts kept as gallery candidates (verified accounts only)
+  apifyRenderPages: z.number().int().min(1).max(20).default(8), // pages per site for the browser crawl
   // Stage 2B: Google (display data only)
   googleEnabled: z.boolean().default(false),
   googleRunCallCap: z.number().int().min(0).max(10_000).default(50),

@@ -1,6 +1,8 @@
 // Directory import worker. Picks up a queued run from /ops/import and takes it through
 //   discover (DataForSEO, or the legacy Google grid) -> website enrichment (contact, services, team,
 //   images, videos) -> optional LLM extraction -> editorial writing -> checks.
+// Enhance runs add Apify actors (Google Maps, Facebook, Instagram, rendered sites) for the gaps the
+// provider and the website leave (stages/apify.ts).
 // Safe to stop at any point and start again: every step reads its state from the database, paid
 // calls are checkpointed around the request, and a lease stops two workers from working the same run.
 //
@@ -19,6 +21,7 @@ import { argRun, db, LEASE_MS, log, Stop, timeLeft, WORKER } from './ctx';
 import { check } from './stages/check';
 import { discoverDfs, seedDfs } from './stages/dfsDiscover';
 import { enrich } from './stages/enrich';
+import { APIFY_KINDS, apifyStage } from './stages/apify';
 import { enhancePlaceIds, enhanceStage, seedEnhance } from './stages/enhance';
 import { collectPostPhotos, queuePostPhotos } from './stages/googlePosts';
 import { editorialStage } from './stages/editorial';
@@ -48,6 +51,8 @@ async function work(run: ImportRun): Promise<'done' | 'stopped'> {
     if (run.provider === 'enhance') {
       await seedEnhance(run);
       while (await enhanceStage(run, 'dfs_refresh'));
+      // Apify actors (Google Maps, Facebook, Instagram, then rendered sites) before the website stage reads the results.
+      for (const kind of APIFY_KINDS) while (await apifyStage(run, kind));
       await queuePostPhotos(run, await enhancePlaceIds(run));
       while (await collectPostPhotos(run));
       while (await enhanceStage(run, 'enhance'));

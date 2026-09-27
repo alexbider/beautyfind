@@ -24,7 +24,7 @@ import { channelUploads, chooseVideos, validateVideos, type VideoRecord } from '
 import { crawlSite, type CrawlOutcome, type SiteStatus } from '../crawl';
 import { bump, db, hasMx, heartbeat, log, pool, settings } from '../ctx';
 
-interface SiteSummary {
+export interface SiteSummary {
   status: SiteStatus;
   emails: Fact[];
   agencyEmails: string[];
@@ -55,7 +55,7 @@ interface SiteSummary {
   text?: string; // kept only when the optional LLM step is on
 }
 
-function summarize(c: CrawlOutcome, keepText: boolean): SiteSummary {
+export function summarize(c: CrawlOutcome, keepText: boolean): SiteSummary {
   const all = c.facts;
   const uniq = <T,>(xs: T[], key: (x: T) => string) => [...new Map(xs.map(x => [key(x), x])).values()];
   return {

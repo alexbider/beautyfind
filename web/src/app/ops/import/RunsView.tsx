@@ -7,8 +7,9 @@ import { CATEGORIES, CITIES, MENU_REGION_ORDER, REGIONS } from '@/lib/catalog';
 import { dfsCategoriesFor } from '@/lib/import/dataforseo';
 import { DEFAULT_ASSUMPTIONS, dfsRunMaxUsd, estimateRun, estimateTable, type EstimateAssumptions } from '@/lib/import/estimate';
 import type { RunScope } from '@/lib/import/rules';
+import { runErrorKind } from '@/lib/import/runErrors';
 import type { ImportSettings } from '@/lib/import/settings';
-import { copyPendingImagesAction, reconcileAction, runControlAction, saveSettingsAction, startRunAction } from './actions';
+import { copyPendingImagesAction, deleteRunsAction, reconcileAction, runControlAction, saveSettingsAction, startRunAction } from './actions';
 import styles from './import.module.css';
 
 export interface RunRow {
@@ -30,6 +31,7 @@ export interface RunRow {
   spend: Record<string, { estimatedUsd: number; actualUsd: number; calls: number; uncertain: number }>;
   noEmailBySite: Record<string, number>;
   reconcile: Array<{ id: string; key: string; error: string | null; page: number }>;
+  places: number; // staged records that point at this run (a run with records cannot be deleted)
 }
 
 const STATUS_NAME: Record<RunRow['status'], string> = { queued: 'ממתינה', running: 'רצה', paused: 'מושהית', done: 'הסתיימה', failed: 'נכשלה', canceled: 'בוטלה' };
@@ -221,6 +223,11 @@ function Settings({ settings, googleAvailable, googleMonth }: { settings: Import
           {flag('youtubeEnabled', 'סרטוני YouTube רשמיים (oEmbed ללא מפתח; Data API עם YOUTUBE_API_KEY)')}
           {flag('imageDerivatives', 'נגזרות WebP לתמונות מאושרות')}
           {flag('mapsEmbedEnabled', 'מפת Google Maps Embed בעמוד (דורש NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY)')}
+          {flag('apifyEnabled', 'Apify פעיל (דורש APIFY_TOKEN ב־GitHub Actions)')}
+          {flag('apifyMaps', 'Apify: פרטי Google Maps ותמונות הפרופיל', !v.apifyEnabled)}
+          {flag('apifyFacebook', 'Apify: עמוד הפייסבוק של העסק (רק כשהעמוד מאשר את העסק)', !v.apifyEnabled)}
+          {flag('apifyInstagram', 'Apify: פרופיל האינסטגרם של העסק (רק כשהפרופיל מאשר את העסק)', !v.apifyEnabled)}
+          {flag('apifyRender', 'Apify: אתרים שדורשים JavaScript בדפדפן (לא אתרים שחסמו או אוסרים סריקה)', !v.apifyEnabled)}
         </div>
         {!googleAvailable ? <p className={styles.note}>Google כבוי בשרת (GOOGLE_ENRICHMENT_ENABLED אינו true או שאין מפתח).</p> : null}
         <div className={styles.editGrid}>
@@ -233,6 +240,11 @@ function Settings({ settings, googleAvailable, googleMonth }: { settings: Import
           {num('editorialMaxPerRun', 'קריאות כתיבה לריצה')}
           {num('youtubeQuotaPerRun', 'YouTube: יחידות מכסה לריצה')}
           {num('youtubeMaxVideos', 'סרטונים לעסק (עד 6)')}
+          {num('apifyBudgetUsd', 'Apify: תקרה לריצה (USD)', '0.01')}
+          {num('apifyMonthlyUsd', 'Apify: תקרה חודשית (USD)', '0.01')}
+          {num('apifyMaxImages', 'Apify: תמונות מפרופיל Google לעסק (עד 30)')}
+          {num('apifyMaxPosts', 'Apify: פוסטי אינסטגרם לעסק (עד 12)')}
+          {num('apifyRenderPages', 'Apify: עמודים לאתר בדפדפן (עד 20)')}
           {num('maxListingPhotos', 'תמונות מאתר העסק לכל עסק (עד 20)')}
           {num('recheckOkDays', 'ימים עד בדיקה חוזרת של אתר')}
           {num('recheckFailDays', 'ימים עד ניסיון חוזר אחרי כישלון')}
@@ -282,17 +294,18 @@ function Estimator({ pricingNote }: { pricingNote: { version: string; dfs: { per
           {field('editorialRepairShare', 'שיעור עם תיקון')}
           {field('photosPerProfile', 'תמונות לעסק', '1')}
           {field('videoShare', 'שיעור עם סרטונים')}
+          {field('apifyShare', 'שיעור שצריך Apify')}
         </div>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ textAlign: 'start' }}>
-              <th>עסקים</th><th>בקשות DataForSEO</th><th>DataForSEO</th><th>בקשות לאתרים</th><th>Google</th><th>תמונות Google</th><th>חילוץ Claude</th><th>כתיבה</th><th>YouTube (מכסה)</th><th>אחסון (MB)</th><th>סה״כ</th><th>לעסק שמיש</th>
+              <th>עסקים</th><th>בקשות DataForSEO</th><th>DataForSEO</th><th>בקשות לאתרים</th><th>Google</th><th>תמונות Google</th><th>חילוץ Claude</th><th>כתיבה</th><th>Apify</th><th>YouTube (מכסה)</th><th>אחסון (MB)</th><th>סה״כ</th><th>לעסק שמיש</th>
             </tr>
           </thead>
           <tbody className={styles.ltr}>
             {rows.map(r => (
               <tr key={r.businesses}>
-                <td>{n(r.businesses)}</td><td>{n(r.dfsRequests)}</td><td>{usd(r.dfsUsd)}</td><td>{n(r.websiteRequests)}</td><td>{usd(r.googleUsd)}</td><td>{usd(r.photoUsd)}</td><td>{usd(r.llmUsd)}</td><td>{usd(r.editorialUsd)}</td><td>{n(r.youtubeQuota)}</td><td>{n(r.storageMb)}</td><td><b>{usd(r.totalUsd)}</b></td><td>{usd(r.perUsableUsd)}</td>
+                <td>{n(r.businesses)}</td><td>{n(r.dfsRequests)}</td><td>{usd(r.dfsUsd)}</td><td>{n(r.websiteRequests)}</td><td>{usd(r.googleUsd)}</td><td>{usd(r.photoUsd)}</td><td>{usd(r.llmUsd)}</td><td>{usd(r.editorialUsd)}</td><td>{usd(r.apifyUsd)}</td><td>{n(r.youtubeQuota)}</td><td>{n(r.storageMb)}</td><td><b>{usd(r.totalUsd)}</b></td><td>{usd(r.perUsableUsd)}</td>
               </tr>
             ))}
           </tbody>
@@ -306,7 +319,8 @@ function Estimator({ pricingNote }: { pricingNote: { version: string; dfs: { per
 const FILLED: Record<string, string> = {
   phone: 'טלפון', whatsapp: 'וואטסאפ', email: 'דוא״ל', website: 'אתר', instagram: 'אינסטגרם', hours: 'שעות', description: 'תיאור', faqs: 'שאלות נפוצות',
   accessible: 'נגישות', parking: 'חניה', waze: 'Waze', google_profile: 'פרופיל Google', rating: 'דירוג Google', logo: 'לוגו', cover: 'תמונת שער',
-  gallery: 'גלריה', categories: 'תחומים', services: 'טיפולים', prices: 'מחירים',
+  gallery: 'גלריה', categories: 'תחומים', services: 'טיפולים', prices: 'מחירים', team: 'צוות', videos: 'סרטונים', languages: 'שפות', established: 'שנת הקמה',
+  facebook: 'פייסבוק', tiktok: 'טיקטוק', youtube: 'יוטיוב',
 };
 
 function EnhanceRun({ eligible, pendingImages, canDispatch, killSwitch, perRequestUsd, perItemUsd, editorialUsd }: { eligible: number; pendingImages: number; canDispatch: boolean; killSwitch: boolean; perRequestUsd: number; perItemUsd: number; editorialUsd: number }) {
@@ -387,7 +401,15 @@ function Run({ r }: { r: RunRow }) {
   const b = r.byStatus;
   const staged = Object.values(b).reduce((s, x) => s + x, 0);
   const pct = r.budgetUsd ? Math.min(100, Math.round(((r.spentUsd + r.reservedUsd) / r.budgetUsd) * 100)) : Math.min(100, Math.round((r.requestsUsed / Math.max(1, r.maxRequests)) * 100));
-  const errorKind = r.error ? (/payment required|40200|\b402\b|credit balance|no_credit|insufficient|balance|top.?up|billing/i.test(r.error) ? 'funds' : /40100|\b401\b|auth|not authorized|model_not_found|api key|no_api_key/i.test(r.error) ? 'auth' : /budget/i.test(r.error) ? 'budget' : 'other') : null;
+  const errorKind = runErrorKind(r.error);
+  const canDelete = r.status !== 'running' && r.places === 0;
+  const del = () =>
+    start(async () => {
+      if (!confirm('למחוק את הריצה? המשימות והסטטיסטיקה שלה נמחקות; נתונים שכבר נכנסו לעסקים נשארים.')) return;
+      const res = await deleteRunsAction([r.id]);
+      setNote(res.ok && res.deleted ? 'הריצה נמחקה.' : res.skipped[0]?.error === 'running' ? 'הריצה רצה כרגע. השהו או בטלו אותה קודם.' : res.skipped[0]?.error === 'has_records' ? 'לריצה יש רשומות בתור הבדיקה, אי אפשר למחוק אותה.' : 'המחיקה נכשלה.');
+      router.refresh();
+    });
   const act = (a: 'pause' | 'resume' | 'cancel' | 'kick' | 'retry' | 'recover') =>
     start(async () => {
       if (a === 'cancel' && !confirm('לבטל את הריצה? רשומות שנמצאו נשארות בתור הבדיקה.')) return;
@@ -411,7 +433,7 @@ function Run({ r }: { r: RunRow }) {
     });
 
   return (
-    <article className={styles.card}>
+    <article className={styles.card} id={`run-${r.id}`}>
       <div className={styles.runHead}>
         <span className={styles.runTitle}>{r.label}</span>
         <span className={styles.chip}>{r.provider === 'dataforseo' ? 'DataForSEO' : r.provider === 'enhance' ? 'העשרה' : 'Google'}</span>
@@ -436,6 +458,8 @@ function Run({ r }: { r: RunRow }) {
           {c.failed ? ` · נכשלו ${n(c.failed)}` : ''}
           {c.editorialCalls ? ` · כתיבה: ${n(c.editorialCalls)} קריאות (${n(c.editorial_written ?? 0)} נכתבו, ${n(c.editorial_cached ?? 0)} מהמטמון${c.editorial_budget ? `, ${n(c.editorial_budget)} מעבר לתקציב` : ''})` : ''}
           {c.youtubeQuota ? ` · YouTube: ${n(c.youtubeQuota)} יחידות מכסה` : ''}
+          {c.apifyRuns ? ` · Apify: ${n(c.apifyRuns)} הרצות (${['maps', 'facebook', 'instagram', 'render'].filter(k => c[`apify_${k}_matched`]).map(k => `${k} ${n(c[`apify_${k}_matched`])}`).join(', ') || 'ללא עדכונים'})` : ''}
+          {r.stats.apifyMissingToken ? ' · APIFY_TOKEN לא מוגדר, צעדי Apify דולגו' : ''}
           {Array.isArray(r.stats.failures) && r.stats.failures.length ? <><br />סיבות: {(r.stats.failures as string[]).slice(0, 3).join(' | ')}</> : null}
         </p>
       ) : null}
@@ -503,6 +527,7 @@ function Run({ r }: { r: RunRow }) {
         {r.status !== 'done' && r.status !== 'canceled' ? <button type="button" className={`${styles.btn} ${styles.danger}`} disabled={pending} onClick={() => act('cancel')}>ביטול</button> : null}
         <a className={styles.btn} href={`/ops/import/export?run=${r.id}&kind=canonical`}>ייצוא שדות מותרים</a>
         <a className={styles.btn} href={`/ops/import/export?run=${r.id}&kind=audit`}>דוח ביקורת</a>
+        {canDelete ? <button type="button" className={`${styles.btn} ${styles.danger}`} disabled={pending} onClick={del}>מחיקה</button> : null}
       </div>
     </article>
   );

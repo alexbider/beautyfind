@@ -6,20 +6,21 @@
 import { socialOf } from './websiteKind';
 
 export type SocialNetwork = 'instagram' | 'facebook' | 'tiktok' | 'youtube';
-export type SocialVia = 'backlink' | 'handle_matches_domain' | 'provider_and_linkhub' | 'owner' | 'staff' | 'unverified';
+export type SocialVia = 'backlink' | 'handle_matches_domain' | 'provider_and_linkhub' | 'profile_links_site' | 'profile_shows_phone' | 'owner' | 'staff' | 'unverified';
 
 export interface SocialAccount {
   url: string;
   verified: boolean;
   via: SocialVia;
-  sources: string[]; // where it was seen: website | linkhub | dataforseo | owner | staff
+  sources: string[]; // where it was seen: website | linkhub | dataforseo | owner | staff | apify_*
+  checked?: 'match' | 'no_match' | 'unavailable'; // result of reading the profile itself (Apify)
 }
 export type Socials = Partial<Record<SocialNetwork, SocialAccount>>;
 
 export interface SocialInput {
   network: string;
   url: string;
-  source: 'website' | 'linkhub' | 'dataforseo' | 'owner' | 'staff';
+  source: 'website' | 'linkhub' | 'dataforseo' | 'owner' | 'staff' | 'apify_google_maps' | 'apify_facebook' | 'apify_instagram';
 }
 
 const NETWORKS: SocialNetwork[] = ['instagram', 'facebook', 'tiktok', 'youtube'];

@@ -5,6 +5,7 @@ import { Prisma, type ImportPlace, type ImportRun } from '@prisma/client';
 import { pickEmail } from '../../../src/lib/import/email';
 import { DUPLICATE_AT, isStrong, MatchPool, POSSIBLE_MATCH_AT, type PoolItem } from '../../../src/lib/import/match';
 import { qualify } from '../../../src/lib/import/rules';
+import { ratingProviderOk } from '../../../src/lib/import/sourcePolicy';
 import { db, heartbeat, log, setStats, settings } from '../ctx';
 
 const OPEN: ImportPlace['status'][] = ['extracted', 'ready', 'needs_review', 'incomplete', 'duplicate', 'closed'];
@@ -103,7 +104,7 @@ export async function check(run: ImportRun) {
 
   // Provider ratings on published listings: only when the source's terms allow it (setting).
   if (s.publishProviderRatings) {
-    for (const p of places.filter(x => x.branchId && (x.status === 'approved' || x.status === 'merged') && x.ratingProvider === 'dataforseo')) {
+    for (const p of places.filter(x => x.branchId && (x.status === 'approved' || x.status === 'merged') && ratingProviderOk(x.ratingProvider))) {
       await db.branch.updateMany({ where: { id: p.branchId!, googlePlaceId: p.placeId }, data: { googleRating: p.googleRating, googleReviewCount: p.googleReviewCount, googleSyncedAt: new Date() } });
     }
   }

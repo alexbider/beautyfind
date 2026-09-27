@@ -21,6 +21,7 @@ export interface EstimateAssumptions {
   editorialRepairShare: number; // drafts that need the one repair call
   photosPerProfile: number; // copied images per usable record (WebP derivatives)
   videoShare: number; // usable records with YouTube ids to validate (Data API: 1 unit per 50 ids; oEmbed: none)
+  apifyShare: number; // usable records that need one Apify actor (Google Maps, Facebook or Instagram) for a gap
 }
 
 export const DEFAULT_ASSUMPTIONS: EstimateAssumptions = {
@@ -38,6 +39,7 @@ export const DEFAULT_ASSUMPTIONS: EstimateAssumptions = {
   editorialRepairShare: 0.25,
   photosPerProfile: 6,
   videoShare: 0.15,
+  apifyShare: 0.5,
 };
 
 export interface EstimateRow {
@@ -50,6 +52,7 @@ export interface EstimateRow {
   photoUsd: number;
   llmUsd: number;
   editorialUsd: number; // gross, before the token-based settlement
+  apifyUsd: number; // one Google Maps place read per record in the share, at the reserve factor
   youtubeQuota: number; // Data API units (no charge; the default daily quota is 10,000)
   storageMb: number; // WebP derivatives plus safe originals, roughly
   totalUsd: number;
@@ -71,10 +74,11 @@ export function estimateFor(n: number, a: EstimateAssumptions = DEFAULT_ASSUMPTI
   const usable = Math.round(n * a.usableShare);
   // One call per profile at the gross allowance; the repair call is a second full call for that share.
   const editorialUsd = usable * a.editorialShare * p.editorial.perProfileUsd * (1 + a.editorialRepairShare);
+  const apifyUsd = usable * a.apifyShare * p.apify.maps.perPlaceUsd * p.apify.reserveFactor;
   const youtubeQuota = Math.ceil(usable * a.videoShare); // one videos.list unit per profile (ids batched)
   const storageMb = Math.round((usable * a.photosPerProfile * 0.45) / 1); // ~150KB derivative + ~300KB original per image
-  const totalUsd = dfsUsd + googleUsd + photoUsd + llmUsd + editorialUsd;
-  return { businesses: n, dfsRequests, dfsRecords, dfsUsd, websiteRequests, googleUsd, photoUsd, llmUsd, editorialUsd, youtubeQuota, storageMb, totalUsd, usable, perUsableUsd: usable ? totalUsd / usable : 0 };
+  const totalUsd = dfsUsd + googleUsd + photoUsd + llmUsd + editorialUsd + apifyUsd;
+  return { businesses: n, dfsRequests, dfsRecords, dfsUsd, websiteRequests, googleUsd, photoUsd, llmUsd, editorialUsd, apifyUsd, youtubeQuota, storageMb, totalUsd, usable, perUsableUsd: usable ? totalUsd / usable : 0 };
 }
 
 export const estimateTable = (a?: EstimateAssumptions) => [100, 1000, 10000].map(n => estimateFor(n, a));

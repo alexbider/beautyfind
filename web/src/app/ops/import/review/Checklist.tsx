@@ -40,7 +40,7 @@ export interface ProfileInfo {
 
 const STATUS_CHIP: Record<ProfileStatus, string> = { ready: styles.chipOk, ready_with_disclosed_gaps: styles.chipOk, needs_owner_information: styles.chipWarn, needs_review: styles.chipBad };
 const STATE_NAME: Record<string, string> = { populated: 'מלא', fallback: 'מצב חסר גלוי', missing: 'חסר' };
-const VIA: Record<string, string> = { backlink: 'קישור מאתר העסק', handle_matches_domain: 'שם החשבון תואם לדומיין', provider_and_linkhub: 'Google וגם דף הקישורים', owner: 'בעל העסק', staff: 'צוות', unverified: 'לא מאומת, לא מתפרסם' };
+const VIA: Record<string, string> = { backlink: 'קישור מאתר העסק', handle_matches_domain: 'שם החשבון תואם לדומיין', provider_and_linkhub: 'Google וגם דף הקישורים', profile_links_site: 'הפרופיל מקשר לאתר העסק', profile_shows_phone: 'הפרופיל מציג את טלפון העסק', owner: 'בעל העסק', staff: 'צוות', unverified: 'לא מאומת, לא מתפרסם' };
 const usd = (x: number) => `$${x < 1 ? x.toFixed(4) : x.toFixed(2)}`;
 
 /** Per-profile checklist (feature request §12): coverage, missing fields, evidence, draft, media, video, map, costs. */

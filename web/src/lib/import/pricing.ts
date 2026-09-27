@@ -30,6 +30,19 @@ export interface Pricing {
   editorial: { perProfileUsd: number; inputPer1MUsd: number; outputPer1MUsd: number; model: string; note: string };
   youtube: { quotaPerDay: number; note: string };
   mapsEmbed: { perLoadUsd: number; note: string };
+  // Apify actors, per item (place, profile, page). Reserved at twice the rate because most actors bill
+  // per result plus platform usage; the recorded cost is the run's usageTotalUsd reported by Apify.
+  apify: {
+    actors: Record<'maps' | 'instagram' | 'facebook' | 'render', string>;
+    maps: { perPlaceUsd: number };
+    instagram: { perProfileUsd: number };
+    facebook: { perPageUsd: number };
+    render: { perPageUsd: number };
+    reserveFactor: number;
+    source: string;
+    checked: string;
+    note: string;
+  };
 }
 
 export type GoogleSku = 'essentials_ids_only' | 'essentials' | 'pro' | 'enterprise' | 'enterprise_atmosphere';
@@ -61,6 +74,17 @@ export const DEFAULT_PRICING: Pricing = {
   },
   youtube: { quotaPerDay: 10_000, note: 'YouTube Data API v3 default daily quota (units, no charge). oEmbed needs no key and no quota.' },
   mapsEmbed: { perLoadUsd: 0, note: 'Maps Embed API has no usage charge at the time of writing; needs its own browser key restricted to our domains.' },
+  apify: {
+    actors: { maps: 'compass~crawler-google-places', instagram: 'apify~instagram-profile-scraper', facebook: 'apify~facebook-pages-scraper', render: 'apify~website-content-crawler' },
+    maps: { perPlaceUsd: 0.004 },
+    instagram: { perProfileUsd: 0.0025 },
+    facebook: { perPageUsd: 0.004 },
+    render: { perPageUsd: 0.002 },
+    reserveFactor: 2,
+    source: 'https://apify.com/pricing and each actor\'s page',
+    checked: 'unverified',
+    note: 'Apify Store rates recalled, not fetched (the pages were not reachable from the build environment): Google Maps Scraper about $4 per 1,000 places, Instagram Profile Scraper about $2.5 per 1,000 profiles, Facebook Pages Scraper about $4 per 1,000 pages, Website Content Crawler by compute (about $2 per 1,000 pages). Confirm on the actor pages before a live run; override with IMPORT_PRICING_JSON.',
+  },
 };
 
 export function pricing(): Pricing {
@@ -68,7 +92,11 @@ export function pricing(): Pricing {
   if (!raw) return DEFAULT_PRICING;
   try {
     const o = JSON.parse(raw) as Partial<Pricing>;
-    return { ...DEFAULT_PRICING, ...o, dataforseo: { ...DEFAULT_PRICING.dataforseo, ...o.dataforseo }, google: { ...DEFAULT_PRICING.google, ...o.google }, editorial: { ...DEFAULT_PRICING.editorial, ...o.editorial } } as Pricing;
+    return {
+      ...DEFAULT_PRICING, ...o,
+      dataforseo: { ...DEFAULT_PRICING.dataforseo, ...o.dataforseo }, google: { ...DEFAULT_PRICING.google, ...o.google }, editorial: { ...DEFAULT_PRICING.editorial, ...o.editorial },
+      apify: { ...DEFAULT_PRICING.apify, ...o.apify, actors: { ...DEFAULT_PRICING.apify.actors, ...o.apify?.actors } },
+    } as Pricing;
   } catch {
     return DEFAULT_PRICING;
   }
@@ -81,6 +109,11 @@ export const fromMicros = (m: bigint | number) => Number(m) / USD;
 /** Gross maximum for one DataForSEO search page: request fee plus a full page of items. */
 export function dfsPageMaxUsd(limit: number, p: Pricing = pricing()): number {
   return p.dataforseo.businessListingsSearch.perRequestUsd + p.dataforseo.businessListingsSearch.perItemUsd * limit;
+}
+
+/** Gross per-item rate of an Apify actor. */
+export function apifyItemUsd(kind: 'maps' | 'instagram' | 'facebook' | 'render', p: Pricing = pricing()): number {
+  return kind === 'maps' ? p.apify.maps.perPlaceUsd : kind === 'instagram' ? p.apify.instagram.perProfileUsd : kind === 'facebook' ? p.apify.facebook.perPageUsd : p.apify.render.perPageUsd;
 }
 
 /** Cost of one editorial call from the tokens the API reported. */

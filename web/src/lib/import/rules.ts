@@ -16,10 +16,14 @@ export type RunScope = z.infer<typeof RunScope>;
 /** Scope of an "enhance published listings" run. */
 export const EnhanceScope = z.object({
   branchIds: z.array(z.uuid()).max(5000).optional(), // none: every live, unclaimed listing that came from the import
-  refresh: z.boolean(), // re-read the provider's data (paid, one request per 1,000 listings)
+  refresh: z.boolean().optional(), // re-read the provider's data (paid, one request per 500 listings); same as steps including 'dfs'
   regenerate: z.boolean().optional(), // rewrite the editorial draft even when the evidence has not changed
   rereadSite: z.boolean().optional(), // ignore the site cache and read the website again
   focus: z.array(z.string().max(30)).max(30).optional(), // template sections the run was started for (label only)
+  // Enrichment plan (src/lib/import/enrichPlan.ts): the steps staff allowed. auto: run each step only for
+  // listings whose missing sections it can fill (seedEnhance decides per listing); otherwise every listed step for every listing.
+  steps: z.array(z.enum(['dfs', 'maps', 'facebook', 'instagram', 'site', 'render', 'editorial', 'regenerate', 'images'])).max(9).optional(),
+  auto: z.boolean().optional(),
 });
 export type EnhanceScope = z.infer<typeof EnhanceScope>;
 
@@ -67,7 +71,7 @@ export const BLOCKING = ['no_phone', 'no_contact', 'no_email', 'email_no_mx', 'n
 /** Reasons that allow approval but only by a person looking at the record. */
 export const REVIEW = [
   'possible_existing', 'possible_duplicate', 'email_domain_mismatch', 'shared_phone', 'temporarily_closed', 'not_beauty', 'city_not_in_catalog',
-  'extraction_failed', 'medical_without_doctor_info', 'email_from_search', 'phone_conflict', 'hours_conflict', 'website_unverified',
+  'extraction_failed', 'medical_without_doctor_info', 'email_from_search', 'phone_conflict', 'hours_conflict', 'website_unverified', 'closed_on_google',
 ] as const;
 
 export const REASON_NAMES: Record<string, string> = {
@@ -86,6 +90,7 @@ export const REASON_NAMES: Record<string, string> = {
   email_domain_mismatch: 'הדוא״ל מדומיין אחר מהאתר',
   shared_phone: 'אותו טלפון בעסק אחר',
   temporarily_closed: 'סגור זמנית בגוגל',
+  closed_on_google: 'מסומן בגוגל כסגור לצמיתות',
   not_beauty: 'ייתכן שאינו עסק יופי',
   city_not_in_catalog: 'יישוב שאינו ברשימה',
   extraction_failed: 'חילוץ הטיפולים מהאתר נכשל',

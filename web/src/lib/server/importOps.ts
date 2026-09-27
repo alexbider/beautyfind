@@ -13,6 +13,7 @@ import { loadSettings, parseSettings, type ImportSettings } from '@/lib/import/s
 import { toMicros } from '@/lib/import/pricing';
 import { commit, release } from '@/lib/import/budget';
 import { classifyWebsite, KEEP_AS_WEBSITE } from '@/lib/import/websiteKind';
+import { ratingProviderOk } from '@/lib/import/sourcePolicy';
 import { composeDescription } from '@/lib/import/completeness';
 import { copyListingImages, type Candidate, type MediaProvenance } from '@/lib/server/importMedia';
 import { branchCoverage, editorialText, profileFields, socialCounts, treatmentRows } from '@/lib/server/importPublish';
@@ -139,14 +140,7 @@ export async function setRunStatus(runId: string, action: 'pause' | 'resume' | '
   return db.importRun.updateMany({ where: { id: runId, status: { in: ['queued', 'running', 'paused', 'failed'] } }, data: { status: 'canceled', finishedAt: new Date() } });
 }
 
-/** Why a run stopped, from its error text: out of provider funds, a key problem, a budget cap, or something else. */
-export function runErrorKind(error: string | null): 'funds' | 'auth' | 'budget' | 'other' | null {
-  if (!error) return null;
-  if (/payment required|40200|\b402\b|credit balance|no_credit|insufficient|balance|top.?up|billing/i.test(error)) return 'funds';
-  if (/40100|\b401\b|auth|not authorized|model_not_found|api key|no_api_key/i.test(error)) return 'auth';
-  if (/budget_exceeded|budget/i.test(error)) return 'budget';
-  return 'other';
-}
+export { runErrorKind } from '@/lib/import/runErrors';
 
 /**
  * Recovery after an external stop (provider out of funds, a key fixed, a budget raised): failed tasks go
@@ -167,6 +161,25 @@ export async function recoverRun(actor: Actor, runId: string, opts: { budgetUsd?
   });
   await db.auditLog.create({ data: { actorId: actor.id, action: 'import_recover', subjectType: 'import_run', subjectId: runId, meta: { tasks: tasks.count, editorial, budgetUsd: opts.budgetUsd ?? null } } });
   return { tasks: tasks.count, editorial, queued: r.count > 0 };
+}
+
+/**
+ * Deletes a run (a "batch") with its tasks. Allowed when the run is not being worked on: queued, paused,
+ * done, failed or canceled, or running with an expired lease. Discovery runs that still own staged
+ * records are kept (their records point at them); enhance runs never own records. Listing data the run
+ * produced stays, and so do its spend entries (they are the accounting record). Audited.
+ */
+export async function deleteRun(actor: Actor, runId: string): Promise<{ ok: true } | { ok: false; error: 'not_found' | 'running' | 'has_records' }> {
+  const run = await db.importRun.findUnique({ where: { id: runId }, include: { _count: { select: { places: true, tasks: true } } } });
+  if (!run) return { ok: false, error: 'not_found' };
+  if (run.status === 'running' && run.lockedUntil && run.lockedUntil > new Date()) return { ok: false, error: 'running' };
+  if (run._count.places > 0) return { ok: false, error: 'has_records' };
+  await db.$transaction([
+    db.importTask.deleteMany({ where: { runId } }),
+    db.importRun.delete({ where: { id: runId } }),
+    db.auditLog.create({ data: { actorId: actor.id, action: 'import_run_delete', subjectType: 'import_run', subjectId: runId, meta: { label: run.label, provider: run.provider, status: run.status, scope: run.scope, stats: run.stats, spentMicros: run.spentMicros.toString(), tasks: run._count.tasks } as Prisma.InputJsonValue } }),
+  ]);
+  return { ok: true };
 }
 
 /**
@@ -253,7 +266,7 @@ async function applyImages(
 /** Where each image candidate was found (page, provider, alt), for the provenance record of the copy. */
 export const mediaCandidatesOf = (p: ImportPlace): Candidate[] => {
   const list = ((p.crawl as { mediaCandidates?: Array<{ url: string; pageUrl?: string | null; provider?: string; evidence?: string }> } | null)?.mediaCandidates ?? []);
-  return list.map(c => ({ url: c.url, pageUrl: c.pageUrl ?? null, provider: c.provider === 'google_profile' ? 'google_profile' : 'website', alt: c.evidence?.replace(/^img\s*/, '').trim() || null }));
+  return list.map(c => ({ url: c.url, pageUrl: c.pageUrl ?? null, provider: c.provider === 'google_profile' || c.provider === 'instagram' || c.provider === 'facebook' ? c.provider : 'website', alt: c.evidence?.replace(/^img\s*/, '').trim() || null }));
 };
 
 /** Recomputes and stores the readiness classification and checklist of a listing that came from the import. */
@@ -291,7 +304,7 @@ export async function approvePlace(actor: Actor, id: string): Promise<OpResult> 
   if (googleId && (await db.branch.findUnique({ where: { googlePlaceId: googleId }, select: { id: true } }))) return { ok: false, error: 'exists' };
   const settings = await loadSettings(db);
   // Provider ratings reach the listing only when the source's terms allow it (setting); never Google content.
-  const rating = settings.publishProviderRatings && p.ratingProvider === 'dataforseo' ? { googleRating: p.googleRating, googleReviewCount: p.googleReviewCount } : { googleRating: null, googleReviewCount: null };
+  const rating = settings.publishProviderRatings && ratingProviderOk(p.ratingProvider) ? { googleRating: p.googleRating, googleReviewCount: p.googleReviewCount } : { googleRating: null, googleReviewCount: null };
 
   const cats = p.categories.filter(c => CATEGORIES.some(x => x.slug === c));
   const city = p.citySlug ? await db.city.findUnique({ where: { slug: p.citySlug }, select: { id: true, name: true } }) : null;
@@ -366,7 +379,7 @@ export async function mergePlace(actor: Actor, id: string, branchId: string): Pr
   const googleId = p.placeId.startsWith('dfs:') ? null : p.placeId;
   const placeTaken = googleId ? await db.branch.findUnique({ where: { googlePlaceId: googleId }, select: { id: true } }) : null;
   const settings = await loadSettings(db);
-  const withRating = settings.publishProviderRatings && p.ratingProvider === 'dataforseo';
+  const withRating = settings.publishProviderRatings && ratingProviderOk(p.ratingProvider);
   if (placeTaken && placeTaken.id !== b.id) return { ok: false, error: 'exists' };
 
   const cats = p.categories.filter(c => CATEGORIES.some(x => x.slug === c));

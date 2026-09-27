@@ -23,7 +23,7 @@ export interface MediaProvenance {
   kind: 'logo' | 'cover' | 'gallery';
   sourceUrl: string; // asset URL on the source
   pageUrl: string | null; // page or profile it was found on
-  provider: 'website' | 'google_profile' | 'google_post' | 'owner';
+  provider: 'website' | 'google_profile' | 'google_post' | 'instagram' | 'facebook' | 'owner';
   retrievedAt: string;
   width: number;
   height: number;
