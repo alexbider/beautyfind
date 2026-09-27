@@ -78,7 +78,10 @@ export default async function ImportPage() {
       <main className={styles.page}>
         <div className={styles.titleRow}>
           <h1 className={styles.h1}>ייבוא עסקים</h1>
-          <Link href="/ops/import/review" className={`${styles.btn} ${styles.primary}`}>לתור הבדיקה</Link>
+          <div className={styles.btnRow}>
+            <Link href="/ops/import/enrich" className={styles.btn}>העשרה לפי חוסרים</Link>
+            <Link href="/ops/import/review" className={`${styles.btn} ${styles.primary}`}>לתור הבדיקה</Link>
+          </div>
         </div>
         <p className={styles.lead}>
           שלב 1 מאתר עסקים ב־DataForSEO. שלב 2 משלים פרטים חסרים מהאתר הרשמי של העסק. Google משמש רק לתצוגה נפרדת ומבוקרת, ורק כשמפעילים אותו. שום דבר לא עולה לאתר לפני אישור.

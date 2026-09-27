@@ -387,11 +387,19 @@ function Run({ r }: { r: RunRow }) {
   const b = r.byStatus;
   const staged = Object.values(b).reduce((s, x) => s + x, 0);
   const pct = r.budgetUsd ? Math.min(100, Math.round(((r.spentUsd + r.reservedUsd) / r.budgetUsd) * 100)) : Math.min(100, Math.round((r.requestsUsed / Math.max(1, r.maxRequests)) * 100));
-  const act = (a: 'pause' | 'resume' | 'cancel' | 'kick' | 'retry') =>
+  const errorKind = r.error ? (/payment required|40200|\b402\b|credit balance|no_credit|insufficient|balance|top.?up|billing/i.test(r.error) ? 'funds' : /40100|\b401\b|auth|not authorized|model_not_found|api key|no_api_key/i.test(r.error) ? 'auth' : /budget/i.test(r.error) ? 'budget' : 'other') : null;
+  const act = (a: 'pause' | 'resume' | 'cancel' | 'kick' | 'retry' | 'recover') =>
     start(async () => {
       if (a === 'cancel' && !confirm('לבטל את הריצה? רשומות שנמצאו נשארות בתור הבדיקה.')) return;
-      const res = await runControlAction(r.id, a);
-      if (a === 'retry' && !res.count) setNote('אין רשומות חסרות להרצה חוזרת.');
+      let extra: { budgetUsd?: number } = {};
+      if (a === 'recover' && errorKind === 'budget') {
+        const v = prompt('תקרה חדשה לריצה (USD)', String(Math.max(1, Math.ceil((r.budgetUsd ?? 1) * 2))));
+        if (v === null) return;
+        extra = { budgetUsd: Number(v) || undefined };
+      }
+      const res = await runControlAction(r.id, a, extra);
+      if (a === 'recover') setNote(res.ok ? `הריצה חזרה לתור: ${res.recovered?.tasks ?? 0} משימות ו־${res.recovered?.editorial ?? 0} טיוטות יחזרו לעיבוד${res.dispatched === false ? '. העובד לא הופעל אוטומטית, הפעילו אותו ב־GitHub.' : '.'}` : 'השחזור נכשל.');
+      else if (a === 'retry' && !res.count) setNote('אין רשומות חסרות להרצה חוזרת.');
       else if (res.dispatched === false) setNote('העובד לא הופעל אוטומטית. הפעילו את ה־workflow ב־GitHub.');
       else setNote(a === 'retry' ? `${res.count} רשומות נשלחו להשלמה חוזרת.` : '');
       router.refresh();
@@ -454,7 +462,17 @@ function Run({ r }: { r: RunRow }) {
           לפי ספק: {Object.entries(r.spend).map(([k, v]) => `${k} ${v.calls} קריאות, הערכה ${usd(v.estimatedUsd)}, בפועל ${usd(v.actualUsd)}${v.uncertain ? `, ${v.uncertain} לא ודאיות` : ''}`).join(' · ')}
         </p>
       ) : null}
-      {r.error ? <p className={styles.error}>{r.error}</p> : null}
+      {r.error ? (
+        <div className={styles.error}>
+          <p style={{ margin: 0 }}>{r.error}</p>
+          <p style={{ margin: '6px 0 0' }}>
+            {errorKind === 'funds' ? 'נראה שנגמר הקרדיט אצל הספק. טענו את החשבון אצל הספק (DataForSEO או Anthropic), ואז לחצו ״המשך אחרי טעינת קרדיט״: המשימות שנכשלו והטיוטות שדולגו יחזרו לעיבוד, בלי לשלוח שוב בקשות ששולמו.'
+              : errorKind === 'auth' ? 'בעיית מפתח או הרשאה אצל הספק. תקנו את הסוד ב־GitHub Actions (או ב־Vercel), ואז לחצו ״המשך״.'
+              : errorKind === 'budget' ? 'הריצה הגיעה לתקרת ההוצאה שלה. ״המשך״ יאפשר להגדיל את התקרה ולהמשיך מאותה נקודה.'
+              : 'הריצה נעצרה. ״המשך״ מחזיר אותה לתור מאותה נקודה; משימות שנכשלו ינוסו שוב.'}
+          </p>
+        </div>
+      ) : null}
       {r.reconcile.length ? (
         <div className={styles.panel}>
           <p>בקשות בתשלום בלי תשובה ודאית. בדקו ביומן השימוש של הספק, ואז:</p>
@@ -476,7 +494,11 @@ function Run({ r }: { r: RunRow }) {
             <button type="button" className={styles.btn} disabled={pending} onClick={() => act('kick')}>הפעלת העובד</button>
           </>
         ) : null}
-        {r.status === 'paused' || r.status === 'failed' ? <button type="button" className={styles.btn} disabled={pending} onClick={() => act('resume')}>המשך</button> : null}
+        {r.status === 'paused' || r.status === 'failed' || (r.status === 'done' && r.error) ? (
+          <button type="button" className={`${styles.btn} ${styles.primary}`} disabled={pending} onClick={() => act('recover')}>
+            {errorKind === 'funds' ? 'המשך אחרי טעינת קרדיט' : errorKind === 'budget' ? 'הגדלת התקרה והמשך' : 'המשך מאותה נקודה'}
+          </button>
+        ) : null}
         {r.status === 'done' || r.status === 'failed' ? <button type="button" className={styles.btn} disabled={pending} onClick={() => act('retry')}>השלמה חוזרת לרשומות החסרות</button> : null}
         {r.status !== 'done' && r.status !== 'canceled' ? <button type="button" className={`${styles.btn} ${styles.danger}`} disabled={pending} onClick={() => act('cancel')}>ביטול</button> : null}
         <a className={styles.btn} href={`/ops/import/export?run=${r.id}&kind=canonical`}>ייצוא שדות מותרים</a>

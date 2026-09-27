@@ -139,6 +139,36 @@ export async function setRunStatus(runId: string, action: 'pause' | 'resume' | '
   return db.importRun.updateMany({ where: { id: runId, status: { in: ['queued', 'running', 'paused', 'failed'] } }, data: { status: 'canceled', finishedAt: new Date() } });
 }
 
+/** Why a run stopped, from its error text: out of provider funds, a key problem, a budget cap, or something else. */
+export function runErrorKind(error: string | null): 'funds' | 'auth' | 'budget' | 'other' | null {
+  if (!error) return null;
+  if (/payment required|40200|\b402\b|credit balance|no_credit|insufficient|balance|top.?up|billing/i.test(error)) return 'funds';
+  if (/40100|\b401\b|auth|not authorized|model_not_found|api key|no_api_key/i.test(error)) return 'auth';
+  if (/budget_exceeded|budget/i.test(error)) return 'budget';
+  return 'other';
+}
+
+/**
+ * Recovery after an external stop (provider out of funds, a key fixed, a budget raised): failed tasks go
+ * back to pending, editorial drafts skipped for budget or error are cleared so the writer tries again,
+ * and the run is queued. Paid requests that were sent stay as they are (needs_reconciliation is a
+ * human decision). Returns what was reset.
+ */
+export async function recoverRun(actor: Actor, runId: string, opts: { budgetUsd?: number } = {}): Promise<{ tasks: number; editorial: number; queued: boolean }> {
+  const run = await db.importRun.findUnique({ where: { id: runId } });
+  if (!run) return { tasks: 0, editorial: 0, queued: false };
+  const tasks = await db.importTask.updateMany({ where: { runId, OR: [{ status: 'failed' }, { status: 'done', error: 'budget' }] }, data: { status: 'pending', error: null } });
+  const editorial = await db.$executeRaw`
+    UPDATE import_places SET editorial = NULL
+    WHERE run_id = ${runId}::uuid AND editorial->>'skipped' IN ('budget', 'error')`;
+  const r = await db.importRun.updateMany({
+    where: { id: runId, status: { in: ['failed', 'paused', 'done'] } },
+    data: { status: 'queued', error: null, finishedAt: null, lockedBy: null, lockedUntil: null, ...(opts.budgetUsd != null ? { budgetMicros: toMicros(Math.max(0, Math.min(10_000, opts.budgetUsd))) } : {}) },
+  });
+  await db.auditLog.create({ data: { actorId: actor.id, action: 'import_recover', subjectType: 'import_run', subjectId: runId, meta: { tasks: tasks.count, editorial, budgetUsd: opts.budgetUsd ?? null } } });
+  return { tasks: tasks.count, editorial, queued: r.count > 0 };
+}
+
 /**
  * Sends a finished run's incomplete records (no email, failed extraction, no category) back through
  * enrichment and extraction. Google is not called again. Records staff already decided on are kept.

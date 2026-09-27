@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { importerOrNull } from '@/components/ops/guard';
 import { db } from '@/lib/server/db';
 import {
-  approvePlace, createRun, dispatchWorker, editPlace, enrichSelected, markDuplicate, mergePlace, reconcileTask, rejectPlace, restorePlace, retryIncomplete,
+  approvePlace, createRun, dispatchWorker, editPlace, enrichSelected, markDuplicate, mergePlace, reconcileTask, recoverRun, rejectPlace, restorePlace, retryIncomplete,
   getSettings, saveSettings, setRunStatus, type CreateRunInput, type OpResult,
 } from '@/lib/server/importOps';
 import { googleLookup, type GoogleLookup } from '@/lib/server/googleDisplay';
@@ -71,15 +71,20 @@ export async function googleLookupAction(placeId: string, feature: 'verify' | 'r
   return googleLookup(user, placeId, feature);
 }
 
-export async function runControlAction(runId: string, action: 'pause' | 'resume' | 'cancel' | 'kick' | 'retry'): Promise<{ ok: boolean; dispatched?: boolean; reason?: string; count?: number }> {
+export async function runControlAction(runId: string, action: 'pause' | 'resume' | 'cancel' | 'kick' | 'retry' | 'recover', extra: { budgetUsd?: number } = {}): Promise<{ ok: boolean; dispatched?: boolean; reason?: string; count?: number; recovered?: { tasks: number; editorial: number } }> {
   const user = await importerOrNull();
   if (!user || !z.uuid().safeParse(runId).success) return { ok: false };
   let count: number | undefined;
+  let recovered: { tasks: number; editorial: number } | undefined;
   if (action === 'retry') count = await retryIncomplete(runId);
-  else if (action !== 'kick') await setRunStatus(runId, action);
-  const d = action === 'resume' || action === 'kick' || (action === 'retry' && count) ? await dispatchWorker(runId) : undefined;
+  else if (action === 'recover') {
+    const budget = typeof extra.budgetUsd === 'number' && Number.isFinite(extra.budgetUsd) ? extra.budgetUsd : undefined;
+    const r = await recoverRun(user, runId, { budgetUsd: budget });
+    recovered = { tasks: r.tasks, editorial: r.editorial };
+  } else if (action !== 'kick') await setRunStatus(runId, action);
+  const d = action === 'resume' || action === 'kick' || action === 'recover' || (action === 'retry' && count) ? await dispatchWorker(runId) : undefined;
   refresh();
-  return { ok: true, count, ...d };
+  return { ok: true, count, recovered, ...d };
 }
 
 const Op = z.discriminatedUnion('op', [
@@ -164,6 +169,42 @@ export async function enhanceApprovedAction(ids: string[], refresh: boolean): Pr
     return { ok: true, count: branchIds.length, dispatched: d.dispatched };
   } catch {
     return { ok: false, count: 0 };
+  }
+}
+
+/**
+ * Targeted enhancement from the enrichment tab: chosen published listings (by branch id) with the steps
+ * to run. rereadSite ignores the 30-day site cache; refresh re-reads DataForSEO (paid); regenerate
+ * rewrites the editorial draft even when the evidence did not change.
+ */
+export async function enhanceListingsAction(branchIds: string[], opts: { refresh?: boolean; regenerate?: boolean; rereadSite?: boolean; focus?: string[] }): Promise<{ ok: boolean; count: number; dispatched?: boolean; runId?: string; error?: string }> {
+  const user = await importerOrNull();
+  const list = z.array(z.uuid()).min(1).max(1000).safeParse(branchIds);
+  if (!user || !list.success) return { ok: false, count: 0, error: 'invalid' };
+  const places = await db.importPlace.findMany({ where: { branchId: { in: list.data }, status: { in: ['approved', 'merged'] } }, select: { branchId: true, siteDomain: true } });
+  const ids = [...new Set(places.map(p => p.branchId!))];
+  if (!ids.length) return { ok: true, count: 0 };
+  if (opts.rereadSite) {
+    const domains = [...new Set(places.map(p => p.siteDomain).filter((d): d is string => !!d))];
+    if (domains.length) await db.siteFetch.updateMany({ where: { domain: { in: domains } }, data: { nextCheckAt: new Date(0) } });
+  }
+  try {
+    const s = await getSettings();
+    const editorial = s.editorialEnabled ? Math.min(s.editorialBudgetUsd, ids.length * pricing().editorial.perProfileUsd * (opts.regenerate ? 1.3 : 1)) : 0;
+    const focus = (opts.focus ?? []).slice(0, 30);
+    const run = await createRun(user, {
+      label: `העשרה ממוקדת: ${ids.length} עסקים${focus.length ? ` (${focus.join(', ')})` : ''}`,
+      provider: 'enhance',
+      scope: { branchIds: ids, refresh: !!opts.refresh, regenerate: !!opts.regenerate, rereadSite: !!opts.rereadSite, focus },
+      recordLimit: ids.length,
+      budgetUsd: (opts.refresh ? Math.ceil(ids.length / 500) * 0.012 + ids.length * 0.00036 + 0.05 : 0) + editorial,
+    });
+    const d = await dispatchWorker(run.id);
+    refreshPaths();
+    revalidatePath('/ops/import/enrich');
+    return { ok: true, count: ids.length, dispatched: d.dispatched, runId: run.id };
+  } catch (e) {
+    return { ok: false, count: 0, error: e instanceof Error ? e.message : 'failed' };
   }
 }
 

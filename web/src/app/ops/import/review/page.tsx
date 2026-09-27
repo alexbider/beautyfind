@@ -191,7 +191,10 @@ export default async function ReviewPage({ searchParams }: { searchParams: SP })
       <main className={styles.page}>
         <div className={styles.titleRow}>
           <h1 className={styles.h1}>בדיקת עסקים מיובאים</h1>
-          <Link href="/ops/import" className={styles.btn}>לריצות</Link>
+          <div className={styles.btnRow}>
+            <Link href="/ops/import/enrich" className={styles.btn}>העשרה לפי חוסרים</Link>
+            <Link href="/ops/import" className={styles.btn}>לריצות</Link>
+          </div>
         </div>
 
         <nav className={styles.seg} aria-label="מצב">

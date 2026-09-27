@@ -18,6 +18,8 @@ export const EnhanceScope = z.object({
   branchIds: z.array(z.uuid()).max(5000).optional(), // none: every live, unclaimed listing that came from the import
   refresh: z.boolean(), // re-read the provider's data (paid, one request per 1,000 listings)
   regenerate: z.boolean().optional(), // rewrite the editorial draft even when the evidence has not changed
+  rereadSite: z.boolean().optional(), // ignore the site cache and read the website again
+  focus: z.array(z.string().max(30)).max(30).optional(), // template sections the run was started for (label only)
 });
 export type EnhanceScope = z.infer<typeof EnhanceScope>;
 
