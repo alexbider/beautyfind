@@ -16,7 +16,7 @@ import { BIZ, Count, JsonLd, breadcrumbLd, countText, faqLd, fmtInt, median, pct
 import { InfoGlyph } from '@/components/treatments/InfoGlyph';
 import { listingBreakdown, ratingMedians, regionFacts } from '@/components/treatments/queries';
 import shared from '@/components/treatments/shared.module.css';
-import { CATEGORIES, REGIONS, citiesOf, cityHref, regionBySlug, type RegionSlug } from '@/lib/catalog';
+import { CATEGORIES, REGIONS, citiesOf, cityPageHref, regionBySlug, type RegionSlug } from '@/lib/catalog';
 import { nis } from '@/lib/format';
 import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
 import { listBranches, listingCounts, medianPrices } from '@/lib/server/public';
@@ -113,7 +113,7 @@ export default async function RegionPage({ params }: Props) {
       key: c.slug,
       name: c.name,
       inName: `ב${c.name}`,
-      allHref: cityHref(c),
+      allHref: cityPageHref(c),
       total: cityTops[i].total,
       items: cityTops[i].items.map(card => ({ card, meta: cardMeta(card), contact: contacts[card.id] })),
     })),
@@ -202,7 +202,7 @@ export default async function RegionPage({ params }: Props) {
           <ul className={styles.cityGrid}>
             {citiesSorted.map(c => (
               <li key={c.slug}>
-                <Link href={cityHref(c)} className={styles.cityCard}>
+                <Link href={cityPageHref(c)} className={styles.cityCard}>
                   <span className={styles.cityName}>{c.name}</span>
                   <span className={styles.cityCount}>
                     <Count n={cityCount(c.slug)} {...BIZ} />

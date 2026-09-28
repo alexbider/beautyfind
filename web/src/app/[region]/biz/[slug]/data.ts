@@ -134,7 +134,7 @@ export function buildView(p: PublicProfile, now = new Date()) {
   ];
   const beforeAfter: Photo[] = ba.map(g => ({ url: g.url, alt: g.alt || 'לפני ואחרי' }));
 
-  const cats = [...p.categories].sort((a, b) => a.category.sortOrder - b.category.sortOrder).map(c => c.category);
+  const cats = [...p.categories].sort((a, b) => Number(!!b.isPrimary) - Number(!!a.isPrimary) || a.category.sortOrder - b.category.sortOrder).map(c => c.category);
   const medicalBiz = cats.some(c => c.isMedical);
   const citySlug = p.city?.slug ?? null;
   const bookingOnline = BOOKING_LIVE && p.onlineBooking && p.isClaimed;

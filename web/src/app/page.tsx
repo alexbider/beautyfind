@@ -5,7 +5,7 @@ import { DeskHome } from '@/components/home/desk/DeskHome';
 import { HomeFooter } from '@/components/home/HomeFooter';
 import { HomeHeader, type HeaderRegion } from '@/components/home/HomeHeader';
 import { PhoneHome, type PhoneCard, type PhoneReview } from '@/components/home/phone/PhoneHome';
-import { CATEGORIES, REGIONS, citiesOf, cityHref, type RegionSlug } from '@/lib/catalog';
+import { CATEGORIES, REGIONS, citiesOf, cityPageHref, type RegionSlug } from '@/lib/catalog';
 import { listBranches, listingCounts, recentReviews, type ListingCard } from '@/lib/server/public';
 import styles from './page.module.css';
 
@@ -93,7 +93,7 @@ export default async function HomePage() {
   const cardLists = Object.fromEntries(REGIONS.map(r => [r.slug, lists[r.slug].map(toPhone)])) as Record<RegionSlug, PhoneCard[]>;
   const regionCounts = Object.fromEntries(REGIONS.map(r => [r.slug, regionCount(r.slug)])) as Record<RegionSlug, number>;
   const regionCities = Object.fromEntries(
-    REGIONS.map(r => [r.slug, topCities(r.slug, 2).map(c => ({ name: c.name, href: cityHref(c) }))]),
+    REGIONS.map(r => [r.slug, topCities(r.slug, 2).map(c => ({ name: c.name, href: cityPageHref(c) }))]),
   ) as Record<RegionSlug, Array<{ name: string; href: string }>>;
   const monthYear = new Intl.DateTimeFormat('he-IL', { month: 'long', year: 'numeric', timeZone: 'Asia/Jerusalem' });
   const cardReviews: PhoneReview[] = reviews.map(r => ({
@@ -113,7 +113,7 @@ export default async function HomePage() {
     slug: r.slug,
     name: r.name,
     count: regionCount(r.slug),
-    cities: topCities(r.slug, 5).map(c => ({ name: c.name, href: cityHref(c) })),
+    cities: topCities(r.slug, 5).map(c => ({ name: c.name, href: cityPageHref(c) })),
   }));
 
   return (

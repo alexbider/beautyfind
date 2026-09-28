@@ -73,7 +73,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
   if (canonicalCat !== 'biz' && via !== canonicalCat) permanentRedirect(p.href);
   const v = buildView(p);
 
-  const parentHref = v.citySlug ? `/${p.regionSlug}/${v.citySlug}` : `/${p.regionSlug}`;
+  const parentHref = v.citySlug && v.citySlug !== p.regionSlug ? `/${p.regionSlug}/${v.citySlug}` : `/${p.regionSlug}`;
   const crumbs = (
     <nav aria-label="נתיב ניווט" className={styles.crumbs}>
       <ol>
@@ -83,7 +83,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
         {v.citySlug && (
           <>
             <li aria-hidden="true">/</li>
-            <li><Link href={`/${p.regionSlug}/${v.citySlug}`}>{p.cityName}</Link></li>
+            {v.citySlug !== p.regionSlug && <li><Link href={`/${p.regionSlug}/${v.citySlug}`}>{p.cityName}</Link></li>}
           </>
         )}
         <li aria-hidden="true">/</li>

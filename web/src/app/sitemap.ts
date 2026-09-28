@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { CATEGORIES, CITIES, REGIONS, cityHref } from '@/lib/catalog';
+import { CATEGORIES, CITIES, REGIONS, cityHref, cityPageHref } from '@/lib/catalog';
 import { db } from '@/lib/server/db';
 import { PUBLIC_WHERE, profileHref } from '@/lib/server/public';
 import { siteUrl } from '@/lib/server/site';
@@ -30,7 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     u('/regions', 0.7),
     ...CATEGORIES.map(c => u(`/treatments/${c.slug}`, 0.8)),
     ...REGIONS.map(r => u(`/${r.slug}`, 0.8, 'daily')),
-    ...CITIES.filter(c => citiesWithListings.has(c.slug)).map(c => u(cityHref(c), 0.7, 'daily')),
+    ...CITIES.filter(c => citiesWithListings.has(c.slug) && c.slug !== c.region).map(c => u(cityPageHref(c), 0.7, 'daily')),
     ...CITIES.flatMap(c => CATEGORIES.filter(cat => cityCats.has(`${c.slug}|${cat.slug}`)).map(cat => u(`${cityHref(c)}/${cat.slug}`, 0.6))),
     ...branches.map(b => u(profileHref(b), 0.6, 'weekly', b.updatedAt)),
     u('/for-business', 0.6, 'monthly'),

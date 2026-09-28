@@ -12,6 +12,8 @@
 // success, 7 after a failure). Branch-specific phones come from the site only when it shows one number.
 
 import { Prisma, type ImportPlace, type ImportRun } from '@prisma/client';
+import { rankCategories } from '../../../src/lib/import/categoryRank';
+import { GENERIC_TYPES, slugsForType } from '../../../src/lib/import/dataforseo';
 import { cleanEmail, emailDomain, sameDomain, siteHost } from '../../../src/lib/import/email';
 import type { DayHours, ImportedTreatment } from '../../../src/lib/import/rules';
 import { serviceKey } from '../../../src/lib/import/services';
@@ -375,7 +377,11 @@ export async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap:
     perCat.set(t.category, c);
   }
   const siteCats = [...perCat.entries()].filter(([, c]) => c.priced >= 1 || c.n >= 2).map(([k]) => k);
-  const categories = edited.has('categories') ? undefined : [...new Set([...p.categories, ...siteCats])];
+  // The first category decides the profile address: Google's type, the name and the services vote (categoryRank).
+  const googleTypes = p.types ?? [];
+  const categories = edited.has('categories')
+    ? undefined
+    : rankCategories({ name: p.name, candidates: [...new Set([...p.categories, ...siteCats])], googlePrimary: googleTypes[0] ? slugsForType(googleTypes[0]) : [], googleAdditional: googleTypes.slice(1).flatMap(slugsForType), googleGeneric: !!googleTypes[0] && GENERIC_TYPES.has(googleTypes[0].trim().toLowerCase().replace(/[^a-z0-9]+/g, '_')), services: Object.fromEntries(perCat) });
 
   // Logo and photos: the site's own first, then the Google profile's. Staff choose in review; the
   // choice is copied to our storage on approval. A choice staff already made is kept.

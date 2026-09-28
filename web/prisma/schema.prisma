@@ -361,6 +361,7 @@ model BranchCategory {
   branch       Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
   categorySlug String   @map("category_slug")
   category     Category @relation(fields: [categorySlug], references: [slug])
+  isPrimary    Boolean  @default(false) @map("is_primary") // decides /:region/:category/:slug and the card
 
   @@id([branchId, categorySlug])
   @@map("branch_categories")

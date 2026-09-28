@@ -5,7 +5,7 @@ import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { JsonLd, breadcrumbLd } from '@/components/treatments/format';
 import shared from '@/components/treatments/shared.module.css';
-import { CITIES, MENU_REGION_ORDER, citiesOf, cityHref, regionBySlug } from '@/lib/catalog';
+import { CITIES, MENU_REGION_ORDER, citiesOf, cityPageHref, regionBySlug } from '@/lib/catalog';
 import { listingCounts } from '@/lib/server/public';
 import styles from './page.module.css';
 
@@ -51,7 +51,7 @@ export default async function RegionsPage() {
                 <ul className={styles.cities}>
                   {citiesOf(slug).map(c => (
                     <li key={c.slug}>
-                      <Link href={cityHref(c)} className={styles.city}>
+                      <Link href={cityPageHref(c)} className={styles.city}>
                         {c.name}
                         {counts.city[c.slug] ? <span className={`${styles.cityCount} ltr`}>{counts.city[c.slug]}</span> : null}
                       </Link>

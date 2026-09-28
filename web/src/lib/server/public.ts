@@ -48,14 +48,21 @@ export interface ListingCard {
   hasMedicalResponsible: boolean;
 }
 
-/** The listing's primary category: the first of its categories in catalog order. */
-export function primaryCategory(cats: Array<string | { categorySlug: string }> | undefined): string | null {
-  const have = new Set((cats ?? []).map(c => (typeof c === 'string' ? c : c.categorySlug)));
+/**
+ * The listing's primary category: the row flagged primary; for an ordered list of slugs (an import record)
+ * the first one; for older rows without a flag, catalog order.
+ */
+export function primaryCategory(cats: Array<string | { categorySlug: string; isPrimary?: boolean }> | undefined): string | null {
+  const list = cats ?? [];
+  const flagged = list.find(c => typeof c !== 'string' && c.isPrimary);
+  if (flagged && typeof flagged !== 'string') return flagged.categorySlug;
+  if (list.length && list.every(c => typeof c === 'string')) return (list as string[]).find(s => CATEGORIES.some(c => c.slug === s)) ?? null;
+  const have = new Set(list.map(c => (typeof c === 'string' ? c : c.categorySlug)));
   return CATEGORIES.find(c => have.has(c.slug))?.slug ?? null;
 }
 
 /** /:region/:category/:slug; a listing without categories keeps /:region/biz/:slug. */
-export const profileHref = (b: { regionSlug: string; slug: string; categories?: Array<string | { categorySlug: string }> }) =>
+export const profileHref = (b: { regionSlug: string; slug: string; categories?: Array<string | { categorySlug: string; isPrimary?: boolean }> }) =>
   `/${b.regionSlug}/${primaryCategory(b.categories) ?? 'biz'}/${b.slug}`;
 
 function where(f: ListingFilter): Prisma.BranchWhereInput {

@@ -47,7 +47,7 @@ async function resolveScope(params: DirParams): Promise<Scope> {
     category = categoryBySlug(p.category);
     if (!category) notFound();
   }
-  const cityPath = `/${region.slug}/${city.slug}`;
+  const cityPath = `/${region.slug}/${city.slug}`; // city and category pages live under it; the bare city page of a region-named city is the region page
   return { region, city, category, cityPath, path: category ? `${cityPath}/${category.slug}` : cityPath };
 }
 
@@ -141,7 +141,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
   const crumbs = [
     { name: 'ראשי', href: '/' },
     { name: s.region.name, href: `/${s.region.slug}` },
-    ...(s.category ? [{ name: s.city.name, href: s.cityPath }] : []),
+    ...(s.category && s.city.slug !== s.region.slug ? [{ name: s.city.name, href: s.cityPath }] : []),
   ];
   const current = s.category ? s.category.name : s.city.name;
 

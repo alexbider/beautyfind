@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { GROUP_ORDER, MENU_REGION_ORDER, categoriesInGroup, citiesOf, cityHref, regionBySlug } from '@/lib/catalog';
+import { GROUP_ORDER, MENU_REGION_ORDER, categoriesInGroup, citiesOf, cityPageHref, regionBySlug } from '@/lib/catalog';
 import { ROUTES } from '@/lib/routes';
 import { TABS, isTabRoot } from '@/lib/ui/shell';
 import { ChevronDown } from '../icons';
@@ -82,7 +82,7 @@ export function SiteHeader({
   const rightTitle = locOpen ? `ערים באזור ${region.name}` : group;
   const rightAll = locOpen ? { href: `/${region.slug}`, label: 'כל האזור' } : { href: '/treatments', label: 'כל התחומים' };
   const rightLinks = locOpen
-    ? citiesOf(region.slug).slice(0, MEGA_CITY_LIMIT).map(ct => ({ name: ct.name, href: cityHref(ct) }))
+    ? citiesOf(region.slug).slice(0, MEGA_CITY_LIMIT).map(ct => ({ name: ct.name, href: cityPageHref(ct) }))
     : categoriesInGroup(group).map(ct => ({ name: ct.name, href: `/treatments/${ct.slug}` }));
 
   const leftList = (variant: 'mega' | 'chip') =>

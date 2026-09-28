@@ -18,6 +18,7 @@ import { composeDescription } from '@/lib/import/completeness';
 import { copyListingImages, copyVideoPosters, type Candidate, type MediaProvenance } from '@/lib/server/importMedia';
 import { branchCoverage, editorialText, profileFields, socialCounts, treatmentRows } from '@/lib/server/importPublish';
 import { profileHref } from '@/lib/server/public';
+import { slugBase, slugCandidates } from '@/lib/import/slug';
 import { storage } from '@/lib/vendors/storage';
 
 export type OpResult = { ok: true; branchId?: string; slug?: string; href?: string } | { ok: false; error: string };
@@ -299,15 +300,12 @@ export async function dispatchWorker(runId: string): Promise<{ dispatched: boole
 
 // ---------- decisions ----------
 
+/** /:region/:category/:slug with a readable slug: the name (Latin or Hebrew), then the city or a counter when taken, a random tail only as a last resort. */
 async function uniqueSlug(p: ImportPlace): Promise<string> {
-  const latin = p.name
-    .normalize('NFKD')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 40);
-  // Hebrew names: category and city make a readable, stable base.
-  const base = latin.length >= 4 ? latin : `${p.categories[0] ?? 'beauty'}-${p.citySlug ?? p.regionSlug ?? 'il'}`;
+  const base = slugBase(p.name, `${p.categories[0] ?? 'beauty'}-${p.citySlug ?? p.regionSlug ?? 'il'}`);
+  for (const slug of slugCandidates(base, p.citySlug ?? null)) {
+    if (!(await db.branch.findUnique({ where: { slug }, select: { id: true } }))) return slug;
+  }
   for (;;) {
     const slug = `${base}-${randomBytes(2).toString('hex')}`;
     if (!(await db.branch.findUnique({ where: { slug }, select: { id: true } }))) return slug;
@@ -442,7 +440,7 @@ export async function approvePlace(actor: Actor, id: string): Promise<OpResult> 
           websiteUrl: p.website,
           instagram: p.instagram,
           ...fields,
-          categories: { create: cats.map(c => ({ categorySlug: c })) },
+          categories: { create: cats.map((c, i) => ({ categorySlug: c, isPrimary: i === 0 })) },
           treatments: { create: treatmentRows(p, cats) },
         },
       });
@@ -524,7 +522,8 @@ export async function mergePlace(actor: Actor, id: string, branchId: string): Pr
     });
     const have = new Set(b.categories.map(c => c.categorySlug));
     const add = cats.filter(c => !have.has(c));
-    if (add.length) await tx.branchCategory.createMany({ data: add.map(c => ({ branchId: b.id, categorySlug: c })), skipDuplicates: true });
+    const hasPrimary = b.categories.some(c => c.isPrimary);
+    if (add.length) await tx.branchCategory.createMany({ data: add.map((c, i) => ({ branchId: b.id, categorySlug: c, isPrimary: !hasPrimary && !have.size && i === 0 })), skipDuplicates: true });
     // The owner's own menu always wins; imported treatments only fill an empty one.
     if (!b._count.treatments) for (const t of treatmentRows(p, [...have, ...add])) await tx.treatment.create({ data: { ...t, branch: { connect: { id: b.id } } } });
     await tx.importPlace.update({ where: { id }, data: { branchId: b.id, reviewedById: actor.id, reviewedAt: new Date() } });

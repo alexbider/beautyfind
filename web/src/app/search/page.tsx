@@ -108,7 +108,7 @@ export default async function SearchPage({ searchParams }: Props) {
   const catsByCount = [...CATEGORIES].sort((a, b) => (counts.category[b.slug] ?? 0) - (counts.category[a.slug] ?? 0));
   const relatedCats = [...(st.t ? CATEGORIES.filter(c => c.slug === st.t) : []), ...catsByCount.filter(c => c.slug !== st.t)].slice(0, 4);
   const related = [
-    ...(st.city && st.region ? [{ name: `מכוני יופי ב${city}`, href: `/${st.region}/${st.city}` }] : []),
+    ...(st.city && st.region ? [{ name: `מכוני יופי ב${city}`, href: st.city === st.region ? `/${st.region}` : `/${st.region}/${st.city}` }] : []),
     ...(st.region
       ? [{ name: `מכוני יופי ב${region}`, href: `/${st.region}` }]
       : MENU_REGION_ORDER.slice(0, 2).map(r => ({ name: `מכוני יופי ב${regionBySlug(r)!.name}`, href: `/${r}` }))),

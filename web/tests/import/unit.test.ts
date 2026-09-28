@@ -15,6 +15,8 @@ import { checkUrl, guardedLookup, isPrivateAddress, safeFetch, UnsafeUrlError } 
 import { extractPage, hoursFromText, rankEmails } from '../../src/lib/import/siteExtract';
 import { completeness, composeDescription } from '../../src/lib/import/completeness';
 import { imageInfo, usable } from '../../src/lib/import/imageInfo';
+import { categoriesFromName, rankCategories } from '../../src/lib/import/categoryRank';
+import { slugBase, slugCandidates } from '../../src/lib/import/slug';
 import { acceptPhoto, canonicalImageUrl, decorativeHint, dedupeVariants, dhash, hamming, logoScore, photoScore } from '../../src/lib/import/imageQuality';
 import { matchService } from '../../src/lib/import/services';
 import { mayPublish } from '../../src/lib/import/sourcePolicy';
@@ -379,6 +381,34 @@ describe('images', () => {
     assert.ok(!usable(imageInfo(png(40, 40))!, 'logo'));
     assert.ok(usable(imageInfo(png(240, 240))!, 'logo'));
     assert.equal(imageInfo(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"></svg>'.padEnd(64))), null);
+  });
+});
+
+describe('primary category and listing slug', () => {
+  it('a hair salon that Google calls a beauty salon is a hair salon first', () => {
+    const r = rankCategories({ name: 'Ehud Elbaz Beauty Salon', candidates: ['facials'], googlePrimary: ['facials'], googleGeneric: true, services: { 'hair-salons': { n: 6, priced: 4 } } });
+    assert.deepEqual(r, ['hair-salons', 'facials']);
+    assert.deepEqual(rankCategories({ name: 'מספרת אהוד', candidates: ['facials'], googlePrimary: ['facials'], googleGeneric: true }), ['hair-salons', 'facials']);
+    // A specific Google type beats a generic one and the name confirms it.
+    assert.deepEqual(rankCategories({ name: 'נועה קליניק', candidates: ['facials', 'medical-aesthetics'], googlePrimary: ['medical-aesthetics'], googleAdditional: ['facials'] }), ['medical-aesthetics', 'facials']);
+    // Without evidence the record's own order and the catalog order hold.
+    assert.deepEqual(rankCategories({ name: 'סטודיו X', candidates: ['nails', 'brows-lashes'] }), ['nails', 'brows-lashes']);
+    assert.deepEqual(categoriesFromName('מספרה ועיצוב שיער דנה'), ['hair-salons']);
+    assert.deepEqual(categoriesFromName('סלון יופי'), []);
+  });
+  it('the provider mapping puts the evidenced category first', () => {
+    const m = mapItem({ title: 'מספרת אהוד אלבז', cid: '77', category: 'Beauty salon', additional_categories: ['Hair salon'], latitude: 32.8, longitude: 34.99, address: 'חיפה' } as never)!;
+    assert.equal(m.categories[0], 'hair-salons');
+    assert.ok(m.categories.includes('facials'));
+  });
+  it('slugs are readable, Hebrew stays Hebrew, and uniqueness comes from the city or a counter', () => {
+    assert.equal(slugBase('Ehud Elbaz Beauty Salon', 'x'), 'ehud-elbaz-beauty-salon');
+    assert.equal(slugBase('Noa Clinic & Spa', 'x'), 'noa-clinic-and-spa');
+    assert.equal(slugBase('סלון יופי אהוד אלבז', 'x'), 'סלון-יופי-אהוד-אלבז');
+    assert.equal(slugBase('ד"ר רוני מוסקונה', 'x'), 'דר-רוני-מוסקונה');
+    assert.equal(slugBase('!!', 'hair-salons-haifa'), 'hair-salons-haifa');
+    assert.deepEqual(slugCandidates('noa-clinic', 'haifa').slice(0, 3), ['noa-clinic', 'noa-clinic-haifa', 'noa-clinic-2']);
+    assert.deepEqual(slugCandidates('noa-clinic', null).slice(0, 2), ['noa-clinic', 'noa-clinic-2']);
   });
 });
 

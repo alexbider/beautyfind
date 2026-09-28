@@ -8,6 +8,7 @@
 // Every item field is optional; unknown fields are ignored. The endpoint searches DataForSEO's existing
 // database: a "live" request does not mean each business was freshly crawled (see last_updated_time).
 
+import { rankCategories } from './categoryRank';
 import { CATEGORIES } from '../catalog';
 import { normName } from './match';
 import { matchService } from './services';
@@ -60,6 +61,14 @@ export function ourCategoriesFrom(item: DfsItem): string[] {
 }
 
 const snake = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+
+/** Our slugs for one Google type label or id ("Hair salon", "hair_salon"). */
+export function slugsForType(label: string): string[] {
+  const id = snake(label);
+  return Object.entries(DFS_CATEGORY_MAP).filter(([, dfs]) => dfs.includes(id)).map(([slug]) => slug);
+}
+/** Google types that say almost nothing about the field: a specific type, the name or the services decide. */
+export const GENERIC_TYPES = new Set(['beauty_salon', 'beautician', 'beauty_product_supplier', 'health_and_beauty_shop']);
 
 export interface DfsSearchRequest {
   categories?: string[];
@@ -279,7 +288,7 @@ export function mapItem(item: DfsItem): MappedListing | null {
     googleMapsUrl: googleMapsUrl(item),
     providerLogo: typeof item.logo === 'string' && /^https?:\/\//.test(item.logo) ? item.logo : null,
     providerPhoto: typeof item.main_image === 'string' && /^https?:\/\//.test(item.main_image) ? item.main_image : null,
-    categories: ourCategoriesFrom(item),
+    categories: rankCategories({ name, candidates: ourCategoriesFrom(item), googlePrimary: item.category ? slugsForType(item.category) : [], googleAdditional: (item.additional_categories ?? []).flatMap(slugsForType), googleGeneric: !!item.category && GENERIC_TYPES.has(snake(item.category)) }),
     primaryType: item.category_ids?.[0] ?? null,
     types,
     hours: hoursFromDfs(item.work_time?.work_hours?.timetable),
