@@ -188,6 +188,21 @@ export async function enhanceListingsAction(branchIds: string[], opts: { steps?:
   const user = await importerOrNull();
   const list = z.array(z.uuid()).min(1).max(1000).safeParse(branchIds);
   if (!user || !list.success) return { ok: false, count: 0, error: 'invalid' };
+  return startCompletion(user, list.data, opts);
+}
+
+/** One completion batch for a whole group of the report (a city and a category): every published, unclaimed listing in it, automatic plan. */
+export async function enhanceGroupAction(group: { region?: string; city?: string; category?: string; label?: string }): Promise<EnhanceListingsResult> {
+  const user = await importerOrNull();
+  if (!user) return { ok: false, count: 0, error: 'forbidden' };
+  const q = await enrichQueue({ region: group.region?.slice(0, 40), city: group.city?.slice(0, 80), category: group.category?.slice(0, 40) });
+  const ids = q.rows.map(r => r.branchId).slice(0, 1000);
+  if (!ids.length) return { ok: true, count: 0, runId: null, budgetUsd: 0, plan: {} };
+  return startCompletion(user, ids, { auto: true, label: group.label ?? `השלמות: ${[group.city, group.category].filter(Boolean).join(', ') || 'קבוצה'}` });
+}
+
+async function startCompletion(user: { id: string }, branchIds: string[], opts: { steps?: string[]; auto?: boolean; label?: string; focus?: string[]; refresh?: boolean; regenerate?: boolean; rereadSite?: boolean }): Promise<EnhanceListingsResult> {
+  const list = { data: branchIds };
   // Legacy booleans map onto steps; a call without any step means the default set.
   const requested = new Set<StepId>((StepList.safeParse(opts.steps ?? []).data ?? []) as StepId[]);
   if (opts.rereadSite) requested.add('site');
@@ -206,7 +221,7 @@ export async function enhanceListingsAction(branchIds: string[], opts: { steps?:
     if (auto && requested.has('regenerate') && stepApplies('regenerate', r.signals, planOpts)) plan.push('regenerate');
     return plan;
   });
-  const est = estimatePlans(plans, pricing(), { renderPages: s.apifyRenderPages, editorialEnabled: s.editorialEnabled });
+  const est = estimatePlans(plans, pricing(), { renderPages: s.apifyRenderPages, editorialEnabled: s.editorialEnabled, writer: s.llmProvider });
   const planCounts = Object.fromEntries(Object.entries(est.perStep).filter(([, v]) => v.listings > 0).map(([k, v]) => [k, v.listings]));
   // Ceiling: the estimate plus a quarter, at least the editorial allowance for a few new drafts; never above the per-run caps.
   const editorialCap = s.editorialEnabled ? Math.min(s.editorialBudgetUsd, ids.length * pricing().editorial.perProfileUsd * 1.3) : 0;

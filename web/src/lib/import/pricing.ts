@@ -30,6 +30,17 @@ export interface Pricing {
   editorial: { perProfileUsd: number; inputPer1MUsd: number; outputPer1MUsd: number; model: string; note: string };
   youtube: { quotaPerDay: number; note: string };
   mapsEmbed: { perLoadUsd: number; note: string };
+  // ChatGPT (OpenAI): the research step (Responses API with web search) and, when chosen, the writer.
+  openai: {
+    model: string; // research and writer default (IMPORT_OPENAI_MODEL overrides)
+    inputPer1MUsd: number;
+    outputPer1MUsd: number;
+    webSearchPer1kUsd: number; // per web search tool call
+    research: { perRecordUsd: number; maxSearchCalls: number }; // gross hold per record
+    source: string;
+    checked: string;
+    note: string;
+  };
   // Apify actors, per item (place, profile, page). Reserved at twice the rate because most actors bill
   // per result plus platform usage; the recorded cost is the run's usageTotalUsd reported by Apify.
   apify: {
@@ -74,6 +85,16 @@ export const DEFAULT_PRICING: Pricing = {
   },
   youtube: { quotaPerDay: 10_000, note: 'YouTube Data API v3 default daily quota (units, no charge). oEmbed needs no key and no quota.' },
   mapsEmbed: { perLoadUsd: 0, note: 'Maps Embed API has no usage charge at the time of writing; needs its own browser key restricted to our domains.' },
+  openai: {
+    model: 'gpt-5-mini',
+    inputPer1MUsd: 0.25,
+    outputPer1MUsd: 2,
+    webSearchPer1kUsd: 10,
+    research: { perRecordUsd: 0.08, maxSearchCalls: 6 },
+    source: 'https://openai.com/api/pricing',
+    checked: 'unverified',
+    note: 'OpenAI list prices recalled, not fetched: gpt-5-mini $0.25 per 1M input and $2 per 1M output tokens; web search tool calls about $10 per 1,000. A research call with up to six searches is held at $0.08 and settled from the reported usage. Confirm before a live run; override with IMPORT_PRICING_JSON and IMPORT_OPENAI_MODEL.',
+  },
   apify: {
     actors: { maps: 'compass~crawler-google-places', instagram: 'apify~instagram-profile-scraper', facebook: 'apify~facebook-pages-scraper', render: 'apify~website-content-crawler' },
     maps: { perPlaceUsd: 0.004 },
@@ -96,6 +117,7 @@ export function pricing(): Pricing {
       ...DEFAULT_PRICING, ...o,
       dataforseo: { ...DEFAULT_PRICING.dataforseo, ...o.dataforseo }, google: { ...DEFAULT_PRICING.google, ...o.google }, editorial: { ...DEFAULT_PRICING.editorial, ...o.editorial },
       apify: { ...DEFAULT_PRICING.apify, ...o.apify, actors: { ...DEFAULT_PRICING.apify.actors, ...o.apify?.actors } },
+      openai: { ...DEFAULT_PRICING.openai, ...o.openai, research: { ...DEFAULT_PRICING.openai.research, ...o.openai?.research } },
     } as Pricing;
   } catch {
     return DEFAULT_PRICING;
@@ -116,7 +138,8 @@ export function apifyItemUsd(kind: 'maps' | 'instagram' | 'facebook' | 'render',
   return kind === 'maps' ? p.apify.maps.perPlaceUsd : kind === 'instagram' ? p.apify.instagram.perProfileUsd : kind === 'facebook' ? p.apify.facebook.perPageUsd : p.apify.render.perPageUsd;
 }
 
-/** Cost of one editorial call from the tokens the API reported. */
-export function editorialCostUsd(inputTokens: number, outputTokens: number, p: Pricing = pricing()): number {
-  return (inputTokens * p.editorial.inputPer1MUsd + outputTokens * p.editorial.outputPer1MUsd) / 1_000_000;
+/** Cost of one editorial call from the tokens the API reported, at the writer's provider rates. */
+export function editorialCostUsd(inputTokens: number, outputTokens: number, p: Pricing = pricing(), provider: 'anthropic' | 'openai' = 'anthropic'): number {
+  const r = provider === 'openai' ? { inputPer1MUsd: p.openai.inputPer1MUsd, outputPer1MUsd: p.openai.outputPer1MUsd } : p.editorial;
+  return (inputTokens * r.inputPer1MUsd + outputTokens * r.outputPer1MUsd) / 1_000_000;
 }

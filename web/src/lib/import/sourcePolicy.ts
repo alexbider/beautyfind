@@ -48,6 +48,12 @@ export const SOURCE_POLICY: Record<string, SourcePolicy> = {
     publish: { social: true, email: true, phone: true, website: true, hours: true, logo: false, photo: false },
     note: 'The business\'s own Facebook page, same confirmation rule as Instagram. About text is evidence for the editorial packet.',
   },
+  openai_research: {
+    retention: { kind: 'permanent' },
+    keepRawPayload: false,
+    publish: { website: true, phone: true, whatsapp: true, booking: true, hours: true, service: true, team: true, languages: true, established: true, accessible: true, free_parking: true, social: false, email: false, photo: false, logo: false },
+    note: 'Facts ChatGPT read on public pages, each kept with the page URL. Published like website facts when the page is the business\'s own; an email from search is flagged for a person (email_from_search); social accounts found by search stay unverified until a profile or the site confirms them.',
+  },
   apify_site: {
     retention: { kind: 'permanent' },
     keepRawPayload: false,

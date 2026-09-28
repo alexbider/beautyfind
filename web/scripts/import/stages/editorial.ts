@@ -6,6 +6,7 @@
 import { Prisma, type ImportPlace, type ImportRun } from '@prisma/client';
 import { BudgetExceeded, commit, release, reserve, withCaps } from '../../../src/lib/import/budget';
 import { buildPacket, countWords, packetHash, PROMPT_VERSION, templateDraft, WORDS_MIN, type EditorialRecord } from '../../../src/lib/import/editorial';
+import { writerUsd } from '../../../src/lib/import/enrichPlan';
 import { pricing, toMicros } from '../../../src/lib/import/pricing';
 import { bump, db, heartbeat, log, pool, setStats, settings } from '../ctx';
 import { writeEditorial } from '../editorialCall';
@@ -24,10 +25,10 @@ export async function editorialFor(p: ImportPlace, run: ImportRun | null, opts: 
   if (!opts.force && cur?.evidenceHash === hash && cur.promptVersion === PROMPT_VERSION && !cur.skipped) return 'cached';
   if (opts.counter && opts.counter.calls >= s.editorialMaxPerRun) return 'budget';
 
-  const est = toMicros(pricing().editorial.perProfileUsd);
+  const est = toMicros(writerUsd(pricing(), s.llmProvider));
   const key = `editorial:${p.id}:${hash}:${PROMPT_VERSION}${opts.force ? `:f${Date.now()}` : ''}`;
   try {
-    const st = await reserve(db, withCaps({ runId: run?.id ?? null, provider: 'anthropic', endpoint: 'editorial', requestKey: key, estimateMicros: est, caps: run ? [{ key: `editorial:run:${run.id}`, limitMicros: toMicros(s.editorialBudgetUsd) }] : [] }));
+    const st = await reserve(db, withCaps({ runId: run?.id ?? null, provider: s.llmProvider, endpoint: 'editorial', requestKey: key, estimateMicros: est, caps: run ? [{ key: `editorial:run:${run.id}`, limitMicros: toMicros(s.editorialBudgetUsd) }] : [] }));
     if (st === 'exists' && !opts.force) return 'cached';
   } catch (e) {
     if (e instanceof BudgetExceeded) {
@@ -37,7 +38,7 @@ export async function editorialFor(p: ImportPlace, run: ImportRun | null, opts: 
     throw e;
   }
   if (opts.counter) opts.counter.calls++;
-  const r = await writeEditorial(packet);
+  const r = await writeEditorial(packet, s.llmProvider);
   if (!r.ok) {
     if (r.transient) {
       await release(db, key, r.error);

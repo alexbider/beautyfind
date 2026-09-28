@@ -18,7 +18,7 @@ process.env.UPLOAD_DIR ??= `${process.env.TMPDIR ?? '/tmp'}/bf-sim-uploads`;
 
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { fakeItems, startMockApify, startMockDfs, startSites } from './sim/fixtures';
+import { fakeItems, startMockApify, startMockDfs, startMockOpenAI, startSites } from './sim/fixtures';
 
 const LOCAL = /@(localhost|127\.0\.0\.1)(:\d+)?\//;
 
@@ -57,6 +57,24 @@ async function main() {
   }, { usdPerItem: 0.004 });
   process.env.APIFY_API_BASE = apify.url;
   process.env.APIFY_TOKEN = 'simulated';
+  // ChatGPT look-alike: research answers with a cited website (the fixture site of the business) and hours; the writer is the template draft.
+  const openai = await startMockOpenAI(subject => {
+    const m = subject.match(/Business: (.+)/);
+    const name = m?.[1] ?? '';
+    const idx = withPort.findIndex(it => it.title === name);
+    const it = idx >= 0 ? withPort[idx] : null;
+    const page = it?.url && /\.test:/.test(it.url) ? it.url : 'https://www.example.test/listing';
+    return {
+      website: it?.url && /\.test:/.test(it.url) ? { value: it.url, sourceUrl: page } : null,
+      phone: it?.phone ? { value: it.phone, sourceUrl: page } : null, email: null, whatsapp: null, instagram: null, facebook: null, tiktok: null, youtube: null, booking: null,
+      hours: { sourceUrl: page, days: [0, 1, 2, 3, 4].map(day => ({ day, open: '09:00', close: '18:00', closed: false })) },
+      services: [{ name: 'טיפול פנים קלאסי', priceNis: 250, priceType: 'fixed', durationMin: 60, sourceUrl: page, quote: 'טיפול פנים קלאסי 250 ₪' }],
+      team: [], languages: null, establishedYear: idx % 2 ? { value: 2016, sourceUrl: page } : null, accessible: null, freeParking: null,
+      summary: [{ text: 'העסק מציע טיפולי פנים וציפורניים ומקבל תורים גם בערב.', sourceUrl: page }], notFound: ['email'],
+    };
+  });
+  process.env.OPENAI_API_BASE = openai.url;
+  process.env.OPENAI_API_KEY = 'simulated';
 
   const ctx = await import('./ctx');
   const { seedDfs, discoverDfs } = await import('./stages/dfsDiscover');
@@ -66,6 +84,7 @@ async function main() {
   const { editorialStage } = await import('./stages/editorial');
   const { seedSources, requeueAfterSources } = await import('./stages/sources');
   const { APIFY_KINDS, apifyStage } = await import('./stages/apify');
+  const { researchStage } = await import('./stages/research');
   const { check } = await import('./stages/check');
   const { countWords, WORDS_MIN } = await import('../../src/lib/import/editorial');
   const { fromMicros } = await import('../../src/lib/import/pricing');
@@ -97,6 +116,7 @@ async function main() {
     while (await enrich(run));
     await seedSources(run);
     for (const kind of APIFY_KINDS) while (await apifyStage(run, kind));
+    while (await researchStage(run));
     if (await requeueAfterSources(run)) while (await enrich(run));
     await queuePostPhotos(run, (await db.importPlace.findMany({ where: { runId: run.id }, select: { id: true } })).map(p => p.id));
     while (await collectPostPhotos(run));
@@ -276,7 +296,7 @@ async function main() {
     '',
     '1. DATAFORSEO_LOGIN and DATAFORSEO_PASSWORD as GitHub Actions secrets (the worker runs there).',
     '2. `npm run import:dfs-categories` once, to confirm the category ids in src/lib/import/dataforseo.ts.',
-    '3. ANTHROPIC_API_KEY as a GitHub Actions secret for the editorial writer (IMPORT_EDITORIAL_MODEL optional), YOUTUBE_API_KEY optional, NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY on Vercel for the map.',
+    '3. OPENAI_API_KEY as a GitHub Actions secret for the ChatGPT research step and the writer (IMPORT_OPENAI_MODEL optional; ANTHROPIC_API_KEY only if the writer is switched to Claude), YOUTUBE_API_KEY optional, NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY on Vercel for the map.',
     '4. A pilot run from /ops/import: DataForSEO, one city, record limit 10, ceiling $2 (the editorial allowance is reserved per profile and settled at the reported token cost).',
     '',
   ];
@@ -297,6 +317,7 @@ async function main() {
   await db.$disconnect();
   await dfs.close();
   await apify.close();
+  await openai.close();
   await web.close();
 }
 

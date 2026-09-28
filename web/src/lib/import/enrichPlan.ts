@@ -6,9 +6,9 @@
 import { apifyItemUsd, type Pricing } from './pricing';
 import type { ImportSettings } from './settings';
 
-export type StepId = 'dfs' | 'maps' | 'facebook' | 'instagram' | 'site' | 'render' | 'editorial' | 'regenerate' | 'images';
+export type StepId = 'dfs' | 'maps' | 'facebook' | 'instagram' | 'site' | 'render' | 'research' | 'editorial' | 'regenerate' | 'images';
 
-export const STEP_ORDER: StepId[] = ['dfs', 'maps', 'facebook', 'instagram', 'site', 'render', 'editorial', 'regenerate', 'images'];
+export const STEP_ORDER: StepId[] = ['dfs', 'maps', 'facebook', 'instagram', 'site', 'render', 'research', 'editorial', 'regenerate', 'images'];
 
 export const STEP_NAME: Record<StepId, string> = {
   dfs: 'רענון DataForSEO',
@@ -17,10 +17,14 @@ export const STEP_NAME: Record<StepId, string> = {
   instagram: 'פרופיל האינסטגרם (Apify)',
   site: 'קריאה חוזרת של האתר',
   render: 'האתר בדפדפן (Apify)',
+  research: 'מחקר ברשת (ChatGPT)',
   editorial: 'כתיבת תיאור ושאלות',
   regenerate: 'כתיבה מחדש',
   images: 'העתקת תמונות',
 };
+
+/** One or two words per step, for chips and result lines. */
+export const STEP_SHORT: Record<StepId, string> = { dfs: 'DataForSEO', maps: 'Maps', facebook: 'פייסבוק', instagram: 'אינסטגרם', site: 'אתר', render: 'אתר בדפדפן', research: 'ChatGPT', editorial: 'כתיבה', regenerate: 'כתיבה מחדש', images: 'תמונות' };
 
 export const STEP_HINT: Record<StepId, string> = {
   dfs: 'דירוג, שעות, מאפיינים ותמונות מפרופיל Google דרך הספק. בתשלום לפי רשומה.',
@@ -29,7 +33,8 @@ export const STEP_HINT: Record<StepId, string> = {
   instagram: 'אימות החשבון, הביו, קישור מהביו, תמונת פרופיל ופוסטים אחרונים. רק כשהפרופיל מאשר את העסק.',
   site: 'קריאה חוזרת של אתר העסק, מתעלמת ממטמון 30 הימים. ללא עלות ספק.',
   render: 'אתרים שהסורק שלנו לא הצליח לקרוא כי הם דורשים JavaScript. לא לאתרים שחסמו או שאוסרים סריקה.',
-  editorial: 'קריאה אחת ל־Claude על חבילת הראיות; מהמטמון כשהראיות לא השתנו.',
+  research: 'ChatGPT מחפש ברשת את מה שעדיין חסר (אתר, טלפון, דוא״ל, שעות, שירותים ומחירים, צוות, שנת הקמה, נגישות) ומחזיר כל עובדה עם העמוד שממנו נקראה. עובדה בלי עמוד נזרקת.',
+  editorial: 'קריאה אחת לכותב (ChatGPT או Claude, לפי ההגדרות) על חבילת הראיות; מהמטמון כשהראיות לא השתנו.',
   regenerate: 'כתיבה מחדש גם כשהראיות לא השתנו.',
   images: 'העתקת התמונות שנמצאו לאחסון שלנו (העובד צריך BLOB_READ_WRITE_TOKEN; אחרת מהכפתור בטאב).',
 };
@@ -44,6 +49,7 @@ export interface PlanSignals {
   instagram: boolean; // an Instagram account is named (verified or not)
   facebook: boolean;
   hasEditorial: boolean;
+  researchedAt: string | null; // last ChatGPT research (crawl.research.at)
 }
 
 /** Source signals of an import record, for the plan. */
@@ -63,6 +69,7 @@ export function planSignals(p: { placeId: string; sourceId: string | null; provi
     instagram: !!(p.instagram || socials.instagram?.url),
     facebook: !!(p.facebook || socials.facebook?.url),
     hasEditorial: !!p.editorial && typeof (p.editorial as { description?: unknown }).description === 'string',
+    researchedAt: typeof (crawl.research as { at?: string } | undefined)?.at === 'string' ? (crawl.research as { at: string }).at : null,
   };
 }
 
@@ -74,18 +81,21 @@ const HELPS: Record<StepId, string[]> = {
   instagram: ['contact', 'hero', 'identity', 'about', 'facts'],
   site: ['hero', 'identity', 'facts', 'about', 'services', 'team', 'video', 'hours', 'faq', 'contact', 'chips'],
   render: ['hero', 'identity', 'facts', 'about', 'services', 'team', 'video', 'hours', 'faq', 'contact'],
+  research: ['contact', 'hours', 'services', 'about', 'team', 'facts', 'chips', 'faq', 'video'],
   editorial: ['about', 'faq', 'services'],
   regenerate: [],
   images: ['hero', 'identity'],
 };
 
 export interface PlanOptions {
-  settings: Pick<ImportSettings, 'dataforseoEnabled' | 'apifyEnabled' | 'apifyMaps' | 'apifyInstagram' | 'apifyFacebook' | 'apifyRender' | 'editorialEnabled' | 'killSwitch'>;
+  settings: Pick<ImportSettings, 'dataforseoEnabled' | 'apifyEnabled' | 'apifyMaps' | 'apifyInstagram' | 'apifyFacebook' | 'apifyRender' | 'editorialEnabled' | 'killSwitch' | 'openaiEnabled' | 'researchEnabled'>;
   apifyConfigured: boolean;
+  openaiConfigured?: boolean; // default true (the admin plans as if the worker has its key)
   allowed?: StepId[]; // staff's choice; default every step
 }
 
 const READABLE = new Set(['ok', 'no_email', 'not_modified', 'pending', '']);
+const RESEARCH_AGAIN_DAYS = 30;
 
 /** Can this step run for this listing at all, whatever it is missing? */
 export function stepApplies(step: StepId, s: PlanSignals, o: PlanOptions): boolean {
@@ -98,6 +108,7 @@ export function stepApplies(step: StepId, s: PlanSignals, o: PlanOptions): boole
     case 'instagram': return apify && st.apifyInstagram && s.instagram;
     case 'site': return s.hasSite && READABLE.has(s.siteOutcome ?? '') && !s.siteThin;
     case 'render': return apify && st.apifyRender && s.hasSite && (s.siteOutcome === 'failed' || s.siteThin);
+    case 'research': return st.openaiEnabled && st.researchEnabled && (o.openaiConfigured ?? true) && !st.killSwitch && (!s.researchedAt || Date.now() - new Date(s.researchedAt).getTime() > RESEARCH_AGAIN_DAYS * 86_400_000);
     case 'editorial': return st.editorialEnabled;
     case 'regenerate': return st.editorialEnabled && s.hasEditorial;
     case 'images': return true;
@@ -124,16 +135,29 @@ export function planFor(missing: string[], s: PlanSignals, o: PlanOptions): Step
   return out;
 }
 
+export interface StepCostOptions {
+  renderPages: number;
+  editorialEnabled: boolean;
+  writer?: 'openai' | 'anthropic'; // who writes; the OpenAI writer is far cheaper per profile
+}
+
+/** Gross allowance for one profile text, by writer. About 3k input and 1.5k output tokens, plus a quarter for one repair. */
+export function writerUsd(p: Pricing, writer: 'openai' | 'anthropic' = 'openai'): number {
+  if (writer === 'anthropic') return p.editorial.perProfileUsd;
+  return ((3000 * p.openai.inputPer1MUsd + 1500 * p.openai.outputPer1MUsd) / 1_000_000) * 1.25;
+}
+
 /** Gross per-listing cost of one step (Apify at the reserve factor, as the run will hold it). */
-export function stepUsd(step: StepId, p: Pricing, o: { renderPages: number; editorialEnabled: boolean }): number {
+export function stepUsd(step: StepId, p: Pricing, o: StepCostOptions): number {
   switch (step) {
     case 'dfs': return p.dataforseo.businessListingsSearch.perItemUsd + p.dataforseo.businessListingsSearch.perRequestUsd / 500;
     case 'maps': return apifyItemUsd('maps', p) * p.apify.reserveFactor;
     case 'facebook': return apifyItemUsd('facebook', p) * p.apify.reserveFactor;
     case 'instagram': return apifyItemUsd('instagram', p) * p.apify.reserveFactor;
     case 'render': return apifyItemUsd('render', p) * o.renderPages * p.apify.reserveFactor;
-    case 'editorial': return o.editorialEnabled ? p.editorial.perProfileUsd * 0.4 : 0; // most drafts come from the cache; new evidence pays the full call
-    case 'regenerate': return o.editorialEnabled ? p.editorial.perProfileUsd * 1.3 : 0;
+    case 'research': return p.openai.research.perRecordUsd;
+    case 'editorial': return o.editorialEnabled ? writerUsd(p, o.writer) * 0.4 : 0; // most drafts come from the cache; new evidence pays the full call
+    case 'regenerate': return o.editorialEnabled ? writerUsd(p, o.writer) * 1.3 : 0;
     case 'site':
     case 'images': return 0;
   }
@@ -146,7 +170,7 @@ export interface PlanEstimate {
 }
 
 /** Totals over a selection: how many listings each step touches and the gross ceiling it needs. */
-export function estimatePlans(plans: StepId[][], p: Pricing, o: { renderPages: number; editorialEnabled: boolean }): PlanEstimate {
+export function estimatePlans(plans: StepId[][], p: Pricing, o: StepCostOptions): PlanEstimate {
   const perStep = Object.fromEntries(STEP_ORDER.map(s => [s, { listings: 0, usd: 0 }])) as PlanEstimate['perStep'];
   for (const plan of plans) {
     for (const step of plan) {

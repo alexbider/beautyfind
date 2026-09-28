@@ -51,6 +51,7 @@ function profileInfo(r: { editorial: unknown; coverage: unknown; profileStatus: 
   const retries: Array<{ at: string; what: string }> = [];
   if (typeof crawl.imageCopyTriedAt === 'string') retries.push({ at: crawl.imageCopyTriedAt, what: 'העתקת תמונות' });
   if (ed?.generatedAt) retries.push({ at: ed.generatedAt, what: ed.skipped ? `כתיבה דולגה (${ed.skipped})` : `כתיבה (${ed.repairs ? 'עם תיקון' : 'ללא תיקון'})` });
+  const rs = crawl.research as { filled?: string[]; sources?: string[]; notFound?: string[]; dropped?: number; error?: string; costUsd?: number; at?: string } | undefined;
   return {
     status: (r.profileStatus as ReviewRow['profile']['status']) ?? null,
     coverage: (r.coverage as Coverage | null) ?? null,
@@ -67,6 +68,7 @@ function profileInfo(r: { editorial: unknown; coverage: unknown; profileStatus: 
     socials,
     media: { candidates: cands, copied, beforeAfterPending: ba, heroMissing: copied === 0 && cands === 0 },
     crawl: cb ? { pages: cb.pages ?? 0, sitemapUrls: cb.sitemapUrls ?? 0, extended: !!cb.extended } : null,
+    research: rs ? { filled: rs.filled ?? [], sources: rs.sources?.length ?? 0, notFound: (rs.notFound ?? []).slice(0, 6), dropped: rs.dropped ?? 0, error: rs.error ?? null, costUsd: rs.costUsd ?? 0, at: rs.at ?? null } : null,
     map: process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY ? 'configured' : 'not_configured',
     costs: (r.costs ?? {}) as Record<string, number>,
     conflicts: [crawl.phoneConflict === true ? 'טלפון' : null, crawl.hoursConflict === true ? 'שעות' : null].filter((x): x is string => !!x),

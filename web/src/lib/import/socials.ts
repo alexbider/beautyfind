@@ -20,7 +20,7 @@ export type Socials = Partial<Record<SocialNetwork, SocialAccount>>;
 export interface SocialInput {
   network: string;
   url: string;
-  source: 'website' | 'linkhub' | 'dataforseo' | 'owner' | 'staff' | 'apify_google_maps' | 'apify_facebook' | 'apify_instagram';
+  source: 'website' | 'linkhub' | 'dataforseo' | 'owner' | 'staff' | 'apify_google_maps' | 'apify_facebook' | 'apify_instagram' | 'search';
 }
 
 const NETWORKS: SocialNetwork[] = ['instagram', 'facebook', 'tiktok', 'youtube'];

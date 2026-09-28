@@ -1,13 +1,18 @@
-// The editorial API call: one structured Claude request on the evidence packet, at most one repair
-// request. Model and behaviour are configurable; with IMPORT_EDITORIAL_MOCK=1 (tests, simulation) the
-// deterministic template draft stands in and no request leaves the machine.
+// The editorial API call: one structured request on the evidence packet, at most one repair request.
+// The writer is ChatGPT (OpenAI Responses API) or Claude, chosen by the llmProvider setting. With
+// IMPORT_EDITORIAL_MOCK=1 (tests, simulation) the deterministic template draft stands in and no
+// request leaves the machine.
 
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
 import { checkOutput, OUTPUT_SCHEMA, PROMPT_VERSION, repairable, repairMessage, SYSTEM_PROMPT, templateDraft, userMessage, type EditorialOutput, type EvidencePacket } from '../../src/lib/import/editorial';
+import { openaiErrorKind } from '../../src/lib/import/openai';
 import { editorialCostUsd, pricing } from '../../src/lib/import/pricing';
+import { responses } from './providers/openai';
 
+export type WriterProvider = 'anthropic' | 'openai';
 export const EDITORIAL_MODEL = process.env.IMPORT_EDITORIAL_MODEL || pricing().editorial.model;
+export const OPENAI_MODEL = process.env.IMPORT_OPENAI_MODEL || pricing().openai.model;
 const MOCK = process.env.IMPORT_EDITORIAL_MOCK === '1';
 
 const Out = z.object({
@@ -76,15 +81,49 @@ async function once(messages: Anthropic.MessageParam[]): Promise<{ output: Edito
   }
 }
 
+type Turn = { role: 'user' | 'assistant'; content: string };
+type Once = { output: EditorialOutput; inputTokens: number; outputTokens: number; raw: string } | { error: string; transient?: boolean; fatal?: boolean };
+
+/** The same structured request through the OpenAI Responses API (JSON schema output, no tools). */
+async function onceOpenAI(turns: Turn[]): Promise<Once> {
+  const r = await responses({ model: OPENAI_MODEL, instructions: SYSTEM_PROMPT, input: turns, schema: { name: 'profile_text', schema: OUTPUT_SCHEMA as unknown as Record<string, unknown>, strict: true }, maxOutputTokens: 6000 });
+  if (r.kind === 'not_sent') return { error: 'no_api_key', fatal: true };
+  if (r.kind === 'uncertain') return { error: `connection: ${r.message}`, transient: true };
+  if (r.kind === 'error') {
+    const why = openaiErrorKind(r.status, r.code, r.message);
+    if (r.code === 'refusal') return { error: 'refusal' };
+    if (why === 'auth') return { error: `auth: ${r.message.slice(0, 200)}`, fatal: true };
+    if (why === 'funds') return { error: `no_credit: ${r.message.slice(0, 200)}`, fatal: true };
+    if (why === 'transient') return { error: `api_${r.status ?? 'error'}: ${r.message.slice(0, 120)}`, transient: true };
+    return { error: `api: ${r.message.slice(0, 240)}` };
+  }
+  let json: unknown = r.json;
+  if (json == null) {
+    try {
+      json = parseJson(r.text);
+    } catch {
+      return { error: 'bad_json' };
+    }
+  }
+  const parsed = Out.safeParse(json);
+  if (!parsed.success) return { error: `schema: ${parsed.error.message.slice(0, 200)}` };
+  return { output: parsed.data, inputTokens: r.usage.inputTokens, outputTokens: r.usage.outputTokens, raw: r.text };
+}
+
+const onceClaude = (turns: Turn[]): Promise<Once> => once(turns.map(t => ({ role: t.role, content: t.content })) as Anthropic.MessageParam[]);
+
 /** One generation call, then one repair call when the checks find something a rewrite can fix. */
-export async function writeEditorial(packet: EvidencePacket): Promise<EditorialResult> {
-  if (MOCK || !process.env.ANTHROPIC_API_KEY) {
+export async function writeEditorial(packet: EvidencePacket, provider: WriterProvider = 'openai'): Promise<EditorialResult> {
+  const key = provider === 'openai' ? process.env.OPENAI_API_KEY : process.env.ANTHROPIC_API_KEY;
+  if (MOCK || !key) {
     if (!MOCK) return { ok: false, error: 'no_api_key', fatal: true };
     const output = templateDraft(packet);
     return { ok: true, output, violations: checkOutput(output, packet).filter(v => !v.startsWith('short:')), repairs: 0, inputTokens: 0, outputTokens: 0, costUsd: 0, model: 'template' };
   }
-  const messages: Anthropic.MessageParam[] = [{ role: 'user', content: userMessage(packet) }];
-  const first = await once(messages);
+  const call = provider === 'openai' ? onceOpenAI : onceClaude;
+  const model = provider === 'openai' ? OPENAI_MODEL : EDITORIAL_MODEL;
+  const turns: Turn[] = [{ role: 'user', content: userMessage(packet) }];
+  const first = await call(turns);
   if ('error' in first) return { ok: false, ...first };
   let inputTokens = first.inputTokens;
   let outputTokens = first.outputTokens;
@@ -93,7 +132,7 @@ export async function writeEditorial(packet: EvidencePacket): Promise<EditorialR
   let repairs = 0;
   if (repairable(violations).length) {
     repairs = 1;
-    const second = await once([...messages, { role: 'assistant', content: first.raw }, { role: 'user', content: repairMessage(repairable(violations)) }]);
+    const second = await call([...turns, { role: 'assistant', content: first.raw }, { role: 'user', content: repairMessage(repairable(violations)) }]);
     if (!('error' in second)) {
       inputTokens += second.inputTokens;
       outputTokens += second.outputTokens;
@@ -105,7 +144,7 @@ export async function writeEditorial(packet: EvidencePacket): Promise<EditorialR
       }
     }
   }
-  return { ok: true, output, violations, repairs, inputTokens, outputTokens, costUsd: editorialCostUsd(inputTokens, outputTokens), model: EDITORIAL_MODEL };
+  return { ok: true, output, violations, repairs, inputTokens, outputTokens, costUsd: editorialCostUsd(inputTokens, outputTokens, pricing(), provider), model };
 }
 
 export { PROMPT_VERSION };

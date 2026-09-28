@@ -122,8 +122,8 @@ describe('Apify social profiles', () => {
 });
 
 describe('enrichment plan from gaps and sources', () => {
-  const opts = { settings: DEFAULT_SETTINGS, apifyConfigured: true };
-  const base: PlanSignals = { hasSite: true, siteOutcome: 'ok', siteThin: false, placeId: true, cid: true, instagram: true, facebook: false, hasEditorial: false };
+  const opts = { settings: DEFAULT_SETTINGS, apifyConfigured: true, openaiConfigured: false }; // the ChatGPT step has its own suite
+  const base: PlanSignals = { hasSite: true, siteOutcome: 'ok', siteThin: false, placeId: true, cid: true, instagram: true, facebook: false, hasEditorial: false, researchedAt: null };
 
   it('picks only the steps that can fill a missing section and have a source', () => {
     const plan = planFor(['hours', 'hero'], base, opts);
@@ -165,7 +165,7 @@ describe('enrichment plan from gaps and sources', () => {
     const b = scopeSteps({ steps: ['maps', 'instagram'], auto: true });
     assert.deepEqual([...b.steps], ['maps', 'instagram']);
     assert.equal(b.auto, true);
-    assert.equal(STEP_ORDER.length, 9);
+    assert.equal(STEP_ORDER.length, 10);
   });
 });
 

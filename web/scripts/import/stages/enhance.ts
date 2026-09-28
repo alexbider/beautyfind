@@ -21,6 +21,8 @@ import { bump, db, heartbeat, log, setStats, settings, Stop } from '../ctx';
 import { apifyConfigured } from '../providers/apify';
 import { dfsSearch } from '../providers/dataforseo';
 import { seedApifyTasks } from './apify';
+import { seedResearchTasks } from './research';
+import { openaiConfigured } from '../providers/openai';
 import { upsertListing } from './dfsDiscover';
 import { editorialFor } from './editorial';
 import { enrichOne } from './enrich';
@@ -45,7 +47,7 @@ export async function seedEnhance(run: ImportRun) {
     take: run.recordLimit ?? 1000,
   });
   const s = await settings();
-  const opts = { settings: s, apifyConfigured: apifyConfigured(), allowed: [...steps] };
+  const opts = { settings: s, apifyConfigured: apifyConfigured(), openaiConfigured: openaiConfigured(), allowed: [...steps] };
 
   // The plan per record: automatic from the listing's gaps, or every allowed step that applies.
   const plans = new Map<string, Set<string>>();
@@ -80,13 +82,14 @@ export async function seedEnhance(run: ImportRun) {
   // Refresh tasks first so the website stage and the fill use fresh provider data.
   for (const t of tasks) await db.importTask.create({ data: t });
   const apify = await seedApifyTasks(run, plans, places);
+  const research = await seedResearchTasks(run, places.filter(p => plans.get(p.id)?.has('research')).map(p => p.id));
   const enhance: Prisma.ImportTaskCreateManyInput[] = [];
   for (let i = 0; i < places.length; i += ENHANCE_BATCH) {
     const slice = places.slice(i, i + ENHANCE_BATCH);
     enhance.push({ runId: run.id, key: `enhance:${i}`, kind: 'enhance', params: { ids: slice.map(p => p.id), steps: Object.fromEntries(slice.map(p => [p.id, [...(plans.get(p.id) ?? [])]])) } as unknown as Prisma.InputJsonValue });
   }
   await db.importTask.createMany({ data: enhance, skipDuplicates: true });
-  await setStats(run.id, { seeded: true, listings: places.length, refreshTasks: tasks.length, plan: planCounts, apifyTasks: apify, auto, apifyConfigured: apifyConfigured(), stepsAllowed: [...steps] });
+  await setStats(run.id, { seeded: true, listings: places.length, refreshTasks: tasks.length, plan: planCounts, apifyTasks: apify, researchTasks: research, auto, apifyConfigured: apifyConfigured(), openaiConfigured: openaiConfigured(), stepsAllowed: [...steps] });
   log(`enhance: ${places.length} published listings, plan ${JSON.stringify(planCounts)}`);
 }
 

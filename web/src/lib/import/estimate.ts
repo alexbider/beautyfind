@@ -22,6 +22,8 @@ export interface EstimateAssumptions {
   photosPerProfile: number; // copied images per usable record (WebP derivatives)
   videoShare: number; // usable records with YouTube ids to validate (Data API: 1 unit per 50 ids; oEmbed: none)
   apifyShare: number; // usable records that need one Apify actor (Google Maps, Facebook or Instagram) for a gap
+  researchShare: number; // records that still have gaps after the site and Apify, sent to ChatGPT research
+  writerUsd: number; // gross allowance per profile text (ChatGPT by default; Claude is several times more)
 }
 
 export const DEFAULT_ASSUMPTIONS: EstimateAssumptions = {
@@ -40,6 +42,8 @@ export const DEFAULT_ASSUMPTIONS: EstimateAssumptions = {
   photosPerProfile: 6,
   videoShare: 0.15,
   apifyShare: 0.5,
+  researchShare: 0.6,
+  writerUsd: 0.005,
 };
 
 export interface EstimateRow {
@@ -53,6 +57,7 @@ export interface EstimateRow {
   llmUsd: number;
   editorialUsd: number; // gross, before the token-based settlement
   apifyUsd: number; // one Google Maps place read per record in the share, at the reserve factor
+  researchUsd: number; // one ChatGPT research call per record in the share
   youtubeQuota: number; // Data API units (no charge; the default daily quota is 10,000)
   storageMb: number; // WebP derivatives plus safe originals, roughly
   totalUsd: number;
@@ -73,12 +78,13 @@ export function estimateFor(n: number, a: EstimateAssumptions = DEFAULT_ASSUMPTI
   const llmUsd = n * a.websiteShare * a.llmShare * p.llm.perRecordUsd;
   const usable = Math.round(n * a.usableShare);
   // One call per profile at the gross allowance; the repair call is a second full call for that share.
-  const editorialUsd = usable * a.editorialShare * p.editorial.perProfileUsd * (1 + a.editorialRepairShare);
+  const editorialUsd = usable * a.editorialShare * a.writerUsd * (1 + a.editorialRepairShare);
   const apifyUsd = usable * a.apifyShare * p.apify.maps.perPlaceUsd * p.apify.reserveFactor;
+  const researchUsd = n * a.researchShare * p.openai.research.perRecordUsd;
   const youtubeQuota = Math.ceil(usable * a.videoShare); // one videos.list unit per profile (ids batched)
   const storageMb = Math.round((usable * a.photosPerProfile * 0.45) / 1); // ~150KB derivative + ~300KB original per image
-  const totalUsd = dfsUsd + googleUsd + photoUsd + llmUsd + editorialUsd + apifyUsd;
-  return { businesses: n, dfsRequests, dfsRecords, dfsUsd, websiteRequests, googleUsd, photoUsd, llmUsd, editorialUsd, apifyUsd, youtubeQuota, storageMb, totalUsd, usable, perUsableUsd: usable ? totalUsd / usable : 0 };
+  const totalUsd = dfsUsd + googleUsd + photoUsd + llmUsd + editorialUsd + apifyUsd + researchUsd;
+  return { businesses: n, dfsRequests, dfsRecords, dfsUsd, websiteRequests, googleUsd, photoUsd, llmUsd, editorialUsd, apifyUsd, researchUsd, youtubeQuota, storageMb, totalUsd, usable, perUsableUsd: usable ? totalUsd / usable : 0 };
 }
 
 export const estimateTable = (a?: EstimateAssumptions) => [100, 1000, 10000].map(n => estimateFor(n, a));

@@ -9,6 +9,7 @@ import { fromMicros, pricing } from '@/lib/import/pricing';
 import { runErrorKind } from '@/lib/import/runErrors';
 import { db } from '@/lib/server/db';
 import { enrichQueue, TARGETABLE } from '@/lib/server/enrichQueue';
+import { reportCities } from '@/lib/server/importReport';
 import { getSettings } from '@/lib/server/importOps';
 import { ImportNav } from '../ImportNav';
 import { EnrichList, type BatchRow } from './EnrichList';
@@ -71,11 +72,11 @@ async function batches(): Promise<BatchRow[]> {
 export default async function EnrichPage({ searchParams }: { searchParams: SP }) {
   const user = await requireImporter('/ops/import/enrich');
   const sp = await searchParams;
-  const f = { region: one(sp.region), category: one(sp.cat), status: one(sp.status), missing: one(sp.missing), step: one(sp.step), q: one(sp.q).trim() };
+  const f = { region: one(sp.region), city: one(sp.city), category: one(sp.cat), status: one(sp.status), missing: one(sp.missing), step: one(sp.step), q: one(sp.q).trim() };
   const page = Math.max(1, Number(one(sp.page)) || 1);
-  const [{ rows, total, truncated }, settings, batchRows] = await Promise.all([enrichQueue(f), getSettings(), batches()]);
+  const [{ rows, total, truncated }, settings, batchRows, cities] = await Promise.all([enrichQueue(f), getSettings(), batches(), reportCities()]);
   // Counts per missing section, status and step over the region/category/search filter (before the status, missing and step filters).
-  const base = await enrichQueue({ region: f.region, category: f.category, q: f.q });
+  const base = await enrichQueue({ region: f.region, city: f.city, category: f.category, q: f.q });
   const perSection = TARGETABLE.map(t => ({ id: t.id, name: SECTION_NAME[t.id] ?? t.id, n: base.rows.filter(r => r.missing.includes(t.id)).length })).filter(x => x.n > 0);
   const perStatus = STATUSES.map(s => ({ id: s, name: STATUS_NAME[s], n: base.rows.filter(r => r.status === s).length }));
   const perStep = STEP_ORDER.filter(s => s !== 'regenerate').map(s => ({ id: s, name: STEP_NAME[s], n: base.rows.filter(r => r.plan.includes(s)).length })).filter(x => x.n > 0);
@@ -83,13 +84,13 @@ export default async function EnrichPage({ searchParams }: { searchParams: SP })
   const slice = rows.slice((page - 1) * PAGE, page * PAGE);
   const href = (patch: Record<string, string | number>) => {
     const p = new URLSearchParams();
-    const cur: Record<string, string> = { region: f.region, cat: f.category, status: f.status, missing: f.missing, step: f.step, q: f.q, page: String(page) };
+    const cur: Record<string, string> = { region: f.region, city: f.city, cat: f.category, status: f.status, missing: f.missing, step: f.step, q: f.q, page: String(page) };
     for (const [k, v] of Object.entries({ ...cur, ...patch })) if (v && !(k === 'page' && String(v) === '1')) p.set(k, String(v));
     return `/ops/import/enrich?${p}`;
   };
   const who = `${user.fullName ?? user.email ?? 'צוות BeautyFind'} · ${OPS_ROLE_NAMES[user.opsRole!]}`;
   const p = pricing();
-  const costs = Object.fromEntries(STEP_ORDER.map(s => [s, stepUsd(s, p, { renderPages: settings.apifyRenderPages, editorialEnabled: settings.editorialEnabled })])) as Record<StepId, number>;
+  const costs = Object.fromEntries(STEP_ORDER.map(s => [s, stepUsd(s, p, { renderPages: settings.apifyRenderPages, editorialEnabled: settings.editorialEnabled, writer: settings.llmProvider })])) as Record<StepId, number>;
 
   return (
     <div dir="rtl" lang="he" className={styles.root}>
@@ -110,6 +111,13 @@ export default async function EnrichPage({ searchParams }: { searchParams: SP })
             <select name="region" defaultValue={f.region} className={styles.select}>
               <option value="">כל האזורים</option>
               {REGIONS.map(r => <option key={r.slug} value={r.slug}>{r.name}</option>)}
+            </select>
+          </label>
+          <label>
+            <span className={styles.label}>עיר</span>
+            <select name="city" defaultValue={f.city} className={styles.select}>
+              <option value="">כל הערים</option>
+              {(f.city && !cities.includes(f.city) ? [f.city, ...cities] : cities).map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </label>
           <label>

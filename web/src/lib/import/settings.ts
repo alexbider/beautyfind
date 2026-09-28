@@ -32,6 +32,12 @@ export const ImportSettingsSchema = z.object({
   youtubeMaxVideos: z.number().int().min(0).max(6).default(3),
   imageDerivatives: z.boolean().default(true), // WebP derivatives for approved images (sharp)
   mapsEmbedEnabled: z.boolean().default(true), // the public map needs NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY as well
+  // ChatGPT (OpenAI): web research for the gaps that remain, and the writer of the description and FAQs.
+  openaiEnabled: z.boolean().default(true), // needs OPENAI_API_KEY on the worker
+  llmProvider: z.enum(['openai', 'anthropic']).default('openai'), // who writes the description, FAQs and meta
+  researchEnabled: z.boolean().default(true), // ChatGPT web research step
+  researchBudgetUsd: z.number().min(0).max(1000).default(5), // per run
+  researchMonthlyUsd: z.number().min(0).max(10_000).default(100),
   // Stage 2E: Apify actors for the gaps the site and DataForSEO leave (needs APIFY_TOKEN on the worker).
   apifyEnabled: z.boolean().default(true),
   apifyMaps: z.boolean().default(true), // Google Maps place details and profile photos
@@ -44,7 +50,7 @@ export const ImportSettingsSchema = z.object({
   apifyMaxPosts: z.number().int().min(0).max(12).default(6), // recent Instagram image posts kept as gallery candidates (verified accounts only)
   apifyRenderPages: z.number().int().min(1).max(20).default(8), // pages per site for the browser crawl
   // Written by the worker at every start: which server-side keys it had. The admin shows it as the connection status.
-  workerStatus: z.object({ at: z.string(), dataforseo: z.boolean(), anthropic: z.boolean(), apify: z.boolean(), youtube: z.boolean(), blob: z.boolean(), browser: z.boolean() }).optional(),
+  workerStatus: z.object({ at: z.string(), dataforseo: z.boolean(), anthropic: z.boolean(), openai: z.boolean().optional(), apify: z.boolean(), youtube: z.boolean(), blob: z.boolean(), browser: z.boolean() }).optional(),
   // Stage 2B: Google (display data only)
   googleEnabled: z.boolean().default(false),
   googleRunCallCap: z.number().int().min(0).max(10_000).default(50),

@@ -5,16 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { CATEGORIES } from '@/lib/catalog';
 import { SECTION_NAME, STATUS_NAME, type ProfileStatus } from '@/lib/import/coverage';
-import { STEP_HINT, STEP_NAME, STEP_ORDER, type StepId } from '@/lib/import/enrichPlan';
+import { STEP_HINT, STEP_NAME, STEP_ORDER, STEP_SHORT, type StepId } from '@/lib/import/enrichPlan';
+import { SITE_OUTCOME_NAME as SITE } from '@/lib/import/sourceNames';
 import type { EnrichRow } from '@/lib/server/enrichQueue';
 import { copyPendingImagesAction, deleteRunsAction, enhanceListingsAction, runControlAction } from '../actions';
 import styles from '../import.module.css';
 
 const STATUS_CHIP: Record<ProfileStatus, string> = { ready: styles.chipOk, ready_with_disclosed_gaps: styles.chipOk, needs_owner_information: styles.chipWarn, needs_review: styles.chipBad };
-const SITE: Record<string, string> = { ok: 'האתר נקרא', no_email: 'נקרא, בלי דוא״ל', blocked: 'האתר חסם', robots: 'robots.txt אוסר', failed: 'האתר לא נטען', unsafe: 'כתובת לא בטוחה', unrelated: 'אתר של עסק אחר', directory: 'אינדקס, לא אתר', social_profile: 'רשת חברתית', google_profile: 'רק פרופיל Google', no_website: 'אין אתר', not_modified: 'לא השתנה', skipped_complete: 'לא נדרש' };
 const RUN_STATUS: Record<string, string> = { queued: 'ממתינה', running: 'רצה', paused: 'מושהית', done: 'הסתיימה', failed: 'נכשלה', canceled: 'בוטלה' };
 const RUN_CHIP: Record<string, string> = { queued: '', running: styles.chipOk, paused: styles.chipWarn, done: styles.chipOk, failed: styles.chipBad, canceled: '' };
-const STEP_SHORT: Record<StepId, string> = { dfs: 'DataForSEO', maps: 'Maps', facebook: 'פייסבוק', instagram: 'אינסטגרם', site: 'אתר', render: 'אתר בדפדפן', editorial: 'כתיבה', regenerate: 'כתיבה מחדש', images: 'תמונות' };
 const catName = (s: string) => CATEGORIES.find(c => c.slug === s)?.name ?? s;
 const FILLED: Record<string, string> = {
   phone: 'טלפון', whatsapp: 'וואטסאפ', email: 'דוא״ל', website: 'אתר', instagram: 'אינסטגרם', hours: 'שעות', description: 'תיאור', faqs: 'שאלות נפוצות', accessible: 'נגישות', parking: 'חניה', waze: 'Waze',

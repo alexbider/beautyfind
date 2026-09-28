@@ -7,6 +7,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { deflateSync } from 'node:zlib';
 import type { AddressInfo } from 'node:net';
 import type { DfsItem } from '../../../src/lib/import/dataforseo';
+import { templateDraft, type EvidencePacket } from '../../../src/lib/import/editorial';
 
 export type DfsMode = 'ok' | 'hang' | 'fatal' | 'transient' | 'bad_json';
 
@@ -144,6 +145,56 @@ export async function startMockApify(datasets: Record<string, unknown[]>, opts: 
   });
   const port = await listen(srv);
   return { url: `http://127.0.0.1:${port}`, starts, setMode: m => (mode = m), datasets, close: () => new Promise(r => srv.close(() => r())) };
+}
+
+export type OpenAIMode = 'ok' | 'funds' | 'auth' | 'hang' | 'bad_json';
+
+export interface MockOpenAI {
+  url: string;
+  requests: Array<{ body: Record<string, unknown>; at: number }>;
+  setMode: (m: OpenAIMode) => void;
+  close: () => Promise<void>;
+}
+
+/**
+ * OpenAI Responses API look-alike. A request with the web_search tool is a research call: the answer
+ * comes from `research(subjectText)`; any other request is the writer, answered with the deterministic
+ * template draft built from the packet in the request. Usage and one web_search_call per request are
+ * reported, so the budget code sees a real (mock) cost.
+ */
+export async function startMockOpenAI(research: (subject: string) => unknown, opts: { inputTokens?: number; outputTokens?: number } = {}): Promise<MockOpenAI> {
+  let mode: OpenAIMode = 'ok';
+  const requests: MockOpenAI['requests'] = [];
+  const srv = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+    const raw = await readBody(req);
+    let body: Record<string, unknown> = {};
+    try {
+      body = JSON.parse(raw || '{}');
+    } catch {
+      /* empty */
+    }
+    requests.push({ body, at: Date.now() });
+    res.setHeader('content-type', 'application/json');
+    if (!/^Bearer /.test(req.headers.authorization ?? '') || mode === 'auth') return void res.writeHead(401).end(JSON.stringify({ error: { code: 'invalid_api_key', message: 'Incorrect API key provided', type: 'invalid_request_error' } }));
+    if (mode === 'hang') return void req.socket.destroy();
+    if (mode === 'funds') return void res.writeHead(429).end(JSON.stringify({ error: { code: 'insufficient_quota', message: 'You exceeded your current quota, please check your plan and billing details.', type: 'insufficient_quota' } }));
+    const isResearch = Array.isArray(body.tools) && (body.tools as Array<{ type?: string }>).some(t => t.type === 'web_search');
+    const input = typeof body.input === 'string' ? body.input : ((body.input as Array<{ content?: string }>) ?? []).map(t => t.content ?? '').join('\n');
+    let text: string;
+    if (mode === 'bad_json') text = 'not json at all';
+    else if (isResearch) text = JSON.stringify(research(input));
+    else {
+      const m = input.match(/Evidence packet \(JSON\):\n(\{[\s\S]*?\})\n\nEvidence richness/);
+      const packet = m ? (JSON.parse(m[1]) as EvidencePacket) : null;
+      text = JSON.stringify(packet ? templateDraft(packet) : { heading: 'על העסק', description: 'x', faqs: [], metaTitle: '', metaDescription: '', serviceSummaries: [], insufficientEvidence: true, missing: ['packet'] });
+    }
+    const output: unknown[] = [];
+    if (isResearch) output.push({ type: 'web_search_call', id: `ws_${requests.length}`, status: 'completed' });
+    output.push({ type: 'message', id: `msg_${requests.length}`, role: 'assistant', content: [{ type: 'output_text', text, annotations: [] }] });
+    res.end(JSON.stringify({ id: `resp_${requests.length}`, status: 'completed', model: body.model ?? 'mock', output, usage: { input_tokens: opts.inputTokens ?? 3000, output_tokens: opts.outputTokens ?? 1200, total_tokens: (opts.inputTokens ?? 3000) + (opts.outputTokens ?? 1200) } }));
+  });
+  const port = await listen(srv);
+  return { url: `http://127.0.0.1:${port}`, requests, setMode: m => (mode = m), close: () => new Promise(r => srv.close(() => r())) };
 }
 
 // rich: a complete clinic site (team page, videos, languages, founding year, price ranges and packages, sitemap, gallery);

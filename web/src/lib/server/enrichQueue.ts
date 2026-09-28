@@ -51,6 +51,7 @@ export interface EnrichFilter {
   missing?: string;
   q?: string;
   branchIds?: string[]; // only these listings (the worker seeding a run)
+  city?: string; // exact city name
   step?: string; // only listings whose automatic plan includes this step
 }
 
@@ -65,6 +66,7 @@ export async function enrichQueue(f: EnrichFilter = {}): Promise<{ rows: EnrichR
     isClaimed: false,
     ...(CATEGORIES.some(c => c.slug === f.category) ? { categories: { some: { categorySlug: f.category } } } : {}),
     ...(f.region ? { regionSlug: f.region as RegionSlug } : {}),
+    ...(f.city ? { cityName: f.city } : {}),
     ...(f.q ? { OR: [{ name: { contains: f.q, mode: 'insensitive' } }, { cityName: { contains: f.q, mode: 'insensitive' } }] } : {}),
   };
   const [places, settings] = await Promise.all([

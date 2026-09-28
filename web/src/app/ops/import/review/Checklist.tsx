@@ -32,6 +32,7 @@ export interface ProfileInfo {
   socials: Array<{ network: string; url: string; verified: boolean; via: string }>;
   media: { candidates: number; copied: number; beforeAfterPending: number; heroMissing: boolean };
   crawl: { pages: number; sitemapUrls: number; extended: boolean } | null;
+  research: { filled: string[]; sources: number; notFound: string[]; dropped: number; error: string | null; costUsd: number; at: string | null } | null; // ChatGPT web research
   map: 'configured' | 'not_configured';
   costs: Record<string, number>;
   conflicts: string[];
@@ -123,6 +124,7 @@ export function Checklist({ id, decided, info }: { id: string; decided: boolean;
             <div><dt>רשתות: </dt><dd>{info.socials.length ? info.socials.map(s => `${s.network}: ${VIA[s.via] ?? s.via}`).join(' · ') : 'אין'}</dd></div>
             <div><dt>תמונות: </dt><dd>{info.media.copied ? `${info.media.copied} הועתקו` : `${info.media.candidates} מועמדות`}{info.media.heroMissing ? ' · hero_media_missing' : ''}{info.media.beforeAfterPending ? ` · ${info.media.beforeAfterPending} תמונות לפני/אחרי ממתינות לאישור בעל העסק` : ''}</dd></div>
             <div><dt>סריקה: </dt><dd>{info.crawl ? `${info.crawl.pages} עמודים${info.crawl.sitemapUrls ? `, ${info.crawl.sitemapUrls} מה־sitemap` : ''}${info.crawl.extended ? ', התקציב הורחב' : ''}` : 'לא נסרק'}</dd></div>
+            <div><dt>מחקר ChatGPT: </dt><dd>{!info.research ? 'לא רץ' : info.research.error ? `נכשל (${info.research.error})` : `${info.research.filled.length ? `השלים ${info.research.filled.join(', ')}` : 'לא השלים דבר'} · ${info.research.sources} עמודים צוטטו${info.research.dropped ? ` · ${info.research.dropped} עובדות בלי מקור נזרקו` : ''}${info.research.notFound.length ? ` · לא נמצא: ${info.research.notFound.join(', ')}` : ''}`}</dd></div>
             <div><dt>מפה: </dt><dd>{info.map === 'configured' ? 'Google Maps Embed מוגדר' : 'מפתח Maps Embed לא מוגדר (מוצגת מפה סכמטית וקישורי ניווט)'}</dd></div>
             <div><dt>עלויות הרשומה: </dt><dd className={styles.ltr}>{Object.entries(info.costs).length ? Object.entries(info.costs).map(([k, v]) => `${k} ${typeof v === 'number' && k.endsWith('Usd') ? usd(v) : v}`).join(', ') : '0'}</dd></div>
             {info.retries.length ? <div><dt>ניסיונות: </dt><dd>{info.retries.map(r => `${r.what} (${new Date(r.at).toLocaleDateString('he-IL')})`).join(', ')}</dd></div> : null}

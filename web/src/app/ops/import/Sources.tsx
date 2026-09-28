@@ -88,9 +88,14 @@ export function Sources({ settings, flags }: { settings: ImportSettings; flags: 
         {flag('apifyInstagram', 'אינסטגרם', !v.apifyEnabled)}
         {flag('apifyRender', 'אתרים שדורשים JavaScript', !v.apifyEnabled)}
       </Row>
-      <Row title="כתיבת התיאור והשאלות הנפוצות (Claude)" status={<Status ok={known('anthropic')} />} what="קריאה אחת לעסק על חבילת הראיות: 450 עד 550 מילים, 5 עד 8 שאלות, כותרות. בלי המפתח העסקים נשארים עם הטקסט מהמקורות." where="GitHub: ANTHROPIC_API_KEY">
-        {flag('editorialEnabled', 'פעיל')}
+      <Row title="ChatGPT (OpenAI): מחקר ברשת וכתיבת הפרופיל" status={<Status ok={known('openai')} />} what="מחקר: למה שעדיין חסר אחרי הספק, האתר ו־Apify, ChatGPT מחפש ברשת ומחזיר כל עובדה עם העמוד שממנו נקראה (עובדה בלי עמוד נזרקת; דוא״ל מחיפוש מסומן לאישור אדם; חשבונות ברשתות נשארים לא מאומתים עד שפרופיל או אתר מאשרים). כתיבה: התיאור, השאלות והכותרות מחבילת הראיות, קריאה אחת לעסק." where="GitHub: OPENAI_API_KEY (רשות: IMPORT_OPENAI_MODEL)">
+        {flag('openaiEnabled', 'פעיל')}
+        {flag('researchEnabled', 'מחקר ברשת', !v.openaiEnabled)}
+        {flag('editorialEnabled', 'כתיבת התיאור והשאלות')}
+        <label className={styles.check}><input type="radio" name="writer" checked={v.llmProvider === 'openai'} onChange={() => set('llmProvider', 'openai')} />הכותב: ChatGPT</label>
+        <label className={styles.check}><input type="radio" name="writer" checked={v.llmProvider === 'anthropic'} onChange={() => set('llmProvider', 'anthropic')} />הכותב: Claude</label>
       </Row>
+      <Row title="Claude (Anthropic): כותב חלופי" status={<Status ok={known('anthropic')} optional />} what="משמש לכתיבה רק כשבוחרים בו למעלה. אותה חבילת ראיות, אותן בדיקות, יקר פי כמה לעסק." where="GitHub: ANTHROPIC_API_KEY (רשות)" />
       <Row title="YouTube" status={<Status ok={known('youtube')} optional />} what="סרטונים רשמיים מהאתר (בלי מפתח) ומהערוץ המאומת (עם מפתח)." where="GitHub: YOUTUBE_API_KEY (רשות)">
         {flag('youtubeEnabled', 'פעיל')}
       </Row>
@@ -106,6 +111,8 @@ export function Sources({ settings, flags }: { settings: ImportSettings; flags: 
           {num('pilotRecordLimit', 'ברירת מחדל: עסקים לריצה')}
           {num('editorialBudgetUsd', 'כתיבה: תקרה לריצה (USD)', '0.01')}
           {num('editorialMaxPerRun', 'כתיבה: קריאות לריצה')}
+          {num('researchBudgetUsd', 'מחקר ChatGPT: תקרה לריצה (USD)', '0.01')}
+          {num('researchMonthlyUsd', 'מחקר ChatGPT: תקרה חודשית (USD)', '0.01')}
           {num('apifyBudgetUsd', 'Apify: תקרה לריצה (USD)', '0.01')}
           {num('apifyMonthlyUsd', 'Apify: תקרה חודשית (USD)', '0.01')}
           {num('maxListingPhotos', 'תמונות לעסק (עד 20)')}

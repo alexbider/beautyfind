@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { CATEGORIES, CITIES, MENU_REGION_ORDER, REGIONS } from '@/lib/catalog';
+import { writerUsd } from '@/lib/import/enrichPlan';
 import { DEFAULT_ASSUMPTIONS, estimateFor, estimateRun, estimateTable, type EstimateAssumptions } from '@/lib/import/estimate';
+import { pricing } from '@/lib/import/pricing';
 import type { RunScope } from '@/lib/import/rules';
 import { runErrorKind } from '@/lib/import/runErrors';
 import type { ImportSettings } from '@/lib/import/settings';
@@ -109,7 +111,7 @@ function Scope({ all, setAll, cities, setCities, cats, setCats }: { all: boolean
 /** What one import run does, in order, with the sources it will actually use. */
 function Plan({ settings, flags }: { settings: ImportSettings; flags: ServerFlags }) {
   const ws = settings.workerStatus ?? null;
-  const st = (k: 'dataforseo' | 'anthropic' | 'apify' | 'youtube' | 'blob') => (ws ? (ws[k] ? 'ok' : 'missing') : 'unknown');
+  const st = (k: 'dataforseo' | 'anthropic' | 'openai' | 'apify' | 'youtube' | 'blob') => (ws ? (ws[k] ? 'ok' : 'missing') : 'unknown');
   const chip = (s: 'ok' | 'missing' | 'unknown' | 'off', optional = false) =>
     s === 'ok' ? <span className={`${styles.chip} ${styles.chipOk}`}>מחובר</span>
     : s === 'off' ? <span className={styles.chip}>כבוי בהגדרות</span>
@@ -119,10 +121,11 @@ function Plan({ settings, flags }: { settings: ImportSettings; flags: ServerFlag
     ['1', 'איתור העסקים ב־DataForSEO: שם, כתובת, טלפון, שעות, דירוג, תמונות, מאפיינים.', chip(settings.dataforseoEnabled ? st('dataforseo') : 'off')],
     ['2', 'קריאת האתר הרשמי של כל עסק: דוא״ל, שירותים ומחירים, שעות, צוות, סרטונים, תמונות.', <span key="s" className={`${styles.chip} ${styles.chipOk}`}>ללא עלות</span>],
     ['3', 'למה שעדיין חסר: Google Maps, הפייסבוק והאינסטגרם של העסק, ודפדפן לאתרים שלא נטענו (Apify).', chip(settings.apifyEnabled ? st('apify') : 'off')],
-    ['4', 'תמונות מפוסטים בפרופיל Google לעסקים עם פחות מחמש תמונות.', chip(settings.googlePostPhotos && settings.dataforseoEnabled ? st('dataforseo') : 'off')],
-    ['5', 'כתיבת התיאור, השאלות הנפוצות והכותרות מכל הראיות (Claude, קריאה אחת לעסק).', chip(settings.editorialEnabled ? st('anthropic') : 'off')],
-    ['6', 'סרטוני YouTube רשמיים.', chip(settings.youtubeEnabled ? (st('youtube') === 'missing' ? 'ok' : st('youtube')) : 'off')],
-    ['7', 'בדיקות: כפילויות, עסקים קיימים, מינימום לפרסום. הרשומות מחכות לאישור בתור הבדיקה, ובאישור התמונות מועתקות לאחסון שלנו.', chip(flags.mapKey ? 'ok' : 'missing')],
+    ['4', 'למה שעדיין חסר אחרי זה: ChatGPT מחפש ברשת (אתר, טלפון, דוא״ל, שעות, שירותים ומחירים, צוות, שנת הקמה, נגישות) ומחזיר כל עובדה עם העמוד שממנו נקראה.', chip(settings.openaiEnabled && settings.researchEnabled ? st('openai') : 'off')],
+    ['5', 'תמונות מפוסטים בפרופיל Google לעסקים עם פחות מחמש תמונות.', chip(settings.googlePostPhotos && settings.dataforseoEnabled ? st('dataforseo') : 'off')],
+    ['6', `כתיבת התיאור, השאלות הנפוצות והכותרות מכל הראיות (${settings.llmProvider === 'openai' ? 'ChatGPT' : 'Claude'}, קריאה אחת לעסק).`, chip(settings.editorialEnabled ? st(settings.llmProvider === 'openai' ? 'openai' : 'anthropic') : 'off')],
+    ['7', 'סרטוני YouTube רשמיים.', chip(settings.youtubeEnabled ? (st('youtube') === 'missing' ? 'ok' : st('youtube')) : 'off')],
+    ['8', 'בדיקות: כפילויות, עסקים קיימים, מינימום לפרסום. הרשומות מחכות לאישור בתור הבדיקה, ובאישור התמונות מועתקות לאחסון שלנו.', chip(flags.mapKey ? 'ok' : 'missing')],
   ];
   return (
     <ol style={{ margin: 0, paddingInlineStart: 18, fontSize: 13.5, display: 'grid', gap: 6 }}>
@@ -152,8 +155,8 @@ function NewRun({ settings, flags, pricingNote }: { settings: ImportSettings; fl
   const recordLimit = Math.max(1, Number(limit) || 0);
   // Gross ceiling for the whole run: discovery at a full page, Apify for the share that needs it, one editorial call per record.
   const est = useMemo(
-    () => estimateFor(recordLimit, { ...DEFAULT_ASSUMPTIONS, pageSize: settings.dfsPageSize, duplicateShare: 0, usableShare: 1, editorialShare: settings.editorialEnabled ? 1 : 0, editorialRepairShare: 0.25, apifyShare: settings.apifyEnabled ? 0.8 : 0 }),
-    [recordLimit, settings.dfsPageSize, settings.editorialEnabled, settings.apifyEnabled],
+    () => estimateFor(recordLimit, { ...DEFAULT_ASSUMPTIONS, pageSize: settings.dfsPageSize, duplicateShare: 0, usableShare: 1, editorialShare: settings.editorialEnabled ? 1 : 0, editorialRepairShare: 0.25, apifyShare: settings.apifyEnabled ? 0.8 : 0, researchShare: settings.openaiEnabled && settings.researchEnabled ? 0.7 : 0, writerUsd: writerUsd(pricing(), settings.llmProvider) }),
+    [recordLimit, settings.dfsPageSize, settings.editorialEnabled, settings.apifyEnabled, settings.openaiEnabled, settings.researchEnabled, settings.llmProvider],
   );
   const legacy = useMemo(() => (provider === 'google' ? estimateRun(scope) : null), [provider, all, cities, cats]); // eslint-disable-line react-hooks/exhaustive-deps
   const budget = budgetOverride ? Number(budgetOverride) : Math.ceil(est.totalUsd * 1.2 * 100) / 100;
@@ -201,7 +204,7 @@ function NewRun({ settings, flags, pricingNote }: { settings: ImportSettings; fl
           <>
             <div>DataForSEO<b className={styles.ltr}>{usd(est.dfsUsd)}</b></div>
             <div>Apify<b className={styles.ltr}>{usd(est.apifyUsd)}</b></div>
-            <div>כתיבה<b className={styles.ltr}>{usd(est.editorialUsd)}</b></div>
+            <div>ChatGPT: מחקר וכתיבה<b className={styles.ltr}>{usd(est.researchUsd + est.editorialUsd)}</b></div>
             <div>תקרה לריצה<b className={styles.ltr}>{usd(budget)}</b></div>
           </>
         )}
@@ -263,24 +266,26 @@ function Estimator({ pricingNote }: { pricingNote: PricingNote }) {
           {field('editorialShare', 'שיעור עם כתיבת תיאור')}
           {field('editorialRepairShare', 'שיעור עם תיקון')}
           {field('apifyShare', 'שיעור שצריך Apify')}
+          {field('researchShare', 'שיעור שנשלח למחקר ChatGPT')}
+          {field('writerUsd', 'עלות כתיבה לעסק (USD)', '0.001')}
           {field('photosPerProfile', 'תמונות לעסק', '1')}
           {field('videoShare', 'שיעור עם סרטונים')}
         </div>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ textAlign: 'start' }}>
-              <th>עסקים</th><th>DataForSEO</th><th>Apify</th><th>כתיבה</th><th>אחסון (MB)</th><th>סה״כ</th><th>לעסק</th>
+              <th>עסקים</th><th>DataForSEO</th><th>Apify</th><th>מחקר ChatGPT</th><th>כתיבה</th><th>אחסון (MB)</th><th>סה״כ</th><th>לעסק</th>
             </tr>
           </thead>
           <tbody className={styles.ltr}>
             {rows.map(r => (
               <tr key={r.businesses}>
-                <td>{n(r.businesses)}</td><td>{usd(r.dfsUsd)}</td><td>{usd(r.apifyUsd)}</td><td>{usd(r.editorialUsd)}</td><td>{n(r.storageMb)}</td><td><b>{usd(r.totalUsd)}</b></td><td>{usd(r.perUsableUsd)}</td>
+                <td>{n(r.businesses)}</td><td>{usd(r.dfsUsd)}</td><td>{usd(r.apifyUsd)}</td><td>{usd(r.researchUsd)}</td><td>{usd(r.editorialUsd)}</td><td>{n(r.storageMb)}</td><td><b>{usd(r.totalUsd)}</b></td><td>{usd(r.perUsableUsd)}</td>
               </tr>
             ))}
           </tbody>
         </table>
-        <p className={styles.note}>הכתיבה לפי <span className={styles.ltr}>${pricingNote.editorialUsd}</span> לעסק (Sonnet, תיקון אחד לכל היותר) ומסולקת לפי הטוקנים בפועל. ללא: מינימום טעינה של DataForSEO, מסים, ניסיונות חוזרים. YouTube ו־Maps Embed ללא חיוב.</p>
+        <p className={styles.note}>הכתיבה לפי ״עלות כתיבה לעסק״ (ברירת המחדל: ChatGPT, כחצי סנט לעסק; Claude Sonnet כ־<span className={styles.ltr}>${pricingNote.editorialUsd}</span>), תיקון אחד לכל היותר, ומסולקת לפי הטוקנים בפועל. ללא: מינימום טעינה של DataForSEO, מסים, ניסיונות חוזרים. YouTube ו־Maps Embed ללא חיוב.</p>
       </div>
     </details>
   );

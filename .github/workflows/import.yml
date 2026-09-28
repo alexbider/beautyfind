@@ -50,7 +50,10 @@ jobs:
           DATAFORSEO_PASSWORD: ${{ secrets.DATAFORSEO_PASSWORD }}
           # Legacy Google discovery runs only (new runs use DataForSEO).
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
-          # Editorial writing (description, FAQs, meta) and the optional extraction step. Server-side only.
+          # ChatGPT (OpenAI): web research for the remaining gaps and, by default, the writer. Server-side only.
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          IMPORT_OPENAI_MODEL: ${{ vars.IMPORT_OPENAI_MODEL }}
+          # Claude as the alternative writer (llmProvider setting) and the optional extraction step. Server-side only.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           IMPORT_MODEL: ${{ vars.IMPORT_MODEL }}
           IMPORT_EDITORIAL_MODEL: ${{ vars.IMPORT_EDITORIAL_MODEL }}

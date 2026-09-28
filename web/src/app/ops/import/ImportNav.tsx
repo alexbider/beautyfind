@@ -5,6 +5,7 @@ const TABS = [
   { key: 'runs', name: 'ייבוא וריצות', href: '/ops/import', hint: 'התחלת ייבוא ומעקב' },
   { key: 'review', name: 'תור הבדיקה', href: '/ops/import/review', hint: 'אישור רשומות לפני פרסום' },
   { key: 'enrich', name: 'השלמות', href: '/ops/import/enrich', hint: 'חוסרים בעסקים שפורסמו' },
+  { key: 'report', name: 'דוח פרופילים', href: '/ops/import/report', hint: 'מה יש ומה חסר בכל עסק' },
 ] as const;
 
 /** The three screens of the import, in the order staff use them. */

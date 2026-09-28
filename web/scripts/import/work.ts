@@ -22,6 +22,7 @@ import { check } from './stages/check';
 import { discoverDfs, seedDfs } from './stages/dfsDiscover';
 import { enrich } from './stages/enrich';
 import { APIFY_KINDS, apifyStage } from './stages/apify';
+import { researchStage } from './stages/research';
 import { enhancePlaceIds, enhanceStage, seedEnhance } from './stages/enhance';
 import { collectPostPhotos, queuePostPhotos } from './stages/googlePosts';
 import { editorialStage } from './stages/editorial';
@@ -62,6 +63,7 @@ async function work(run: ImportRun): Promise<'done' | 'stopped'> {
       // Apify actors (Google Maps, Facebook, Instagram, then rendered sites) before the website stage reads the results.
       await stage(run.id, 'sources');
       for (const kind of APIFY_KINDS) while (await apifyStage(run, kind));
+      while (await researchStage(run));
       await stage(run.id, 'photos');
       await queuePostPhotos(run, await enhancePlaceIds(run));
       while (await collectPostPhotos(run));
@@ -87,6 +89,7 @@ async function work(run: ImportRun): Promise<'done' | 'stopped'> {
     await stage(run.id, 'sources');
     await seedSources(run);
     for (const kind of APIFY_KINDS) while (await apifyStage(run, kind));
+    while (await researchStage(run));
     if (await requeueAfterSources(run)) while (await enrich(run));
     // Records still short of photos: photos from the business's own Google posts.
     await stage(run.id, 'photos');
@@ -121,7 +124,7 @@ async function work(run: ImportRun): Promise<'done' | 'stopped'> {
 /** What this worker can reach, for the admin's connection status. Presence only; no values are stored. */
 async function reportWorkerStatus() {
   const status = {
-    at: new Date().toISOString(), dataforseo: dfsConfigured(), anthropic: !!process.env.ANTHROPIC_API_KEY, apify: apifyConfigured(), youtube: !!process.env.YOUTUBE_API_KEY,
+    at: new Date().toISOString(), dataforseo: dfsConfigured(), anthropic: !!process.env.ANTHROPIC_API_KEY, openai: !!process.env.OPENAI_API_KEY, apify: apifyConfigured(), youtube: !!process.env.YOUTUBE_API_KEY,
     blob: !!process.env.BLOB_READ_WRITE_TOKEN && process.env.STORAGE_ADAPTER !== 'none', browser: process.env.IMPORT_BROWSER === '1' || !!process.env.CRAWL_CHROMIUM_PATH,
   };
   const row = await db.importSettings.findUnique({ where: { id: 1 } });
