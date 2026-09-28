@@ -11,6 +11,7 @@ import { BudgetExceeded, commit, monthKey, release, reserve, uncertain, withCaps
 import { emailDomain, siteHost } from '../../../src/lib/import/email';
 import { openaiCostUsd, openaiErrorKind, RESEARCH_PROMPT_VERSION, RESEARCH_SCHEMA, RESEARCH_SYSTEM, researchFacts, researchMessage, researchTargets, type ResearchAnswer, type ResearchFacts } from '../../../src/lib/import/openai';
 import { placeCoverage } from '../../../src/lib/import/placeCoverage';
+import { cleanTeam } from '../../../src/lib/import/profileExtract';
 import { pricing, toMicros } from '../../../src/lib/import/pricing';
 import type { ImportedTreatment } from '../../../src/lib/import/rules';
 import { serviceKey } from '../../../src/lib/import/services';
@@ -229,10 +230,11 @@ export async function applyResearch(p: ImportPlace, f: ResearchFacts, s: Awaited
     data.treatments = [...byKey.values()] as unknown as Prisma.InputJsonValue;
     if (newServices) filled.push('services');
   }
-  if (f.team.length) {
-    for (const t of f.team) add('team', { name: t.name, role: t.role }, t.sourceUrl, 0.6, 'Team member named with a role on a public page');
+  const team = cleanTeam<ResearchFacts['team'][number]>(f.team); // the same quality gate as the site reader
+  if (team.length) {
+    for (const t of team) add('team', { name: t.name, role: t.role }, t.sourceUrl, 0.6, 'Team member named with a role on a public page');
     if ((!Array.isArray(p.team) || !p.team.length) && !edited.has('team')) {
-      data.team = f.team.map(t => ({ name: t.name, role: t.role, bio: null, sourceUrl: t.sourceUrl })) as unknown as Prisma.InputJsonValue;
+      data.team = team.map(t => ({ name: t.name, role: t.role, bio: null, sourceUrl: t.sourceUrl })) as unknown as Prisma.InputJsonValue;
       filled.push('team');
     }
   }

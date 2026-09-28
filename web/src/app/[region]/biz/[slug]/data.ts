@@ -2,6 +2,7 @@ import 'server-only';
 import { categoryBySlug, regionBySlug } from '@/lib/catalog';
 import { nisFromAgorot } from '@/lib/format';
 import { BOOKING_LIVE } from '@/lib/features';
+import { cleanTeam } from '@/lib/import/profileExtract';
 import { listBranches, type ListingCard, type PublicProfile } from '@/lib/server/public';
 import {
   COMPARABLE_PRICE_TYPES, DAY_NAMES, PROFESSION_NAME, hoursKnown, jerusalemNow, longDateHe, openState, openingHoursSpec, parseHours, priceParts, relHe, servicePrice,
@@ -39,7 +40,8 @@ export function parseFaqs(json: unknown): Array<{ q: string; a: string }> {
 /** People named on the business's own site (imported): shown without a link, badge or login. */
 export function parseTeam(json: unknown): Array<{ name: string; role: string; bio: string | null; sourceUrl: string | null }> {
   if (!Array.isArray(json)) return [];
-  return json.flatMap(t => {
+  // The same quality gate as the import: a stored entry that is not a person with a role is never shown.
+  return cleanTeam<Record<string, unknown>>(json).flatMap(t => {
     const o = (t ?? {}) as Record<string, unknown>;
     if (typeof o.name !== 'string' || !o.name.trim()) return [];
     return [{ name: o.name.trim(), role: typeof o.role === 'string' ? o.role.trim() : '', bio: typeof o.bio === 'string' && o.bio.trim() ? o.bio.trim() : null, sourceUrl: typeof o.sourceUrl === 'string' ? o.sourceUrl : null }];

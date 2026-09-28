@@ -21,6 +21,16 @@ const NAME_WORD = /^[א-תA-Za-z'׳"״.\-]{2,20}$/;
 // A card whose "role" is a customer signature, or a name that is a menu label, is not staff.
 const TESTIMONIAL = /(לקוח(?:ה|ות|ים)?|מטופל(?:ת|ים|ות)?|ממליצ|מרוצ|חוות\s*דעת|ביקורת|review|customer|client|patient)/i;
 const NAV = /^(צור קשר|צרו קשר|אודות|הצוות|הצוות שלנו|שירותים|טיפולים|מחירון|גלריה|ראשי|בית|תפריט|home|about|contact|team|services|menu|our team)$/i;
+// Words that never appear in a person's name: form labels, navigation, legal lines, treatments and body parts.
+// A line with one of them is a label or a service, however name-like its shape ("שם מלא", "דלג לתוכן", "הזרקת בוטוקס").
+const STOP = new Set([
+  'מלא', 'מספר', 'טלפון', 'נייד', 'דואל', 'דוא"ל', 'אימייל', 'מייל', 'כתובת', 'הודעה', 'תוכן', 'הפנייה', 'הפניה', 'פנייה', 'פניה', 'שלח', 'שלחו', 'שליחה', 'אישור', 'ביטול',
+  'דלג', 'לתוכן', 'קרא', 'קראו', 'עוד', 'לחץ', 'לחצו', 'כאן', 'הרשמה', 'התחברות', 'כניסה', 'חיפוש', 'תפריט', 'ניווט', 'עמוד', 'הבית', 'ראשי', 'הבא', 'הקודם', 'סגור', 'פתח',
+  'כל', 'הזכויות', 'שמורות', 'מדיניות', 'פרטיות', 'תקנון', 'נגישות', 'הצהרת', 'תנאי', 'שימוש', 'עוגיות', 'קוקיז',
+  'טיפול', 'טיפולי', 'טיפולים', 'הזרקת', 'הזרקות', 'הזרקה', 'בוטוקס', 'חומצה', 'היאלורונית', 'מילוי', 'מתיחת', 'הרמת', 'הסרת', 'עיצוב', 'ניתוח', 'ניתוחי', 'לייזר', 'פילינג', 'שיער', 'ציפורניים', 'גבות', 'ריסים', 'פנים', 'גוף', 'עור', 'שפתיים', 'אף', 'חזה', 'בטן', 'קמטים', 'צלוליטיס', 'שיזוף', 'מסאז', "מסאז'", 'עיסוי', 'ייעוץ', 'יעוץ', 'מחיר', 'מחירים', 'מחירון', 'מבצע', 'מבצעים', 'הנחה', 'חבילה', 'חבילת', 'שעות', 'פעילות', 'לפני', 'אחרי', 'ביקורות', 'המלצות', 'שאלות', 'תשובות', 'נפוצות', 'גלריה', 'תמונות', 'סרטון', 'סרטונים', 'אודות', 'אודותינו', 'סניף', 'סניפים', 'מיקום', 'הגעה', 'קביעת', 'תור', 'תורים', 'זימון', 'הזמנת', 'הזמנה',
+  'name', 'full', 'phone', 'email', 'message', 'send', 'submit', 'skip', 'content', 'read', 'more', 'click', 'here', 'login', 'search', 'menu', 'home', 'next', 'prev', 'close', 'open', 'privacy', 'policy', 'terms', 'cookies', 'treatment', 'treatments', 'botox', 'filler', 'fillers', 'laser', 'peeling', 'hair', 'nails', 'face', 'body', 'lips', 'prices', 'price', 'gallery', 'before', 'after', 'reviews', 'faq', 'booking', 'book',
+]);
+const stopWord = (w: string) => STOP.has(w.replace(/["״'׳.,]/g, '').toLowerCase());
 // A name and its role on one line: "ד"ר יעל לוינסון - מנהלת רפואית", "נועה בן דוד | אחות", "רונית, קוסמטיקאית".
 const SPLIT = /\s+[-–—|·]\s+|,\s+|:\s+/;
 
@@ -32,10 +42,39 @@ export function looksLikeName(line: string): boolean {
   if (words.length < 1 || words.length > 4) return false;
   if (words.length === 1 && !TITLE.test(s)) return false;
   if (!words.every(w => NAME_WORD.test(w.replace(/,$/, '')))) return false;
-  // A role ("מנהלת רפואית", "קוסמטיקאית") or a navigation label is not a person's name.
+  // A role ("מנהלת רפואית", "קוסמטיקאית"), a navigation label or a form label is not a person's name.
   if (ROLE.test(s.replace(TITLE, ''))) return false;
-  if (NAV.test(s)) return false;
+  if (NAV.test(s) || words.some(stopWord)) return false;
   return true;
+}
+
+/** A line that carries a person's name itself ("ד"ר תמיר גיל: מומחה לכירורגיה פלסטית") is its own card and never the role of a neighbouring line. */
+const hasOwnName = (line: string): boolean => {
+  if (/(^|[\s(])(ד["״]?ר|דר['׳]|פרופ['׳]?|dr\.?|prof\.?)\s+[א-תA-Za-z]/i.test(line)) return true;
+  const parts = line.split(SPLIT).map(x => x.trim()).filter(Boolean);
+  return parts.length === 2 && (looksLikeName(parts[0]) || looksLikeName(parts[1]));
+};
+
+/**
+ * Quality gate for stored team entries (from the site, from research, or written earlier by an older
+ * reader): a person needs a name that passes the same checks as extraction and a role that names a
+ * role. Anything else is dropped, so a form label or a treatment never reaches a profile.
+ */
+export function cleanTeam<T extends { name?: unknown; role?: unknown }>(items: unknown): T[] {
+  if (!Array.isArray(items)) return [];
+  const out: T[] = [];
+  const seen = new Set<string>();
+  for (const it of items as T[]) {
+    if (!it || typeof it !== 'object') continue;
+    const name = typeof it.name === 'string' ? it.name.trim() : '';
+    const role = typeof it.role === 'string' ? it.role.trim() : '';
+    if (!looksLikeName(name) || !isRoleLine(role) || hasOwnName(role)) continue;
+    const key = norm(name);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(it);
+  }
+  return out.slice(0, 12);
 }
 
 // A role line: short, names a role, no digits or prices, not a sentence. A line that starts with a role
@@ -97,9 +136,9 @@ export function teamFrom(text: string, url: string, opts: { teamPage?: boolean; 
       }
     }
     if (!b) continue;
-    if (looksLikeName(a) && isRoleLine(b) && !looksLikeName(b)) {
+    if (looksLikeName(a) && isRoleLine(b) && !looksLikeName(b) && !hasOwnName(b)) {
       if (push(a, b, lines[i + 2], `${a} | ${b}`)) i++;
-    } else if (isRoleLine(a) && !looksLikeName(a) && looksLikeName(b)) {
+    } else if (isRoleLine(a) && !looksLikeName(a) && !hasOwnName(a) && looksLikeName(b)) {
       if (push(b, a, lines[i + 2], `${a} | ${b}`)) i++;
     } else if (looksLikeName(a) && isBio(b) && !TESTIMONIAL.test(b.slice(0, 60))) {
       // "ד"ר יוסי גוברין" then "ד"ר גוברין הוא מנתח פלסטי בכיר, ...": the biography names the role.

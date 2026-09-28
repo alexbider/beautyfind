@@ -11,7 +11,7 @@ import { PRICE_UNKNOWN, hoursKnown, openState, parseHours, servicePrice } from '
 import { mapQuery, mapsEmbedUrl } from '../../src/lib/mapsEmbed';
 import { coverageOf, MANIFEST, manifestMarkdown, type CoverageInput } from '../../src/lib/import/coverage';
 import { BANNED_PHRASES, buildPacket, checkOutput, countWords, packetHash, repairable, templateDraft, WORDS_MIN, type EvidencePacket } from '../../src/lib/import/editorial';
-import { establishedFrom, languagesFrom, looksLikeName, teamFrom, videosFrom } from '../../src/lib/import/profileExtract';
+import { cleanTeam, establishedFrom, languagesFrom, looksLikeName, teamFrom, videosFrom } from '../../src/lib/import/profileExtract';
 import { extractPage } from '../../src/lib/import/siteExtract';
 import { handleOf, publishableSocials, verifySocials } from '../../src/lib/import/socials';
 import { channelUploads, chooseVideos, isoDuration, validateVideos } from '../../src/lib/import/youtube';
@@ -39,6 +39,15 @@ describe('team, videos, languages and founding year from a site', () => {
     assert.deepEqual(t.map(x => [x.value.name, x.value.role]), [['ד"ר יוסי גוברין', 'מנתח פלסטי מומחה'], ['ד"ר דנה לוי', 'כירורגית פלסטית בכירה'], ['מיכל כהן', 'מנהלת הקליניקה']]);
     assert.match(t[0].value.bio ?? '', /בוגר הפקולטה/);
     assert.match(t[1].value.bio ?? '', /כירורגית פלסטית/);
+  });
+  it('form labels, skip links and treatment names are never people, and a line that names its own person is its own card', () => {
+    const page = 'דלג לתוכן\nמומחה לכירורגיה פלסטית - ד״ר תמיר גיל\nהזרקת חומצה היאלורונית ובוטוקס\nד"ר תמיר גיל: מומחה לכירורגיה פלסטית ואסתטית\nבחירה של מנתח פלסטי מומחה מבוססת על אמון, בטיחות וניסיון כירורגי עשיר.\nשם מלא\nמספר טלפון\nתוכן הפנייה\nמספר טלפון\n';
+    const t = teamFrom(page, 'https://gil.test/', { teamPage: true });
+    assert.deepEqual(t.map(x => [x.value.name, x.value.role]), [['ד״ר תמיר גיל', 'מומחה לכירורגיה פלסטית']]);
+    assert.ok(!looksLikeName('שם מלא') && !looksLikeName('דלג לתוכן') && !looksLikeName('הזרקת חומצה היאלורונית ובוטוקס') && !looksLikeName('תוכן הפנייה'));
+    // Entries an older reader stored are filtered the same way before they reach a listing or a page.
+    const stored = [{ name: 'שם מלא', role: 'מספר טלפון' }, { name: 'דלג לתוכן', role: 'מומחה לכירורגיה פלסטית - ד״ר תמיר גיל' }, { name: 'הזרקת חומצה היאלורונית ובוטוקס', role: 'ד"ר תמיר גיל: מומחה' }, { name: 'ד"ר תמיר גיל', role: 'מומחה לכירורגיה פלסטית ואסתטית', bio: 'x' }, { name: 'נועה בן דוד', role: 'אחות מוסמכת' }];
+    assert.deepEqual(cleanTeam(stored).map(x => x.name), ['ד"ר תמיר גיל', 'נועה בן דוד']);
   });
   it('never turns testimonials, menu labels or the business name into staff', () => {
     const page = 'הצוות שלנו\nקליניקת גוברין\nמומחים לכירורגיה פלסטית\n"טיפול מצוין, ממליצה בחום"\nרונית כהן\nמטופלת\nשירותים\nמנתח פלסטי\nד"ר יוסי גוברין\nמנתח פלסטי\n';
