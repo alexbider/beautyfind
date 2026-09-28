@@ -8,6 +8,7 @@
 // Refuses to run unless DATABASE_URL points at localhost.
 
 process.env.IMPORT_TEST_ALLOW_PRIVATE = '1';
+process.env.IMPORT_IMAGE_QUALITY = '0'; // fixture images are flat colours
 process.env.IMPORT_CRAWL_PAUSE_MS = '0';
 process.env.DATAFORSEO_LOGIN = 'simulated';
 process.env.DATAFORSEO_PASSWORD = 'simulated';

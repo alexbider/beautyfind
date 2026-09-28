@@ -15,6 +15,7 @@ import { checkUrl, guardedLookup, isPrivateAddress, safeFetch, UnsafeUrlError } 
 import { extractPage, hoursFromText, rankEmails } from '../../src/lib/import/siteExtract';
 import { completeness, composeDescription } from '../../src/lib/import/completeness';
 import { imageInfo, usable } from '../../src/lib/import/imageInfo';
+import { acceptPhoto, canonicalImageUrl, decorativeHint, dedupeVariants, dhash, hamming, photoScore } from '../../src/lib/import/imageQuality';
 import { matchService } from '../../src/lib/import/services';
 import { mayPublish } from '../../src/lib/import/sourcePolicy';
 import { classifyWebsite, siteBelongs } from '../../src/lib/import/websiteKind';
@@ -378,6 +379,37 @@ describe('images', () => {
     assert.ok(!usable(imageInfo(png(40, 40))!, 'logo'));
     assert.ok(usable(imageInfo(png(240, 240))!, 'logo'));
     assert.equal(imageInfo(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"></svg>'.padEnd(64))), null);
+  });
+});
+
+describe('image quality', () => {
+  const photo = { url: 'https://x.co.il/wp-content/uploads/2024/clinic-room.jpg', width: 1600, height: 1067, bytes: 320_000, entropy: 7.4, hasAlpha: false };
+  it('prefers a large sharp photograph over a small or flat graphic and rejects decoration', () => {
+    const big = photoScore(photo);
+    const small = photoScore({ ...photo, width: 640, height: 427, bytes: 60_000 });
+    const flat = photoScore({ ...photo, entropy: 2.1, bytes: 12_000 });
+    const cutout = photoScore({ ...photo, hasAlpha: true });
+    assert.ok(big > small && small > flat && big > cutout);
+    assert.ok(acceptPhoto(photo) && !acceptPhoto({ ...photo, entropy: 2.1 }) && !acceptPhoto({ ...photo, hasAlpha: true }));
+    assert.ok(!acceptPhoto({ ...photo, url: 'https://x.co.il/img/stars-bg.png' }));
+    assert.ok(decorativeHint('https://x.co.il/assets/certificate-2023.jpg') && decorativeHint('https://x.co.il/a.jpg', 'תעודת הסמכה') && !decorativeHint('https://x.co.il/uploads/reception-area.jpg', 'חדר הטיפולים'));
+    assert.ok(acceptPhoto({ ...photo, entropy: 1 }, false)); // lenient mode for flat fixtures
+    assert.ok(photoScore({ ...photo, entropy: null }) > 50); // no sharp: size and filename still rank
+  });
+  it('treats size variants of one file as one picture, plain file first', () => {
+    assert.equal(canonicalImageUrl('https://x.co.il/wp-content/uploads/2024/room-300x200.jpg'), canonicalImageUrl('https://x.co.il/wp-content/uploads/2024/room.jpg'));
+    assert.equal(canonicalImageUrl('https://x.co.il/wp-content/uploads/2024/room-scaled.jpg?ver=3'), canonicalImageUrl('https://X.co.il/wp-content/uploads/2024/ROOM.jpg'));
+    assert.equal(canonicalImageUrl('https://lh3.googleusercontent.com/p/abc=w408-h306-k-no'), canonicalImageUrl('https://lh3.googleusercontent.com/p/abc=w1600-h1200'));
+    assert.notEqual(canonicalImageUrl('https://x.co.il/a.jpg'), canonicalImageUrl('https://x.co.il/b.jpg'));
+    assert.deepEqual(dedupeVariants(['https://x.co.il/u/room-300x200.jpg', 'https://x.co.il/u/room.jpg', 'https://x.co.il/u/hall.jpg', 'https://x.co.il/u/room-768x512.jpg']), ['https://x.co.il/u/room.jpg', 'https://x.co.il/u/hall.jpg']);
+  });
+  it('perceptual hash: identical thumbnails match, a brightened copy is near, a different picture is far', () => {
+    const a = Array.from({ length: 72 }, (_, i) => (i * 37) % 256);
+    const b = a.map(v => Math.min(255, v + 20));
+    const c = Array.from({ length: 72 }, (_, i) => (i * 91 + 7) % 256);
+    assert.equal(hamming(dhash(a), dhash(a)), 0);
+    assert.ok(hamming(dhash(a), dhash(b)) <= 6);
+    assert.ok(hamming(dhash(a), dhash(c)) > 6);
   });
 });
 

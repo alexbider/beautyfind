@@ -180,6 +180,7 @@ describe('enhancing published listings', { skip }, () => {
   before(async () => {
     process.env.IMPORT_TEST_ALLOW_PRIVATE = '1';
     process.env.UPLOAD_DIR = `${process.env.TMPDIR ?? '/tmp'}/bf-test-uploads`;
+    process.env.IMPORT_IMAGE_QUALITY = '0'; // fixture images are flat colours
     const { startSites } = await import('../../scripts/import/sim/fixtures');
     web = await startSites([{ host: 'enh.test', kind: 'full' }]);
     pdb = (await import('../../scripts/import/ctx')).db;

@@ -393,6 +393,12 @@ function images(html: string, url: string, ldImages: string[], ldLogo: string | 
     if (!list.some(x => x.value === abs) && !logos.some(x => x.value === abs) && !photos.some(x => x.value === abs)) list.push({ value: abs, url, evidence });
   };
   if (ldLogo) add(logos, ldLogo, 'JSON-LD logo');
+  // The image inside a link or block marked as the logo (header brand links carry the class, the image often does not).
+  for (const m of html.matchAll(/<(?:a|div|span)\b[^>]*(?:class|id)=["'][^"']*(?:logo|brand|לוגו)[^"']*["'][^>]*>\s*(?:<(?!img)[^>]*>\s*){0,3}<img\b[^>]*>/gi)) {
+    const img = m[0].match(/<img\b[^>]*>/i)?.[0] ?? '';
+    const src = attr(img, 'data-src') ?? attr(img, 'data-lazy-src') ?? (attr(img, 'srcset') ? bestFromSrcset(attr(img, 'srcset')!) : null) ?? attr(img, 'src');
+    if (src && logos.length < 3) add(logos, src, `img in logo block ${attr(img, 'alt') ?? ''}`.trim().slice(0, 120));
+  }
   for (const m of html.matchAll(/<img\b[^>]*>/gi)) {
     const tag = m[0];
     const src = attr(tag, 'data-src') ?? attr(tag, 'data-lazy-src') ?? (attr(tag, 'srcset') ? bestFromSrcset(attr(tag, 'srcset')!) : null) ?? attr(tag, 'src');
@@ -421,12 +427,15 @@ function images(html: string, url: string, ldImages: string[], ldLogo: string | 
   // Social preview image and structured data images come last among photos (often a logo or banner).
   for (const m of html.matchAll(/<meta[^>]+(?:property|name)=["'](?:og:image|twitter:image)(?::url)?["'][^>]*>/gi)) add(photos, attr(m[0], 'content'), 'og:image');
   for (const i of ldImages) add(photos, i, 'JSON-LD image');
-  // Touch icons are square logos at a usable size.
-  for (const m of html.matchAll(/<link[^>]+rel=["'][^"']*apple-touch-icon[^"']*["'][^>]*>/gi)) {
+  // Touch icons and large PNG site icons are square logos at a usable size (last resort, after the page's own logo).
+  for (const m of html.matchAll(/<link[^>]+rel=["'][^"']*(?:apple-touch-icon|icon)[^"']*["'][^>]*>/gi)) {
     const href = attr(m[0], 'href');
-    if (href && !IMG_BAD.test(href.replace(/icon/gi, ''))) {
+    const sizes = attr(m[0], 'sizes');
+    const px = sizes ? Number(sizes.split('x')[0]) : null;
+    if (!href || /\.(ico|svg)(\?|#|$)/i.test(href) || (px != null && px < 96)) continue;
+    if (!IMG_BAD.test(href.replace(/icon/gi, ''))) {
       const abs = absolute(href, url);
-      if (!logos.some(x => x.value === abs)) logos.push({ value: abs, url, evidence: 'apple-touch-icon' });
+      if (!logos.some(x => x.value === abs)) logos.push({ value: abs, url, evidence: /apple-touch-icon/i.test(m[0]) ? 'apple-touch-icon' : `site icon ${sizes ?? ''}`.trim() });
     }
   }
   return { logos: logos.slice(0, 4), photos: photos.slice(0, 20), beforeAfter };

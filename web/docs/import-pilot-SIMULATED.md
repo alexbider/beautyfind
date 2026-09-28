@@ -7,75 +7,72 @@
 > directory and Instagram links given as the website, a repeated place and a record without coordinates).
 > They say nothing about how many Israeli businesses a live run will find.
 
-Generated 2026-09-28T10:15:50.848Z in 6.1s. Pricing reference: $0.012 per request + $0.00036 per record (mock billed at these rates).
+Generated 2026-09-28T17:12:01.180Z in 6.4s. Pricing reference: $0.012 per request + $0.00036 per record (mock billed at these rates).
 
 ## SIMULATED run
 
 - Record limit 100, ceiling $1.00; mock provider held 142 items (140 businesses + 1 repeat + 1 without coordinates)
 - Provider requests: 7; simulated spend $0.9293; reserved at end $0.0000
-- Spend entries: committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0480, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.5680, committed 0.0040, committed 0.0200, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000
+- Spend entries: committed 0.0480, committed 0.5680, committed 0.0040, committed 0.0200, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0132, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000, committed 0.0000
 - Unique businesses staged: 100
 - With an email: 41 (41%)
-- Ready to publish without edits: 49; conflicts sent to review: 14
-- Services: 302 on 62 records (198 with a price)
-- Images: 60 records with a logo, 86 with photos (376 photos chosen)
+- Ready to publish without edits: 41; conflicts sent to review: 10
+- Services: 304 on 61 records (199 with a price)
+- Images: 60 records with a logo, 84 with photos (377 photos chosen)
 - Social profile kept as the website: 4
 - Fixture sites that redirect to the cloud metadata address: 6; of those crawled, refused as unsafe: 4 (records marked unsafe: 4)
 
 ## SIMULATED records by status
 
-- needs_review: 22
-- ready: 49
-- merged: 24
+- ready: 41
+- needs_review: 20
 - incomplete: 5
+- merged: 34
 
 ## SIMULATED reasons
 
-- hours_conflict: 10
 - possible_existing: 7
+- hours_conflict: 6
 - no_contact: 5
-- phone_conflict: 4
 - email_domain_mismatch: 4
-- medical_without_doctor_info: 3
-- possible_duplicate: 1
+- phone_conflict: 4
+- medical_without_doctor_info: 1
+- shared_phone: 1
 
 ## SIMULATED website outcomes
 
 - ok: 37
 - google_profile: 36
-- no_email: 5
-- blocked: 5
 - robots: 5
+- blocked: 5
+- no_email: 5
 - social_profile: 4
-- unsafe: 4
 - unrelated: 4
+- unsafe: 4
 
 ## SIMULATED listing template coverage
 
-Average completeness 72%. Records with each field: שם 100, כתובת ומיקום 100, טלפון 94, דוא״ל 41, אתר או פרופיל 100, וואטסאפ או רשת חברתית 38, שעות פתיחה 100, לוגו 60, תמונת שער 86, גלריה (3 תמונות ומעלה) 46, תיאור 61, תחומים 100, טיפולים 62, מחירים 61, דירוג Google 100, נגישות 61, חניה 62, שאלות נפוצות 29.
+Average completeness 71%. Records with each field: שם 100, כתובת ומיקום 100, טלפון 94, דוא״ל 41, אתר או פרופיל 100, וואטסאפ או רשת חברתית 38, שעות פתיחה 100, לוגו 60, תמונת שער 84, גלריה (3 תמונות ומעלה) 48, תיאור 64, תחומים 100, טיפולים 61, מחירים 59, דירוג Google 100, נגישות 53, חניה 54, שאלות נפוצות 29.
 
 ## SIMULATED 10-business pilot
 
-Approved through the real approve path (8 records: rich clinic sites, a two-branch chain, a site without prices, sparse listings without a site, plain sites). The editorial writer ran in mock mode (model "template": a deterministic draft built from the evidence packet, so word counts show the packet's richness, not Claude's writing). YouTube ids were validated against a local oEmbed stand-in.
+Approved through the real approve path (5 records: rich clinic sites, a two-branch chain, a site without prices, sparse listings without a site, plain sites). The editorial writer ran in mock mode (model "template": a deterministic draft built from the evidence packet, so word counts show the packet's richness, not Claude's writing). YouTube ids were validated against a local oEmbed stand-in.
 
-- סלון דוגמה 42 (ירושלים; nails): ready_with_disclosed_gaps, coverage 100%, readiness 60%, description 246 words (template, needs_more_business_information), 6 FAQs, 4 services (1 without a published price, 0 zero-priced), 4 photos, 0 videos, team 0 from the site / 0 staff logins created, hours known, map not configured (links only)
-- סלון דוגמה 44 (חיפה; nails, medical-aesthetics, facials, hair-removal): ready_with_disclosed_gaps, coverage 100%, readiness 95%, description 458 words (template), 8 FAQs, 11 services (3 without a published price, 0 zero-priced), 8 photos, 2 videos, team 3 from the site / 0 staff logins created, hours known, map not configured (links only)
-- סלון דוגמה 62 (חיפה; nails): ready_with_disclosed_gaps, coverage 100%, readiness 60%, description 233 words (template, needs_more_business_information), 6 FAQs, 4 services (1 without a published price, 0 zero-priced), 2 photos, 0 videos, team 0 from the site / 0 staff logins created, hours known, map not configured (links only)
-- סלון דוגמה 65 (חיפה; facials, medical-aesthetics, hair-removal): ready_with_disclosed_gaps, coverage 100%, readiness 95%, description 460 words (template), 8 FAQs, 12 services (3 without a published price, 0 zero-priced), 8 photos, 2 videos, team 3 from the site / 0 staff logins created, hours known, map not configured (links only)
-- סלון דוגמה 36 (ירושלים; nails, facials, brows-lashes): ready_with_disclosed_gaps, coverage 100%, readiness 67%, description 303 words (template, needs_more_business_information), 6 FAQs, 6 services (6 without a published price, 0 zero-priced), 8 photos, 0 videos, team 0 from the site / 0 staff logins created, hours known, map not configured (links only)
-- סלון דוגמה 68 (חיפה; nails): ready_with_disclosed_gaps, coverage 100%, readiness 60%, description 203 words (template, needs_more_business_information), 6 FAQs, 1 services (0 without a published price, 0 zero-priced), 2 photos, 0 videos, team 0 from the site / 0 staff logins created, hours known, map not configured (links only)
-- סלון דוגמה 6 (ירושלים; nails): ready_with_disclosed_gaps, coverage 100%, readiness 60%, description 220 words (template, needs_more_business_information), 6 FAQs, 1 services (0 without a published price, 0 zero-priced), 2 photos, 0 videos, team 0 from the site / 0 staff logins created, hours known, map not configured (links only)
-- סלון דוגמה 8 (חיפה; nails): ready_with_disclosed_gaps, coverage 100%, readiness 60%, description 203 words (template, needs_more_business_information), 6 FAQs, 1 services (0 without a published price, 0 zero-priced), 2 photos, 0 videos, team 0 from the site / 0 staff logins created, hours known, map not configured (links only)
+- סלון דוגמה 86 (חיפה; nails, medical-aesthetics, facials, hair-removal): ready_with_disclosed_gaps, coverage 100%, readiness 95%, description 456 words (template), 8 FAQs, 11 services (3 without a published price, 0 zero-priced), 8 photos, 2 videos, team 3 from the site / 0 staff logins created, hours known, map not configured (links only)
+- סלון דוגמה 36 (ירושלים; nails, facials, brows-lashes): ready_with_disclosed_gaps, coverage 100%, readiness 67%, description 327 words (template, needs_more_business_information), 6 FAQs, 6 services (5 without a published price, 0 zero-priced), 8 photos, 0 videos, team 0 from the site / 0 staff logins created, hours known, map not configured (links only)
+- סלון דוגמה 3 (ירושלים; facials, nails, brows-lashes): ready_with_disclosed_gaps, coverage 100%, readiness 67%, description 312 words (template, needs_more_business_information), 6 FAQs, 7 services (2 without a published price, 0 zero-priced), 7 photos, 0 videos, team 0 from the site / 0 staff logins created, hours known, map not configured (links only)
+- סלון דוגמה 52 (תל אביב–יפו; nails): needs_owner_information, coverage 100%, readiness 53%, description 129 words (template, needs_more_business_information), 6 FAQs, 0 services (0 without a published price, 0 zero-priced), 3 photos, 0 videos, team 0 from the site / 0 staff logins created, hours known, map not configured (links only)
+- סלון דוגמה 66 (ירושלים; nails, facials, brows-lashes): ready_with_disclosed_gaps, coverage 100%, readiness 67%, description 307 words (template, needs_more_business_information), 6 FAQs, 6 services (2 without a published price, 0 zero-priced), 8 photos, 0 videos, team 0 from the site / 0 staff logins created, hours known, map not configured (links only)
 
-- Descriptions: 2 of 8 reach 450 words; 6 flagged needs_more_business_information (kept short, not padded). FAQs: 8 of 8 have five or more.
-- Services: 40 published, 14 shown as "המחיר לא פורסם" with a quote action; zero-priced unknowns: 0 by construction (checked per row above).
-- Media: 36 copied photos (WebP derivatives when sharp is available), 4 playable videos; before/after candidates are never published.
-- Readiness: ready_with_disclosed_gaps 8.
+- Descriptions: 1 of 5 reach 450 words; 4 flagged needs_more_business_information (kept short, not padded). FAQs: 5 of 5 have five or more.
+- Services: 30 published, 12 shown as "המחיר לא פורסם" with a quote action; zero-priced unknowns: 0 by construction (checked per row above).
+- Media: 34 copied photos (WebP derivatives when sharp is available), 2 playable videos; before/after candidates are never published.
+- Readiness: ready_with_disclosed_gaps 4, needs_owner_information 1.
 - Editorial cost recorded for the run: $0.0000 over 0 calls (mock: $0). A live Sonnet call is estimated at about $0.06 per profile plus 25% for repairs.
 
 ## SIMULATED enhancement of published listings
 
-5 listings approved and blanked; after enhancing: logo 5, cover 5, hours 5, description 5, email 1, photos per listing (cover + gallery) 6/4/6/4/8 | counters improved 5, postTasks 4, refreshed 5, postPhotos 12, filled_faqs 5, filled_logo 5, filled_cover 5, filled_email 1, filled_hours 5, editorialCalls 4, filled_gallery 5, filled_parking 2, youtubeRequests 0, editorial_cached 1, editorial_written 4, filled_accessible 1, filled_description 5 | spent $0.0198
+5 listings approved and blanked; after enhancing: logo 5, cover 5, hours 5, description 5, email 1, photos per listing (cover + gallery) 5/4/4/7/6 | counters improved 5, postTasks 4, refreshed 5, postPhotos 12, filled_faqs 5, filled_logo 5, filled_cover 5, filled_email 1, filled_hours 5, editorialCalls 4, filled_gallery 5, filled_parking 3, youtubeRequests 0, editorial_cached 1, editorial_written 4, filled_accessible 4, filled_description 5 | spent $0.0198
 
 ## What a live pilot needs
 
