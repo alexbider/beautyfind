@@ -26,7 +26,7 @@ export function ResetImport({ preview }: { preview: ResetPreview }) {
       router.refresh();
     });
   return (
-    <details className={styles.card}>
+    <details className={styles.card} id="reset" open={!empty}>
       <summary className={styles.h2} style={{ cursor: 'pointer', margin: 0 }}>איפוס הייבוא: מחיקת כל מה שנוצר עד עכשיו</summary>
       <div className={styles.stack} style={{ marginTop: 10 }}>
         <p className={styles.note} style={{ margin: 0 }}>

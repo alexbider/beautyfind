@@ -85,6 +85,7 @@ export default async function ImportPage() {
         <ImportNav current="runs" counts={{ review: reviewOpen, enrich: enhanceEligible }} />
         <p className={styles.lead}>
           שלושה מסכים: כאן מתחילים ייבוא ועוקבים אחרי הריצות, בתור הבדיקה מאשרים רשומות, ובהשלמות ממלאים חוסרים בעסקים שכבר פורסמו. ריצת ייבוא אחת אוספת הכול מכל המקורות; שום דבר לא עולה לאתר לפני אישור, אלא אם ביקשתם פרסום אוטומטי.
+          {reset.listings + reset.places + reset.runs > 0 ? <> רוצים להתחיל מאפס? <a href="#reset">איפוס הייבוא</a> בתחתית העמוד מוחק את כל מה שנוצר עד עכשיו.</> : null}
         </p>
         <RunsView
           runs={rows}

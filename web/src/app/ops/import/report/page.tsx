@@ -6,7 +6,9 @@ import { CATEGORIES, REGIONS } from '@/lib/catalog';
 import { MANIFEST, SECTION_NAME, STATUS_NAME } from '@/lib/import/coverage';
 import { RESEARCH_NAME, SITE_OUTCOME_NAME, SOCIAL_CHECK_NAME } from '@/lib/import/sourceNames';
 import { db } from '@/lib/server/db';
+import { resetPreview } from '@/lib/server/importOps';
 import { importReport, reportCities, STATE_NAME, type ReportRow, type ReportState } from '@/lib/server/importReport';
+import { ResetImport } from '../ResetImport';
 import { ImportNav } from '../ImportNav';
 import { ReportGroups } from './ReportGroups';
 import styles from '../import.module.css';
@@ -35,10 +37,11 @@ export default async function ReportPage({ searchParams }: { searchParams: SP })
   const sp = await searchParams;
   const f = { region: one(sp.region), city: one(sp.city), category: one(sp.cat), state: one(sp.state), missing: one(sp.missing), runId: one(sp.run), q: one(sp.q).trim() };
   const page = Math.max(1, Number(one(sp.page)) || 1);
-  const [report, cities, runs] = await Promise.all([
+  const [report, cities, runs, reset] = await Promise.all([
     importReport(f),
     reportCities(),
     db.importRun.findMany({ orderBy: { createdAt: 'desc' }, take: 40, select: { id: true, label: true, status: true, provider: true } }),
+    resetPreview(),
   ]);
   const { rows, groups, total, truncated } = report;
   const cityOptions = f.city && !cities.includes(f.city) ? [f.city, ...cities] : cities;
@@ -178,6 +181,7 @@ export default async function ReportPage({ searchParams }: { searchParams: SP })
             {page < pages ? <Link className={styles.btn} href={href({ page: page + 1 })}>הבא</Link> : <span />}
           </div>
         ) : null}
+        <div style={{ marginTop: 14 }}><ResetImport preview={reset} /></div>
       </main>
     </div>
   );
