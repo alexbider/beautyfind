@@ -562,7 +562,7 @@ export function extractPage(html: string, url: string, siteHost: string): PageFa
     logos,
     photos,
     beforeAfter,
-    team: teamFrom(text, url, { teamPage: isTeamPage }),
+    team: teamFrom(text, url, { teamPage: isTeamPage, siteName }),
     ...videosFrom(html, url),
     languages: languagesFrom(text, url),
     establishedYear: establishedFrom(text, url),

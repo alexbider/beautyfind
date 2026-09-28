@@ -13,55 +13,99 @@ export interface TeamMember {
 
 // Titles and roles that mark a person card. A line is a role when it is short and matches one of these.
 const ROLE_WORDS =
-  /(רופא(?:ה|ת)?\s*(?:עור|מומחה|מומחית|פלסטי|פלסטיקאי)?|מנהל(?:ת)?\s*רפואי(?:ת)?|אחות|אח\s+מוסמך|קוסמטיקאי(?:ת)?|קוסמטיקאית\s*רפואית|פרא[-־ ]?רפואית|מעצב(?:ת)?\s*(?:שיער|גבות|ציפורניים)|ספר(?:ית)?|מאפר(?:ת)?|מטפל(?:ת)?|טכנאי(?:ת)?|מנהל(?:ת)?\s*(?:הקליניקה|הסלון|המכון|קליניקה|סניף)?|בעל(?:ת|ים)?\s*(?:העסק|הסלון|הקליניקה)|מייסד(?:ת)?|מומחה|מומחית|מדריכ(?:ה)?|פדיקוריסט(?:ית)?|מניקוריסט(?:ית)?|מנתח(?:ת)?|רופא\s*שיניים|nurse|doctor|physician|dermatologist|cosmetician|esthetician|stylist|therapist|manager|owner|founder|technician|surgeon|md|rn)/i;
+  /(רופא(?:ה|ת|ים|ות)?\s*(?:עור|מומחה|מומחית|פלסטי|פלסטיקאי|שיניים|משפחה|בכיר|בכירה)?|מנהל(?:ת)?\s*רפואי(?:ת)?|אחות|אח\s+מוסמך|אחיות|קוסמטיקאי(?:ת|ות)?|קוסמטיקאית\s*רפואית|פרא[-־ ]?רפואית|אסתטיקאי(?:ת)?|מעצב(?:ת)?\s*(?:שיער|גבות|ציפורניים)|ספר(?:ית)?|מאפר(?:ת)?|מטפל(?:ת|ים|ות)?|טכנאי(?:ת)?|מנהל(?:ת)?\s*(?:הקליניקה|הסלון|המכון|המרפאה|קליניקה|סניף|צוות|שירות|מרפאה)?|בעל(?:ת|ים)?\s*(?:העסק|הסלון|הקליניקה|המכון)|מייסד(?:ת)?|מומח(?:ה|ית|ים)\s*(?:ל\S+)?|מדריכ(?:ה)?|פדיקוריסט(?:ית)?|מניקוריסט(?:ית)?|מנתח(?:ת|ים)?\s*(?:פלסטי|פלסטית|פלסטיקאי)?|כירורג(?:ית|ים)?\s*(?:פלסטי|פלסטית)?|פלסטיקאי(?:ת)?|מרדים(?:ה)?|דיאטנ(?:ית|אי)|תזונאי(?:ת)?|פיזיותרפיסט(?:ית)?|רוקח(?:ת)?|מזכיר(?:ה|ת)\s*(?:רפואית)?|רכז(?:ת)?\s*(?:טיפולים|לקוחות)?|nurse|doctor|physician|dermatologist|cosmetician|esthetician|aesthetician|stylist|therapist|manager|owner|founder|technician|surgeon|receptionist|coordinator|md|rn)/i;
+const ROLE = new RegExp(`(?<![א-תA-Za-z])${ROLE_WORDS.source}(?![א-תA-Za-z])`, 'i');
+const ROLE_START = new RegExp(`^${ROLE_WORDS.source}(?![א-תA-Za-z])`, 'i');
 const TITLE = /^(ד["״]?ר|דר['׳]?|פרופ['׳]?|dr\.?|prof\.?)\s+/i;
 const NAME_WORD = /^[א-תA-Za-z'׳"״.\-]{2,20}$/;
+// A card whose "role" is a customer signature, or a name that is a menu label, is not staff.
+const TESTIMONIAL = /(לקוח(?:ה|ות|ים)?|מטופל(?:ת|ים|ות)?|ממליצ|מרוצ|חוות\s*דעת|ביקורת|review|customer|client|patient)/i;
+const NAV = /^(צור קשר|צרו קשר|אודות|הצוות|הצוות שלנו|שירותים|טיפולים|מחירון|גלריה|ראשי|בית|תפריט|home|about|contact|team|services|menu|our team)$/i;
+// A name and its role on one line: "ד"ר יעל לוינסון - מנהלת רפואית", "נועה בן דוד | אחות", "רונית, קוסמטיקאית".
+const SPLIT = /\s+[-–—|·]\s+|,\s+|:\s+/;
 
 /** A short line of two to four name-like words, optionally with a title, no digits and no verbs of a sentence. */
 export function looksLikeName(line: string): boolean {
   const s = line.trim().replace(/[,:]+$/, '');
-  if (s.length < 3 || s.length > 45 || /\d|@|https?:|₪|\?|!/.test(s)) return false;
+  if (s.length < 3 || s.length > 45 || /\d|@|https?:|₪|\?|!|["״]$/.test(s)) return false;
   const words = s.replace(TITLE, '').split(/\s+/).filter(Boolean);
   if (words.length < 1 || words.length > 4) return false;
   if (words.length === 1 && !TITLE.test(s)) return false;
   if (!words.every(w => NAME_WORD.test(w.replace(/,$/, '')))) return false;
   // A role ("מנהלת רפואית", "קוסמטיקאית") or a navigation label is not a person's name.
-  if (ROLE_WORDS.test(s.replace(TITLE, ''))) return false;
-  if (/^(צור קשר|אודות|הצוות|שירותים|טיפולים|מחירון|גלריה|ראשי|בית|תפריט|home|about|contact|team|services|menu)$/i.test(s)) return false;
+  if (ROLE.test(s.replace(TITLE, ''))) return false;
+  if (NAV.test(s)) return false;
   return true;
 }
 
-const isRoleLine = (line: string) => line.trim().length <= 60 && ROLE_WORDS.test(line) && !/[.!?]\s*\S/.test(line.trim()) && line.split(/\s+/).length <= 8;
+// A role line: short, names a role, no digits or prices, not a sentence. A line that starts with a role
+// may run longer ("מנתח פלסטי מומחה, חבר האיגוד הישראלי לכירורגיה פלסטית").
+const isRoleLine = (line: string) => {
+  const s = line.trim().replace(/\b(dr|prof|md)\./gi, '$1');
+  if (!s || s.length > 90 || /\d|₪|@|https?:|[.!?]/.test(s) || TESTIMONIAL.test(s)) return false;
+  if (!ROLE.test(s)) return false;
+  const words = s.split(/\s+/).length;
+  return words <= 8 || (words <= 12 && ROLE_START.test(s));
+};
 const isBio = (line: string) => line.length >= 30 && line.length <= 600 && /[.!]/.test(line);
 
+/** The role phrase at the start of a biography ("ד"ר גוברין הוא מנתח פלסטי בכיר, בוגר..." gives "מנתח פלסטי בכיר"). */
+function roleFromBio(bio: string): string | null {
+  const head = bio.slice(0, 140);
+  const m = ROLE.exec(head);
+  if (!m || m.index > 100) return null;
+  const rest = head.slice(m.index).split(/[,.;:()\n]|\s+(?:עם|של|מאז|בעל|בעלת|בוגר|בוגרת|אשר|המתמחה|שמתמחה|ומנהל|ומנהלת)\s/)[0].trim();
+  const role = rest.split(/\s+/).slice(0, 4).join(' ');
+  return role.length >= 3 && role.length <= 45 ? role : null;
+}
+
+const norm = (s: string) => s.replace(TITLE, '').replace(/["״'׳]/g, '').toLowerCase().trim();
+
 /**
- * People named on a page as "name + role" cards (name then role, or role then name), with the
- * paragraph under them as the biography. Only pages that look like a team page or that carry two or
- * more such cards count, so a single testimonial signature is not a staff member.
+ * People named on a page as "name + role" cards (name then role, role then name, both on one line, or a
+ * name followed by a biography that opens with the role), with the paragraph under them as the
+ * biography. Only pages that look like a team page or that carry two or more such cards count, so a
+ * single testimonial signature is not a staff member. The business's own name is never a person.
  */
-export function teamFrom(text: string, url: string, opts: { teamPage?: boolean } = {}): Fact<TeamMember>[] {
+export function teamFrom(text: string, url: string, opts: { teamPage?: boolean; siteName?: string | null } = {}): Fact<TeamMember>[] {
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   const out: Fact<TeamMember>[] = [];
   const seen = new Set<string>();
-  for (let i = 0; i < lines.length - 1; i++) {
-    const a = lines[i];
-    const b = lines[i + 1];
-    let name: string | null = null;
-    let role: string | null = null;
-    if (looksLikeName(a) && isRoleLine(b) && !looksLikeName(b)) {
-      name = a;
-      role = b;
-    } else if (isRoleLine(a) && !looksLikeName(a) && looksLikeName(b)) {
-      role = a;
-      name = b;
-    } else continue;
-    const key = name.replace(TITLE, '').toLowerCase();
-    if (seen.has(key)) continue;
-    const bioLine = lines[i + 2];
+  const site = opts.siteName ? norm(opts.siteName) : null;
+  const push = (name: string, role: string, bioLine: string | undefined, evidence: string) => {
+    const key = norm(name);
+    if (seen.has(key) || (site && site === key)) return false;
     const bio = bioLine && isBio(bioLine) && !looksLikeName(bioLine) && !isRoleLine(bioLine) ? bioLine.slice(0, 500) : null;
     seen.add(key);
-    out.push({ value: { name: name.replace(/[,:]+$/, ''), role: role.replace(/[,:]+$/, ''), bio }, url, evidence: `${name} | ${role}`.slice(0, 200) });
-    i++;
+    out.push({ value: { name: name.replace(/[,:]+$/, '').trim(), role: role.replace(/[,:]+$/, '').trim(), bio }, url, evidence: evidence.slice(0, 200) });
+    return true;
+  };
+  for (let i = 0; i < lines.length; i++) {
+    const a = lines[i];
+    const b = lines[i + 1] ?? '';
+    const prev = lines[i - 1] ?? '';
+    // A quoted line before the name is a testimonial, not a card.
+    if (/^["״“]/.test(prev) || /["״”]$/.test(prev)) continue;
+    // Name and role on one line.
+    const parts = a.length <= 70 && !/[.!?]/.test(a) ? a.split(SPLIT).map(x => x.trim()).filter(Boolean) : [];
+    if (parts.length === 2) {
+      const [x, y] = parts;
+      if (looksLikeName(x) && isRoleLine(y) && !looksLikeName(y)) {
+        if (push(x, y, b, a)) continue;
+      } else if (isRoleLine(x) && !looksLikeName(x) && looksLikeName(y)) {
+        if (push(y, x, b, a)) continue;
+      }
+    }
+    if (!b) continue;
+    if (looksLikeName(a) && isRoleLine(b) && !looksLikeName(b)) {
+      if (push(a, b, lines[i + 2], `${a} | ${b}`)) i++;
+    } else if (isRoleLine(a) && !looksLikeName(a) && looksLikeName(b)) {
+      if (push(b, a, lines[i + 2], `${a} | ${b}`)) i++;
+    } else if (looksLikeName(a) && isBio(b) && !TESTIMONIAL.test(b.slice(0, 60))) {
+      // "ד"ר יוסי גוברין" then "ד"ר גוברין הוא מנתח פלסטי בכיר, ...": the biography names the role.
+      const role = roleFromBio(b);
+      if (role && push(a, role, b, `${a} | ${b.slice(0, 80)}`)) i++;
+    }
   }
   if (!opts.teamPage && out.length < 2) return [];
   return out.slice(0, 12);

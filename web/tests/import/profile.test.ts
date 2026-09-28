@@ -33,6 +33,21 @@ describe('team, videos, languages and founding year from a site', () => {
     assert.deepEqual(teamFrom('תודה רבה!\nרונית כהן\nלקוחה מרוצה\n', 'https://x.co.il/'), []);
     assert.ok(!looksLikeName('צור קשר') && !looksLikeName('קוסמטיקאית') && looksLikeName('ד"ר יעל לוינסון'));
   });
+  it('reads a name and role on one line, a role that opens the biography, and surgeon titles', () => {
+    const page = 'הצוות שלנו\nד"ר יוסי גוברין - מנתח פלסטי מומחה\nבוגר הפקולטה לרפואה, חבר האיגוד הישראלי לכירורגיה פלסטית.\nד"ר דנה לוי\nד"ר לוי היא כירורגית פלסטית בכירה, בעלת ניסיון של שנים בניתוחי חזה.\nמיכל כהן | מנהלת הקליניקה\n';
+    const t = teamFrom(page, 'https://govrin.test/team', { teamPage: true });
+    assert.deepEqual(t.map(x => [x.value.name, x.value.role]), [['ד"ר יוסי גוברין', 'מנתח פלסטי מומחה'], ['ד"ר דנה לוי', 'כירורגית פלסטית בכירה'], ['מיכל כהן', 'מנהלת הקליניקה']]);
+    assert.match(t[0].value.bio ?? '', /בוגר הפקולטה/);
+    assert.match(t[1].value.bio ?? '', /כירורגית פלסטית/);
+  });
+  it('never turns testimonials, menu labels or the business name into staff', () => {
+    const page = 'הצוות שלנו\nקליניקת גוברין\nמומחים לכירורגיה פלסטית\n"טיפול מצוין, ממליצה בחום"\nרונית כהן\nמטופלת\nשירותים\nמנתח פלסטי\nד"ר יוסי גוברין\nמנתח פלסטי\n';
+    const t = teamFrom(page, 'https://govrin.test/', { teamPage: true, siteName: 'קליניקת גוברין' });
+    assert.deepEqual(t.map(x => x.value.name), ['ד"ר יוסי גוברין']);
+    // A solo clinic named after its doctor keeps the doctor.
+    const solo = teamFrom('ד"ר גוברין\nמנתח פלסטי\n', 'https://govrin.test/', { teamPage: true, siteName: 'ד"ר גוברין - מנתח פלסטי' });
+    assert.equal(solo.length, 1);
+  });
   it('finds YouTube ids and channel links, nothing else', () => {
     assert.deepEqual(f.videos.map(v => v.value.id).sort(), ['abcdefghijk', 'lmnopqrstuv']);
     assert.deepEqual(f.channels.map(c => c.value), ['https://www.youtube.com/@noaclinic']);

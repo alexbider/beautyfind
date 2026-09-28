@@ -13,7 +13,7 @@ import { mapQuery } from '@/lib/mapsEmbed';
 import { ProfileHeader, SectionTabs } from '@/components/profile/ProfileMobile';
 import { ProfileView } from '@/components/profile/ProfileView';
 import { ReviewsInfo, ReviewsRail } from '@/components/profile/Reviews';
-import { Services, ServicesEmpty } from '@/components/profile/Services';
+import { Services } from '@/components/profile/Services';
 import { VideoGrid } from '@/components/profile/VideoEmbed';
 import { SaveHeart } from '@/components/save-heart/SaveHeart';
 import { ActionBar } from '@/components/shell/ActionBar';
@@ -98,14 +98,26 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
   const cta = primaryCta(p, v);
   const bookHref = cta?.kind === 'book' ? cta.href : null;
 
-  // Phone section chips (mobile v2 §4), in page order. Every section keeps its anchor; the chips list the ones with content.
+  // Sections appear only when there is something to show: a section without data is left out of the page
+  // and of the phone chips. Identity, location and contact always have content.
+  const has = {
+    about: v.description.length > 0,
+    services: v.services.length > 0,
+    reviews: !!v.google || (!!p.beautyfind && p.beautyfind.count > 0) || v.reviews.length > 0,
+    ba: v.beforeAfter.length > 0,
+    team: v.staff.length > 0 || v.siteTeam.length > 0,
+    video: v.videos.length > 0,
+    hours: !!v.hoursRows && v.hoursKnown,
+    faq: v.faqs.length > 0,
+  };
+  // Phone section chips (mobile v2 §4), in page order, for the sections that exist.
   const tabs = [
-    { key: 'services', label: 'מחירים', target: 'h-services' },
-    { key: 'reviews', label: 'ביקורות', target: 'h-reviews' },
-    (v.staff.length > 0 || v.siteTeam.length > 0) && { key: 'team', label: 'צוות', target: 'h-team' },
-    v.videos.length > 0 && { key: 'video', label: 'סרטונים', target: 'h-video' },
-    { key: 'hours', label: 'שעות', target: 'h-hours' },
-    v.faqs.length > 0 && { key: 'faq', label: 'שאלות', target: 'h-faq' },
+    has.services && { key: 'services', label: 'מחירים', target: 'h-services' },
+    has.reviews && { key: 'reviews', label: 'ביקורות', target: 'h-reviews' },
+    has.team && { key: 'team', label: 'צוות', target: 'h-team' },
+    has.video && { key: 'video', label: 'סרטונים', target: 'h-video' },
+    has.hours && { key: 'hours', label: 'שעות', target: 'h-hours' },
+    has.faq && { key: 'faq', label: 'שאלות', target: 'h-faq' },
     { key: 'loc', label: 'הגעה', target: 'h-loc' },
     { key: 'contact', label: 'יצירת קשר', target: 'bf-contact' },
   ].filter((t): t is { key: string; label: string; target: string } => !!t);
@@ -147,17 +159,16 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
           <div className={styles.col}>
             <Identity p={p} v={v} />
 
-            <section aria-labelledby="h-about">
-              <h2 id="h-about" className={styles.h2}>{v.heading}<span className={styles.dotTeal}>.</span></h2>
-              {v.description.length > 0 ? (
+            {has.about && (
+              <section aria-labelledby="h-about">
+                <h2 id="h-about" className={styles.h2}>{v.heading}<span className={styles.dotTeal}>.</span></h2>
                 <div className={styles.about}>
                   {v.description.map((para, i) => <p key={i}>{para}</p>)}
                 </div>
-              ) : (
-                <p className={styles.emptyState}>{p.isClaimed ? 'העסק טרם כתב תיאור.' : 'לא נמצא תיאור של העסק במקורות שנבדקו. הפרטים שנמצאו מופיעים בהמשך העמוד.'}</p>
-              )}
-            </section>
+              </section>
+            )}
 
+            {has.services && (
             <section aria-labelledby="h-services">
               <div className={styles.secHead}>
                 <h2 id="h-services" className={styles.h2}>שירותים ומחירים<span className={styles.dotTeal}>.</span></h2>
@@ -165,34 +176,31 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
                   ? v.pricesUpdated && <span className={styles.secNote}>המחירים נמסרו על ידי העסק ועודכנו ב־{v.pricesUpdated}</span>
                   : <span className={styles.secNote}>{v.pricesUpdated ? `כפי שפורסמו על ידי העסק, נאספו ב־${v.pricesUpdated}` : 'כפי שפורסמו על ידי העסק'}</span>)}
               </div>
-              {v.services.length > 0 ? (
-                <>
-                  <Services groups={v.services} contact={p.isClaimed} bookHref={bookHref} />
-                  <p className={styles.vat}>
-                    {p.isClaimed && !v.importedPrices
-                      ? 'כל המחירים לא כוללים מע״מ.'
-                      : 'המחירים כפי שפרסם העסק; כדאי לוודא מול העסק אם הם כוללים מע״מ.'}
-                    {v.medicalBiz ? ' טיפולים רפואיים נקבעים אחרי ייעוץ רפואי, ושם נקבע גם המחיר הסופי.' : ''}
-                  </p>
-                </>
-              ) : (
-                <ServicesEmpty contact={p.isClaimed} />
-              )}
+              <Services groups={v.services} contact={p.isClaimed} bookHref={bookHref} />
+              <p className={styles.vat}>
+                {p.isClaimed && !v.importedPrices
+                  ? 'כל המחירים לא כוללים מע״מ.'
+                  : 'המחירים כפי שפרסם העסק; כדאי לוודא מול העסק אם הם כוללים מע״מ.'}
+                {v.medicalBiz ? ' טיפולים רפואיים נקבעים אחרי ייעוץ רפואי, ושם נקבע גם המחיר הסופי.' : ''}
+              </p>
             </section>
+            )}
 
-            <ReviewsSection p={p} v={v} />
+            {has.reviews && <ReviewsSection p={p} v={v} />}
 
-            <section aria-labelledby="h-ba">
-              <div className={styles.secHead}>
-                <h2 id="h-ba" className={styles.h2}>לפני ואחרי<span className={styles.dotTeal}>.</span></h2>
-                {v.beforeAfter.length > 0 && <span className={styles.secNote}>פורסם על ידי העסק בהסכמת המטופלים</span>}
-              </div>
-              {v.beforeAfter.length > 0 ? <BeforeAfter photos={v.beforeAfter} /> : <p className={styles.emptyState}>{p.isClaimed ? 'העסק טרם פרסם תמונות לפני ואחרי.' : 'תמונות לפני ואחרי מתפרסמות רק על ידי העסק עצמו, בהסכמת המטופלים.'}</p>}
-            </section>
+            {has.ba && (
+              <section aria-labelledby="h-ba">
+                <div className={styles.secHead}>
+                  <h2 id="h-ba" className={styles.h2}>לפני ואחרי<span className={styles.dotTeal}>.</span></h2>
+                  <span className={styles.secNote}>פורסם על ידי העסק בהסכמת המטופלים</span>
+                </div>
+                <BeforeAfter photos={v.beforeAfter} />
+              </section>
+            )}
 
+            {has.team && (
             <section aria-labelledby="h-team">
               <h2 id="h-team" className={styles.h2}>הצוות שלנו<span className={styles.dotTeal}>.</span></h2>
-              {v.staff.length > 0 || v.siteTeam.length > 0 ? (
                 <>
                   <div className={styles.team}>
                     {v.staff.map(s => (
@@ -227,29 +235,19 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
                   </div>
                   {v.siteTeam.length > 0 && <p className={styles.secFoot}>פרטי הצוות לקוחים מאתר העסק. הסמכות ורישיונות מאומתים מופיעים רק אחרי אימות ב־BeautyFind.</p>}
                 </>
-              ) : (
-                <p className={styles.emptyState}>{p.isClaimed ? 'העסק טרם הוסיף את אנשי הצוות.' : 'פרטי הצוות טרם עודכנו.'}</p>
-              )}
             </section>
+            )}
 
-            <section aria-labelledby="h-video">
-              <h2 id="h-video" className={styles.h2}>סרטונים<span className={styles.dotTeal}>.</span></h2>
-              {v.videos.length > 0 ? (
+            {has.video && (
+              <section aria-labelledby="h-video">
+                <h2 id="h-video" className={styles.h2}>סרטונים<span className={styles.dotTeal}>.</span></h2>
                 <VideoGrid videos={v.videos} />
-              ) : (
-                <p className={styles.emptyState}>
-                  {p.youtube ? (
-                    <>
-                      לא נמצאו סרטונים שאפשר להציג כאן. <a href={p.youtube} target="_blank" rel="noopener nofollow">לערוץ היוטיוב של העסק</a>
-                    </>
-                  ) : p.isClaimed ? 'העסק טרם הוסיף סרטונים.' : 'לא נמצאו סרטונים רשמיים של העסק.'}
-                </p>
-              )}
-            </section>
+              </section>
+            )}
 
+            {has.hours && v.hoursRows && (
             <section aria-labelledby="h-hours">
               <h2 id="h-hours" className={styles.h2}>שעות פעילות<span className={styles.dotTeal}>.</span></h2>
-              {v.hoursRows && v.hoursKnown ? (
                 <table className={styles.hours}>
                   <caption>היום מסומן. השעות לפי שעון ישראל{v.hoursRows.some(h => h.unknown) ? '; ימים שלא פורסמו מסומנים כך.' : '.'}</caption>
                   <tbody>
@@ -266,18 +264,15 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
                     ))}
                   </tbody>
                 </table>
-              ) : (
-                <div className={styles.emptyBox}>
-                  <p className={styles.emptyText}>שעות הפעילות לא פורסמו במקורות שנבדקו. כדאי לבדוק מול העסק לפני ההגעה.</p>
-                  <ContactTrigger className={styles.emptyAction}>{p.isClaimed ? 'פנייה לעסק' : 'בירור מול העסק'}</ContactTrigger>
-                </div>
-              )}
             </section>
+            )}
 
-            <section aria-labelledby="h-faq">
-              <h2 id="h-faq" className={styles.h2}>שאלות נפוצות<span className={styles.dotTeal}>.</span></h2>
-              {v.faqs.length > 0 ? <FaqAccordion items={v.faqs} /> : <p className={styles.emptyState}>עוד לא נאספו שאלות ותשובות על העסק הזה. אפשר לפנות לעסק ישירות דרך פרטי הקשר.</p>}
-            </section>
+            {has.faq && (
+              <section aria-labelledby="h-faq">
+                <h2 id="h-faq" className={styles.h2}>שאלות נפוצות<span className={styles.dotTeal}>.</span></h2>
+                <FaqAccordion items={v.faqs} />
+              </section>
+            )}
 
             <Location p={p} v={v} />
 
