@@ -366,7 +366,9 @@ describe('seeding an automatic enhance run', { skip }, () => {
     made.places.push(p.id);
     const { seedEnhance } = await import('../../scripts/import/stages/enhance');
     const { WORKER } = await import('../../scripts/import/ctx');
-    const run = await db.importRun.create({ data: { label: 'auto batch', provider: 'enhance', scope: { branchIds: [b.id], steps: ['dfs', 'maps', 'instagram', 'facebook', 'site', 'render', 'editorial', 'images'], auto: true }, maxRequests: 0, budgetMicros: 1_000_000n, status: 'running', lockedBy: WORKER, lockedUntil: new Date(Date.now() + 600_000) } });
+    // The fill needs an actor: the run's creator (a bare user is enough; CI has no ops user).
+    const actor = (await db.user.findFirst({ select: { id: true } })) ?? (await db.user.create({ data: {}, select: { id: true } }));
+    const run = await db.importRun.create({ data: { label: 'auto batch', provider: 'enhance', scope: { branchIds: [b.id], steps: ['dfs', 'maps', 'instagram', 'facebook', 'site', 'render', 'editorial', 'images'], auto: true }, maxRequests: 0, budgetMicros: 1_000_000n, status: 'running', lockedBy: WORKER, lockedUntil: new Date(Date.now() + 600_000), createdById: actor.id } });
     made.runs.push(run.id);
     await seedEnhance(run);
     const tasks = await db.importTask.findMany({ where: { runId: run.id } });
