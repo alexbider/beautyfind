@@ -8,7 +8,7 @@ import { serviceKey } from '@/lib/import/services';
 import type { ImportSettings } from '@/lib/import/settings';
 import { ratingProviderOk } from '@/lib/import/sourcePolicy';
 import { db } from '@/lib/server/db';
-import { copyListingImages, type MediaProvenance } from '@/lib/server/importMedia';
+import { copyListingImages, copyVideoPosters, type MediaProvenance } from '@/lib/server/importMedia';
 import { mediaCandidatesOf, refreshProfileStatus } from '@/lib/server/importOps';
 import { editorialText, profileFields, treatmentRows } from '@/lib/server/importPublish';
 
@@ -102,6 +102,17 @@ export async function enhanceBranch(branchId: string, p: ImportPlace, s: ImportS
     if (want.gallery && gallery.length > galleryCount) set('gallery', gallery as unknown as Prisma.InputJsonValue, 'gallery');
     if (copied.provenance.length) data.mediaProvenance = [...((Array.isArray(b.mediaProvenance) ? b.mediaProvenance : []) as unknown as MediaProvenance[]), ...copied.provenance] as unknown as Prisma.InputJsonValue;
   }
+  // Video posters: the thumbnail copied into our storage, for videos that have none yet (existing or just filled).
+  if (opts.images !== false && process.env.STORAGE_ADAPTER !== 'none') {
+    const vids = ((data.videos as unknown) ?? b.videos) as unknown as Array<{ id: string; status?: string; thumbnail?: string | null; poster?: string | null }>;
+    if (Array.isArray(vids) && vids.some(v => !v.poster && (!v.status || v.status === 'ok'))) {
+      const r = await copyVideoPosters(vids, actorId, b.businessId, b.name).catch(() => null);
+      if (r?.copied) {
+        data.videos = r.videos as unknown as Prisma.InputJsonValue;
+        filled.push('video_posters');
+      }
+    }
+  }
 
   // Categories and services.
   const have = new Set(b.categories.map(c => c.categorySlug));
@@ -178,6 +189,11 @@ export async function copyPendingImages(s: ImportSettings, actorId: string, batc
       }
       const gallery = want.cover ? rest : copied.photos;
       if (want.gallery && gallery.length > galleryCount) data.gallery = gallery as unknown as Prisma.InputJsonValue;
+      const vids = (Array.isArray(b.videos) ? b.videos : []) as unknown as Array<{ id: string; status?: string; thumbnail?: string | null; poster?: string | null }>;
+      if (vids.some(v => !v.poster && (!v.status || v.status === 'ok'))) {
+        const r = await copyVideoPosters(vids, actorId, b.businessId, b.name).catch(() => null);
+        if (r?.copied) data.videos = r.videos as unknown as Prisma.InputJsonValue;
+      }
       if (Object.keys(data).length) await db.branch.update({ where: { id: b.id }, data });
       if (data.logoUrl) logos++;
       if (data.coverUrl) covers++;

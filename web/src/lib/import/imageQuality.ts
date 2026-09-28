@@ -128,3 +128,22 @@ export function dedupeVariants(urls: string[]): string[] {
   }
   return [...byKey.values()];
 }
+
+/**
+ * Logo candidates: a mark rather than a photo. Transparency and a compact, square-ish shape count for;
+ * photographic entropy, a very wide strip or a partner, payment or award badge count against. Candidates
+ * arrive in source order (the site's own logo first, then the Google profile, then social profile
+ * pictures, then touch icons), and `rank` keeps that order as a small tiebreaker.
+ */
+export function logoScore(s: ImageSignals & { rank?: number }): number {
+  const short = Math.min(s.width, s.height);
+  const ratio = s.width / Math.max(1, s.height);
+  const size = short >= 400 ? 1 : short >= 200 ? 0.8 : short >= 120 ? 0.6 : 0.35;
+  const shape = ratio >= 0.7 && ratio <= 1.6 ? 1 : ratio <= 3.5 && ratio >= 0.4 ? 0.75 : 0.3;
+  const photo = s.entropy == null ? 0 : s.entropy >= 7.2 ? 0.45 : s.entropy >= 6.5 ? 0.2 : 0; // a photograph is not a logo
+  let score = 0.4 * size + 0.35 * shape + (s.hasAlpha ? 0.25 : 0.1) - photo;
+  if (/(partner|clients?|payment|visa|mastercard|paypal|award|badge|certificate|accredit|iso-|google-play|app-store|whatsapp|waze)/i.test(s.url)) score -= 0.4; // badges and third-party marks
+  if (s.entropy != null && s.entropy < 0.5) score -= 0.3; // a flat square
+  score -= Math.min(0.15, (s.rank ?? 0) * 0.03);
+  return Math.round(Math.max(0, Math.min(1, score)) * 100);
+}

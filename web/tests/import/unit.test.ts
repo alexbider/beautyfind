@@ -15,7 +15,7 @@ import { checkUrl, guardedLookup, isPrivateAddress, safeFetch, UnsafeUrlError } 
 import { extractPage, hoursFromText, rankEmails } from '../../src/lib/import/siteExtract';
 import { completeness, composeDescription } from '../../src/lib/import/completeness';
 import { imageInfo, usable } from '../../src/lib/import/imageInfo';
-import { acceptPhoto, canonicalImageUrl, decorativeHint, dedupeVariants, dhash, hamming, photoScore } from '../../src/lib/import/imageQuality';
+import { acceptPhoto, canonicalImageUrl, decorativeHint, dedupeVariants, dhash, hamming, logoScore, photoScore } from '../../src/lib/import/imageQuality';
 import { matchService } from '../../src/lib/import/services';
 import { mayPublish } from '../../src/lib/import/sourcePolicy';
 import { classifyWebsite, siteBelongs } from '../../src/lib/import/websiteKind';
@@ -395,6 +395,14 @@ describe('image quality', () => {
     assert.ok(decorativeHint('https://x.co.il/assets/certificate-2023.jpg') && decorativeHint('https://x.co.il/a.jpg', 'תעודת הסמכה') && !decorativeHint('https://x.co.il/uploads/reception-area.jpg', 'חדר הטיפולים'));
     assert.ok(acceptPhoto({ ...photo, entropy: 1 }, false)); // lenient mode for flat fixtures
     assert.ok(photoScore({ ...photo, entropy: null }) > 50); // no sharp: size and filename still rank
+  });
+  it('picks a mark over a photograph or a partner badge as the logo', () => {
+    const mark = logoScore({ url: 'https://x.co.il/wp-content/uploads/logo.png', width: 400, height: 400, bytes: 20_000, hasAlpha: true, entropy: 3.5, rank: 0 });
+    const wordmark = logoScore({ url: 'https://x.co.il/img/brand.png', width: 600, height: 200, bytes: 18_000, hasAlpha: true, entropy: 3, rank: 1 });
+    const photo = logoScore({ url: 'https://lh3.googleusercontent.com/p/abc=s400', width: 400, height: 400, bytes: 60_000, hasAlpha: false, entropy: 7.6, rank: 2 });
+    const badge = logoScore({ url: 'https://x.co.il/img/partner-visa.png', width: 300, height: 300, bytes: 9_000, hasAlpha: true, entropy: 3, rank: 3 });
+    const tiny = logoScore({ url: 'https://x.co.il/favicon-96.png', width: 96, height: 96, bytes: 3_000, hasAlpha: true, entropy: 3, rank: 4 });
+    assert.ok(mark > wordmark && wordmark > photo && mark > badge && mark > tiny);
   });
   it('treats size variants of one file as one picture, plain file first', () => {
     assert.equal(canonicalImageUrl('https://x.co.il/wp-content/uploads/2024/room-300x200.jpg'), canonicalImageUrl('https://x.co.il/wp-content/uploads/2024/room.jpg'));

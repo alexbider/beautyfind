@@ -53,7 +53,7 @@ export function parseVideos(json: unknown): VideoView[] {
   return json.flatMap(v => {
     const o = (v ?? {}) as Record<string, unknown>;
     if (typeof o.id !== 'string' || !/^[A-Za-z0-9_-]{11}$/.test(o.id) || o.status !== 'ok' || o.embeddable !== true) return [];
-    return [{ id: o.id, title: typeof o.title === 'string' ? o.title : null, channelTitle: typeof o.channelTitle === 'string' ? o.channelTitle : null, durationSec: typeof o.durationSec === 'number' ? o.durationSec : null, thumbnail: typeof o.thumbnail === 'string' ? o.thumbnail : null, status: 'ok' as const }];
+    return [{ id: o.id, title: typeof o.title === 'string' ? o.title : null, channelTitle: typeof o.channelTitle === 'string' ? o.channelTitle : null, durationSec: typeof o.durationSec === 'number' ? o.durationSec : null, thumbnail: typeof o.thumbnail === 'string' ? o.thumbnail : null, poster: typeof o.poster === 'string' ? o.poster : null, status: 'ok' as const }];
   }).slice(0, 6);
 }
 

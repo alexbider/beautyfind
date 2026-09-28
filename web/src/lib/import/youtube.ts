@@ -20,6 +20,7 @@ export interface VideoRecord {
   channelTitle: string | null;
   durationSec: number | null;
   thumbnail: string | null;
+  poster?: string | null; // our copy of the thumbnail (/media/...), set when images are copied
   source: 'website' | 'channel' | 'owner';
   sourceUrl: string | null;
   validatedAt: string;

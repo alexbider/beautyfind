@@ -15,7 +15,7 @@ import { commit, release } from '@/lib/import/budget';
 import { classifyWebsite, KEEP_AS_WEBSITE } from '@/lib/import/websiteKind';
 import { ratingProviderOk } from '@/lib/import/sourcePolicy';
 import { composeDescription } from '@/lib/import/completeness';
-import { copyListingImages, type Candidate, type MediaProvenance } from '@/lib/server/importMedia';
+import { copyListingImages, copyVideoPosters, type Candidate, type MediaProvenance } from '@/lib/server/importMedia';
 import { branchCoverage, editorialText, profileFields, socialCounts, treatmentRows } from '@/lib/server/importPublish';
 import { profileHref } from '@/lib/server/public';
 import { storage } from '@/lib/vendors/storage';
@@ -339,7 +339,19 @@ async function applyImages(
   }
   if (Object.keys(data).length) await db.branch.update({ where: { id: branchId }, data });
   await db.importPlace.update({ where: { id: p.id }, data: { mediaProvenance: copied.provenance as unknown as Prisma.InputJsonValue } });
+  await postersFor(branchId, actor.id, businessId, p.name);
   return { logo: !!data.logoUrl, photos: copied.photos.length };
+}
+
+/** Copies a poster for each of the listing's videos that has none yet (the YouTube thumbnail into our storage). */
+export async function postersFor(branchId: string, actorId: string, businessId: string, name: string): Promise<number> {
+  const b = await db.branch.findUnique({ where: { id: branchId }, select: { videos: true } });
+  const videos = (Array.isArray(b?.videos) ? b!.videos : []) as unknown as Array<{ id: string; status?: string; thumbnail?: string | null; poster?: string | null }>;
+  if (!videos.some(v => !v.poster && (!v.status || v.status === 'ok'))) return 0;
+  const r = await copyVideoPosters(videos, actorId, businessId, name).catch(() => null);
+  if (!r || !r.copied) return 0;
+  await db.branch.update({ where: { id: branchId }, data: { videos: r.videos as unknown as Prisma.InputJsonValue } });
+  return r.copied;
 }
 
 /** Where each image candidate was found (page, provider, alt), for the provenance record of the copy. */

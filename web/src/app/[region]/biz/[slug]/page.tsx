@@ -131,10 +131,22 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
       {crumbs}
       <ProfileView branchId={p.id} />
       {!p.isClaimed && (
-        <p className={`${styles.wrap} ${styles.unclaimedNote}`} role="note">
-          הכרטיס הזה אינו מנוהל על ידי העסק. הפרטים נאספו ממקורות פומביים וייתכן שאינם מעודכנים.{' '}
-          <Link href={ROUTES.claim}>זה העסק שלכם?</Link>
-        </p>
+        <section className={`${styles.wrap} ${styles.claimWrap}`} aria-label="תביעת הכרטיס">
+          <div className={styles.claimCta}>
+            <span aria-hidden="true" className={styles.claimIcon}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z" /><path d="m9 12 2 2 4-4" /></svg>
+            </span>
+            <div className={styles.claimText}>
+              <strong>העסק שלכם? קחו את הכרטיס לידיים</strong>
+              <span>אימות בעלות חינם, ואז אתם מעדכנים פרטים, מעלים תמונות, מפרסמים מחירים ומקבלים פניות ישירות מלקוחות.</span>
+              <small>הפרטים בכרטיס נאספו ממקורות פומביים ויתעדכנו לפי מה שתמסרו.</small>
+            </div>
+            <Link href={ROUTES.claim} className={`${btn.primary} ${styles.claimBtn}`}>
+              לאימות בעלות
+              <ArrowForward size={16} />
+            </Link>
+          </div>
+        </section>
       )}
 
       <ContactProvider branch={{ id: p.id, name: p.name, phone: p.phone, whatsapp: p.whatsapp, email: p.email, website: p.websiteUrl, direct: !p.isClaimed }} treatments={v.treatmentOptions}>

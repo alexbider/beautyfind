@@ -1,7 +1,7 @@
 import 'server-only';
 import { createHash, randomUUID } from 'node:crypto';
 import { imageInfo, usable } from '@/lib/import/imageInfo';
-import { acceptPhoto, dedupeVariants, dhash, hamming, NEAR_DUPLICATE, photoScore, type ImageSignals } from '@/lib/import/imageQuality';
+import { acceptPhoto, dedupeVariants, dhash, hamming, logoScore, NEAR_DUPLICATE, photoScore, type ImageSignals } from '@/lib/import/imageQuality';
 import { safeFetch } from '@/lib/import/safeFetch';
 import { db } from '@/lib/server/db';
 import { storage } from '@/lib/vendors/storage';
@@ -17,8 +17,8 @@ import { storage } from '@/lib/vendors/storage';
 
 const MAX_BYTES = 8 * 1024 * 1024;
 const EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' } as const;
-const WIDTH = { banner: 1600, photo: 1200, logo: 512 } as const;
-const TARGET_BYTES = { banner: 350_000, photo: 160_000, logo: 120_000 } as const;
+const WIDTH = { banner: 1600, photo: 1200, logo: 512, poster: 640 } as const;
+const TARGET_BYTES = { banner: 350_000, photo: 160_000, logo: 120_000, poster: 60_000 } as const;
 
 export interface MediaProvenance {
   url: string; // our /media/... URL of the served derivative
@@ -47,6 +47,7 @@ export interface Candidate {
   pageUrl?: string | null;
   provider?: MediaProvenance['provider'];
   alt?: string | null; // alt text on the source, when it is descriptive
+  rank?: number; // position among logo candidates (source order), a tiebreaker in logoScore
 }
 
 type Sharp = typeof import('sharp').default;
@@ -128,6 +129,10 @@ async function copyOne(c: Candidate, as: 'logo' | 'photo', ownerId: string, busi
   if (seen.hashes.has(hash)) return null; // the same file under two URLs
   let score = 100;
   let sig: Awaited<ReturnType<typeof photoSignals>> = { entropy: null, sharpness: null, hasAlpha: null, dhash: null };
+  if (as === 'logo') {
+    sig = await photoSignals(got.bytes);
+    score = logoScore({ url: c.url, alt: c.alt, provider: c.provider ?? 'website', width: got.info.width, height: got.info.height, bytes: got.bytes.length, hasAlpha: sig.hasAlpha, entropy: sig.entropy, rank: c.rank });
+  }
   if (as === 'photo') {
     sig = await photoSignals(got.bytes);
     const signals: ImageSignals = { url: c.url, alt: c.alt, provider: c.provider ?? 'website', width: got.info.width, height: got.info.height, bytes: got.bytes.length, hasAlpha: sig.hasAlpha, entropy: sig.entropy, sharpness: sig.sharpness };
@@ -152,6 +157,39 @@ async function copyOne(c: Candidate, as: 'logo' | 'photo', ownerId: string, busi
       ...(as === 'photo' ? { score, ...(sig.dhash ? { dhash: sig.dhash } : {}) } : {}),
     },
   };
+}
+
+/** Which source a logo URL comes from, when the candidate list did not say. */
+const logoProvider = (u: string): MediaProvenance['provider'] => (/googleusercontent\.com|ggpht\.com/.test(u) ? 'google_profile' : /cdninstagram\.com|instagram\.com/.test(u) ? 'instagram' : /fbcdn\.net|facebook\.com/.test(u) ? 'facebook' : 'website');
+
+/**
+ * Posters for the profile's videos: the YouTube thumbnail copied into our storage at import time, so the
+ * card shows the real cover without a request to YouTube from the visitor's browser. Returns the same
+ * records with `poster` set where a thumbnail could be copied.
+ */
+export async function copyVideoPosters<T extends { id: string; status?: string; thumbnail?: string | null; poster?: string | null }>(videos: T[], ownerId: string, businessId: string, businessName: string): Promise<{ videos: T[]; copied: number }> {
+  let copied = 0;
+  const out: T[] = [];
+  for (const v of videos) {
+    if (v.poster || (v.status && v.status !== 'ok') || !/^[A-Za-z0-9_-]{11}$/.test(v.id)) {
+      out.push(v);
+      continue;
+    }
+    const tries = [`https://i.ytimg.com/vi/${v.id}/maxresdefault.jpg`, `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`, ...(v.thumbnail ? [v.thumbnail] : [])];
+    let poster: string | null = null;
+    for (const u of tries) {
+      const got = await fetchImage(u);
+      // hqdefault always exists; a placeholder is 120x90 and maxresdefault is missing for many videos.
+      if (!got || got.info.width < 320) continue;
+      const der = await derive(got.bytes, 'poster');
+      const served = der ? await store(der.bytes, 'image/webp', ownerId, businessId, `תמונת הסרטון של ${businessName}`) : await store(got.bytes, got.info.mime, ownerId, businessId, `תמונת הסרטון של ${businessName}`);
+      poster = served.url;
+      break;
+    }
+    if (poster) copied++;
+    out.push(poster ? { ...v, poster } : v);
+  }
+  return { videos: out, copied };
 }
 
 /** Removes a copied file (served derivative, private original and their rows) that the ranking left out. */
@@ -195,15 +233,18 @@ export async function copyListingImages(
   const altFor = (c: Candidate, i: number) => (c.alt && !generic(c.alt) && isHebrew(c.alt) ? `${c.alt.slice(0, 80)}, ${place.name}` : `${place.name}${where}${i > 0 ? `, תמונה ${i + 1}` : ''}`);
 
   const logoJob = (async () => {
-    // The chosen logo first, then the other logo candidates from the site (a JSON-LD logo, a header image, a touch icon).
-    for (const u of [...new Set([place.logoUrl, ...(place.fallbackLogos ?? [])].filter((x): x is string => !!x))].slice(0, 5)) {
-      const r = await copyOne(cand(u), 'logo', ownerId, businessId, `הלוגו של ${place.name}`, seen);
-      if (r) {
-        provenance.push({ ...r.prov, kind: 'logo' });
-        return r.url;
-      }
-    }
-    return null;
+    // Every logo candidate is read (the site's own logo, the Google profile logo, social profile pictures, a touch
+    // icon) and the best mark wins (imageQuality.logoScore); the others are removed again.
+    const urls = [...new Set([place.logoUrl, ...(place.fallbackLogos ?? [])].filter((x): x is string => !!x))].slice(0, 6);
+    const got = await Promise.all(urls.map(async (u, rank) => {
+      const c = { ...cand(u), rank, provider: cand(u).provider ?? logoProvider(u) };
+      return copyOne(c, 'logo', ownerId, businessId, `הלוגו של ${place.name}`, seen);
+    }));
+    const ok = got.filter((r): r is NonNullable<typeof r> => !!r).sort((a, b) => b.score - a.score);
+    if (!ok.length) return null;
+    await Promise.all(ok.slice(1).map(r => discard(r.prov)));
+    provenance.push({ ...ok[0].prov, kind: 'logo', score: ok[0].score });
+    return ok[0].url;
   })();
   const queue = dedupeVariants([...new Set([...place.photoUrls, ...(place.fallbackPhotos ?? [])])]).slice(0, 30);
   const want = maxPhotos + 3; // a few spare, so the ranking has a choice

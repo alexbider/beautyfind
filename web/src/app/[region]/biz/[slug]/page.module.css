@@ -270,6 +270,15 @@ a.rating { color: inherit; }
 .footGap { height: clamp(56px, 7vw, 96px); }
 
 /* Listings no owner has claimed yet: same template, with a plain notice and a claim box instead of the enquiry form. */
+.claimWrap { margin-top: 12px; }
+.claimCta { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid var(--teal-border); border-radius: 16px; background: linear-gradient(135deg, #F0FAFB 0%, #FFFFFF 60%, #F5FBFC 100%); box-shadow: 0 8px 24px rgba(11, 122, 135, .07); }
+.claimIcon { flex: none; display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 12px; background: var(--tint); color: var(--teal-deep); }
+.claimText { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; text-wrap: pretty; }
+.claimText strong { font-size: 16px; color: var(--navy); }
+.claimText span { font-size: 14px; line-height: 1.5; color: var(--text); }
+.claimText small { font-size: 12px; color: var(--subtle); }
+.claimBtn { flex: none; width: auto; min-height: 46px; padding: 0 18px; border-radius: 12px; }
+@media (max-width: 759px) { .claimCta { flex-wrap: wrap; } .claimIcon { display: none; } .claimBtn { width: 100%; } }
 .unclaimedNote { margin-top: 12px; padding: 12px 15px; border: 1px solid #F3D9BE; border-radius: 13px; background: #FDF1E7; font-size: 14px; font-weight: 700; color: var(--warn-text); text-wrap: pretty; }
 .unclaimedNote a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
 .claimBox { margin: 4px 0 12px; padding: 12px 14px; border: 1px solid var(--teal-border); border-radius: 12px; background: var(--tint); font-size: 13.5px; }

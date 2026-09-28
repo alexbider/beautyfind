@@ -10,6 +10,7 @@ export interface VideoView {
   channelTitle: string | null;
   durationSec: number | null;
   thumbnail: string | null;
+  poster?: string | null; // our own copy of the thumbnail (/media/...), shown before the player loads
   status: 'ok' | 'private' | 'not_found' | 'not_embeddable' | 'unknown';
 }
 
@@ -41,7 +42,8 @@ function VideoCard({ v }: { v: VideoView }) {
           </EmbedGate>
         ) : (
           <button type="button" className={styles.poster} onClick={() => setPlay(true)} aria-label={`הפעלת הסרטון: ${title}`}>
-            {/* The thumbnail is a YouTube-hosted image, requested only when the visitor allowed embeds; until then a neutral poster. */}
+            {/* The poster is our own copy of the thumbnail (no request to YouTube before the visitor presses play); without one, a neutral frame. */}
+            {v.poster && <img className={styles.posterImg} src={v.poster} alt="" loading="lazy" />}
             <span aria-hidden="true" className={styles.play}>
               <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><path d="M6 3.6 14 9l-8 5.4z" /></svg>
             </span>
