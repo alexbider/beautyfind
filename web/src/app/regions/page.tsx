@@ -11,7 +11,7 @@ import styles from './page.module.css';
 
 // All regions and their cities, linked from the homepage "כל הערים". Counts are live listings.
 
-export const revalidate = 3600;
+export const revalidate = 600;
 
 export const metadata: Metadata = {
   title: 'כל האזורים והערים',

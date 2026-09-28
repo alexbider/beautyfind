@@ -6,6 +6,24 @@ import type { ImportRun } from '@prisma/client';
 import { approvePlace } from '../../../src/lib/server/importOps';
 import { bump, db, heartbeat, log } from '../ctx';
 
+/** Tells the site to refresh its cached public pages (needs SITE_URL and REVALIDATE_SECRET on the worker); otherwise they refresh on their own schedule. */
+export async function refreshSite(): Promise<boolean> {
+  const base = (process.env.SITE_URL || '').replace(/\/$/, '');
+  const secret = process.env.REVALIDATE_SECRET;
+  if (!base || !secret) {
+    log('publish: SITE_URL or REVALIDATE_SECRET not set, the public pages refresh on their own schedule');
+    return false;
+  }
+  try {
+    const res = await fetch(`${base}/api/revalidate`, { method: 'POST', headers: { Authorization: `Bearer ${secret}` }, signal: AbortSignal.timeout(15_000) });
+    log(`publish: site refresh ${res.ok ? 'done' : `failed (${res.status})`}`);
+    return res.ok;
+  } catch (e) {
+    log(`publish: site refresh failed: ${e instanceof Error ? e.message : String(e)}`);
+    return false;
+  }
+}
+
 export async function publishReady(run: ImportRun): Promise<number> {
   const actor = run.createdById ? { id: run.createdById } : null;
   if (!actor) {
@@ -25,5 +43,6 @@ export async function publishReady(run: ImportRun): Promise<number> {
   }
   await bump(run.id, { autoPublished: n });
   log(`publish: ${n} records published automatically`);
+  if (n) await refreshSite();
   return n;
 }

@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 // Counts and cards change as listings go live; refresh the cached page every 5 minutes.
-export const revalidate = 300;
+export const revalidate = 120;
 
 const CARDS_PER_TAB = 10;
 

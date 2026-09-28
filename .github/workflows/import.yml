@@ -62,6 +62,9 @@ jobs:
           # Optional YouTube Data API key (video validation and channel discovery); without it oEmbed validates videos found on the site.
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           # Image storage for listings enhanced by the worker (same store the site uses).
+          # After automatic publication the worker asks the site to refresh its cached pages (optional).
+          SITE_URL: ${{ vars.SITE_URL || 'https://beautyfind.vercel.app' }}
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
           STORAGE_ADAPTER: ${{ secrets.BLOB_READ_WRITE_TOKEN != '' && 'blob' || 'none' }}
           BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
           # Optional versioned price override (JSON), see src/lib/import/pricing.ts.

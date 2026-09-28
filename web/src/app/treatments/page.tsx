@@ -17,7 +17,7 @@ import styles from './page.module.css';
 
 // Design: project/BeautyFind Treatments.dc.html
 
-export const revalidate = 3600;
+export const revalidate = 600;
 
 export async function generateMetadata(): Promise<Metadata> {
   const counts = await listingCounts();

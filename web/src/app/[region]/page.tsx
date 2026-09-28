@@ -24,7 +24,7 @@ import styles from './page.module.css';
 
 // Design: project/BeautyFind Region.dc.html
 
-export const revalidate = 3600;
+export const revalidate = 300;
 
 export function generateStaticParams() {
   return REGIONS.map(r => ({ region: r.slug }));

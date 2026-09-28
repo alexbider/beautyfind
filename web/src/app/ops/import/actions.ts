@@ -19,6 +19,8 @@ const refresh = () => {
   revalidatePath('/ops/import');
   revalidatePath('/ops/import/review');
 };
+/** The cached public pages (home, regions, treatments) show a listing published or changed just now. */
+const publicRefresh = () => revalidatePath('/', 'layout');
 const refreshPaths = refresh;
 
 export type StartResult = { ok: true; runId: string; dispatched: boolean; reason?: string } | { ok: false; error: string };
@@ -124,6 +126,7 @@ export async function placeAction(id: string, input: z.input<typeof Op>): Promis
     : a.op === 'restore' ? await restorePlace(user, id)
     : await editPlace(user, id, a.fields);
   refresh();
+  if (r.ok && (a.op === 'approve' || a.op === 'merge' || a.op === 'restore')) publicRefresh();
   return r;
 }
 
@@ -137,6 +140,7 @@ export async function bulkApproveAction(ids: string[]): Promise<{ ok: boolean; a
   let approved = 0;
   for (const { id } of ready) if ((await approvePlace(user, id)).ok) approved++;
   refresh();
+  if (approved) publicRefresh();
   return { ok: true, approved, skipped: list.data.length - approved };
 }
 
@@ -150,6 +154,7 @@ export async function publishEligibleAction(runId: string): Promise<{ ok: boolea
   const left = await db.importPlace.count({ where: { runId, status: 'ready' } });
   await db.auditLog.create({ data: { actorId: user.id, action: 'import_publish_run', subjectType: 'import_run', subjectId: runId, meta: { approved, left } } });
   refresh();
+  if (approved) publicRefresh();
   return { ok: true, approved, left };
 }
 

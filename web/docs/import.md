@@ -166,6 +166,7 @@ Prices are versioned in `src/lib/import/pricing.ts` (override with `IMPORT_PRICI
 | `IMPORT_BROWSER` | GitHub variable | `1` installs Chromium for the optional browser fallback. |
 | `IMPORT_PRICING_JSON` | GitHub variable / Vercel env | Optional price override. |
 | `BLOB_READ_WRITE_TOKEN` | GitHub secret | Lets the worker copy images when enhancing published listings. The same value as in Vercel. |
+| `REVALIDATE_SECRET` | Vercel env and GitHub secret (same value) | Optional. Lets the worker refresh the cached public pages right after automatic publication (`POST /api/revalidate`). Without it the home page refreshes every 2 minutes, region pages every 5 and treatment pages every 10; approvals from the admin refresh at once either way. |
 | `APIFY_TOKEN` | GitHub secret | Stage 2E. Personal API token from the Apify console. Without it the Apify steps of a batch are skipped and the batch says so. Top up Apify yourself; nothing here buys credits. |
 
 No secret is ever sent to the browser or printed in logs.

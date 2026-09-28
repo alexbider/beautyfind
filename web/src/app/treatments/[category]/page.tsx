@@ -23,7 +23,7 @@ import styles from './page.module.css';
 
 // Design: project/BeautyFind Treatment Category.dc.html (prop `category`: one page per catalog category)
 
-export const revalidate = 3600;
+export const revalidate = 600;
 
 export function generateStaticParams() {
   return CATEGORIES.map(c => ({ category: c.slug }));
