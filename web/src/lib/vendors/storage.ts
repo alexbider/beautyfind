@@ -1,7 +1,7 @@
 import 'server-only';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { get as blobGet, put as blobPut } from '@vercel/blob';
+import { del as blobDel, get as blobGet, put as blobPut } from '@vercel/blob';
 
 // File storage behind one interface: local disk for development, Vercel Blob on Vercel.
 // Keys are opaque; never build them from user input.
@@ -9,6 +9,8 @@ import { get as blobGet, put as blobPut } from '@vercel/blob';
 export interface StorageAdapter {
   put(key: string, body: Buffer, mime: string): Promise<void>;
   get(key: string): Promise<Buffer | null>;
+  /** Removes the object; a missing key is not an error. */
+  del(key: string): Promise<void>;
 }
 
 const ROOT = path.resolve(/*turbopackIgnore: true*/ process.env.UPLOAD_DIR ?? '.data/uploads');
@@ -28,6 +30,11 @@ const localAdapter: StorageAdapter = {
       return null;
     }
   },
+  async del(key) {
+    const file = path.join(/*turbopackIgnore: true*/ ROOT, key);
+    if (!file.startsWith(ROOT + path.sep)) return;
+    await unlink(file).catch(() => undefined);
+  },
 };
 
 // Every blob is private, including public images: files are only ever served through our own
@@ -40,6 +47,9 @@ const blobAdapter: StorageAdapter = {
     const res = await blobGet(key, { access: 'private' }).catch(() => null);
     if (!res || res.statusCode !== 200 || !res.stream) return null;
     return Buffer.from(await new Response(res.stream).arrayBuffer());
+  },
+  async del(key) {
+    await blobDel(key).catch(() => undefined);
   },
 };
 

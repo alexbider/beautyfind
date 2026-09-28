@@ -18,6 +18,7 @@ import { composeDescription } from '@/lib/import/completeness';
 import { copyListingImages, type Candidate, type MediaProvenance } from '@/lib/server/importMedia';
 import { branchCoverage, editorialText, profileFields, socialCounts, treatmentRows } from '@/lib/server/importPublish';
 import { profileHref } from '@/lib/server/public';
+import { storage } from '@/lib/vendors/storage';
 
 export type OpResult = { ok: true; branchId?: string; slug?: string; href?: string } | { ok: false; error: string };
 type Actor = { id: string };
@@ -180,6 +181,84 @@ export async function deleteRun(actor: Actor, runId: string): Promise<{ ok: true
     db.auditLog.create({ data: { actorId: actor.id, action: 'import_run_delete', subjectType: 'import_run', subjectId: runId, meta: { label: run.label, provider: run.provider, status: run.status, scope: run.scope, stats: run.stats, spentMicros: run.spentMicros.toString(), tasks: run._count.tasks } as Prisma.InputJsonValue } }),
   ]);
   return { ok: true };
+}
+
+// ---------- Reset: every listing the import created and every trace of previous runs ----------
+
+export interface ResetPreview {
+  listings: number; // listings the import created that the reset removes
+  claimedKept: number; // listings an owner claimed: never touched
+  activeKept: number; // listings with bookings, requests, waitlist entries, gift cards or a second branch: kept
+  places: number;
+  runs: number;
+  media: number; // stored image files that go with the listings
+  running: boolean; // a worker holds a run right now: the reset refuses
+}
+
+/**
+ * Listings the import created (approved records, never merged ones), excluding claimed listings,
+ * listings whose business has an owner, and businesses with customer activity or a second branch.
+ * An import always creates one business with one branch, so anything else was touched by people.
+ */
+async function importListings() {
+  const rows = await db.importPlace.findMany({ where: { status: 'approved', branchId: { not: null } }, select: { branchId: true } });
+  const ids = [...new Set(rows.map(r => r.branchId!))];
+  const branches = ids.length
+    ? await db.branch.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, businessId: true, isClaimed: true, _count: { select: { bookings: true, consults: true, waitlist: true } }, business: { select: { ownerUserId: true, _count: { select: { branches: true, giftCards: true, staff: true } } } } },
+      })
+    : [];
+  const claimed = branches.filter(b => b.isClaimed || b.business.ownerUserId);
+  const own = branches.filter(b => !b.isClaimed && !b.business.ownerUserId);
+  const deletable = own.filter(b => b.business._count.branches === 1 && b.business._count.giftCards === 0 && b.business._count.staff === 0 && b._count.bookings === 0 && b._count.consults === 0 && b._count.waitlist === 0);
+  return { businessIds: [...new Set(deletable.map(b => b.businessId))], branchIds: deletable.map(b => b.id), claimedKept: claimed.length, activeKept: own.length - deletable.length };
+}
+
+const workerBusy = async () => (await db.importRun.count({ where: { status: 'running', lockedUntil: { gt: new Date() } } })) > 0;
+
+export async function resetPreview(): Promise<ResetPreview> {
+  const l = await importListings();
+  const [places, runs, media, running] = await Promise.all([
+    db.importPlace.count(),
+    db.importRun.count(),
+    l.businessIds.length ? db.mediaFile.count({ where: { businessId: { in: l.businessIds } } }) : 0,
+    workerBusy(),
+  ]);
+  return { listings: l.branchIds.length, claimedKept: l.claimedKept, activeKept: l.activeKept, places, runs, media, running };
+}
+
+/**
+ * Removes the listings the import created (with their images), then every import record, run, task,
+ * observation, spend entry and per-run budget, the website cache and the Google display cache, so the
+ * import screens start empty. Settings, monthly caps and the audit log stay. Refuses while a worker
+ * holds a run. Deleting a business cascades to its branch, categories, services, reviews and leads.
+ */
+export async function resetImport(actor: Actor): Promise<{ ok: true; preview: ResetPreview } | { ok: false; error: 'running' }> {
+  if (await workerBusy()) return { ok: false, error: 'running' };
+  const preview = await resetPreview();
+  const l = await importListings();
+  const media = l.businessIds.length ? await db.mediaFile.findMany({ where: { businessId: { in: l.businessIds } }, select: { key: true } }) : [];
+  await db.$transaction(
+    async tx => {
+      if (l.businessIds.length) {
+        await tx.mediaFile.deleteMany({ where: { businessId: { in: l.businessIds } } });
+        await tx.business.deleteMany({ where: { id: { in: l.businessIds } } });
+      }
+      await tx.importPlace.deleteMany({}); // observations cascade
+      await tx.importTask.deleteMany({});
+      await tx.importRun.deleteMany({});
+      await tx.spendEntry.deleteMany({});
+      await tx.providerBudget.deleteMany({ where: { key: { contains: ':run:' } } });
+      await tx.siteFetch.deleteMany({});
+      await tx.googleDisplay.deleteMany({});
+      await tx.auditLog.create({ data: { actorId: actor.id, action: 'import_reset', subjectType: 'import_settings', subjectId: actor.id, meta: { ...preview, businessIds: l.businessIds.slice(0, 500) } as unknown as Prisma.InputJsonValue } });
+    },
+    { timeout: 120_000, maxWait: 10_000 },
+  );
+  // Stored files last and best effort: a file left behind is harmless, a listing left behind is not.
+  for (const m of media) await storage().del(m.key);
+  return { ok: true, preview };
 }
 
 /**

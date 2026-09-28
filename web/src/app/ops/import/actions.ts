@@ -6,7 +6,7 @@ import { importerOrNull } from '@/components/ops/guard';
 import { db } from '@/lib/server/db';
 import {
   approvePlace, createRun, deleteRun, dispatchWorker, editPlace, enrichSelected, markDuplicate, mergePlace, reconcileTask, recoverRun, rejectPlace, restorePlace, retryIncomplete,
-  getSettings, saveSettings, setRunStatus, type CreateRunInput, type OpResult,
+  getSettings, resetImport, saveSettings, setRunStatus, type CreateRunInput, type OpResult, type ResetPreview,
 } from '@/lib/server/importOps';
 import { estimatePlans, planFor, STEP_ORDER, stepApplies, type StepId } from '@/lib/import/enrichPlan';
 import { enrichQueue } from '@/lib/server/enrichQueue';
@@ -246,6 +246,20 @@ async function startCompletion(user: { id: string }, branchIds: string[], opts: 
 }
 
 /** Deletes finished or stopped runs ("batches"). Running runs and discovery runs that still own records are skipped and reported. */
+/** Wipes every listing the import created and every trace of earlier runs. Needs the typed word; refused while a worker holds a run. */
+export async function resetImportAction(confirm: string): Promise<{ ok: true; preview: ResetPreview } | { ok: false; error: 'forbidden' | 'confirm' | 'running' }> {
+  const user = await importerOrNull();
+  if (!user) return { ok: false, error: 'forbidden' };
+  if (confirm.trim() !== 'מחיקה') return { ok: false, error: 'confirm' };
+  const r = await resetImport(user);
+  if (!r.ok) return r;
+  refreshPaths();
+  revalidatePath('/ops/import/enrich');
+  revalidatePath('/ops/import/report');
+  revalidatePath('/', 'layout'); // the public pages that showed the deleted listings
+  return r;
+}
+
 export async function deleteRunsAction(runIds: string[]): Promise<{ ok: boolean; deleted: number; skipped: Array<{ id: string; error: string }> }> {
   const user = await importerOrNull();
   const list = z.array(z.uuid()).min(1).max(100).safeParse(runIds);
