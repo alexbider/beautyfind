@@ -16,6 +16,15 @@ const RUN_STATUS: Record<string, string> = { queued: 'ממתינה', running: '�
 const RUN_CHIP: Record<string, string> = { queued: '', running: styles.chipOk, paused: styles.chipWarn, done: styles.chipOk, failed: styles.chipBad, canceled: '' };
 const STEP_SHORT: Record<StepId, string> = { dfs: 'DataForSEO', maps: 'Maps', facebook: 'פייסבוק', instagram: 'אינסטגרם', site: 'אתר', render: 'אתר בדפדפן', editorial: 'כתיבה', regenerate: 'כתיבה מחדש', images: 'תמונות' };
 const catName = (s: string) => CATEGORIES.find(c => c.slug === s)?.name ?? s;
+const FILLED: Record<string, string> = {
+  phone: 'טלפון', whatsapp: 'וואטסאפ', email: 'דוא״ל', website: 'אתר', instagram: 'אינסטגרם', hours: 'שעות', description: 'תיאור', faqs: 'שאלות נפוצות', accessible: 'נגישות', parking: 'חניה', waze: 'Waze',
+  google_profile: 'פרופיל Google', rating: 'דירוג', logo: 'לוגו', cover: 'תמונת שער', gallery: 'גלריה', categories: 'תחומים', services: 'טיפולים', prices: 'מחירים', team: 'צוות', videos: 'סרטונים', languages: 'שפות', established: 'שנת הקמה', facebook: 'פייסבוק', tiktok: 'טיקטוק', youtube: 'יוטיוב',
+  images_waiting_for_storage: 'תמונות מחכות להעתקה',
+};
+const SOURCE_STATE: Record<string, string> = { found: 'נמצא', not_found: 'לא נמצא ב־Google Maps', match: 'הפרופיל אישר את העסק', no_match: 'הפרופיל לא אישר את העסק (אין קישור לאתר ואין את הטלפון), לא נלקח', unavailable: 'הפרופיל לא זמין', ok: 'האתר נקרא בדפדפן', no_email: 'נקרא בדפדפן, בלי דוא״ל', failed: 'גם הדפדפן לא הצליח', done: 'הסתיים' };
+const SOURCE_NAME: Record<string, string> = { maps: 'Google Maps', instagram: 'אינסטגרם', facebook: 'פייסבוק', render: 'אתר בדפדפן' };
+const SKIPPED: Record<string, string> = { claimed: 'העסק נתבע על ידי בעליו, לא נוגעים', not_live: 'העסק לא מפורסם', no_actor: 'אין משתמש מפעיל' };
+const EDITORIAL_ERR = (s: string) => (/no_api_key/.test(s) ? 'חסר ANTHROPIC_API_KEY ב־GitHub Actions' : /no_credit/.test(s) ? 'נגמר הקרדיט ב־Anthropic' : /auth/.test(s) ? 'מפתח Anthropic לא תקין' : /model_not_found/.test(s) ? 'המודל לא נמצא' : s);
 const usd = (x: number) => `$${x < 1 ? x.toFixed(3) : x.toFixed(2)}`;
 const n = (x: number) => x.toLocaleString('he-IL');
 const when = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('he-IL') : 'אף פעם');
@@ -316,6 +325,15 @@ export function EnrichList({ rows, allFiltered, focus, costs, flags, canDispatch
             יכולים להשלים: {r.plan.length ? r.plan.map(s => STEP_SHORT[s]).join(', ') : 'אין מקור נוסף (נשאר לבעל העסק)'}
             {r.signals.instagram ? ' · יש חשבון אינסטגרם' : ''}{r.signals.facebook ? ' · יש עמוד פייסבוק' : ''}{r.signals.placeId || r.signals.cid ? ' · יש מזהה Google' : ''}
           </p>
+          {r.lastResult ? (
+            <p className={styles.note} style={{ marginTop: 4 }}>
+              <b>ההשלמה האחרונה ({when(r.lastResult.at)}):</b>{' '}
+              {r.lastResult.skipped ? SKIPPED[r.lastResult.skipped] ?? r.lastResult.skipped : r.lastResult.filled.length ? `מולאו ${r.lastResult.filled.map(f => FILLED[f] ?? f).join(', ')}` : 'שום דבר חדש לא נמצא במקורות'}
+              {r.lastResult.site ? ` · אתר: ${SITE[r.lastResult.site] ?? r.lastResult.site}` : ''}
+              {Object.entries(r.lastResult.sources).map(([k, v]) => ` · ${SOURCE_NAME[k] ?? k}: ${SOURCE_STATE[v] ?? v}`).join('')}
+              {r.lastResult.editorial ? ` · הכתיבה לא רצה: ${EDITORIAL_ERR(r.lastResult.editorial)}` : ''}
+            </p>
+          ) : null}
           <p className={styles.note} style={{ marginTop: 4 }}>
             תמונות {r.photos} · שירותים {r.services} ({r.unpriced} ללא מחיר) · תיאור {r.words != null ? `${r.words} מילים` : 'ללא טיוטה'} · {r.faqs} שאלות · {r.hasSite ? SITE[r.siteOutcome ?? ''] ?? r.siteOutcome ?? 'אתר' : 'אין אתר'} · האתר נקרא לאחרונה {when(r.lastEnriched)} · כתיבה {when(r.lastEditorial)}
           </p>

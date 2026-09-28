@@ -165,23 +165,37 @@ export async function enhanceStage(run: ImportRun, kind: 'dfs_refresh' | 'enhanc
   const legacy = scopeSteps(scope);
   const counts: Record<string, number> = {};
   const failures: string[] = [];
+  let editorialFatal: string | null = null;
   for (const id of params.ids ?? []) {
     const p = await db.importPlace.findUnique({ where: { id } });
     if (!p?.branchId) continue;
     // Older runs have no per-record steps: they wrote and copied for everyone.
     const steps = new Set<string>(params.steps?.[id] ?? [...legacy.steps]);
     try {
+      // The website read is the one step that must succeed: without a record there is nothing to fill from.
       await enrichOne(p, runBrowser, { keepStatus: true, youtubeQuota, onCost: c => Object.entries(c).forEach(([k, v]) => (counts[k] = (counts[k] ?? 0) + (v ?? 0))) });
       const afterSite = await db.importPlace.findUniqueOrThrow({ where: { id } });
+      // The writer can fail (no key, no credit, model refused) without stopping the fill: whatever the
+      // sources found still reaches the listing, and the run reports the writer's problem.
+      let editorialNote: string | null = null;
       if (steps.has('editorial') || steps.has('regenerate')) {
-        const ed = await editorialFor(afterSite, run, { counter: editorialCounter, force: steps.has('regenerate') });
-        counts[`editorial_${ed}`] = (counts[`editorial_${ed}`] ?? 0) + 1;
+        try {
+          const ed = await editorialFor(afterSite, run, { counter: editorialCounter, force: steps.has('regenerate') });
+          counts[`editorial_${ed}`] = (counts[`editorial_${ed}`] ?? 0) + 1;
+        } catch (e) {
+          if (e instanceof Stop) throw e;
+          editorialNote = (e instanceof Error ? e.message : String(e)).slice(0, 160);
+          counts.editorial_failed = (counts.editorial_failed ?? 0) + 1;
+          if (/no_api_key|auth|no_credit|model_not_found/.test(editorialNote)) editorialFatal = editorialNote;
+        }
       }
       const fresh = await db.importPlace.findUniqueOrThrow({ where: { id } });
       const r = actor ? await enhanceBranch(p.branchId, fresh, s, actor, { images: steps.has('images') }) : { filled: [], skipped: 'no_actor' };
       for (const f of r.filled) counts[`filled_${f}`] = (counts[`filled_${f}`] ?? 0) + 1;
       counts[r.filled.length ? 'improved' : r.skipped ? `skipped_${r.skipped}` : 'nothing_to_add'] = (counts[r.filled.length ? 'improved' : r.skipped ? `skipped_${r.skipped}` : 'nothing_to_add'] ?? 0) + 1;
-      await db.auditLog.create({ data: { actorId: actor, action: 'import_enhance', subjectType: 'branch', subjectId: p.branchId, meta: { runId: run.id, filled: r.filled, steps: [...steps] as StepId[] } } });
+      const crawl = (fresh.crawl ?? {}) as { site?: string; apify?: Record<string, { checked?: string; found?: boolean; status?: string }> };
+      const sources = Object.fromEntries(Object.entries(crawl.apify ?? {}).map(([k, v]) => [k, v?.checked ?? (v?.found === false ? 'not_found' : v?.found ? 'found' : v?.status ?? 'done')]));
+      await db.auditLog.create({ data: { actorId: actor, action: 'import_enhance', subjectType: 'branch', subjectId: p.branchId, meta: { runId: run.id, filled: r.filled, skipped: r.skipped ?? null, steps: [...steps] as StepId[], site: crawl.site ?? null, sources, editorial: editorialNote } } });
     } catch (e) {
       if (e instanceof Stop) throw e;
       counts.failed = (counts.failed ?? 0) + 1;
@@ -192,6 +206,11 @@ export async function enhanceStage(run: ImportRun, kind: 'dfs_refresh' | 'enhanc
   }
   await db.importTask.update({ where: { id: task.id }, data: { status: 'done', found: (params.ids ?? []).length } });
   await bump(run.id, { ...counts, editorialCalls: editorialCounter.calls - editorialBefore });
+  if (editorialFatal) {
+    // Shown on the run card with the matching hint (key, credit); the fill itself went on.
+    await setStats(run.id, { lastEditorialError: editorialFatal });
+    await db.importRun.updateMany({ where: { id: run.id }, data: { error: `הכתיבה לא רצה: ${editorialFatal}` } });
+  }
   if (failures.length) {
     const cur = await db.importRun.findUniqueOrThrow({ where: { id: run.id }, select: { stats: true } });
     const prev = ((cur.stats as { failures?: string[] }).failures ?? []) as string[];

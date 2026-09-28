@@ -337,8 +337,13 @@ describe('Apify task flow and batch deletion', { skip }, () => {
 describe('seeding an automatic enhance run', { skip }, () => {
   let db: PrismaClient;
   const made: { businesses: string[]; places: string[]; runs: string[] } = { businesses: [], places: [], runs: [] };
+  let seededRun: string | null = null;
+  let seededBranch: string | null = null;
   before(async () => {
     process.env.APIFY_TOKEN = 'test-token';
+    // The writer has no key here (and no mock): its failure must not stop the fill.
+    delete process.env.IMPORT_EDITORIAL_MOCK;
+    delete process.env.ANTHROPIC_API_KEY;
     db = (await import('../../scripts/import/ctx')).db;
   });
   after(async () => {
@@ -356,7 +361,7 @@ describe('seeding an automatic enhance run', { skip }, () => {
     // A listing with no hours, no photos and a same-name Instagram account from the provider: the plan should name Instagram and Maps, not the site (there is none).
     const b = await db.branch.create({ data: { businessId: biz.id, name: 'סלון תוכנית', slug: `plan-${biz.id.slice(0, 8)}`, regionSlug: 'dan', cityName: 'תל אביב', address: 'רחוב 3', lat: 32.08, lng: 34.78, status: 'live', isClaimed: false, phone: '+97235551111' } });
     const p = await db.importPlace.create({
-      data: { runId: disc.id, placeId: 'ChIJplan-1', provider: 'dataforseo', sourceId: '777', name: 'סלון תוכנית', address: 'רחוב 3', lat: 32.08, lng: 34.78, status: 'approved', branchId: b.id, phone: '+97235551111', categories: ['nails'], socials: { instagram: { url: 'https://www.instagram.com/salon_plan', verified: false, via: 'unverified', sources: ['dataforseo'] } } },
+      data: { runId: disc.id, placeId: 'ChIJplan-1', provider: 'dataforseo', sourceId: '777', name: 'סלון תוכנית', address: 'רחוב 3', lat: 32.08, lng: 34.78, status: 'approved', branchId: b.id, phone: '+97235551111', email: 'hello@salon-plan.test', emailMx: true, categories: ['nails'], socials: { instagram: { url: 'https://www.instagram.com/salon_plan', verified: false, via: 'unverified', sources: ['dataforseo'] } } },
     });
     made.places.push(p.id);
     const { seedEnhance } = await import('../../scripts/import/stages/enhance');
@@ -377,5 +382,30 @@ describe('seeding an automatic enhance run', { skip }, () => {
     assert.equal(stats.auto, true);
     assert.equal(stats.plan.instagram, 1);
     assert.equal(stats.plan.site, 0);
+    seededRun = run.id;
+    seededBranch = b.id;
+  });
+
+  it('fills the listing even when the writer cannot run, and reports the writer problem on the run', async () => {
+    assert.ok(seededRun && seededBranch);
+    const { enhanceStage } = await import('../../scripts/import/stages/enhance');
+    const { APIFY_KINDS, apifyStage } = await import('../../scripts/import/stages/apify');
+    const run = await db.importRun.findUniqueOrThrow({ where: { id: seededRun! } });
+    // Provider steps fail without reachable providers (no DataForSEO credentials, the mock Apify is gone): the fill still runs.
+    while (await enhanceStage(run, 'dfs_refresh'));
+    for (const kind of APIFY_KINDS) while (await apifyStage(run, kind));
+    while (await enhanceStage(run, 'enhance'));
+    const b = await db.branch.findUniqueOrThrow({ where: { id: seededBranch! } });
+    assert.equal(b.email, 'hello@salon-plan.test'); // filled from the record although the writer failed
+    const after = await db.importRun.findUniqueOrThrow({ where: { id: seededRun! } });
+    const c = ((after.stats as { counters?: Record<string, number> }).counters ?? {});
+    assert.equal(c.editorial_failed, 1);
+    assert.equal(c.improved, 1);
+    assert.match(after.error ?? '', /no_api_key/);
+    assert.equal(after.status, 'running'); // the run itself was not failed
+    const audit = await db.auditLog.findFirst({ where: { action: 'import_enhance', subjectId: seededBranch! }, orderBy: { createdAt: 'desc' } });
+    const meta = audit?.meta as { filled: string[]; editorial: string | null };
+    assert.ok(meta.filled.includes('email'));
+    assert.match(meta.editorial ?? '', /no_api_key/);
   });
 });

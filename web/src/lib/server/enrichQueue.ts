@@ -35,6 +35,11 @@ export interface EnrichRow {
   siteOutcome: string | null;
   lastEnriched: string | null;
   lastEditorial: string | null;
+  // What the sources said the last time they were asked (crawl.apify): found / not_found for Maps,
+  // match / no_match / unavailable for the social profiles, the outcome for a rendered site.
+  sources: Record<string, string>;
+  // The last completion run that touched this listing: what it filled, what each source said, the writer's problem if any.
+  lastResult: { at: string; filled: string[]; skipped: string | null; steps: string[]; site: string | null; sources: Record<string, string>; editorial: string | null } | null;
   signals: PlanSignals;
   plan: StepId[]; // steps that can fill this listing's gaps ("all enrichments needed")
 }
@@ -81,6 +86,13 @@ export async function enrichQueue(f: EnrichFilter = {}): Promise<{ rows: EnrichR
   const truncated = branches.length > MAX_ROWS;
   const verified = await db.staffMember.groupBy({ by: ['businessId'], where: { businessId: { in: branches.map(b => b.businessId) }, status: 'active', license: { status: 'verified' } }, _count: true });
   const verifiedBy = new Map(verified.map(v => [v.businessId, v._count]));
+  const lastRuns = await db.auditLog.findMany({
+    where: { action: 'import_enhance', subjectType: 'branch', subjectId: { in: branches.map(b => b.id) } },
+    orderBy: { createdAt: 'desc' },
+    distinct: ['subjectId'],
+    select: { subjectId: true, createdAt: true, meta: true },
+  });
+  const lastBy = new Map(lastRuns.map(a => [a.subjectId, a]));
   const rows: EnrichRow[] = [];
   for (const b of branches.slice(0, MAX_ROWS)) {
     const p = byBranch.get(b.id)!;
@@ -112,6 +124,13 @@ export async function enrichQueue(f: EnrichFilter = {}): Promise<{ rows: EnrichR
       siteOutcome: typeof crawl.site === 'string' ? crawl.site : null,
       lastEnriched: p.enrichedAt?.toISOString() ?? null,
       lastEditorial: ed?.generatedAt ?? null,
+      sources: Object.fromEntries(Object.entries((crawl.apify as Record<string, { checked?: string; found?: boolean; status?: string }> | undefined) ?? {}).map(([k, v]) => [k, v?.checked ?? (v?.found === false ? 'not_found' : v?.found ? 'found' : v?.status ?? 'done')])),
+      lastResult: (() => {
+        const a = lastBy.get(b.id);
+        if (!a) return null;
+        const m = (a.meta ?? {}) as { filled?: string[]; skipped?: string | null; steps?: string[]; site?: string | null; sources?: Record<string, string>; editorial?: string | null };
+        return { at: a.createdAt.toISOString(), filled: m.filled ?? [], skipped: m.skipped ?? null, steps: m.steps ?? [], site: m.site ?? null, sources: m.sources ?? {}, editorial: m.editorial ?? null };
+      })(),
     });
   }
   const filtered = rows
