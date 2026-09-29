@@ -43,12 +43,12 @@ export function Price({ p }: { p: PriceView }) {
 }
 
 /**
- * Services & prices accordion, one card per category, first open (design: openSvc = 0).
+ * Services & prices accordion, one card per category, all closed until the visitor opens one.
  * `contact`: whether a request can be sent through the platform (claimed listing with a lead inbox);
  * otherwise the quote action opens the direct-contact panel. Both carry the service id.
  */
 export function Services({ groups, contact = true, bookHref }: { groups: ServiceGroupView[]; contact?: boolean; bookHref?: string | null }) {
-  const [open, setOpen] = useState(0);
+  const [open, setOpen] = useState(-1);
   return (
     <div className={styles.list}>
       {groups.map((g, i) => {

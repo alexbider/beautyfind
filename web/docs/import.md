@@ -112,7 +112,11 @@ The review screen shows each record's completeness and what is still missing.
 
 **Google post photos** (`stages/googlePosts.ts`, setting `googlePostPhotos`, on). For records with fewer than five photos after the website stage: DataForSEO Google business updates (the business's own posts), up to 100 tasks per request, reserved against the run budget at an unverified $0.004 per task (the reported cost is recorded), collected for up to 20 minutes.
 
-**Claim banner.** An unclaimed listing opens with a positive call to action ("העסק שלכם? קחו את הכרטיס לידיים") that leads to ownership verification, with the note that the details came from public sources in small print under it.
+**Claim line.** An unclaimed listing carries one short call to action under the business name ("העסק שלכם? לאימות בעלות") that leads to ownership verification; the contact card repeats the invitation where the enquiry form would be.
+
+**About text.** The description shows its first 250 words; "קראו עוד" reveals the rest in place. The full text is always in the HTML.
+
+**Fact cards.** Only sourced facts get a card (founding year, team, languages, then responsibility, today's hours and the Google rating as alternates). Fewer facts mean fewer cards; no placeholder card is shown. Service groups start closed.
 
 **Empty sections stay off the page.** The public profile shows a section only when it has content: description, services, reviews (a Google rating or a verified review), before and after, team, videos, hours and FAQs are left out when nothing is known, and the phone chips list only the sections present. Identity, location and contact always render. The readiness score still counts the missing sections, so the admin sees what to fill.
 

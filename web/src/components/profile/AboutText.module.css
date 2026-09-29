@@ -1,0 +1,15 @@
+/* About text with a 250 word preview and an in-place "read more". */
+.text { font-size: 16.5px; line-height: 1.75; color: var(--text); }
+.text p { margin: 0 0 14px; text-wrap: pretty; }
+.text p:last-child { margin-bottom: 0; }
+.rest[hidden] { display: none; }
+.more {
+  display: inline-flex; align-items: center; gap: 7px; min-height: 44px; margin: 2px 0 0; padding: 0 2px;
+  border: 0; background: transparent; font: inherit; font-size: 15px; font-weight: 700; color: var(--teal-deep); cursor: pointer;
+}
+.more::after {
+  content: ''; width: 8px; height: 8px; margin-top: -4px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+  transform: rotate(45deg); transition: transform .2s;
+}
+.more[aria-expanded='true']::after { margin-top: 4px; transform: rotate(-135deg); }
+@media (hover: hover) and (pointer: fine) { .more:hover { text-decoration: underline; text-underline-offset: 3px; } }

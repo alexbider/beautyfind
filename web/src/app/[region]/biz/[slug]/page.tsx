@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { FaqAccordion } from '@/components/faq/FaqAccordion';
 import { ArrowForward } from '@/components/icons';
+import { AboutText } from '@/components/profile/AboutText';
 import { ContactProvider, ContactTrigger } from '@/components/profile/ContactDialog';
 import { CallButton, TrackedLink, WazeButton, WhatsAppButton } from '@/components/profile/ContactLinks';
 import { displayUrl, initials, mapsHref, ratingText } from '@/components/profile/format';
@@ -130,24 +131,6 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
       <ProfileHeader name={p.name} watchId="h-name" backHref={parentHref} />
       {crumbs}
       <ProfileView branchId={p.id} />
-      {!p.isClaimed && (
-        <section className={`${styles.wrap} ${styles.claimWrap}`} aria-label="תביעת הכרטיס">
-          <div className={styles.claimCta}>
-            <span aria-hidden="true" className={styles.claimIcon}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z" /><path d="m9 12 2 2 4-4" /></svg>
-            </span>
-            <div className={styles.claimText}>
-              <strong>העסק שלכם? קחו את הכרטיס לידיים</strong>
-              <span>אימות בעלות חינם, ואז אתם מעדכנים פרטים, מעלים תמונות, מפרסמים מחירים ומקבלים פניות ישירות מלקוחות.</span>
-              <small>הפרטים בכרטיס נאספו ממקורות פומביים ויתעדכנו לפי מה שתמסרו.</small>
-            </div>
-            <Link href={ROUTES.claim} className={`${btn.primary} ${styles.claimBtn}`}>
-              לאימות בעלות
-              <ArrowForward size={16} />
-            </Link>
-          </div>
-        </section>
-      )}
 
       <ContactProvider branch={{ id: p.id, name: p.name, phone: p.phone, whatsapp: p.whatsapp, email: p.email, website: p.websiteUrl, direct: !p.isClaimed }} treatments={v.treatmentOptions}>
         {v.photos.length > 0 ? (
@@ -174,9 +157,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
             {has.about && (
               <section aria-labelledby="h-about">
                 <h2 id="h-about" className={styles.h2}>{v.heading}<span className={styles.dotTeal}>.</span></h2>
-                <div className={styles.about}>
-                  {v.description.map((para, i) => <p key={i}>{para}</p>)}
-                </div>
+                <AboutText paragraphs={v.description} />
               </section>
             )}
 
@@ -377,10 +358,19 @@ function Identity({ p, v }: { p: PublicProfile; v: View }) {
         <span aria-hidden="true" className={styles.logo}>
           {p.logoUrl ? <img src={p.logoUrl} alt="" /> : initials(p.name)}
         </span>
-        <h1 id="h-name" className={styles.h1}>
-          {p.name}
-          <span className={styles.dotTeal}>.</span>
-        </h1>
+        <div className={styles.idText}>
+          <h1 id="h-name" className={styles.h1}>
+            {p.name}
+            <span className={styles.dotTeal}>.</span>
+          </h1>
+          {!p.isClaimed && (
+            <Link href={ROUTES.claim} className={styles.claimLine}>
+              <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z" /><path d="m9 12 2 2 4-4" /></svg>
+              <span>העסק שלכם? לאימות בעלות</span>
+              <ArrowForward size={13} />
+            </Link>
+          )}
+        </div>
         <SaveHeart id={p.id} name={p.name} className={styles.heart} />
       </div>
 
@@ -427,9 +417,10 @@ function Identity({ p, v }: { p: PublicProfile; v: View }) {
         </ul>
       )}
 
-      <dl className={styles.facts} style={{ '--n': 3 } as React.CSSProperties}>
+      {v.facts.length > 0 && (
+      <dl className={styles.facts} style={{ '--n': v.facts.length } as React.CSSProperties}>
         {v.facts.map((f, i) => (
-          <div key={`${f.key}-${i}`} className={styles.fact} data-unknown={f.key === 'unknown' || undefined}>
+          <div key={`${f.key}-${i}`} className={styles.fact}>
             <span aria-hidden="true" className={styles.factIcon}>
               <svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="#0B7A87" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 {(FACT_ICONS[f.key] ?? FACT_ICONS.unknown).map(d => <path key={d} d={d} />)}
@@ -443,6 +434,7 @@ function Identity({ p, v }: { p: PublicProfile; v: View }) {
           </div>
         ))}
       </dl>
+      )}
     </section>
   );
 }

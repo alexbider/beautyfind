@@ -17,6 +17,7 @@ import { completeness, composeDescription } from '../../src/lib/import/completen
 import { imageInfo, usable } from '../../src/lib/import/imageInfo';
 import { categoriesFromName, rankCategories } from '../../src/lib/import/categoryRank';
 import { slugBase, slugCandidates } from '../../src/lib/import/slug';
+import { splitAtWords } from '../../src/components/profile/aboutSplit';
 import { acceptPhoto, canonicalImageUrl, decorativeHint, dedupeVariants, dhash, hamming, logoScore, photoScore } from '../../src/lib/import/imageQuality';
 import { matchService } from '../../src/lib/import/services';
 import { mayPublish } from '../../src/lib/import/sourcePolicy';
@@ -515,5 +516,20 @@ describe('template fields', () => {
     const d = composeDescription({ name: 'סלון נועה', cityName: 'חיפה', categories: ['nails', 'brows-lashes'], treatments: [{ name: 'מניקור' }, { name: 'הרמת ריסים' }], googleRating: 4.8, googleReviewCount: 52 });
     assert.equal(d, 'סלון נועה הוא עסק בתחום ציפורניים, מניקור ופדיקור, גבות וריסים בחיפה. בין השירותים: מניקור, הרמת ריסים. דירוג 4.8 ב־Google על סמך 52 ביקורות.');
     assert.equal(composeDescription({ name: 'X', cityName: null, categories: [], treatments: [], googleRating: null, googleReviewCount: null }), null);
+  });
+});
+
+describe('about text preview', () => {
+  it('keeps a short text whole and cuts a long one at 250 words, inside the crossing paragraph', () => {
+    const w = (n: number) => Array.from({ length: n }, (_, i) => `מילה${i + 1}`).join(' ');
+    assert.deepEqual(splitAtWords([w(120), w(100)]), { head: [w(120), w(100)], tail: [] });
+    const { head, tail } = splitAtWords([w(200), w(100), w(50)]);
+    assert.equal(head.length, 2);
+    assert.equal(head[0], w(200));
+    assert.equal(head[1].split(' ').length, 50);
+    assert.equal(tail.length, 2);
+    assert.equal(tail[0].split(' ').length, 50);
+    assert.equal(tail[1], w(50));
+    assert.equal([...head, ...tail].join(' ').split(' ').length, 350);
   });
 });

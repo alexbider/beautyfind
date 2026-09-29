@@ -110,7 +110,7 @@ export function hoursRows(hours: DayHours[] | null, now: Date): HoursRow[] | nul
 }
 
 export interface Fact {
-  key: 'established' | 'team' | 'languages' | 'responsible' | 'hours' | 'rating' | 'unknown';
+  key: 'established' | 'team' | 'languages' | 'responsible' | 'hours' | 'rating';
   label: string;
   value: string;
   note: string | null;
@@ -212,8 +212,9 @@ export function buildView(p: PublicProfile, now = new Date()) {
   const editorial = (p.editorial && typeof p.editorial === 'object' ? (p.editorial as { heading?: string; words?: number; needsMoreInfo?: boolean }) : null);
   const heading = (HEADINGS as readonly string[]).includes(editorial?.heading ?? '') ? (editorial!.heading as string) : p.business.type === 'clinic' || p.business.type === 'medspa' ? 'על הקליניקה' : cats.some(c => c.slug === 'hair-salons') && cats.length === 1 ? 'על המספרה' : cats.some(c => c.slug === 'spa-massage') && cats.length === 1 ? 'על הספא' : 'על העסק';
 
-  // Three fact cards (design: established, team, languages). A slot without a sourced value takes a
-  // known alternate fact; the last resort says the detail was not updated, never a made-up value.
+  // Up to three fact cards (design: established, team, languages). A slot without a sourced value takes
+  // a known alternate fact; with fewer sourced facts the row is shorter, and with none it is left out.
+  // No placeholder card: a card that says nothing looks like a mistake.
   const thisYear = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jerusalem', year: 'numeric' }).format(now));
   const primary: Array<Fact | null> = [
     p.establishedYear ? { key: 'established', label: 'פועל מאז', value: String(p.establishedYear), note: thisYear - p.establishedYear >= 1 ? `${yearsLabel(thisYear - p.establishedYear)} לפי אתר העסק` : 'לפי אתר העסק', ltr: true } : null,
@@ -227,7 +228,7 @@ export function buildView(p: PublicProfile, now = new Date()) {
     ...(known ? [{ key: 'hours' as const, label: 'שעות היום', value: todayRange ?? (todayRange === null ? 'סגור היום' : 'לא פורסם להיום'), note: open?.label ?? null, ltr: !!todayRange }] : []),
     ...(google && google.count > 0 ? [{ key: 'rating' as const, label: 'דירוג בגוגל', value: `${google.rating.toFixed(1)} מתוך 5`, note: reviewsLabel(google.count), ltr: false }] : []),
   ];
-  const facts: Fact[] = primary.map(f => f ?? alternates.shift() ?? { key: 'unknown', label: 'פרטים', value: 'פרטים טרם עודכנו', note: null });
+  const facts: Fact[] = [...primary.filter((f): f is Fact => !!f), ...alternates].slice(0, 3);
 
   return {
     region,
