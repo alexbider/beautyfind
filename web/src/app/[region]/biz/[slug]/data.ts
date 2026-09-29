@@ -4,6 +4,7 @@ import { nisFromAgorot } from '@/lib/format';
 import { BOOKING_LIVE } from '@/lib/features';
 import { cleanTeam } from '@/lib/import/profileExtract';
 import { listBranches, type ListingCard, type PublicProfile } from '@/lib/server/public';
+import { listingTitle } from '@/lib/seo/listingTitle';
 import {
   COMPARABLE_PRICE_TYPES, DAY_NAMES, PROFESSION_NAME, hoursKnown, jerusalemNow, longDateHe, openState, openingHoursSpec, parseHours, priceParts, relHe, servicePrice,
   type DayHours, type OpenState, type PractitionerProfession, type PriceView,
@@ -280,10 +281,13 @@ export async function similarBusinesses(p: PublicProfile, mainCategory: string |
 
 // ---------- SEO ----------
 
+/**
+ * The page title. An owner's own title (claimed listing) is kept; every other listing gets the one
+ * shape built to win searches for the business itself: name, city, main category, prices and reviews.
+ */
 export function metaTitle(p: PublicProfile, v: ProfileView): string {
-  if (p.metaTitle && p.metaTitle.trim().length >= 10) return p.metaTitle.trim().slice(0, 70);
-  const main = v.cats[0]?.name;
-  return main ? `${p.name}: ${main} ב${p.cityName}` : `${p.name}, ${p.cityName}`;
+  if (p.isClaimed && p.metaTitle && p.metaTitle.trim().length >= 10) return p.metaTitle.trim().slice(0, 70);
+  return listingTitle({ name: p.name, city: p.cityName, category: v.cats[0]?.name ?? null });
 }
 
 export function metaDescription(p: PublicProfile, v: ProfileView): string {

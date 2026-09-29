@@ -14,6 +14,15 @@ export const RunScope = z.object({
 });
 export type RunScope = z.infer<typeof RunScope>;
 
+/** Scope of a count run: which cities and categories to ask the provider about (stages/count.ts). */
+export const CountScope = z.object({
+  all: z.boolean(), // every catalog city
+  cities: z.array(z.enum(CITIES.map(c => c.slug) as [string, ...string[]])),
+  categories: z.array(z.enum(CATEGORIES.map(c => c.slug) as [string, ...string[]])), // empty: every category
+  recount: z.boolean().optional(), // ask again even for pairs counted in the last 30 days
+});
+export type CountScope = z.infer<typeof CountScope>;
+
 /** Scope of an "enhance published listings" run. */
 export const EnhanceScope = z.object({
   branchIds: z.array(z.uuid()).max(5000).optional(), // none: every live, unclaimed listing that came from the import

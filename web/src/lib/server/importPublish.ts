@@ -7,6 +7,7 @@ import { WORDS_MIN, type EditorialRecord } from '@/lib/import/editorial';
 import type { ImportedTreatment } from '@/lib/import/rules';
 import { chooseVideos, type VideoRecord } from '@/lib/import/youtube';
 import type { MediaProvenance } from '@/lib/server/importMedia';
+import { listingTitle } from '@/lib/seo/listingTitle';
 
 // What an import record contributes to a listing, shared by approve, merge and enhance:
 // services with their real price states, the profile facts with evidence, the editorial draft, and the
@@ -94,7 +95,10 @@ export function profileFields(p: ImportPlace, opts: { maxVideos: number }): Prof
     tiktok: p.tiktok,
     youtube: p.youtube,
     attributes: attributes as unknown as Prisma.InputJsonValue,
-    ...(ed ? { editorial: { ...ed, ownerApproved: false, appliedAt: new Date().toISOString() } as unknown as Prisma.InputJsonValue, metaTitle: ed.metaTitle.slice(0, 70), metaDescription: ed.metaDescription.slice(0, 170) } : {}),
+    // The page title follows one shape for every listing (name, city, main category, then prices and
+    // reviews) so it wins searches for the business itself; the writer's title stays in the draft only.
+    metaTitle: listingTitle({ name: p.name, city: p.cityName, category: CATEGORIES.find(c => c.slug === p.categories[0])?.name ?? null }),
+    ...(ed ? { editorial: { ...ed, ownerApproved: false, appliedAt: new Date().toISOString() } as unknown as Prisma.InputJsonValue, metaDescription: ed.metaDescription.slice(0, 170) } : {}),
   };
 }
 

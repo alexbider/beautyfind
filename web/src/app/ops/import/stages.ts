@@ -18,7 +18,12 @@ export const ENHANCE_STAGES: Array<{ id: string; name: string }> = [
   { id: 'done', name: 'הסתיים' },
 ];
 
-export const stagesFor = (provider: string) => (provider === 'enhance' ? ENHANCE_STAGES : IMPORT_STAGES);
+export const COUNT_STAGES: Array<{ id: string; name: string }> = [
+  { id: 'count', name: 'ספירה ב־DataForSEO' },
+  { id: 'done', name: 'הסתיים' },
+];
+
+export const stagesFor = (provider: string) => (provider === 'enhance' ? ENHANCE_STAGES : provider === 'count' ? COUNT_STAGES : IMPORT_STAGES);
 
 /** Index of the current stage; a finished run is at the end, a queued one before the start. */
 export function stageIndex(provider: string, stage: string | undefined, status: string): number {

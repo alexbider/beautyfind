@@ -8,7 +8,7 @@ import { db } from '@/lib/server/db';
 import { cleanEmail, emailDomain, pickEmail } from '@/lib/import/email';
 import { DUPLICATE_AT, isStrong, MatchPool, POSSIBLE_MATCH_AT, type PoolItem } from '@/lib/import/match';
 import { normalizeIlPhone } from '@/lib/import/phone';
-import { BLOCKING, EnhanceScope, qualify, RunScope } from '@/lib/import/rules';
+import { BLOCKING, CountScope, EnhanceScope, qualify, RunScope } from '@/lib/import/rules';
 import { loadSettings, parseSettings, type ImportSettings } from '@/lib/import/settings';
 import { toMicros } from '@/lib/import/pricing';
 import { commit, release } from '@/lib/import/budget';
@@ -30,7 +30,7 @@ const OPEN_FOR_DECISION = ['ready', 'needs_review'] as const;
 
 export interface CreateRunInput {
   label: string;
-  provider: 'dataforseo' | 'google' | 'enhance';
+  provider: 'dataforseo' | 'google' | 'enhance' | 'count';
   scope: unknown;
   recordLimit: number;
   budgetUsd: number;
@@ -48,6 +48,24 @@ export async function createRun(actor: Actor, input: CreateRunInput) {
         provider: 'enhance',
         scope,
         recordLimit: Math.max(1, Math.min(100_000, Math.round(input.recordLimit))),
+        budgetMicros: toMicros(Math.max(0, Math.min(10_000, input.budgetUsd))),
+        maxRequests: 0,
+        createdById: actor.id,
+      },
+    });
+  }
+  if (input.provider === 'count') {
+    const scope = CountScope.parse(input.scope);
+    if (!scope.all && !scope.cities.length) throw new Error('no_cities');
+    const s = await loadSettings(db);
+    if (s.killSwitch) throw new Error('kill_switch');
+    if (!s.dataforseoEnabled) throw new Error('provider_disabled');
+    return db.importRun.create({
+      data: {
+        label: input.label.trim().slice(0, 80) || 'ספירת עסקים לפי עיר ותחום',
+        provider: 'count',
+        scope,
+        recordLimit: null,
         budgetMicros: toMicros(Math.max(0, Math.min(10_000, input.budgetUsd))),
         maxRequests: 0,
         createdById: actor.id,

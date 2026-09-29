@@ -47,6 +47,7 @@ describe('import database behaviour', { skip }, () => {
   });
   after(async () => {
     await db.importPlace.deleteMany({ where: { runId: { in: runs } } });
+    await db.importCoverage.deleteMany({ where: { runId: { in: runs } } });
     await db.spendEntry.deleteMany({ where: { OR: [{ runId: { in: runs } }, { requestKey: { startsWith: 'test:' } }] } });
     await db.providerBudget.deleteMany({ where: { key: { startsWith: 'test:' } } });
     await db.importRun.deleteMany({ where: { id: { in: runs } } });
@@ -135,6 +136,28 @@ describe('import database behaviour', { skip }, () => {
     assert.equal(rating?.publishable, true);
     const noSite = await db.importPlace.findFirst({ where: { runId: run.id, websiteKind: 'google_profile' } });
     assert.ok(noSite?.website?.startsWith('https://www.google.com/maps?cid='));
+  });
+
+  it('a count run stores the provider total per city and category, pays one request per pair, and skips fresh pairs', async () => {
+    const count = await import('../../scripts/import/stages/count');
+    dfs.setMode('ok');
+    await db.importCoverage.deleteMany({ where: { citySlug: 'tel-aviv', categorySlug: { in: ['nails', 'facials'] } } });
+    const run = await newRun({ provider: 'count', recordLimit: null, scope: { all: false, cities: ['tel-aviv'], categories: ['nails', 'facials'] } });
+    await count.seedCount(run, { all: false, cities: ['tel-aviv'], categories: ['nails', 'facials'] });
+    assert.equal(await db.importTask.count({ where: { runId: run.id, kind: 'count' } }), 2);
+    const before = dfs.requests.length;
+    while (await count.countStage(run));
+    assert.equal(dfs.requests.length, before + 2);
+    const rows = await db.importCoverage.findMany({ where: { citySlug: 'tel-aviv', categorySlug: { in: ['nails', 'facials'] } } });
+    assert.equal(rows.length, 2);
+    assert.ok(rows.every(r => r.providerTotal != null && r.providerTotal > 0 && r.runId === run.id));
+    const spent = await db.importRun.findUniqueOrThrow({ where: { id: run.id } });
+    assert.ok(spent.spentMicros > 0n && spent.reservedMicros === 0n);
+    // A second count of the same pairs asks nothing: they were counted a moment ago.
+    const again = await newRun({ provider: 'count', recordLimit: null, scope: { all: false, cities: ['tel-aviv'], categories: ['nails', 'facials'] } });
+    await count.seedCount(again, { all: false, cities: ['tel-aviv'], categories: ['nails', 'facials'] });
+    assert.equal(await db.importTask.count({ where: { runId: again.id } }), 0);
+    assert.equal(((await db.importRun.findUniqueOrThrow({ where: { id: again.id } })).stats as { skippedFresh?: number }).skippedFresh, 2);
   });
 
   it('a rerun never overwrites fields staff edited', async () => {

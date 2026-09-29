@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { CATEGORIES, CITIES, MENU_REGION_ORDER, REGIONS } from '@/lib/catalog';
+import { countRequestUsd, coverageIndex, pairsToCount, summarize, type CoverageCell, type CoverageSummary } from '@/lib/import/coverageCounts';
 import { writerUsd } from '@/lib/import/enrichPlan';
 import { DEFAULT_ASSUMPTIONS, estimateFor, estimateRun, estimateTable, type EstimateAssumptions } from '@/lib/import/estimate';
 import { pricing } from '@/lib/import/pricing';
@@ -56,14 +57,31 @@ const SITE_NAME: Record<string, string> = {
 const n = (x: number) => x.toLocaleString('he-IL');
 const usd = (x: number) => `$${x < 1 ? x.toFixed(3) : x.toFixed(2)}`;
 
-function Scope({ all, setAll, cities, setCities, cats, setCats }: { all: boolean; setAll: (v: boolean) => void; cities: string[]; setCities: (v: string[]) => void; cats: string[]; setCats: (v: string[]) => void }) {
+/** "45 / 120" next to a city or category: the provider's total, what the import found, and whether the pair is covered. */
+function Count({ s }: { s: CoverageSummary }) {
+  if (!s.counted && !s.found) return null;
+  if (!s.counted) return <span className={styles.chip} title="נמצאו בייבוא; הסך הכולל טרם נספר">{n(s.found)}</span>;
+  const partial = s.counted < s.pairs;
+  const title = `${n(s.found)} נמצאו מתוך ${n(s.total)} שהספק מונה${partial ? ` (${n(s.pairs - s.counted)} תחומים טרם נספרו)` : ''}${s.published ? `, ${n(s.published)} פורסמו` : ''}`;
+  return (
+    <span className={`${styles.chip} ${s.done ? styles.chipOk : s.found ? styles.chipWarn : ''}`} title={title}>
+      {s.done ? '✓ ' : ''}{n(s.found)} / {n(s.total)}{partial ? '+' : ''}
+    </span>
+  );
+}
+
+function Scope({ all, setAll, cities, setCities, cats, setCats, coverage }: { all: boolean; setAll: (v: boolean) => void; cities: string[]; setCities: (v: string[]) => void; cats: string[]; setCats: (v: string[]) => void; coverage: CoverageCell[] }) {
   const toggle = (list: string[], set: (v: string[]) => void, v: string) => set(list.includes(v) ? list.filter(x => x !== v) : [...list, v]);
   const allCats = cats.length === CATEGORIES.length;
+  const index = useMemo(() => coverageIndex(coverage), [coverage]);
+  const everyCity = useMemo(() => CITIES.map(c => c.slug), []);
+  const catSum = (slug: string) => summarize(index, everyCity, [slug]);
+  const citySum = (slug: string) => summarize(index, [slug], cats);
   return (
     <>
       <div>
         <div className={styles.btnRow} style={{ alignItems: 'center', marginBottom: 6 }}>
-          <span className={styles.label} style={{ margin: 0, flex: 1 }}>תחומים</span>
+          <span className={styles.label} style={{ margin: 0, flex: 1 }}>תחומים <span className={styles.note}>(נמצאו / סך הכול בכל הערים)</span></span>
           <button type="button" className={styles.btn} style={{ minHeight: 30, padding: '3px 10px' }} onClick={() => setCats(allCats ? [] : CATEGORIES.map(c => c.slug))}>{allCats ? 'ניקוי' : 'כל התחומים'}</button>
         </div>
         <div className={styles.checks}>
@@ -71,12 +89,13 @@ function Scope({ all, setAll, cities, setCities, cats, setCats }: { all: boolean
             <label key={c.slug} className={styles.check}>
               <input type="checkbox" checked={cats.includes(c.slug)} onChange={() => toggle(cats, setCats, c.slug)} />
               {c.name}
+              <Count s={catSum(c.slug)} />
             </label>
           ))}
         </div>
       </div>
       <div>
-        <span className={styles.label}>אזור</span>
+        <span className={styles.label}>אזור <span className={styles.note}>(ליד כל עיר: נמצאו / סך הכול בתחומים שנבחרו; ✓ כשהעיר כוסתה)</span></span>
         <label className={styles.check}><input type="checkbox" checked={all} onChange={e => setAll(e.target.checked)} />כל הארץ</label>
         {!all
           ? MENU_REGION_ORDER.map(slug => {
@@ -89,6 +108,7 @@ function Scope({ all, setAll, cities, setCities, cats, setCats }: { all: boolean
                     <label className={styles.check}>
                       <input type="checkbox" checked={allOn} onChange={() => setCities(allOn ? cities.filter(c => !list.some(x => x.slug === c)) : [...new Set([...cities, ...list.map(c => c.slug)])])} />
                       {region.name}
+                      <Count s={summarize(index, list.map(c => c.slug), cats)} />
                     </label>
                   </div>
                   <div className={styles.checks}>
@@ -96,6 +116,7 @@ function Scope({ all, setAll, cities, setCities, cats, setCats }: { all: boolean
                       <label key={c.slug} className={styles.check}>
                         <input type="checkbox" checked={cities.includes(c.slug)} onChange={() => toggle(cities, setCities, c.slug)} />
                         {c.name}
+                        <Count s={citySum(c.slug)} />
                       </label>
                     ))}
                   </div>
@@ -138,7 +159,7 @@ function Plan({ settings, flags }: { settings: ImportSettings; flags: ServerFlag
   );
 }
 
-function NewRun({ settings, flags, pricingNote }: { settings: ImportSettings; flags: ServerFlags; pricingNote: PricingNote }) {
+function NewRun({ settings, flags, pricingNote, coverage }: { settings: ImportSettings; flags: ServerFlags; pricingNote: PricingNote; coverage: CoverageCell[] }) {
   const router = useRouter();
   const [provider, setProvider] = useState<'dataforseo' | 'google'>('dataforseo');
   const [label, setLabel] = useState('');
@@ -161,6 +182,29 @@ function NewRun({ settings, flags, pricingNote }: { settings: ImportSettings; fl
   const legacy = useMemo(() => (provider === 'google' ? estimateRun(scope) : null), [provider, all, cities, cats]); // eslint-disable-line react-hooks/exhaustive-deps
   const budget = budgetOverride ? Number(budgetOverride) : Math.ceil(est.totalUsd * 1.2 * 100) / 100;
   const valid = cats.length > 0 && (all || cities.length > 0) && budget > 0 && !settings.killSwitch;
+
+  // What the count says about the chosen cities and categories, and what a count of them would cost.
+  const chosenCities = all ? CITIES.map(c => c.slug) : cities;
+  const cover = useMemo(() => summarize(coverageIndex(coverage), chosenCities, cats), [coverage, chosenCities, cats]); // eslint-disable-line react-hooks/exhaustive-deps
+  const toCount = useMemo(() => pairsToCount(coverage, chosenCities, cats, new Date(Date.now() - 30 * 86_400_000)).length, [coverage, chosenCities, cats]); // eslint-disable-line react-hooks/exhaustive-deps
+  const countUsd = toCount * countRequestUsd(pricing());
+  const remaining = Math.max(0, cover.total - cover.found);
+  const [counting, startCount] = useTransition();
+  const [countMsg, setCountMsg] = useState<string | null>(null);
+  const count = (recount: boolean) =>
+    startCount(async () => {
+      setCountMsg(null);
+      const pairs = recount ? chosenCities.length * cats.length : toCount;
+      const r = await startRunAction({
+        label: `ספירה: ${all ? 'כל הארץ' : chosenCities.map(c => CITIES.find(x => x.slug === c)?.name).join(', ')}`,
+        provider: 'count',
+        scope: { all, cities, categories: cats, recount },
+        recordLimit: 1,
+        budgetUsd: Math.ceil(pairs * countRequestUsd(pricing()) * 1.2 * 100) / 100 + 0.05,
+      });
+      setCountMsg(r.ok ? (r.dispatched ? 'הספירה התחילה. המספרים יופיעו ליד הערים והתחומים כשהיא מסתיימת.' : 'הספירה נוצרה ומחכה לעובד. הפעילו את ״Import worker״ ב־GitHub Actions.') : r.error === 'kill_switch' ? 'מתג החירום פעיל.' : r.error === 'provider_disabled' ? 'DataForSEO כבוי בהגדרות.' : 'לא הצלחנו ליצור את הספירה.');
+      router.refresh();
+    });
 
   const go = (preview: boolean) =>
     start(async () => {
@@ -189,7 +233,26 @@ function NewRun({ settings, flags, pricingNote }: { settings: ImportSettings; fl
         <span className={styles.label}>שם הריצה (רשות)</span>
         <input className={styles.input} value={label} onChange={e => setLabel(e.target.value)} maxLength={80} placeholder="לדוגמה: חיפה, ציפורניים" />
       </label>
-      <Scope all={all} setAll={setAll} cities={cities} setCities={setCities} cats={cats} setCats={setCats} />
+      <Scope all={all} setAll={setAll} cities={cities} setCities={setCities} cats={cats} setCats={setCats} coverage={coverage} />
+      <div className={styles.panel} style={{ background: '#F1F5F7' }}>
+        {cover.counted ? (
+          <p>
+            לפי הספירה: <b>{n(cover.total)}</b> עסקים בערים ובתחומים שנבחרו{cover.counted < cover.pairs ? ` (${n(cover.pairs - cover.counted)} צירופי עיר ותחום טרם נספרו)` : ''}, מהם <b>{n(cover.found)}</b> כבר נמצאו ו־<b>{n(cover.published)}</b> פורסמו.
+            {cover.done ? ' הבחירה הזו כבר כוסתה; ריצה נוספת תרענן את הרשומות הקיימות ולא תוסיף הרבה.' : remaining > 0 ? ` נשארו כ־${n(remaining)}.` : ''}
+          </p>
+        ) : (
+          <p>עוד לא נספר כמה עסקים יש בערים ובתחומים האלה. הספירה שואלת את DataForSEO פעם אחת לכל צירוף של עיר ותחום ומציגה את המספר ליד כל עיר, כדי שלא נריץ את אותה עיר ואותו תחום פעמיים.</p>
+        )}
+        <div className={styles.btnRow} style={{ alignItems: 'center' }}>
+          {toCount > 0 ? (
+            <button type="button" className={styles.btn} disabled={counting || !valid} onClick={() => count(false)}>{counting ? 'יוצרים…' : `ספירת עסקים (${n(toCount)} בקשות, ${usd(countUsd)})`}</button>
+          ) : (
+            <button type="button" className={styles.btn} disabled={counting || !valid} onClick={() => count(true)}>{counting ? 'יוצרים…' : `ספירה מחדש (${n(chosenCities.length * cats.length)} בקשות, ${usd(chosenCities.length * cats.length * countRequestUsd(pricing()))})`}</button>
+          )}
+          {remaining > 0 && String(remaining) !== limit ? <button type="button" className={styles.btn} onClick={() => setLimit(String(remaining))}>להגדיר {n(remaining)} עסקים לפי מה שנשאר</button> : null}
+        </div>
+        {countMsg ? <p style={{ margin: '6px 0 0' }}>{countMsg}</p> : null}
+      </div>
       <label>
         <span className={styles.label}>כמה עסקים ייחודיים</span>
         <input className={styles.input} inputMode="numeric" dir="ltr" value={limit} onChange={e => setLimit(e.target.value.replace(/\D/g, ''))} />
@@ -361,12 +424,18 @@ function Run({ r }: { r: RunRow }) {
     <article className={styles.card} id={`run-${r.id}`}>
       <div className={styles.runHead}>
         <span className={styles.runTitle}>{r.label}</span>
-        <span className={styles.chip}>{r.provider === 'dataforseo' ? 'ייבוא' : enhance ? 'השלמה' : 'Google (ישן)'}</span>
+        <span className={styles.chip}>{r.provider === 'dataforseo' ? 'ייבוא' : enhance ? 'השלמה' : r.provider === 'count' ? 'ספירה' : 'Google (ישן)'}</span>
         <span className={`${styles.chip} ${STATUS_CHIP[r.status]}`}>{STATUS_NAME[r.status]}</span>
         <span className={styles.note}>{new Date(r.createdAt).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' })}</span>
       </div>
       <Stages r={r} />
-      {enhance ? (
+      {r.provider === 'count' ? (
+        <p className={styles.note} style={{ margin: '8px 0 0' }}>
+          נספרו {n(c.counted ?? 0)} מתוך {n(Number(r.stats.seededTasks ?? 0))} צירופי עיר ותחום · {n(c.businesses ?? 0)} עסקים אצל הספק
+          {Number(r.stats.skippedFresh ?? 0) ? ` · ${n(Number(r.stats.skippedFresh))} נספרו בחודש האחרון ודולגו` : ''}
+          {c.tasksFailed ? ` · נכשלו ${n(c.tasksFailed)}` : ''}
+        </p>
+      ) : enhance ? (
         <p className={styles.note} style={{ margin: '8px 0 0' }}>
           עסקים {n(Number(r.stats.listings ?? 0))} · שופרו {n(c.improved ?? 0)} · אין מה להוסיף {n(c.nothing_to_add ?? 0)}
           {c.refreshed ? ` · רועננו מ־DataForSEO ${n(c.refreshed)}` : ''}
@@ -426,7 +495,7 @@ function Run({ r }: { r: RunRow }) {
       ) : null}
       {note ? <p className={styles.info}>{note}</p> : null}
       <div className={styles.btnRow} style={{ marginTop: 10 }}>
-        {enhance ? <Link className={`${styles.btn} ${styles.teal}`} href="/ops/import/enrich">לאצוות ההשלמה</Link> : <Link className={`${styles.btn} ${styles.teal}`} href={`/ops/import/review?run=${r.id}`}>לבדיקת הרשומות</Link>}
+        {enhance ? <Link className={`${styles.btn} ${styles.teal}`} href="/ops/import/enrich">לאצוות ההשלמה</Link> : r.provider === 'count' ? null : <Link className={`${styles.btn} ${styles.teal}`} href={`/ops/import/review?run=${r.id}`}>לבדיקת הרשומות</Link>}
         {r.status === 'queued' || r.status === 'running' ? (
           <>
             <button type="button" className={styles.btn} disabled={pending} onClick={() => act('pause')}>השהיה</button>
@@ -447,8 +516,8 @@ function Run({ r }: { r: RunRow }) {
           {Object.keys(r.spend).length ? <p className={styles.note} style={{ margin: 0 }}>לפי ספק: {Object.entries(r.spend).map(([k, v]) => `${k} ${v.calls} קריאות, הערכה ${usd(v.estimatedUsd)}, בפועל ${usd(v.actualUsd)}`).join(' · ')}</p> : null}
           {Array.isArray(r.stats.failures) && (r.stats.failures as string[]).length ? <p className={styles.note} style={{ margin: 0 }}>סיבות כישלון: {(r.stats.failures as string[]).slice(0, 3).join(' | ')}</p> : null}
           <div className={styles.btnRow}>
-            {!enhance && (r.status === 'done' || r.status === 'failed') ? <button type="button" className={styles.btn} disabled={pending} onClick={() => act('retry')}>השלמה חוזרת לרשומות החסרות</button> : null}
-            {!enhance ? <a className={styles.btn} href={`/ops/import/export?run=${r.id}&kind=canonical`}>ייצוא שדות מותרים</a> : null}
+            {!enhance && r.provider !== 'count' && (r.status === 'done' || r.status === 'failed') ? <button type="button" className={styles.btn} disabled={pending} onClick={() => act('retry')}>השלמה חוזרת לרשומות החסרות</button> : null}
+            {!enhance && r.provider !== 'count' ? <a className={styles.btn} href={`/ops/import/export?run=${r.id}&kind=canonical`}>ייצוא שדות מותרים</a> : null}
             <a className={styles.btn} href={`/ops/import/export?run=${r.id}&kind=audit`}>דוח ביקורת</a>
             {canDelete ? <button type="button" className={`${styles.btn} ${styles.danger}`} disabled={pending} onClick={del}>מחיקת הריצה</button> : null}
           </div>
@@ -493,7 +562,7 @@ function Published({ eligible, pendingImages }: { eligible: number; pendingImage
   );
 }
 
-export function RunsView(props: { runs: RunRow[]; settings: ImportSettings; flags: ServerFlags; pricingNote: PricingNote; enhanceEligible: number; pendingImages: number }) {
+export function RunsView(props: { runs: RunRow[]; settings: ImportSettings; flags: ServerFlags; pricingNote: PricingNote; enhanceEligible: number; pendingImages: number; coverage: CoverageCell[] }) {
   const router = useRouter();
   const live = props.runs.some(r => r.status === 'running' || r.status === 'queued');
   useEffect(() => {
@@ -505,7 +574,7 @@ export function RunsView(props: { runs: RunRow[]; settings: ImportSettings; flag
   return (
     <div className={styles.grid2}>
       <div className={styles.stack}>
-        <NewRun settings={props.settings} flags={props.flags} pricingNote={props.pricingNote} />
+        <NewRun settings={props.settings} flags={props.flags} pricingNote={props.pricingNote} coverage={props.coverage} />
         <Published eligible={props.enhanceEligible} pendingImages={props.pendingImages} />
         <Sources settings={props.settings} flags={props.flags} />
         <Estimator pricingNote={props.pricingNote} />

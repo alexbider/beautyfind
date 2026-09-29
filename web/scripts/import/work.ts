@@ -15,10 +15,11 @@
 import { appendFileSync } from 'node:fs';
 import type { ImportRun } from '@prisma/client';
 import { sweepExpired } from '../../src/lib/import/retention';
-import { RunScope } from '../../src/lib/import/rules';
+import { CountScope, RunScope } from '../../src/lib/import/rules';
 import { closeBrowser } from './crawl';
 import { argRun, db, LEASE_MS, log, setStats, Stop, timeLeft, WORKER } from './ctx';
 import { check } from './stages/check';
+import { countStage, seedCount } from './stages/count';
 import { discoverDfs, seedDfs } from './stages/dfsDiscover';
 import { enrich } from './stages/enrich';
 import { APIFY_KINDS, apifyStage } from './stages/apify';
@@ -72,6 +73,16 @@ async function work(run: ImportRun): Promise<'done' | 'stopped'> {
       await stage(run.id, 'done');
       await db.importRun.updateMany({ where: { id: run.id, lockedBy: WORKER }, data: { status: 'done', finishedAt: new Date(), lockedBy: null, lockedUntil: null } });
       log('enhance run done');
+      return 'done';
+    }
+    if (run.provider === 'count') {
+      // How many businesses the provider lists per city and category (import_coverage). No records are staged.
+      await stage(run.id, 'count');
+      await seedCount(run, CountScope.parse(run.scope));
+      while (await countStage(run));
+      await stage(run.id, 'done');
+      await db.importRun.updateMany({ where: { id: run.id, lockedBy: WORKER }, data: { status: 'done', finishedAt: new Date(), lockedBy: null, lockedUntil: null } });
+      log('count run done');
       return 'done';
     }
     const scope = RunScope.parse(run.scope);

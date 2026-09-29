@@ -533,3 +533,60 @@ describe('about text preview', () => {
     assert.equal([...head, ...tail].join(' ').split(' ').length, 350);
   });
 });
+
+describe('import coverage per city and category', async () => {
+  const { coverageIndex, pairsToCount, summarize, countRequestUsd } = await import('../../src/lib/import/coverageCounts');
+  const cells = [
+    { city: 'haifa', category: 'nails', total: 100, checkedAt: '2026-09-20T00:00:00.000Z', found: 95, published: 40 },
+    { city: 'haifa', category: 'facials', total: 50, checkedAt: '2026-09-20T00:00:00.000Z', found: 10, published: 0 },
+    { city: 'akko', category: 'nails', total: null, checkedAt: null, found: 3, published: 1 },
+  ];
+  it('sums totals, found and published over the chosen pairs and says when a city is covered', () => {
+    const index = coverageIndex(cells);
+    const nails = summarize(index, ['haifa'], ['nails']);
+    assert.equal(nails.total, 100);
+    assert.equal(nails.found, 95);
+    assert.equal(nails.done, true);
+    const both = summarize(index, ['haifa'], ['nails', 'facials']);
+    assert.equal(both.total, 150);
+    assert.equal(both.found, 105);
+    assert.equal(both.done, false); // facials at 10 of 50
+    const akko = summarize(index, ['akko'], ['nails']);
+    assert.equal(akko.counted, 0);
+    assert.equal(akko.share, null);
+    assert.equal(akko.found, 3);
+    const mixed = summarize(index, ['haifa', 'akko'], ['nails']);
+    assert.equal(mixed.counted, 1);
+    assert.equal(mixed.pairs, 2);
+    assert.equal(mixed.done, false); // one pair never counted
+  });
+  it('asks the provider only for pairs never counted or counted too long ago', () => {
+    const stale = new Date('2026-09-01T00:00:00.000Z');
+    assert.deepEqual(pairsToCount(cells, ['haifa', 'akko'], ['nails'], stale), [{ city: 'akko', category: 'nails' }]);
+    assert.equal(pairsToCount(cells, ['haifa'], ['nails', 'facials'], new Date('2026-09-25T00:00:00.000Z')).length, 2);
+    assert.equal(pairsToCount(cells, ['haifa'], ['nails'], stale, true).length, 1);
+    assert.ok(countRequestUsd() > 0.01 && countRequestUsd() < 0.02);
+  });
+});
+
+describe('listing page title', async () => {
+  const { listingTitle, nameSays } = await import('../../src/lib/seo/listingTitle');
+  it('puts the name, the city and the main category first, then prices and reviews, within 60 characters', () => {
+    const t = listingTitle({ name: 'סלון אהוד אלבז', city: 'חיפה', category: 'מספרות ועיצוב שיער' });
+    assert.ok(t.startsWith('סלון אהוד אלבז חיפה: מספרות ועיצוב שיער'), t);
+    assert.ok(t.length <= 60, t);
+    assert.ok(/מחירים/.test(t), t);
+  });
+  it('does not repeat a city or category the name already carries, and shortens long names', () => {
+    assert.ok(nameSays('מספרת חיפה', 'חיפה'));
+    assert.ok(nameSays('קליניקה בחיפה', 'חיפה'));
+    assert.ok(!nameSays('מספרת חיפאי', 'חיפה'));
+    assert.ok(nameSays('קוסמטיקה רפואית ד"ר לוי', 'קוסמטיקה וטיפולי פנים'));
+    const t = listingTitle({ name: 'מספרת חיפה', city: 'חיפה', category: 'מספרות ועיצוב שיער' });
+    assert.ok(!/חיפה.*חיפה/.test(t), t);
+    const long = listingTitle({ name: 'המרכז הבינלאומי לרפואה אסתטית ולכירורגיה פלסטית של פרופסור ישראלי', city: 'תל אביב–יפו', category: 'כירורגיה פלסטית' });
+    assert.ok(long.length <= 60, long);
+    assert.ok(long.startsWith('המרכז הבינלאומי'), long);
+    assert.equal(listingTitle({ name: 'Nail Bar', city: null, category: null }), 'Nail Bar | מחירים, ביקורות ושעות פתיחה');
+  });
+});

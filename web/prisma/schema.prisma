@@ -1307,6 +1307,22 @@ model ImportTask {
   @@map("import_tasks")
 }
 
+// How many businesses the provider lists per city and category, so the import screen can show the
+// city's total next to what the import already found, and a city is not crawled twice for one
+// category. One row per (city, category), refreshed by a "count" run (scripts/import/stages/count.ts).
+model ImportCoverage {
+  citySlug      String    @map("city_slug")
+  categorySlug  String    @map("category_slug")
+  providerTotal Int?      @map("provider_total") // matching records in DataForSEO's database; null when the count failed
+  checkedAt     DateTime  @map("checked_at")
+  runId         String?   @map("run_id") @db.Uuid
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@id([citySlug, categorySlug])
+  @@map("import_coverage")
+}
+
 model ImportPlace {
   id          String            @id @default(uuid()) @db.Uuid
   // Stable source key: the Google place id when the provider gives one (shared by DataForSEO and
