@@ -27,6 +27,7 @@ import { buildView, jsonLd, ldJson, metaDescription, metaTitle, reviewsLabel, si
 import btn from '@/components/profile/buttons.module.css';
 import rv from '@/components/profile/Reviews.module.css';
 import styles from './page.module.css';
+import { decodeParam } from '@/lib/params';
 
 // Design: project/BeautyFind Business Profile.dc.html and Business Profile Mobile v2 (docs/coverage-manifest.md
 // maps every element). "Open now", "today" and relative review dates are computed per request in
@@ -37,8 +38,8 @@ export const dynamic = 'force-dynamic';
 type Props = { params: Promise<{ region: string; slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { region, slug } = await params;
-  const p = await getProfile(region, slug);
+  const { region, slug: rawSlug } = await params;
+  const p = await getProfile(region, decodeParam(rawSlug));
   if (!p) return { title: 'העסק לא נמצא', robots: { index: false } };
   const v = buildView(p);
   const title = metaTitle(p, v);
@@ -66,14 +67,14 @@ const EMBED_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY || '';
 const claimHref = (branchId: string) => `${ROUTES.claim}?branch=${branchId}`;
 
 export default async function BusinessProfilePage({ params, searchParams }: Props) {
-  const { region, slug } = await params;
-  const p = await getProfile(region, slug);
+  const { region, slug: rawSlug } = await params;
+  const p = await getProfile(region, decodeParam(rawSlug));
   if (!p) notFound();
   // Served at /:region/:category/:slug (see the rewrite in next.config.ts, which passes the category as
   // "via"). Any other address, including the old /:region/biz/:slug, moves permanently to that one.
   const via = (await searchParams).via;
   const canonicalCat = p.href.split('/')[2];
-  if (canonicalCat !== 'biz' && via !== canonicalCat) permanentRedirect(p.href);
+  if (canonicalCat !== 'biz' && via !== canonicalCat) permanentRedirect(encodeURI(p.href)); // a Hebrew slug must be percent-encoded in the Location header
   const v = buildView(p);
 
   const parentHref = v.citySlug && v.citySlug !== p.regionSlug ? `/${p.regionSlug}/${v.citySlug}` : `/${p.regionSlug}`;

@@ -9,6 +9,7 @@ import { isAdvanced } from '@/lib/server/clinic';
 import { db } from '@/lib/server/db';
 import { PUBLIC_WHERE, profileHref } from '@/lib/server/public';
 import { currentUser } from '@/lib/server/session';
+import { decodeParam } from '@/lib/params';
 
 // Design: project/BeautyFind Consult Request.dc.html (side=patient)
 // 08-open-decisions.md A2 · 01-flows.md C3 · 03-states.md "Consult request"
@@ -28,7 +29,7 @@ async function loadBranch(slug: string) {
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
-  const { branch: slug } = await params;
+  const slug = decodeParam((await params).branch);
   const b = await loadBranch(slug);
   if (!b) return { title: 'בקשת ייעוץ' };
   return {
@@ -39,7 +40,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 export default async function ConsultPage({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<Search> }) {
-  const [{ branch: slug }, sp] = await Promise.all([params, searchParams]);
+  const [{ branch: rawSlug }, sp] = await Promise.all([params, searchParams]);
+  const slug = decodeParam(rawSlug);
   const branch = await loadBranch(slug);
   if (!branch) notFound();
 

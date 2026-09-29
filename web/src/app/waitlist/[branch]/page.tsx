@@ -7,6 +7,7 @@ import { PhoneIcon, PublicShell, StateCard, WaIcon, telHref, waHref } from '@/co
 import styles from '@/components/waitlist/Waitlist.module.css';
 import { loadJoinPage } from '../entries';
 import { joinAction, leaveAction } from './actions';
+import { decodeParam } from '@/lib/params';
 
 // Design: project/BeautyFind Waitlist.dc.html (view=join). Advanced plan only; a basic listing
 // shows "call or WhatsApp the clinic" instead of the form.
@@ -14,7 +15,7 @@ import { joinAction, leaveAction } from './actions';
 type Props = { params: Promise<{ branch: string }>; searchParams: Promise<{ t?: string | string[] }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { branch } = await params;
+  const branch = decodeParam((await params).branch);
   const data = await loadJoinPage(branch);
   return {
     title: data ? `רשימת המתנה · ${data.branch.name}` : 'רשימת המתנה',
@@ -24,7 +25,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function WaitlistJoinPage({ params, searchParams }: Props) {
-  const [{ branch: slug }, sp] = await Promise.all([params, searchParams]);
+  const [{ branch: rawSlug }, sp] = await Promise.all([params, searchParams]);
+  const slug = decodeParam(rawSlug);
   const data = await loadJoinPage(slug);
   if (!data) notFound();
   const { branch, advanced, treatments, holdMinutes } = data;

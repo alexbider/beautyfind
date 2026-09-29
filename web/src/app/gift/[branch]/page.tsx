@@ -8,6 +8,7 @@ import { yearsText } from '@/components/gift/shared';
 import { profileHref } from '@/lib/server/public';
 import { addDays, ilDate, ilDateKey } from '@/lib/time';
 import { GiftFrame } from '../frame';
+import { decodeParam } from '@/lib/params';
 
 // Design: project/BeautyFind Gift Cards.dc.html (view=buy). Payment runs at the business's own provider;
 // the checkout returns here with ?card=<id>&paid=1|0 and the card turns active once the provider confirms.
@@ -17,7 +18,7 @@ export const dynamic = 'force-dynamic';
 type Props = { params: Promise<{ branch: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
-  const { branch } = await params;
+  const branch = decodeParam((await params).branch);
   const sp = await searchParams;
   const s = await sellableBranch(branch);
   if (!s) return { title: 'העמוד לא נמצא', robots: { index: false } };
@@ -33,7 +34,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 }
 
 export default async function GiftBuyPage({ params, searchParams }: Props) {
-  const { branch } = await params;
+  const branch = decodeParam((await params).branch);
   const sp = await searchParams;
   const s = await sellableBranch(branch);
   if (!s) notFound();

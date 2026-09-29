@@ -13,6 +13,7 @@ import { canTakePayments } from '@/lib/server/money';
 import { PUBLIC_WHERE, profileHref } from '@/lib/server/public';
 import { currentUser } from '@/lib/server/session';
 import { ilDateKey } from '@/lib/time';
+import { decodeParam } from '@/lib/params';
 
 // Design: project/BeautyFind Booking.dc.html. Steps: treatment → practitioner → slot → details + consents.
 // Deposit per the business's DepositPolicy (advanced plan only, as createBooking applies it).
@@ -36,7 +37,7 @@ async function loadBranch(slug: string) {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { branch } = await params;
+  const branch = decodeParam((await params).branch);
   const b = await db.branch.findFirst({ where: { AND: [PUBLIC_WHERE, { slug: branch }] }, select: { name: true, cityName: true } });
   if (!b) return { title: 'הקליניקה לא נמצאה', robots: { index: false } };
   return {
@@ -47,7 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function BookPage({ params, searchParams }: Props) {
-  const { branch: slug } = await params;
+  const slug = decodeParam((await params).branch);
   const sp = await searchParams;
   const b = await loadBranch(slug);
   if (!b) notFound();

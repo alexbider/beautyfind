@@ -11,7 +11,7 @@ export const revalidate = 3600;
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl();
   const u = (path: string, priority: number, changeFrequency: MetadataRoute.Sitemap[number]['changeFrequency'] = 'weekly', lastModified?: Date) => ({
-    url: base + path,
+    url: base + encodeURI(path), // Hebrew slugs are percent-encoded in <loc>
     priority,
     changeFrequency,
     ...(lastModified ? { lastModified } : {}),

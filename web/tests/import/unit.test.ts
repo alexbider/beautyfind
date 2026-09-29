@@ -590,3 +590,12 @@ describe('listing page title', async () => {
     assert.equal(listingTitle({ name: 'Nail Bar', city: null, category: null }), 'Nail Bar | מחירים, ביקורות ושעות פתיחה');
   });
 });
+
+describe('route parameters', async () => {
+  const { decodeParam } = await import('../../src/lib/params');
+  it('decodes a percent-encoded Hebrew slug and keeps a malformed value as typed', () => {
+    assert.equal(decodeParam('%D7%90%D7%A8%D7%99%D7%90%D7%9C-%D7%9E%D7%A1%D7%A4%D7%A8%D7%94'), 'אריאל-מספרה');
+    assert.equal(decodeParam('ehud-elbaz-beauty-salon'), 'ehud-elbaz-beauty-salon');
+    assert.equal(decodeParam('%E0%A4%A'), '%E0%A4%A');
+  });
+});
