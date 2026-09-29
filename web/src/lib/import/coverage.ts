@@ -36,7 +36,7 @@ export const MANIFEST: ManifestEntry[] = [
   { id: 'compare', element: 'Comparison links', selector: 'Services foot link', fields: 'category, city', source: 'Existing /region/city/category routes only', fallback: 'No link when the city has no page', cta: 'Compare', test: 'unit: compare href', weight: 0, ownerField: false },
   { id: 'reviews', element: 'h-reviews', selector: '#h-reviews', fields: 'googleRating, reviews[] (BeautyFind)', source: 'Google summary (labelled) and BeautyFind verified reviews, sorted by real controls', fallback: 'Left out of the page until a Google rating or a verified review exists', cta: 'Google link, write a review after a visit', test: 'unit: no weekly-refresh claim without a job', weight: 2, ownerField: false },
   { id: 'ba', element: 'h-ba', selector: '#h-ba', fields: 'gallery items tagged לפני/אחרי with consent', source: 'Only owner-published pairs with a consent basis; crawler candidates wait for owner confirmation', fallback: 'Left out of the page until the owner publishes pairs', cta: 'Claim', test: 'unit: candidates never published', weight: 0, ownerField: true },
-  { id: 'team', element: 'h-team', selector: '#h-team', fields: 'staff (verified) + team[] (imported: name, role, bio, sourceUrl)', source: 'People named with a role on the business site; never a login, permission or verified badge', fallback: 'Left out of the page until a person is named', cta: 'Claim', test: 'db: imported team creates no StaffMember', weight: 6, ownerField: true },
+  { id: 'team', element: 'h-team', selector: '#h-team', fields: 'staff (verified)', source: 'The owner adds staff after claiming; names scraped from a website are never published', fallback: 'Left out of the page until the owner adds a person', cta: 'Claim', test: 'db: imported team creates no StaffMember', weight: 0, ownerField: true },
   { id: 'video', element: 'h-video', selector: '#h-video (VideoEmbed)', fields: 'videos[] (id, title, channel, status, embeddable)', source: 'YouTube ids on the official site, then the verified channel (Data API); validated via API or oEmbed', fallback: 'Left out of the page until a playable video exists', cta: 'Consent-gated click-to-load player', test: 'unit: video validation states', weight: 3, ownerField: true },
   { id: 'hours', element: 'h-hours', selector: '#h-hours', fields: 'hours[7] with per-day unknown', source: 'Google hours via DataForSEO or the site; Asia/Jerusalem; unknown is not closed; no Saturday default', fallback: 'Left out of the page until hours are known; no open-now claim', cta: 'Contact', test: 'unit: unknown hours give no open state', weight: 6, ownerField: true },
   { id: 'faq', element: 'h-faq', selector: '#h-faq', fields: 'faqs[] (5 to 8)', source: 'Editorial call from the evidence packet, with a basis per answer; site FAQs as evidence', fallback: 'Fewer than five accurate FAQs flags editorial review; the section shows what exists and is left out with none', cta: 'None', test: 'unit: five FAQs from rich evidence, flag on sparse', weight: 6, ownerField: false },
@@ -104,7 +104,7 @@ export function coverageOf(i: CoverageInput): Coverage {
   row('identity', i.logoUrl ? 'populated' : 'fallback', i.logoUrl ? 'logo' : 'monogram');
   row('rating', i.rating ? 'populated' : 'fallback', i.rating ? 'google rating' : 'no rating');
   row('chips', i.accessible != null || i.parking != null || i.servicesPriced > 0 ? 'populated' : 'fallback', `accessible=${i.accessible ?? 'unknown'} parking=${i.parking ?? 'unknown'}`);
-  const factSlots = [i.establishedYear != null, i.teamCount + i.verifiedStaff > 0, i.languages > 0].filter(Boolean).length;
+  const factSlots = [i.establishedYear != null, i.verifiedStaff > 0, i.languages > 0].filter(Boolean).length;
   row('facts', factSlots >= 2 ? 'populated' : factSlots === 1 ? 'fallback' : 'fallback', `${factSlots}/3 template facts`);
   const aboutOk = !!i.description && (i.editorialWords ?? 0) >= 450 && i.editorialNeedsMore !== true;
   row('about', aboutOk ? 'populated' : i.description ? 'fallback' : 'missing', i.editorialWords != null ? `${i.editorialWords} words${i.editorialNeedsMore ? ', needs_more_business_information' : ''}` : i.description ? 'source description only' : 'no description');
@@ -113,7 +113,7 @@ export function coverageOf(i: CoverageInput): Coverage {
   row('compare', 'populated', 'category links');
   row('reviews', 'populated', i.rating ? 'google summary' : 'empty state');
   row('ba', 'fallback', 'owner-published only');
-  row('team', i.teamCount + i.verifiedStaff > 0 ? 'populated' : 'fallback', `${i.verifiedStaff} verified, ${i.teamCount} from the site`);
+  row('team', i.verifiedStaff > 0 ? 'populated' : 'fallback', `${i.verifiedStaff} verified; owner-added only`);
   row('video', i.videosPlayable > 0 ? 'populated' : 'fallback', `${i.videosPlayable} playable`);
   row('hours', i.hoursKnown ? 'populated' : 'fallback', i.hoursKnown ? 'seven days' : 'unknown');
   row('faq', i.faqs >= 5 ? 'populated' : i.faqs > 0 ? 'fallback' : 'missing', `${i.faqs} faqs`);

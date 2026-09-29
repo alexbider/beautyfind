@@ -1,5 +1,4 @@
 import 'server-only';
-import { cleanTeam } from '@/lib/import/profileExtract';
 import type { Branch, ImportPlace, Prisma } from '@prisma/client';
 import { CATEGORIES } from '@/lib/catalog';
 import { coverageOf, type Coverage } from '@/lib/import/coverage';
@@ -87,7 +86,7 @@ export function profileFields(p: ImportPlace, opts: { maxVideos: number }): Prof
   const videos = chooseVideos((Array.isArray(p.videos) ? (p.videos as unknown as VideoRecord[]) : []), opts.maxVideos);
   const ed = editorialOf(p);
   return {
-    team: cleanTeam(p.team) as unknown as Prisma.InputJsonValue, // quality gate: only people with a role reach a listing
+    team: [] as unknown as Prisma.InputJsonValue, // the team section is the owner's: nothing scraped from a website is published
     videos: videos as unknown as Prisma.InputJsonValue,
     languages: p.languages,
     establishedYear: p.establishedYear,

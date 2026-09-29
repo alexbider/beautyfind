@@ -62,6 +62,8 @@ const FACT_ICONS: Record<string, string[]> = {
 };
 
 const EMBED_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY || '';
+/** The claim flow opens on this listing, not on a search. */
+const claimHref = (branchId: string) => `${ROUTES.claim}?branch=${branchId}`;
 
 export default async function BusinessProfilePage({ params, searchParams }: Props) {
   const { region, slug } = await params;
@@ -106,7 +108,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
     services: v.services.length > 0,
     reviews: !!v.google || (!!p.beautyfind && p.beautyfind.count > 0) || v.reviews.length > 0,
     ba: v.beforeAfter.length > 0,
-    team: v.staff.length > 0 || v.siteTeam.length > 0,
+    team: v.staff.length > 0, // verified staff only; nothing scraped from a website reaches this section
     video: v.videos.length > 0,
     hours: !!v.hoursRows && v.hoursKnown,
     faq: v.faqs.length > 0,
@@ -143,7 +145,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
               <span aria-hidden="true" className={styles.heroMono}>{initials(p.name)}</span>
               <span className={styles.heroText}>
                 {p.isClaimed ? 'העסק טרם העלה תמונות.' : 'לא נמצאו תמונות מהעסק במקורות שנבדקו.'}{' '}
-                {p.isClaimed ? <Link href="/biz/profile">העלאת תמונות</Link> : <Link href={ROUTES.claim}>בעלי העסק יכולים להוסיף תמונות אחרי אישור בעלות</Link>}
+                {p.isClaimed ? <Link href="/biz/profile">העלאת תמונות</Link> : <Link href={claimHref(p.id)}>בעלי העסק יכולים להוסיף תמונות אחרי אישור בעלות</Link>}
               </span>
             </div>
           </section>
@@ -194,7 +196,6 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
             {has.team && (
             <section aria-labelledby="h-team">
               <h2 id="h-team" className={styles.h2}>הצוות שלנו<span className={styles.dotTeal}>.</span></h2>
-                <>
                   <div className={styles.team}>
                     {v.staff.map(s => (
                       <Link key={s.id} href={`/pro/${s.id}`} className={styles.person}>
@@ -215,19 +216,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
                         </span>
                       </Link>
                     ))}
-                    {v.siteTeam.map(t => (
-                      <article key={t.name} className={`${styles.person} ${styles.personSite}`}>
-                        <span aria-hidden="true" className={styles.personPic} />
-                        <span className={styles.personText}>
-                          <span className={styles.personName}>{t.name}</span>
-                          {t.role && <span className={styles.personRole}>{t.role}</span>}
-                        </span>
-                        {t.bio && <span className={styles.personBio}>{t.bio}</span>}
-                      </article>
-                    ))}
                   </div>
-                  {v.siteTeam.length > 0 && <p className={styles.secFoot}>פרטי הצוות לקוחים מאתר העסק. הסמכות ורישיונות מאומתים מופיעים רק אחרי אימות ב־BeautyFind.</p>}
-                </>
             </section>
             )}
 
@@ -364,7 +353,7 @@ function Identity({ p, v }: { p: PublicProfile; v: View }) {
             <span className={styles.dotTeal}>.</span>
           </h1>
           {!p.isClaimed && (
-            <Link href={ROUTES.claim} className={styles.claimLine}>
+            <Link href={claimHref(p.id)} className={styles.claimLine}>
               <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z" /><path d="m9 12 2 2 4-4" /></svg>
               <span>העסק שלכם? לאימות בעלות</span>
               <ArrowForward size={13} />
@@ -636,7 +625,7 @@ function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null
       ) : (
         <div className={styles.claimBox}>
           <p>העסק עוד לא מנהל את הכרטיס, לכן אין כאן תיאום תור. אפשר לפנות לעסק ישירות בטלפון, בוואטסאפ או באתר.</p>
-          <Link href={ROUTES.claim} className={styles.claimLink}>זה העסק שלכם? אישור בעלות</Link>
+          <Link href={claimHref(p.id)} className={styles.claimLink}>זה העסק שלכם? אישור בעלות</Link>
         </div>
       )}
 

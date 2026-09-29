@@ -30,12 +30,15 @@ export function ReportGroups({ groups, region, live, canDispatch, hrefFor }: { g
     return () => clearInterval(t);
   }, [live, router]);
 
-  const go = (g: ReportGroup) =>
+  const go = (g: ReportGroup, rewrite = false) =>
     start(async () => {
       const what = `${g.cityName || 'כל הערים'} · ${catName(g.category)}`;
-      if (!confirm(`להתחיל אצוות השלמה ל־${n(g.publishedUnclaimed.length)} עסקים שפורסמו בקבוצה ${what}? כל מקור רץ רק לעסקים שהוא יכול לעזור להם, והתקרה נקבעת לפי ההערכה.`)) return;
+      const ask = rewrite
+        ? `לכתוב מחדש את התיאור והשאלות הנפוצות ל־${n(g.publishedUnclaimed.length)} עסקים שפורסמו בקבוצה ${what}? קריאת כתיבה אחת לכל עסק; הטקסט החדש מחליף את הקיים.`
+        : `להתחיל אצוות השלמה ל־${n(g.publishedUnclaimed.length)} עסקים שפורסמו בקבוצה ${what}? כל מקור רץ רק לעסקים שהוא יכול לעזור להם, והתקרה נקבעת לפי ההערכה.`;
+      if (!confirm(ask)) return;
       setBusy(g.key);
-      const r = await enhanceGroupAction({ region: region || undefined, city: g.cityName || undefined, category: g.category || undefined, label: `השלמות: ${what}`.slice(0, 60) });
+      const r = await enhanceGroupAction({ region: region || undefined, city: g.cityName || undefined, category: g.category || undefined, label: `${rewrite ? 'כתיבה מחדש' : 'השלמות'}: ${what}`.slice(0, 60), rewrite });
       setBusy(null);
       if (!r.ok) setNote({ kind: 'bad', text: r.error === 'forbidden' ? 'אין הרשאה.' : `האצווה לא נוצרה: ${r.error}` });
       else if (!r.count) setNote({ kind: 'ok', text: 'אין בקבוצה עסקים שאפשר להשלים כרגע.' });
@@ -77,6 +80,9 @@ export function ReportGroups({ groups, region, live, canDispatch, hrefFor }: { g
                 <td style={{ whiteSpace: 'nowrap' }}>
                   <button type="button" className={`${styles.btn} ${styles.primary}`} disabled={pending || !g.publishedUnclaimed.length} onClick={() => go(g)} title={g.publishedUnclaimed.length ? `השלמת חוסרים ל־${n(g.publishedUnclaimed.length)} עסקים שפורסמו` : 'אין בקבוצה עסקים שפורסמו ולא נתבעו'}>
                     {busy === g.key ? 'יוצר אצווה…' : `השלמת חוסרים (${n(g.publishedUnclaimed.length)})`}
+                  </button>{' '}
+                  <button type="button" className={styles.btn} disabled={pending || !g.publishedUnclaimed.length} onClick={() => go(g, true)} title="כתיבה מחדש של התיאור והשאלות הנפוצות לכל העסקים שפורסמו בקבוצה">
+                    כתיבה מחדש
                   </button>
                 </td>
               </tr>

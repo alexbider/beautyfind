@@ -292,8 +292,6 @@ a.rating { color: inherit; }
 .secFoot { margin: 12px 0 0; font-size: 13px; color: var(--subtle); }
 .ratingNone { font-size: 14px; color: var(--muted); }
 .hours td[data-unknown] { color: var(--subtle); font-style: italic; }
-.personSite { color: inherit; }
-.personBio { font-size: 14px; line-height: 1.65; color: var(--muted); text-wrap: pretty; }
 .dlMissing { color: var(--subtle); }
 
 /* Hero fallback when no approved photo exists: neutral branded monogram, never a stock image. */

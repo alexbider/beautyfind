@@ -518,7 +518,6 @@ export async function mergePlace(actor: Actor, id: string, branchId: string): Pr
         description: text.description ?? b.description ?? p.description ?? composeDescription(p),
         faqs: text.faqs ?? ((!Array.isArray(b.faqs) || !b.faqs.length) && Array.isArray(p.faqs) ? (p.faqs as Prisma.InputJsonValue) : undefined),
         // Profile facts only where the listing has none.
-        team: Array.isArray(b.team) && b.team.length ? undefined : fields.team,
         videos: Array.isArray(b.videos) && b.videos.length ? undefined : fields.videos,
         languages: b.languages.length ? undefined : fields.languages,
         establishedYear: b.establishedYear ?? fields.establishedYear,

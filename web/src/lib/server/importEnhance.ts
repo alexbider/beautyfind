@@ -62,7 +62,6 @@ export async function enhanceBranch(branchId: string, p: ImportPlace, s: ImportS
   else if ((!Array.isArray(b.faqs) || !b.faqs.length) && Array.isArray(p.faqs) && p.faqs.length) set('faqs', p.faqs as Prisma.InputJsonValue, 'faqs');
   // Profile facts: only where the listing has none.
   const f = profileFields(p, { maxVideos: s.youtubeMaxVideos });
-  if ((!Array.isArray(b.team) || !b.team.length) && Array.isArray(p.team) && p.team.length) set('team', f.team, 'team');
   if ((!Array.isArray(b.videos) || !b.videos.length) && Array.isArray(f.videos) && (f.videos as unknown[]).length) set('videos', f.videos, 'videos');
   if (!b.languages.length && f.languages.length) set('languages', f.languages, 'languages');
   if (!b.establishedYear && f.establishedYear) set('establishedYear', f.establishedYear, 'established');

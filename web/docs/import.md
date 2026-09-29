@@ -116,7 +116,11 @@ The review screen shows each record's completeness and what is still missing.
 
 **Duplicate control.** Three layers: the provider's place id is the record key (`import_places.place_id`), so a business found again by any run or provider updates the same record instead of creating a second one; the checks stage scores every open record against every other import record and against every live listing (`src/lib/import/match.ts`: name similarity, distance, phone, email, website, place id) and marks strong matches `duplicate` or `merged` automatically, weaker ones "needs review" with the reasons shown; and the coverage counts above keep a city and category from being crawled twice by mistake.
 
-**Claim line.** An unclaimed listing carries one short call to action under the business name ("העסק שלכם? לאימות בעלות") that leads to ownership verification; the contact card repeats the invitation where the enquiry form would be.
+**Claim line.** An unclaimed listing carries one short call to action under the business name ("העסק שלכם? לאימות בעלות") that opens the claim flow on that listing (`/for-business/claim?branch=<id>`, kept through the business login), so the owner verifies the listing they came from rather than searching for it; the contact card repeats the invitation where the enquiry form would be.
+
+**Team section.** Only verified staff members (added by the owner after claiming) appear in הצוות שלנו. Names the crawler finds on a website are kept on the import record for the review screen but are never published, never counted as a gap, and never sent to any enrichment step.
+
+**Rewriting after publication.** The profiles report has "כתיבה מחדש" on every group row (all published, unclaimed listings in that city and category) and "כתיבה מחדש של התיאור" on every published listing card. Both start an enhancement batch with the `editorial` and `regenerate` steps, one writer call per listing, and the new description and FAQs replace the old ones (an owner-approved text is never replaced). The same steps are available under "customise" on the enrichment tab and on the review record.
 
 **About text.** The description shows its first 250 words; "קראו עוד" reveals the rest in place. The full text is always in the HTML.
 

@@ -94,6 +94,13 @@ export async function searchLiveBranches(q: string): Promise<ListingHit[]> {
   return rows.map(toHit);
 }
 
+/** The listing the visitor arrived from (profile page claim link), as a search hit, or null. */
+export async function loadListingHit(id: string): Promise<ListingHit | null> {
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
+  const b = await db.branch.findFirst({ where: { id, status: 'live' }, include: branchInclude });
+  return b ? toHit(b) : null;
+}
+
 /** A live branch by id, with what the claim checks need. */
 export function loadLiveBranch(id: string) {
   return db.branch.findFirst({ where: { id, status: 'live' }, include: branchInclude });

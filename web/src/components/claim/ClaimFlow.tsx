@@ -70,7 +70,7 @@ function writeDraft(d: Draft | null) {
   }
 }
 
-export function ClaimFlow({ initialHits, devCode }: { initialHits: ListingHit[]; devCode: string | null }) {
+export function ClaimFlow({ initialHits, devCode, preselected = null }: { initialHits: ListingHit[]; devCode: string | null; preselected?: ListingHit | null }) {
   const [step, setStep] = useState<Step>('find');
   const [touched, setTouched] = useState(false);
 
@@ -101,8 +101,17 @@ export function ClaimFlow({ initialHits, devCode }: { initialHits: ListingHit[];
   const contentRef = useRef<HTMLDivElement>(null);
   const [hydrated, setHydrated] = useState(false);
 
-  // Resume a saved draft once: back at the verify step for the listing picked last time.
+  // A listing the visitor arrived from (the claim link on its profile) is picked for them, ahead of
+  // any saved draft; otherwise a saved draft resumes at the verify step for the listing picked last time.
   useEffect(() => {
+    if (preselected && !preselected.claimed) {
+      setPicked(preselected);
+      setMethod(firstMethod(preselected));
+      setForm({ ...EMPTY_FORM, bizName: preselected.name, ...preselected.prefill });
+      setStep('verify');
+      setHydrated(true);
+      return;
+    }
     const d = readDraft();
     if (d && !d.picked.claimed) {
       setPicked(d.picked);

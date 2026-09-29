@@ -184,9 +184,9 @@ export function buildView(p: PublicProfile, now = new Date()) {
     role: [PROFESSION_NAME[s.profession as PractitionerProfession], s.license?.status === 'verified' ? s.license.specialty : null].filter(Boolean).join(' · '),
     badge: staffBadge(s.license),
   }));
-  // People named on the business's own site, minus anyone who is already a verified staff member.
-  const staffNames = new Set(staff.map(s => s.name.replace(/^(ד["״]?ר|דר['׳]|פרופ['׳]?)\s+/, '').toLowerCase()));
-  const siteTeam = parseTeam(p.team).filter(t => !staffNames.has(t.name.replace(/^(ד["״]?ר|דר['׳]|פרופ['׳]?)\s+/, '').toLowerCase()));
+  // The team section is the owner's: only verified staff members appear. Names scraped from a website
+  // (branch.team) are never shown; the owner adds people after claiming the listing.
+  const siteTeam: Array<{ name: string; role: string; bio: string | null; sourceUrl: string | null }> = [];
 
   const reviews: ReviewView[] = p.reviews.map(r => ({
     id: r.id,

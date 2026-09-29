@@ -11,6 +11,7 @@ import { importReport, reportCities, STATE_NAME, type ReportRow, type ReportStat
 import { ResetImport } from '../ResetImport';
 import { ImportNav } from '../ImportNav';
 import { ReportGroups } from './ReportGroups';
+import { RewriteButton } from './RewriteButton';
 import styles from '../import.module.css';
 
 export const metadata: Metadata = {
@@ -233,6 +234,7 @@ function Row({ r }: { r: ReportRow }) {
           <Link href={r.reviewHref}>רשומת הבדיקה</Link> · <Link href={`/ops/import?run=${r.runId}`}>הריצה</Link>
           {r.state === 'published' ? <> · <a href={r.href} target="_blank" rel="noreferrer">הפרופיל באתר</a></> : null}
         </p>
+        {r.state === 'published' && !r.claimed && r.branchId ? <div><RewriteButton branchId={r.branchId} name={r.name} /></div> : null}
       </div>
     </article>
   );

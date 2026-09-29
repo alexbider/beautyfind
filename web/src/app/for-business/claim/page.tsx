@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { ClaimFlow } from '@/components/claim/ClaimFlow';
 import { ROUTES } from '@/lib/routes';
 import { currentUser } from '@/lib/server/session';
-import { searchLiveBranches } from './data';
+import { loadListingHit, searchLiveBranches } from './data';
 
 // Design: project/BeautyFind Claim.dc.html
 
@@ -14,13 +14,20 @@ export const metadata: Metadata = {
   alternates: { canonical: ROUTES.claim },
 };
 
-export default async function ClaimPage() {
-  const user = await currentUser();
-  if (!user || user.kind !== 'business') redirect(`${ROUTES.bizLogin}&next=${encodeURIComponent(ROUTES.claim)}`);
+type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-  const initialHits = await searchLiveBranches('');
+export default async function ClaimPage({ searchParams }: Props) {
+  const sp = await searchParams;
+  const branch = (Array.isArray(sp.branch) ? sp.branch[0] : sp.branch) ?? '';
+  // The profile page links here with ?branch=<id>: the flow opens on that listing, and the login
+  // redirect keeps it so the visitor lands back on the same listing after signing in.
+  const here = branch ? `${ROUTES.claim}?branch=${encodeURIComponent(branch)}` : ROUTES.claim;
+  const user = await currentUser();
+  if (!user || user.kind !== 'business') redirect(`${ROUTES.bizLogin}&next=${encodeURIComponent(here)}`);
+
+  const [initialHits, preselected] = await Promise.all([searchLiveBranches(''), branch ? loadListingHit(branch) : null]);
   // Dev only: every OTP is DEV_FIXED_OTP, and the design's error line names it.
   const devCode = process.env.NODE_ENV !== 'production' ? process.env.DEV_FIXED_OTP || null : null;
 
-  return <ClaimFlow initialHits={initialHits} devCode={devCode} />;
+  return <ClaimFlow initialHits={initialHits} devCode={devCode} preselected={preselected} />;
 }
