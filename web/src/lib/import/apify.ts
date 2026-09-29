@@ -16,6 +16,7 @@ import { extractEmails } from './email';
 import { normalizeIlPhone } from './phone';
 import type { DayHours } from './rules';
 import { socialOf } from './websiteKind';
+import { cutText } from './text';
 
 export type ApifyActorKind = 'maps' | 'instagram' | 'facebook' | 'render';
 
@@ -212,7 +213,7 @@ export function mapsFacts(it: MapsItem, opts: { maxPhotos: number }): MapsFacts 
     phone: normalizeIlPhone(it.phoneUnformatted ?? it.phone ?? null),
     website: it.website?.trim() || null,
     hours: hoursFromMaps(it.openingHours),
-    description: desc.length >= 40 ? desc.slice(0, 2000) : null,
+    description: desc.length >= 40 ? cutText(desc, 2000) : null,
     rating: typeof it.totalScore === 'number' && it.totalScore > 0 ? { value: it.totalScore, count: it.reviewsCount ?? 0 } : null,
     photos: [...new Set((it.imageUrls ?? []).filter(u => /^https?:\/\//.test(u)))].slice(0, opts.maxPhotos),
     accessible: attrs.accessible,
@@ -280,7 +281,7 @@ export function instagramFacts(it: InstagramItem, opts: { maxPosts: number }): P
   const phone = normalizeIlPhone(it.businessPhoneNumber ?? it.publicPhoneNumber ?? null) ?? phonesIn(bio);
   const posts = (it.latestPosts ?? [])
     .filter(p => (p.type ?? 'Image') !== 'Video' && (p.displayUrl || p.images?.[0]))
-    .map(p => ({ url: (p.displayUrl ?? p.images?.[0])!, pageUrl: p.url ?? null, caption: p.caption?.slice(0, 200) ?? null }))
+    .map(p => ({ url: (p.displayUrl ?? p.images?.[0])!, pageUrl: p.url ?? null, caption: p.caption ? cutText(p.caption, 200) : null }))
     .slice(0, opts.maxPosts);
   return {
     handle: it.username?.toLowerCase() ?? null,

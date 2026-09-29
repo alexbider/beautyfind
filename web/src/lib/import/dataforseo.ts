@@ -15,6 +15,7 @@ import { matchService } from './services';
 import { classifyWebsite, KEEP_AS_WEBSITE, type WebsiteKind } from './websiteKind';
 import { normalizeIlPhone } from './phone';
 import type { DayHours } from './rules';
+import { cutText } from './text';
 
 export const DFS_SEARCH_PATH = '/v3/business_data/business_listings/search/live';
 export const DFS_MAX_LIMIT = 1000;
@@ -281,7 +282,7 @@ export function mapItem(item: DfsItem): MappedListing | null {
     whatsapp: w.kind === 'whatsapp' ? (w.phone ?? null) : null,
     social: w.kind === 'social' && w.url ? { network: w.network!, url: w.url } : null,
     siteDomain: w.kind === 'own' && w.url ? new URL(w.url).hostname.replace(/^www\./, '').toLowerCase() : null,
-    description: item.description?.trim() ? item.description.trim().slice(0, 1500) : null,
+    description: item.description?.trim() ? cutText(item.description.trim(), 1500) : null,
     ...attributeFlags(item.attributes),
     priceLevel: item.price_level ?? null,
     services: providerServices(item.services),

@@ -4,8 +4,26 @@ import { promises as dns } from 'node:dns';
 import { hostname } from 'node:os';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { loadSettings, type ImportSettings } from '../../src/lib/import/settings';
+import { cleanDeep } from '../../src/lib/import/text';
 
-export const db = new PrismaClient();
+// Every string written by the worker is cleaned first (src/lib/import/text.ts): provider text can carry a
+// lone surrogate or a control character that fails the whole write. The extension only touches `data`.
+const WRITE_OPS = new Set(['create', 'createMany', 'update', 'updateMany', 'upsert', 'createManyAndReturn']);
+export const db = new PrismaClient().$extends({
+  query: {
+    $allModels: {
+      $allOperations({ operation, args, query }) {
+        if (WRITE_OPS.has(operation) && args && typeof args === 'object' && 'data' in args) {
+          const a = args as { data?: unknown; create?: unknown; update?: unknown };
+          a.data = cleanDeep(a.data);
+          if (a.create) a.create = cleanDeep(a.create);
+          if (a.update) a.update = cleanDeep(a.update);
+        }
+        return query(args);
+      },
+    },
+  },
+}) as unknown as PrismaClient; // same surface as the plain client; the cast keeps the stage signatures unchanged
 export const WORKER = `${hostname()}-${process.pid}`;
 export const LEASE_MS = 10 * 60_000;
 

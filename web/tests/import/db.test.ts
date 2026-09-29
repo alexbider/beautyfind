@@ -160,6 +160,19 @@ describe('import database behaviour', { skip }, () => {
     assert.equal(((await db.importRun.findUniqueOrThrow({ where: { id: again.id } })).stats as { skippedFresh?: number }).skippedFresh, 2);
   });
 
+  it('a value with a lone surrogate (an emoji cut in half) is stored cleaned instead of failing the write', async () => {
+    const run = await newRun();
+    const place = await db.importPlace.create({ data: { placeId: `test:surrogate:${run.id}`, runId: run.id, name: 'סלון 😀'.slice(0, 6), address: 'x', lat: 32.08, lng: 34.78, description: 'תיאור \uD83D חתוך', categories: ['nails'] } });
+    assert.equal(place.name, 'סלון ');
+    assert.equal(place.description, 'תיאור  חתוך');
+    await db.$transaction([
+      db.fieldObservation.deleteMany({ where: { importPlaceId: place.id, provider: 'test' } }),
+      db.fieldObservation.createMany({ data: [{ importPlaceId: place.id, field: 'description', value: { text: 'ביו \uDE00 קטוע', tags: ['a\u0000b'] }, provider: 'test', retrievedAt: new Date(), confidence: 0.5, publishable: false }] }),
+    ]);
+    const obs = await db.fieldObservation.findFirstOrThrow({ where: { importPlaceId: place.id, provider: 'test' } });
+    assert.deepEqual(obs.value, { text: 'ביו  קטוע', tags: ['ab'] });
+  });
+
   it('a rerun never overwrites fields staff edited', async () => {
     const run1 = await newRun({ recordLimit: 5 });
     await stages.seedDfs(run1, { all: false, cities: ['tel-aviv'], categories: ['nails'], nearby: false, text: false });

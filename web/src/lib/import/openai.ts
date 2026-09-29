@@ -13,6 +13,7 @@ import { cleanEmail } from './email';
 import { normalizeIlPhone } from './phone';
 import type { DayHours, ImportedPriceType } from './rules';
 import { classifyWebsite, socialOf } from './websiteKind';
+import { cutText } from './text';
 
 export const RESEARCH_PROMPT_VERSION = '2026-09-28.1';
 
@@ -216,7 +217,7 @@ export function researchFacts(a: ResearchAnswer): ResearchFacts {
     sources.add(u);
     const price = typeof s.priceNis === 'number' && s.priceNis > 0 && s.priceNis < 100_000 ? Math.round(s.priceNis) : null;
     const type = (['fixed', 'from', 'range', 'package', 'free', 'on_request'].includes(s.priceType) ? s.priceType : price ? 'fixed' : 'on_request') as ImportedPriceType;
-    services.push({ name: s.name.trim().slice(0, 120), priceNis: type === 'free' ? null : price, priceType: price || type === 'free' ? type : 'on_request', durationMin: typeof s.durationMin === 'number' && s.durationMin > 0 && s.durationMin < 600 ? s.durationMin : null, sourceUrl: u, quote: (s.quote ?? '').slice(0, 200) });
+    services.push({ name: s.name.trim().slice(0, 120), priceNis: type === 'free' ? null : price, priceType: price || type === 'free' ? type : 'on_request', durationMin: typeof s.durationMin === 'number' && s.durationMin > 0 && s.durationMin < 600 ? s.durationMin : null, sourceUrl: u, quote: cutText(s.quote ?? '', 200) });
   }
   const team: ResearchFacts['team'] = [];
   for (const t of a.team ?? []) {
@@ -238,7 +239,7 @@ export function researchFacts(a: ResearchAnswer): ResearchFacts {
       continue;
     }
     sources.add(u);
-    notes.push({ text: n.text.trim().slice(0, 300), sourceUrl: u });
+    notes.push({ text: cutText(n.text.trim(), 300), sourceUrl: u });
   }
   const bookingRaw = cited(a.booking);
   const booking = bookingRaw && classifyWebsite(bookingRaw.value).kind === 'booking' ? { value: classifyWebsite(bookingRaw.value).url!, sourceUrl: bookingRaw.sourceUrl } : null;

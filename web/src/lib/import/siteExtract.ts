@@ -9,6 +9,7 @@ import { BOOKING_HOSTS, socialOf } from './websiteKind';
 
 export { socialOf };
 import type { DayHours } from './rules';
+import { cutText } from './text';
 
 export interface Fact<T = string> {
   value: T;
@@ -142,7 +143,7 @@ function jsonLd(html: string) {
       if (isBusiness && typeof o.description === 'string' && o.description.trim().length > 20) out.description ??= o.description.trim();
       if (type.some(t => /^Question$/i.test(t)) && typeof o.name === 'string') {
         const ans = o.acceptedAnswer as { text?: unknown } | undefined;
-        if (typeof ans?.text === 'string') out.faqs.push({ q: o.name.trim(), a: htmlToText(ans.text).slice(0, 800) });
+        if (typeof ans?.text === 'string') out.faqs.push({ q: o.name.trim(), a: cutText(htmlToText(ans.text), 800) });
       }
       if (isBusiness) for (const img of ([] as unknown[]).concat(o.image ?? [])) {
         const u = typeof img === 'string' ? img : img && typeof (img as { url?: unknown }).url === 'string' ? (img as { url: string }).url : null;

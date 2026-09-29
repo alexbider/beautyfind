@@ -599,3 +599,19 @@ describe('route parameters', async () => {
     assert.equal(decodeParam('%E0%A4%A'), '%E0%A4%A');
   });
 });
+
+describe('provider text safety', async () => {
+  const { cleanText, cutText, cleanDeep } = await import('../../src/lib/import/text');
+  it('drops a lone surrogate and control characters, and cuts by code points', () => {
+    const emoji = 'מספרה 💇‍♀️ יפה';
+    assert.equal(cleanText(emoji), emoji);
+    assert.equal(cleanText('abc\uD83Ddef\u0000g'), 'abcdefg');
+    const cut = 'שלום 😀 עולם'.slice(0, 6); // ends inside the emoji
+    assert.ok(/[\uD800-\uDBFF]$/.test(cut));
+    assert.equal(cutText('שלום 😀 עולם', 6), 'שלום 😀');
+    assert.equal(cutText('abc', 10), 'abc');
+    assert.deepEqual(cleanDeep({ a: 'x\uD83D', b: ['y\u0001', 2, null], c: { d: 'ok' } }), { a: 'x', b: ['y', 2, null], c: { d: 'ok' } });
+    const d = new Date();
+    assert.equal(cleanDeep({ d }).d, d);
+  });
+});
