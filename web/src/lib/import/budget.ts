@@ -94,6 +94,12 @@ async function settle(db: Db, requestKey: string, status: 'committed' | 'release
   });
 }
 
+/** The state of an earlier entry under this key (null when none): lets a stage tell a leftover reservation from a paid call. */
+export async function entryStatus(db: Db, requestKey: string): Promise<'reserved' | 'committed' | 'released' | 'needs_reconciliation' | null> {
+  const e = await db.spendEntry.findUnique({ where: { requestKey }, select: { status: true } });
+  return (e?.status as 'reserved' | 'committed' | 'released' | 'needs_reconciliation' | undefined) ?? null;
+}
+
 /** The provider answered: record its reported cost (falls back to the estimate when it gives none). */
 export const commit = (db: Db, requestKey: string, actualMicros: bigint | null, estimateMicros: bigint) =>
   settle(db, requestKey, 'committed', actualMicros ?? estimateMicros);

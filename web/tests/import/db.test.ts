@@ -422,3 +422,45 @@ describe('render stage: the worker\'s own browser reads a JavaScript site', { sk
     assert.ok((stats.counters?.browserPages ?? 0) >= 2);
   });
 });
+
+describe('writing stage: a leftover reservation never loops', { skip }, () => {
+  let pdb: PrismaClient;
+  const made: { places: string[]; runs: string[] } = { places: [], runs: [] };
+  before(async () => {
+    pdb = (await import('../../scripts/import/ctx')).db;
+  });
+  after(async () => {
+    await pdb.spendEntry.deleteMany({ where: { runId: { in: made.runs } } });
+    await pdb.providerBudget.deleteMany({ where: { key: { in: made.runs.map(id => `editorial:run:${id}`) } } });
+    await pdb.importPlace.deleteMany({ where: { id: { in: made.places } } });
+    await pdb.importRun.deleteMany({ where: { id: { in: made.runs } } });
+  });
+
+  it('a reservation left by a worker stopped mid-call is released, the draft is written and the stage ends', async () => {
+    const { editorialStage } = await import('../../scripts/import/stages/editorial');
+    const { buildPacket, packetHash, PROMPT_VERSION } = await import('../../src/lib/import/editorial');
+    const run = await pdb.importRun.create({ data: { label: 'stale reservation', provider: 'dataforseo', scope: {}, maxRequests: 0, budgetMicros: 1_000_000n, status: 'running', lockedBy: ctx.WORKER, lockedUntil: new Date(Date.now() + 600_000) } });
+    made.runs.push(run.id);
+    const p = await pdb.importPlace.create({
+      data: {
+        runId: run.id, placeId: `stale-${run.id}`, provider: 'dataforseo', name: 'סלון תקוע', address: 'רחוב 1, תל אביב', lat: 32.08, lng: 34.78, status: 'extracted',
+        regionSlug: 'dan', cityName: 'תל אביב', citySlug: 'tel-aviv', phone: '+97235550009', categories: ['nails'], description: 'סלון ציפורניים שכונתי עם צוות ותיק.',
+        treatments: [{ name: 'מניקור', priceNis: 120, priceType: 'fixed', category: 'nails', isMedical: false, durationMin: null }],
+      },
+    });
+    made.places.push(p.id);
+    // What a worker killed between "reserve" and "commit" leaves behind: the key is taken, no draft exists.
+    const key = `editorial:${p.id}:${packetHash(buildPacket(p, {}))}:${PROMPT_VERSION}`;
+    await pdb.spendEntry.create({ data: { runId: run.id, provider: 'openai', endpoint: 'editorial', requestKey: key, estimatedMicros: 5_000n, status: 'reserved', meta: { caps: [] } } });
+    assert.equal(await editorialStage(run), true);
+    assert.equal(await editorialStage(run), false, 'nothing left: the stage ends instead of selecting the record again');
+    const after = await pdb.importPlace.findUniqueOrThrow({ where: { id: p.id } });
+    const ed = after.editorial as { promptVersion?: string; words?: number; skipped?: string };
+    assert.equal(ed.promptVersion, PROMPT_VERSION);
+    assert.ok((ed.words ?? 0) > 0 && !ed.skipped, 'a draft was written');
+    const entry = await pdb.spendEntry.findUniqueOrThrow({ where: { requestKey: key } });
+    assert.notEqual(entry.status, 'reserved', 'the leftover reservation was settled');
+    const fresh = await pdb.importRun.findUniqueOrThrow({ where: { id: run.id } });
+    assert.equal(fresh.reservedMicros, 0n, 'nothing stays reserved on the run');
+  });
+});

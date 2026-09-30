@@ -7,7 +7,7 @@
 
 import { Prisma, type ImportPlace, type ImportRun } from '@prisma/client';
 import { CATEGORIES } from '../../../src/lib/catalog';
-import { BudgetExceeded, commit, monthKey, release, reserve, uncertain, withCaps } from '../../../src/lib/import/budget';
+import { BudgetExceeded, commit, entryStatus, monthKey, release, reserve, uncertain, withCaps } from '../../../src/lib/import/budget';
 import { emailDomain, siteHost } from '../../../src/lib/import/email';
 import { openaiCostUsd, openaiErrorKind, RESEARCH_PROMPT_VERSION, RESEARCH_SCHEMA, RESEARCH_SYSTEM, researchFacts, researchMessage, researchTargets, type ResearchAnswer, type ResearchFacts } from '../../../src/lib/import/openai';
 import { placeCoverage } from '../../../src/lib/import/placeCoverage';
@@ -98,7 +98,16 @@ async function researchOne(run: ImportRun, p: ImportPlace, s: Awaited<ReturnType
       caps: [{ key: `research:run:${run.id}`, limitMicros: toMicros(s.researchBudgetUsd) }, { key: monthKey('openai_research'), limitMicros: toMicros(s.researchMonthlyUsd) }],
       meta: { placeId: p.id, targets: targets.length },
     }));
-    if (st === 'exists') return 'cached';
+    if (st === 'exists') {
+      // A reservation left by a worker that was stopped mid-call is given back and taken again; a settled entry means this record was paid for already.
+      if ((await entryStatus(db, requestKey)) !== 'reserved') return 'cached';
+      await release(db, requestKey, 'stale reservation: the worker stopped mid-call');
+      if ((await reserve(db, withCaps({
+        runId: run.id, provider: 'openai', endpoint: 'responses/web_search', requestKey, estimateMicros: estimate,
+        caps: [{ key: `research:run:${run.id}`, limitMicros: toMicros(s.researchBudgetUsd) }, { key: monthKey('openai_research'), limitMicros: toMicros(s.researchMonthlyUsd) }],
+        meta: { placeId: p.id, targets: targets.length },
+      }))) === 'exists') return 'cached';
+    }
   } catch (e) {
     if (e instanceof BudgetExceeded) {
       await setStats(run.id, { budgetHit: true, researchBudgetHit: e.scope });

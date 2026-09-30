@@ -4,7 +4,7 @@
 // (needsMoreInfo) with the missing evidence listed for the admin; nothing is padded.
 
 import { Prisma, type ImportPlace, type ImportRun } from '@prisma/client';
-import { BudgetExceeded, commit, release, reserve, withCaps } from '../../../src/lib/import/budget';
+import { BudgetExceeded, commit, entryStatus, release, reserve, withCaps } from '../../../src/lib/import/budget';
 import { buildPacket, countWords, packetHash, PROMPT_VERSION, templateDraft, WORDS_MIN, type EditorialRecord } from '../../../src/lib/import/editorial';
 import { writerUsd } from '../../../src/lib/import/enrichPlan';
 import { pricing, toMicros } from '../../../src/lib/import/pricing';
@@ -12,6 +12,9 @@ import { bump, db, heartbeat, log, pool, setStats, settings } from '../ctx';
 import { writeEditorial } from '../editorialCall';
 
 export type EditorialOutcome = 'written' | 'cached' | 'skipped' | 'budget' | 'failed' | 'transient';
+
+const TRANSIENT_PASSES = 10; // about five minutes of rate limits or outages before the run stops with the reason
+let transientPasses = 0;
 
 const stored = (p: ImportPlace) => (p.editorial ?? null) as (Partial<EditorialRecord> & { skipped?: string; error?: string }) | null;
 
@@ -26,10 +29,25 @@ export async function editorialFor(p: ImportPlace, run: ImportRun | null, opts: 
   if (opts.counter && opts.counter.calls >= s.editorialMaxPerRun) return 'budget';
 
   const est = toMicros(writerUsd(pricing(), s.llmProvider));
-  const key = `editorial:${p.id}:${hash}:${PROMPT_VERSION}${opts.force ? `:f${Date.now()}` : ''}`;
+  const base = `editorial:${p.id}:${hash}:${PROMPT_VERSION}${opts.force ? `:f${Date.now()}` : ''}`;
+  let key = base;
+  const take = (k: string) => reserve(db, withCaps({ runId: run?.id ?? null, provider: s.llmProvider, endpoint: 'editorial', requestKey: k, estimateMicros: est, caps: run ? [{ key: `editorial:run:${run.id}`, limitMicros: toMicros(s.editorialBudgetUsd) }] : [] }));
   try {
-    const st = await reserve(db, withCaps({ runId: run?.id ?? null, provider: s.llmProvider, endpoint: 'editorial', requestKey: key, estimateMicros: est, caps: run ? [{ key: `editorial:run:${run.id}`, limitMicros: toMicros(s.editorialBudgetUsd) }] : [] }));
-    if (st === 'exists' && !opts.force) return 'cached';
+    let st = await take(key);
+    if (st === 'exists') {
+      // No draft is stored for this evidence (checked above), so the entry under this key is a leftover:
+      // a reservation from a worker that was stopped mid-call is given back and taken again; a settled
+      // entry (paid, but the draft never reached the record) gets a fresh key. Treating it as "cached"
+      // would leave the record unwritten and the stage selecting it forever.
+      const prior = await entryStatus(db, key);
+      if (prior === 'reserved') {
+        await release(db, key, 'stale reservation: the worker stopped mid-call');
+      } else {
+        key = `${base}:r${Date.now()}`;
+      }
+      st = await take(key);
+      if (st === 'exists') throw new Error('editorial: reservation could not be taken');
+    }
   } catch (e) {
     if (e instanceof BudgetExceeded) {
       await db.importPlace.update({ where: { id: p.id }, data: { editorial: { skipped: 'budget', evidenceHash: hash, promptVersion: 'none', generatedAt: new Date().toISOString() } as Prisma.InputJsonValue } });
@@ -86,6 +104,7 @@ export async function editorialStage(run: ImportRun): Promise<boolean> {
   const counts: Record<string, number> = {};
   let budgetOut = false;
   let transient = 0;
+  let progress = 0; // rows that left the queue this pass (written, failed, skipped or budget)
   await pool(rows, s.llmConcurrency, async ({ id }) => {
     if (budgetOut) return;
     const p = await db.importPlace.findUniqueOrThrow({ where: { id } });
@@ -94,6 +113,7 @@ export async function editorialStage(run: ImportRun): Promise<boolean> {
       counts[`editorial_${r}`] = (counts[`editorial_${r}`] ?? 0) + 1;
       if (r === 'budget') budgetOut = true;
       if (r === 'transient') transient++;
+      else if (r !== 'cached') progress++;
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       if (/editorial: (no_credit|auth|model_not_found)/.test(msg)) {
@@ -101,6 +121,7 @@ export async function editorialStage(run: ImportRun): Promise<boolean> {
         throw e;
       }
       counts.editorial_failed = (counts.editorial_failed ?? 0) + 1;
+      progress++;
       await setStats(run.id, { lastEditorialError: msg.slice(0, 200) });
       await db.importPlace.update({ where: { id }, data: { editorial: { error: msg.slice(0, 200), evidenceHash: null, promptVersion: PROMPT_VERSION, generatedAt: new Date().toISOString(), skipped: 'error' } as Prisma.InputJsonValue } });
     }
@@ -111,8 +132,23 @@ export async function editorialStage(run: ImportRun): Promise<boolean> {
     await db.importPlace.updateMany({ where: { runId: run.id, status: 'extracted', editorial: { equals: Prisma.DbNull } }, data: { editorial: { skipped: 'budget', promptVersion: 'none' } } });
     return false;
   }
-  if (transient >= rows.length) {
+  // Every pass must move the queue. A pass where the writer only answered with rate limits or outages
+  // waits and tries again, up to TRANSIENT_PASSES in a row; then the run stops with the reason so staff
+  // can continue it later instead of the run showing "writing" for hours.
+  if (progress) transientPasses = 0;
+  else if (transient) {
+    if (++transientPasses >= TRANSIENT_PASSES) {
+      const msg = `transient: the writer answered with rate limits or errors for ${TRANSIENT_PASSES} passes in a row`;
+      await setStats(run.id, { lastEditorialError: msg });
+      transientPasses = 0;
+      throw new Error(`editorial: ${msg}`);
+    }
     await new Promise(r => setTimeout(r, 30_000));
+  } else {
+    // Nothing written, nothing failed, nothing transient: these rows would come back forever. Leave them
+    // for the admin with the reason instead.
+    log(`editorial: ${rows.length} records made no progress, skipped`);
+    await db.importPlace.updateMany({ where: { id: { in: rows.map(r => r.id) } }, data: { editorial: { skipped: 'error', error: 'no draft stored after the call', promptVersion: PROMPT_VERSION, generatedAt: new Date().toISOString() } } });
   }
   return true;
 }
