@@ -1,5 +1,6 @@
 import 'server-only';
 import type { OtpChannel, Prisma } from '@prisma/client';
+import type { SiblingBranch } from './shared';
 import { db } from '@/lib/server/db';
 import { fromE164 } from '@/lib/format';
 import { DEFAULT_DAYS, TIME_RE, type ClaimMethod, type DayHours, type ListingHit } from './shared';
@@ -104,4 +105,12 @@ export async function loadListingHit(id: string): Promise<ListingHit | null> {
 /** A live branch by id, with what the claim checks need. */
 export function loadLiveBranch(id: string) {
   return db.branch.findFirst({ where: { id, status: 'live' }, include: branchInclude });
+}
+
+/** The other live, unclaimed branches of the business a listing belongs to (a chain): claimable in the same request. */
+export async function siblingBranches(branchId: string): Promise<SiblingBranch[]> {
+  const b = await db.branch.findFirst({ where: { id: branchId, status: 'live' }, select: { businessId: true, business: { select: { ownerUserId: true } } } });
+  if (!b || b.business.ownerUserId) return [];
+  const rows = await db.branch.findMany({ where: { businessId: b.businessId, status: 'live', isClaimed: false, id: { not: branchId } }, orderBy: { cityName: 'asc' }, select: { id: true, name: true, cityName: true, address: true } });
+  return rows.map(r => ({ id: r.id, name: r.name, city: r.cityName, address: r.address }));
 }

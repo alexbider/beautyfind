@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { searchListings, sendClaimCode, submitClaim, verifyClaimCode } from '@/app/for-business/claim/actions';
-import { CLAIM_METHODS, DEFAULT_DAYS, detailsOk, type ClaimMethod, type ListingHit } from '@/app/for-business/claim/shared';
+import { listSiblings, searchListings, sendClaimCode, submitClaim, verifyClaimCode } from '@/app/for-business/claim/actions';
+import { CLAIM_METHODS, DEFAULT_DAYS, detailsOk, type ClaimMethod, type ListingHit, type SiblingBranch } from '@/app/for-business/claim/shared';
 import { nis } from '@/lib/format';
 import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
@@ -31,7 +31,7 @@ const STEPS: Array<{ key: Step; name: string; note: string }> = [
 const SEARCH_DEBOUNCE_MS = 250;
 const PRICE = nis(PLAN_MONTHLY_NIS.basic);
 
-const EMPTY_FORM: DetailsForm = { bizName: '', address: '', phone: '', whatsapp: '', doctor: '', cats: [], days: DEFAULT_DAYS };
+const EMPTY_FORM: DetailsForm = { bizName: '', address: '', phone: '', whatsapp: '', doctor: '', cats: [], days: DEFAULT_DAYS, extraBranchIds: [] };
 
 const COMMON_ERRORS: Record<string, ReactNode> = {
   claimed: 'לעסק הזה כבר יש בעלים מאומתים. אפשר לבקש מהבעלים הזמנה לצוות.',
@@ -94,6 +94,20 @@ export function ClaimFlow({ initialHits, devCode, preselected = null }: { initia
 
   // Details and done
   const [form, setForm] = useState<DetailsForm>(EMPTY_FORM);
+  // A chain: the other branches of the picked listing's business, offered on the details step.
+  const [siblings, setSiblings] = useState<SiblingBranch[]>([]);
+  useEffect(() => {
+    if (!picked) return setSiblings([]);
+    let alive = true;
+    listSiblings(picked.id).then(r => {
+      if (!alive) return;
+      setSiblings(r.siblings);
+      setForm(f => ({ ...f, extraBranchIds: r.siblings.map(x => x.id) })); // all locations, by default
+    });
+    return () => {
+      alive = false;
+    };
+  }, [picked]);
   const [submitError, setSubmitError] = useState<ReactNode | null>(null);
   const [refCode, setRefCode] = useState('');
 
@@ -441,7 +455,7 @@ export function ClaimFlow({ initialHits, devCode, preselected = null }: { initia
               />
             )}
             {step === 'details' && (
-              <DetailsStep headingRef={headingRef} form={form} touched={touched} onChange={patch => setForm(f => ({ ...f, ...patch }))} />
+              <DetailsStep headingRef={headingRef} form={form} touched={touched} siblings={siblings} onChange={patch => setForm(f => ({ ...f, ...patch }))} />
             )}
             {step === 'done' && <DoneStep headingRef={headingRef} bizName={form.bizName.trim() || picked?.name || ''} refCode={refCode} onRestart={restart} />}
 

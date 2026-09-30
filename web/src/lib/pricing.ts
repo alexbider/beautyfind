@@ -20,3 +20,15 @@ export const planPrice = (plan: PlanKey, cycle: 'monthly' | 'yearly') =>
   PLAN_MONTHLY_NIS[plan] * (cycle === 'yearly' ? YEARLY_MULTIPLIER : 1);
 
 export const isPlanKey = (v: unknown): v is PlanKey => v === 'basic' || v === 'advanced';
+
+// Chains and franchises: every branch is billed, and from the fourth branch on each extra one gets 25% off.
+export const CHAIN_FULL_PRICE_BRANCHES = 3;
+export const CHAIN_DISCOUNT = 0.25;
+
+/** The subscription total for `branches` live branches at `unit` per branch, with the chain discount applied. */
+export function chainTotal(branches: number, unit: number): { total: number; fullPrice: number; discounted: number; discount: number } {
+  const fullPrice = Math.min(branches, CHAIN_FULL_PRICE_BRANCHES);
+  const discounted = Math.max(0, branches - CHAIN_FULL_PRICE_BRANCHES);
+  const discount = Math.round(discounted * unit * CHAIN_DISCOUNT * 100) / 100;
+  return { total: Math.round((fullPrice * unit + discounted * unit * (1 - CHAIN_DISCOUNT)) * 100) / 100, fullPrice, discounted, discount };
+}

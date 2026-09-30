@@ -8,7 +8,7 @@ import b from '@/components/dashboard/billing/billing.module.css';
 import { PlanPicker, type PlanCard } from '@/components/dashboard/billing/PlanPicker';
 import { tabGuard } from '@/components/dashboard/guard';
 import { ReadOnlyBanner } from '@/components/dashboard/ReadOnlyBanner';
-import { PLAN_MONTHLY_NIS, PLATFORM_BILLING_LINE, PLATFORM_PRICE_NOTE, planPrice, YEARLY_MULTIPLIER, type PlanKey } from '@/lib/pricing';
+import { CHAIN_DISCOUNT, CHAIN_FULL_PRICE_BRANCHES, PLAN_MONTHLY_NIS, PLATFORM_BILLING_LINE, PLATFORM_PRICE_NOTE, chainTotal, planPrice, YEARLY_MULTIPLIER, type PlanKey } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
 
 // Design: project/BeautyFind Dashboard.dc.html (isBilling; PLANS, INVOICES, QUARTERS, SPEND)
@@ -57,8 +57,10 @@ export default async function BillingPage() {
   const nextPlan: PlanKey | null = sub ? (sub.pendingPlan ?? sub.plan) : null;
   const periodEnd = sub?.currentPeriodEnd ? dateIL(sub.currentPeriodEnd) : null;
   const unit = nextPlan ? planPrice(nextPlan, cycle) : 0;
+  // Every live branch is billed; from the fourth branch on, each extra one gets the chain discount.
+  const chain = chainTotal(billed, unit);
   // Israfind Group charges no Israeli VAT, so the plan total is the amount charged.
-  const netAg = unit * 100 * billed;
+  const netAg = Math.round(chain.total * 100);
   const grossAg = netAg;
   const nextName = PLANS.find(p => p.key === nextPlan)?.name ?? '';
 
@@ -121,7 +123,13 @@ export default async function BillingPage() {
               </p>
               <dl className={b.sum}>
                 <dt>{nextName || 'מנוי'} · <Count n={billed} one="סניף פעיל אחד" two="שני סניפים פעילים" many="סניפים פעילים" /></dt>
-                <dd>{money(netAg)}</dd>
+                <dd>{money(Math.round(unit * 100 * billed))}</dd>
+                {chain.discounted > 0 ? (
+                  <>
+                    <dt>הנחת רשת: {Math.round(CHAIN_DISCOUNT * 100)}% על כל סניף מהסניף ה־{CHAIN_FULL_PRICE_BRANCHES + 1} ({chain.discounted} סניפים)</dt>
+                    <dd>{'−' + money(Math.round(chain.discount * 100))}</dd>
+                  </>
+                ) : null}
               </dl>
               <div className={b.total}>
                 <span className={b.totalLabel}>

@@ -628,3 +628,28 @@ describe('provider text safety', async () => {
     assert.equal(cleanDeep({ d }).d, d);
   });
 });
+
+describe('chains and franchises', async () => {
+  const { chainKeyOf, sameChain } = await import('../../src/lib/import/chain');
+  const { chainTotal } = await import('../../src/lib/pricing');
+  it('keys a chain by its own website domain and recognises branch names of one chain', () => {
+    assert.equal(chainKeyOf({ website: 'https://www.proportsia.co.il/haifa', websiteKind: 'own', siteDomain: 'proportsia.co.il' }), 'proportsia.co.il');
+    assert.equal(chainKeyOf({ website: 'https://proportsia.co.il/', websiteKind: 'own', siteDomain: null }), 'proportsia.co.il');
+    assert.equal(chainKeyOf({ website: 'https://www.facebook.com/salon', websiteKind: 'social' }), null);
+    assert.equal(chainKeyOf({ website: 'https://www.google.com/maps?cid=1', websiteKind: 'google_profile' }), null);
+    assert.equal(chainKeyOf({ website: null }), null);
+    assert.ok(sameChain('פרופורציה תל אביב', 'פרופורציה חיפה'));
+    assert.ok(sameChain('פרופורציה', 'פרופורציה רמת גן'));
+    assert.ok(!sameChain('מספרת דנה', 'קליניקת רותי'));
+  });
+  it('bills every branch and gives 25% off from the fourth', () => {
+    assert.deepEqual(chainTotal(1, 149), { total: 149, fullPrice: 1, discounted: 0, discount: 0 });
+    assert.deepEqual(chainTotal(3, 149), { total: 447, fullPrice: 3, discounted: 0, discount: 0 });
+    const five = chainTotal(5, 149);
+    assert.equal(five.fullPrice, 3);
+    assert.equal(five.discounted, 2);
+    assert.equal(five.discount, 74.5);
+    assert.equal(five.total, 447 + 2 * 149 * 0.75);
+    assert.equal(chainTotal(0, 149).total, 0);
+  });
+});

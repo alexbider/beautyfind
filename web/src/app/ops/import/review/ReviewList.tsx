@@ -54,6 +54,7 @@ export interface ReviewRow {
   photoUrls: string[];
   imageCandidates: { logos: string[]; photos: string[] };
   conflicts: string[];
+  chainSize: number; // import records that share this business website (a chain), including this one
   agencyEmails: string[];
   observations: Obs[];
   match: { id: string; name: string; href: string; city: string; score: number; reasons: string[] } | null;
@@ -327,6 +328,7 @@ function Record({ r, onDone, selected, onSelect, google }: { r: ReviewRow; onDon
           {r.reasons.map(x => (
             <span key={x} className={`${styles.chip} ${(BLOCKING as readonly string[]).includes(x) ? styles.chipBad : isNotice(x) ? '' : styles.chipWarn}`} title={isNotice(x) ? 'הערה בלבד, לא מעכבת פרסום' : undefined}>{REASON_NAMES[x] ?? x}</span>
           ))}
+          {r.chainSize > 1 ? <span className={`${styles.chip} ${styles.chipOk}`} title="כמה רשומות באותו אתר: בפרסום הן מתאגדות לעסק אחד עם כמה סניפים, והבעלים תובע את כולן בחשבון אחד">רשת: {r.chainSize} סניפים</span> : null}
         </div>
         <p className={styles.note} style={{ marginTop: 6 }}>
           שלמות הכרטיס: <span className={styles.ltr}>{r.template.score}%</span>

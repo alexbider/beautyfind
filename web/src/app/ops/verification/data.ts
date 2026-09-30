@@ -213,6 +213,9 @@ export async function loadQueue(now = new Date()): Promise<QueueItem[]> {
       push(submitted, 'קטגוריות', catNames(d.categories));
       push(submitted, 'אחראי רפואי', str(d.medicalResponsible));
       push(submitted, 'שעות', hoursSummary(d.hours));
+      const extra = Array.isArray(sub.extraBranches) ? (sub.extraBranches as unknown[]).map(obj) : [];
+      if (extra.length) push(submitted, 'סניפים נוספים באותה בקשה', extra.map(x => [str(x.name), str(x.cityName)].filter(Boolean).join(' · ')).join('; '));
+      else if (typeof sub.siblingsOffered === 'number' && sub.siblingsOffered > 0) push(submitted, 'סניפים נוספים', `לא נבחרו (${sub.siblingsOffered} סניפים אחרים של העסק יופרדו לעסק נפרד)`);
     } else {
       const b = obj(sub.business), br = obj(sub.branch), resp = obj(sub.responsibility);
       const services = Array.isArray(sub.services) ? sub.services.map(obj) : [];

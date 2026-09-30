@@ -1,5 +1,6 @@
 import type { InputHTMLAttributes, RefObject } from 'react';
-import { DAY_NAMES, detailsErrors, hasMedical, hoursLabel, type ClaimDetails } from '@/app/for-business/claim/shared';
+import { DAY_NAMES, detailsErrors, hasMedical, hoursLabel, type ClaimDetails, type SiblingBranch } from '@/app/for-business/claim/shared';
+import { CHAIN_DISCOUNT, CHAIN_FULL_PRICE_BRANCHES } from '@/lib/pricing';
 import { categoryBySlug } from '@/lib/catalog';
 import styles from './Claim.module.css';
 
@@ -15,6 +16,7 @@ interface Props {
   headingRef: RefObject<HTMLHeadingElement | null>;
   form: DetailsForm;
   touched: boolean;
+  siblings?: SiblingBranch[]; // other branches of the same business (a chain), claimable in this request
   onChange: (patch: Partial<DetailsForm>) => void;
 }
 
@@ -22,7 +24,7 @@ function Req() {
   return <span aria-hidden="true" className={styles.req}>*</span>;
 }
 
-export function DetailsStep({ headingRef, form, touched, onChange }: Props) {
+export function DetailsStep({ headingRef, form, touched, siblings = [], onChange }: Props) {
   const errs = detailsErrors(form);
   const bad = (k: keyof typeof errs) => touched && errs[k];
   const medical = hasMedical(form.cats);
@@ -65,6 +67,32 @@ export function DetailsStep({ headingRef, form, touched, onChange }: Props) {
           {text('whatsapp', { type: 'tel', dir: 'ltr', inputMode: 'tel', placeholder: '050-0000000' })}
         </label>
       </div>
+
+      {siblings.length > 0 ? (
+        <fieldset className={styles.fieldset} aria-describedby="h-siblings-note">
+          <legend>סניפים נוספים של העסק</legend>
+          <p id="h-siblings-note" className={styles.lede} style={{ marginBottom: 10 }}>
+            מצאנו עוד {siblings.length === 1 ? 'סניף אחד' : `${siblings.length} סניפים`} של העסק. סמנו את אלה שבבעלותכם וכולם ינוהלו מחשבון אחד. כל סניף מחויב בנפרד; מהסניף ה־{CHAIN_FULL_PRICE_BRANCHES + 1} כל סניף נוסף ב־{Math.round(CHAIN_DISCOUNT * 100)}% הנחה. סניף שלא סומן יישאר באתר כעסק נפרד.
+          </p>
+          <div className={styles.chips}>
+            {siblings.map(b => {
+              const on = form.extraBranchIds.includes(b.id);
+              return (
+                <button
+                  key={b.id}
+                  type="button"
+                  className={styles.chip}
+                  aria-pressed={on}
+                  title={b.address}
+                  onClick={() => onChange({ extraBranchIds: on ? form.extraBranchIds.filter(x => x !== b.id) : [...form.extraBranchIds, b.id] })}
+                >
+                  {b.name} · {b.city}
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
+      ) : null}
 
       <fieldset className={styles.fieldset}>
         <legend>תחומי הטיפול שאתם מציעים <Req /></legend>

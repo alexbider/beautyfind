@@ -316,4 +316,37 @@ describe('enhancing published listings', { skip }, () => {
     assert.ok(after.logoUrl, 'logo copied by the pending-images step');
     assert.notEqual(after.coverUrl, b.coverUrl);
   });
+
+  it('branches found under one business website are published as one business with several branches', async () => {
+    const { approvePlace } = await import('../../src/lib/server/importOps');
+    const actor = (await pdb.user.findFirst({ select: { id: true } })) ?? (await pdb.user.create({ data: {}, select: { id: true } }));
+    const run = await pdb.importRun.create({ data: { label: 'chain test', provider: 'dataforseo', scope: {}, maxRequests: 0 } });
+    made.runs.push(run.id);
+    const domain = `chain-${run.id.slice(0, 8)}.test`;
+    const mk = (name: string, city: string, slug: string) =>
+      pdb.importPlace.create({
+        data: {
+          runId: run.id, placeId: `chain-${run.id}-${slug}`, provider: 'dataforseo', name, address: `רחוב 1, ${city}`, lat: 32.08, lng: 34.78, status: 'ready',
+          regionSlug: 'dan', cityName: city, citySlug: slug, phone: '+97235550002', website: `https://www.${domain}/`, websiteKind: 'own', siteDomain: domain, categories: ['hair-salons'],
+        },
+      });
+    const a = await mk('פרופורציה תל אביב', 'תל אביב', 'tel-aviv');
+    const b = await mk('פרופורציה רמת גן', 'רמת גן', 'ramat-gan');
+    const c = await mk('קליניקת רותי', 'גבעתיים', 'givatayim'); // same domain, unrelated name: not the chain
+    made.places.push(a.id, b.id, c.id);
+    const ra = await approvePlace(actor, a.id, { images: false });
+    const rb = await approvePlace(actor, b.id, { images: false });
+    const rc = await approvePlace(actor, c.id, { images: false });
+    assert.ok(ra.ok && rb.ok && rc.ok);
+    const [ba, bb, bc] = await Promise.all([ra, rb, rc].map(r => pdb.branch.findUniqueOrThrow({ where: { id: r.ok ? r.branchId : '' } })));
+    made.businesses.push(ba.businessId, bc.businessId);
+    assert.equal(ba.businessId, bb.businessId, 'two branches of the chain share one business');
+    assert.notEqual(ba.businessId, bc.businessId, 'an unrelated name on the same domain stays separate');
+    const biz = await pdb.business.findUniqueOrThrow({ where: { id: ba.businessId } });
+    assert.equal(biz.chainKey, domain);
+    // The claim flow offers the sibling branch of the same business.
+    const { siblingBranches } = await import('../../src/app/for-business/claim/data');
+    const sib = await siblingBranches(ba.id);
+    assert.deepEqual(sib.map(x => x.id), [bb.id]);
+  });
 });

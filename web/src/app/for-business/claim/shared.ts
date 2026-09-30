@@ -35,6 +35,8 @@ export interface ListingHit {
 
 export interface ClaimDetails {
   branchId: string;
+  /** Other branches of the same business (a chain) the owner claims in the same request. */
+  extraBranchIds: string[];
   bizName: string;
   address: string;
   phone: string;
@@ -69,7 +71,7 @@ export const hoursLabel = (d: DayHours) => `${d.from.replace(/^0(\d)/, '$1')}–
 export type DetailsField = 'bizName' | 'address' | 'phone' | 'whatsapp' | 'cats' | 'doctor';
 
 /** Fields that fail the design's rules. Same function runs on the client and in the server action. */
-export function detailsErrors(d: Omit<ClaimDetails, 'branchId' | 'days'>): Record<DetailsField, boolean> {
+export function detailsErrors(d: Omit<ClaimDetails, 'branchId' | 'days' | 'extraBranchIds'>): Record<DetailsField, boolean> {
   const wa = d.whatsapp.trim();
   return {
     bizName: d.bizName.trim().length < 2,
@@ -81,4 +83,12 @@ export function detailsErrors(d: Omit<ClaimDetails, 'branchId' | 'days'>): Recor
   };
 }
 
-export const detailsOk = (d: Omit<ClaimDetails, 'branchId' | 'days'>) => !Object.values(detailsErrors(d)).some(Boolean);
+export const detailsOk = (d: Omit<ClaimDetails, 'branchId' | 'days' | 'extraBranchIds'>) => !Object.values(detailsErrors(d)).some(Boolean);
+
+/** A sibling branch of the picked listing: same business, live, not yet claimed. */
+export interface SiblingBranch {
+  id: string;
+  name: string;
+  city: string;
+  address: string;
+}

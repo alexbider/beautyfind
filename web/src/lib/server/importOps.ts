@@ -22,6 +22,7 @@ import { slugBase, slugCandidates } from '@/lib/import/slug';
 import { storage } from '@/lib/vendors/storage';
 import { PERSON_REASONS } from '@/lib/import/placeCoverage';
 import { resolveCity } from '@/lib/import/geo';
+import { chainKeyOf, sameChain } from '@/lib/import/chain';
 
 export type OpResult = { ok: true; branchId?: string; slug?: string; href?: string } | { ok: false; error: string };
 type Actor = { id: string };
@@ -427,13 +428,19 @@ export async function approvePlace(actor: Actor, id: string, opts: { images?: bo
   const medical = cats.some(c => CATEGORIES.find(x => x.slug === c)?.isMedical);
   const text = editorialText(p, null);
   const fields = profileFields(p, { maxVideos: settings.youtubeMaxVideos });
+  // A chain or franchise: another branch found under the same business website already made a
+  // business; this record becomes one more branch of it (one account claims and manages them all).
+  const chainKey = chainKeyOf(p);
+  const chain = chainKey
+    ? (await db.business.findMany({ where: { chainKey }, include: { branches: { select: { name: true } } }, orderBy: { createdAt: 'asc' } })).find(b => b.branches.some(x => sameChain(x.name, p.name)))
+    : null;
 
   try {
     const branch = await db.$transaction(async tx => {
       // Optimistic lock: a second click or a second reviewer cannot approve the same record twice.
       const claimed = await tx.importPlace.updateMany({ where: { id, status: { in: [...OPEN_FOR_DECISION] } }, data: { status: 'approved' } });
       if (!claimed.count) throw new Error('state');
-      const biz = await tx.business.create({ data: { status: 'live', type: p.businessType ?? (medical ? 'clinic' : 'salon') } });
+      const biz = chain ?? (await tx.business.create({ data: { status: 'live', type: p.businessType ?? (medical ? 'clinic' : 'salon'), chainKey } }));
       const b = await tx.branch.create({
         data: {
           businessId: biz.id,
@@ -475,7 +482,7 @@ export async function approvePlace(actor: Actor, id: string, opts: { images?: bo
     });
     const images = opts.images === false ? { deferred: true } : await applyImages(actor, p, branch.id, branch.businessId, settings, { logo: true, cover: true, gallery: true });
     await refreshProfileStatus(branch.id, p);
-    await audit(actor, 'import_approve', p, { branchId: branch.id, images });
+    await audit(actor, 'import_approve', p, { branchId: branch.id, images, chain: chain ? { businessId: chain.id, key: chainKey } : null });
     return { ok: true, branchId: branch.id, slug: branch.slug, href: profileHref({ regionSlug: branch.regionSlug, slug: branch.slug, categories: cats }) };
   } catch (e) {
     if (e instanceof Error && e.message === 'state') return { ok: false, error: 'state' };

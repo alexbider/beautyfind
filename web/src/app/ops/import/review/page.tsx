@@ -114,6 +114,10 @@ export default async function ReviewPage({ searchParams }: { searchParams: SP })
     }),
   ]);
 
+  // Chains: how many open or published records share each business website.
+  const domains = [...new Set(rows.map(r => r.siteDomain).filter((d): d is string => !!d))];
+  const chainRows = domains.length ? await db.importPlace.groupBy({ by: ['siteDomain'], where: { siteDomain: { in: domains }, status: { notIn: ['rejected', 'duplicate', 'closed'] } }, _count: true }) : [];
+  const chainSizes = new Map(chainRows.map(r => [r.siteDomain as string, r._count]));
   const list: ReviewRow[] = rows.map(r => {
     const mb = branches.find(b => b.id === r.matchBranchId);
     const created = branches.find(b => b.id === r.branchId);
@@ -163,6 +167,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: SP })
         photos: ((crawl.imageCandidates as { photos?: string[] } | undefined)?.photos ?? []).slice(0, 24),
       },
       conflicts: [crawl.phoneConflict === true ? 'phone' : null, crawl.hoursConflict === true ? 'hours' : null].filter((x): x is string => !!x),
+      chainSize: r.siteDomain ? (chainSizes.get(r.siteDomain) ?? 0) : 0,
       agencyEmails: Array.isArray(crawl.agencyEmails) ? (crawl.agencyEmails as string[]) : [],
       observations: observations
         .filter(o => o.importPlaceId === r.id)

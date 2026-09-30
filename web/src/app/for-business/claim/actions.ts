@@ -8,8 +8,8 @@ import { sendOtp, verifyOtp } from '@/lib/server/otp';
 import { nextRef } from '@/lib/server/refs';
 import { currentUser } from '@/lib/server/session';
 import { clearClaimProof, readClaimProof, setClaimProof } from './claim-token';
-import { claimTarget, isClaimedRow, loadLiveBranch, maskEmail, maskPhone, searchLiveBranches } from './data';
-import { CATEGORY_SLUGS, CLAIM_METHODS, TIME_RE, detailsErrors, hasMedical, type ClaimDetails, type ListingHit } from './shared';
+import { claimTarget, isClaimedRow, loadLiveBranch, maskEmail, maskPhone, searchLiveBranches, siblingBranches } from './data';
+import { CATEGORY_SLUGS, CLAIM_METHODS, TIME_RE, detailsErrors, hasMedical, type ClaimDetails, type ListingHit, type SiblingBranch } from './shared';
 
 const SLA_MS = 24 * 60 * 60_000;
 const OPEN_STATUSES = ['open', 'awaiting_document'] as const;
@@ -99,9 +99,20 @@ export async function verifyClaimCode(input: { branchId: string; method: string;
 
 // ---------- Submit ----------
 
+/** The other branches of the picked listing's business, for the "claim them too" list on the details step. */
+export async function listSiblings(branchId: string): Promise<{ ok: boolean; siblings: SiblingBranch[] }> {
+  if (!z.uuid().safeParse(branchId).success) return { ok: false, siblings: [] };
+  try {
+    return { ok: true, siblings: await siblingBranches(branchId) };
+  } catch {
+    return { ok: false, siblings: [] };
+  }
+}
+
 const detailsInput = z
   .object({
     branchId: z.uuid(),
+    extraBranchIds: z.array(z.uuid()).max(200).default([]),
     bizName: z.string().trim().max(120),
     address: z.string().trim().max(200),
     phone: z.string().trim().max(20),
@@ -149,9 +160,14 @@ export async function submitClaim(input: ClaimDetails): Promise<SubmitClaimResul
     if (existing) return { ok: false, error: 'duplicate', ref: existing.ref };
 
     const medical = hasMedical(d.cats);
+    // Other branches of the same business the owner claims in this request (only real siblings count).
+    const siblings = await siblingBranches(branch.id);
+    const extra = siblings.filter(x => d.extraBranchIds.includes(x.id)).map(x => ({ id: x.id, name: x.name, cityName: x.city }));
     // Ownership is not granted here: the details wait in the request until BeautyFind approves.
     const submitted: Prisma.InputJsonValue = {
       branch: { id: branch.id, name: branch.name, cityName: branch.cityName },
+      extraBranches: extra,
+      siblingsOffered: siblings.length,
       details: {
         name: d.bizName,
         address: d.address,

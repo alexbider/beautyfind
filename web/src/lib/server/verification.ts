@@ -136,11 +136,23 @@ async function onApprove(tx: Tx, req: Req): Promise<'license_pending' | 'already
       const cats = Array.isArray(d.categories) ? d.categories.filter((c): c is string => typeof c === 'string') : [];
       const known = cats.length ? await tx.category.findMany({ where: { OR: [{ slug: { in: cats } }, { name: { in: cats } }] } }) : [];
 
+      // A chain: the branches the owner also claimed join this account; the other live branches of the
+      // business move to a business of their own, so they stay public and claimable by someone else.
+      const extraIds = (Array.isArray(sub.extraBranches) ? (sub.extraBranches as Prisma.JsonValue[]).map(v => str(obj(v).id)) : []).filter((x): x is string => !!x);
+      const siblings = await tx.branch.findMany({ where: { businessId: branch.businessId, id: { not: branch.id }, isClaimed: false }, select: { id: true } });
+      const claimedExtra = siblings.filter(x => extraIds.includes(x.id)).map(x => x.id);
+      const leftOut = siblings.filter(x => !extraIds.includes(x.id)).map(x => x.id);
+      if (leftOut.length) {
+        const rest = await tx.business.create({ data: { status: branch.business.status, type: branch.business.type, chainKey: branch.business.chainKey } });
+        await tx.branch.updateMany({ where: { id: { in: leftOut } }, data: { businessId: rest.id } });
+      }
+      if (claimedExtra.length) await tx.branch.updateMany({ where: { id: { in: claimedExtra } }, data: { isClaimed: true } });
+
       await tx.business.update({ where: { id: branch.businessId }, data: { ownerUserId: user.id } });
       await tx.staffMember.create({
         data: {
           businessId: branch.businessId, userId: user.id, displayName: user.fullName ?? str(d.name) ?? branch.name,
-          profession: 'management', isOwner: true, preset: 'owner', branchIds: [branch.id],
+          profession: 'management', isOwner: true, preset: 'owner', branchIds: [branch.id, ...claimedExtra],
         },
       });
       await tx.branch.update({
