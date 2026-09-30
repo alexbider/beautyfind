@@ -1,7 +1,8 @@
 // "Enhance published listings" runs. For live listings that came from the import and that no owner has
 // claimed, a run carries a set of steps (src/lib/import/enrichPlan.ts):
 //   dfs        refresh the provider data (DataForSEO, one request per up to 500 listings);
-//   maps, facebook, instagram, render   Apify actors (stages/apify.ts);
+//   maps, facebook, instagram          Apify actors (stages/apify.ts);
+//   render                             the worker's own browser for unreadable sites (stages/render.ts);
 //   site       read the business's website again (the 30-day cache is ignored for those domains);
 //   editorial  write the description and FAQs when the evidence changed; regenerate: even when it did not;
 //   images     copy the images that were found.
@@ -21,6 +22,7 @@ import { bump, db, heartbeat, log, setStats, settings, Stop } from '../ctx';
 import { apifyConfigured } from '../providers/apify';
 import { dfsSearch } from '../providers/dataforseo';
 import { seedApifyTasks } from './apify';
+import { seedRenderTasks } from './render';
 import { seedResearchTasks } from './research';
 import { openaiConfigured } from '../providers/openai';
 import { upsertListing } from './dfsDiscover';
@@ -82,6 +84,7 @@ export async function seedEnhance(run: ImportRun) {
   // Refresh tasks first so the website stage and the fill use fresh provider data.
   for (const t of tasks) await db.importTask.create({ data: t });
   const apify = await seedApifyTasks(run, plans, places);
+  const render = await seedRenderTasks(run, plans, places);
   const research = await seedResearchTasks(run, places.filter(p => plans.get(p.id)?.has('research')).map(p => p.id));
   const enhance: Prisma.ImportTaskCreateManyInput[] = [];
   for (let i = 0; i < places.length; i += ENHANCE_BATCH) {
@@ -89,7 +92,7 @@ export async function seedEnhance(run: ImportRun) {
     enhance.push({ runId: run.id, key: `enhance:${i}`, kind: 'enhance', params: { ids: slice.map(p => p.id), steps: Object.fromEntries(slice.map(p => [p.id, [...(plans.get(p.id) ?? [])]])) } as unknown as Prisma.InputJsonValue });
   }
   await db.importTask.createMany({ data: enhance, skipDuplicates: true });
-  await setStats(run.id, { seeded: true, listings: places.length, refreshTasks: tasks.length, plan: planCounts, apifyTasks: apify, researchTasks: research, auto, apifyConfigured: apifyConfigured(), openaiConfigured: openaiConfigured(), stepsAllowed: [...steps] });
+  await setStats(run.id, { seeded: true, listings: places.length, refreshTasks: tasks.length, plan: planCounts, apifyTasks: apify, renderSites: render, researchTasks: research, auto, apifyConfigured: apifyConfigured(), openaiConfigured: openaiConfigured(), stepsAllowed: [...steps] });
   log(`enhance: ${places.length} published listings, plan ${JSON.stringify(planCounts)}`);
 }
 
@@ -196,8 +199,9 @@ export async function enhanceStage(run: ImportRun, kind: 'dfs_refresh' | 'enhanc
       const r = actor ? await enhanceBranch(p.branchId, fresh, s, actor, { images: steps.has('images') }) : { filled: [], skipped: 'no_actor' };
       for (const f of r.filled) counts[`filled_${f}`] = (counts[`filled_${f}`] ?? 0) + 1;
       counts[r.filled.length ? 'improved' : r.skipped ? `skipped_${r.skipped}` : 'nothing_to_add'] = (counts[r.filled.length ? 'improved' : r.skipped ? `skipped_${r.skipped}` : 'nothing_to_add'] ?? 0) + 1;
-      const crawl = (fresh.crawl ?? {}) as { site?: string; apify?: Record<string, { checked?: string; found?: boolean; status?: string }> };
+      const crawl = (fresh.crawl ?? {}) as { site?: string; apify?: Record<string, { checked?: string; found?: boolean; status?: string }>; render?: { status?: string } };
       const sources = Object.fromEntries(Object.entries(crawl.apify ?? {}).map(([k, v]) => [k, v?.checked ?? (v?.found === false ? 'not_found' : v?.found ? 'found' : v?.status ?? 'done')]));
+      if (crawl.render?.status) sources.render = crawl.render.status;
       await db.auditLog.create({ data: { actorId: actor, action: 'import_enhance', subjectType: 'branch', subjectId: p.branchId, meta: { runId: run.id, filled: r.filled, skipped: r.skipped ?? null, steps: [...steps] as StepId[], site: crawl.site ?? null, sources, editorial: editorialNote } } });
     } catch (e) {
       if (e instanceof Stop) throw e;

@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
 import type { PrismaClient } from '@prisma/client';
 import {
-  apifyErrorKind, attributesFromMaps, facebookFacts, groupRenderPages, hoursFromFacebook, hoursFromMaps, instagramFacts, instagramHandle, mapsFacts, mapsInput, parseClock, profileMatches, renderInput,
+  apifyErrorKind, attributesFromMaps, facebookFacts, hoursFromFacebook, hoursFromMaps, instagramFacts, instagramHandle, mapsFacts, mapsInput, parseClock, profileMatches,
 } from '../../src/lib/import/apify';
 import { estimatePlans, planFor, scopeSteps, stepApplies, STEP_ORDER, stepUsd, type PlanSignals } from '../../src/lib/import/enrichPlan';
 import { pricing } from '../../src/lib/import/pricing';
@@ -66,9 +66,6 @@ describe('Apify Google Maps mapping', () => {
     assert.deepEqual(inp.placeIds, ['ChIJa']);
     assert.deepEqual(inp.startUrls, [{ url: 'https://maps.google.com/?cid=77' }]);
     assert.equal(inp.maxReviews, 0);
-    const r = renderInput(['https://a.test/'], { maxPages: 8 }) as { respectRobotsTxtFile: boolean; maxCrawlPages: number };
-    assert.equal(r.respectRobotsTxtFile, true);
-    assert.equal(r.maxCrawlPages, 8);
   });
 });
 
@@ -100,10 +97,7 @@ describe('Apify social profiles', () => {
     assert.equal(facebookFacts({ error: 'page not found' }).unavailable, true);
   });
 
-  it('groups rendered pages per site and classifies errors', () => {
-    const g = groupRenderPages([{ url: 'https://a.test/', html: '<p>a</p>', crawl: { httpStatusCode: 200 } }, { url: 'https://www.a.test/prices', html: '<p>b</p>' }, { url: 'https://b.test/', html: null }]);
-    assert.equal(g.get('a.test')?.length, 2);
-    assert.equal(g.has('b.test'), false);
+  it('classifies actor errors', () => {
     assert.equal(apifyErrorKind(402, 'platform-usage-limit-exceeded Monthly usage hard limit exceeded'), 'funds');
     assert.equal(apifyErrorKind(401, 'token-not-found'), 'auth');
     assert.equal(apifyErrorKind(503, 'temporarily unavailable'), 'transient');
@@ -133,11 +127,14 @@ describe('enrichment plan from gaps and sources', () => {
     assert.ok(!planFor(['about'], base, opts).includes('regenerate')); // never automatic
   });
 
-  it('sends a site to the browser only when our crawler could not read it, never a blocked one', () => {
+  it('sends a site to the worker\'s browser only when our crawler could not read it, never a blocked one, and needs no Apify', () => {
     assert.equal(stepApplies('render', { ...base, siteOutcome: 'failed' }, opts), true);
     assert.equal(stepApplies('render', { ...base, siteOutcome: 'ok', siteThin: true }, opts), true);
     assert.equal(stepApplies('render', { ...base, siteOutcome: 'blocked' }, opts), false);
     assert.equal(stepApplies('render', { ...base, siteOutcome: 'robots' }, opts), false);
+    assert.equal(stepApplies('render', { ...base, siteOutcome: 'failed' }, { ...opts, apifyConfigured: false, settings: { ...DEFAULT_SETTINGS, apifyEnabled: false } }), true);
+    assert.equal(stepApplies('render', { ...base, siteOutcome: 'failed' }, { ...opts, settings: { ...DEFAULT_SETTINGS, apifyRender: false } }), false);
+    assert.equal(stepUsd('render', pricing(), { renderPages: 8, editorialEnabled: true }), 0);
     assert.equal(stepApplies('site', { ...base, siteOutcome: 'failed' }, opts), false);
     assert.equal(stepApplies('site', { ...base, siteOutcome: 'blocked' }, opts), false);
     assert.equal(stepApplies('maps', { ...base, placeId: false, cid: false }, opts), false);

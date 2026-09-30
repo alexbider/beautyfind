@@ -37,9 +37,19 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
-      # Optional headless Chromium, used only when the admin turns on the capped browser fallback.
-      - if: vars.IMPORT_BROWSER == '1'
+      # Headless Chromium for the worker's own browser: the fallback for pages that need JavaScript and
+      # the render step for sites the HTTP crawler could not read. Cached by the playwright-core version.
+      - id: pw
+        run: echo "version=$(node -p "require('playwright-core/package.json').version")" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        id: chromium
+        with:
+          path: ~/.cache/ms-playwright
+          key: chromium-${{ runner.os }}-${{ steps.pw.outputs.version }}
+      - if: steps.chromium.outputs.cache-hit != 'true'
         run: npx playwright-core install --with-deps chromium
+      - if: steps.chromium.outputs.cache-hit == 'true'
+        run: npx playwright-core install-deps chromium
       - id: work
         run: npm run import:work -- --max-minutes "${{ inputs.max_minutes || '330' }}" ${{ inputs.run_id && format('--run {0}', inputs.run_id) || '' }}
         env:
@@ -57,7 +67,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           IMPORT_MODEL: ${{ vars.IMPORT_MODEL }}
           IMPORT_EDITORIAL_MODEL: ${{ vars.IMPORT_EDITORIAL_MODEL }}
-          # Apify actors for enhance runs (Google Maps, Facebook, Instagram, rendered sites). Server-side only.
+          # Apify actors for the gaps the site leaves (Google Maps, Facebook, Instagram). Server-side only.
           APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
           # Optional YouTube Data API key (video validation and channel discovery); without it oEmbed validates videos found on the site.
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}

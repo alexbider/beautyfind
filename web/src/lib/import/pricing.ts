@@ -44,11 +44,10 @@ export interface Pricing {
   // Apify actors, per item (place, profile, page). Reserved at twice the rate because most actors bill
   // per result plus platform usage; the recorded cost is the run's usageTotalUsd reported by Apify.
   apify: {
-    actors: Record<'maps' | 'instagram' | 'facebook' | 'render', string>;
+    actors: Record<'maps' | 'instagram' | 'facebook', string>;
     maps: { perPlaceUsd: number };
     instagram: { perProfileUsd: number };
     facebook: { perPageUsd: number };
-    render: { perPageUsd: number };
     reserveFactor: number;
     source: string;
     checked: string;
@@ -96,15 +95,14 @@ export const DEFAULT_PRICING: Pricing = {
     note: 'OpenAI list prices recalled, not fetched: gpt-5-mini $0.25 per 1M input and $2 per 1M output tokens; web search tool calls about $10 per 1,000. A research call with up to six searches is held at $0.08 and settled from the reported usage. Confirm before a live run; override with IMPORT_PRICING_JSON and IMPORT_OPENAI_MODEL.',
   },
   apify: {
-    actors: { maps: 'compass~crawler-google-places', instagram: 'apify~instagram-profile-scraper', facebook: 'apify~facebook-pages-scraper', render: 'apify~website-content-crawler' },
+    actors: { maps: 'compass~crawler-google-places', instagram: 'apify~instagram-profile-scraper', facebook: 'apify~facebook-pages-scraper' },
     maps: { perPlaceUsd: 0.004 },
     instagram: { perProfileUsd: 0.0025 },
     facebook: { perPageUsd: 0.004 },
-    render: { perPageUsd: 0.002 },
     reserveFactor: 2,
     source: 'https://apify.com/pricing and each actor\'s page',
     checked: 'unverified',
-    note: 'Apify Store rates recalled, not fetched (the pages were not reachable from the build environment): Google Maps Scraper about $4 per 1,000 places, Instagram Profile Scraper about $2.5 per 1,000 profiles, Facebook Pages Scraper about $4 per 1,000 pages, Website Content Crawler by compute (about $2 per 1,000 pages). Confirm on the actor pages before a live run; override with IMPORT_PRICING_JSON.',
+    note: 'Apify Store rates recalled, not fetched (the pages were not reachable from the build environment): Google Maps Scraper about $4 per 1,000 places, Instagram Profile Scraper about $2.5 per 1,000 profiles, Facebook Pages Scraper about $4 per 1,000 pages. Sites that need JavaScript are rendered by the worker\'s own browser at no provider cost. Confirm on the actor pages before a live run; override with IMPORT_PRICING_JSON.',
   },
 };
 
@@ -134,8 +132,8 @@ export function dfsPageMaxUsd(limit: number, p: Pricing = pricing()): number {
 }
 
 /** Gross per-item rate of an Apify actor. */
-export function apifyItemUsd(kind: 'maps' | 'instagram' | 'facebook' | 'render', p: Pricing = pricing()): number {
-  return kind === 'maps' ? p.apify.maps.perPlaceUsd : kind === 'instagram' ? p.apify.instagram.perProfileUsd : kind === 'facebook' ? p.apify.facebook.perPageUsd : p.apify.render.perPageUsd;
+export function apifyItemUsd(kind: 'maps' | 'instagram' | 'facebook', p: Pricing = pricing()): number {
+  return kind === 'maps' ? p.apify.maps.perPlaceUsd : kind === 'instagram' ? p.apify.instagram.perProfileUsd : p.apify.facebook.perPageUsd;
 }
 
 /** Cost of one editorial call from the tokens the API reported, at the writer's provider rates. */

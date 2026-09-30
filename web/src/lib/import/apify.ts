@@ -2,15 +2,14 @@
 // Pure mapping code: actor inputs, and the facts we take from each actor's output. The HTTP client is
 // scripts/import/providers/apify.ts; the worker stage is scripts/import/stages/apify.ts.
 //
-// Four actors, each for the gaps it can fill:
+// Three actors, each for the gaps it can fill:
 //   maps       Google Maps place details (hours, phone, website, wheelchair access, parking, the owner's
 //              own description, profile photos, rating): for records with a Google place id or cid.
 //   instagram  the business's Instagram profile (bio, link in bio, profile picture, recent posts):
 //              verifies the account when the bio links to the business site or shows its phone.
 //   facebook   the business's Facebook page (about text, email, phone, website, hours, pictures).
-//   render     Apify's website crawler with a real browser, only for sites our own crawler could not
-//              read because they need JavaScript. Never for sites that blocked us or forbid crawling
-//              in robots.txt: Apify is asked to respect robots.txt as well.
+// Sites that need JavaScript are rendered by the worker's own Chromium (scripts/import/crawlee/browser.ts,
+// stages/render.ts), not by an actor.
 
 import { extractEmails } from './email';
 import { normalizeIlPhone } from './phone';
@@ -18,21 +17,20 @@ import type { DayHours } from './rules';
 import { socialOf } from './websiteKind';
 import { cutText } from './text';
 
-export type ApifyActorKind = 'maps' | 'instagram' | 'facebook' | 'render';
+export type ApifyActorKind = 'maps' | 'instagram' | 'facebook';
 
 /** Actor ids in the API form (owner~name). Overridable through IMPORT_PRICING_JSON (pricing.apify.actors). */
 export const DEFAULT_ACTORS: Record<ApifyActorKind, string> = {
   maps: 'compass~crawler-google-places',
   instagram: 'apify~instagram-profile-scraper',
   facebook: 'apify~facebook-pages-scraper',
-  render: 'apify~website-content-crawler',
 };
 
 /** Items per actor run: small batches keep one failed run cheap and resumable. */
-export const BATCH: Record<ApifyActorKind, number> = { maps: 50, instagram: 50, facebook: 20, render: 5 };
+export const BATCH: Record<ApifyActorKind, number> = { maps: 50, instagram: 50, facebook: 20 };
 
 /** Provider names used on observations and provenance records. */
-export const APIFY_PROVIDER: Record<ApifyActorKind, string> = { maps: 'apify_google_maps', instagram: 'apify_instagram', facebook: 'apify_facebook', render: 'apify_site' };
+export const APIFY_PROVIDER: Record<ApifyActorKind, string> = { maps: 'apify_google_maps', instagram: 'apify_instagram', facebook: 'apify_facebook' };
 
 // ---------- inputs ----------
 
@@ -66,19 +64,6 @@ export function facebookInput(urls: string[]): Record<string, unknown> {
   return { startUrls: urls.map(url => ({ url })) };
 }
 
-export function renderInput(urls: string[], opts: { maxPages: number }): Record<string, unknown> {
-  return {
-    startUrls: urls.map(url => ({ url })),
-    maxCrawlPages: opts.maxPages * urls.length,
-    maxCrawlDepth: 2,
-    crawlerType: 'playwright:adaptive',
-    saveHtml: true,
-    saveMarkdown: false,
-    htmlTransformer: 'none',
-    respectRobotsTxtFile: true, // same rule as our own crawler
-    proxyConfiguration: { useApifyProxy: true },
-  };
-}
 
 // ---------- Google Maps output ----------
 
@@ -379,29 +364,6 @@ export function profileMatches(f: ProfileFacts, biz: { domain: string | null; ph
   const phones = [biz.phone, biz.whatsapp].filter(Boolean);
   if (f.phone && phones.includes(f.phone)) return 'shows_phone';
   return null;
-}
-
-// ---------- website crawler output ----------
-
-export interface RenderItem {
-  url?: string;
-  crawl?: { loadedUrl?: string; httpStatusCode?: number };
-  metadata?: { title?: string };
-  html?: string | null;
-  text?: string | null;
-}
-
-/** Pages grouped by the site they belong to (the crawler returns every site's pages in one dataset). */
-export function groupRenderPages(items: RenderItem[]): Map<string, Array<{ url: string; html: string; status: number }>> {
-  const out = new Map<string, Array<{ url: string; html: string; status: number }>>();
-  for (const it of items) {
-    const url = it.crawl?.loadedUrl ?? it.url;
-    if (!url || !it.html) continue;
-    const host = hostOf(url);
-    if (!host) continue;
-    out.set(host, [...(out.get(host) ?? []), { url, html: it.html, status: it.crawl?.httpStatusCode ?? 200 }]);
-  }
-  return out;
 }
 
 // ---------- errors and costs ----------

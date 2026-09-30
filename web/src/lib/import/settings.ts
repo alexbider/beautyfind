@@ -17,8 +17,8 @@ export const ImportSettingsSchema = z.object({
   crawlMaxPagesExtended: z.number().int().min(1).max(20).default(12),
   recheckOkDays: z.number().int().min(1).max(365).default(30),
   recheckFailDays: z.number().int().min(1).max(90).default(7),
-  browserFallback: z.boolean().default(false),
-  browserMaxPerRun: z.number().int().min(0).max(5000).default(25),
+  browserFallback: z.boolean().default(true), // during the site stage: a page that comes back as a JavaScript shell is rendered at once in the worker's Chromium
+  browserMaxPerRun: z.number().int().min(0).max(5000).default(100), // rendered pages per run in the site stage (the render step has its own per-site cap)
   llmEnabled: z.boolean().default(false),
   llmBudgetUsd: z.number().min(0).max(1000).default(0),
   // Stage 2C: editorial writing (description, FAQs, meta, service summaries) from the evidence packet.
@@ -43,12 +43,12 @@ export const ImportSettingsSchema = z.object({
   apifyMaps: z.boolean().default(true), // Google Maps place details and profile photos
   apifyInstagram: z.boolean().default(true), // the business's Instagram profile (verifies the account, bio, posts)
   apifyFacebook: z.boolean().default(true), // the business's Facebook page
-  apifyRender: z.boolean().default(true), // browser crawl of sites our crawler could not read (never blocked or robots sites)
+  apifyRender: z.boolean().default(true), // render step: the worker's own Chromium reads sites our crawler could not (never blocked or robots sites); key kept for stored settings
   apifyBudgetUsd: z.number().min(0).max(1000).default(5), // per run
   apifyMonthlyUsd: z.number().min(0).max(10_000).default(50),
   apifyMaxImages: z.number().int().min(0).max(30).default(10), // Google profile photos per place
   apifyMaxPosts: z.number().int().min(0).max(12).default(6), // recent Instagram image posts kept as gallery candidates (verified accounts only)
-  apifyRenderPages: z.number().int().min(1).max(20).default(8), // pages per site for the browser crawl
+  apifyRenderPages: z.number().int().min(1).max(20).default(8), // pages per site for the render step
   // Written by the worker at every start: which server-side keys it had. The admin shows it as the connection status.
   workerStatus: z.object({ at: z.string(), dataforseo: z.boolean(), anthropic: z.boolean(), openai: z.boolean().optional(), apify: z.boolean(), youtube: z.boolean(), blob: z.boolean(), browser: z.boolean() }).optional(),
   // Stage 2B: Google (display data only)

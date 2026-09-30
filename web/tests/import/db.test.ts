@@ -350,3 +350,75 @@ describe('enhancing published listings', { skip }, () => {
     assert.deepEqual(sib.map(x => x.id), [bb.id]);
   });
 });
+
+describe('render stage: the worker\'s own browser reads a JavaScript site', { skip }, () => {
+  let web: { port: number; close: () => Promise<void> };
+  let pdb: PrismaClient;
+  let hasBrowser = false;
+  const made: { places: string[]; runs: string[]; domains: string[] } = { places: [], runs: [], domains: [] };
+  before(async () => {
+    process.env.IMPORT_TEST_ALLOW_PRIVATE = '1';
+    const { startSites } = await import('../../scripts/import/sim/fixtures');
+    web = await startSites([{ host: 'js.test', kind: 'scripted', email: 'hello@js.test', phone: '03-5550505' }]);
+    pdb = (await import('../../scripts/import/ctx')).db;
+    hasBrowser = (await import('../../scripts/import/crawlee/browser')).browserAvailable();
+  });
+  after(async () => {
+    await pdb.importPlace.deleteMany({ where: { id: { in: made.places } } });
+    await pdb.importRun.deleteMany({ where: { id: { in: made.runs } } });
+    await pdb.siteFetch.deleteMany({ where: { domain: { in: made.domains } } });
+    await web.close();
+  });
+
+  it('the HTTP crawler sees an empty shell; the browser sees the business', async t => {
+    if (!hasBrowser) return t.skip('no Chromium on this machine');
+    const { crawlSite } = await import('../../scripts/import/crawl');
+    const { renderPages } = await import('../../scripts/import/crawlee/browser');
+    const u = `http://js.test:${web.port}/`;
+    const plain = await crawlSite(u, { maxPages: 4, browserAllowed: () => false, sitemap: false });
+    assert.ok(!plain.facts.some(f => f.emails.length), 'no email without JavaScript');
+    const pages = await renderPages([u], { followLinks: true, maxPages: 3 });
+    assert.ok(pages.length >= 2 && pages.length <= 3, `home and its contact page: ${pages.map(p => p.finalUrl).join(', ')}`);
+    assert.ok(pages.some(p => /hello@js\.test/.test(p.html)), 'the rendered contact page shows the email');
+    assert.ok(pages.every(p => p.status === 200));
+  });
+
+  it('a render task fills the domain cache and sends the record through the website stage again', async t => {
+    if (!hasBrowser) return t.skip('no Chromium on this machine');
+    const { seedRenderTasks, renderStage } = await import('../../scripts/import/stages/render');
+    const { requeueAfterSources } = await import('../../scripts/import/stages/sources');
+    const { enrich } = await import('../../scripts/import/stages/enrich');
+    const u = `http://js.test:${web.port}/`;
+    made.domains.push('js.test');
+    await pdb.siteFetch.deleteMany({ where: { domain: 'js.test' } });
+    const run = await pdb.importRun.create({ data: { label: 'render test', provider: 'dataforseo', scope: {}, maxRequests: 0, budgetMicros: 1_000_000n, status: 'running', lockedBy: ctx.WORKER, lockedUntil: new Date(Date.now() + 600_000) } });
+    made.runs.push(run.id);
+    const p = await pdb.importPlace.create({
+      data: {
+        runId: run.id, placeId: `js-${run.id}`, provider: 'dataforseo', name: 'עסק לדוגמה', address: 'רחוב 1, תל אביב', lat: 32.08, lng: 34.78, status: 'enriched',
+        regionSlug: 'dan', cityName: 'תל אביב', citySlug: 'tel-aviv', website: u, websiteKind: 'own', siteDomain: 'js.test', categories: ['nails'], crawl: { site: 'failed' },
+      },
+    });
+    made.places.push(p.id);
+    assert.equal(await seedRenderTasks(run, new Map([[p.id, new Set(['render'])]]), [p]), 1);
+    while (await renderStage(run));
+    const task = await pdb.importTask.findFirstOrThrow({ where: { runId: run.id, kind: 'render' } });
+    assert.equal(task.status, 'done');
+    assert.equal(task.found, 1);
+    const cache = await pdb.siteFetch.findUniqueOrThrow({ where: { domain: 'js.test' } });
+    assert.equal(cache.status, 'ok');
+    const summary = cache.result as { emails?: Array<{ value: string }>; via?: string };
+    assert.ok(summary.emails?.some(e => e.value === 'hello@js.test'), 'the cached summary carries the email the browser saw');
+    assert.equal(summary.via, 'browser');
+    const after = await pdb.importPlace.findUniqueOrThrow({ where: { id: p.id } });
+    assert.equal((after.crawl as { render?: { status?: string } }).render?.status, 'ok');
+    // Back through the website stage, which reads the cache like any crawl.
+    assert.equal(await requeueAfterSources(run), 1);
+    while (await enrich(run));
+    const filled = await pdb.importPlace.findUniqueOrThrow({ where: { id: p.id } });
+    assert.equal(filled.email, 'hello@js.test');
+    assert.equal(filled.phone, '+97235550505');
+    const stats = (await pdb.importRun.findUniqueOrThrow({ where: { id: run.id } })).stats as { counters?: Record<string, number> };
+    assert.ok((stats.counters?.browserPages ?? 0) >= 2);
+  });
+});

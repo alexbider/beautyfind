@@ -104,6 +104,7 @@ export async function importReport(f: ReportFilter = {}): Promise<{ rows: Report
     const b = p.branchId ? byBranch.get(p.branchId) : undefined;
     const crawl = (p.crawl ?? {}) as Record<string, unknown>;
     const apify = (crawl.apify ?? {}) as Record<string, { checked?: string; found?: boolean; status?: string }>;
+    const render = (crawl.render ?? null) as { status?: string } | null;
     const research = crawl.research as { filled?: string[]; error?: string; at?: string } | undefined;
     let cov: Coverage;
     if (b) {
@@ -134,7 +135,7 @@ export async function importReport(f: ReportFilter = {}): Promise<{ rows: Report
         maps: apify.maps ? (apify.maps.found === false ? 'not_found' : 'found') : null,
         facebook: apify.facebook?.checked ?? null,
         instagram: apify.instagram?.checked ?? null,
-        render: apify.render?.status ?? null,
+        render: render?.status ?? apify.render?.status ?? null,
         research: research ? (research.error ? 'failed' : research.filled?.length ? 'filled' : 'nothing') : null,
         researchFilled: research?.filled ?? [],
       },

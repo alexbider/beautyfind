@@ -198,8 +198,9 @@ export async function startMockOpenAI(research: (subject: string) => unknown, op
 }
 
 // rich: a complete clinic site (team page, videos, languages, founding year, price ranges and packages, sitemap, gallery);
-// no_prices: services listed without any price; chain: one domain shared by two branches (branch pages).
-export type SiteKind = 'full' | 'no_email' | 'agency_footer' | 'blocked' | 'robots' | 'conflict_phone' | 'redirect_private' | 'unrelated' | 'rich' | 'no_prices' | 'chain';
+// no_prices: services listed without any price; chain: one domain shared by two branches (branch pages);
+// scripted: a JavaScript shell whose HTML carries nothing (only a browser sees the business).
+export type SiteKind = 'full' | 'no_email' | 'agency_footer' | 'blocked' | 'robots' | 'conflict_phone' | 'redirect_private' | 'unrelated' | 'rich' | 'no_prices' | 'chain' | 'scripted';
 
 export interface FixtureSite {
   host: string; // site-N.test
@@ -291,6 +292,7 @@ export async function startSites(sites: FixtureSite[]): Promise<{ port: number; 
     const name = s.kind === 'rich' ? `קליניקה לדוגמה ${host.replace(/\D/g, '')}` : s.kind === 'chain' ? 'רשת ציפורניים לדוגמה' : `עסק לדוגמה ${host.replace(/\D/g, '')}`;
     if (s.kind === 'rich') return void richSite(res, path, name, s, host);
     if (s.kind === 'chain') return void chainSite(res, path, name, s);
+    if (s.kind === 'scripted') return void scriptedSite(res, path, name, s);
     if (s.kind === 'no_prices' && path === '/מחירון') return void res.end(page('השירותים שלנו', '<h1>השירותים שלנו</h1><ul><li>טיפול פנים קלאסי</li><li>ניקוי פנים עמוק</li><li>פילינג</li><li>עיצוב גבות</li><li>הרמת ריסים</li></ul><p>לקבלת מחיר צרו קשר</p>'));
     const nav = '<a href="/צור-קשר">צור קשר</a> <a href="/מחירון">מחירון</a> <a href="/גלריה">גלריה</a> <a href="/blog/post">בלוג</a>';
     const footer = s.kind === 'agency_footer' ? '<footer>האתר נבנה ע"י סטודיו דוגמה studio@example-agency.test</footer>' : '';
@@ -327,6 +329,15 @@ function richSite(res: ServerResponse, path: string, name: string, s: FixtureSit
   if (path === '/גלריה') return res.end(page('גלריה', [4, 5, 6, 7, 8].map(n => `<img src="/img/photo-${n}.png" width="1200" height="800" alt="חדר טיפולים ${n}">`).join('') + '<h2>לפני ואחרי</h2><img src="/img/ba-1.png" width="1200" height="800" alt="לפני ואחרי מילוי שפתיים">'));
   if (path === '/סרטונים') return res.end(page('סרטונים', '<h1>סרטונים</h1><iframe src="https://www.youtube.com/embed/simTour0001" title="סיור"></iframe><a href="https://youtu.be/simTeam0002">הצוות</a><iframe src="https://www.youtube.com/embed/simPriv0003"></iframe>'));
   if (path === '/blog/post-1') return res.end(page('בלוג', '<h1>פוסט</h1><p>טקסט</p>'));
+  res.writeHead(404).end();
+}
+
+/** A JavaScript shell: the HTML holds an empty div and a script that writes the page. The HTTP crawler sees nothing; a browser sees the business. */
+function scriptedSite(res: ServerResponse, path: string, name: string, s: FixtureSite) {
+  const shell = (title: string, html: string) => page(title, `<div id="app"></div><script>document.getElementById('app').innerHTML = ${JSON.stringify(html)};</script>`);
+  if (path === '/' || path === '') return res.end(shell(name, `<h1>${name}</h1><nav><a href="/צור-קשר">צור קשר</a> <a href="/מחירון">מחירון</a></nav><p>סלון יופי שכונתי עם טיפולי פנים, ריסים וגבות, צוות מקצועי ויחס אישי.</p><h2>הטיפולים שלנו</h2><ul><li>טיפול פנים קלאסי</li><li>הרמת ריסים</li><li>עיצוב גבות</li></ul>`));
+  if (path === '/צור-קשר') return res.end(shell('צור קשר', `<h1>צור קשר</h1><a href="mailto:${s.email}">${s.email}</a> <a href="tel:${s.phone}">${s.phone}</a><h3>שעות פתיחה</h3><p>א'-ה' 09:00-19:00</p><p>שישי 08:00-13:00</p>`));
+  if (path === '/מחירון') return res.end(shell('מחירון', '<h1>מחירון</h1><p>טיפול פנים קלאסי ₪250</p><p>הרמת ריסים 220 ₪</p>'));
   res.writeHead(404).end();
 }
 

@@ -9,3 +9,6 @@ next-env.d.ts
 # Written by next dev
 AGENTS.md
 CLAUDE.md
+
+# Self-hosted worker secrets
+.env.worker

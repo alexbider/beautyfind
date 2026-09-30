@@ -74,7 +74,7 @@ const stepOn = (s: StepId, f: Flags) =>
   : s === 'maps' ? f.apifyEnabled && f.apifyMaps
   : s === 'facebook' ? f.apifyEnabled && f.apifyFacebook
   : s === 'instagram' ? f.apifyEnabled && f.apifyInstagram
-  : s === 'render' ? f.apifyEnabled && f.apifyRender
+  : s === 'render' ? f.apifyRender
   : s === 'editorial' || s === 'regenerate' ? f.editorialEnabled
   : true;
 

@@ -1,0 +1,21 @@
+# The import worker on your own machine or VPS (see Dockerfile.worker and docs/import.md).
+#
+#   cp .env.worker.example .env.worker   # fill in the values (never commit it)
+#   docker compose -f docker-compose.worker.yml up -d --build
+#   docker compose -f docker-compose.worker.yml logs -f
+#
+# One worker per database is enough: runs are leased, so a second worker would only wait.
+services:
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    env_file: .env.worker
+    environment:
+      IMPORT_MAX_MINUTES: '330'
+      IMPORT_IDLE_SECONDS: '60'
+    restart: unless-stopped
+    # Chromium needs a bigger shared memory segment than Docker's default 64 MB.
+    shm_size: 1gb
+    mem_limit: 3g
+    init: true

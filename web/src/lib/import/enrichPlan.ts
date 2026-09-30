@@ -16,7 +16,7 @@ export const STEP_NAME: Record<StepId, string> = {
   facebook: 'עמוד הפייסבוק (Apify)',
   instagram: 'פרופיל האינסטגרם (Apify)',
   site: 'קריאה חוזרת של האתר',
-  render: 'האתר בדפדפן (Apify)',
+  render: 'האתר בדפדפן (Chromium של העובד)',
   research: 'מחקר ברשת (ChatGPT)',
   editorial: 'כתיבת תיאור ושאלות',
   regenerate: 'כתיבה מחדש',
@@ -32,7 +32,7 @@ export const STEP_HINT: Record<StepId, string> = {
   facebook: 'טקסט האודות, דוא״ל, טלפון, אתר, שעות ותמונות. רק כשהעמוד עצמו מאשר את העסק (קישור לאתר או הטלפון).',
   instagram: 'אימות החשבון, הביו, קישור מהביו, תמונת פרופיל ופוסטים אחרונים. רק כשהפרופיל מאשר את העסק.',
   site: 'קריאה חוזרת של אתר העסק, מתעלמת ממטמון 30 הימים. ללא עלות ספק.',
-  render: 'אתרים שהסורק שלנו לא הצליח לקרוא כי הם דורשים JavaScript. לא לאתרים שחסמו או שאוסרים סריקה.',
+  render: 'אתרים שהסורק שלנו לא הצליח לקרוא כי הם דורשים JavaScript, נקראים בדפדפן של העובד עצמו (ללא עלות ספק). לא לאתרים שחסמו או שאוסרים סריקה.',
   research: 'ChatGPT מחפש ברשת את מה שעדיין חסר (אתר, טלפון, דוא״ל, שעות, שירותים ומחירים, צוות, שנת הקמה, נגישות) ומחזיר כל עובדה עם העמוד שממנו נקראה. עובדה בלי עמוד נזרקת.',
   editorial: 'קריאה אחת לכותב (ChatGPT או Claude, לפי ההגדרות) על חבילת הראיות; מהמטמון כשהראיות לא השתנו.',
   regenerate: 'כתיבה מחדש גם כשהראיות לא השתנו.',
@@ -107,7 +107,7 @@ export function stepApplies(step: StepId, s: PlanSignals, o: PlanOptions): boole
     case 'facebook': return apify && st.apifyFacebook && s.facebook;
     case 'instagram': return apify && st.apifyInstagram && s.instagram;
     case 'site': return s.hasSite && READABLE.has(s.siteOutcome ?? '') && !s.siteThin;
-    case 'render': return apify && st.apifyRender && s.hasSite && (s.siteOutcome === 'failed' || s.siteThin);
+    case 'render': return st.apifyRender && s.hasSite && (s.siteOutcome === 'failed' || s.siteThin); // the worker's own browser: no provider, no charge, no kill switch
     case 'research': return st.openaiEnabled && st.researchEnabled && (o.openaiConfigured ?? true) && !st.killSwitch && (!s.researchedAt || Date.now() - new Date(s.researchedAt).getTime() > RESEARCH_AGAIN_DAYS * 86_400_000);
     case 'editorial': return st.editorialEnabled;
     case 'regenerate': return st.editorialEnabled && s.hasEditorial;
@@ -154,11 +154,11 @@ export function stepUsd(step: StepId, p: Pricing, o: StepCostOptions): number {
     case 'maps': return apifyItemUsd('maps', p) * p.apify.reserveFactor;
     case 'facebook': return apifyItemUsd('facebook', p) * p.apify.reserveFactor;
     case 'instagram': return apifyItemUsd('instagram', p) * p.apify.reserveFactor;
-    case 'render': return apifyItemUsd('render', p) * o.renderPages * p.apify.reserveFactor;
     case 'research': return p.openai.research.perRecordUsd;
     case 'editorial': return o.editorialEnabled ? writerUsd(p, o.writer) * 0.4 : 0; // most drafts come from the cache; new evidence pays the full call
     case 'regenerate': return o.editorialEnabled ? writerUsd(p, o.writer) * 1.3 : 0;
     case 'site':
+    case 'render': // the worker's own Chromium
     case 'images': return 0;
   }
 }

@@ -78,15 +78,15 @@ export function Sources({ settings, flags }: { settings: ImportSettings; flags: 
         {flag('publishProviderRatings', 'פרסום דירוג Google ומספר הביקורות')}
         {flag('useProviderImages', 'לוגו ותמונות מפרופיל Google')}
       </Row>
-      <Row title="אתר העסק" status={<span className={`${styles.chip} ${styles.chipOk}`}>תמיד</span>} what="הסורק שלנו קורא את האתר הרשמי: דוא״ל, שירותים ומחירים, שעות, צוות, סרטונים, תמונות. ללא עלות ספק, מכבד robots.txt ולא עוקף חסימות." where="">
+      <Row title="אתר העסק" status={<span className={`${styles.chip} ${styles.chipOk}`}>תמיד</span>} what="הסורק שלנו (Crawlee) קורא את האתר הרשמי: דוא״ל, שירותים ומחירים, שעות, סניפים, סרטונים, תמונות. אתר שדורש JavaScript נקרא בדפדפן Chromium של העובד עצמו. ללא עלות ספק, מכבד robots.txt ולא עוקף חסימות." where="">
         {flag('useWebsiteImages', 'לוגו ותמונות מאתר העסק')}
+        {flag('apifyRender', 'קריאה בדפדפן לאתרים שדורשים JavaScript (ללא עלות)')}
       </Row>
-      <Row title="Apify: Google Maps, פייסבוק, אינסטגרם ואתרים בדפדפן" status={<Status ok={known('apify')} />} what="משלים מה שהספק והאתר השאירו חסר. פרופילים ברשתות נלקחים רק כשהפרופיל עצמו מאשר את העסק. בתשלום לפי פריט." where="GitHub: APIFY_TOKEN">
+      <Row title="Apify: Google Maps, פייסבוק ואינסטגרם" status={<Status ok={known('apify')} />} what="משלים מה שהספק והאתר השאירו חסר. פרופילים ברשתות נלקחים רק כשהפרופיל עצמו מאשר את העסק. בתשלום לפי פריט." where="GitHub: APIFY_TOKEN">
         {flag('apifyEnabled', 'פעיל')}
         {flag('apifyMaps', 'Google Maps', !v.apifyEnabled)}
         {flag('apifyFacebook', 'פייסבוק', !v.apifyEnabled)}
         {flag('apifyInstagram', 'אינסטגרם', !v.apifyEnabled)}
-        {flag('apifyRender', 'אתרים שדורשים JavaScript', !v.apifyEnabled)}
       </Row>
       <Row title="ChatGPT (OpenAI): מחקר ברשת וכתיבת הפרופיל" status={<Status ok={known('openai')} />} what="מחקר: למה שעדיין חסר אחרי הספק, האתר ו־Apify, ChatGPT מחפש ברשת ומחזיר כל עובדה עם העמוד שממנו נקראה (עובדה בלי עמוד נזרקת; דוא״ל מחיפוש מסומן לאישור אדם; חשבונות ברשתות נשארים לא מאומתים עד שפרופיל או אתר מאשרים). כתיבה: התיאור, השאלות והכותרות מחבילת הראיות, קריאה אחת לעסק." where="GitHub: OPENAI_API_KEY (רשות: IMPORT_OPENAI_MODEL)">
         {flag('openaiEnabled', 'פעיל')}
@@ -126,7 +126,7 @@ export function Sources({ settings, flags }: { settings: ImportSettings; flags: 
       <details>
         <summary className={styles.label} style={{ cursor: 'pointer' }}>הגדרות מתקדמות</summary>
         <div className={styles.checks} style={{ marginTop: 8 }}>
-          {flag('browserFallback', 'דפדפן של העובד לאתרים שדורשים JavaScript (מוגבל)')}
+          {flag('browserFallback', 'בשלב האתר: עמוד שחוזר ריק נקרא מיד בדפדפן (עד התקרה למטה)')}
           {flag('llmEnabled', 'חילוץ טיפולים עם Claude (עם ציטוט מהאתר)')}
           {flag('imageDerivatives', 'נגזרות WebP לתמונות')}
           {flag('googlePostPhotos', 'תמונות מפוסטים בפרופיל Google (DataForSEO)')}
@@ -142,7 +142,7 @@ export function Sources({ settings, flags }: { settings: ImportSettings; flags: 
           {num('browserMaxPerRun', 'עמודי דפדפן לריצה')}
           {num('apifyMaxImages', 'Apify: תמונות מפרופיל Google לעסק')}
           {num('apifyMaxPosts', 'Apify: פוסטי אינסטגרם לעסק')}
-          {num('apifyRenderPages', 'Apify: עמודים לאתר בדפדפן')}
+          {num('apifyRenderPages', 'עמודים לאתר בקריאה בדפדפן')}
           {num('youtubeQuotaPerRun', 'YouTube: יחידות מכסה לריצה')}
           {num('youtubeMaxVideos', 'סרטונים לעסק (עד 6)')}
           {num('llmBudgetUsd', 'חילוץ Claude: תקרה לריצה (USD)', '0.01')}

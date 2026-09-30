@@ -1,5 +1,5 @@
 // Stage 2E: Apify actors for the gaps DataForSEO and the business's own website leave behind
-// (src/lib/import/apify.ts explains the four actors). Runs only inside enhance runs, for the listings
+// (src/lib/import/apify.ts explains the three actors; sites that need JavaScript are the render stage's job). Runs only inside enhance runs, for the listings
 // whose plan names the step (src/lib/import/enrichPlan.ts).
 //
 // One task = one actor run over a small batch. Its request key reserves the gross maximum against the
@@ -9,23 +9,20 @@
 
 import { Prisma, type ImportPlace, type ImportRun } from '@prisma/client';
 import {
-  APIFY_PROVIDER, apifyErrorKind, facebookFacts, facebookInput, groupRenderPages, instagramFacts, instagramHandle, instagramInput, mapsFacts, mapsInput, profileMatches, renderInput,
-  type ApifyActorKind, type FacebookItem, type InstagramItem, type MapsItem, type ProfileFacts, type RenderItem,
+  APIFY_PROVIDER, apifyErrorKind, facebookFacts, facebookInput, instagramFacts, instagramHandle, instagramInput, mapsFacts, mapsInput, profileMatches,
+  type ApifyActorKind, type FacebookItem, type InstagramItem, type MapsItem, type ProfileFacts,
 } from '../../../src/lib/import/apify';
 import { BudgetExceeded, commit, monthKey, release, reserve, uncertain, withCaps } from '../../../src/lib/import/budget';
 import { cleanEmail, emailDomain, siteHost } from '../../../src/lib/import/email';
 import { largerGoogleImage } from '../../../src/lib/import/dataforseo';
 import { apifyItemUsd, pricing, toMicros } from '../../../src/lib/import/pricing';
-import { extractPage } from '../../../src/lib/import/siteExtract';
 import type { SocialAccount, Socials } from '../../../src/lib/import/socials';
 import { expiryFor, mayPublish } from '../../../src/lib/import/sourcePolicy';
 import { classifyWebsite, KEEP_AS_WEBSITE } from '../../../src/lib/import/websiteKind';
-import type { CrawlOutcome } from '../crawl';
 import { bump, db, hasMx, heartbeat, log, setStats, settings, Stop } from '../ctx';
 import { apifyConfigured, datasetItems, getRun, startActorRun, type ApifyRun } from '../providers/apify';
-import { summarize } from './enrich';
 
-export const APIFY_KINDS: ApifyActorKind[] = ['maps', 'facebook', 'instagram', 'render'];
+export const APIFY_KINDS: ApifyActorKind[] = ['maps', 'facebook', 'instagram'];
 export const taskKind = (k: ApifyActorKind) => `apify_${k}`;
 
 export interface ApifyTarget {
@@ -53,7 +50,7 @@ const MAX_WAIT_MS = 32 * 60_000; // actor timeout is 30 minutes
 export async function seedApifyTasks(run: ImportRun, plans: Map<string, Set<string>>, places: Array<Pick<ImportPlace, 'id' | 'placeId' | 'sourceId' | 'provider' | 'website' | 'instagram' | 'facebook' | 'socials' | 'crawl'>>): Promise<Record<string, number>> {
   const s = await settings();
   const out: Record<string, number> = {};
-  const batches: Record<ApifyActorKind, number> = { maps: 50, facebook: 20, instagram: 50, render: 5 };
+  const batches: Record<ApifyActorKind, number> = { maps: 50, facebook: 20, instagram: 50 };
   const targetsOf = (kind: ApifyActorKind): ApifyTarget[] =>
     places
       .filter(p => plans.get(p.id)?.has(kind))
@@ -61,23 +58,18 @@ export async function seedApifyTasks(run: ImportRun, plans: Map<string, Set<stri
         const socials = (p.socials ?? {}) as Socials;
         if (kind === 'maps') return { id: p.id, placeId: p.placeId.startsWith('dfs:') ? null : p.placeId, cid: p.provider === 'dataforseo' && p.sourceId && /^\d+$/.test(p.sourceId) ? p.sourceId : null };
         if (kind === 'instagram') return { id: p.id, handle: instagramHandle(p.instagram ?? socials.instagram?.url) };
-        if (kind === 'facebook') return { id: p.id, url: p.facebook ?? socials.facebook?.url ?? null };
-        return { id: p.id, url: p.website };
+        return { id: p.id, url: p.facebook ?? socials.facebook?.url ?? null };
       })
       .filter(t => (t.placeId || t.cid || t.handle || t.url));
   if (!s.apifyEnabled) return out;
   const tasks: Prisma.ImportTaskCreateManyInput[] = [];
   for (const kind of APIFY_KINDS) {
-    const enabled = kind === 'maps' ? s.apifyMaps : kind === 'instagram' ? s.apifyInstagram : kind === 'facebook' ? s.apifyFacebook : s.apifyRender;
+    const enabled = kind === 'maps' ? s.apifyMaps : kind === 'instagram' ? s.apifyInstagram : s.apifyFacebook;
     if (!enabled) continue;
     const targets = targetsOf(kind);
-    // One site per render batch entry; several records of a chain share one site.
-    const uniq = kind === 'render' ? [...new Map(targets.map(t => [siteHost(t.url), t])).values()] : targets;
-    for (let i = 0; i < uniq.length; i += batches[kind]) {
-      const slice = uniq.slice(i, i + batches[kind]);
-      // For a rendered site every record on that domain benefits; keep them all on the task.
-      const withSiblings = kind === 'render' ? targets.filter(t => slice.some(x => siteHost(x.url) === siteHost(t.url))) : slice;
-      tasks.push({ runId: run.id, key: `${taskKind(kind)}:${i}`, kind: taskKind(kind), params: { kind, targets: withSiblings } as unknown as Prisma.InputJsonValue });
+    for (let i = 0; i < targets.length; i += batches[kind]) {
+      const slice = targets.slice(i, i + batches[kind]);
+      tasks.push({ runId: run.id, key: `${taskKind(kind)}:${i}`, kind: taskKind(kind), params: { kind, targets: slice } as unknown as Prisma.InputJsonValue });
       out[kind] = (out[kind] ?? 0) + slice.length;
     }
   }
@@ -85,10 +77,9 @@ export async function seedApifyTasks(run: ImportRun, plans: Map<string, Set<stri
   return out;
 }
 
-function estimateFor(kind: ApifyActorKind, targets: ApifyTarget[], renderPages: number): bigint {
+function estimateFor(kind: ApifyActorKind, targets: ApifyTarget[]): bigint {
   const p = pricing();
-  const items = kind === 'render' ? new Set(targets.map(t => siteHost(t.url))).size * renderPages : targets.length;
-  return toMicros(Math.max(0.001, apifyItemUsd(kind, p) * items * p.apify.reserveFactor));
+  return toMicros(Math.max(0.001, apifyItemUsd(kind, p) * targets.length * p.apify.reserveFactor));
 }
 
 /** Runs one pending or dispatched Apify task of the given kind. Returns false when none is left. */
@@ -105,7 +96,7 @@ export async function apifyStage(run: ImportRun, kind: ApifyActorKind): Promise<
     log('apify: APIFY_TOKEN not set, actor tasks skipped');
     return true;
   }
-  const estimate = estimateFor(kind, params.targets, s.apifyRenderPages);
+  const estimate = estimateFor(kind, params.targets);
 
   if (!params.apifyRunId) {
     const requestKey = params.requestKey ?? `apify:${task.id}`;
@@ -132,9 +123,8 @@ export async function apifyStage(run: ImportRun, kind: ApifyActorKind): Promise<
     const input =
       kind === 'maps' ? mapsInput(params.targets.map(t => ({ id: t.id, placeId: t.placeId ?? null, cid: t.cid ?? null })), { maxImages: s.apifyMaxImages })
       : kind === 'instagram' ? instagramInput([...new Set(params.targets.map(t => t.handle!).filter(Boolean))])
-      : kind === 'facebook' ? facebookInput([...new Set(params.targets.map(t => t.url!).filter(Boolean))])
-      : renderInput([...new Set(params.targets.map(t => t.url!).filter(Boolean))], { maxPages: s.apifyRenderPages });
-    const started = await startActorRun(pricing().apify.actors[kind], input, { timeoutSecs: 1800, memoryMb: kind === 'render' ? 4096 : 2048 });
+      : facebookInput([...new Set(params.targets.map(t => t.url!).filter(Boolean))]);
+    const started = await startActorRun(pricing().apify.actors[kind], input, { timeoutSecs: 1800, memoryMb: 2048 });
     if (started.kind === 'not_sent') {
       await release(db, requestKey, started.message);
       await db.importTask.update({ where: { id: task.id }, data: { status: 'failed', error: started.message } });
@@ -211,7 +201,6 @@ type Crawl = Record<string, unknown> & { imageCandidates?: { logos?: string[]; p
 async function apply(kind: ApifyActorKind, targets: ApifyTarget[], items: unknown[], s: Awaited<ReturnType<typeof settings>>, meta: { runId: string; costUsd: number }): Promise<number> {
   const share = targets.length ? meta.costUsd / targets.length : 0;
   let n = 0;
-  if (kind === 'render') return applyRender(targets, items as RenderItem[], s, meta);
   for (const t of targets) {
     const p = await db.importPlace.findUnique({ where: { id: t.id } });
     if (!p) continue;
@@ -389,36 +378,3 @@ async function applyProfile(p: ImportPlace, network: 'instagram' | 'facebook', f
   return true;
 }
 
-/** Rendered pages become the domain's cached site summary, which the website stage then reads like any crawl. */
-async function applyRender(targets: ApifyTarget[], items: RenderItem[], s: Awaited<ReturnType<typeof settings>>, meta: { runId: string; costUsd: number }): Promise<number> {
-  const byHost = groupRenderPages(items);
-  const hosts = [...new Set(targets.map(t => siteHost(t.url)).filter((h): h is string => !!h))];
-  const share = hosts.length ? meta.costUsd / hosts.length : 0;
-  let n = 0;
-  const now = new Date();
-  for (const host of hosts) {
-    const pages = byHost.get(host) ?? [];
-    const facts = pages.filter(pg => pg.status < 400).slice(0, s.apifyRenderPages).map(pg => extractPage(pg.html, pg.url, host));
-    if (!facts.length) {
-      await db.siteFetch.upsert({ where: { domain: host }, create: { domain: host, status: 'failed', fetchedAt: now, nextCheckAt: new Date(now.getTime() + s.recheckFailDays * 86_400_000), error: 'apify: no readable page' }, update: { status: 'failed', fetchedAt: now, error: 'apify: no readable page', nextCheckAt: new Date(now.getTime() + s.recheckFailDays * 86_400_000) } });
-      continue;
-    }
-    const outcome: CrawlOutcome = { status: facts.some(f => f.emails.length) ? 'ok' : 'no_email', pages: pages.map((pg, i) => ({ url: pg.url, status: pg.status, via: 'browser', depth: i ? 1 : 0 })), facts, validators: {}, contentHash: null, browserUsed: pages.length };
-    const summary = { ...summarize(outcome, s.llmEnabled), via: 'apify' };
-    await db.siteFetch.upsert({
-      where: { domain: host },
-      create: { domain: host, status: outcome.status, fetchedAt: now, nextCheckAt: new Date(now.getTime() + s.recheckOkDays * 86_400_000), pages: pages.length, result: summary as unknown as Prisma.InputJsonValue, error: null },
-      update: { status: outcome.status, fetchedAt: now, nextCheckAt: new Date(now.getTime() + s.recheckOkDays * 86_400_000), pages: pages.length, result: summary as unknown as Prisma.InputJsonValue, error: null, validators: {} },
-    });
-    n++;
-    for (const t of targets.filter(x => siteHost(x.url) === host)) {
-      const p = await db.importPlace.findUnique({ where: { id: t.id }, select: { crawl: true, costs: true } });
-      if (!p) continue;
-      const crawl = (p.crawl ?? {}) as Crawl;
-      const costs = (p.costs as Record<string, number> | null) ?? {};
-      crawl.apify = { ...(crawl.apify ?? {}), render: { at: now.toISOString(), runId: meta.runId, pages: pages.length, status: outcome.status } };
-      await db.importPlace.update({ where: { id: t.id }, data: { crawl: crawl as Prisma.InputJsonValue, costs: { ...costs, apifyUsd: (costs.apifyUsd ?? 0) + share } as Prisma.InputJsonValue } });
-    }
-  }
-  return n;
-}
