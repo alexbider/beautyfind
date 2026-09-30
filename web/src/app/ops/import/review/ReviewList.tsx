@@ -6,7 +6,7 @@ import { useState, useTransition } from 'react';
 import { CATEGORIES, CITIES, REGIONS } from '@/lib/catalog';
 import { formatIlPhone } from '@/lib/import/phone';
 import { BLOCKING, REASON_NAMES, type ImportedTreatment } from '@/lib/import/rules';
-import { bulkApproveAction, enhanceApprovedAction, enrichSelectedAction, googleLookupAction, placeAction, publishEligibleAction } from '../actions';
+import { bulkApproveAction, copyPendingImagesAction, enhanceApprovedAction, enrichSelectedAction, googleLookupAction, placeAction, publishEligibleAction } from '../actions';
 import { Checklist, type ProfileInfo } from './Checklist';
 import styles from '../import.module.css';
 
@@ -498,19 +498,67 @@ export function ReviewList({ rows, tab, bulk, runId, readyInRun, google }: { row
     </div>
   ) : null;
   if (!rows.length) return <div className={styles.stack}>{recent}<p className={`${styles.card} ${styles.empty}`}>אין רשומות במצב הזה.</p></div>;
+  // Publishing copies no images inside the request (Vercel stops a request at 60 seconds); once the
+  // records are live, their logos and photos are copied here in small batches until none are waiting.
+  const copyImages = async (pendingImages: number) => {
+    if (!pendingImages) return;
+    let total = { done: 0, left: pendingImages };
+    log({ ok: true, name: 'תמונות', text: `מעתיקים לוגו ותמונות ל־${pendingImages} עסקים שפורסמו…` });
+    for (let i = 0; i < 300; i++) {
+      const r = await copyPendingImagesAction();
+      if (!r.ok) {
+        log({ ok: false, name: 'תמונות', text: 'העתקת התמונות נעצרה. אפשר להמשיך מכפתור ״העתקת התמונות״ בדף הריצות.' });
+        return;
+      }
+      total = { done: total.done + r.done, left: r.left };
+      if (!r.done || !r.left) break;
+      log({ ok: true, name: 'תמונות', text: `הועתקו תמונות ל־${total.done} עסקים, נשארו ${total.left}…` });
+    }
+    log({ ok: true, name: 'תמונות', text: `הועתקו תמונות ל־${total.done} עסקים.${total.left ? ` ${total.left} עדיין מחכים (כפתור ״העתקת התמונות״ בדף הריצות).` : ''}` });
+  };
   const approveAll = () => {
     if (!confirm(`לפרסם ${rows.length} עסקים מהעמוד הזה? רק רשומות במצב ״מוכן״ יפורסמו.`)) return;
     start(async () => {
-      const r = await bulkApproveAction(rows.map(x => x.id));
-      log({ ok: r.ok, name: 'אישור מרוכז', text: r.ok ? `פורסמו ${r.approved} עסקים${r.skipped ? `, ${r.skipped} דולגו` : ''}` : 'הפעולה נכשלה' });
+      let approved = 0;
+      let ids = rows.map(x => x.id);
+      let pendingImages = 0;
+      for (let i = 0; i < 20 && ids.length; i++) {
+        const r = await bulkApproveAction(ids);
+        if (!r.ok) {
+          log({ ok: false, name: 'אישור מרוכז', text: 'הפעולה נכשלה' });
+          return;
+        }
+        approved += r.approved;
+        pendingImages = r.pendingImages;
+        if (!r.left) break;
+        log({ ok: true, name: 'אישור מרוכז', text: `פורסמו ${approved} עסקים, ממשיכים…` });
+        ids = ids.slice(-r.left); // the ones the time budget did not reach come last in the list
+      }
+      log({ ok: true, name: 'אישור מרוכז', text: `פורסמו ${approved} עסקים${rows.length - approved ? `, ${rows.length - approved} דולגו` : ''}` });
+      router.refresh();
+      await copyImages(pendingImages);
       router.refresh();
     });
   };
   const publishRun = () => {
     if (!runId || !confirm(`לפרסם את כל ${readyInRun} הרשומות המוכנות בריצה הזו? רשומות ״לבדיקה״ לא יפורסמו.`)) return;
     start(async () => {
-      const r = await publishEligibleAction(runId);
-      log({ ok: r.ok, name: 'פרסום הריצה', text: r.ok ? `פורסמו ${r.approved} עסקים${r.left ? `, נשארו ${r.left} (הפעילו שוב)` : ''}` : 'הפעולה נכשלה' });
+      let approved = 0;
+      let pendingImages = 0;
+      for (let i = 0; i < 50; i++) {
+        const r = await publishEligibleAction(runId);
+        if (!r.ok) {
+          log({ ok: false, name: 'פרסום הריצה', text: 'הפעולה נכשלה' });
+          return;
+        }
+        approved += r.approved;
+        pendingImages = r.pendingImages;
+        if (!r.left || !r.approved) break;
+        log({ ok: true, name: 'פרסום הריצה', text: `פורסמו ${approved} עסקים, נשארו ${r.left}…` });
+      }
+      log({ ok: true, name: 'פרסום הריצה', text: `פורסמו ${approved} עסקים.` });
+      router.refresh();
+      await copyImages(pendingImages);
       router.refresh();
     });
   };

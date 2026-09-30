@@ -401,8 +401,14 @@ async function audit(actor: Actor, action: string, p: ImportPlace, meta: Record<
   await db.auditLog.create({ data: { actorId: actor.id, action, subjectType: 'import_place', subjectId: p.id, meta: meta as Prisma.InputJsonValue } });
 }
 
-/** New listing from an import record. Unclaimed, live, with our category photo until the owner adds theirs. */
-export async function approvePlace(actor: Actor, id: string): Promise<OpResult> {
+/**
+ * New listing from an import record. Unclaimed, live, with our category photo until the owner adds theirs.
+ * `images: false` publishes without copying the logo and photos (a few hundred milliseconds instead of
+ * several seconds); the listing then waits in the pending-images queue (copyPendingImages), which the
+ * review screen drains right after a bulk publish. Vercel stops a request at 60 seconds, so a bulk
+ * publish must never copy images inline.
+ */
+export async function approvePlace(actor: Actor, id: string, opts: { images?: boolean } = {}): Promise<OpResult> {
   const p = await db.importPlace.findUnique({ where: { id } });
   if (!p) return { ok: false, error: 'not_found' };
   if (!(OPEN_FOR_DECISION as readonly string[]).includes(p.status)) return { ok: false, error: 'state' };
@@ -465,7 +471,7 @@ export async function approvePlace(actor: Actor, id: string): Promise<OpResult> 
       await tx.importPlace.update({ where: { id }, data: { branchId: b.id, reviewedById: actor.id, reviewedAt: new Date() } });
       return b;
     });
-    const images = await applyImages(actor, p, branch.id, branch.businessId, settings, { logo: true, cover: true, gallery: true });
+    const images = opts.images === false ? { deferred: true } : await applyImages(actor, p, branch.id, branch.businessId, settings, { logo: true, cover: true, gallery: true });
     await refreshProfileStatus(branch.id, p);
     await audit(actor, 'import_approve', p, { branchId: branch.id, images });
     return { ok: true, branchId: branch.id, slug: branch.slug, href: profileHref({ regionSlug: branch.regionSlug, slug: branch.slug, categories: cats }) };

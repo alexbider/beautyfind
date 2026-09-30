@@ -11,7 +11,7 @@ import {
 import { estimatePlans, planFor, STEP_ORDER, stepApplies, type StepId } from '@/lib/import/enrichPlan';
 import { enrichQueue } from '@/lib/server/enrichQueue';
 import { googleLookup, type GoogleLookup } from '@/lib/server/googleDisplay';
-import { copyPendingImages } from '@/lib/server/importEnhance';
+import { countPendingImages, copyPendingImages } from '@/lib/server/importEnhance';
 import { pricing } from '@/lib/import/pricing';
 import type { ImportSettings } from '@/lib/import/settings';
 
@@ -130,32 +130,49 @@ export async function placeAction(id: string, input: z.input<typeof Op>): Promis
   return r;
 }
 
-/** Approves the given records that are "ready" (never "needs_review"); stops at the first system error. */
-export async function bulkApproveAction(ids: string[]): Promise<{ ok: boolean; approved: number; skipped: number }> {
+// A bulk publish works inside one request, and Vercel ends a request at 60 seconds: images are not copied
+// inline (they wait in the pending-images queue, which the screen drains afterwards), and the loop stops
+// after this many milliseconds and reports what is left so the screen calls again.
+const PUBLISH_BUDGET_MS = 20_000;
+
+/** Approves the given records that are "ready" (never "needs_review") without copying images; stops at the time budget. */
+export async function bulkApproveAction(ids: string[]): Promise<{ ok: boolean; approved: number; skipped: number; left: number; pendingImages: number }> {
   const user = await importerOrNull();
-  if (!user) return { ok: false, approved: 0, skipped: 0 };
+  if (!user) return { ok: false, approved: 0, skipped: 0, left: 0, pendingImages: 0 };
   const list = z.array(z.uuid()).max(100).safeParse(ids);
-  if (!list.success) return { ok: false, approved: 0, skipped: 0 };
+  if (!list.success) return { ok: false, approved: 0, skipped: 0, left: 0, pendingImages: 0 };
   const ready = await db.importPlace.findMany({ where: { id: { in: list.data }, status: 'ready' }, select: { id: true } });
+  const deadline = Date.now() + PUBLISH_BUDGET_MS;
   let approved = 0;
-  for (const { id } of ready) if ((await approvePlace(user, id)).ok) approved++;
+  let left = 0;
+  for (const { id } of ready) {
+    if (Date.now() > deadline) {
+      left++;
+      continue;
+    }
+    if ((await approvePlace(user, id, { images: false })).ok) approved++;
+  }
   refresh();
   if (approved) publicRefresh();
-  return { ok: true, approved, skipped: list.data.length - approved };
+  return { ok: true, approved, skipped: list.data.length - approved - left, left, pendingImages: await countPendingImages() };
 }
 
-/** Publishes every "ready" record in a run, up to 40 per click (each one copies its images) so a request never runs too long. */
-export async function publishEligibleAction(runId: string): Promise<{ ok: boolean; approved: number; left: number }> {
+/** Publishes the "ready" records of a run without copying images, as many as fit the time budget; the screen calls again while `left` > 0. */
+export async function publishEligibleAction(runId: string): Promise<{ ok: boolean; approved: number; left: number; pendingImages: number }> {
   const user = await importerOrNull();
-  if (!user || !z.uuid().safeParse(runId).success) return { ok: false, approved: 0, left: 0 };
-  const ready = await db.importPlace.findMany({ where: { runId, status: 'ready' }, select: { id: true }, orderBy: { createdAt: 'asc' }, take: 40 });
+  if (!user || !z.uuid().safeParse(runId).success) return { ok: false, approved: 0, left: 0, pendingImages: 0 };
+  const ready = await db.importPlace.findMany({ where: { runId, status: 'ready' }, select: { id: true }, orderBy: { createdAt: 'asc' }, take: 60 });
+  const deadline = Date.now() + PUBLISH_BUDGET_MS;
   let approved = 0;
-  for (const { id } of ready) if ((await approvePlace(user, id)).ok) approved++;
+  for (const { id } of ready) {
+    if (Date.now() > deadline) break;
+    if ((await approvePlace(user, id, { images: false })).ok) approved++;
+  }
   const left = await db.importPlace.count({ where: { runId, status: 'ready' } });
   await db.auditLog.create({ data: { actorId: user.id, action: 'import_publish_run', subjectType: 'import_run', subjectId: runId, meta: { approved, left } } });
   refresh();
   if (approved) publicRefresh();
-  return { ok: true, approved, left };
+  return { ok: true, approved, left, pendingImages: await countPendingImages() };
 }
 
 /** Starts an enhance run for the chosen approved records' listings (website re-read; provider refresh optional). */

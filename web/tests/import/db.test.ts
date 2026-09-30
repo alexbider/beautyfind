@@ -284,4 +284,36 @@ describe('enhancing published listings', { skip }, () => {
     const after = await pdb.branch.findUniqueOrThrow({ where: { id: b.id } });
     assert.equal(after.email, null);
   });
+
+  it('a bulk publish creates the listing without images, and the pending-images step copies them afterwards', async () => {
+    const { approvePlace } = await import('../../src/lib/server/importOps');
+    const { countPendingImages, copyPendingImages } = await import('../../src/lib/server/importEnhance');
+    const { DEFAULT_SETTINGS } = await import('../../src/lib/import/settings');
+    const actor = (await pdb.user.findFirst({ select: { id: true } })) ?? (await pdb.user.create({ data: {}, select: { id: true } }));
+    const u = `http://enh.test:${web.port}`;
+    const run = await pdb.importRun.create({ data: { label: 'publish test', provider: 'dataforseo', scope: {}, maxRequests: 0 } });
+    made.runs.push(run.id);
+    const p = await pdb.importPlace.create({
+      data: {
+        runId: run.id, placeId: `pub-${run.id}`, provider: 'dataforseo', name: 'סלון לפרסום מהיר', address: 'רחוב 2', lat: 32.08, lng: 34.78, status: 'ready',
+        regionSlug: 'dan', cityName: 'תל אביב', phone: '+97235550001', email: 'info@enh.test', website: `${u}/`, categories: ['nails'],
+        logoUrl: `${u}/logo.png`, photoUrls: [`${u}/img/photo-1.png`, `${u}/img/photo-2.png`],
+      },
+    });
+    made.places.push(p.id);
+    const before = await countPendingImages();
+    const t0 = Date.now();
+    const r = await approvePlace(actor, p.id, { images: false });
+    assert.ok(r.ok, JSON.stringify(r));
+    assert.ok(Date.now() - t0 < 5000, 'publishing without images must be quick');
+    const b = await pdb.branch.findUniqueOrThrow({ where: { id: r.ok ? r.branchId : '' } });
+    made.businesses.push(b.businessId);
+    assert.equal(b.logoUrl, null);
+    assert.equal(await countPendingImages(), before + 1); // waits for the image step
+    const copied = await copyPendingImages(DEFAULT_SETTINGS, actor.id, 50);
+    assert.ok(copied.done >= 1);
+    const after = await pdb.branch.findUniqueOrThrow({ where: { id: b.id } });
+    assert.ok(after.logoUrl, 'logo copied by the pending-images step');
+    assert.notEqual(after.coverUrl, b.coverUrl);
+  });
 });
