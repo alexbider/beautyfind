@@ -111,6 +111,7 @@ export function Sources({ settings, flags }: { settings: ImportSettings; flags: 
           {num('pilotRecordLimit', 'ברירת מחדל: עסקים לריצה')}
           {num('editorialBudgetUsd', 'כתיבה: תקרה לריצה (USD)', '0.01')}
           {num('editorialMaxPerRun', 'כתיבה: קריאות לריצה')}
+          {num('llmConcurrency', 'ChatGPT: קריאות במקביל (כתיבה, מחקר, חילוץ; עד 12)')}
           {num('researchBudgetUsd', 'מחקר ChatGPT: תקרה לריצה (USD)', '0.01')}
           {num('researchMonthlyUsd', 'מחקר ChatGPT: תקרה חודשית (USD)', '0.01')}
           {num('apifyBudgetUsd', 'Apify: תקרה לריצה (USD)', '0.01')}

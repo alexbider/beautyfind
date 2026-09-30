@@ -18,12 +18,12 @@ export async function extractStage(run: ImportRun): Promise<boolean> {
     void r;
     return false;
   }
-  const places = await db.importPlace.findMany({ where: { runId: run.id, status: 'enriched' }, orderBy: { enrichedAt: 'asc' }, take: 6 });
+  const places = await db.importPlace.findMany({ where: { runId: run.id, status: 'enriched' }, orderBy: { enrichedAt: 'asc' }, take: s.llmConcurrency * 3 });
   if (!places.length) return false;
   await heartbeat(run.id);
   let fatal: string | null = null;
   let budgetOut = false;
-  await pool(places, 2, async p => {
+  await pool(places, s.llmConcurrency, async p => {
     if (fatal || budgetOut) return;
     const crawl = (p.crawl ?? {}) as Record<string, unknown>;
     const text = typeof crawl.text === 'string' ? crawl.text : '';

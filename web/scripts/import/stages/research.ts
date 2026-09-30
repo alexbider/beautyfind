@@ -17,7 +17,7 @@ import type { ImportedTreatment } from '../../../src/lib/import/rules';
 import { serviceKey } from '../../../src/lib/import/services';
 import type { Socials } from '../../../src/lib/import/socials';
 import { expiryFor, mayPublish } from '../../../src/lib/import/sourcePolicy';
-import { bump, db, hasMx, heartbeat, log, setStats, settings, Stop } from '../ctx';
+import { bump, db, hasMx, heartbeat, log, pool, setStats, settings, Stop } from '../ctx';
 import { openaiConfigured, responses } from '../providers/openai';
 
 export const PROVIDER = 'openai_research';
@@ -49,25 +49,32 @@ export async function researchStage(run: ImportRun): Promise<boolean> {
   }
   const ids = ((task.params as { ids?: string[] }).ids ?? []);
   const counts: Record<string, number> = {};
-  let fatal: string | null = null;
-  for (const id of ids) {
+  // `llmConcurrency` records at a time; a fatal answer (key, credit) or the kill switch ends the task at once.
+  const halt: { fatal: string | null; stop: Stop | null } = { fatal: null, stop: null };
+  await pool(ids, s.llmConcurrency, async id => {
+    if (halt.fatal || halt.stop) return;
     await heartbeat(run.id);
     const p = await db.importPlace.findUnique({ where: { id } });
-    if (!p) continue;
+    if (!p) return;
     try {
       const r = await researchOne(run, p, s);
       counts[r] = (counts[r] ?? 0) + 1;
     } catch (e) {
-      if (e instanceof Stop) throw e;
+      if (e instanceof Stop) {
+        halt.stop = e;
+        return;
+      }
       const msg = e instanceof Error ? e.message : String(e);
       if (/^research fatal:/.test(msg)) {
-        fatal = msg;
-        break;
+        halt.fatal = msg;
+        return;
       }
       counts.failed = (counts.failed ?? 0) + 1;
       log('research failed', id, msg.slice(0, 160));
     }
-  }
+  });
+  if (halt.stop) throw halt.stop;
+  const fatal = halt.fatal;
   await db.importTask.update({ where: { id: task.id }, data: { status: fatal ? 'failed' : 'done', found: counts.filled ?? 0, error: fatal } });
   await bump(run.id, Object.fromEntries(Object.entries(counts).map(([k, v]) => [`research_${k}`, v])));
   if (fatal) throw new Error(fatal.replace(/^research fatal: /, 'OpenAI research: '));

@@ -70,7 +70,7 @@ export async function editorialFor(p: ImportPlace, run: ImportRun | null, opts: 
   return 'written';
 }
 
-/** Import runs: every extracted record of the run gets a draft (or a cached one). Batches of six, two calls at a time. */
+/** Import runs: every extracted record of the run gets a draft (or a cached one). `llmConcurrency` calls at a time, three batches' worth per pass. */
 export async function editorialStage(run: ImportRun): Promise<boolean> {
   const s = await settings();
   if (!s.editorialEnabled) return false;
@@ -86,7 +86,7 @@ export async function editorialStage(run: ImportRun): Promise<boolean> {
   const counts: Record<string, number> = {};
   let budgetOut = false;
   let transient = 0;
-  await pool(rows, 2, async ({ id }) => {
+  await pool(rows, s.llmConcurrency, async ({ id }) => {
     if (budgetOut) return;
     const p = await db.importPlace.findUniqueOrThrow({ where: { id } });
     try {

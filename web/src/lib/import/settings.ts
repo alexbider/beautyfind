@@ -26,6 +26,7 @@ export const ImportSettingsSchema = z.object({
   editorialEnabled: z.boolean().default(true),
   editorialBudgetUsd: z.number().min(0).max(1000).default(3),
   editorialMaxPerRun: z.number().int().min(0).max(20_000).default(300),
+  llmConcurrency: z.number().int().min(1).max(12).default(6), // parallel model calls in the writing, research and extraction stages (cost per business unchanged)
   // Stage 2D: media and video
   youtubeEnabled: z.boolean().default(true), // oEmbed without a key; Data API when YOUTUBE_API_KEY is set
   youtubeQuotaPerRun: z.number().int().min(0).max(100_000).default(2_000), // Data API units (daily quota is 10,000 by default)
