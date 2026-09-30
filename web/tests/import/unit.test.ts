@@ -676,3 +676,53 @@ describe('emails on business websites', async () => {
     assert.deepEqual(f.agencyEmails, []);
   });
 });
+
+describe('chain websites: branches page and menu', async () => {
+  const { extractLocations, pickLocation, citiesIn, BRANCHES_LINK } = await import('../../src/lib/import/locations');
+  const { extractPage } = await import('../../src/lib/import/siteExtract');
+  const { missingTemplateFields } = await import('../../scripts/import/crawl');
+  const branchesHtml = `<html><body>
+    <header><nav class="main-menu"><a href="/">ראשי</a><a href="/סניפים/">סניפים</a><a href="/מחירון/">מחירון</a><a href="/about/">אודות</a></nav></header>
+    <h1>הסניפים שלנו</h1>
+    <h2>אמריקן לייזר תל אביב</h2>
+    <p>כתובת: רחוב הברזל 12, תל אביב</p>
+    <p>טלפון: 03-6001234</p>
+    <p>tlv@care.co.il</p>
+    <p>ראשון-חמישי 09:00-20:00</p>
+    <h2>אמריקן לייזר חיפה</h2>
+    <p>כתובת: שדרות ההסתדרות 5, חיפה</p>
+    <p>טלפון: 04-8001234</p>
+    <p>haifa@care.co.il</p>
+    <h2>אמריקן לייזר באר שבע</h2>
+    <p>כתובת: רחוב הנרייטה סולד 8, באר שבע</p>
+    <p>טלפון: 08-6401234</p>
+    <footer>*5599 · info@care.co.il</footer>
+  </body></html>`;
+  const f = extractPage(branchesHtml, 'https://www.care.co.il/סניפים/', 'care.co.il');
+  it('reads one block per location with its own address, phone, email and hours', () => {
+    assert.ok(f.locations.length >= 3, `blocks: ${f.locations.length}`);
+    const tlv = f.locations.find(b => b.cities.includes('tel-aviv'));
+    assert.ok(tlv);
+    assert.equal(tlv.phones[0], '+97236001234');
+    assert.deepEqual(tlv.emails, ['tlv@care.co.il']);
+    assert.match(tlv.address ?? '', /הברזל 12/);
+    assert.ok(tlv.hours && tlv.hours[0].open === '09:00');
+    assert.deepEqual(citiesIn('מרכז קריית ים, ליד קניון'), ['kiryat-yam']);
+  });
+  it('picks the block of the record\'s city, or its name suffix, never the central number', () => {
+    const b = pickLocation(f.locations, { citySlug: 'haifa', cityName: 'חיפה', name: 'אמריקן לייזר', address: '' });
+    assert.equal(b?.phones[0], '+97248001234');
+    const byName = pickLocation(f.locations, { citySlug: null, cityName: null, name: 'אמריקן לייזר- באר שבע', address: '' });
+    assert.equal(byName?.phones[0], '+97286401234');
+    assert.equal(pickLocation(f.locations, { citySlug: 'eilat', cityName: 'אילת', name: 'אמריקן לייזר', address: '' }), null);
+    assert.equal(pickLocation(f.locations.slice(0, 1), { citySlug: 'tel-aviv', cityName: 'תל אביב', name: 'x', address: '' }), null);
+  });
+  it('collects the site menu and asks the crawler for the branches page while none was read', () => {
+    assert.ok(f.menuLinks.some(l => /סניפים/.test(decodeURIComponent(l))));
+    assert.ok(f.menuLinks.some(l => /about/.test(l)));
+    assert.ok(BRANCHES_LINK.test('/סניפים/') && BRANCHES_LINK.test('/locations') && !BRANCHES_LINK.test('/prices'));
+    const home = extractPage('<html><body><nav><a href="/סניפים/">סניפים</a></nav><p>03-6001234 info@care.co.il</p></body></html>', 'https://www.care.co.il/', 'care.co.il');
+    assert.ok(missingTemplateFields([home]).includes('locations'));
+    assert.ok(!missingTemplateFields([home, f]).includes('locations'));
+  });
+});

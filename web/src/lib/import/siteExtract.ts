@@ -10,6 +10,7 @@ import { BOOKING_HOSTS, socialOf } from './websiteKind';
 export { socialOf };
 import type { DayHours } from './rules';
 import { cutText } from './text';
+import { extractLocations, type LocationBlock } from './locations';
 
 export interface Fact<T = string> {
   value: T;
@@ -57,12 +58,14 @@ export interface PageFacts {
   beforeAfter: Fact[]; // image URLs on a before/after page or section: never published without the owner's confirmation
   isTeamPage: boolean;
   links: string[]; // relevant same-site links to follow
+  menuLinks: string[]; // same-site links from the site's navigation (header, nav, menus): the site's own map of its pages
+  locations: LocationBlock[]; // per-location blocks (address, phone, email, hours) on a branches page
   outLinks: string[]; // links to other sites (used on link-in-bio pages to find the real site)
   text: string;
 }
 
 const CONTACT_PAGE = /(contact|צור|צרו|קשר)/i;
-export const FOLLOW = /(contact|about|service|treat|price|pricing|menu|branch|location|gallery|portfolio|team|staff|our-team|doctors|video|צור|צרו|קשר|אודות|שירות|טיפול|מחיר|מחירון|סניפ|מיקום|גלריה|תמונות|עבודות|הצוות|צוות|רופאים|סרטונים|וידאו|מי אנחנו|עלינו)/i;
+export const FOLLOW = /(contact|about|service|treat|price|pricing|menu|branch|location|clinics|centers|centres|stores|gallery|portfolio|team|staff|our-team|doctors|video|צור|צרו|קשר|אודות|שירות|טיפול|מחיר|מחירון|סניפ|מוקד|מרכזים|קליניקות|מיקומ|גלריה|תמונות|עבודות|הצוות|צוות|רופאים|סרטונים|וידאו|מי אנחנו|עלינו|איפה אנחנו)/i;
 const TEAM_PAGE = /(team|staff|our-team|doctors|הצוות|צוות|רופאים|המטפלים|מי אנחנו|עלינו|about)/i;
 const SKIP = /(blog|news|post|tag\/|category\/|calendar|events?\/|search|cart|checkout|login|signin|wp-admin|wp-json|feed|privacy|terms|accessibility|נגישות|תקנון|מדיניות|\.(pdf|jpe?g|png|gif|webp|zip|mp4)$)/i;
 const CREDIT = /(נבנה\s*(ע["״]?י|על ידי)|בניית\s*אתרים|עיצוב\s*ו?בניית|פיתוח\s*אתרים|developed by|designed by|powered by|created by|website by|site by|web design)/i;
@@ -547,6 +550,27 @@ export function extractPage(html: string, url: string, siteHost: string): PageFa
       /* bad href */
     }
   }
+  // The site's own menu: links inside <nav>, <header> or an element whose class or id says menu or nav.
+  // These name every section the site has (branches, prices, team) whatever their paths look like.
+  const menuLinks: string[] = [];
+  const menuHtml = [
+    ...[...html.matchAll(/<nav\b[\s\S]*?<\/nav>/gi)].map(m => m[0]),
+    ...[...html.matchAll(/<header\b[\s\S]*?<\/header>/gi)].map(m => m[0]),
+    ...[...html.matchAll(/<(?:ul|div)\b[^>]*(?:class|id)=["'][^"']*(?:menu|nav)[^"']*["'][^>]*>[\s\S]{0,20000}?<\/(?:ul|div)>/gi)].map(m => m[0]),
+  ].join('\n');
+  for (const m of menuHtml.matchAll(/<a\b[^>]*href=["']([^"'#]+)["']/gi)) {
+    try {
+      const u = new URL(decode(m[1]), url);
+      if (u.hostname.replace(/^www\./, '') !== siteHost || !/^https?:$/.test(u.protocol)) continue;
+      const path = decodeURIComponentSafe(u.pathname);
+      if (SKIP.test(path) || /\.(pdf|jpe?g|png|gif|webp|svg|zip|mp4)$/i.test(path)) continue;
+      const clean = u.toString().split('#')[0];
+      if (!menuLinks.includes(clean)) menuLinks.push(clean);
+    } catch {
+      /* bad href */
+    }
+    if (menuLinks.length >= 40) break;
+  }
 
   const outLinks: string[] = [];
   for (const h of hrefs) {
@@ -583,6 +607,8 @@ export function extractPage(html: string, url: string, siteHost: string): PageFa
     isTeamPage,
     siteName,
     links: [...new Set(links)],
+    menuLinks,
+    locations: extractLocations(text, url),
     text,
   };
 }

@@ -24,6 +24,7 @@ import { expiryFor, mayPublish } from '../../../src/lib/import/sourcePolicy';
 import { classifyWebsite, siteBelongs, type WebsiteKind } from '../../../src/lib/import/websiteKind';
 import { channelUploads, chooseVideos, validateVideos, type VideoRecord } from '../../../src/lib/import/youtube';
 import { crawlSite, type CrawlOutcome, type SiteStatus } from '../crawl';
+import { pickLocation, type LocationBlock } from '../../../src/lib/import/locations';
 import { bump, db, hasMx, heartbeat, log, pool, settings } from '../ctx';
 
 export interface SiteSummary {
@@ -52,6 +53,7 @@ export interface SiteSummary {
   beforeAfter?: Fact[];
   sitemapUrls?: number;
   extended?: boolean;
+  locations?: LocationBlock[]; // per-location blocks from a chain's branches page
   outLinks: string[];
   pages: CrawlOutcome['pages'];
   text?: string; // kept only when the optional LLM step is on
@@ -70,6 +72,7 @@ export function summarize(c: CrawlOutcome, keepText: boolean): SiteSummary {
     booking: uniq(all.flatMap(f => f.booking), f => f.value),
     hours: all.find(f => f.hours)?.hours ?? null,
     address: all.find(f => f.address)?.address ?? null,
+    locations: uniq(all.flatMap(f => f.locations ?? []), b => `${b.url}|${b.heading}`).slice(0, 60),
     services: mergeServices(all.flatMap(f => f.services)).slice(0, 100),
     logos: uniq(all.flatMap(f => f.logos), f => f.value).slice(0, 4),
     photos: uniq(all.flatMap(f => f.photos), f => f.value).slice(0, 30),
@@ -265,7 +268,11 @@ export async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap:
   const website = site;
 
   // Email: contact-page and own-domain first; the site builder's credit is already excluded.
-  const ranked = rankEmails(summary.emails.filter(e => cleanEmail(e.value)), website);
+  // A chain: the block on the branches page that names this record's city holds its own phone, address,
+  // email and hours. Those come first; the site's central number is only a fallback.
+  const mine = pickLocation(summary.locations ?? [], { citySlug: p.citySlug, cityName: p.cityName, name: p.name, address: p.address });
+  const mineEmails: Fact[] = mine ? mine.emails.map(e => ({ value: e, url: mine.url, evidence: `branch block: ${mine.heading}`, onContactPage: true })) : [];
+  const ranked = rankEmails([...mineEmails, ...summary.emails].filter((e, i, arr) => cleanEmail(e.value) && arr.findIndex(x => x.value === e.value) === i), website);
   // A staff-entered email always stays; otherwise the site's best email, else the provider's.
   let email: string | null = p.emailSource === 'manual' ? p.email : null;
   let emailStatus: string | null = p.emailSource === 'manual' ? p.emailStatus : null;
@@ -284,14 +291,17 @@ export async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap:
   // Phones: the provider's phone stays; the site's number fills it only when unambiguous.
   for (const f of summary.phones) add('phone', f, f.onContactPage ? 0.8 : 0.6, 'published');
   const sitePhones = summary.phones.map(f => f.value);
-  const phone = p.phone ?? (sitePhones.length === 1 ? sitePhones[0] : null);
-  const phoneConflict = !!p.phone && sitePhones.length === 1 && sitePhones[0] !== p.phone;
+  if (mine?.phones.length) add('phone', { value: mine.phones[0], url: mine.url, evidence: `branch block: ${mine.heading}`, onContactPage: true }, 0.85, 'published');
+  const phone = p.phone ?? mine?.phones[0] ?? (sitePhones.length === 1 ? sitePhones[0] : null);
+  const phoneConflict = !!p.phone && (mine?.phones.length ? !mine.phones.includes(p.phone) : sitePhones.length === 1 && sitePhones[0] !== p.phone);
 
   for (const f of summary.whatsapp) add('whatsapp', f, 0.8, 'published');
   for (const f of [...summary.socials, ...(hub?.socials ?? [])]) add('social', f, 0.8);
   for (const f of summary.booking) add('booking', f, 0.8);
-  if (summary.hours) add('hours', summary.hours, 0.8);
-  if (summary.address) add('address', summary.address, 0.7);
+  if (mine?.hours) add('hours', { value: mine.hours, url: mine.url, evidence: `branch block: ${mine.heading}` }, 0.85);
+  else if (summary.hours) add('hours', summary.hours, 0.8);
+  if (mine?.address) add('address', { value: mine.address, url: mine.url, evidence: `branch block: ${mine.heading}` }, 0.8);
+  else if (summary.address) add('address', summary.address, 0.7);
   for (const f of summary.services) add('service', f, f.value.priceNis != null ? 0.8 : 0.6);
   if (summary.description) add('description', summary.description, 0.7);
   for (const f of summary.faqs ?? []) add('faq', f, 0.8);
@@ -347,7 +357,9 @@ export async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap:
   }
   opts.onCost?.(ytCosts);
 
-  const hoursFromSite = summary.hours?.value ?? null;
+  // A chain's central hours are not the branch's: only the branch block's hours (or, without a
+  // branches page, the site's) count for this record.
+  const hoursFromSite = mine ? mine.hours : (summary.hours?.value ?? null);
   const providerHours = (p.hours ?? null) as DayHours[] | null;
 
   // Services: add what the site lists, fill a missing price, never drop what is already there.
@@ -397,6 +409,7 @@ export async function enrichOne(p: ImportPlace, runBrowser: { used: number; cap:
       website,
       websiteKind: 'own',
       siteDomain: domain,
+      address: p.address?.trim() ? undefined : mine?.address ?? undefined, // a branch block's address fills an empty one
       email: email ?? (p.emailSource === 'provider' ? p.email : null),
       emailSource: p.emailSource === 'manual' ? 'manual' : email ? 'site' : p.emailSource === 'provider' && p.email ? 'provider' : null,
       emailStatus: email ? emailStatus : p.emailSource === 'provider' ? p.emailStatus : null,

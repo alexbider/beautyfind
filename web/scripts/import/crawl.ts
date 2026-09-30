@@ -14,6 +14,7 @@ import { createHash } from 'node:crypto';
 import type { Browser } from 'playwright-core';
 import { checkUrl, safeFetch, UnsafeUrlError } from '../../src/lib/import/safeFetch';
 import { extractPage, FOLLOW, type PageFacts } from '../../src/lib/import/siteExtract';
+import { BRANCHES_LINK } from '../../src/lib/import/locations';
 
 const UA = 'BeautyFindBot/1.0 (+https://beautyfind.co.il/bot; business directory listing check)';
 const HEADERS = { 'User-Agent': UA, Accept: 'text/html,application/xhtml+xml', 'Accept-Language': 'he-IL,he;q=0.9,en;q=0.6' };
@@ -151,6 +152,10 @@ export function missingTemplateFields(facts: PageFacts[]): string[] {
   if (!facts.some(f => f.description)) miss.push('description');
   // A videos page is worth one more request only when the site has one and no video was seen yet.
   if (!facts.some(f => f.videos.length) && facts.some(f => f.links.some(l => /video|סרטונים|וידאו/i.test(decodeURIComponentSafe(l))))) miss.push('videos');
+  // A chain: the site links to a branches page and no page read so far lists its locations. The record is
+  // one branch, so its own address, phone and hours live on that page, not on the homepage.
+  const branchesLinked = facts.some(f => [...f.links, ...f.menuLinks].some(l => BRANCHES_LINK.test(decodeURIComponentSafe(l))));
+  if (branchesLinked && !facts.some(f => f.locations.length >= 2)) miss.push('locations');
   return miss;
 }
 
@@ -283,12 +288,13 @@ export async function crawlSite(website: string, opts: CrawlOptions): Promise<Cr
     }
 
     if (depth < 2) {
-      // Contact first, then prices and services, then gallery, then the rest.
+      // Contact and branches first, then prices and services, then gallery, then the rest. The site's
+      // menu links join the queue too (one level down), so a section the menu names is never missed.
       const rank = (l: string) => {
         const d = decodeURIComponentSafe(l);
-        return /צור|צרו|קשר|contact/i.test(d) ? 0 : /מחיר|price|pricing/i.test(d) ? 1 : /טיפול|שירות|treat|service|menu/i.test(d) ? 2 : /גלריה|תמונות|gallery|portfolio|עבודות/i.test(d) ? 3 : /צוות|team|staff|רופאים|doctors/i.test(d) ? 4 : /אודות|about|עלינו|מי אנחנו/i.test(d) ? 5 : /סניפ|branch|סרטונים|video/i.test(d) ? 6 : 7;
+        return /צור|צרו|קשר|contact/i.test(d) ? 0 : BRANCHES_LINK.test(d) ? 0.5 : /מחיר|price|pricing/i.test(d) ? 1 : /טיפול|שירות|treat|service|menu/i.test(d) ? 2 : /גלריה|תמונות|gallery|portfolio|עבודות/i.test(d) ? 3 : /צוות|team|staff|רופאים|doctors/i.test(d) ? 4 : /אודות|about|עלינו|מי אנחנו/i.test(d) ? 5 : /סרטונים|video/i.test(d) ? 6 : FOLLOW.test(d) ? 7 : 8;
       };
-      const next = facts.links.filter(l => !seen.has(l)).sort((a, b) => rank(a) - rank(b));
+      const next = [...facts.links, ...(depth === 0 ? facts.menuLinks : [])].filter((l, i, arr) => !seen.has(l) && arr.indexOf(l) === i).sort((a, b) => rank(a) - rank(b));
       for (const l of next) queue.push({ url: l, depth: depth + 1 });
       queue.sort((a, b) => a.depth - b.depth || rank(a.url) - rank(b.url));
     }
