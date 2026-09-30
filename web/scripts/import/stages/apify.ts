@@ -363,14 +363,10 @@ async function applyProfile(p: ImportPlace, network: 'instagram' | 'facebook', f
     obs.push(obsRow(p, provider, 'email', email, url, 0.7, `Contact email shown on the ${network} profile`, mx ? 'dns_valid' : 'syntax_valid', s));
     if (!p.email && !edited.has('email') && mx !== false) Object.assign(data, { email, emailSource: network, emailStatus: mx ? 'dns_valid' : 'syntax_valid', emailMx: mx, emails: [...new Set([...p.emails, email])] });
   }
-  if (f.phone) {
-    obs.push(obsRow(p, provider, 'phone', f.phone, url, 0.7, `Phone shown on the ${network} profile`, 'published', s));
-    if (!p.phone && !edited.has('phone')) data.phone = f.phone;
-  }
-  if (f.hours && !p.hours) {
-    obs.push(obsRow(p, provider, 'hours', f.hours, url, 0.6, `Opening hours on the ${network} page`, undefined, s));
-    data.hours = f.hours as unknown as Prisma.InputJsonValue;
-  }
+  // Phone and opening hours come from the Google Business Profile or the website only; a social page's
+  // numbers and hours are kept as evidence for the review screen and never written to the record.
+  if (f.phone) obs.push(obsRow(p, provider, 'phone', f.phone, url, 0.5, `Phone shown on the ${network} profile (evidence only)`, 'evidence', s));
+  if (f.hours) obs.push(obsRow(p, provider, 'hours', f.hours, url, 0.5, `Opening hours on the ${network} page (evidence only)`, 'evidence', s));
   for (const l of f.links) {
     const w = classifyWebsite(l);
     if (!p.website && !data.website && !edited.has('website') && w.url && w.kind === 'own') {

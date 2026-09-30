@@ -176,13 +176,9 @@ export async function applyResearch(p: ImportPlace, f: ResearchFacts, s: Awaited
       filled.push('website');
     }
   }
-  if (f.phone) {
-    add('phone', f.phone.value, f.phone.sourceUrl, own(f.phone.sourceUrl) ? 0.8 : 0.5, 'Phone on a public page', 'published');
-    if (!p.phone && !edited.has('phone')) {
-      data.phone = f.phone.value;
-      filled.push('phone');
-    }
-  }
+  // Phone and opening hours come from the Google Business Profile or the website only; what ChatGPT
+  // read elsewhere is kept as evidence and never written to the record.
+  if (f.phone) add('phone', f.phone.value, f.phone.sourceUrl, own(f.phone.sourceUrl) ? 0.6 : 0.4, 'Phone on a public page (evidence only)', 'evidence');
   if (f.whatsapp) {
     add('whatsapp', f.whatsapp.value, f.whatsapp.sourceUrl, 0.6, 'WhatsApp number on a public page', 'published');
     if (!p.whatsapp) {
@@ -203,13 +199,7 @@ export async function applyResearch(p: ImportPlace, f: ResearchFacts, s: Awaited
     data.bookingUrl = f.booking.value;
     filled.push('booking');
   }
-  if (f.hours) {
-    add('hours', f.hours.value, f.hours.sourceUrl, own(f.hours.sourceUrl) ? 0.7 : 0.5, 'Opening hours on a public page');
-    if (!p.hours) {
-      data.hours = f.hours.value as unknown as Prisma.InputJsonValue;
-      filled.push('hours');
-    }
-  }
+  if (f.hours) add('hours', f.hours.value, f.hours.sourceUrl, own(f.hours.sourceUrl) ? 0.5 : 0.4, 'Opening hours on a public page (evidence only)', 'evidence');
   // Services: only names the page shows, with the quoted line; a price fills a missing one, nothing is replaced.
   const existing = (Array.isArray(p.treatments) ? p.treatments : []) as unknown as ImportedTreatment[];
   const byKey = new Map(existing.map(t => [serviceKey(t.name), t]));

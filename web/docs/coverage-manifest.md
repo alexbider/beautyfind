@@ -33,4 +33,4 @@ Two measures are tracked separately: **template coverage** (every section render
 - **ready**: every weighted section populated, contact present, no conflicts.
 - **ready_with_disclosed_gaps**: readiness 60% or more, gaps shown as honest states.
 - **needs_owner_information**: readiness under 60%, or the description needs more business information.
-- **needs_review**: a source conflict or a qualification reason that needs a person (phone, hours, address, duplicates, unverified website).
+- **needs_review**: a qualification reason that needs a person (duplicates, unverified website, unknown city); a phone or hours that differ between Google and the website are only noted.

@@ -163,16 +163,19 @@ describe('ChatGPT research stage and writer', { skip }, () => {
     assert.ok(body.max_tool_calls > 0);
 
     const a = await db.importPlace.findUniqueOrThrow({ where: { id: p.id } });
-    assert.equal(a.phone, '+97245559999');
+    // Phone and hours come from Google or the website only: research keeps them as evidence, never writes them.
+    assert.equal(a.phone, null);
+    assert.equal(a.hours, null);
+    const phoneObs = await db.fieldObservation.findFirst({ where: { importPlaceId: p.id, field: 'phone', provider: 'openai_research' } });
+    assert.equal(phoneObs?.status, 'evidence');
     assert.equal(a.website, 'https://research-salon.test/');
     // The email's domain has no mail records here, so it stays an observation for a person; when it does resolve, the fill is marked as found by search.
     assert.ok(a.email === null || a.emailSource === 'search');
-    assert.equal((a.hours as Array<{ open: string }>)[0].open, '10:00');
     assert.equal((a.treatments as unknown[]).length, 1);
     assert.equal(a.establishedYear, 2018);
     assert.equal(a.accessible, true);
     const crawl = a.crawl as { research: { filled: string[]; sources: string[]; notes: unknown[]; costUsd: number; searchCalls: number } };
-    assert.ok(crawl.research.filled.includes('phone') && crawl.research.filled.includes('hours') && crawl.research.filled.includes('website'));
+    assert.ok(crawl.research.filled.includes('website') && !crawl.research.filled.includes('phone') && !crawl.research.filled.includes('hours'));
     assert.equal(crawl.research.searchCalls, 1);
     assert.ok(crawl.research.costUsd > 0);
     assert.equal(stage.researchGainedWebsite(a.crawl), true);
@@ -276,9 +279,9 @@ describe('ChatGPT research stage and writer', { skip }, () => {
     assert.ok(row);
     assert.equal(row.state, 'pending');
     assert.equal(row.sources.research, 'filled');
-    assert.ok(row.sources.researchFilled.includes('phone'));
+    assert.ok(row.sources.researchFilled.includes('website') && !row.sources.researchFilled.includes('phone'));
     assert.ok(row.costUsd > 0);
-    assert.ok(row.sections.some(s => s.id === 'hours' && s.state === 'populated'));
+    assert.ok(row.sections.some(s => s.id === 'hours' && s.state === 'fallback')); // hours are not taken from research
     assert.ok(row.missing.includes('hero'));
     assert.ok(row.href.startsWith('/ops/import/review?run='));
     assert.ok(row.lastActivity);

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { CATEGORIES, CITIES, REGIONS } from '@/lib/catalog';
 import { formatIlPhone } from '@/lib/import/phone';
-import { BLOCKING, REASON_NAMES, type ImportedTreatment } from '@/lib/import/rules';
+import { BLOCKING, isNotice, REASON_NAMES, type ImportedTreatment } from '@/lib/import/rules';
 import { bulkApproveAction, copyPendingImagesAction, enhanceApprovedAction, enrichSelectedAction, googleLookupAction, placeAction, publishEligibleAction } from '../actions';
 import { Checklist, type ProfileInfo } from './Checklist';
 import styles from '../import.module.css';
@@ -325,7 +325,7 @@ function Record({ r, onDone, selected, onSelect, google }: { r: ReviewRow; onDon
           {r.categories.map(c => <span key={c} className={`${styles.chip} ${styles.chipOk}`}>{catName(c)}</span>)}
           {r.businessType ? <span className={styles.chip}>{TYPE_NAME[r.businessType]}</span> : null}
           {r.reasons.map(x => (
-            <span key={x} className={`${styles.chip} ${(BLOCKING as readonly string[]).includes(x) ? styles.chipBad : styles.chipWarn}`}>{REASON_NAMES[x] ?? x}</span>
+            <span key={x} className={`${styles.chip} ${(BLOCKING as readonly string[]).includes(x) ? styles.chipBad : isNotice(x) ? '' : styles.chipWarn}`} title={isNotice(x) ? 'הערה בלבד, לא מעכבת פרסום' : undefined}>{REASON_NAMES[x] ?? x}</span>
           ))}
         </div>
         <p className={styles.note} style={{ marginTop: 6 }}>
@@ -365,7 +365,7 @@ function Record({ r, onDone, selected, onSelect, google }: { r: ReviewRow; onDon
         </dl>
         {r.rejectedWebsite ? <p className={styles.note}>קישור שלא נשמר כאתר: <span className={styles.ltr}>{r.rejectedWebsite.replace(/^https?:\/\/(www\.)?/, '').slice(0, 60)}</span></p> : null}
         {r.bookingUrl ? <p className={styles.note}>הזמנת תור: <a href={r.bookingUrl} target="_blank" rel="noreferrer" className={styles.ltr}>{r.bookingUrl.replace(/^https?:\/\//, '').slice(0, 50)}</a></p> : null}
-        {r.conflicts.length ? <p className={`${styles.result} ${styles.resultBad}`}>סתירה בין המקורות: {r.conflicts.map(c => (c === 'phone' ? 'טלפון' : 'שעות')).join(', ')}. ראו ראיות.</p> : null}
+        {r.conflicts.length ? <p className={styles.note}>הערה: {r.conflicts.map(c => (c === 'phone' ? 'הטלפון' : 'שעות הפתיחה')).join(' וגם ')} באתר שונים מאלה שבפרופיל Google; נשמר הערך מגוגל. ראו ראיות.</p> : null}
         {r.description ? <p className={styles.desc}>{r.description}</p> : null}
         {r.extractError ? <p className={styles.note}>שגיאת חילוץ: <span className={styles.ltr}>{r.extractError}</span></p> : null}
         {r.note ? <p className={styles.note}>הערה: {r.note}</p> : null}

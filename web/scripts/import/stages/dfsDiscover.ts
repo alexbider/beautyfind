@@ -96,7 +96,7 @@ export async function upsertListing(run: ImportRun, m: MappedListing, s: ImportS
   const providerTreatments = m.services.map(x => ({ ...x, durationMin: null, sourceText: 'Google profile services', sourceUrl: m.googleMapsUrl ?? undefined }));
   const email = m.emails.map(e => cleanEmail(e)).find((e): e is string => !!e) ?? null;
   const providerImages = { logo: m.providerLogo ? largerGoogleImage(m.providerLogo, 'logo') : null, photo: m.providerPhoto ? largerGoogleImage(m.providerPhoto, 'photo') : null };
-  const existing = await db.importPlace.findUnique({ where: { placeId: m.sourceKey }, select: { id: true, categories: true, crawl: true, phone: true, email: true, website: true, websiteKind: true, hours: true, status: true, reviewedById: true, bookingUrl: true, whatsapp: true, instagram: true, facebook: true, logoUrl: true, photoUrls: true, description: true, accessible: true, freeParking: true, treatments: true } });
+  const existing = await db.importPlace.findUnique({ where: { placeId: m.sourceKey }, select: { id: true, categories: true, crawl: true, phone: true, email: true, website: true, websiteKind: true, hours: true, status: true, reviewedById: true, bookingUrl: true, whatsapp: true, instagram: true, facebook: true, logoUrl: true, photoUrls: true, description: true, accessible: true, freeParking: true, treatments: true, citySlug: true } });
   let id: string;
   let result: 'new' | 'seen';
   if (existing) {
@@ -107,6 +107,7 @@ export async function upsertListing(run: ImportRun, m: MappedListing, s: ImportS
       delete data.nameNorm;
     }
     if (!edited.has('categories')) data.categories = [...new Set([...existing.categories, ...m.categories])];
+    if (!existing.citySlug && where.citySlug) Object.assign(data, { citySlug: where.citySlug, cityName: where.cityName, regionSlug: where.regionSlug as RegionSlug });
     if (!edited.has('phone') && !existing.phone && m.phone) data.phone = m.phone;
     if (!edited.has('email') && !existing.email && email) {
       data.email = email;

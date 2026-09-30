@@ -273,7 +273,7 @@ describe('template coverage and readiness (acceptance 1)', () => {
     assert.ok(MANIFEST.every(m => m.fallback && m.test && m.selector));
     assert.match(manifestMarkdown(), /h-services/);
   });
-  it('a full profile is ready; gaps are disclosed; sparse needs the owner; conflicts need review', () => {
+  it('a full profile is ready; gaps are disclosed; sparse needs the owner; a conflict is only a note', () => {
     const full = coverageOf(COV);
     assert.equal(full.status, 'ready');
     assert.equal(full.templateCoverage, 100);
@@ -285,7 +285,7 @@ describe('template coverage and readiness (acceptance 1)', () => {
     assert.equal(sparse.status, 'needs_owner_information');
     assert.equal(sparse.templateCoverage, 100); // every section still renders a truthful state
     assert.ok(sparse.readiness < 60);
-    assert.equal(coverageOf({ ...COV, conflicts: ['phone'] }).status, 'needs_review');
+    assert.equal(coverageOf({ ...COV, conflicts: ['phone'] }).status, 'ready'); // the Google value stays; the site's number is evidence
     assert.equal(coverageOf({ ...COV, phone: false, email: false }).status, 'needs_review');
   });
 });

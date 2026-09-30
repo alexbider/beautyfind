@@ -20,6 +20,8 @@ import { branchCoverage, editorialText, profileFields, socialCounts, treatmentRo
 import { profileHref } from '@/lib/server/public';
 import { slugBase, slugCandidates } from '@/lib/import/slug';
 import { storage } from '@/lib/vendors/storage';
+import { PERSON_REASONS } from '@/lib/import/placeCoverage';
+import { resolveCity } from '@/lib/import/geo';
 
 export type OpResult = { ok: true; branchId?: string; slug?: string; href?: string } | { ok: false; error: string };
 type Actor = { id: string };
@@ -383,7 +385,7 @@ export async function refreshProfileStatus(branchId: string, p: ImportPlace): Pr
   const verifiedStaff = await db.staffMember.count({ where: { businessId: b.businessId, status: 'active', branchIds: { has: b.id }, license: { status: 'verified' } } });
   const crawl = (p.crawl ?? {}) as Record<string, unknown>;
   const conflicts = [crawl.phoneConflict === true ? 'phone' : null, crawl.hoursConflict === true ? 'hours' : null].filter((x): x is string => !!x);
-  const cov = branchCoverage(b, { verifiedStaff, conflicts, reviewReasons: p.reasons.filter(r => !['medical_without_doctor_info', 'no_email'].includes(r)), socials: socialCounts(p) });
+  const cov = branchCoverage(b, { verifiedStaff, conflicts, reviewReasons: PERSON_REASONS(p.reasons), socials: socialCounts(p) });
   await db.branch.update({ where: { id: b.id }, data: { profileStatus: cov.status, profileChecklist: { ...cov, at: new Date().toISOString() } as unknown as Prisma.InputJsonValue } });
   await db.importPlace.update({ where: { id: p.id }, data: { profileStatus: cov.status, coverage: cov as unknown as Prisma.InputJsonValue } });
 }
@@ -720,6 +722,13 @@ export async function requalify(id: string) {
   const crawl = (p.crawl ?? {}) as Record<string, unknown>;
   const tier = p.emailSource === 'manual' ? 'own' : ((crawl.emailTier as 'own' | 'free' | 'other' | null | undefined) ?? pickEmail(p.email ? [p.email] : [], p.website)?.tier ?? null);
   const shared = !!p.phone && [...branches, ...others].some(x => x.phone === p.phone && x.id !== existing?.item.id && x.id !== maybeTwin?.item.id);
+  if (!p.citySlug && p.lat != null && p.lng != null) {
+    const where = resolveCity(p.cityName, p.lat, p.lng);
+    if (where.citySlug) {
+      Object.assign(p, { citySlug: where.citySlug, cityName: where.cityName, regionSlug: where.regionSlug });
+      await db.importPlace.update({ where: { id }, data: { citySlug: where.citySlug, cityName: where.cityName, regionSlug: where.regionSlug as RegionSlug } });
+    }
+  }
   const q = qualify({
     name: p.name,
     phone: p.phone,

@@ -118,6 +118,7 @@ export const ISRAEL_BOX: Box = { s: 29.45, w: 34.25, n: 33.35, e: 35.92 };
 /** Hebrew place names compare badly as typed: קרית/קריית, dashes, maqaf, "יפו". */
 export function normCityName(s: string): string {
   return s
+    .toLowerCase()
     .replace(/[֑-ׇ]/g, '') // niqqud
     .replace(/[־–—\-'"׳״.,()]/g, ' ')
     .replace(/\s+/g, ' ')
@@ -132,6 +133,23 @@ const CITY_BY_NAME = new Map(CITIES.map(c => [normCityName(c.name), c]));
 const CITY_ALIASES: Record<string, string> = {
   [normCityName('תל אביב')]: 'tel-aviv', [normCityName('יפו')]: 'tel-aviv', [normCityName('פרדס חנה כרכור')]: 'pardes-hanna',
   [normCityName('מודיעין מכבים רעות')]: 'modiin', [normCityName('נוף הגליל')]: 'nazareth', [normCityName('עכו')]: 'akko',
+  // English spellings the provider returns for the locality.
+  ...Object.fromEntries(Object.entries({
+    'tel aviv': 'tel-aviv', 'tel aviv yafo': 'tel-aviv', 'tel aviv jaffa': 'tel-aviv', jaffa: 'tel-aviv', jerusalem: 'jerusalem', haifa: 'haifa',
+    'rishon lezion': 'rishon-lezion', 'rishon leziyyon': 'rishon-lezion', 'petah tikva': 'petah-tikva', 'petah tiqwa': 'petah-tikva', ashdod: 'ashdod', netanya: 'netanya',
+    'beer sheva': 'beer-sheva', "be'er sheva": 'beer-sheva', beersheba: 'beer-sheva', holon: 'holon', 'bnei brak': 'bnei-brak', 'ramat gan': 'ramat-gan',
+    ashkelon: 'ashkelon', rehovot: 'rehovot', 'bat yam': 'bat-yam', 'kfar saba': 'kfar-saba', herzliya: 'herzliya', hadera: 'hadera', modiin: 'modiin',
+    "modi'in": 'modiin', nazareth: 'nazareth', lod: 'lod', ramla: 'ramla', raanana: 'raanana', "ra'anana": 'raanana', givatayim: 'givatayim',
+    'hod hasharon': 'hod-hasharon', 'kiryat ata': 'kiryat-ata', 'kiryat gat': 'kiryat-gat', 'kiryat motzkin': 'kiryat-motzkin', 'kiryat bialik': 'kiryat-bialik',
+    'kiryat yam': 'kiryat-yam', 'kiryat ono': 'kiryat-ono', eilat: 'eilat', nahariya: 'nahariya', akko: 'akko', acre: 'akko', karmiel: 'karmiel', afula: 'afula',
+    tiberias: 'tiberias', safed: 'tzfat', tzfat: 'tzfat', 'beit shemesh': 'beit-shemesh', 'ness ziona': 'ness-ziona', yavne: 'yavne', 'or yehuda': 'or-yehuda',
+    'rosh haayin': 'rosh-haayin', "rosh ha'ayin": 'rosh-haayin', 'ramat hasharon': 'ramat-hasharon', dimona: 'dimona', arad: 'arad', sderot: 'sderot', netivot: 'netivot',
+    ofakim: 'ofakim', 'zichron yaakov': 'zichron-yaakov', "zikhron ya'akov": 'zichron-yaakov', binyamina: 'binyamina', 'pardes hanna karkur': 'pardes-hanna',
+    'pardes hanna': 'pardes-hanna', 'tirat carmel': 'tirat-carmel', nesher: 'nesher', yokneam: 'yokneam', "yoqne'am": 'yokneam', 'migdal haemek': 'migdal-haemek',
+    'beit shean': 'beit-shean', 'kiryat shmona': 'kiryat-shmona', 'even yehuda': 'even-yehuda', 'kfar yona': 'kfar-yona', 'tel mond': 'tel-mond', 'givat shmuel': 'givat-shmuel',
+    'maale adumim': 'maale-adumim', "ma'ale adumim": 'maale-adumim', 'mevaseret zion': 'mevaseret-zion', 'beitar illit': 'beitar-illit', 'givat zeev': 'givat-zeev',
+    gedera: 'gedera', shoham: 'shoham', 'mitzpe ramon': 'mitzpe-ramon', lehavim: 'lehavim',
+  }).map(([k, v]) => [normCityName(k), v])),
 };
 
 export interface PlaceCity {

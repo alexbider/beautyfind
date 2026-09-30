@@ -177,10 +177,23 @@ const base: QualifyInput = {
 
 describe('qualification', () => {
   it('complete record is ready', () => assert.equal(qualify(base).status, 'ready'));
-  it('conflicts go to review, never straight to publish', () => {
+  it('a phone or hours that differ on the website are notices: the record stays ready with the Google value', () => {
     const q = qualify({ ...base, phoneConflict: true, hoursConflict: true });
-    assert.equal(q.status, 'needs_review');
+    assert.equal(q.status, 'ready');
     assert.ok(q.reasons.includes('phone_conflict') && q.reasons.includes('hours_conflict'));
+  });
+  it('a medical category is a notice, not a hold; an unknown city still needs a person', () => {
+    assert.equal(qualify({ ...base, categories: ['medical-aesthetics'] }).status, 'ready');
+    assert.ok(qualify({ ...base, categories: ['medical-aesthetics'] }).reasons.includes('medical_without_doctor_info'));
+    assert.equal(qualify({ ...base, citySlug: null }).status, 'needs_review');
+  });
+  it('maps English localities and coordinates inside a city to the catalog city', async () => {
+    const { resolveCity } = await import('../../src/lib/import/geo');
+    assert.equal(resolveCity('Tel Aviv-Yafo', 32.115, 34.797).citySlug, 'tel-aviv');
+    assert.equal(resolveCity('Jerusalem', 31.78, 35.21).citySlug, 'jerusalem');
+    assert.equal(resolveCity("Be'er Sheva", 31.25, 34.79).citySlug, 'beer-sheva');
+    assert.equal(resolveCity('Somewhere', 32.115, 34.797).citySlug, 'tel-aviv'); // inside the city circle
+    assert.equal(resolveCity('כפר קטן', 31.0, 35.4).citySlug, null); // far from every catalog city
   });
   it('a phone or an email is enough to publish (default rule)', () => {
     assert.equal(qualify({ ...base, email: null }).status, 'ready');

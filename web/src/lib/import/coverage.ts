@@ -133,7 +133,7 @@ export function coverageOf(i: CoverageInput): Coverage {
   const readiness = Math.round((got / total) * 100);
 
   let status: ProfileStatus;
-  if (i.conflicts.length || i.reviewReasons.length || i.socialsUnverified > 0 && i.socialsVerified === 0 && false) status = 'needs_review';
+  if (i.reviewReasons.length) status = 'needs_review'; // a phone or hours that differ on the website is only noted: the Google value stays
   else if (i.editorialNeedsMore === true && !aboutOk && readiness < 60) status = 'needs_owner_information';
   else if (!contactOk) status = 'needs_review';
   else if (missing.length === 0) status = 'ready';
@@ -160,6 +160,6 @@ export const isMedicalCategory = (slug: string) => !!CATEGORIES.find(c => c.slug
 export function manifestMarkdown(): string {
   const head = ['# Template coverage manifest', '', 'Generated from `src/lib/import/coverage.ts` (`npm run import:manifest`). Every visible element of the Business Profile template (desktop `BeautyFind Business Profile.dc.html` and `Mobile v2`), its implementation, data, source rule, honest fallback, action and covering test.', '', 'Two measures are tracked separately: **template coverage** (every section renders populated content or a truthful state) and **evidence readiness** (sections filled with sourced content, weighted). A truthful missing state counts for coverage, never for readiness.', '', '| Element | Implementation | Data | Source rule | Fallback | CTA | Test | Weight | Owner field |', '|---|---|---|---|---|---|---|---|---|'];
   const rows = MANIFEST.map(m => `| ${m.element} | ${m.selector} | ${m.fields} | ${m.source} | ${m.fallback} | ${m.cta} | ${m.test} | ${m.weight} | ${m.ownerField ? 'yes' : 'no'} |`);
-  const tail = ['', '## Profile classification', '', '- **ready**: every weighted section populated, contact present, no conflicts.', '- **ready_with_disclosed_gaps**: readiness 60% or more, gaps shown as honest states.', '- **needs_owner_information**: readiness under 60%, or the description needs more business information.', '- **needs_review**: a source conflict or a qualification reason that needs a person (phone, hours, address, duplicates, unverified website).', ''];
+  const tail = ['', '## Profile classification', '', '- **ready**: every weighted section populated, contact present, no conflicts.', '- **ready_with_disclosed_gaps**: readiness 60% or more, gaps shown as honest states.', '- **needs_owner_information**: readiness under 60%, or the description needs more business information.', '- **needs_review**: a qualification reason that needs a person (duplicates, unverified website, unknown city); a phone or hours that differ between Google and the website are only noted.', ''];
   return [...head, ...rows, ...tail].join('\n');
 }

@@ -81,15 +81,22 @@ export const BLOCKING = ['no_phone', 'no_contact', 'no_email', 'email_no_mx', 'n
 /** Reasons that allow approval but only by a person looking at the record. */
 export const REVIEW = [
   'possible_existing', 'possible_duplicate', 'email_domain_mismatch', 'shared_phone', 'temporarily_closed', 'not_beauty', 'city_not_in_catalog',
-  'extraction_failed', 'medical_without_doctor_info', 'email_from_search', 'phone_conflict', 'hours_conflict', 'website_unverified', 'closed_on_google',
+  'extraction_failed', 'email_from_search', 'website_unverified', 'closed_on_google',
 ] as const;
+/**
+ * Notices: shown on the record, never a reason to hold it. A medical category only reminds the reviewer
+ * that a responsible doctor can be verified after claiming; a phone or hours that differ on the website
+ * is noted, the Google Business Profile value stays (phone and hours come from Google or the website only).
+ */
+export const NOTICE = ['medical_without_doctor_info', 'phone_conflict', 'hours_conflict'] as const;
+export const isNotice = (r: string) => (NOTICE as readonly string[]).includes(r);
 
 export const REASON_NAMES: Record<string, string> = {
   no_phone: 'אין טלפון תקין',
   no_contact: 'אין טלפון או דוא״ל',
   no_location: 'אין מיקום או אזור שירות',
-  phone_conflict: 'הטלפון באתר שונה מהטלפון במקור',
-  hours_conflict: 'שעות הפתיחה באתר שונות מהמקור',
+  phone_conflict: 'הטלפון באתר שונה מזה שבגוגל; נשמר הטלפון מגוגל',
+  hours_conflict: 'שעות הפתיחה באתר שונות מאלה שבגוגל; נשמרו השעות מגוגל',
   website_unverified: 'לא ברור שהאתר שייך לעסק (אין בו טלפון או שם תואמים)',
   no_email: 'לא נמצא דוא״ל',
   email_no_mx: 'דומיין הדוא״ל לא מקבל דואר',
@@ -105,7 +112,7 @@ export const REASON_NAMES: Record<string, string> = {
   city_not_in_catalog: 'יישוב שאינו ברשימה',
   extraction_failed: 'חילוץ הטיפולים מהאתר נכשל',
   email_from_search: 'הדוא״ל נמצא בחיפוש, צריך לאמת',
-  medical_without_doctor_info: 'טיפול רפואי, צריך לבדוק רופא אחראי',
+  medical_without_doctor_info: 'טיפול רפואי: רופא אחראי יאומת אחרי אימות הבעלות',
 };
 
 export interface QualifyInput {
@@ -164,7 +171,7 @@ export function qualify(p: QualifyInput, rules: QualifyRules = DEFAULT_RULES): {
   if (p.extractionFailed) r.push('extraction_failed');
   if (p.email && p.emailFromSearch) r.push('email_from_search');
   if (p.categories.some(c => CATEGORIES.find(x => x.slug === c)?.isMedical)) r.push('medical_without_doctor_info');
-  const status = r.some(x => (BLOCKING as readonly string[]).includes(x)) ? 'incomplete' : r.length ? 'needs_review' : 'ready';
+  const status = r.some(x => (BLOCKING as readonly string[]).includes(x)) ? 'incomplete' : r.some(x => !isNotice(x)) ? 'needs_review' : 'ready';
   return { status, reasons: r };
 }
 

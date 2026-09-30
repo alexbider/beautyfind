@@ -6,6 +6,7 @@ import { coverageOf, type Coverage, type CoverageInput } from './coverage';
 import type { EditorialRecord } from './editorial';
 import type { ImportedTreatment } from './rules';
 import type { Socials } from './socials';
+import { isNotice } from './rules';
 
 export interface PlaceLike {
   placeId: string;
@@ -34,7 +35,7 @@ export interface PlaceLike {
 const hoursKnown = (hours: unknown) => Array.isArray(hours) && hours.length === 7 && (hours as Array<{ closed?: boolean; unknown?: boolean }>).some(d => d && !d.closed && !d.unknown);
 
 /** Qualification reasons that need a person (the rest are handled by the publication rules). */
-export const PERSON_REASONS = (reasons: string[]) => reasons.filter(r => !['medical_without_doctor_info', 'no_email'].includes(r));
+export const PERSON_REASONS = (reasons: string[]) => reasons.filter(r => !isNotice(r) && r !== 'no_email');
 
 export function placeCoverageInput(p: PlaceLike, opts: { mapConfigured: boolean }): CoverageInput {
   const crawl = (p.crawl ?? {}) as Record<string, unknown>;

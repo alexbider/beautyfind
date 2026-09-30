@@ -7,6 +7,7 @@ import { placeCoverage } from '@/lib/import/placeCoverage';
 import { db } from '@/lib/server/db';
 import { branchCoverage, socialCounts } from '@/lib/server/importPublish';
 import { profileHref } from '@/lib/server/public';
+import { PERSON_REASONS } from '@/lib/import/placeCoverage';
 
 // The profiles report (/ops/import/report): every business the import touched, scraped or enhanced,
 // with a link, what it has and what it lacks per template section, which sources answered, and what
@@ -107,7 +108,7 @@ export async function importReport(f: ReportFilter = {}): Promise<{ rows: Report
     let cov: Coverage;
     if (b) {
       const conflicts = [crawl.phoneConflict === true ? 'phone' : null, crawl.hoursConflict === true ? 'hours' : null].filter((x): x is string => !!x);
-      cov = branchCoverage(b, { verifiedStaff: verifiedBy.get(b.businessId) ?? 0, conflicts, reviewReasons: p.reasons.filter(r => !['medical_without_doctor_info', 'no_email'].includes(r)), socials: socialCounts(p) });
+      cov = branchCoverage(b, { verifiedStaff: verifiedBy.get(b.businessId) ?? 0, conflicts, reviewReasons: PERSON_REASONS(p.reasons), socials: socialCounts(p) });
     } else cov = placeCoverage(p, { mapConfigured: !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY });
     const ed = ((b?.editorial ?? p.editorial) ?? null) as (EditorialRecord & { model?: string }) | null;
     const state = stateOf(p.status);

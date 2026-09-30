@@ -5,6 +5,7 @@ import { Prisma, type ImportPlace, type ImportRun } from '@prisma/client';
 import { pickEmail } from '../../../src/lib/import/email';
 import { DUPLICATE_AT, isStrong, MatchPool, POSSIBLE_MATCH_AT, type PoolItem } from '../../../src/lib/import/match';
 import { qualify } from '../../../src/lib/import/rules';
+import { resolveCity } from '../../../src/lib/import/geo';
 import { placeCoverage } from '../../../src/lib/import/placeCoverage';
 import { ratingProviderOk } from '../../../src/lib/import/sourcePolicy';
 import { db, heartbeat, log, setStats, settings } from '../ctx';
@@ -26,6 +27,16 @@ export async function check(run: ImportRun) {
   const asItem = (p: ImportPlace): PoolItem => ({ id: p.id, kind: 'import', name: p.name, lat: p.lat, lng: p.lng, phone: p.phone, email: p.email, website: p.website, googlePlaceId: p.placeId.startsWith('dfs:') ? null : p.placeId });
 
   for (const p of places) {
+    // A record whose locality never matched a catalog city (English spelling, older run): the coordinates decide now.
+    if (!p.citySlug && p.lat != null && p.lng != null) {
+      const where = resolveCity(p.cityName, p.lat, p.lng);
+      if (where.citySlug) {
+        p.citySlug = where.citySlug;
+        p.cityName = where.cityName;
+        p.regionSlug = where.regionSlug as ImportPlace['regionSlug'];
+        await db.importPlace.update({ where: { id: p.id }, data: { citySlug: where.citySlug, cityName: where.cityName, regionSlug: where.regionSlug as ImportPlace['regionSlug'] } });
+      }
+    }
     const item = asItem(p);
     const final = p.status === 'approved' || p.status === 'merged' || (p.status === 'duplicate' && p.reviewedById);
     if (final) {
