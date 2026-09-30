@@ -51,10 +51,19 @@ export function extractEmails(html: string): string[] {
   for (const m of html.matchAll(/data-cfemail=["']([0-9a-f]+)["']/gi)) add(decodeCfEmail(m[1]));
   for (const m of html.matchAll(/\/cdn-cgi\/l\/email-protection#([0-9a-f]+)/gi)) add(decodeCfEmail(m[1]));
   const text = html
-    .replace(/&#64;|&#x40;|\s*\[\s*at\s*\]\s*|\s*\(\s*at\s*\)\s*/gi, '@')
-    .replace(/&#46;|\s*\[\s*dot\s*\]\s*/gi, '.');
+    .replace(/&#64;|&#x40;|&commat;|＠|\s*\[\s*at\s*\]\s*|\s*\(\s*at\s*\)\s*|\s+at\s+(?=[a-z0-9-]+\s*(?:\.|\[\s*dot\s*\]|\(\s*dot\s*\))\s*[a-z]{2,})/gi, '@')
+    .replace(/&#46;|\s*\[\s*dot\s*\]\s*|\s*\(\s*dot\s*\)\s*/gi, '.');
   for (const m of text.matchAll(EMAIL_RE)) add(m[0]);
-  return [...found];
+  // An address split across inline tags (<span>info@</span><span>salon.co.il</span>) or written with
+  // spaces around the @ by a page builder: read the text with tags removed and spaces around @ closed.
+  const joined = text
+    .replace(/<\/?(?:span|a|b|i|u|em|strong|small|font|wbr|bdi|bdo)\b[^>]*>/gi, '') // inline tags vanish
+    .replace(/<[^>]+>/g, ' ') // block tags separate words
+    .replace(/\s*@\s*/g, '@');
+  for (const m of joined.matchAll(EMAIL_RE)) add(m[0]);
+  // The joined pass can glue a neighbouring number onto an address ("5599info@..."): keep the shorter one.
+  const list = [...found];
+  return list.filter(e => !list.some(o => o !== e && e.endsWith(o)));
 }
 
 export const emailDomain = (email: string) => email.split('@')[1] ?? '';
@@ -69,12 +78,38 @@ export function siteHost(url: string | null | undefined): string | null {
   }
 }
 
-/** True when the address belongs to the website's own domain (or a subdomain of it). */
+/** The distinctive part of a host: "proportsia" from proportsia.co.il, "salon-x" from www.salon-x.com. */
+function baseLabel(host: string): string {
+  const parts = host.toLowerCase().split('.').filter(Boolean);
+  // Drop the public suffix (co.il, org.il, com, net, ...) and keep the label before it.
+  const suffix = parts.length >= 3 && parts[parts.length - 2].length <= 3 && parts[parts.length - 1].length === 2 ? 2 : 1;
+  return parts[Math.max(0, parts.length - suffix - 1)] ?? '';
+}
+
+function editDistance(a: string, b: string): number {
+  const dp = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array<number>(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) dp[0][j] = j;
+  for (let i = 1; i <= a.length; i++)
+    for (let j = 1; j <= b.length; j++) dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return dp[a.length][b.length];
+}
+
+/**
+ * True when the address belongs to the website's own domain (or a subdomain of it), or to a domain
+ * that is the same name spelled slightly differently: proportsia.co.il and info@proportzia.co.il are
+ * one business whose site and mailbox were registered with different transliterations.
+ */
 export function sameDomain(email: string, website: string | null | undefined): boolean {
   const host = siteHost(website);
   const d = emailDomain(email);
   if (!host || !d) return false;
-  return host === d || host.endsWith('.' + d) || d.endsWith('.' + host);
+  if (host === d || host.endsWith('.' + d) || d.endsWith('.' + host)) return true;
+  if (FREE_MAIL.has(d)) return false;
+  const a = baseLabel(host);
+  const b = baseLabel(d);
+  if (a.length < 5 || b.length < 5) return false;
+  if (a.includes(b) || b.includes(a)) return true;
+  return editDistance(a, b) <= (Math.min(a.length, b.length) >= 8 ? 2 : 1);
 }
 
 /**

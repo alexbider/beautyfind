@@ -135,13 +135,17 @@ export async function placeAction(id: string, input: z.input<typeof Op>): Promis
 // after this many milliseconds and reports what is left so the screen calls again.
 const PUBLISH_BUDGET_MS = 20_000;
 
-/** Approves the given records that are "ready" (never "needs_review") without copying images; stops at the time budget. */
-export async function bulkApproveAction(ids: string[]): Promise<{ ok: boolean; approved: number; skipped: number; left: number; pendingImages: number }> {
+/**
+ * Approves the given "ready" records without copying images; stops at the time budget. With
+ * `includeReview`, records waiting for a person ("needs_review") are approved too: staff chose them on
+ * the review tab after looking, and only blocking reasons (no contact, no category) still refuse.
+ */
+export async function bulkApproveAction(ids: string[], opts: { includeReview?: boolean } = {}): Promise<{ ok: boolean; approved: number; skipped: number; left: number; pendingImages: number }> {
   const user = await importerOrNull();
   if (!user) return { ok: false, approved: 0, skipped: 0, left: 0, pendingImages: 0 };
   const list = z.array(z.uuid()).max(100).safeParse(ids);
   if (!list.success) return { ok: false, approved: 0, skipped: 0, left: 0, pendingImages: 0 };
-  const ready = await db.importPlace.findMany({ where: { id: { in: list.data }, status: 'ready' }, select: { id: true } });
+  const ready = await db.importPlace.findMany({ where: { id: { in: list.data }, status: { in: opts.includeReview ? ['ready', 'needs_review'] : ['ready'] } }, select: { id: true } });
   const deadline = Date.now() + PUBLISH_BUDGET_MS;
   let approved = 0;
   let left = 0;

@@ -240,7 +240,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: SP })
           <button type="submit" className={`${styles.btn} ${styles.primary}`} style={{ flex: 'none' }}>סינון</button>
         </form>
 
-        <ReviewList rows={list} tab={tab.key} bulk={tab.key === 'ready'} runId={run || null} readyInRun={run ? count(TABS[0]) : 0} google={googleAvailable()} />
+        <ReviewList rows={list} tab={tab.key} bulk={tab.key === 'ready' || tab.key === 'review'} runId={run || null} readyInRun={run ? count(TABS[0]) : 0} google={googleAvailable()} />
 
         {pages > 1 ? (
           <div className={styles.pager}>

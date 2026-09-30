@@ -519,13 +519,18 @@ export function ReviewList({ rows, tab, bulk, runId, readyInRun, google }: { row
     log({ ok: true, name: 'תמונות', text: `הועתקו תמונות ל־${total.done} עסקים.${total.left ? ` ${total.left} עדיין מחכים (כפתור ״העתקת התמונות״ בדף הריצות).` : ''}` });
   };
   const approveAll = () => {
-    if (!confirm(`לפרסם ${rows.length} עסקים מהעמוד הזה? רק רשומות במצב ״מוכן״ יפורסמו.`)) return;
+    const review = tab === 'review';
+    const chosen = picked.size ? rows.filter(r => picked.has(r.id)) : rows;
+    const ask = review
+      ? `לפרסם ${chosen.length} עסקים שמחכים לבדיקה${picked.size ? ' (הנבחרים)' : ' (כל העמוד)'}? הסיבות לבדיקה (כפילות אפשרית, אתר לא מאומת, יישוב לא ברשימה) יישארו רשומות, והרשומות יפורסמו כמו שהן. רשומות בלי טלפון או דוא״ל ובלי תחום לא יפורסמו.`
+      : `לפרסם ${chosen.length} עסקים מהעמוד הזה? רק רשומות במצב ״מוכן״ יפורסמו.`;
+    if (!confirm(ask)) return;
     start(async () => {
       let approved = 0;
-      let ids = rows.map(x => x.id);
+      let ids = chosen.map(x => x.id);
       let pendingImages = 0;
       for (let i = 0; i < 20 && ids.length; i++) {
-        const r = await bulkApproveAction(ids);
+        const r = await bulkApproveAction(ids, { includeReview: review });
         if (!r.ok) {
           log({ ok: false, name: 'אישור מרוכז', text: 'הפעולה נכשלה' });
           return;
@@ -536,7 +541,7 @@ export function ReviewList({ rows, tab, bulk, runId, readyInRun, google }: { row
         log({ ok: true, name: 'אישור מרוכז', text: `פורסמו ${approved} עסקים, ממשיכים…` });
         ids = ids.slice(-r.left); // the ones the time budget did not reach come last in the list
       }
-      log({ ok: true, name: 'אישור מרוכז', text: `פורסמו ${approved} עסקים${rows.length - approved ? `, ${rows.length - approved} דולגו` : ''}` });
+      log({ ok: true, name: 'אישור מרוכז', text: `פורסמו ${approved} עסקים${chosen.length - approved ? `, ${chosen.length - approved} דולגו` : ''}` });
       router.refresh();
       await copyImages(pendingImages);
       router.refresh();
@@ -600,8 +605,8 @@ export function ReviewList({ rows, tab, bulk, runId, readyInRun, google }: { row
           </button>
         )}
         {bulk ? (
-          <button type="button" className={`${styles.btn} ${styles.primary}`} disabled={pending} onClick={approveAll}>
-            {pending ? 'מפרסמים…' : `אישור ופרסום של ${rows.length} המוכנים בעמוד`}
+          <button type="button" className={`${styles.btn} ${styles.primary}`} disabled={pending} onClick={approveAll} title={tab === 'review' ? 'מפרסם את הרשומות שמחכות לבדיקה כמו שהן; הסיבות לבדיקה נשארות רשומות' : undefined}>
+            {pending ? 'מפרסמים…' : tab === 'review' ? (picked.size ? `אישור ופרסום של ${picked.size} הנבחרים` : `אישור ופרסום של כל ${rows.length} הרשומות בעמוד`) : picked.size ? `אישור ופרסום של ${picked.size} הנבחרים` : `אישור ופרסום של ${rows.length} המוכנים בעמוד`}
           </button>
         ) : null}
         {bulk && runId && readyInRun > rows.length ? (

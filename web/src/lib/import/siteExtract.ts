@@ -66,6 +66,8 @@ export const FOLLOW = /(contact|about|service|treat|price|pricing|menu|branch|lo
 const TEAM_PAGE = /(team|staff|our-team|doctors|הצוות|צוות|רופאים|המטפלים|מי אנחנו|עלינו|about)/i;
 const SKIP = /(blog|news|post|tag\/|category\/|calendar|events?\/|search|cart|checkout|login|signin|wp-admin|wp-json|feed|privacy|terms|accessibility|נגישות|תקנון|מדיניות|\.(pdf|jpe?g|png|gif|webp|zip|mp4)$)/i;
 const CREDIT = /(נבנה\s*(ע["״]?י|על ידי)|בניית\s*אתרים|עיצוב\s*ו?בניית|פיתוח\s*אתרים|developed by|designed by|powered by|created by|website by|site by|web design)/i;
+// Words that say the address is how to reach the business (a contact block), so a nearby builder credit does not hide it.
+const CONTACT_CUE = /(פרטי\s*התקשרות|צרו?\s*קשר|יצירת\s*קשר|דוא["״]?ל|אימייל|מייל|טלפון|כתובת|שעות|contact|e-?mail|phone|tel\b)/i;
 
 const decode = (s: string) =>
   s
@@ -454,7 +456,9 @@ export function extractPage(html: string, url: string, siteHost: string): PageFa
   const emails: Fact[] = [];
   for (const e of new Set([...extractEmails(html), ...ld.emails.map(x => cleanEmail(x)).filter((x): x is string => !!x)])) {
     const ctx = snippet(text, e, 90);
-    if (CREDIT.test(ctx) && !sameDomain(e, `https://${siteHost}`)) {
+    // A builder credit next to an address on another domain is the agency's mailbox, unless the same
+    // context is plainly the business's contact block (phone, email, hours labels around it).
+    if (CREDIT.test(ctx) && !sameDomain(e, `https://${siteHost}`) && !CONTACT_CUE.test(ctx)) {
       agency.add(e);
       continue;
     }

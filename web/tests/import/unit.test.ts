@@ -653,3 +653,26 @@ describe('chains and franchises', async () => {
     assert.equal(chainTotal(0, 149).total, 0);
   });
 });
+
+describe('emails on business websites', async () => {
+  const { extractEmails, sameDomain, pickEmail } = await import('../../src/lib/import/email');
+  const { extractPage } = await import('../../src/lib/import/siteExtract');
+  it('treats a mailbox on the same name spelled differently as the business address', () => {
+    assert.ok(sameDomain('info@proportzia.co.il', 'https://proportsia.co.il/'));
+    assert.ok(sameDomain('office@salon-dana.co.il', 'https://www.salondana.co.il/'));
+    assert.ok(!sameDomain('x@gmail.com', 'https://proportsia.co.il/'));
+    assert.ok(!sameDomain('studio@pixel-agency.co.il', 'https://salon.co.il/'));
+    assert.equal(pickEmail(['info@proportzia.co.il'], 'https://proportsia.co.il/')?.tier, 'own');
+  });
+  it('reads addresses split across tags, spaced around the @, and written with "at"', () => {
+    const html = '<footer><span>info@</span><span>proportzia.co.il</span> · office @ salon.co.il · hello at studio [dot] co [dot] il</footer>';
+    const got = extractEmails(html).sort();
+    assert.deepEqual(got, ['hello@studio.co.il', 'info@proportzia.co.il', 'office@salon.co.il']);
+  });
+  it('keeps the contact-block address even when a builder credit sits next to it on another domain', () => {
+    const html = `<html><body><footer><h4>פרטי התקשרות</h4><p>*5599</p><p><a href="mailto:info@proportzia.co.il">info@proportzia.co.il</a></p><p>בניית אתרים: סטודיו X</p></footer></body></html>`;
+    const f = extractPage(html, 'https://proportsia.co.il/', 'proportsia.co.il');
+    assert.deepEqual(f.emails.map(e => e.value), ['info@proportzia.co.il']);
+    assert.deepEqual(f.agencyEmails, []);
+  });
+});
