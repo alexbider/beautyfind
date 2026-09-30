@@ -13,7 +13,7 @@ import { responses } from './providers/openai';
 export type WriterProvider = 'anthropic' | 'openai';
 export const EDITORIAL_MODEL = process.env.IMPORT_EDITORIAL_MODEL || pricing().editorial.model;
 export const OPENAI_MODEL = process.env.IMPORT_OPENAI_MODEL || pricing().openai.model;
-const MOCK = process.env.IMPORT_EDITORIAL_MOCK === '1';
+const mock = () => process.env.IMPORT_EDITORIAL_MOCK === '1'; // read per call: tests switch it on for one suite
 
 const Out = z.object({
   heading: z.enum(['על הקליניקה', 'על המספרה', 'על הספא', 'על הסטודיו', 'על העסק']),
@@ -115,8 +115,8 @@ const onceClaude = (turns: Turn[]): Promise<Once> => once(turns.map(t => ({ role
 /** One generation call, then one repair call when the checks find something a rewrite can fix. */
 export async function writeEditorial(packet: EvidencePacket, provider: WriterProvider = 'openai'): Promise<EditorialResult> {
   const key = provider === 'openai' ? process.env.OPENAI_API_KEY : process.env.ANTHROPIC_API_KEY;
-  if (MOCK || !key) {
-    if (!MOCK) return { ok: false, error: 'no_api_key', fatal: true };
+  if (mock() || !key) {
+    if (!mock()) return { ok: false, error: 'no_api_key', fatal: true };
     const output = templateDraft(packet);
     return { ok: true, output, violations: checkOutput(output, packet).filter(v => !v.startsWith('short:')), repairs: 0, inputTokens: 0, outputTokens: 0, costUsd: 0, model: 'template' };
   }

@@ -425,11 +425,16 @@ describe('render stage: the worker\'s own browser reads a JavaScript site', { sk
 
 describe('writing stage: a leftover reservation never loops', { skip }, () => {
   let pdb: PrismaClient;
+  let mockBefore: string | undefined;
   const made: { places: string[]; runs: string[] } = { places: [], runs: [] };
   before(async () => {
+    mockBefore = process.env.IMPORT_EDITORIAL_MOCK;
+    process.env.IMPORT_EDITORIAL_MOCK = '1'; // the template writer stands in: no key, no call
     pdb = (await import('../../scripts/import/ctx')).db;
   });
   after(async () => {
+    if (mockBefore === undefined) delete process.env.IMPORT_EDITORIAL_MOCK;
+    else process.env.IMPORT_EDITORIAL_MOCK = mockBefore;
     await pdb.spendEntry.deleteMany({ where: { runId: { in: made.runs } } });
     await pdb.providerBudget.deleteMany({ where: { key: { in: made.runs.map(id => `editorial:run:${id}`) } } });
     await pdb.importPlace.deleteMany({ where: { id: { in: made.places } } });
