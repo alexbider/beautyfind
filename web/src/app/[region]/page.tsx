@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lead = n > 0 ? `${countText(n, 'עסק אחד', 'עסקים')} ב־14 תחומים, ${cities} ערים` : `${cities} ערים ו־14 תחומי טיפול`;
   return applySeo(`/${region.slug}`, {
     title: `יופי ואסתטיקה ${rc.inName}`,
-    description: `עסקי יופי ואסתטיקה ${rc.inName}: ${lead}, מחירים חציוניים בשקלים והעסקים המדורגים ביותר באזור.`,
+    description: `עסקי יופי ואסתטיקה ${rc.inName}: ${lead}, מחירים אמצעיים בשקלים והעסקים המדורגים ביותר באזור.`,
     alternates: { canonical: `/${region.slug}` },
   });
 }
@@ -92,10 +92,10 @@ export default async function RegionPage({ params }: Props) {
     { label: 'ערים', value: fmtInt(cities.length), note: activeCats === CATEGORIES.length ? 'כל 14 התחומים' : activeCats > 0 ? `${countText(activeCats, 'תחום טיפול אחד', 'תחומי טיפול')} באזור` : 'בכל האזור' },
   ];
   const rating = ratings.region[r];
-  if (rating != null) stats.push({ label: 'דירוג חציוני', value: rating.toFixed(1), note: 'מתוך 5 בגוגל' });
+  if (rating != null) stats.push({ label: 'דירוג אמצעי', value: rating.toFixed(1), note: 'מתוך 5 בגוגל' });
   if (regionDelta != null) {
     const d = Math.round(regionDelta);
-    stats.push({ label: 'מול החציון הארצי', value: `${d > 0 ? '+' : ''}${d}%`, note: 'חציון הפער בין התחומים' });
+    stats.push({ label: 'מול המחיר האמצעי הארצי', value: `${d > 0 ? '+' : ''}${d}%`, note: 'הפער האמצעי בין התחומים' });
   }
 
   // WhatsApp and phone for the phone card's contact buttons.
@@ -226,7 +226,7 @@ export default async function RegionPage({ params }: Props) {
           </div>
           <div aria-hidden="true" className={styles.catHeader}>
             <span className={styles.cName}>תחום</span>
-            <span className={styles.cMedian}>חציון באזור</span>
+            <span className={styles.cMedian}>מחיר אמצעי באזור</span>
             <span className={styles.cDelta}>מול הארצי</span>
             <span className={styles.cCount}>עסקים</span>
             <span className={styles.cArrow} />
@@ -266,7 +266,7 @@ export default async function RegionPage({ params }: Props) {
             ))}
           </ul>
           <p className={shared.note}>
-            חציון מתפריטי המחירים שהעסקים באזור מפרסמים. בשקלים, לא כולל מע״מ. הפער מחושב מול החציון הארצי באותו תחום, ותחום עם פחות משלושה מחירים מוצג בלי חציון.
+            המחיר האמצעי (חציון) מתפריטי המחירים שהעסקים באזור מפרסמים. בשקלים, לא כולל מע״מ. הפער מחושב מול המחיר האמצעי הארצי באותו תחום, ותחום עם פחות משלושה מחירים מוצג בלי מחיר אמצעי.
           </p>
         </section>
 

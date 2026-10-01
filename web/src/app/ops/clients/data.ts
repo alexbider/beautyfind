@@ -8,7 +8,7 @@ import { monthStart } from '@/lib/server/opsStats';
 // its marketing consent and whether staff blocked it.
 
 export type ClientFilter = 'all' | 'consented' | 'blocked';
-export const CLIENT_FILTERS: Array<{ key: ClientFilter; name: string }> = [{ key: 'all', name: 'הכל' }, { key: 'consented', name: 'מסכימות לדיוור' }, { key: 'blocked', name: 'חסומות' }];
+export const CLIENT_FILTERS: Array<{ key: ClientFilter; name: string }> = [{ key: 'all', name: 'הכול' }, { key: 'consented', name: 'מסכימות לדיוור' }, { key: 'blocked', name: 'חסומות' }];
 
 export interface ClientRow {
   id: string;

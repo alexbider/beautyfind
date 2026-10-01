@@ -251,7 +251,7 @@ export function ClinicQueue({
               <>
                 <div className={`${styles.panelBody} bf-desk-only`}>
                   <div role="radiogroup" aria-label="סינון לפי טיפול" className={styles.filters}>
-                    {[{ id: 'all', name: 'הכל', count: data.entries.length }, ...data.treatments].map(t => (
+                    {[{ id: 'all', name: 'הכול', count: data.entries.length }, ...data.treatments].map(t => (
                       <button
                         key={t.id}
                         type="button"
@@ -271,7 +271,7 @@ export function ClinicQueue({
                     label="סינון לפי טיפול"
                     value={filter}
                     onChange={setFilter}
-                    items={[{ id: 'all', name: 'הכל', count: data.entries.length }, ...data.treatments].map(t => ({ key: t.id, label: t.name, count: t.count }))}
+                    items={[{ id: 'all', name: 'הכול', count: data.entries.length }, ...data.treatments].map(t => ({ key: t.id, label: t.name, count: t.count }))}
                   />
                 </div>
               </>

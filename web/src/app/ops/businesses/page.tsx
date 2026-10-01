@@ -59,13 +59,13 @@ export default async function BusinessesPage({ searchParams }: { searchParams: S
           <select name="region" defaultValue={region} className={ui.select} aria-label="אזור"><option value="">כל האזורים</option>{REGIONS.map(r => <option key={r.slug} value={r.slug}>{r.name}</option>)}</select>
           <select name="city" defaultValue={city} className={ui.select} aria-label="עיר"><option value="">כל הערים</option>{(region ? citiesOf(region as RegionSlug) : []).map(c => <option key={c.slug} value={c.name}>{c.name}</option>)}{city && !(region && citiesOf(region as RegionSlug).some(c => c.name === city)) ? <option value={city}>{city}</option> : null}</select>
           <select name="cat" defaultValue={category} className={ui.select} aria-label="תחום"><option value="">כל התחומים</option>{CATEGORIES.map(c => <option key={c.slug} value={c.slug}>{c.name}</option>)}</select>
-          <select name="claimed" defaultValue={claimed} className={ui.select} aria-label="בעלות"><option value="all">בעלות: הכל</option><option value="unclaimed">לא נתבעו (ניתנים להשלמה)</option><option value="claimed">בבעלות מאומתת</option></select>
+          <select name="claimed" defaultValue={claimed} className={ui.select} aria-label="בעלות"><option value="all">בעלות: הכול</option><option value="unclaimed">לא נתבעו (ניתנים להשלמה)</option><option value="claimed">בבעלות מאומתת</option></select>
           {view === 'list' ? (
-            <select name="plan" defaultValue={plan} className={ui.select} aria-label="מסלול"><option value="all">מסלול: הכל</option><option value="basic">בסיסי</option><option value="advanced">מתקדם</option><option value="none">ללא מנוי</option></select>
+            <select name="plan" defaultValue={plan} className={ui.select} aria-label="מסלול"><option value="all">מסלול: הכול</option><option value="basic">בסיסי</option><option value="advanced">מתקדם</option><option value="none">ללא מנוי</option></select>
           ) : (
             <>
-              <select name="missing" defaultValue={missing} className={ui.select} aria-label="סעיף חסר"><option value="">חסר: הכל</option>{GAP_SECTIONS.map(id => <option key={id} value={id}>חסר: {SECTION_NAME[id] ?? id}</option>)}</select>
-              <select name="gstatus" defaultValue={gstatus} className={ui.select} aria-label="מצב פרופיל"><option value="">מצב: הכל</option>{GAP_STATUSES.map(st => <option key={st} value={st}>{STATUS_NAME[st]}</option>)}</select>
+              <select name="missing" defaultValue={missing} className={ui.select} aria-label="סעיף חסר"><option value="">חסר: הכול</option>{GAP_SECTIONS.map(id => <option key={id} value={id}>חסר: {SECTION_NAME[id] ?? id}</option>)}</select>
+              <select name="gstatus" defaultValue={gstatus} className={ui.select} aria-label="מצב פרופיל"><option value="">מצב: הכול</option>{GAP_STATUSES.map(st => <option key={st} value={st}>{STATUS_NAME[st]}</option>)}</select>
             </>
           )}
           <button type="submit" className={`${ui.btn} ${ui.primary}`}>סינון</button>

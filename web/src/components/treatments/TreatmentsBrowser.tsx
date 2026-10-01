@@ -221,7 +221,7 @@ export function TreatmentsBrowser({ rows, groupOrder }: { rows: TreatmentRow[]; 
               <span className={styles.cImg} />
               <span className={styles.cName}>תחום</span>
               <span className={styles.cResp}>אחריות</span>
-              <span className={styles.cMedian}>מחיר חציוני</span>
+              <span className={styles.cMedian}>מחיר אמצעי</span>
               <span className={styles.cFreq}>תדירות</span>
               <span className={styles.cCount}>עסקים</span>
               <span className={styles.cArrow} />
@@ -279,7 +279,7 @@ export function TreatmentsBrowser({ rows, groupOrder }: { rows: TreatmentRow[]; 
         )}
 
         <p className={styles.footnote}>
-          המחירים הם חציון בשקלים, לא כולל מע״מ, מתוך התפריטים שהעסקים מפרסמים, ומוצגים רק כשיש לפחות שלושה מחירים בתחום. הם אינם הצעת מחיר ואינם מחייבים אף עסק. טיפולים אסתטיים אלקטיביים אינם בסל הבריאות.
+          המחירים הם המחיר האמצעי (חציון) בשקלים, לא כולל מע״מ, מתוך התפריטים שהעסקים מפרסמים, ומוצגים רק כשיש לפחות שלושה מחירים בתחום. הם אינם הצעת מחיר ואינם מחייבים אף עסק. טיפולים אסתטיים אלקטיביים אינם בסל הבריאות.
         </p>
       </div>
     </div>

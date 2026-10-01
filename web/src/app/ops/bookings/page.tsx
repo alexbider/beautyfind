@@ -14,7 +14,7 @@ type SP = Promise<Record<string, string | string[] | undefined>>;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? '';
 
 const FILTERS: Array<{ key: string; name: string; where: Prisma.BookingWhereInput }> = [
-  { key: 'all', name: 'הכל', where: { status: { notIn: ['pending_payment', 'abandoned'] } } },
+  { key: 'all', name: 'הכול', where: { status: { notIn: ['pending_payment', 'abandoned'] } } },
   { key: 'confirmed', name: 'מאושר', where: { status: { in: ['confirmed', 'checked_in', 'in_treatment'] } } },
   { key: 'consult', name: 'ייעוץ רפואי', where: { kind: 'consult', status: { notIn: ['pending_payment', 'abandoned'] } } },
   { key: 'completed', name: 'הושלם', where: { status: 'completed' } },

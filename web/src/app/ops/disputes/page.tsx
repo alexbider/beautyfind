@@ -25,7 +25,7 @@ export default async function DisputesPage({ searchParams }: { searchParams: SP 
       <PageHead eyebrow="תפעול" title="מחלוקות" lead="הקליניקה מחליטה על ההחזר. אנחנו בודקים שהמדיניות שהוצגה נאכפה כפי שנכתבה, ומתעדים." />
       <div className={ui.split}>
         <div className={ui.stack}>
-          <Pills current={filter} items={[{ key: 'open', name: 'פתוחות', href: '/ops/disputes' }, { key: 'all', name: 'הכל', href: '/ops/disputes?filter=all' }]} />
+          <Pills current={filter} items={[{ key: 'open', name: 'פתוחות', href: '/ops/disputes' }, { key: 'all', name: 'הכול', href: '/ops/disputes?filter=all' }]} />
           {rows.length ? rows.map(d => (
             <Card
               key={d.id}

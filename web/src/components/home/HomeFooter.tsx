@@ -29,7 +29,7 @@ const GROUPS = [
     links: [
       { name: 'אודות', href: '/about' },
       { name: 'מרכז עזרה', href: ROUTES.help },
-      { name: 'צור קשר', href: ROUTES.contact },
+      { name: 'צרו קשר', href: ROUTES.contact },
       { name: 'לעסקים', href: ROUTES.forBusiness },
       { name: 'תקן הרישום', href: ROUTES.listingStandards },
       { name: 'מידע על פרסום', href: ROUTES.sponsorship },
@@ -78,7 +78,7 @@ export function HomeFooter() {
             <span>© <span className="ltr">{new Date().getFullYear()}</span> BeautyFind · Israfind Group</span>
             <nav aria-label="מידע משפטי" className={styles.legal}>
               <Link href={ROUTES.privacy}>מדיניות פרטיות</Link>
-              <Link href={ROUTES.terms}>תקנון</Link>
+              <Link href={ROUTES.terms}>תנאי שימוש</Link>
               <Link href={ROUTES.listingStandards}>תקן הרישום</Link>
               <Link href={ROUTES.accessibility}>הצהרת נגישות</Link>
             </nav>

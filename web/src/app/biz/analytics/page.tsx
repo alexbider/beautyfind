@@ -226,7 +226,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
 
         {bench ? (
           <div className={ui.card}>
-            <h2 className={ui.h2Tight}>אתם מול החציון באזור</h2>
+            <h2 className={ui.h2Tight}>אתם מול המחיר האמצעי באזור</h2>
             <p className={ui.metaGap} style={{ marginBottom: 18 }}>
               <span className="ltr">{nf(bench.peers)}</span> סניפים נוספים בתחום {bench.categoryName} ב{bench.regionName} · {RANGE_TITLE[range]}
             </p>
@@ -234,9 +234,9 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
               {bench.rows.map(b => {
                 const top = Math.max(1, b.you, b.med);
                 const better = b.higherIsBetter ? b.you >= b.med : b.you <= b.med;
-                const verdict = b.you === b.med ? 'בדיוק בחציון' : better ? 'מעל החציון באזור' : 'מתחת לחציון באזור';
+                const verdict = b.you === b.med ? 'בדיוק במחיר האמצעי' : better ? 'מעל המחיר האמצעי באזור' : 'מתחת למחיר האמצעי באזור';
                 return (
-                  <li key={b.key} className={a.benchRow} aria-label={`${b.name}: אתם ${nf(b.you)}, החציון ${nf(b.med)}. ${verdict}`}>
+                  <li key={b.key} className={a.benchRow} aria-label={`${b.name}: אתם ${nf(b.you)}, המחיר האמצעי ${nf(b.med)}. ${verdict}`}>
                     <span className={a.benchName}>{b.name}</span>
                     <span className={a.benchBars} aria-hidden="true">
                       <span className={a.benchLine}>
@@ -259,7 +259,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
             </ul>
             <div className={a.benchKey} aria-hidden="true">
               <span><i style={{ background: '#0B7A87' }} />אתם</span>
-              <span><i style={{ background: '#D4D4D4' }} />החציון באזור</span>
+              <span><i style={{ background: '#D4D4D4' }} />המחיר האמצעי באזור</span>
             </div>
           </div>
         ) : null}

@@ -14,7 +14,7 @@ import { requireClinic } from '@/lib/server/clinic';
 
 const Id = z.uuid();
 const PATH = '/clinic/consults';
-const DENIED: ActionResult = { ok: false, error: 'אין לך הרשאה לפעולה הזו. בעלי העסק יכולים לפתוח אותה בהגדרות הצוות.' };
+const DENIED: ActionResult = { ok: false, error: 'אין לכם הרשאה לפעולה הזו. בעלי העסק יכולים לפתוח אותה בהגדרות הצוות.' };
 const BROKEN: ActionResult = { ok: false, error: 'הפעולה נכשלה אצלנו. נסו שוב בעוד רגע.' };
 
 async function actor(): Promise<Actor | null> {
@@ -59,7 +59,7 @@ const Reason = z.enum(DECLINES.map(d => d.key) as ['medical', 'scope', 'duplicat
 
 export async function declineAction(id: string, reason: string) {
   const r = Reason.safeParse(reason);
-  if (!r.success) return { ok: false, error: 'בחרי סיבה.' } satisfies ActionResult;
+  if (!r.success) return { ok: false, error: 'בחרו סיבה.' } satisfies ActionResult;
   return run(id, (a, rid) => declineRequest(a, rid, r.data));
 }
 

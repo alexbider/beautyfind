@@ -127,7 +127,7 @@ async function SubscriptionsTab({ filter, canEdit }: { filter: 'all' | 'active' 
   return (
     <>
       <div className={ui.toolbar}>
-        <Pills current={filter} items={[{ key: 'all', name: 'הכל', count: counts.reduce((a, x) => a + x._count, 0), href: '/ops/accounting?tab=subscriptions' }, { key: 'active', name: 'פעילים', count: c('active'), href: '/ops/accounting?tab=subscriptions&filter=active' }, { key: 'past_due', name: 'חוב פתוח', count: c('past_due'), href: '/ops/accounting?tab=subscriptions&filter=past_due' }, { key: 'hidden', name: 'מוסתרים', count: c('hidden'), href: '/ops/accounting?tab=subscriptions&filter=hidden' }, { key: 'cancelled', name: 'בוטלו', count: c('cancelled'), href: '/ops/accounting?tab=subscriptions&filter=cancelled' }]} />
+        <Pills current={filter} items={[{ key: 'all', name: 'הכול', count: counts.reduce((a, x) => a + x._count, 0), href: '/ops/accounting?tab=subscriptions' }, { key: 'active', name: 'פעילים', count: c('active'), href: '/ops/accounting?tab=subscriptions&filter=active' }, { key: 'past_due', name: 'חוב פתוח', count: c('past_due'), href: '/ops/accounting?tab=subscriptions&filter=past_due' }, { key: 'hidden', name: 'מוסתרים', count: c('hidden'), href: '/ops/accounting?tab=subscriptions&filter=hidden' }, { key: 'cancelled', name: 'בוטלו', count: c('cancelled'), href: '/ops/accounting?tab=subscriptions&filter=cancelled' }]} />
       </div>
       <Card flush>
         {rows.length ? (

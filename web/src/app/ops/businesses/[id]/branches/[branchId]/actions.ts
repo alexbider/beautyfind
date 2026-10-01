@@ -155,7 +155,7 @@ export async function saveMediaAction(branchId: string, input: MediaForm): Promi
     const owned = await db.mediaFile.count({ where: { id: { in: fresh.map(u => u.slice('/media/'.length)) }, businessId: ctx.b.businessId, isPrivate: false } });
     if (owned !== fresh.length) return { ok: false, error: 'אחת התמונות אינה שייכת לעסק. העלו אותה מחדש.' };
   }
-  if (f.coverUrl && f.coverAlt.trim().length < 3) return { ok: false, error: 'נדרש תיאור נגישות לתמונת הכיסוי', fields: { coverAlt: 'קצר מדי' } };
+  if (f.coverUrl && f.coverAlt.trim().length < 3) return { ok: false, error: 'נדרש תיאור נגישות לתמונת השער', fields: { coverAlt: 'קצר מדי' } };
   if (f.gallery.some(g => g.alt.trim().length < 3)) return { ok: false, error: 'לכל תמונה בגלריה נדרש תיאור', fields: { gallery: 'תיאור חסר' } };
   const ids = f.videos.map(v => v.id.trim()).filter(Boolean);
   if (ids.some(id => !/^[A-Za-z0-9_-]{11}$/.test(id))) return { ok: false, error: 'מזהה YouTube הוא 11 תווים', fields: { videos: 'מזהה לא תקין' } };

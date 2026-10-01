@@ -67,7 +67,7 @@ export function GapsList({ rows, canEdit, total }: { rows: GapRow[]; canEdit: bo
       <div className={ui.card}>
         <div className={ui.tableWrap}>
           <table className={ui.table}>
-            <thead><tr>{canEdit ? <th><input type="checkbox" aria-label="בחירת הכל" checked={chosen.length > 0 && chosen.length === eligible.length} onChange={e => (e.target.checked ? allEligible() : setPicked(new Set()))} /></th> : null}<th>רישום</th><th>מוכנות</th><th>חסר בפרופיל</th><th>תוכנית</th><th>ריצה אחרונה</th><th></th></tr></thead>
+            <thead><tr>{canEdit ? <th><input type="checkbox" aria-label="בחירת הכול" checked={chosen.length > 0 && chosen.length === eligible.length} onChange={e => (e.target.checked ? allEligible() : setPicked(new Set()))} /></th> : null}<th>רישום</th><th>מוכנות</th><th>חסר בפרופיל</th><th>תוכנית</th><th>ריצה אחרונה</th><th></th></tr></thead>
             <tbody>
               {rows.map(r => (
                 <tr key={r.branchId} className={!r.canEnhance ? styles.off : undefined}>

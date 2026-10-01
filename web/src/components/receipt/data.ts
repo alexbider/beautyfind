@@ -164,7 +164,7 @@ function docViews(p: PaymentRow, issuer: Issuer, onlyDocId?: string): DocView[] 
     const original = credit && d.referencesDocumentId ? p.documents.find(x => x.id === d.referencesDocumentId) : null;
     const creditedBy = !credit ? p.documents.filter(x => x.type === 'credit_note' && x.referencesDocumentId === d.id) : [];
     const notes: string[] = [];
-    if (original) notes.push(`מבטלת את ${original.type === 'receipt' ? 'קבלה' : 'חשבונית מס/קבלה'} מס׳ ${original.number}.`);
+    if (original) notes.push(`מבטלת את ${original.type === 'receipt' ? 'קבלה' : 'חשבונית מס / קבלה'} מס׳ ${original.number}.`);
     for (const c of creditedBy) notes.push(`זוכתה בחשבונית זיכוי מס׳ ${c.number}.`);
     if (credit) notes.push('ההחזר יופיע בפירוט חיובי הכרטיס תוך 7–10 ימי עסקים, בהתאם לחברת האשראי.');
     else if (receiptOnly) notes.push('קבלה בלבד: חשבונית מס תופק כשהשובר ימומש בקליניקה.');

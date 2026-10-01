@@ -12,7 +12,7 @@ import styles from './ai.module.css';
 
 interface Msg { role: 'user' | 'assistant'; text: string; proposals?: Array<{ ref: string; action: string; label: string | null }>; tools?: string[] }
 
-const SUGGESTIONS = ['מה דורש טיפול היום?', 'אילו עסקים בחוב ומה הסכום?', 'סכם את המחלוקות הפתוחות והמלץ', 'כמה הכנסו החודש ומה מדיניות המע״מ?'];
+const SUGGESTIONS = ['מה דורש טיפול היום?', 'אילו עסקים בחוב ומה הסכום?', 'סכם את המחלוקות הפתוחות והמלץ', 'מה ההכנסות החודש ומה מדיניות המע״מ?'];
 const ACTION_NAMES: Record<string, string> = { hide_business: 'הסתרת עסק', restore_business: 'החזרה לאוויר', note: 'הערה בתיק' };
 
 export function AssistantChat({ configured, firstName, model }: { configured: boolean; firstName: string; model: string }) {

@@ -23,7 +23,7 @@ const POPULAR: Array<{ name: string; note: string; href: string }> = [
   ...(['dan', 'sharon', 'haifa'] as RegionSlug[]).map(s => ({ name: `קליניקות ב${regionBySlug(s)!.name}`, note: 'עסקים מאומתים באזור', href: `/${s}` })),
   ...['hair-removal', 'medical-aesthetics', 'facials'].map(s => {
     const c = categoryBySlug(s)!;
-    return { name: c.name, note: 'מחירים וטווחי טיפול', href: categoryHref(c) };
+    return { name: c.name, note: 'מחירים וטיפולים נפוצים', href: categoryHref(c) };
   }),
 ];
 

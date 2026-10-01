@@ -754,7 +754,7 @@ export function BookingFlow({ data }: { data: BookingData }) {
   const consentDefs: Array<{ key: keyof typeof consents; label: ReactNode; note: ReactNode }> = [
     {
       key: 'health',
-      label: 'אני מתחייב/ת לדווח לקליניקה לפני הטיפול על מצב רפואי, תרופות, הריון או הנקה',
+      label: 'אני מתחייב/ת לדווח לקליניקה לפני הטיפול על מצב רפואי, תרופות, היריון או הנקה',
       note: svc?.requiresDeclaration ? 'הצהרת בריאות מלאה נשלחת בוואטסאפ ונחתמת דיגיטלית לפני הטיפול' : 'הצהרת בריאות מלאה נחתמת דיגיטלית בקליניקה לפני הטיפול הראשון',
     },
     {

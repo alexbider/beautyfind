@@ -242,7 +242,7 @@ export function ResultsShell({ base, query, filterCounts, matched, total, shown,
 
         <span role="status" aria-live="polite" className={styles.matchLine}>
           {pending ? (
-            'מעדכן תוצאות'
+            'מעדכנים תוצאות'
           ) : nFilters > 0 ? (
             <><Count n={matched} f={RESULTS} /> אחרי סינון</>
           ) : (
@@ -260,7 +260,7 @@ export function ResultsShell({ base, query, filterCounts, matched, total, shown,
         title="סינון עסקים"
         footer={
           <button type="button" className={styles.sheetShow} onClick={() => setSheet(null)}>
-            {pending ? 'מעדכן תוצאות…' : matched === 0 ? 'אין תוצאות, חזרה לרשימה' : <>הצגת <Count n={matched} f={BIZ} /></>}
+            {pending ? 'מעדכנים תוצאות…' : matched === 0 ? 'אין תוצאות, חזרה לרשימה' : <>הצגת <Count n={matched} f={BIZ} /></>}
           </button>
         }
       >
@@ -333,7 +333,7 @@ export function ResultsShell({ base, query, filterCounts, matched, total, shown,
         <div className={styles.moreRow}>
           {canLoadMore ? (
             <a href={moreHref} rel="nofollow" className={`${styles.moreBtn} bf-desk-only`} onClick={onMore} aria-disabled={pending || undefined}>
-              {pending ? 'טוען' : moreLabel}
+              {pending ? 'טוענים…' : moreLabel}
             </a>
           ) : (
             remaining > 0 && (

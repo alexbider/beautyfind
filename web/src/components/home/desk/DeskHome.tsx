@@ -314,7 +314,7 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
               <span className={s.fieldCol}>
                 <span className={s.fieldLabel}>איפה?</span>
                 <span className={s.locValue} data-set={located ? '' : undefined}>
-                  {locating ? 'מאתרים את המיקום...' : located ? `המיקום שלכם: ${rName(located)}` : 'עיר או אזור'}
+                  {locating ? 'מאתרים את המיקום…' : located ? `המיקום שלכם: ${rName(located)}` : 'עיר או אזור'}
                 </span>
               </span>
             </button>

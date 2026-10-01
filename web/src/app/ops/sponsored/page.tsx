@@ -30,7 +30,7 @@ export default async function SponsoredPage({ searchParams }: { searchParams: SP
       />
       <div className={ui.split}>
         <div className={ui.stack}>
-          <Pills current={filter} items={[{ key: 'pending', name: 'לבדיקה', href: '/ops/sponsored' }, { key: 'all', name: 'הכל', href: '/ops/sponsored?filter=all' }]} />
+          <Pills current={filter} items={[{ key: 'pending', name: 'לבדיקה', href: '/ops/sponsored' }, { key: 'all', name: 'הכול', href: '/ops/sponsored?filter=all' }]} />
           {rows.length ? rows.map(c => (
             <Card
               key={c.id}

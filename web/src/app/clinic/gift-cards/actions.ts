@@ -9,7 +9,7 @@ import { db } from '@/lib/server/db';
 // Reception desk actions. Look-up needs `giftcards: view`; redeeming and cancelling need `manage`
 // and the advanced plan. Every action re-checks on the server.
 
-const FORBIDDEN = 'אין לך הרשאה לפעולה הזאת. מימוש וביטול שוברים אפשריים רק בהרשאת ניהול.';
+const FORBIDDEN = 'אין לכם הרשאה לפעולה הזאת. מימוש וביטול שוברים אפשריים רק בהרשאת ניהול.';
 
 async function guard(need: 'view' | 'manage') {
   try {
@@ -33,11 +33,11 @@ const REDEEM_ERRORS: Record<RedeemError, string> = {
   expired: 'תוקף השובר פג.',
   refunded: 'השובר בוטל והכסף הוחזר לקונה.',
   empty: 'השובר מומש במלואו.',
-  amount: 'הזיני סכום למימוש.',
+  amount: 'הזינו סכום למימוש.',
   over_balance: 'הסכום גבוה מהיתרה בשובר.',
   booking_not_found: 'לא מצאנו תור עם המספר הזה בקליניקה.',
-  needs_consult: 'שובר לטיפול רפואי אפשר לממש רק אחרי ייעוץ שבו הרופא/ה אישר/ה את הטיפול. קשרי אותו לתור שנקבע בעקבות הייעוץ.',
-  conflict: 'היתרה השתנתה בזמן הפעולה. בדקי שוב את השובר.',
+  needs_consult: 'שובר לטיפול רפואי אפשר לממש רק אחרי ייעוץ שבו הרופא/ה אישר/ה את הטיפול. קשרו אותו לתור שנקבע בעקבות הייעוץ.',
+  conflict: 'היתרה השתנתה בזמן הפעולה. בדקו שוב את השובר.',
 };
 
 export type RedeemActionResult = { ok: true; message: string; card: DeskCard; invoiceNote: string | null } | { ok: false; error: string };

@@ -10,7 +10,7 @@ const WIDTHS = [
   ['66%', '42%', '50%'],
 ];
 
-export function CardSkeleton({ count = 4, caption = 'טוען…' }: { count?: number; caption?: string }) {
+export function CardSkeleton({ count = 4, caption = 'טוענים…' }: { count?: number; caption?: string }) {
   return (
     <div>
       <div className={styles.skeletons} aria-hidden="true">

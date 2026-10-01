@@ -54,7 +54,7 @@ const FILTERS: Array<{ key: Filter; name: string; match: (s: ConsultStatus) => b
   { key: 'awaiting_client', name: 'ממתינות למטופלת', match: s => s === 'awaiting_client' },
   { key: 'consult_scheduled', name: 'נקבע ייעוץ', match: s => s === 'consult_scheduled' },
   { key: 'closed', name: 'סגורות', match: s => s === 'closed_declined' || s === 'closed_treatment_booked' },
-  { key: 'all', name: 'הכל', match: () => true },
+  { key: 'all', name: 'הכול', match: () => true },
 ];
 
 type Mode = 'none' | 'propose' | 'decline' | 'approve';

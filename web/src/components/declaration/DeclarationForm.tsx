@@ -147,7 +147,7 @@ export function DeclarationForm(p: DeclarationProps) {
   const pregYes = ans.preg === true;
   const flagOn = yesN > 0;
   const pregMedical = pregYes && medical;
-  const flagTitle = pregMedical ? 'לא מבצעים הזרקה בהריון או בהנקה' : `${plAnswers(yesN)} לבדיקה לפני הטיפול`;
+  const flagTitle = pregMedical ? 'לא מבצעים הזרקה בהיריון או בהנקה' : `${plAnswers(yesN)} לבדיקה לפני הטיפול`;
   const flagBody = pregMedical
     ? `ההזרקה לא תתבצע בתור הזה. ${p.appt.doctor ? `${p.appt.doctor} או הקליניקה ייצרו` : 'הקליניקה תיצור'} איתכם קשר לתיאום מועד אחר. אין חיוב על העברת מועד מסיבה רפואית.`
     : `הפירוט יגיע אל ${p.appt.who} לפני הטיפול, וייצרו איתכם קשר רק אם צריך להתאים משהו. התור נשאר במקומו.`;

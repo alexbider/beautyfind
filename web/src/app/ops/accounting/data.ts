@@ -12,7 +12,7 @@ import { platformSettings } from '@/lib/server/platformSettings';
 
 export type LedgerFilter = 'all' | 'subscription' | 'sponsored' | 'manual' | 'credit';
 export const LEDGER_FILTERS: Array<{ key: LedgerFilter; name: string }> = [
-  { key: 'all', name: 'הכל' }, { key: 'subscription', name: 'מנויים' }, { key: 'sponsored', name: 'ממומן' }, { key: 'manual', name: 'ידני' }, { key: 'credit', name: 'זיכויים' },
+  { key: 'all', name: 'הכול' }, { key: 'subscription', name: 'מנויים' }, { key: 'sponsored', name: 'ממומן' }, { key: 'manual', name: 'ידני' }, { key: 'credit', name: 'זיכויים' },
 ];
 
 export interface LedgerRow {

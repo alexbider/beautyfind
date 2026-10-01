@@ -196,7 +196,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
 
             {has.team && (
             <section aria-labelledby="h-team">
-              <h2 id="h-team" className={styles.h2}>הצוות שלנו<span className={styles.dotTeal}>.</span></h2>
+              <h2 id="h-team" className={styles.h2}>הצוות<span className={styles.dotTeal}>.</span></h2>
                   <div className={styles.team}>
                     {v.staff.map(s => (
                       <Link key={s.id} href={`/pro/${s.id}`} className={styles.person}>
@@ -660,7 +660,7 @@ function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null
               <TrackedLink branchId={p.id} type="contact_click" href={`mailto:${p.email}`} dir="ltr">
                 {p.email}
               </TrackedLink>
-            ) : <span className={styles.dlMissing}>אימייל לא פורסם</span>}
+            ) : <span className={styles.dlMissing}>דוא״ל לא פורסם</span>}
           </dd>
         </div>
         {p.websiteUrl && (
@@ -677,7 +677,7 @@ function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null
 
       {v.socials.length > 0 && (
         <div className={styles.bookBlock}>
-          <div className={styles.blockLabel}>עקבו אחרינו</div>
+          <div className={styles.blockLabel}>רשתות חברתיות</div>
           <div className={styles.socials}>
             {v.socials.map(s => (
               <a key={s.network} href={s.url} target="_blank" rel="noopener noreferrer" aria-label={s.label} title={s.label} className={styles.social}>

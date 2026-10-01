@@ -77,7 +77,7 @@ export async function directoryMetadata(params: DirParams, searchParams: DirSear
               : o.verified === 1
                 ? ', אחד מהם מאומת'
                 : `, מתוכם ${fmtNum(o.verified)} מאומתים`) +
-        `. דירוג Google וביקורות BeautyFind מאומתות בנפרד, מחירים חציוניים ${BOOKING_LIVE ? 'וקביעת תור אונליין' : 'ופנייה ישירה לעסק'}.`;
+        `. דירוג Google וביקורות BeautyFind מאומתות בנפרד, מחירים אמצעיים ${BOOKING_LIVE ? 'וקביעת תור אונליין' : 'ופנייה ישירה לעסק'}.`;
   return {
     title,
     description,
@@ -233,7 +233,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
       {s.category && ` ל${s.category.name}`}
       {o.medianGoogle != null && (
         <>
-          , עם דירוג Google חציוני של <N>{o.medianGoogle.toFixed(1)}</N>
+          , עם דירוג Google אמצעי של <N>{o.medianGoogle.toFixed(1)}</N>
         </>
       )}
       .
@@ -246,8 +246,8 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
       {headlinePrice && (
         <>
           {' '}
-          המחיר החציוני ל{headlinePrice.name} הוא <N>{nis(headlinePrice.price)}</N> לפני מע״מ
-          {headlinePrice.fromRegion && ` (לפי חציון אזור ${s.region.name})`}.
+          המחיר האמצעי ל{headlinePrice.name} הוא <N>{nis(headlinePrice.price)}</N> לפני מע״מ
+          {headlinePrice.fromRegion && ` (לפי המחיר האמצעי באזור ${s.region.name})`}.
         </>
       )}
     </>
@@ -255,8 +255,8 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
 
   const stats: Array<{ label: string; value: string | null }> = [
     { label: 'עסקים רשומים', value: fmtNum(o.total) },
-    { label: 'דירוג Google חציוני', value: o.medianGoogle?.toFixed(1) ?? null },
-    s.category ? { label: 'מחיר חציוני', value: ownPrice ? nis(ownPrice.price) : null } : { label: 'תחומי טיפול', value: fmtNum(o.cityCategories.length) },
+    { label: 'דירוג Google אמצעי', value: o.medianGoogle?.toFixed(1) ?? null },
+    s.category ? { label: 'מחיר אמצעי', value: ownPrice ? nis(ownPrice.price) : null } : { label: 'תחומי טיפול', value: fmtNum(o.cityCategories.length) },
     { label: 'עסקים מאומתים', value: fmtNum(o.verified) },
   ];
 
@@ -547,12 +547,12 @@ function Guide({ s, o }: { s: Scope; o: Overview }) {
             <div className={styles.tableWrap}>
               <table className={styles.table}>
                 <caption>
-                  {citySample > 0 ? `מחיר חציוני של הטיפולים שהעסקים ${where} מפרסמים, לפני מע״מ.` : `מחיר חציוני באזור ${s.region.name}, לפני מע״מ.`}
+                  {citySample > 0 ? `מחיר אמצעי של הטיפולים שהעסקים ${where} מפרסמים, לפני מע״מ.` : `מחיר אמצעי באזור ${s.region.name}, לפני מע״מ.`}
                 </caption>
                 <thead>
                   <tr>
                     <th scope="col">תחום</th>
-                    <th scope="col">מחיר חציוני</th>
+                    <th scope="col">מחיר אמצעי</th>
                     <th scope="col">עסקים בעיר</th>
                   </tr>
                 </thead>
@@ -563,7 +563,7 @@ function Guide({ s, o }: { s: Scope; o: Overview }) {
                       <td>
                         <span className="ltr">{nis(p.price)}</span>
                         {p.fromRegion && (
-                          <span className={styles.star} aria-label={`לפי חציון אזור ${s.region.name}`}>
+                          <span className={styles.star} aria-label={`לפי המחיר האמצעי באזור ${s.region.name}`}>
                             *
                           </span>
                         )}
@@ -578,7 +578,7 @@ function Guide({ s, o }: { s: Scope; o: Overview }) {
             </div>
             {fallback && (
               <p className={styles.smallPrint}>
-                * אין מספיק מחירים מפורסמים {where} בתחום הזה, ולכן מוצג החציון של אזור {s.region.name}. חציון מוצג רק כשיש לפחות שלושה מחירים.
+                * אין מספיק מחירים מפורסמים {where} בתחום הזה, ולכן מוצג המחיר האמצעי של אזור {s.region.name}. מחיר אמצעי מוצג רק כשיש לפחות שלושה מחירים.
               </p>
             )}
           </>

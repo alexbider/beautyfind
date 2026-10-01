@@ -295,7 +295,7 @@ export function metaDescription(p: PublicProfile, v: ProfileView): string {
   const cats = v.cats.map(c => c.name).join(', ');
   const parts = [`${p.name} ב${p.cityName}${cats ? `: ${cats}` : ''}.`];
   if (v.google && v.google.count > 0) parts.push(`דירוג ${v.google.rating.toFixed(1)} בגוגל על סמך ${reviewsLabel(v.google.count)}.`);
-  if (p.beautyfind) parts.push(`${reviewsLabel(p.beautyfind.count)} מאומתות ב־BeautyFind.`);
+  if (p.beautyfind) parts.push(`${reviewsLabel(p.beautyfind.count)} ב־BeautyFind אחרי ביקור מאומת.`);
   if (p.treatments.length) parts.push(`${p.treatments.slice(0, 3).map(t => t.name).join(', ')}${p.treatments.length > 3 ? ' ועוד' : ''}.`);
   if (v.responsible) parts.push(`${v.responsible.label}: ${v.responsible.name}.`);
   if (p.description) parts.push(p.description.replace(/\s+/g, ' ').trim());

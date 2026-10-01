@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return applySeo(`/treatments/${cat.slug}`, {
     title: `${cat.name} בישראל`,
     description:
-      `${cat.name} בישראל: מה כולל התחום, מחירים חציוניים, מי מורשה לבצע, והעסקים המדורגים ביותר בכל אזור.` +
+      `${cat.name} בישראל: מה כולל התחום, מחירים אמצעיים, מי מורשה לבצע, והעסקים המדורגים ביותר בכל אזור.` +
       (n > 0 ? ` ${countText(n, 'עסק אחד', 'עסקים')} ב־7 אזורים.` : ''),
     alternates: { canonical: `/treatments/${cat.slug}` },
   });
@@ -75,8 +75,8 @@ export default async function TreatmentCategoryPage({ params }: Props) {
   const aesthetic = !NON_AESTHETIC.has(cat.slug);
 
   const stats: Array<{ label: string; value: ReactNode }> = [{ label: 'עסקים רשומים', value: <span className="ltr tnum">{fmtInt(count)}</span> }];
-  if (rating != null) stats.push({ label: 'דירוג חציוני בגוגל', value: <span className="ltr tnum">{rating.toFixed(1)}</span> });
-  if (medianNat != null) stats.push({ label: 'מחיר חציוני', value: <span className="ltr tnum">{nis(medianNat)}</span> });
+  if (rating != null) stats.push({ label: 'דירוג אמצעי בגוגל', value: <span className="ltr tnum">{rating.toFixed(1)}</span> });
+  if (medianNat != null) stats.push({ label: 'מחיר אמצעי', value: <span className="ltr tnum">{nis(medianNat)}</span> });
   stats.push({ label: 'אזורים', value: <span className="ltr tnum">{activeRegions}</span> });
 
   const priceRows = MENU_REGION_ORDER.map((r, i) => ({
@@ -159,7 +159,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
                   באינדקס רשומים <Count n={count} {...BIZ} /> בתחום
                   {medianNat != null ? (
                     <>
-                      , והמחיר החציוני הוא <span className="ltr tnum">{nis(medianNat)}</span>, לא כולל מע״מ
+                      , והמחיר האמצעי הוא <span className="ltr tnum">{nis(medianNat)}</span>, לא כולל מע״מ
                     </>
                   ) : null}
                   .
@@ -276,7 +276,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
         <section id="prices" aria-labelledby="h-prices" className={`${styles.prices} ${styles.block}`}>
           <div className={shared.rowHead}>
             <h2 id="h-prices" className={`${shared.h2} ${shared.h2Lg}`}>
-              מחירים חציוניים<span className={shared.dot}>.</span>
+              מחירים אמצעיים<span className={shared.dot}>.</span>
             </h2>
             <span className={styles.pricesNote}>
               תדירות אופיינית: {body.freq} · בשקלים, לא כולל מע״מ
@@ -284,11 +284,11 @@ export default async function TreatmentCategoryPage({ params }: Props) {
           </div>
           <div className={styles.tableWrap}>
             <table className={styles.table}>
-              <caption className="sr-only">מחיר חציוני ומספר עסקים לפי אזור, {cat.name}</caption>
+              <caption className="sr-only">מחיר אמצעי ומספר עסקים לפי אזור, {cat.name}</caption>
               <thead>
                 <tr>
                   <th scope="col">אזור</th>
-                  <th scope="col">מחיר חציוני</th>
+                  <th scope="col">מחיר אמצעי</th>
                   <th scope="col">מול הארצי</th>
                   <th scope="col">עסקים</th>
                 </tr>
@@ -317,7 +317,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
             </table>
           </div>
           <p className={styles.priceFoot}>
-            המחירים נמסרים על ידי העסקים ומשקפים את מה שפורסם בתפריטים שלהם. החציון מוצג רק כשיש לפחות שלושה מחירים, והוא אינו הצעת מחיר ואינו מחייב אף עסק.
+            המחירים נמסרים על ידי העסקים ומשקפים את מה שפורסם בתפריטים שלהם. המחיר האמצעי מוצג רק כשיש לפחות שלושה מחירים, והוא אינו הצעת מחיר ואינו מחייב אף עסק.
             {aesthetic ? ' טיפולים אסתטיים אלקטיביים אינם בסל הבריאות.' : ''}
           </p>
         </section>

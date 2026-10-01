@@ -109,7 +109,7 @@ async function QueueTab({ filter, canEdit }: { filter: QueueFilter; canEdit: boo
   return (
     <>
       <div className={ui.toolbar}>
-        <Pills current={filter} items={[{ key: 'proposed', name: 'ממתינים', count: pending, href: '/ops/ai?tab=queue&filter=proposed' }, { key: 'decided', name: 'הוחלטו', href: '/ops/ai?tab=queue&filter=decided' }, { key: 'all', name: 'הכל', href: '/ops/ai?tab=queue&filter=all' }]} />
+        <Pills current={filter} items={[{ key: 'proposed', name: 'ממתינים', count: pending, href: '/ops/ai?tab=queue&filter=proposed' }, { key: 'decided', name: 'הוחלטו', href: '/ops/ai?tab=queue&filter=decided' }, { key: 'all', name: 'הכול', href: '/ops/ai?tab=queue&filter=all' }]} />
       </div>
       <Card title="תור אישורים" sub="כל פעולת כתיבה שהעוזר או שרת MCP מציעים; אדם מאשר, והאישור מבצע" flush>
         {rows.length ? rows.map(r => (

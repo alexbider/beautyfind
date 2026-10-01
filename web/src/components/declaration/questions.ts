@@ -16,7 +16,7 @@ export const QUESTIONNAIRE_VERSION = '2026-09';
 
 export const QUESTIONS: Record<DeclType, Question[]> = {
   medical: [
-    { key: 'preg', label: 'הריון, ניסיון להרות או הנקה', note: 'בתקופה הזו לא מבצעים הזרקות', placeholder: 'באיזה שבוע / עד מתי הנקה', short: 'הריון או הנקה' },
+    { key: 'preg', label: 'היריון, ניסיון להרות או הנקה', note: 'בתקופה הזו לא מבצעים הזרקות', placeholder: 'באיזה שבוע / עד מתי הנקה', short: 'היריון או הנקה' },
     { key: 'blood', label: 'נטילת מדללי דם', note: 'אספירין, קומדין, אליקוויס, קלקסן וכד׳', placeholder: 'שם התרופה והמינון', short: 'מדללי דם' },
     { key: 'neuro', label: 'מחלה נוירו־שרירית', note: 'למשל מיאסטניה גרביס', placeholder: 'איזו ומתי אובחנה', short: 'מחלה נוירו־שרירית' },
     { key: 'auto', label: 'מחלה אוטואימונית או הפרעת קרישה', note: '', placeholder: 'איזו ואיך מטופלת', short: 'אוטואימונית או הפרעת קרישה' },
@@ -26,7 +26,7 @@ export const QUESTIONS: Record<DeclType, Question[]> = {
     { key: 'infect', label: 'דלקת, פצע או זיהום פעיל באזור', note: '', placeholder: 'איפה ומה מצבו', short: 'דלקת או זיהום באזור' },
   ],
   cosmetic: [
-    { key: 'preg', label: 'הריון או הנקה', note: 'חלק מהחומרים מוחלפים בתקופה הזו', placeholder: 'באיזה שבוע / עד מתי הנקה', short: 'הריון או הנקה' },
+    { key: 'preg', label: 'היריון או הנקה', note: 'חלק מהחומרים מוחלפים בתקופה הזו', placeholder: 'באיזה שבוע / עד מתי הנקה', short: 'היריון או הנקה' },
     { key: 'roacc', label: 'נטילת רואקוטן בחצי השנה האחרונה', note: 'איזוטרטינואין מדלל את העור', placeholder: 'עד מתי', short: 'רואקוטן בחצי השנה האחרונה' },
     { key: 'skin', label: 'מצב עור פעיל', note: 'אקזמה, פסוריאזיס, רוזציאה או אקנה דלקתי', placeholder: 'מה ואיפה', short: 'מצב עור פעיל' },
     { key: 'allergy', label: 'אלרגיה לחומרים קוסמטיים', note: 'בשמים, חומצות, לטקס', placeholder: 'למה, ואיזו תגובה הייתה', short: 'אלרגיה לחומרים קוסמטיים' },

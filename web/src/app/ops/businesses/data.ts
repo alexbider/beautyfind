@@ -10,7 +10,7 @@ import { platformSettings } from '@/lib/server/platformSettings';
 
 export type BizFilter = 'all' | 'live' | 'past_due' | 'pending' | 'hidden' | 'no_subscription';
 export const BIZ_FILTERS: Array<{ key: BizFilter; name: string }> = [
-  { key: 'all', name: 'הכל' }, { key: 'live', name: 'פעילים' }, { key: 'past_due', name: 'בחוב' }, { key: 'pending', name: 'ממתינים' }, { key: 'hidden', name: 'מוסתרים' }, { key: 'no_subscription', name: 'ללא מנוי' },
+  { key: 'all', name: 'הכול' }, { key: 'live', name: 'פעילים' }, { key: 'past_due', name: 'בחוב' }, { key: 'pending', name: 'ממתינים' }, { key: 'hidden', name: 'מוסתרים' }, { key: 'no_subscription', name: 'ללא מנוי' },
 ];
 
 export const STATUS_NAME: Record<BusinessStatus, string> = { pending: 'ממתין לאימות', live: 'פעיל', past_due: 'חוב פתוח', hidden: 'מוסתר' };

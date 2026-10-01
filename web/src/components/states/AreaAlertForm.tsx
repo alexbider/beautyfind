@@ -48,7 +48,7 @@ export function AreaAlertForm({
           placeholder="052-000-0000" aria-label="טלפון להתראה" aria-invalid={msg?.bad || undefined} aria-describedby={msg ? 'area-alert-msg' : undefined}
           className={styles.alertInput}
         />
-        <button type="submit" disabled={busy} className={styles.alertBtn}>{busy ? 'שומר…' : 'עדכנו אותי'}</button>
+        <button type="submit" disabled={busy} className={styles.alertBtn}>{busy ? 'שומרים…' : 'עדכנו אותי'}</button>
       </div>
       <p id="area-alert-msg" role="status" className={styles.alertMsg} data-bad={msg?.bad || undefined} hidden={!msg}>
         {msg?.text}

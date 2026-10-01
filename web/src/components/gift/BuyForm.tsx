@@ -38,7 +38,7 @@ const durationNote = (m: number | null) => (m ? `כ־${m} דקות` : 'טיפו�
 // preview pinned under the top bar (it shrinks once the page scrolls). Desktop keeps the single page
 // with the preview in the side column. The steps are CSS only (data-step / data-cur).
 const STEPS = 3;
-const STEP_HINT = ['', 'אפשר לשנות הכל עד התשלום', 'הברכה והשם מופיעים על השובר', 'התשלום בדף המאובטח של חברת הסליקה של הקליניקה'];
+const STEP_HINT = ['', 'אפשר לשנות הכול עד התשלום', 'הברכה והשם מופיעים על השובר', 'התשלום בדף המאובטח של חברת הסליקה של הקליניקה'];
 
 type Draft = {
   kind: Kind; amt: number; custom: string; treatId: string; to: string; msg: string; channel: Channel; contact: string;

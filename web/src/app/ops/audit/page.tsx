@@ -23,7 +23,7 @@ export default async function AuditPage({ searchParams }: { searchParams: SP }) 
     <AdminShell user={user}>
       <PageHead eyebrow="מערכת" title="יומן פעולות" lead="כל פעולה של אדם, AI או מערכת, מיומן הביקורת ומרשומות ההחלטות. לא ניתן לעריכה או למחיקה." actions={<Btn href={`/ops/audit/export${filter ? `?filter=${filter}` : ''}`} small>ייצוא CSV</Btn>} />
       <div className={ui.toolbar}>
-        <Pills current={filter ?? 'all'} items={[{ key: 'all', name: 'הכל', href: '/ops/audit' }, ...KINDS.map(k => ({ key: k, name: k === 'person' ? 'אנשים' : ACTOR_KIND_NAMES[k], href: `/ops/audit?filter=${k}` }))]} />
+        <Pills current={filter ?? 'all'} items={[{ key: 'all', name: 'הכול', href: '/ops/audit' }, ...KINDS.map(k => ({ key: k, name: k === 'person' ? 'אנשים' : ACTOR_KIND_NAMES[k], href: `/ops/audit?filter=${k}` }))]} />
       </div>
       <Card title="פעולות אחרונות" sub={`${rows.length} רשומות אחרונות`} flush>
         {rows.length ? (

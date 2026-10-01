@@ -174,7 +174,7 @@ export const TRUST = [
 ];
 
 const STEPS = [
-  { label: 'פרטי העסק', text: 'ממלאים שם, עיר ותחומי טיפול. אפשר גם לתבוע פרופיל שכבר קיים באינדקס.' },
+  { label: 'פרטי העסק', text: 'ממלאים שם, עיר ותחומי טיפול. אפשר גם לאמת בעלות על פרופיל שכבר קיים באינדקס.' },
   { label: 'אימות', text: 'בודקים רישיון ותעודות. טיפול רפואי מסומן באחריות רפואית של רופא.' },
   { label: 'פרופיל באוויר', text: 'הפרופיל עולה לאוויר עם טיפולים, מחירים ושעות פתיחה. ביקורות Google ו־BeautyFind מוצגות בנפרד.' },
   { label: 'תורים', text: 'לקוחות קובעות תור, האישור נשלח בוואטסאפ, ב־SMS ובמייל, והתור נכנס ליומן שלכם.' },
@@ -189,8 +189,8 @@ export const FAQS = [
 
 const FOOT_GROUPS = [
   { name: 'BeautyFind', links: [['מי אנחנו', '/about'], ['תקן הרישום', ROUTES.listingStandards], ['מדיניות עריכה', '/about/editorial'], ['איך מדרגים', `${ROUTES.methodology}#ranking`], ['מדריכים', '/magazine'], ['תחומי טיפול', ROUTES.treatments]] },
-  { name: 'לעסקים', links: [['הצטרפות לאינדקס', ROUTES.join], ['תביעת פרופיל', ROUTES.claim], ['מחירים', ROUTES.pricing], ['כניסה לעסקים', ROUTES.bizLogin]] },
-  { name: 'עזרה ומשפטי', links: [['מרכז עזרה', ROUTES.help], ['צור קשר', ROUTES.contact], ['תנאי שימוש', ROUTES.terms], ['מדיניות פרטיות', ROUTES.privacy], ['הצהרת נגישות', ROUTES.accessibility]] },
+  { name: 'לעסקים', links: [['הצטרפות לאינדקס', ROUTES.join], ['אישור בעלות', ROUTES.claim], ['מחירים', ROUTES.pricing], ['כניסה לעסקים', ROUTES.bizLogin]] },
+  { name: 'עזרה ומידע משפטי', links: [['מרכז עזרה', ROUTES.help], ['צרו קשר', ROUTES.contact], ['תנאי שימוש', ROUTES.terms], ['מדיניות פרטיות', ROUTES.privacy], ['הצהרת נגישות', ROUTES.accessibility]] },
 ] as const;
 
 const SUPPORT_EMAIL = 'hello@beautyfind.co.il';
@@ -609,7 +609,7 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
                 <span className={s.searchLabel}>איפה?</span>
                 <span className={s.locValue} data-set={located ? '' : undefined}>{located ? `המיקום שלכם: ${rName(located)}` : 'עיר או אזור'}</span>
               </span>
-              <span className={s.useLoc}>{locating ? 'מאתרים...' : 'שימוש במיקום'}</span>
+              <span className={s.useLoc}>{locating ? 'מאתרים…' : 'שימוש במיקום'}</span>
             </button>
             <button type="submit" className={s.go}>
               <span aria-hidden="true" className={s.sheen} />

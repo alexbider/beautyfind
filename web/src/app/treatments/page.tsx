@@ -25,7 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const lead = counts.total > 0 ? `${countText(counts.total, 'עסק אחד', 'עסקים')} ב־7 אזורים` : '7 אזורים';
   return applySeo('/treatments', {
     title: '14 תחומי טיפול',
-    description: `14 תחומי הטיפול באינדקס BeautyFind: ${lead}, מחירים חציוניים בשקלים ומי מורשה לבצע כל טיפול בישראל.`,
+    description: `14 תחומי הטיפול באינדקס BeautyFind: ${lead}, מחירים אמצעיים בשקלים ומי מורשה לבצע כל טיפול בישראל.`,
     alternates: { canonical: '/treatments' },
   });
 }
@@ -59,7 +59,7 @@ export default async function TreatmentsPage() {
     { label: 'תחומי טיפול', value: String(CATEGORIES.length) },
     { label: 'עסקים באינדקס', value: fmtInt(counts.total) },
     { label: 'אזורים', value: '7' },
-    ratings.national != null ? { label: 'דירוג חציוני בגוגל', value: ratings.national.toFixed(1) } : { label: 'ערים', value: `${CITIES.length}` },
+    ratings.national != null ? { label: 'דירוג אמצעי בגוגל', value: ratings.national.toFixed(1) } : { label: 'ערים', value: `${CITIES.length}` },
   ];
 
   return (
@@ -137,7 +137,7 @@ export default async function TreatmentsPage() {
                       <Count n={c.count} {...BIZ} />
                       {c.median != null && (
                         <>
-                          {' '}· חציון <span className="ltr tnum">{nis(c.median)}</span>
+                          {' '}· מחיר אמצעי <span className="ltr tnum">{nis(c.median)}</span>
                         </>
                       )}
                     </span>
@@ -191,7 +191,7 @@ export default async function TreatmentsPage() {
               מנהלים עסק באחד התחומים<span className={shared.dotLight}>?</span>
             </h2>
             <p>
-              רישום עסק כולל תפריט טיפולים עם מחירים, שעות פעילות, WhatsApp וקישור Waze. <span className="ltr tnum">{nis(PLAN_MONTHLY_NIS.basic)}</span> לחודש לסניף, לא כולל מע״מ, ללא התחייבות.
+              רישום עסק כולל תפריט טיפולים עם מחירים, שעות פעילות, וואטסאפ וקישור Waze. <span className="ltr tnum">{nis(PLAN_MONTHLY_NIS.basic)}</span> לחודש לסניף, לא כולל מע״מ, ללא התחייבות.
             </p>
           </div>
           <div className={shared.ctaActions}>

@@ -18,7 +18,7 @@ import styles from './saved.module.css';
 
 type Filter = 'all' | 'med' | 'cos' | 'online';
 const FILTERS: Array<[Filter, string]> = [
-  ['all', 'הכל'],
+  ['all', 'הכול'],
   ['med', 'אסתטיקה רפואית'],
   ['cos', 'קוסמטיקה ולייזר'],
   // Until booking is live no page may filter on it (lib/features.ts).
@@ -153,7 +153,7 @@ export function SavedView({ initialCards, initialCmp, serverSignedIn }: { initia
           <p className={styles.emptyTitle}>{saved.length ? 'אין מועדפים בסינון הזה' : 'עדיין אין כאן מועדפים'}</p>
           <p className={styles.emptyText}>לחצו על הלב בכל כרטיס קליניקה כדי להוסיף אותה למועדפים ולהשוות מאוחר יותר.</p>
           {saved.length ? (
-            <button type="button" className={styles.btnPrimary} onClick={() => setFilter('all')}>הצגת הכל</button>
+            <button type="button" className={styles.btnPrimary} onClick={() => setFilter('all')}>הצגת הכול</button>
           ) : (
             <Link href="/search" className={styles.btnPrimary}>לחיפוש קליניקות</Link>
           )}

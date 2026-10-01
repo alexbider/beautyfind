@@ -8,7 +8,7 @@ import { db } from '@/lib/server/db';
 
 export type ReviewFilter = ReviewStatus | 'all';
 export const REVIEW_FILTERS: Array<{ key: ReviewFilter; name: string }> = [
-  { key: 'submitted', name: 'ממתינות' }, { key: 'published', name: 'פורסמו' }, { key: 'rejected', name: 'נדחו' }, { key: 'removed', name: 'הוסרו' }, { key: 'all', name: 'הכל' },
+  { key: 'submitted', name: 'ממתינות' }, { key: 'published', name: 'פורסמו' }, { key: 'rejected', name: 'נדחו' }, { key: 'removed', name: 'הוסרו' }, { key: 'all', name: 'הכול' },
 ];
 export const REVIEW_STATUS_NAME: Record<ReviewStatus, string> = { submitted: 'ממתינה', published: 'פורסמה', rejected: 'נדחתה', removed: 'הוסרה' };
 export const REVIEW_STATUS_TONE: Record<ReviewStatus, 'warn' | 'ok' | 'bad' | 'neutral'> = { submitted: 'warn', published: 'ok', rejected: 'bad', removed: 'neutral' };

@@ -73,7 +73,7 @@ export type Result = { ok: true } | { ok: false; error: string };
 const fail = (error: string): Result => ({ ok: false, error });
 
 const E = {
-  missing: 'התור לא נמצא, או שאין לך גישה אליו.',
+  missing: 'התור לא נמצא, או שאין לכם גישה אליו.',
   moved: 'מצב התור השתנה בינתיים. רעננו את העמוד.',
   manage: 'הפעולה הזו דורשת הרשאת ניהול תורים.',
 } as const;

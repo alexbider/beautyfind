@@ -47,7 +47,7 @@ export default async function ContentPage({ searchParams }: { searchParams: SP }
             { label: 'noindex', value: int(noindex), note: 'מוסתרים מגוגל', tone: noindex ? 'warn' : undefined },
           ]} />
           <div className={ui.toolbar}>
-            <Pills current={filter} items={[{ key: 'all', name: 'הכל', count: pages.length, href: '/ops/content' }, { key: 'low', name: 'ציון מתחת ל־70', count: low, href: '/ops/content?filter=low' }, { key: 'nodesc', name: 'ללא תיאור', count: noDesc, href: '/ops/content?filter=nodesc' }, { key: 'noindex', name: 'noindex', count: noindex, href: '/ops/content?filter=noindex' }, { key: 'custom', name: 'מותאמים', count: pages.filter(p => p.overridden).length, href: '/ops/content?filter=custom' }]} />
+            <Pills current={filter} items={[{ key: 'all', name: 'הכול', count: pages.length, href: '/ops/content' }, { key: 'low', name: 'ציון מתחת ל־70', count: low, href: '/ops/content?filter=low' }, { key: 'nodesc', name: 'ללא תיאור', count: noDesc, href: '/ops/content?filter=nodesc' }, { key: 'noindex', name: 'noindex', count: noindex, href: '/ops/content?filter=noindex' }, { key: 'custom', name: 'מותאמים', count: pages.filter(p => p.overridden).length, href: '/ops/content?filter=custom' }]} />
           </div>
           <Card flush>
             <Table head={['כותרת', 'סוג', 'מילת מפתח', 'ציון SEO', 'אינדקס', 'עודכן', '']} foot="הציון מחושב מאורך הכותרת והתיאור, מילת המפתח ומצב האינדקס. עמודי עסקים מכוונים בכרטיס העסק.">
@@ -132,7 +132,7 @@ async function SitemapTab() {
         <p className={ui.hint}>מתחדשת כל שעה. עמודי עיר ותחום נכללים רק כשיש בהם עסקים חיים, כדי לא לשלוח את גוגל לעמודים ריקים.</p>
       </Card>
       <Card title="robots.txt" sub={<a href={`${siteUrl()}/robots.txt`} className={ui.rowLink} target="_blank" rel="noreferrer">/robots.txt</a>}>
-        {staging ? <Chip tone="warn">סביבת בדיקה: הכל חסום לסריקה</Chip> : <Chip tone="ok">ייצור: סריקה פתוחה</Chip>}
+        {staging ? <Chip tone="warn">סביבת בדיקה: הכול חסום לסריקה</Chip> : <Chip tone="ok">ייצור: סריקה פתוחה</Chip>}
         <p className={ui.note} style={{ marginTop: 10 }}>חסומים: <span dir="ltr">/biz, /ops, /login, /logout, /invite, /for-business/join, /for-business/claim, /api</span>.</p>
       </Card>
     </div>
