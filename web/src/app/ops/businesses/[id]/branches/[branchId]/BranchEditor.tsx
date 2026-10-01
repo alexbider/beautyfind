@@ -10,7 +10,7 @@ import { SECTION_NAME, STATUS_NAME } from '@/lib/import/coverage';
 import { STEP_NAME } from '@/lib/import/enrichPlan';
 import type { BranchEdit, ContentForm, DetailsForm, FactsForm, MediaForm, TreatmentRow } from '../../../branchEdit';
 import { enhanceBranchesAction, type EnhanceMode } from '../../../actions';
-import { saveContentAction, saveDetailsAction, saveFactsAction, saveMediaAction, saveTreatmentsAction, type SaveResult } from './actions';
+import { generateAltAction, saveContentAction, saveDetailsAction, saveFactsAction, saveMediaAction, saveTreatmentsAction, type SaveResult } from './actions';
 import s from './editor.module.css';
 
 // The admin branch editor: every field of a listing in six sections, each saved on its own. Staff
@@ -193,50 +193,91 @@ function ContentSection({ data, canEdit }: { data: BranchEdit; canEdit: boolean 
 
 // ---------- media ----------
 
+type Tile = { kind: 'cover' | 'logo' | 'gallery'; index: number; url: string; alt: string; tag: string };
+
 function MediaSection({ data, canEdit }: { data: BranchEdit; canEdit: boolean }) {
   const [f, setF] = useState<MediaForm>(data.media);
   const [busy, setBusy] = useState(0);
   const [ytInput, setYt] = useState('');
+  const [altBusy, setAltBusy] = useState<Set<string>>(new Set());
+  const [altErr, setAltErr] = useState<Record<string, string>>({});
   const { save, msg, fields, pending } = useSave((v: MediaForm) => saveMediaAction(data.id, v));
   const set = (p: Partial<MediaForm>) => setF(prev => ({ ...prev, ...p }));
   const ro = !canEdit;
   const up = { uploadUrl: '/ops/businesses/upload', uploadFields: { businessId: data.businessId }, onBusy: (b: boolean) => setBusy(n => Math.max(0, n + (b ? 1 : -1))) };
+  const setGal = (i: number, p: Partial<MediaForm['gallery'][number]>) => set({ gallery: f.gallery.map((x, n) => (n === i ? { ...x, ...p } : x)) });
+
+  const tiles: Tile[] = [
+    { kind: 'cover', index: -1, url: f.coverUrl, alt: f.coverAlt, tag: '' },
+    { kind: 'logo', index: -1, url: f.logoUrl, alt: 'לוגו', tag: '' },
+    ...f.gallery.map((g, i) => ({ kind: 'gallery' as const, index: i, url: g.url, alt: g.alt, tag: g.tag })),
+  ];
+  const tileKey = (t: Tile) => (t.kind === 'gallery' ? `g:${t.index}` : t.kind);
+  const setAlt = (t: Tile, alt: string) => (t.kind === 'cover' ? set({ coverAlt: alt }) : t.kind === 'gallery' ? setGal(t.index, { alt }) : undefined);
+  const describe = (t: Tile) => {
+    if (!t.url) return;
+    const key = tileKey(t);
+    setAltBusy(b => new Set(b).add(key));
+    setAltErr(e => ({ ...e, [key]: '' }));
+    generateAltAction(data.id, { url: t.url, kind: t.kind, tag: t.tag || undefined }).then(r => {
+      setAltBusy(b => { const n = new Set(b); n.delete(key); return n; });
+      if (r.ok) setAlt(t, r.alt); else setAltErr(e => ({ ...e, [key]: r.error }));
+    });
+  };
+  const describeMissing = () => tiles.filter(t => t.url && t.kind !== 'logo' && !t.alt.trim()).forEach(describe);
   const addVideo = () => {
     const m = ytInput.trim().match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([A-Za-z0-9_-]{11})/) ?? ytInput.trim().match(/^([A-Za-z0-9_-]{11})$/);
     if (!m) return;
     if (!f.videos.some(v => v.id === m[1])) set({ videos: [...f.videos, { id: m[1], title: '', status: 'ok', source: 'owner' }] });
     setYt('');
   };
+  const missingAlts = tiles.filter(t => t.url && t.kind !== 'logo' && !t.alt.trim()).length;
+
   return (
     <form className={`${ui.card} ${ui.cardPad}`} onSubmit={e => { e.preventDefault(); save(f); }}>
-      <div className={s.media}>
-        <div className={ui.stack}>
-          <ImageDrop label="תמונת שער" placeholder="תמונת שער (16:9)" url={f.coverUrl} alt={f.coverAlt} frameClass={s.frameCover} disabled={ro} onUploaded={url => set({ coverUrl: url })} onRemove={() => set({ coverUrl: '', coverAlt: '' })} {...up} />
-          <Field label="תיאור נגישות לשער" error={fields.coverAlt}><input className={ui.input} value={f.coverAlt} disabled={ro || !f.coverUrl} maxLength={200} onChange={e => set({ coverAlt: e.target.value })} /></Field>
-        </div>
-        <div className={ui.stack}>
-          <ImageDrop label="לוגו" placeholder="לוגו" url={f.logoUrl} alt="לוגו" fit="contain" frameClass={s.frameLogo} disabled={ro} onUploaded={url => set({ logoUrl: url })} onRemove={() => set({ logoUrl: '' })} {...up} />
-        </div>
+      <div className={s.toolbarRow}>
+        <span className={ui.note}>{f.gallery.length} בגלריה{f.coverUrl ? ' · שער' : ' · אין שער'}{f.logoUrl ? ' · לוגו' : ' · אין לוגו'}{missingAlts ? ` · ${missingAlts} בלי תיאור` : ''}</span>
+        {!ro ? <button type="button" className={`${ui.btn} ${ui.small}`} disabled={!missingAlts || altBusy.size > 0} onClick={describeMissing}>תיאור ב־AI לכל התמונות בלי תיאור</button> : null}
+        {fields.coverAlt || fields.gallery ? <span className={ui.error}>{fields.coverAlt ?? fields.gallery}</span> : null}
       </div>
-      <div className={ui.field} style={{ marginTop: 16 }}>
-        <span className={ui.label}>גלריה ({f.gallery.length})</span>
-        {fields.gallery ? <span className={ui.error}>{fields.gallery}</span> : null}
-        <div className={s.gallery}>
-          {f.gallery.map((g, i) => (
-            <div key={g.url} className={s.galItem}>
-              <ImageDrop label={`תמונה ${i + 1}`} placeholder="" url={g.url} alt={g.alt} frameClass={s.frameGal} disabled={ro} onUploaded={url => set({ gallery: f.gallery.map((x, n) => (n === i ? { ...x, url } : x)) })} onRemove={() => set({ gallery: f.gallery.filter((_, n) => n !== i) })} {...up} />
-              <input className={ui.input} value={g.alt} disabled={ro} maxLength={200} placeholder="תיאור התמונה" onChange={e => set({ gallery: f.gallery.map((x, n) => (n === i ? { ...x, alt: e.target.value } : x)) })} />
-              <select className={ui.select} value={g.tag} disabled={ro} onChange={e => set({ gallery: f.gallery.map((x, n) => (n === i ? { ...x, tag: e.target.value } : x)) })}>
-                <option value="">ללא תגית</option><option value="הקליניקה">הקליניקה</option><option value="צוות">צוות</option><option value="לפני/אחרי">לפני/אחרי</option>
-              </select>
+      <div className={s.tiles}>
+        {tiles.map(t => {
+          const key = tileKey(t);
+          const name = t.kind === 'cover' ? 'תמונת שער' : t.kind === 'logo' ? 'לוגו' : `גלריה ${t.index + 1}`;
+          return (
+            <div key={key} className={`${s.tile} ${t.kind === 'cover' ? s.tileCover : ''}`}>
+              <div className={s.tileHead}><span>{name}</span>{t.url ? <Chip tone={t.kind === 'logo' || t.alt.trim() ? 'ok' : 'warn'}>{t.kind === 'logo' ? 'ללא alt' : t.alt.trim() ? 'יש תיאור' : 'חסר תיאור'}</Chip> : <Chip tone="neutral">ריק</Chip>}</div>
+              <ImageDrop
+                label={name} placeholder={t.kind === 'cover' ? 'תמונת שער (16:9)' : t.kind === 'logo' ? 'לוגו' : 'תמונה'} url={t.url} alt={t.alt} fit={t.kind === 'logo' ? 'contain' : 'cover'}
+                frameClass={t.kind === 'cover' ? s.frameCover : t.kind === 'logo' ? s.frameLogo : s.frameGal} disabled={ro}
+                onUploaded={url => (t.kind === 'cover' ? set({ coverUrl: url }) : t.kind === 'logo' ? set({ logoUrl: url }) : setGal(t.index, { url }))}
+                onRemove={() => (t.kind === 'cover' ? set({ coverUrl: '', coverAlt: '' }) : t.kind === 'logo' ? set({ logoUrl: '' }) : set({ gallery: f.gallery.filter((_, n) => n !== t.index) }))}
+                {...up}
+              />
+              {t.kind !== 'logo' ? (
+                <>
+                  <div className={s.tileRow}>
+                    <input className={ui.input} value={t.alt} disabled={ro || !t.url} maxLength={200} placeholder="תיאור התמונה (alt)" aria-label={`תיאור ${name}`} onChange={e => setAlt(t, e.target.value)} />
+                    {!ro ? <button type="button" className={`${ui.btn} ${ui.small} ${s.altBtn}`} disabled={!t.url || altBusy.has(key)} onClick={() => describe(t)} title="Claude מתאר את התמונה; אפשר לערוך לפני השמירה">{altBusy.has(key) ? 'מתאר…' : 'AI'}</button> : null}
+                  </div>
+                  {altErr[key] ? <span className={ui.error}>{altErr[key]}</span> : null}
+                </>
+              ) : null}
+              {t.kind === 'gallery' ? (
+                <select className={ui.select} value={t.tag} disabled={ro} aria-label="תגית" onChange={e => setGal(t.index, { tag: e.target.value })}>
+                  <option value="">ללא תגית</option><option value="הקליניקה">הקליניקה</option><option value="צוות">צוות</option><option value="לפני/אחרי">לפני/אחרי</option>
+                </select>
+              ) : null}
             </div>
-          ))}
-          {!ro && f.gallery.length < 24 ? (
-            <div className={s.galItem}>
-              <ImageDrop label="תמונה חדשה" placeholder="הוספת תמונה" url="" alt="" frameClass={s.frameGal} disabled={ro} onUploaded={url => set({ gallery: [...f.gallery, { url, alt: '', tag: '' }] })} {...up} />
-            </div>
-          ) : null}
-        </div>
+          );
+        })}
+        {!ro && f.gallery.length < 24 ? (
+          <div className={s.tile}>
+            <div className={s.tileHead}><span>תמונה חדשה לגלריה</span></div>
+            <ImageDrop label="תמונה חדשה" placeholder="גרירה או בחירה" url="" alt="" frameClass={s.frameGal} disabled={ro} onUploaded={url => set({ gallery: [...f.gallery, { url, alt: '', tag: '' }] })} {...up} />
+            <span className={ui.hint}>JPG, PNG או WebP עד 8MB. אחרי ההעלאה מלאו תיאור או בקשו אותו מה־AI.</span>
+          </div>
+        ) : null}
       </div>
       <div className={ui.field} style={{ marginTop: 16 }}>
         <span className={ui.label}>סרטוני YouTube ({f.videos.length})</span>

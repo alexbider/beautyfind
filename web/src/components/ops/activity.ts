@@ -45,6 +45,7 @@ const AUDIT: Record<string, string> = {
   ai_completion_requested: 'הפעיל/ה השלמה ב־AI',
   import_record_seeded: 'יצר/ה רשומת ייבוא מרישום ידני',
   branch_edit: 'ערך/ה פרופיל סניף',
+  ai_alt_generated: 'יצר/ה תיאור תמונה ב־AI',
   treatments_edit: 'ערך/ה טיפולים ומחירים',
   business_edit: 'ערך/ה פרטי עסק',
   audit_export: 'ייצא/ה את יומן הפעולות',

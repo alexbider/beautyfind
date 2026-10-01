@@ -270,3 +270,20 @@ export async function saveTreatmentsAction(branchId: string, input: { rows: Trea
   await afterSave(ctx.user.id, ctx.b, 'treatments', [`rows:${rows.length}`, `deleted:${p.data.deleted.length}`], 'treatments_edit');
   return { ok: true };
 }
+
+// ---------- alt text by AI (admin only) ----------
+
+export async function generateAltAction(branchId: string, input: { url: string; kind: 'cover' | 'logo' | 'gallery'; tag?: string }): Promise<{ ok: true; alt: string } | { ok: false; error: string }> {
+  const ctx = await staffFor(branchId);
+  if (!ctx) return { ok: false, error: 'אין הרשאה או שהסניף לא נמצא' };
+  const p = z.object({ url: s(80), kind: z.enum(['cover', 'logo', 'gallery']), tag: s(20).optional() }).safeParse(input);
+  if (!p.success) return { ok: false, error: 'קלט לא תקין' };
+  const { describeImage } = await import('@/lib/server/altText');
+  const r = await describeImage(p.data.url, ctx.b.businessId, { businessName: ctx.b.name, cityName: ctx.b.cityName, categories: ctx.b.categories.map(c => categoryBySlug(c.categorySlug)?.name ?? c.categorySlug), kind: p.data.kind, tag: p.data.tag ?? null });
+  if (!r.ok) {
+    const text = r.error === 'not_configured' ? 'חסר ANTHROPIC_API_KEY בסביבת האתר' : r.error === 'too_large' ? 'התמונה גדולה מ־4.5MB; העלו גרסה קטנה יותר' : r.error === 'unsupported' ? 'סוג קובץ לא נתמך לתיאור' : r.error === 'not_found' ? 'התמונה לא נמצאה או אינה של העסק' : `התיאור נכשל${r.detail ? `: ${r.detail}` : ''}`;
+    return { ok: false, error: text };
+  }
+  await db.auditLog.create({ data: { actorId: ctx.user.id, action: 'ai_alt_generated', subjectType: 'branch', subjectId: ctx.b.id, businessId: ctx.b.businessId, meta: { url: p.data.url, kind: p.data.kind, input: r.usage.input, output: r.usage.output } } });
+  return { ok: true, alt: r.alt };
+}

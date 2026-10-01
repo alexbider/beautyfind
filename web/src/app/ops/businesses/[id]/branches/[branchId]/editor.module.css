@@ -13,13 +13,20 @@
 .small { font-size: 12.5px; color: #8A96A3; }
 .check { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: #3E4F62; }
 .saveBar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding-top: 14px; border-top: 1px solid #EDEFF2; margin-top: 16px; }
-.media { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
-@media (min-width: 800px) { .media { grid-template-columns: 2fr 1fr; } }
-.frameCover { aspect-ratio: 16 / 9; width: 100%; }
-.frameLogo { aspect-ratio: 1; width: 160px; }
-.frameGal { aspect-ratio: 4 / 3; width: 100%; }
-.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
-.galItem { display: flex; flex-direction: column; gap: 6px; }
+/* Image tiles: the frame is the positioned, clipped box the drop zone's absolute image and buttons sit in. */
+.frame { position: relative; width: 100%; overflow: hidden; background: #F1F3F5; border: 1px dashed #C9CFD6; border-radius: 14px; }
+.frameCover { composes: frame; aspect-ratio: 16 / 9; }
+.frameLogo { composes: frame; aspect-ratio: 1; background: #fff; }
+.frameGal { composes: frame; aspect-ratio: 4 / 3; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+.tile { display: flex; flex-direction: column; gap: 6px; background: #fff; border: 1px solid #E6E6E6; border-radius: 16px; padding: 10px; }
+.tileCover { grid-column: span 2; }
+@media (max-width: 480px) { .tileCover { grid-column: span 1; } }
+.tileHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12.5px; font-weight: 700; color: #0C243E; }
+.tileRow { display: flex; gap: 6px; align-items: center; }
+.tileRow input { flex: 1; min-width: 0; }
+.altBtn { white-space: nowrap; }
+.toolbarRow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 4px 0 12px; }
 .row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 10px 0; border-top: 1px solid #EDEFF2; }
 .row:first-child { border-top: 0; }
 @media (min-width: 900px) { .rowTeam { grid-template-columns: 1fr 1fr 2fr 2fr auto; align-items: start; } .rowFaq { grid-template-columns: 1fr 2fr auto; align-items: start; } }
