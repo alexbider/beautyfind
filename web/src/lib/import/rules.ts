@@ -32,7 +32,7 @@ export const EnhanceScope = z.object({
   focus: z.array(z.string().max(30)).max(30).optional(), // template sections the run was started for (label only)
   // Enrichment plan (src/lib/import/enrichPlan.ts): the steps staff allowed. auto: run each step only for
   // listings whose missing sections it can fill (seedEnhance decides per listing); otherwise every listed step for every listing.
-  steps: z.array(z.enum(['dfs', 'maps', 'facebook', 'instagram', 'site', 'render', 'editorial', 'regenerate', 'images'])).max(9).optional(),
+  steps: z.array(z.enum(['dfs', 'maps', 'facebook', 'instagram', 'site', 'render', 'research', 'editorial', 'regenerate', 'images'])).max(10).optional(),
   auto: z.boolean().optional(),
 });
 export type EnhanceScope = z.infer<typeof EnhanceScope>;

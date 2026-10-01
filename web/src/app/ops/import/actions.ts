@@ -8,8 +8,8 @@ import {
   approvePlace, createRun, deleteRun, dispatchWorker, editPlace, enrichSelected, markDuplicate, mergePlace, reconcileTask, recoverRun, rejectPlace, restorePlace, retryIncomplete,
   getSettings, resetImport, saveSettings, setRunStatus, type CreateRunInput, type OpResult, type ResetPreview,
 } from '@/lib/server/importOps';
-import { estimatePlans, planFor, STEP_ORDER, stepApplies, type StepId } from '@/lib/import/enrichPlan';
 import { enrichQueue } from '@/lib/server/enrichQueue';
+import { startCompletion } from '@/lib/server/enhanceRuns';
 import { googleLookup, type GoogleLookup } from '@/lib/server/googleDisplay';
 import { countPendingImages, copyPendingImages } from '@/lib/server/importEnhance';
 import { pricing } from '@/lib/import/pricing';
@@ -200,7 +200,6 @@ export async function enhanceApprovedAction(ids: string[], refresh: boolean): Pr
   }
 }
 
-const StepList = z.array(z.enum(['dfs', 'maps', 'facebook', 'instagram', 'site', 'render', 'editorial', 'regenerate', 'images'])).max(9);
 
 export type EnhanceListingsResult = { ok: true; count: number; dispatched?: boolean; runId: string | null; budgetUsd: number; plan: Record<string, number> } | { ok: false; count: 0; error: string };
 
@@ -236,50 +235,6 @@ export async function rewriteBranchesAction(branchIds: string[]): Promise<Enhanc
   const list = z.array(z.uuid()).min(1).max(500).safeParse(branchIds);
   if (!user || !list.success) return { ok: false, count: 0, error: 'forbidden' };
   return startCompletion(user, list.data, { auto: false, steps: ['editorial', 'regenerate'], label: `כתיבה מחדש: ${list.data.length} עסקים` });
-}
-
-async function startCompletion(user: { id: string }, branchIds: string[], opts: { steps?: string[]; auto?: boolean; label?: string; focus?: string[]; refresh?: boolean; regenerate?: boolean; rereadSite?: boolean }): Promise<EnhanceListingsResult> {
-  const list = { data: branchIds };
-  // Legacy booleans map onto steps; a call without any step means the default set.
-  const requested = new Set<StepId>((StepList.safeParse(opts.steps ?? []).data ?? []) as StepId[]);
-  if (opts.rereadSite) requested.add('site');
-  if (opts.refresh) requested.add('dfs');
-  if (opts.regenerate) requested.add('regenerate');
-  if (!opts.steps) for (const st of ['site', 'editorial', 'images'] as StepId[]) requested.add(st);
-  const steps = STEP_ORDER.filter(st => requested.has(st));
-  const auto = opts.auto !== false;
-  const q = await enrichQueue({ branchIds: list.data });
-  if (!q.rows.length) return { ok: true, count: 0, runId: null, budgetUsd: 0, plan: {} };
-  const ids = q.rows.map(r => r.branchId);
-  const s = await getSettings();
-  const planOpts = { settings: s, apifyConfigured: true, allowed: steps };
-  const plans = q.rows.map(r => {
-    const plan = auto ? planFor(r.missing, r.signals, planOpts) : steps.filter(st => stepApplies(st, r.signals, planOpts));
-    if (auto && requested.has('regenerate') && stepApplies('regenerate', r.signals, planOpts)) plan.push('regenerate');
-    return plan;
-  });
-  const est = estimatePlans(plans, pricing(), { renderPages: s.apifyRenderPages, editorialEnabled: s.editorialEnabled, writer: s.llmProvider });
-  const planCounts = Object.fromEntries(Object.entries(est.perStep).filter(([, v]) => v.listings > 0).map(([k, v]) => [k, v.listings]));
-  // Ceiling: the estimate plus a quarter, at least the editorial allowance for a few new drafts; never above the per-run caps.
-  const editorialCap = s.editorialEnabled ? Math.min(s.editorialBudgetUsd, ids.length * pricing().editorial.perProfileUsd * 1.3) : 0;
-  const budgetUsd = Math.min(10_000, Math.max(0.05, est.totalUsd * 1.25 + (planCounts.editorial || planCounts.regenerate ? editorialCap * 0.5 : 0)));
-  try {
-    const focus = (opts.focus ?? []).slice(0, 30);
-    const label = (opts.label ?? '').trim().slice(0, 60) || `העשרה: ${ids.length} עסקים${focus.length ? ` (${focus.join(', ')})` : ''}`;
-    const run = await createRun(user, {
-      label,
-      provider: 'enhance',
-      scope: { branchIds: ids, steps, auto, refresh: steps.includes('dfs'), regenerate: steps.includes('regenerate'), rereadSite: steps.includes('site'), focus },
-      recordLimit: ids.length,
-      budgetUsd,
-    });
-    const d = await dispatchWorker(run.id);
-    refreshPaths();
-    revalidatePath('/ops/import/enrich');
-    return { ok: true, count: ids.length, dispatched: d.dispatched, runId: run.id, budgetUsd, plan: planCounts };
-  } catch (e) {
-    return { ok: false, count: 0, error: e instanceof Error ? e.message : 'failed' };
-  }
 }
 
 /** Deletes finished or stopped runs ("batches"). Running runs and discovery runs that still own records are skipped and reported. */

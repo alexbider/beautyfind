@@ -1,0 +1,12 @@
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; position: sticky; top: 0; z-index: 2; }
+.barText { display: flex; flex-direction: column; gap: 3px; min-width: 220px; flex: 1; }
+.readiness { font-weight: 800; font-size: 16px; font-variant-numeric: tabular-nums; }
+.readiness[data-tone='ok'] { color: #3B6B3F; }
+.readiness[data-tone='warn'] { color: #9A5B15; }
+.readiness[data-tone='bad'] { color: #A33A31; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; max-width: 360px; }
+.gapChip { font-size: 12px; padding: 2px 7px; border-radius: 7px; background: #F1F3F5; color: #5B6B7B; border: 1px solid #E6E6E6; white-space: nowrap; }
+.gapChip[data-owner] { background: #FFF8EC; color: #9A5B15; border-color: #F1DDB5; }
+.plan { font-size: 12.5px; color: #3E4F62; max-width: 240px; }
+.off td { opacity: .65; }
+.filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; width: 100%; }

@@ -203,3 +203,81 @@ describe('staff invite links', { skip }, () => {
     assert.ok(!(await setup.setupState(b.token)).ok);
   });
 });
+
+describe('AI completion on hand-registered listings', { skip }, () => {
+  let db: PrismaClient;
+  let runs: typeof import('../../src/lib/server/enhanceRuns');
+  const biz: string[] = [];
+  const users: string[] = [];
+  let actorId: string;
+
+  before(async () => {
+    const { PrismaClient } = await import('@prisma/client');
+    db = new PrismaClient();
+    runs = await import('../../src/lib/server/enhanceRuns');
+    const u = await db.user.create({ data: { email: `ops-gaps-${Date.now()}@example.test`, fullName: 'בדיקה', opsRole: 'ops' } });
+    users.push(u.id);
+    actorId = u.id;
+  });
+  after(async () => {
+    await db.importPlace.deleteMany({ where: { placeId: { startsWith: 'manual:' }, branchId: { in: await db.branch.findMany({ where: { businessId: { in: biz } }, select: { id: true } }).then(r => r.map(x => x.id)) } } });
+    await db.auditLog.deleteMany({ where: { actorId: { in: users } } });
+    await db.business.deleteMany({ where: { id: { in: biz } } });
+    await db.user.deleteMany({ where: { id: { in: users } } });
+    await db.$disconnect();
+  });
+
+  async function branch(over: Record<string, unknown> = {}) {
+    const b = await db.business.create({ data: { status: 'live', type: 'salon' } });
+    biz.push(b.id);
+    return db.branch.create({ data: { businessId: b.id, name: 'סלון ידני', slug: `manual-${b.id.slice(0, 8)}`, regionSlug: 'dan', cityName: 'תל אביב', address: 'דיזנגוף 1', lat: 32.08, lng: 34.78, status: 'live', isClaimed: false, websiteUrl: 'https://salon-example.test', phone: '+972501234567', ...over } });
+  }
+
+  it('seeds an import record from the listing and skips claimed or coordinate-less ones', async () => {
+    const ok = await branch();
+    const claimed = await branch({ isClaimed: true });
+    const noCoords = await branch({ lat: null, lng: null });
+    const r = await runs.ensureImportRecords([ok.id, claimed.id, noCoords.id, '00000000-0000-0000-0000-000000000000'], actorId);
+    assert.deepEqual(r.created, [ok.id]);
+    assert.deepEqual(r.skipped.map(x => x.reason).sort(), ['claimed', 'missing', 'no_coordinates']);
+    const p = await db.importPlace.findUniqueOrThrow({ where: { placeId: `manual:${ok.id}` } });
+    assert.equal(p.status, 'approved');
+    assert.equal(p.branchId, ok.id);
+    assert.equal(p.provider, 'manual');
+    assert.equal(p.website, 'https://salon-example.test/');
+    assert.equal(p.siteDomain, 'salon-example.test');
+    assert.equal(p.phone, '+972501234567');
+    const run = await db.importRun.findUniqueOrThrow({ where: { id: p.runId } });
+    assert.equal(run.status, 'done', 'the holder run is never queued for the worker');
+    // Second call: nothing new, the record now counts as existing.
+    const again = await runs.ensureImportRecords([ok.id], actorId);
+    assert.deepEqual(again, { created: [], existing: [ok.id], skipped: [] });
+  });
+
+  it('lists gaps for any listing, with a plan and a reason when it cannot be completed', async () => {
+    const ok = await branch();
+    const claimed = await branch({ isClaimed: true });
+    const { rows } = await runs.listGaps({ branchIds: [ok.id, claimed.id], live: 'all', claimed: 'all' });
+    const a = rows.find(r => r.branchId === ok.id)!;
+    const c = rows.find(r => r.branchId === claimed.id)!;
+    assert.ok(a && c);
+    assert.ok(a.missing.includes('about'), 'no description yet');
+    assert.ok(a.missing.includes('services'));
+    assert.ok(a.readiness < 50);
+    assert.equal(a.canEnhance, true);
+    assert.ok(a.plan.includes('site'), 'an own website means the site step');
+    assert.equal(c.canEnhance, false);
+    assert.match(c.why ?? '', /בבעלות/);
+    const only = await runs.listGaps({ branchIds: [ok.id, claimed.id], live: 'all', claimed: 'all', missing: 'hero' });
+    assert.ok(only.rows.every(r => r.missing.includes('hero')));
+  });
+});
+
+describe('enhance scope accepts every planner step', () => {
+  it('research is a valid step of an enhance run', async () => {
+    const { EnhanceScope } = await import('../../src/lib/import/rules');
+    const { STEP_ORDER } = await import('../../src/lib/import/enrichPlan');
+    const r = EnhanceScope.safeParse({ branchIds: [], steps: STEP_ORDER.filter(s => s !== 'regenerate'), auto: true });
+    assert.ok(r.success, JSON.stringify(r.error?.issues));
+  });
+});

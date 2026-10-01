@@ -10,8 +10,11 @@ import { fromE164 } from '@/lib/format';
 import { chainTotal } from '@/lib/pricing';
 import { profileHref } from '@/lib/server/public';
 import { platformSettings } from '@/lib/server/platformSettings';
+import { listGaps } from '@/lib/server/enhanceRuns';
 import { loadBusiness, PLAN_NAME, STATUS_NAME, STATUS_TONE } from '../data';
+import { BusinessDetailsForm } from '../BusinessDetailsForm';
 import { StatusActions } from '../StatusActions';
+import { AiPanel } from './branches/[branchId]/BranchEditor';
 
 export const metadata: Metadata = { title: 'כרטיס עסק · ניהול', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
@@ -26,6 +29,8 @@ export default async function BusinessCardPage({ params }: { params: Promise<{ i
   const user = await requireArea('businesses', 'view', `/ops/businesses/${id}`);
   const [b, s, level] = await Promise.all([loadBusiness(id), platformSettings(), areaLevel(user, 'businesses')]);
   if (!b) notFound();
+  const canEdit = atLeast(level, 'edit');
+  const gaps = await listGaps({ branchIds: b.branches.map(x => x.id), live: 'all', claimed: 'all' });
   const live = b.branches.filter(x => x.status === 'live').length;
   const unit = b.subscription ? (b.subscription.plan === 'advanced' ? s.advancedMonthlyNis : s.basicMonthlyNis) : null;
   const total = unit != null && live ? chainTotal(live, unit) : null;
@@ -52,10 +57,24 @@ export default async function BusinessCardPage({ params }: { params: Promise<{ i
                     <td>{br.categories.map(c => categoryBySlug(c.categorySlug)?.name ?? c.categorySlug).join(', ') || '—'}</td>
                     <td>{br.medicalResponsible ? `${br.medicalResponsible.displayName} · ${PROFESSION[br.medicalResponsible.profession] ?? br.medicalResponsible.profession}` : '—'}</td>
                     <td><Chip tone={br.status === 'live' ? 'ok' : br.status === 'draft' ? 'neutral' : 'warn'}>{br.status === 'live' ? 'חי' : br.status === 'draft' ? 'טיוטה' : 'לא מפורסם'}</Chip></td>
-                    <td>{br.status === 'live' && b.status === 'live' ? <a href={profileHref({ regionSlug: br.regionSlug, slug: br.slug, categories: br.categories })} className={ui.rowLink} target="_blank" rel="noreferrer">לפרופיל</a> : null}</td>
+                    <td className={ui.actions}><Link href={`/ops/businesses/${b.id}/branches/${br.id}`} className={`${ui.btn} ${ui.small} ${ui.primary}`}>{canEdit ? 'עריכה מלאה' : 'צפייה בפרופיל'}</Link>{br.status === 'live' && b.status === 'live' ? <a href={profileHref({ regionSlug: br.regionSlug, slug: br.slug, categories: br.categories })} className={`${ui.btn} ${ui.small}`} target="_blank" rel="noreferrer">לאתר</a> : null}</td>
                   </tr>
                 ))}
               </Table>
+            ) : <Empty title="אין סניפים" />}
+          </Card>
+
+          <Card title="השלמה ב־AI" sub="מה חסר בכל סניף ומה הריצה תעשה; ממלאת רק שדות ריקים, לא נוגעת ברישומים בבעלות מאומתת">
+            {gaps.rows.length ? (
+              <div className={ui.stack}>
+                {gaps.rows.map(g => (
+                  <div key={g.branchId} style={{ borderTop: '1px solid #EDEFF2', paddingTop: 12 }}>
+                    <div className={ui.strong} style={{ marginBottom: 6 }}><Link href={`/ops/businesses/${b.id}/branches/${g.branchId}`} className={ui.rowLink}>{g.name}</Link> · מוכנות {g.readiness}%</div>
+                    <AiPanel branchIds={[g.branchId]} gap={g} canEdit={canEdit} compact />
+                  </div>
+                ))}
+                {gaps.rows.length > 1 && canEdit ? <div style={{ borderTop: '1px solid #EDEFF2', paddingTop: 12 }}><div className={ui.strong} style={{ marginBottom: 6 }}>כל הסניפים יחד</div><AiPanel branchIds={gaps.rows.filter(g => g.canEnhance).map(g => g.branchId)} gap={null} canEdit={gaps.rows.some(g => g.canEnhance)} compact /></div> : null}
+              </div>
             ) : <Empty title="אין סניפים" />}
           </Card>
 
@@ -148,8 +167,12 @@ export default async function BusinessCardPage({ params }: { params: Promise<{ i
             </Card>
           ) : null}
 
+          <Card title="פרטי העסק">
+            <BusinessDetailsForm initial={{ id: b.id, legalName: b.legalName ?? '', companyNo: b.companyNo ?? '', type: b.type, invoiceEmail: b.invoiceEmail ?? '', accountantEmail: b.accountantEmail ?? '', chainKey: b.chainKey ?? '' }} canEdit={canEdit} />
+          </Card>
+
           <Card title="מצב העסק">
-            <StatusActions id={b.id} current={b.status} canEdit={atLeast(level, 'edit')} />
+            <StatusActions id={b.id} current={b.status} canEdit={canEdit} />
           </Card>
         </div>
       </div>

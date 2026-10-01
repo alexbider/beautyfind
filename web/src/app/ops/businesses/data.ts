@@ -1,5 +1,5 @@
 import 'server-only';
-import type { BusinessStatus, Prisma } from '@prisma/client';
+import type { BusinessStatus, Prisma, RegionSlug } from '@prisma/client';
 import { categoryBySlug, regionBySlug } from '@/lib/catalog';
 import { chainTotal } from '@/lib/pricing';
 import { db } from '@/lib/server/db';
@@ -37,13 +37,23 @@ export interface BizRow {
   createdAt: Date;
 }
 
-export async function listBusinesses(opts: { filter: BizFilter; q: string; take?: number }): Promise<{ rows: BizRow[]; total: number }> {
+export interface BizListOptions { filter: BizFilter; q: string; take?: number; region?: string; category?: string; claimed?: 'all' | 'claimed' | 'unclaimed'; plan?: 'all' | 'basic' | 'advanced' | 'none' }
+
+export async function listBusinesses(opts: BizListOptions): Promise<{ rows: BizRow[]; total: number }> {
   const s = await platformSettings();
   const q = opts.q.trim();
   const digits = q.replace(/\D/g, '');
+  const branchFilter: Prisma.BranchWhereInput = {
+    ...(opts.region ? { regionSlug: opts.region as RegionSlug } : {}),
+    ...(opts.category ? { categories: { some: { categorySlug: opts.category } } } : {}),
+    ...(opts.claimed === 'claimed' ? { isClaimed: true } : {}),
+  };
   const where: Prisma.BusinessWhereInput = {
     ...(opts.filter === 'all' || opts.filter === 'no_subscription' ? {} : { status: opts.filter }),
     ...(opts.filter === 'no_subscription' ? { subscription: null } : {}),
+    ...(Object.keys(branchFilter).length ? { branches: { some: branchFilter } } : {}),
+    ...(opts.claimed === 'unclaimed' ? { branches: { none: { isClaimed: true } } } : {}),
+    ...(opts.plan === 'none' ? { subscription: null } : opts.plan === 'basic' || opts.plan === 'advanced' ? { subscription: { plan: opts.plan } } : {}),
     ...(q
       ? {
           OR: [

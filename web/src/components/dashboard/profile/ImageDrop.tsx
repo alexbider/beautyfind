@@ -15,10 +15,10 @@ const ERRORS: Record<string, string> = {
   network: 'ההעלאה נכשלה. בדקו את החיבור ונסו שוב',
 };
 
-function upload(file: File, alt: string, onProgress: (p: number) => void): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
+function upload(file: File, alt: string, onProgress: (p: number) => void, endpoint: string, fields: Record<string, string>): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
   return new Promise(resolve => {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', '/biz/profile/upload');
+    xhr.open('POST', endpoint);
     xhr.responseType = 'json';
     xhr.upload.onprogress = e => { if (e.lengthComputable) onProgress(e.loaded / e.total); };
     xhr.onload = () => {
@@ -30,6 +30,7 @@ function upload(file: File, alt: string, onProgress: (p: number) => void): Promi
     const fd = new FormData();
     fd.append('file', file);
     if (alt) fd.append('alt', alt);
+    for (const [k, v] of Object.entries(fields)) fd.append(k, v);
     xhr.send(fd);
   });
 }
@@ -49,6 +50,8 @@ export function ImageDrop({
   onUploaded,
   onRemove,
   onBusy,
+  uploadUrl = '/biz/profile/upload',
+  uploadFields,
 }: {
   label: string;
   placeholder: string;
@@ -60,6 +63,9 @@ export function ImageDrop({
   onUploaded: (url: string) => void;
   onRemove?: () => void;
   onBusy: (busy: boolean) => void;
+  /** Where the file goes; the owner dashboard's route by default, the admin's for staff. */
+  uploadUrl?: string;
+  uploadFields?: Record<string, string>;
 }) {
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState('');
@@ -75,7 +81,7 @@ export function ImageDrop({
     setError('');
     setProgress(0);
     onBusy(true);
-    const res = await upload(file, alt, p => alive.current && setProgress(p));
+    const res = await upload(file, alt, p => alive.current && setProgress(p), uploadUrl, uploadFields ?? {});
     onBusy(false);
     if (!alive.current) return;
     setProgress(null);
