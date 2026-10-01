@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { OpsHeader } from '@/components/ops/OpsHeader';
+import { AdminShell } from '@/components/ops/AdminShell';
 import { OPS_ROLE_NAMES, requireVerifier } from '@/components/ops/guard';
 import { loadQueue } from './data';
 import { VerificationConsole } from './VerificationConsole';
@@ -16,9 +16,10 @@ export default async function VerificationPage() {
   const reviewer = user.fullName ?? user.email ?? 'צוות BeautyFind';
 
   return (
+    <AdminShell user={user} bare>
     <div dir="rtl" lang="he" className={styles.root}>
-      <OpsHeader current="verification" who={`${reviewer} · ${OPS_ROLE_NAMES[user.opsRole!]}`} />
       <VerificationConsole items={items} who={`${reviewer} · ${OPS_ROLE_NAMES[user.opsRole!]}`} />
     </div>
+    </AdminShell>
   );
 }

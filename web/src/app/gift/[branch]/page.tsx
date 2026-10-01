@@ -9,6 +9,7 @@ import { profileHref } from '@/lib/server/public';
 import { addDays, ilDate, ilDateKey } from '@/lib/time';
 import { GiftFrame } from '../frame';
 import { decodeParam } from '@/lib/params';
+import { FeatureOff, gate } from '@/components/shell/FeatureOff';
 
 // Design: project/BeautyFind Gift Cards.dc.html (view=buy). Payment runs at the business's own provider;
 // the checkout returns here with ?card=<id>&paid=1|0 and the card turns active once the provider confirms.
@@ -42,6 +43,9 @@ export default async function GiftBuyPage({ params, searchParams }: Props) {
   const closeHref = profileHref(s.branch);
   const flow = { title: 'שובר מתנה', closeHref };
   const cardId = typeof sp.card === 'string' ? sp.card : null;
+  // Cards already bought keep working (return pages below); only new purchases pause.
+  const g = cardId ? { off: false as const } : await gate('giftCards');
+  if (g.off) return <FeatureOff flag="giftCards" reason={g.reason} message={g.message} closeHref={closeHref} />;
   if (cardId) {
     const r = await returnState(s.businessId, cardId, typeof sp.paid === 'string' ? sp.paid : undefined);
     if (r?.state === 'done') {

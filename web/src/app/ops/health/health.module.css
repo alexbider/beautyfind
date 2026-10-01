@@ -1,0 +1,13 @@
+.services { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+@media (min-width: 1000px) { .services { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.service { background: #fff; border: 1px solid #E6E6E6; border-radius: 18px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0, 0, 0, .04); }
+.serviceTop { display: flex; align-items: center; gap: 8px; }
+.serviceName { font-weight: 800; color: #0C243E; font-size: 14px; }
+.serviceState { margin-top: 6px; font-weight: 700; font-size: 13.5px; color: #3B6B3F; }
+.serviceState[data-tone='warn'] { color: #9A5B15; }
+.serviceState[data-tone='bad'] { color: #A33A31; }
+.serviceState[data-tone='neutral'] { color: #5B6B7B; }
+.serviceNote { margin-top: 4px; font-size: 12.5px; color: #8A96A3; font-variant-numeric: tabular-nums; }
+.kv { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid #EDEFF2; font-size: 13.5px; color: #5B6B7B; }
+.kv:first-child { border-top: 0; }
+.kv strong { color: #0C243E; text-align: end; font-weight: 700; }

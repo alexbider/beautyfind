@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { applySeo } from '@/lib/server/seo';
 import { cardExtras } from '@/app/search/extras';
 import { CATEGORY_IMAGE } from '@/components/home/content';
 import { DeskHome } from '@/components/home/desk/DeskHome';
@@ -8,6 +9,7 @@ import { PhoneHome, type PhoneCard, type PhoneReview } from '@/components/home/p
 import { CATEGORIES, REGIONS, citiesOf, cityPageHref, type RegionSlug } from '@/lib/catalog';
 import { listBranches, listingCounts, recentReviews, type ListingCard } from '@/lib/server/public';
 import styles from './page.module.css';
+import { MaintenanceNotice } from '@/components/shell/FeatureOff';
 
 // Designs: BeautyFind_Homepage_Desktop_new.html (desktop body; the site header and footer are
 // unchanged) and BeautyFind_Homepage_Mobile.html (app shell). Server component: both layouts
@@ -18,12 +20,14 @@ const TITLE = 'מכוני יופי, קליניקות לאסתטיקה וספא �
 const DESCRIPTION =
   'מצאו מכוני יופי, קליניקות לאסתטיקה רפואית, מספרות וספא בכל רחבי ישראל, מהצפון ועד אילת. השוו מחירים וביקורות, גלו טיפולים וקבעו את הפגישה הבאה.';
 
-export const metadata: Metadata = {
-  title: { absolute: TITLE },
-  description: DESCRIPTION,
-  alternates: { canonical: '/' },
-  openGraph: { type: 'website', locale: 'he_IL', url: '/', siteName: 'BeautyFind', title: TITLE, description: DESCRIPTION, images: ['/assets/hero-clinic.jpg'] },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return applySeo('/', {
+    title: { absolute: TITLE },
+    description: DESCRIPTION,
+    alternates: { canonical: '/' },
+    openGraph: { type: 'website', locale: 'he_IL', url: '/', siteName: 'BeautyFind', title: TITLE, description: DESCRIPTION, images: ['/assets/hero-clinic.jpg'] },
+  });
+}
 
 // Counts and cards change as listings go live; refresh the cached page every 5 minutes.
 export const revalidate = 120;
@@ -119,6 +123,7 @@ export default async function HomePage() {
   return (
     <div className={styles.root}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
+      <MaintenanceNotice />
       <div className="bf-shell-only">
         <PhoneHome lists={cardLists} reviews={cardReviews} regionCities={regionCities} catCount={CATEGORIES.length} />
       </div>

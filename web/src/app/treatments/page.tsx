@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { applySeo } from '@/lib/server/seo';
 import Link from 'next/link';
 import { ArrowForward } from '@/components/icons';
 import { SiteFooter } from '@/components/site-footer/SiteFooter';
@@ -22,11 +23,11 @@ export const revalidate = 600;
 export async function generateMetadata(): Promise<Metadata> {
   const counts = await listingCounts();
   const lead = counts.total > 0 ? `${countText(counts.total, 'עסק אחד', 'עסקים')} ב־7 אזורים` : '7 אזורים';
-  return {
+  return applySeo('/treatments', {
     title: '14 תחומי טיפול',
     description: `14 תחומי הטיפול באינדקס BeautyFind: ${lead}, מחירים חציוניים בשקלים ומי מורשה לבצע כל טיפול בישראל.`,
     alternates: { canonical: '/treatments' },
-  };
+  });
 }
 
 export default async function TreatmentsPage() {

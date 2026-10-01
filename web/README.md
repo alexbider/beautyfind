@@ -47,6 +47,7 @@ The funnel is Get Listed → business signup (phone OTP) → Onboarding → a `B
 | `/biz/team` | Team, per-member permissions, staff invites (owner only) | same |
 | `/invite/[token]` | Staff invite acceptance (licensed professions go to verification) | `BeautyFind Staff Invite.dc.html` |
 | `/ops/verification` | BeautyFind staff queue: business, license, certificate and claim requests | `BeautyFind Verification.dc.html` |
+| `/ops` and its areas | Master admin: overview, businesses, clients, bookings, disputes, sponsored, moderation, accounting, content, messages, AI and MCP, integrations, team, audit, settings, health. See `docs/admin.md`. | `BeautyFind_Master_Admin.html` |
 
 Every dashboard tab reads real data; a new business sees empty states, never mock numbers. Areas follow `src/lib/permissions.ts` (presets × areas; `none` hides the tab, `view` shows a lock banner). Owners can preview any role from the header menu.
 

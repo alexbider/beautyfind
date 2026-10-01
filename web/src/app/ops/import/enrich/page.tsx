@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { OpsHeader } from '@/components/ops/OpsHeader';
-import { OPS_ROLE_NAMES, requireImporter } from '@/components/ops/guard';
+import { AdminShell } from '@/components/ops/AdminShell';
+import { requireImporter } from '@/components/ops/guard';
 import { CATEGORIES, REGIONS } from '@/lib/catalog';
 import { SECTION_NAME, STATUS_NAME, type ProfileStatus } from '@/lib/import/coverage';
 import { STEP_NAME, STEP_ORDER, stepUsd, type StepId } from '@/lib/import/enrichPlan';
@@ -88,13 +88,12 @@ export default async function EnrichPage({ searchParams }: { searchParams: SP })
     for (const [k, v] of Object.entries({ ...cur, ...patch })) if (v && !(k === 'page' && String(v) === '1')) p.set(k, String(v));
     return `/ops/import/enrich?${p}`;
   };
-  const who = `${user.fullName ?? user.email ?? 'צוות BeautyFind'} · ${OPS_ROLE_NAMES[user.opsRole!]}`;
   const p = pricing();
   const costs = Object.fromEntries(STEP_ORDER.map(s => [s, stepUsd(s, p, { renderPages: settings.apifyRenderPages, editorialEnabled: settings.editorialEnabled, writer: settings.llmProvider })])) as Record<StepId, number>;
 
   return (
+    <AdminShell user={user} bare>
     <div dir="rtl" lang="he" className={styles.root}>
-      <OpsHeader current="import" who={who} />
       <main className={styles.page}>
         <div className={styles.titleRow}>
           <h1 className={styles.h1}>השלמות לעסקים שפורסמו</h1>
@@ -183,5 +182,6 @@ export default async function EnrichPage({ searchParams }: { searchParams: SP })
         ) : null}
       </main>
     </div>
+    </AdminShell>
   );
 }

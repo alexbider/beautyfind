@@ -1,0 +1,24 @@
+.person { display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-top: 1px solid #EDEFF2; flex-wrap: wrap; }
+.person:first-child { border-top: 0; }
+.personText { flex: 1; min-width: 220px; }
+.personName { font-weight: 800; color: #0C243E; font-size: 15px; }
+.personRole { color: #0B7A87; font-weight: 700; }
+.personMeta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 12.5px; color: #8A96A3; }
+.roleSelect { min-width: 150px; }
+.invite { display: flex; flex-direction: column; gap: 12px; padding: 16px 20px; border-top: 1px solid #EDEFF2; background: #FAFBFB; }
+.inviteResult { display: flex; flex-direction: column; gap: 8px; }
+
+.matrixWrap { overflow-x: auto; }
+.matrix { width: 100%; border-collapse: separate; border-spacing: 6px; font-size: 13.5px; }
+.matrix th { text-align: center; font-size: 12.5px; font-weight: 700; color: #5B6B7B; padding: 6px 4px; white-space: nowrap; }
+.matrix th:first-child, .matrix td:first-child { text-align: start; }
+.matrix td:first-child { font-weight: 800; color: #0C243E; white-space: nowrap; padding-inline-end: 8px; }
+.cell { display: block; width: 100%; min-width: 96px; min-height: 36px; border-radius: 9px; border: 1px solid transparent; font: inherit; font-weight: 700; font-size: 13px; cursor: pointer; text-align: center; }
+.cell[data-level='none'] { background: #F1F3F5; color: #8A96A3; }
+.cell[data-level='view'] { background: #F0FAFB; color: #0B7A87; }
+.cell[data-level='edit'] { background: #FFF8EC; color: #9A5B15; }
+.cell[data-level='full'] { background: #0C243E; color: #fff; }
+.cell[data-level='mixed'] { background: #fff; color: #5B6B7B; border-color: #C9CFD6; border-style: dashed; }
+.cell[data-locked='true'] { background: #4A5A6D; cursor: default; }
+.cell:disabled { opacity: .6; cursor: wait; }
+.cell:hover:not(:disabled):not([data-locked='true']) { filter: brightness(.96); }

@@ -1,5 +1,7 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
+
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useMedia } from '@/components/search/useMedia';
@@ -45,6 +47,7 @@ export function CookieConsent() {
   const [prefs, setPrefs] = useState(false);
   const [draft, setDraft] = useState<Consent>(NONE);
   const shell = useMedia(SHELL_MQ);
+  const pathname = usePathname();
 
   useEffect(() => {
     const s = readConsent();
@@ -67,6 +70,8 @@ export function CookieConsent() {
   }, [prefs, shell]);
 
   if (saved === undefined) return null;
+  // The staff console (/ops) is noindex and sets no analytics or embed cookies: no banner there.
+  if (pathname?.startsWith('/ops')) return null;
 
   const save = (v: Consent) => {
     try {

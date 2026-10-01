@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { applySeo } from '@/lib/server/seo';
 import type { ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -41,13 +42,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!cat) return {};
   const counts = await listingCounts();
   const n = counts.category[cat.slug] ?? 0;
-  return {
+  return applySeo(`/treatments/${cat.slug}`, {
     title: `${cat.name} בישראל`,
     description:
       `${cat.name} בישראל: מה כולל התחום, מחירים חציוניים, מי מורשה לבצע, והעסקים המדורגים ביותר בכל אזור.` +
       (n > 0 ? ` ${countText(n, 'עסק אחד', 'עסקים')} ב־7 אזורים.` : ''),
     alternates: { canonical: `/treatments/${cat.slug}` },
-  };
+  });
 }
 
 export default async function TreatmentCategoryPage({ params }: Props) {

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import { OpsHeader } from '@/components/ops/OpsHeader';
-import { OPS_ROLE_NAMES, requireImporter } from '@/components/ops/guard';
+import { AdminShell } from '@/components/ops/AdminShell';
+import { requireImporter } from '@/components/ops/guard';
 import { fromMicros, pricing } from '@/lib/import/pricing';
 import { db } from '@/lib/server/db';
 import { googleAvailable } from '@/lib/server/googleDisplay';
@@ -74,12 +74,11 @@ export default async function ImportPage() {
       places: Object.values(byStatus).reduce((s, x) => s + x, 0),
     };
   });
-  const who = `${user.fullName ?? user.email ?? 'צוות BeautyFind'} · ${OPS_ROLE_NAMES[user.opsRole!]}`;
   const p = pricing();
 
   return (
+    <AdminShell user={user} bare>
     <div dir="rtl" lang="he" className={styles.root}>
-      <OpsHeader current="import" who={who} />
       <main className={styles.page}>
         <div className={styles.titleRow}>
           <h1 className={styles.h1}>ייבוא עסקים</h1>
@@ -101,5 +100,6 @@ export default async function ImportPage() {
         <div style={{ marginTop: 14 }}><ResetImport preview={reset} /></div>
       </main>
     </div>
+    </AdminShell>
   );
 }

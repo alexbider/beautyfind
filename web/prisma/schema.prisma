@@ -7,8 +7,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   // Migrations need a direct (non-pooled) connection; on Vercel + Neon this is set automatically.
   directUrl = env("DATABASE_URL_UNPOOLED")
 }
@@ -49,11 +49,11 @@ model City {
 
 // The 14 service categories. `isMedical` categories need a verified doctor as medical responsible.
 model Category {
-  slug       String      @id
+  slug       String           @id
   name       String
-  groupName  String      @map("group_name")
-  isMedical  Boolean     @map("is_medical")
-  sortOrder  Int         @map("sort_order")
+  groupName  String           @map("group_name")
+  isMedical  Boolean          @map("is_medical")
+  sortOrder  Int              @map("sort_order")
   treatments Treatment[]
   branches   BranchCategory[]
 
@@ -68,28 +68,31 @@ enum AccountKind {
 }
 
 model User {
-  id           String      @id @default(uuid()) @db.Uuid
-  phone        String?     @unique // E.164, verified by OTP
-  email        String?     @unique
-  fullName     String?     @map("full_name")
-  kind         AccountKind @default(client)
-  passwordHash String?     @map("password_hash") // business users only
-  phoneVerifiedAt DateTime? @map("phone_verified_at")
-  emailVerifiedAt DateTime? @map("email_verified_at")
-  marketingOptIn  Boolean   @default(false) @map("marketing_opt_in")
-  termsAcceptedAt DateTime? @map("terms_accepted_at")
+  id              String      @id @default(uuid()) @db.Uuid
+  phone           String?     @unique // E.164, verified by OTP
+  email           String?     @unique
+  fullName        String?     @map("full_name")
+  kind            AccountKind @default(client)
+  passwordHash    String?     @map("password_hash") // business users only
+  phoneVerifiedAt DateTime?   @map("phone_verified_at")
+  emailVerifiedAt DateTime?   @map("email_verified_at")
+  marketingOptIn  Boolean     @default(false) @map("marketing_opt_in")
+  termsAcceptedAt DateTime?   @map("terms_accepted_at")
   // BeautyFind staff only (see 04-permissions.md). Null for clients and businesses.
-  opsRole      OpsRole?    @map("ops_role")
-  createdAt    DateTime    @default(now()) @map("created_at")
-  updatedAt    DateTime    @updatedAt @map("updated_at")
+  opsRole         OpsRole?    @map("ops_role")
+  // A client account staff blocked (fraud, harassment). Sign-in is refused; records stay for the clinics.
+  blockedAt       DateTime?   @map("blocked_at")
+  blockedReason   String?     @map("blocked_reason")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
 
-  sessions     Session[]
-  staff        StaffMember[]
-  bookings     Booking[]      @relation("ClientBookings")
-  declarations HealthDeclaration[]
-  saved        SavedClinic[]
-  consents     MessageConsent[]
-  ownedBusinesses Business[] @relation("BusinessOwner")
+  sessions             Session[]
+  staff                StaffMember[]
+  bookings             Booking[]             @relation("ClientBookings")
+  declarations         HealthDeclaration[]
+  saved                SavedClinic[]
+  consents             MessageConsent[]
+  ownedBusinesses      Business[]            @relation("BusinessOwner")
   verificationRequests VerificationRequest[] @relation("Submitter")
 
   @@map("users")
@@ -183,8 +186,8 @@ model StaffMember {
   createdAt   DateTime    @default(now()) @map("created_at")
   updatedAt   DateTime    @updatedAt @map("updated_at")
 
-  medicalResponsibleFor Branch[] @relation("MedicalResponsible")
-  bookings    Booking[] @relation("PractitionerBookings")
+  medicalResponsibleFor Branch[]  @relation("MedicalResponsible")
+  bookings              Booking[] @relation("PractitionerBookings")
 
   @@map("staff_members")
 }
@@ -237,32 +240,32 @@ enum BusinessType {
 }
 
 model Business {
-  id             String         @id @default(uuid()) @db.Uuid
-  legalName      String?        @map("legal_name")
-  companyNo      String?        @map("company_no") // ח.פ. / ע.מ., 9 digits, never shown publicly
-  type           BusinessType   @default(salon)
-  ownerUserId    String?        @map("owner_user_id") @db.Uuid
-  owner          User?          @relation("BusinessOwner", fields: [ownerUserId], references: [id])
-  status         BusinessStatus @default(pending)
+  id              String         @id @default(uuid()) @db.Uuid
+  legalName       String?        @map("legal_name")
+  companyNo       String?        @map("company_no") // ח.פ. / ע.מ., 9 digits, never shown publicly
+  type            BusinessType   @default(salon)
+  ownerUserId     String?        @map("owner_user_id") @db.Uuid
+  owner           User?          @relation("BusinessOwner", fields: [ownerUserId], references: [id])
+  status          BusinessStatus @default(pending)
   // { cancel_window_hours, waitlist_hold_minutes, consult_fee, reminder_hours }
-  settings       Json           @default("{}")
-  invoiceEmail   String?        @map("invoice_email")
-  accountantEmail String?       @map("accountant_email")
+  settings        Json           @default("{}")
+  invoiceEmail    String?        @map("invoice_email")
+  accountantEmail String?        @map("accountant_email")
   // A chain or franchise: the business website's domain, shared by every branch the import found
   // under it (src/lib/import/chain.ts). Branches of one chain sit under one business, so an owner
   // claims and manages all locations from one account and is billed per branch.
-  chainKey       String?        @map("chain_key")
-  createdAt      DateTime       @default(now()) @map("created_at")
-  updatedAt      DateTime       @updatedAt @map("updated_at")
+  chainKey        String?        @map("chain_key")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
 
-  branches       Branch[]
-  staff          StaffMember[]
-  subscription   Subscription?
-  depositPolicy  DepositPolicy?
+  branches             Branch[]
+  staff                StaffMember[]
+  subscription         Subscription?
+  depositPolicy        DepositPolicy?
   verificationRequests VerificationRequest[]
-  invites        StaffInvite[]
-  providerConnections ProviderConnection[]
-  giftCards      GiftCard[]
+  invites              StaffInvite[]
+  providerConnections  ProviderConnection[]
+  giftCards            GiftCard[]
 
   @@index([chainKey])
   @@map("businesses")
@@ -275,38 +278,38 @@ enum BranchStatus {
 }
 
 model Branch {
-  id          String       @id @default(uuid()) @db.Uuid
-  businessId  String       @map("business_id") @db.Uuid
-  business    Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  name        String
-  slug        String       @unique
-  regionSlug  RegionSlug   @map("region_slug")
-  region      Region       @relation(fields: [regionSlug], references: [slug])
-  cityId      String?      @map("city_id") @db.Uuid
-  city        City?        @relation(fields: [cityId], references: [id])
-  cityName    String       @map("city_name") // free text as typed; cityId set when it matches the catalog
-  address     String
-  lat         Float?
-  lng         Float?
-  phone       String? // E.164
-  whatsapp    String? // E.164
-  email       String?
+  id                   String       @id @default(uuid()) @db.Uuid
+  businessId           String       @map("business_id") @db.Uuid
+  business             Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name                 String
+  slug                 String       @unique
+  regionSlug           RegionSlug   @map("region_slug")
+  region               Region       @relation(fields: [regionSlug], references: [slug])
+  cityId               String?      @map("city_id") @db.Uuid
+  city                 City?        @relation(fields: [cityId], references: [id])
+  cityName             String       @map("city_name") // free text as typed; cityId set when it matches the catalog
+  address              String
+  lat                  Float?
+  lng                  Float?
+  phone                String? // E.164
+  whatsapp             String? // E.164
+  email                String?
   // 7 entries, index 0 = Sunday: [{ open: "09:00", close: "19:00", closed: false }]
-  hours       Json         @default("[]")
-  accessible  Boolean      @default(false)
-  freeParking Boolean      @default(false) @map("free_parking")
-  onlineBooking Boolean    @default(true) @map("online_booking")
-  medicalResponsibleId String? @map("medical_responsible_id") @db.Uuid
+  hours                Json         @default("[]")
+  accessible           Boolean      @default(false)
+  freeParking          Boolean      @default(false) @map("free_parking")
+  onlineBooking        Boolean      @default(true) @map("online_booking")
+  medicalResponsibleId String?      @map("medical_responsible_id") @db.Uuid
   medicalResponsible   StaffMember? @relation("MedicalResponsible", fields: [medicalResponsibleId], references: [id])
-  status      BranchStatus @default(draft)
-  isClaimed   Boolean      @default(false) @map("is_claimed") // an owner has verified ownership
-  coverUrl    String?      @map("cover_url")
-  coverAlt    String?      @map("cover_alt")
-  logoUrl     String?      @map("logo_url")
+  status               BranchStatus @default(draft)
+  isClaimed            Boolean      @default(false) @map("is_claimed") // an owner has verified ownership
+  coverUrl             String?      @map("cover_url")
+  coverAlt             String?      @map("cover_alt")
+  logoUrl              String?      @map("logo_url")
   // [{ url, alt }]
-  gallery     Json         @default("[]")
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
+  gallery              Json         @default("[]")
+  createdAt            DateTime     @default(now()) @map("created_at")
+  updatedAt            DateTime     @updatedAt @map("updated_at")
 
   // Google Business rating, synced weekly. Never merged with BeautyFind reviews.
   googleRating      Float?    @map("google_rating")
@@ -315,47 +318,47 @@ model Branch {
   googleSyncedAt    DateTime? @map("google_synced_at")
   // Google Places id. Unique so an import can never create the same place twice.
   googlePlaceId     String?   @unique @map("google_place_id")
-  description String?
-  wazeUrl     String?      @map("waze_url")
-  websiteUrl  String?      @map("website_url")
-  instagram   String?
+  description       String?
+  wazeUrl           String?   @map("waze_url")
+  websiteUrl        String?   @map("website_url")
+  instagram         String?
   // [{ q, a }]
-  faqs        Json         @default("[]")
+  faqs              Json      @default("[]")
 
   // ---- Complete-profile fields (imported with evidence, or entered by the owner) ----
-  facebook    String?
-  tiktok      String?
-  youtube     String? // channel URL
-  establishedYear Int?     @map("established_year")
-  languages   String[]     @default([]) // only when a source states the languages spoken
-  teamSize    Int?         @map("team_size") // only with explicit evidence, never the number of cards found
+  facebook         String?
+  tiktok           String?
+  youtube          String? // channel URL
+  establishedYear  Int?     @map("established_year")
+  languages        String[] @default([]) // only when a source states the languages spoken
+  teamSize         Int?     @map("team_size") // only with explicit evidence, never the number of cards found
   // People named on the business's own site: [{ name, role, bio, sourceUrl }]. Never a login or a badge.
-  team        Json         @default("[]")
+  team             Json     @default("[]")
   // Official YouTube videos: [{ id, title, channelId, channelTitle, durationSec, thumbnail, source, validatedAt, embeddable, status }]
-  videos      Json         @default("[]")
+  videos           Json     @default("[]")
   // Tri-state attributes with evidence: { accessible: { value, source, url }, parking: {...}, ... } (null value = unknown)
-  attributes  Json         @default("{}")
+  attributes       Json     @default("{}")
   // Generated editorial content and its provenance: { heading, words, evidenceHash, promptVersion, model, generatedAt,
   //   needsMoreInfo, missing[], serviceSummaries, ownerApproved, metaTitle, metaDescription }
-  editorial   Json?
-  metaTitle   String?      @map("meta_title")
-  metaDescription String?  @map("meta_description")
+  editorial        Json?
+  metaTitle        String?  @map("meta_title")
+  metaDescription  String?  @map("meta_description")
   // [{ url, kind, sourceUrl, pageUrl, provider, retrievedAt, width, height, bytes, hash, alt, reuse, status }]
-  mediaProvenance Json     @default("[]") @map("media_provenance")
+  mediaProvenance  Json     @default("[]") @map("media_provenance")
   // ready | ready_with_disclosed_gaps | needs_owner_information | needs_review (see src/lib/import/coverage.ts)
-  profileStatus String?    @map("profile_status")
-  profileChecklist Json?   @map("profile_checklist")
+  profileStatus    String?  @map("profile_status")
+  profileChecklist Json?    @map("profile_checklist")
 
-  categories  BranchCategory[]
-  treatments  Treatment[]
-  leads       Lead[]
-  reviews     Review[]
-  events      ProfileEvent[]
-  bookings    Booking[]
-  consults    ConsultRequest[]
-  waitlist    WaitlistEntry[]
-  busyBlocks  BusyBlock[]
-  savedBy     SavedClinic[]
+  categories BranchCategory[]
+  treatments Treatment[]
+  leads      Lead[]
+  reviews    Review[]
+  events     ProfileEvent[]
+  bookings   Booking[]
+  consults   ConsultRequest[]
+  waitlist   WaitlistEntry[]
+  busyBlocks BusyBlock[]
+  savedBy    SavedClinic[]
 
   @@index([regionSlug, status])
   @@map("branches")
@@ -385,36 +388,36 @@ enum PriceType {
 }
 
 model Treatment {
-  id                  String    @id @default(uuid()) @db.Uuid
-  branchId            String    @map("branch_id") @db.Uuid
-  branch              Branch    @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  categorySlug        String?   @map("category_slug")
-  category            Category? @relation(fields: [categorySlug], references: [slug])
-  name                String
-  description         String?
-  priceType           PriceType @default(fixed) @map("price_type")
+  id                    String    @id @default(uuid()) @db.Uuid
+  branchId              String    @map("branch_id") @db.Uuid
+  branch                Branch    @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  categorySlug          String?   @map("category_slug")
+  category              Category? @relation(fields: [categorySlug], references: [slug])
+  name                  String
+  description           String?
+  priceType             PriceType @default(fixed) @map("price_type")
   // Null = the business publishes no price (priceType on_request). Never 0 for an unknown price.
-  priceAgorot         Int?      @map("price_agorot")
-  priceMaxAgorot      Int?      @map("price_max_agorot") // upper bound of a range
-  priceNote           String?   @map("price_note") // unit or package wording as published ("6 מפגשים")
+  priceAgorot           Int?      @map("price_agorot")
+  priceMaxAgorot        Int?      @map("price_max_agorot") // upper bound of a range
+  priceNote             String?   @map("price_note") // unit or package wording as published ("6 מפגשים")
   // Null = unknown (imported prices are shown as published); owner-entered prices are before VAT (false).
-  taxIncluded         Boolean?  @map("tax_included")
+  taxIncluded           Boolean?  @map("tax_included")
   // Where an imported service came from. Null for owner-entered services.
-  source              String?   // website | dataforseo | owner
-  sourceUrl           String?   @map("source_url")
-  sourceAt            DateTime? @map("source_at")
-  durationMin         Int?      @map("duration_min")
-  isMedical           Boolean   @default(false) @map("is_medical")
-  requiresDeclaration Boolean   @default(false) @map("requires_declaration")
-  onlineBookable      Boolean   @default(true) @map("online_bookable") // forced false when isMedical
-  depositOverrideAgorot Int?    @map("deposit_override_agorot")
-  isPublished         Boolean   @default(true) @map("is_published")
+  source                String? // website | dataforseo | owner
+  sourceUrl             String?   @map("source_url")
+  sourceAt              DateTime? @map("source_at")
+  durationMin           Int?      @map("duration_min")
+  isMedical             Boolean   @default(false) @map("is_medical")
+  requiresDeclaration   Boolean   @default(false) @map("requires_declaration")
+  onlineBookable        Boolean   @default(true) @map("online_bookable") // forced false when isMedical
+  depositOverrideAgorot Int?      @map("deposit_override_agorot")
+  isPublished           Boolean   @default(true) @map("is_published")
   // Staff who perform it. Empty = any practitioner of the branch whose profession allows it.
-  practitionerIds     String[]  @map("practitioner_ids") @db.Uuid
-  bookings            Booking[]
-  sortOrder           Int       @default(0) @map("sort_order")
-  createdAt           DateTime  @default(now()) @map("created_at")
-  updatedAt           DateTime  @updatedAt @map("updated_at")
+  practitionerIds       String[]  @map("practitioner_ids") @db.Uuid
+  bookings              Booking[]
+  sortOrder             Int       @default(0) @map("sort_order")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
 
   @@map("treatments")
 }
@@ -500,22 +503,22 @@ enum VerificationStatus {
 }
 
 model VerificationRequest {
-  id          String             @id @default(uuid()) @db.Uuid
-  ref         String             @unique // BIZ-0001 | LIC-2291 | CRT-0418 | CLM-1107
-  kind        VerificationKind
-  businessId  String?            @map("business_id") @db.Uuid
-  business    Business?          @relation(fields: [businessId], references: [id])
-  branchId    String?            @map("branch_id") @db.Uuid
-  submittedById String?          @map("submitted_by_id") @db.Uuid
-  submittedBy User?              @relation("Submitter", fields: [submittedById], references: [id])
-  submitted   Json // snapshot of what the applicant sent
-  sourceLookup Json?             @map("source_lookup")
+  id            String             @id @default(uuid()) @db.Uuid
+  ref           String             @unique // BIZ-0001 | LIC-2291 | CRT-0418 | CLM-1107
+  kind          VerificationKind
+  businessId    String?            @map("business_id") @db.Uuid
+  business      Business?          @relation(fields: [businessId], references: [id])
+  branchId      String?            @map("branch_id") @db.Uuid
+  submittedById String?            @map("submitted_by_id") @db.Uuid
+  submittedBy   User?              @relation("Submitter", fields: [submittedById], references: [id])
+  submitted     Json // snapshot of what the applicant sent
+  sourceLookup  Json?              @map("source_lookup")
   // [{ result: ok|warn|bad|todo, text }]
-  checks      Json               @default("[]")
-  slaDueAt    DateTime?          @map("sla_due_at")
-  status      VerificationStatus @default(open)
-  createdAt   DateTime           @default(now()) @map("created_at")
-  updatedAt   DateTime           @updatedAt @map("updated_at")
+  checks        Json               @default("[]")
+  slaDueAt      DateTime?          @map("sla_due_at")
+  status        VerificationStatus @default(open)
+  createdAt     DateTime           @default(now()) @map("created_at")
+  updatedAt     DateTime           @updatedAt @map("updated_at")
 
   @@index([kind, status])
   @@map("verification_requests")
@@ -557,21 +560,21 @@ enum InviteStatus {
 }
 
 model StaffInvite {
-  id         String       @id @default(uuid()) @db.Uuid
-  businessId String       @map("business_id") @db.Uuid
-  business   Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  email      String
-  name       String?
-  preset     String // manager | front | book | practitioner
-  permissions Json        @default("{}")
-  tokenHash  String       @unique @map("token_hash")
-  invitedById String      @map("invited_by_id") @db.Uuid
-  status     InviteStatus @default(sent)
-  expiresAt  DateTime     @map("expires_at") // sent + 7 days
-  acceptedAt DateTime?    @map("accepted_at")
-  renewalRequestedAt DateTime? @map("renewal_requested_at")
-  createdAt  DateTime     @default(now()) @map("created_at")
-  updatedAt  DateTime     @updatedAt @map("updated_at")
+  id                 String       @id @default(uuid()) @db.Uuid
+  businessId         String       @map("business_id") @db.Uuid
+  business           Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  email              String
+  name               String?
+  preset             String // manager | front | book | practitioner
+  permissions        Json         @default("{}")
+  tokenHash          String       @unique @map("token_hash")
+  invitedById        String       @map("invited_by_id") @db.Uuid
+  status             InviteStatus @default(sent)
+  expiresAt          DateTime     @map("expires_at") // sent + 7 days
+  acceptedAt         DateTime?    @map("accepted_at")
+  renewalRequestedAt DateTime?    @map("renewal_requested_at")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
 
   @@index([businessId, status])
   @@map("staff_invites")
@@ -596,23 +599,23 @@ enum LeadSource {
 }
 
 model Lead {
-  id          String     @id @default(uuid()) @db.Uuid
-  businessId  String     @map("business_id") @db.Uuid
-  branchId    String?    @map("branch_id") @db.Uuid
-  branch      Branch?    @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  id          String      @id @default(uuid()) @db.Uuid
+  businessId  String      @map("business_id") @db.Uuid
+  branchId    String?     @map("branch_id") @db.Uuid
+  branch      Branch?     @relation(fields: [branchId], references: [id], onDelete: SetNull)
   name        String
   phone       String? // E.164
   email       String?
   city        String?
   treatment   String?
   source      LeadSource
-  stage       LeadStage  @default(new)
-  valueAgorot Int?       @map("value_agorot")
-  nextAction  String?    @map("next_action")
-  nextDate    DateTime?  @map("next_date") @db.Date
+  stage       LeadStage   @default(new)
+  valueAgorot Int?        @map("value_agorot")
+  nextAction  String?     @map("next_action")
+  nextDate    DateTime?   @map("next_date") @db.Date
   notes       String?
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
   events      LeadEvent[]
 
   @@index([businessId, stage])
@@ -791,51 +794,51 @@ enum BookingSource {
 }
 
 model Booking {
-  id             String        @id @default(uuid()) @db.Uuid
-  ref            String        @unique // BF-4288
-  branchId       String        @map("branch_id") @db.Uuid
-  branch         Branch        @relation(fields: [branchId], references: [id])
-  treatmentId    String?       @map("treatment_id") @db.Uuid // null for consult bookings
-  treatment      Treatment?    @relation(fields: [treatmentId], references: [id])
-  practitionerId String?       @map("practitioner_id") @db.Uuid
-  practitioner   StaffMember?  @relation("PractitionerBookings", fields: [practitionerId], references: [id])
-  clientUserId   String?       @map("client_user_id") @db.Uuid
-  client         User?         @relation("ClientBookings", fields: [clientUserId], references: [id])
+  id                  String             @id @default(uuid()) @db.Uuid
+  ref                 String             @unique // BF-4288
+  branchId            String             @map("branch_id") @db.Uuid
+  branch              Branch             @relation(fields: [branchId], references: [id])
+  treatmentId         String?            @map("treatment_id") @db.Uuid // null for consult bookings
+  treatment           Treatment?         @relation(fields: [treatmentId], references: [id])
+  practitionerId      String?            @map("practitioner_id") @db.Uuid
+  practitioner        StaffMember?       @relation("PractitionerBookings", fields: [practitionerId], references: [id])
+  clientUserId        String?            @map("client_user_id") @db.Uuid
+  client              User?              @relation("ClientBookings", fields: [clientUserId], references: [id])
   // Snapshot of who booked (guest or user), E.164 phone
-  clientName     String        @map("client_name")
-  clientPhone    String        @map("client_phone")
-  clientEmail    String?       @map("client_email")
-  kind           BookingKind   @default(treatment)
-  startsAt       DateTime      @map("starts_at")
-  durationMin    Int           @map("duration_min")
-  room           String?
-  status         BookingStatus
-  source         BookingSource @default(online)
+  clientName          String             @map("client_name")
+  clientPhone         String             @map("client_phone")
+  clientEmail         String?            @map("client_email")
+  kind                BookingKind        @default(treatment)
+  startsAt            DateTime           @map("starts_at")
+  durationMin         Int                @map("duration_min")
+  room                String?
+  status              BookingStatus
+  source              BookingSource      @default(online)
   // Price snapshot at booking time (agorot, before VAT) and the policy shown to the client
-  priceAgorot    Int?          @map("price_agorot")
-  depositAgorot  Int           @default(0) @map("deposit_agorot")
+  priceAgorot         Int?               @map("price_agorot")
+  depositAgorot       Int                @default(0) @map("deposit_agorot")
   // Snapshot of DepositPolicy + cancellation window shown before payment (disputes read this)
-  policyShown    Json          @map("policy_shown")
-  holdUntil      DateTime?     @map("hold_until") // pending_payment slot hold (10 min)
-  requiresDeclaration Boolean  @default(false) @map("requires_declaration")
-  declarationId  String?       @map("declaration_id") @db.Uuid
-  declaration    HealthDeclaration? @relation(fields: [declarationId], references: [id])
-  consultRequestId String?     @unique @map("consult_request_id") @db.Uuid
-  checkedInAt    DateTime?     @map("checked_in_at")
-  startedAt      DateTime?     @map("started_at")
-  finishedAt     DateTime?     @map("finished_at")
+  policyShown         Json               @map("policy_shown")
+  holdUntil           DateTime?          @map("hold_until") // pending_payment slot hold (10 min)
+  requiresDeclaration Boolean            @default(false) @map("requires_declaration")
+  declarationId       String?            @map("declaration_id") @db.Uuid
+  declaration         HealthDeclaration? @relation(fields: [declarationId], references: [id])
+  consultRequestId    String?            @unique @map("consult_request_id") @db.Uuid
+  checkedInAt         DateTime?          @map("checked_in_at")
+  startedAt           DateTime?          @map("started_at")
+  finishedAt          DateTime?          @map("finished_at")
   // { productBatch, units, notes, recordedBy } encrypted at rest (treating staff only)
-  clinicalEnc    String?       @map("clinical_enc")
+  clinicalEnc         String?            @map("clinical_enc")
   // { by: client|clinic, at, reason, late }
-  cancellation   Json?
-  consents       Json          @default("{}") // { policyAcceptedAt, marketingOptIn }
-  rescheduledFromId String?    @map("rescheduled_from_id") @db.Uuid
-  notes          String?
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
+  cancellation        Json?
+  consents            Json               @default("{}") // { policyAcceptedAt, marketingOptIn }
+  rescheduledFromId   String?            @map("rescheduled_from_id") @db.Uuid
+  notes               String?
+  createdAt           DateTime           @default(now()) @map("created_at")
+  updatedAt           DateTime           @updatedAt @map("updated_at")
 
-  payments       Payment[]
-  review         Review?
+  payments Payment[]
+  review   Review?
 
   @@index([branchId, startsAt])
   @@index([practitionerId, startsAt])
@@ -870,31 +873,31 @@ enum ConsultStatus {
 }
 
 model ConsultRequest {
-  id              String        @id @default(uuid()) @db.Uuid
-  ref             String        @unique // R-311
-  branchId        String        @map("branch_id") @db.Uuid
-  branch          Branch        @relation(fields: [branchId], references: [id])
-  clientUserId    String?       @map("client_user_id") @db.Uuid
-  clientName      String        @map("client_name")
-  clientPhone     String        @map("client_phone")
-  treatmentId     String?       @map("treatment_id") @db.Uuid
-  areas           String[]
-  goal            String
-  priorInjections String        @map("prior_injections") // never | over_year | within_year
-  format          String // clinic | video
-  chosenSlot      DateTime?     @map("chosen_slot")
-  preferredTimes  String[]      @map("preferred_times") // morning | noon | evening
-  preferredDays   Int[]         @map("preferred_days")
-  consentShareMedical Boolean   @default(false) @map("consent_share_medical")
-  medicalFlags    String[]      @map("medical_flags")
-  status          ConsultStatus
-  proposedSlot    DateTime?     @map("proposed_slot")
-  outcomeText     String?       @map("outcome_text")
-  decidedById     String?       @map("decided_by_id") @db.Uuid
-  declineReason   String?       @map("decline_reason") // medical | scope | duplicate
-  feeAgorot       Int           @default(0) @map("fee_agorot")
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
+  id                  String        @id @default(uuid()) @db.Uuid
+  ref                 String        @unique // R-311
+  branchId            String        @map("branch_id") @db.Uuid
+  branch              Branch        @relation(fields: [branchId], references: [id])
+  clientUserId        String?       @map("client_user_id") @db.Uuid
+  clientName          String        @map("client_name")
+  clientPhone         String        @map("client_phone")
+  treatmentId         String?       @map("treatment_id") @db.Uuid
+  areas               String[]
+  goal                String
+  priorInjections     String        @map("prior_injections") // never | over_year | within_year
+  format              String // clinic | video
+  chosenSlot          DateTime?     @map("chosen_slot")
+  preferredTimes      String[]      @map("preferred_times") // morning | noon | evening
+  preferredDays       Int[]         @map("preferred_days")
+  consentShareMedical Boolean       @default(false) @map("consent_share_medical")
+  medicalFlags        String[]      @map("medical_flags")
+  status              ConsultStatus
+  proposedSlot        DateTime?     @map("proposed_slot")
+  outcomeText         String?       @map("outcome_text")
+  decidedById         String?       @map("decided_by_id") @db.Uuid
+  declineReason       String?       @map("decline_reason") // medical | scope | duplicate
+  feeAgorot           Int           @default(0) @map("fee_agorot")
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
 
   @@index([branchId, status])
   @@map("consult_requests")
@@ -955,21 +958,21 @@ enum WaitlistStatus {
 }
 
 model WaitlistEntry {
-  id              String         @id @default(uuid()) @db.Uuid
-  branchId        String         @map("branch_id") @db.Uuid
-  branch          Branch         @relation(fields: [branchId], references: [id])
-  treatmentId     String         @map("treatment_id") @db.Uuid
-  practitionerId  String?        @map("practitioner_id") @db.Uuid // null = any
-  clientUserId    String?        @map("client_user_id") @db.Uuid
-  clientName      String         @map("client_name")
-  clientPhone     String         @map("client_phone")
-  days            Int[] // 0..5
-  timeRanges      String[]       @map("time_ranges") // morning | noon | evening
-  expiresAt       DateTime       @map("expires_at")
-  status          WaitlistStatus @default(active)
-  createdAt       DateTime       @default(now()) @map("created_at")
-  updatedAt       DateTime       @updatedAt @map("updated_at")
-  offers          WaitlistOffer[]
+  id             String          @id @default(uuid()) @db.Uuid
+  branchId       String          @map("branch_id") @db.Uuid
+  branch         Branch          @relation(fields: [branchId], references: [id])
+  treatmentId    String          @map("treatment_id") @db.Uuid
+  practitionerId String?         @map("practitioner_id") @db.Uuid // null = any
+  clientUserId   String?         @map("client_user_id") @db.Uuid
+  clientName     String          @map("client_name")
+  clientPhone    String          @map("client_phone")
+  days           Int[] // 0..5
+  timeRanges     String[]        @map("time_ranges") // morning | noon | evening
+  expiresAt      DateTime        @map("expires_at")
+  status         WaitlistStatus  @default(active)
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  offers         WaitlistOffer[]
 
   @@index([branchId, status])
   @@map("waitlist_entries")
@@ -1024,32 +1027,32 @@ enum Payee {
 }
 
 model Payment {
-  id              String         @id @default(uuid()) @db.Uuid
-  payee           Payee
-  businessId      String?        @map("business_id") @db.Uuid
-  bookingId       String?        @map("booking_id") @db.Uuid
-  booking         Booking?       @relation(fields: [bookingId], references: [id])
-  giftCardId      String?        @map("gift_card_id") @db.Uuid
-  payerName       String         @map("payer_name")
-  payerPhone      String?        @map("payer_phone")
-  payerEmail      String?        @map("payer_email")
-  purpose         PaymentPurpose
-  netAgorot       Int            @map("net_agorot")
-  vatAgorot       Int            @map("vat_agorot")
-  grossAgorot     Int            @map("gross_agorot")
-  installments    Int            @default(1)
-  provider        String // cardcom | tranzila | grow | payplus | sandbox | ...
-  connectionId    String?        @map("connection_id") @db.Uuid
-  providerRef     String?        @map("provider_ref")
-  checkoutUrl     String?        @map("checkout_url")
-  cardBrand       String?        @map("card_brand")
-  cardLast4       String?        @map("card_last4")
-  status          PaymentStatus  @default(pending)
-  paidAt          DateTime?      @map("paid_at")
-  createdAt       DateTime       @default(now()) @map("created_at")
-  updatedAt       DateTime       @updatedAt @map("updated_at")
-  documents       Document[]
-  refunds         Refund[]
+  id           String         @id @default(uuid()) @db.Uuid
+  payee        Payee
+  businessId   String?        @map("business_id") @db.Uuid
+  bookingId    String?        @map("booking_id") @db.Uuid
+  booking      Booking?       @relation(fields: [bookingId], references: [id])
+  giftCardId   String?        @map("gift_card_id") @db.Uuid
+  payerName    String         @map("payer_name")
+  payerPhone   String?        @map("payer_phone")
+  payerEmail   String?        @map("payer_email")
+  purpose      PaymentPurpose
+  netAgorot    Int            @map("net_agorot")
+  vatAgorot    Int            @map("vat_agorot")
+  grossAgorot  Int            @map("gross_agorot")
+  installments Int            @default(1)
+  provider     String // cardcom | tranzila | grow | payplus | sandbox | ...
+  connectionId String?        @map("connection_id") @db.Uuid
+  providerRef  String?        @map("provider_ref")
+  checkoutUrl  String?        @map("checkout_url")
+  cardBrand    String?        @map("card_brand")
+  cardLast4    String?        @map("card_last4")
+  status       PaymentStatus  @default(pending)
+  paidAt       DateTime?      @map("paid_at")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  documents    Document[]
+  refunds      Refund[]
 
   @@index([businessId, createdAt])
   @@index([provider, providerRef])
@@ -1161,27 +1164,27 @@ enum GiftCardStatus {
 }
 
 model GiftCard {
-  id              String         @id @default(uuid()) @db.Uuid
-  code            String         @unique // NOA-XXXX-XXXX (stored uppercase)
-  businessId      String         @map("business_id") @db.Uuid
-  business        Business       @relation(fields: [businessId], references: [id])
-  kind            GiftCardKind
-  treatmentId     String?        @map("treatment_id") @db.Uuid
-  valueAgorot     Int            @map("value_agorot")
-  balanceAgorot   Int            @map("balance_agorot")
-  buyerName       String         @map("buyer_name")
-  buyerPhone      String         @map("buyer_phone")
-  buyerEmail      String?        @map("buyer_email")
-  recipientName   String         @map("recipient_name")
-  recipientChannel String        @map("recipient_channel") // wa | email | self
-  recipientContact String?       @map("recipient_contact")
-  message         String?
-  sendAt          DateTime       @map("send_at")
-  expiresAt       DateTime       @map("expires_at") // >= purchase + 5 years
-  status          GiftCardStatus @default(pending_payment)
-  createdAt       DateTime       @default(now()) @map("created_at")
-  updatedAt       DateTime       @updatedAt @map("updated_at")
-  redemptions     GiftRedemption[]
+  id               String           @id @default(uuid()) @db.Uuid
+  code             String           @unique // NOA-XXXX-XXXX (stored uppercase)
+  businessId       String           @map("business_id") @db.Uuid
+  business         Business         @relation(fields: [businessId], references: [id])
+  kind             GiftCardKind
+  treatmentId      String?          @map("treatment_id") @db.Uuid
+  valueAgorot      Int              @map("value_agorot")
+  balanceAgorot    Int              @map("balance_agorot")
+  buyerName        String           @map("buyer_name")
+  buyerPhone       String           @map("buyer_phone")
+  buyerEmail       String?          @map("buyer_email")
+  recipientName    String           @map("recipient_name")
+  recipientChannel String           @map("recipient_channel") // wa | email | self
+  recipientContact String?          @map("recipient_contact")
+  message          String?
+  sendAt           DateTime         @map("send_at")
+  expiresAt        DateTime         @map("expires_at") // >= purchase + 5 years
+  status           GiftCardStatus   @default(pending_payment)
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+  redemptions      GiftRedemption[]
 
   @@index([businessId, status])
   @@map("gift_cards")
@@ -1216,16 +1219,16 @@ model SavedClinic {
 
 // Marketing consent per sender (business or all) and channel. Service messages ignore this table.
 model MessageConsent {
-  id         String   @id @default(uuid()) @db.Uuid
-  userId     String?  @map("user_id") @db.Uuid
-  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  contact    String // E.164 or email, so guests can opt out too
-  scope      String // business id, or "all"
-  channel    String // wa | email | sms
-  marketing  Boolean
-  source     String // booking | unsubscribe | reply | account
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contact   String // E.164 or email, so guests can opt out too
+  scope     String // business id, or "all"
+  channel   String // wa | email | sms
+  marketing Boolean
+  source    String // booking | unsubscribe | reply | account
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([contact, scope, channel])
   @@map("message_consents")
@@ -1259,35 +1262,35 @@ enum ImportPlaceStatus {
 }
 
 model ImportRun {
-  id             String          @id @default(uuid()) @db.Uuid
-  label          String
-  status         ImportRunStatus @default(queued)
+  id              String          @id @default(uuid()) @db.Uuid
+  label           String
+  status          ImportRunStatus @default(queued)
   // { all: boolean, cities: string[], categories: string[], nearby: boolean, text: boolean }
-  scope          Json
+  scope           Json
   // discovery provider: dataforseo (default for new runs) | google (legacy grid search)
-  provider       String          @default("google")
-  recordLimit    Int?            @map("record_limit") // unique businesses to stage, then stop
+  provider        String          @default("google")
+  recordLimit     Int?            @map("record_limit") // unique businesses to stage, then stop
   // external API budget for this run, in micro-dollars (1 USD = 1,000,000)
-  budgetMicros   BigInt?         @map("budget_micros")
-  spentMicros    BigInt          @default(0) @map("spent_micros")
-  reservedMicros BigInt          @default(0) @map("reserved_micros")
-  maxRequests    Int             @map("max_requests") // Google Places calls (legacy provider)
-  requestsUsed   Int             @default(0) @map("requests_used")
-  maxExtractions Int?            @map("max_extractions") // Claude calls, null = no cap
-  extractionsUsed Int            @default(0) @map("extractions_used")
+  budgetMicros    BigInt?         @map("budget_micros")
+  spentMicros     BigInt          @default(0) @map("spent_micros")
+  reservedMicros  BigInt          @default(0) @map("reserved_micros")
+  maxRequests     Int             @map("max_requests") // Google Places calls (legacy provider)
+  requestsUsed    Int             @default(0) @map("requests_used")
+  maxExtractions  Int?            @map("max_extractions") // Claude calls, null = no cap
+  extractionsUsed Int             @default(0) @map("extractions_used")
   // counters and notes written by the worker
-  stats          Json            @default("{}")
-  error          String?
-  lockedBy       String?         @map("locked_by")
-  lockedUntil    DateTime?       @map("locked_until")
-  createdById    String?         @map("created_by_id") @db.Uuid
-  startedAt      DateTime?       @map("started_at")
-  finishedAt     DateTime?       @map("finished_at")
-  createdAt      DateTime        @default(now()) @map("created_at")
-  updatedAt      DateTime        @updatedAt @map("updated_at")
+  stats           Json            @default("{}")
+  error           String?
+  lockedBy        String?         @map("locked_by")
+  lockedUntil     DateTime?       @map("locked_until")
+  createdById     String?         @map("created_by_id") @db.Uuid
+  startedAt       DateTime?       @map("started_at")
+  finishedAt      DateTime?       @map("finished_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
 
-  tasks          ImportTask[]
-  places         ImportPlace[]
+  tasks  ImportTask[]
+  places ImportPlace[]
 
   @@index([status, createdAt])
   @@map("import_runs")
@@ -1316,108 +1319,108 @@ model ImportTask {
 // city's total next to what the import already found, and a city is not crawled twice for one
 // category. One row per (city, category), refreshed by a "count" run (scripts/import/stages/count.ts).
 model ImportCoverage {
-  citySlug      String    @map("city_slug")
-  categorySlug  String    @map("category_slug")
-  providerTotal Int?      @map("provider_total") // matching records in DataForSEO's database; null when the count failed
-  checkedAt     DateTime  @map("checked_at")
-  runId         String?   @map("run_id") @db.Uuid
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  citySlug      String   @map("city_slug")
+  categorySlug  String   @map("category_slug")
+  providerTotal Int?     @map("provider_total") // matching records in DataForSEO's database; null when the count failed
+  checkedAt     DateTime @map("checked_at")
+  runId         String?  @map("run_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   @@id([citySlug, categorySlug])
   @@map("import_coverage")
 }
 
 model ImportPlace {
-  id          String            @id @default(uuid()) @db.Uuid
+  id                String            @id @default(uuid()) @db.Uuid
   // Stable source key: the Google place id when the provider gives one (shared by DataForSEO and
   // Google), otherwise "<provider>:<id>". Same place from two providers = one record.
-  placeId     String            @unique @map("place_id")
-  provider    String            @default("google") // who first supplied it
-  sourceId    String?           @map("source_id") // provider's own id (DataForSEO cid, ...)
-  sourceUrl   String?           @map("source_url")
-  retrievedAt DateTime?         @map("retrieved_at")
-  sourceUpdatedAt DateTime?     @map("source_updated_at")
-  nameNorm    String?           @map("name_norm") // matching string; `name` keeps the display original
-  siteDomain  String?           @map("site_domain")
+  placeId           String            @unique @map("place_id")
+  provider          String            @default("google") // who first supplied it
+  sourceId          String?           @map("source_id") // provider's own id (DataForSEO cid, ...)
+  sourceUrl         String?           @map("source_url")
+  retrievedAt       DateTime?         @map("retrieved_at")
+  sourceUpdatedAt   DateTime?         @map("source_updated_at")
+  nameNorm          String?           @map("name_norm") // matching string; `name` keeps the display original
+  siteDomain        String?           @map("site_domain")
   // published | syntax_valid | dns_valid | owner_confirmed (never "deliverable": we do not probe mailboxes)
-  emailStatus String?           @map("email_status")
-  bookingUrl  String?           @map("booking_url")
+  emailStatus       String?           @map("email_status")
+  bookingUrl        String?           @map("booking_url")
   // own | social | linkhub (directories and unrelated sites are never kept as the website)
-  websiteKind String?           @map("website_kind")
+  websiteKind       String?           @map("website_kind")
   // Images from the business's own site chosen for the listing; copied to our storage on approval.
-  logoUrl     String?           @map("logo_url")
-  photoUrls   String[]          @default([]) @map("photo_urls")
+  logoUrl           String?           @map("logo_url")
+  photoUrls         String[]          @default([]) @map("photo_urls")
   // Template fields beyond contact details (filled from the provider and the business's site)
-  accessible  Boolean?          // wheelchair accessible, when a source says so
-  freeParking Boolean?          @map("free_parking")
-  faqs        Json?             // [{ q, a }] from the business's own site
-  priceLevel  String?           @map("price_level")
+  accessible        Boolean? // wheelchair accessible, when a source says so
+  freeParking       Boolean?          @map("free_parking")
+  faqs              Json? // [{ q, a }] from the business's own site
+  priceLevel        String?           @map("price_level")
   // ---- Complete-profile enrichment (see docs/coverage-manifest.md) ----
-  tiktok      String?
-  youtube     String?
-  establishedYear Int?          @map("established_year")
-  languages   String[]          @default([])
-  teamSize    Int?              @map("team_size")
-  team        Json              @default("[]") // [{ name, role, bio, sourceUrl }]
-  videos      Json              @default("[]") // candidates and validated videos
+  tiktok            String?
+  youtube           String?
+  establishedYear   Int?              @map("established_year")
+  languages         String[]          @default([])
+  teamSize          Int?              @map("team_size")
+  team              Json              @default("[]") // [{ name, role, bio, sourceUrl }]
+  videos            Json              @default("[]") // candidates and validated videos
   // Social channels with how they were verified: { instagram: { url, verified, via }, ... }
-  socials     Json              @default("{}")
+  socials           Json              @default("{}")
   // Generated draft: { description, heading, faqs, metaTitle, metaDescription, serviceSummaries, words, evidenceHash, promptVersion, model, generatedAt, needsMoreInfo, missing, repairs, violations }
-  editorial   Json?
-  mediaProvenance Json          @default("[]") @map("media_provenance")
-  profileStatus String?         @map("profile_status")
-  coverage    Json?             // coverage manifest result at the last check
-  costs       Json              @default("{}") // per-record spend by kind (usd, tokens, quota, pages)
-  runId       String            @map("run_id") @db.Uuid // last run that found it
-  run         ImportRun         @relation(fields: [runId], references: [id])
-  status      ImportPlaceStatus @default(found)
-  reasons     String[] // why it is not ready: no_email, no_phone, email_domain_mismatch, ...
-  name        String
-  primaryType String?           @map("primary_type")
-  types       String[]
-  address     String
-  cityName    String?           @map("city_name")
-  citySlug    String?           @map("city_slug")
-  regionSlug  RegionSlug?       @map("region_slug")
-  lat         Float
-  lng         Float
-  phone       String? // E.164
-  phoneRaw    String?           @map("phone_raw")
-  whatsapp    String? // E.164, only from a WhatsApp link on the site
-  email       String?
-  emailSource String?           @map("email_source") // site | jsonld | manual
-  emailMx     Boolean?          @map("email_mx")
-  emails      String[] // every address found
-  website     String?
-  instagram   String?
-  facebook    String?
-  hours       Json? // our 7-day format, Sunday first
+  editorial         Json?
+  mediaProvenance   Json              @default("[]") @map("media_provenance")
+  profileStatus     String?           @map("profile_status")
+  coverage          Json? // coverage manifest result at the last check
+  costs             Json              @default("{}") // per-record spend by kind (usd, tokens, quota, pages)
+  runId             String            @map("run_id") @db.Uuid // last run that found it
+  run               ImportRun         @relation(fields: [runId], references: [id])
+  status            ImportPlaceStatus @default(found)
+  reasons           String[] // why it is not ready: no_email, no_phone, email_domain_mismatch, ...
+  name              String
+  primaryType       String?           @map("primary_type")
+  types             String[]
+  address           String
+  cityName          String?           @map("city_name")
+  citySlug          String?           @map("city_slug")
+  regionSlug        RegionSlug?       @map("region_slug")
+  lat               Float
+  lng               Float
+  phone             String? // E.164
+  phoneRaw          String?           @map("phone_raw")
+  whatsapp          String? // E.164, only from a WhatsApp link on the site
+  email             String?
+  emailSource       String?           @map("email_source") // site | jsonld | manual
+  emailMx           Boolean?          @map("email_mx")
+  emails            String[] // every address found
+  website           String?
+  instagram         String?
+  facebook          String?
+  hours             Json? // our 7-day format, Sunday first
   // Provider rating summary, kept apart from our reviews and published only when the source allows.
-  googleRating      Float?      @map("google_rating")
-  googleReviewCount Int?        @map("google_review_count")
-  ratingProvider    String?     @map("rating_provider")
-  googleMapsUri     String?     @map("google_maps_uri")
-  businessStatus    String?     @map("business_status")
-  categories  String[]
-  businessType BusinessType?    @map("business_type")
-  description String?
+  googleRating      Float?            @map("google_rating")
+  googleReviewCount Int?              @map("google_review_count")
+  ratingProvider    String?           @map("rating_provider")
+  googleMapsUri     String?           @map("google_maps_uri")
+  businessStatus    String?           @map("business_status")
+  categories        String[]
+  businessType      BusinessType?     @map("business_type")
+  description       String?
   // [{ name, category, priceNis, priceType, durationMin, isMedical }]
-  treatments  Json              @default("[]")
+  treatments        Json              @default("[]")
   // pages read, errors, text kept for extraction
-  crawl       Json?
-  dupOfId     String?           @map("dup_of_id") @db.Uuid
-  matchBranchId String?         @map("match_branch_id") @db.Uuid
-  matchScore  Float?            @map("match_score")
-  matchReasons String[]         @map("match_reasons")
-  branchId    String?           @map("branch_id") @db.Uuid // listing created or merged into
-  reviewedById String?          @map("reviewed_by_id") @db.Uuid
-  reviewedAt  DateTime?         @map("reviewed_at")
-  note        String?
-  enrichedAt  DateTime?         @map("enriched_at")
-  extractedAt DateTime?         @map("extracted_at")
-  createdAt   DateTime          @default(now()) @map("created_at")
-  updatedAt   DateTime          @updatedAt @map("updated_at")
+  crawl             Json?
+  dupOfId           String?           @map("dup_of_id") @db.Uuid
+  matchBranchId     String?           @map("match_branch_id") @db.Uuid
+  matchScore        Float?            @map("match_score")
+  matchReasons      String[]          @map("match_reasons")
+  branchId          String?           @map("branch_id") @db.Uuid // listing created or merged into
+  reviewedById      String?           @map("reviewed_by_id") @db.Uuid
+  reviewedAt        DateTime?         @map("reviewed_at")
+  note              String?
+  enrichedAt        DateTime?         @map("enriched_at")
+  extractedAt       DateTime?         @map("extracted_at")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
 
   observations FieldObservation[]
 
@@ -1529,4 +1532,161 @@ model GoogleDisplay {
 
   @@index([expiresAt])
   @@map("google_display")
+}
+
+// =====================================================================
+// Master admin (/ops): platform settings, disputes, sponsored campaigns, expenses, AI approvals, SEO
+// =====================================================================
+
+// One row (id 1). Pricing, billing policy, feature flags, role permission overrides, template drafts.
+model PlatformSettings {
+  id          Int      @id @default(1)
+  values      Json     @default("{}")
+  updatedById String?  @map("updated_by_id") @db.Uuid
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("platform_settings")
+}
+
+enum DisputeKind {
+  deposit
+  gift_card
+}
+
+enum DisputeStatus {
+  open
+  recommended_refund
+  closed_policy_upheld
+  escalated_legal
+}
+
+// A client's claim about a deposit or a gift card (02-data-model.md). The clinic decides the refund;
+// BeautyFind checks that the policy shown at booking time was applied and records the recommendation.
+model Dispute {
+  id             String        @id @default(uuid()) @db.Uuid
+  ref            String        @unique // D-41
+  kind           DisputeKind
+  bookingId      String?       @map("booking_id") @db.Uuid
+  giftCardId     String?       @map("gift_card_id") @db.Uuid
+  businessId     String        @map("business_id") @db.Uuid
+  branchId       String?       @map("branch_id") @db.Uuid
+  clientName     String        @map("client_name")
+  clientPhone    String?       @map("client_phone")
+  amountAgorot   Int           @map("amount_agorot")
+  claim          String
+  // What the system shows: [{ label, text }], gathered from the booking or gift card when the dispute opens
+  systemFacts    Json          @default("[]") @map("system_facts")
+  policyShown    Json?         @map("policy_shown")
+  status         DisputeStatus @default(open)
+  recommendation String?
+  openedById     String?       @map("opened_by_id") @db.Uuid
+  decidedById    String?       @map("decided_by_id") @db.Uuid
+  decidedAt      DateTime?     @map("decided_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([businessId])
+  @@map("disputes")
+}
+
+enum CampaignStatus {
+  pending_review
+  approved
+  rejected
+  cancelled
+}
+
+// A sponsored placement: one branch, one region and category, from a Sunday for N weeks (02-data-model.md).
+// Reviewed before it runs and before it is billed; at most 2 approved per region, category and week.
+model Campaign {
+  id                String         @id @default(uuid()) @db.Uuid
+  ref               String         @unique // AD-85
+  businessId        String         @map("business_id") @db.Uuid
+  branchId          String         @map("branch_id") @db.Uuid
+  regionSlug        RegionSlug     @map("region_slug")
+  categorySlug      String         @map("category_slug")
+  weekStart         DateTime       @map("week_start") // Sunday 00:00 Asia/Jerusalem
+  weeks             Int            @default(1)
+  line              String // <= 60 characters, the sponsored line on the card
+  featuredTreatment String?        @map("featured_treatment")
+  weeklyPriceAgorot Int            @map("weekly_price_agorot")
+  discountPct       Int            @default(0) @map("discount_pct")
+  status            CampaignStatus @default(pending_review)
+  holdUntil         DateTime?      @map("hold_until")
+  // [{ result: ok|warn|bad, text }] from the automatic review
+  checks            Json           @default("[]")
+  reviewNote        String?        @map("review_note")
+  reviewedById      String?        @map("reviewed_by_id") @db.Uuid
+  reviewedAt        DateTime?      @map("reviewed_at")
+  paymentId         String?        @map("payment_id") @db.Uuid
+  stats             Json?
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([regionSlug, categorySlug, weekStart])
+  @@map("campaigns")
+}
+
+// The platform's own expenses, for the profit and loss and the accountant export.
+model Expense {
+  id          String   @id @default(uuid()) @db.Uuid
+  date        DateTime
+  vendor      String
+  description String?
+  category    String // hosting | providers | marketing | legal | salaries | other
+  netAgorot   Int      @map("net_agorot")
+  vatAgorot   Int      @default(0) @map("vat_agorot")
+  receiptUrl  String?  @map("receipt_url")
+  createdById String?  @map("created_by_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([date])
+  @@map("expenses")
+}
+
+enum AiActionStatus {
+  proposed
+  approved
+  rejected
+  executed
+  failed
+}
+
+// A write action an assistant (the admin's Claude assistant or an MCP client) proposed. Nothing runs
+// until a person approves it here; the executor then carries it out and records the result.
+model AiAction {
+  id           String         @id @default(uuid()) @db.Uuid
+  ref          String         @unique // Q-311
+  source       String // assistant | mcp:claude | mcp:chatgpt
+  action       String // suspend_business | restore_business | hide_business | note
+  subjectType  String         @map("subject_type")
+  subjectId    String?        @map("subject_id") @db.Uuid
+  subjectLabel String?        @map("subject_label")
+  params       Json           @default("{}")
+  reason       String?
+  status       AiActionStatus @default(proposed)
+  decidedById  String?        @map("decided_by_id") @db.Uuid
+  decidedAt    DateTime?      @map("decided_at")
+  result       String?
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("ai_actions")
+}
+
+// Per-path SEO overrides for the public pages (title, description, focus keyword, noindex).
+model PageSeo {
+  path        String   @id
+  title       String?
+  description String?
+  keyword     String?
+  noindex     Boolean  @default(false)
+  updatedById String?  @map("updated_by_id") @db.Uuid
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("page_seo")
 }

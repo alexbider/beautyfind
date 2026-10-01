@@ -17,6 +17,6 @@ export default async function StaffLoginPage({ searchParams }: { searchParams: S
   const next = one(sp.next);
   const user = await currentUser();
   // Already signed in as staff: straight to work.
-  if (user && isStaff(user) && !one(sp.denied)) redirect(next.startsWith('/ops') && !next.startsWith('/ops/login') ? next : staffHome(user));
+  if (user && isStaff(user) && !one(sp.denied)) redirect(next.startsWith('/ops') && !next.startsWith('/ops/login') ? next : await staffHome(user));
   return <StaffLogin next={next} signedInAs={user && !isStaff(user) ? user.email ?? user.phone ?? '' : ''} denied={!!one(sp.denied)} />;
 }

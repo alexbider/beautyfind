@@ -53,5 +53,5 @@ export async function staffSignin(input: z.input<typeof Input>): Promise<StaffSi
   // Staff sessions last one day, never 30.
   await createSession(user.id, false);
   await db.auditLog.create({ data: { actorId: user.id, action: 'staff_login', subjectType: 'user', subjectId: user.id, meta: { role: user.opsRole } } });
-  return { ok: true, redirectTo: safeOpsNext(p.data.next) ?? staffHome(user) };
+  return { ok: true, redirectTo: safeOpsNext(p.data.next) ?? (await staffHome(user)) };
 }

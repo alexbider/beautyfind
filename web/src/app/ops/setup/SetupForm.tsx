@@ -39,7 +39,7 @@ export function SetupForm({ token, email }: { token: string; email: string | nul
         </div>
         {email ? (
           <form className={styles.card} onSubmit={submit} noValidate>
-            <h1 className={styles.h1}>הגדרת סיסמת מנהל</h1>
+            <h1 className={styles.h1}>הגדרת סיסמת צוות</h1>
             <p className={styles.lead}>
               לחשבון <span dir="ltr">{email}</span>. הקישור עובד פעם אחת בלבד.
             </p>

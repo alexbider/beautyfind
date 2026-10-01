@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { OpsHeader } from '@/components/ops/OpsHeader';
-import { OPS_ROLE_NAMES, requireImporter } from '@/components/ops/guard';
+import { AdminShell } from '@/components/ops/AdminShell';
+import { requireImporter } from '@/components/ops/guard';
 import { CATEGORIES, REGIONS } from '@/lib/catalog';
 import { MANIFEST, SECTION_NAME, STATUS_NAME } from '@/lib/import/coverage';
 import { RESEARCH_NAME, SITE_OUTCOME_NAME, SOCIAL_CHECK_NAME } from '@/lib/import/sourceNames';
@@ -56,7 +56,6 @@ export default async function ReportPage({ searchParams }: { searchParams: SP })
     return `${base}?${p}`;
   };
   const hrefFor = Object.fromEntries(groups.map(g => [g.key, href({ city: g.cityName, cat: g.category, page: 1 })]));
-  const who = `${user.fullName ?? user.email ?? 'צוות BeautyFind'} · ${OPS_ROLE_NAMES[user.opsRole!]}`;
 
   // Summary over the filtered rows.
   const published = rows.filter(r => r.state === 'published').length;
@@ -70,8 +69,8 @@ export default async function ReportPage({ searchParams }: { searchParams: SP })
   const perState = STATES.map(s => ({ id: s, name: STATE_NAME[s], n: rows.filter(r => r.state === s).length })).filter(s => s.n > 0);
 
   return (
+    <AdminShell user={user} bare>
     <div dir="rtl" lang="he" className={styles.root}>
-      <OpsHeader current="import" who={who} />
       <main className={styles.page}>
         <div className={styles.titleRow}>
           <h1 className={styles.h1}>דוח פרופילים</h1>
@@ -185,6 +184,7 @@ export default async function ReportPage({ searchParams }: { searchParams: SP })
         <div style={{ marginTop: 14 }}><ResetImport preview={reset} /></div>
       </main>
     </div>
+    </AdminShell>
   );
 }
 

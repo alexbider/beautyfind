@@ -8,6 +8,7 @@ import styles from '@/components/waitlist/Waitlist.module.css';
 import { loadJoinPage } from '../entries';
 import { joinAction, leaveAction } from './actions';
 import { decodeParam } from '@/lib/params';
+import { FeatureOff, gate } from '@/components/shell/FeatureOff';
 
 // Design: project/BeautyFind Waitlist.dc.html (view=join). Advanced plan only; a basic listing
 // shows "call or WhatsApp the clinic" instead of the form.
@@ -32,6 +33,8 @@ export default async function WaitlistJoinPage({ params, searchParams }: Props) 
   const { branch, advanced, treatments, holdMinutes } = data;
   const profileHref = `/${branch.regionSlug}/biz/${branch.slug}`;
   const t = typeof sp.t === 'string' ? sp.t : null;
+  const g = await gate('waitlist');
+  if (g.off) return <FeatureOff flag="waitlist" reason={g.reason} message={g.message} closeHref={profileHref} />;
 
   if (!advanced || treatments.length === 0) {
     const wa = branch.whatsapp ?? null;

@@ -27,7 +27,8 @@ export type AuthError =
   | 'otp_invalid'
   | 'otp_expired'
   | 'otp_too_many'
-  | 'reset_invalid';
+  | 'reset_invalid'
+  | 'blocked';
 
 export type Fail = { ok: false; error: AuthError; retryInSeconds?: number };
 export type CodeSent = { ok: true; phone: string; cooldownSeconds: number };
@@ -75,6 +76,7 @@ export async function verifySigninCode(input: z.input<typeof verifySigninInput>)
   if (!res.ok) return otpError(res.error);
   const user = await db.user.findUnique({ where: { phone: p.data.phone } });
   if (!user) return fail('unknown_phone');
+  if (user.blockedAt) return fail('blocked'); // blocked by BeautyFind staff (/ops/clients)
   if (!user.phoneVerifiedAt) await db.user.update({ where: { id: user.id }, data: { phoneVerifiedAt: new Date() } });
   await claimGuestRecords(user);
   await createSession(user.id, p.data.remember);
@@ -104,6 +106,7 @@ export async function passwordSignin(input: z.input<typeof passwordSigninInput>)
     return fail('bad_credentials');
   }
   if (!(await verifyPassword(p.data.password, user.passwordHash))) return fail('bad_credentials');
+  if (user.blockedAt) return fail('blocked');
   await createSession(user.id, p.data.remember);
   return { ok: true, kind: user.kind, redirectTo: destinationFor(user.kind, p.data.next ?? null) };
 }

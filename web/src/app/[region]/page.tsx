@@ -1,5 +1,6 @@
 import { BOOKING_LIVE } from '@/lib/features';
 import type { Metadata } from 'next';
+import { applySeo } from '@/lib/server/seo';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -41,11 +42,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const n = counts.region[region.slug] ?? 0;
   const cities = citiesOf(region.slug).length;
   const lead = n > 0 ? `${countText(n, 'עסק אחד', 'עסקים')} ב־14 תחומים, ${cities} ערים` : `${cities} ערים ו־14 תחומי טיפול`;
-  return {
+  return applySeo(`/${region.slug}`, {
     title: `יופי ואסתטיקה ${rc.inName}`,
     description: `עסקי יופי ואסתטיקה ${rc.inName}: ${lead}, מחירים חציוניים בשקלים והעסקים המדורגים ביותר באזור.`,
     alternates: { canonical: `/${region.slug}` },
-  };
+  });
 }
 
 export default async function RegionPage({ params }: Props) {

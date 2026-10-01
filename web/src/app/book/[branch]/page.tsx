@@ -14,6 +14,7 @@ import { PUBLIC_WHERE, profileHref } from '@/lib/server/public';
 import { currentUser } from '@/lib/server/session';
 import { ilDateKey } from '@/lib/time';
 import { decodeParam } from '@/lib/params';
+import { FeatureOff, gate } from '@/components/shell/FeatureOff';
 
 // Design: project/BeautyFind Booking.dc.html. Steps: treatment → practitioner → slot → details + consents.
 // Deposit per the business's DepositPolicy (advanced plan only, as createBooking applies it).
@@ -52,6 +53,8 @@ export default async function BookPage({ params, searchParams }: Props) {
   const sp = await searchParams;
   const b = await loadBranch(slug);
   if (!b) notFound();
+  const g = await gate('onlineBooking');
+  if (g.off) return <FeatureOff flag="onlineBooking" reason={g.reason} message={g.message} closeHref={profileHref(b)} />;
 
   const [advanced, paymentsReady, user] = await Promise.all([isAdvanced(b.businessId), canTakePayments(b.businessId), currentUser().catch(() => null)]);
   // Same gate as createBooking: basic listings never take deposits.

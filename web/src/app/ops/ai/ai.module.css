@@ -1,0 +1,29 @@
+.chat { display: flex; flex-direction: column; min-height: 520px; }
+.thread { flex: 1; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; max-height: 60vh; }
+.bubbleWrap { display: flex; flex-direction: column; gap: 4px; max-width: 92%; align-self: flex-start; }
+.bubbleWrap[data-role='user'] { align-self: flex-end; align-items: flex-end; }
+.bubbleWho { font-size: 12px; color: #8A96A3; font-weight: 600; }
+.bubble { background: #fff; border: 1px solid #E6E6E6; border-radius: 14px; padding: 12px 14px; font-size: 14px; line-height: 1.6; color: #0C243E; white-space: pre-wrap; }
+.bubbleWrap[data-role='user'] .bubble { background: #0C243E; border-color: #0C243E; color: #fff; }
+.thinking { color: #8A96A3; font-style: italic; }
+.proposals { display: flex; flex-direction: column; gap: 4px; }
+.proposal { font-size: 12.5px; color: #9A5B15; background: #FFF8EC; border: 1px solid #F1DDB5; border-radius: 8px; padding: 4px 8px; text-decoration: none; }
+.tools { font-size: 11px; color: #8A96A3; }
+.composer { border-top: 1px solid #EDEFF2; padding: 14px 20px; display: flex; flex-direction: column; gap: 10px; }
+.suggestions { display: flex; gap: 8px; flex-wrap: wrap; }
+.suggestion { border: 1px solid #CDEFF3; background: #F0FAFB; color: #0B7A87; border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.suggestion:hover { background: #E3F5F7; }
+.suggestion:disabled { opacity: .5; cursor: default; }
+.form { display: flex; gap: 10px; align-items: flex-end; }
+.form textarea { flex: 1; min-height: 64px; }
+
+.sees { display: flex; flex-direction: column; }
+.seeRow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 0; border-top: 1px solid #EDEFF2; font-size: 14px; color: #3E4F62; }
+.seeRow:first-child { border-top: 0; }
+
+.matrix { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+@media (min-width: 1000px) { .matrix { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.queueRow { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 14px 20px; border-top: 1px solid #EDEFF2; }
+.queueRow:first-child { border-top: 0; }
+@media (min-width: 900px) { .queueRow { grid-template-columns: minmax(0, 1fr) auto; align-items: start; } }
+.queueReason { margin: 4px 0 0; font-size: 13.5px; color: #3E4F62; white-space: pre-wrap; }
