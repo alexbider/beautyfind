@@ -101,7 +101,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
           </>
         )}
         <li aria-hidden="true">/</li>
-        <li aria-current="page">{p.name}</li>
+        <li aria-current="page">{seoName(p.name)}</li>
       </ol>
     </nav>
   );

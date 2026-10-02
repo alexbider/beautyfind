@@ -4,6 +4,7 @@ import { Prisma, type RegionSlug } from '@prisma/client';
 import { cache } from 'react';
 import { BOOKING_LIVE, PRICES_INCLUDE_VAT } from '../features';
 import { coverAlt } from '../seo/imageAlt';
+import { seoName } from '../seo/seoName';
 import { consumerAgorot } from '../vat';
 import { db } from './db';
 import { vatRatePct } from './vat';
@@ -35,7 +36,10 @@ export interface ListingCard {
   id: string;
   slug: string;
   href: string; // /:region/:category/:slug
+  /** The SEO name (src/lib/seo/seoName.ts): the stored name without keyword tails, slogans or a foreign copy, Hebrew typography fixed. What cards, lists and structured data show. */
   name: string;
+  /** The stored name in full, for the profile heading and the business schema's alternateName. */
+  fullName: string;
   regionSlug: RegionSlug;
   cityName: string;
   citySlug: string | null;
@@ -110,7 +114,8 @@ function toCard(b: CardRow, stats: Map<string, { rating: number; count: number }
     id: b.id,
     slug: b.slug,
     href: profileHref(b),
-    name: b.name,
+    name: seoName(b.name),
+    fullName: b.name,
     regionSlug: b.regionSlug,
     cityName: b.cityName,
     citySlug: b.city?.slug ?? null,
@@ -299,7 +304,7 @@ export async function recentReviews(take = 6): Promise<RecentReview[]> {
     treatmentName: r.treatmentName,
     createdAt: r.createdAt,
     verified: r.bookingId != null,
-    branchName: r.branch.name,
+    branchName: seoName(r.branch.name),
     branchHref: profileHref(r.branch),
   }));
 }
