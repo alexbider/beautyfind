@@ -43,7 +43,7 @@ export function DetailsStep({ headingRef, form, touched, siblings = [], onChange
   return (
     <section aria-labelledby="h-details" className={styles.section}>
       <h2 id="h-details" ref={headingRef} tabIndex={-1} className={styles.h2}>
-        פרטי העסק<span className={styles.dot}>.</span>
+        פרטי העסק<span aria-hidden="true" className={styles.dot}>.</span>
       </h2>
       <p className={styles.lede}>אימתנו שהעסק שלכם. עכשיו נשלים את מה שלקוחות רואים ראשון, ואת הכול אפשר לערוך גם אחר כך.</p>
 

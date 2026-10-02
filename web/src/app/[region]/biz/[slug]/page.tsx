@@ -169,7 +169,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
 
             {has.about && (
               <section aria-labelledby="h-about">
-                <h2 id="h-about" className={styles.h2}>{v.heading}<span className={styles.dotTeal}>.</span></h2>
+                <h2 id="h-about" className={styles.h2}>{v.heading}<span aria-hidden="true" className={styles.dotTeal}>.</span></h2>
                 <AboutText paragraphs={v.description} />
               </section>
             )}
@@ -177,7 +177,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
             {has.services && (
             <section aria-labelledby="h-services">
               <div className={styles.secHead}>
-                <h2 id="h-services" className={styles.h2}>שירותים ומחירים<span className={styles.dotTeal}>.</span></h2>
+                <h2 id="h-services" className={styles.h2}>שירותים ומחירים<span aria-hidden="true" className={styles.dotTeal}>.</span></h2>
                 {v.services.length > 0 && (p.isClaimed && !v.importedPrices
                   ? v.pricesUpdated && <span className={styles.secNote}>המחירים נמסרו על ידי העסק ועודכנו ב־{v.pricesUpdated}</span>
                   : <span className={styles.secNote}>{v.pricesUpdated ? `כפי שפורסמו על ידי העסק, נאספו ב־${v.pricesUpdated}` : 'כפי שפורסמו על ידי העסק'}</span>)}
@@ -199,7 +199,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
             {has.ba && (
               <section aria-labelledby="h-ba">
                 <div className={styles.secHead}>
-                  <h2 id="h-ba" className={styles.h2}>לפני ואחרי<span className={styles.dotTeal}>.</span></h2>
+                  <h2 id="h-ba" className={styles.h2}>לפני ואחרי<span aria-hidden="true" className={styles.dotTeal}>.</span></h2>
                   <span className={styles.secNote}>פורסם על ידי העסק בהסכמת המטופלים</span>
                 </div>
                 <BeforeAfter photos={v.beforeAfter} />
@@ -208,7 +208,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
 
             {has.team && (
             <section aria-labelledby="h-team">
-              <h2 id="h-team" className={styles.h2}>הצוות<span className={styles.dotTeal}>.</span></h2>
+              <h2 id="h-team" className={styles.h2}>הצוות<span aria-hidden="true" className={styles.dotTeal}>.</span></h2>
                   <div className={styles.team}>
                     {v.staff.map(s => (
                       <Link key={s.id} href={`/pro/${s.id}`} className={styles.person}>
@@ -235,14 +235,14 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
 
             {has.video && (
               <section aria-labelledby="h-video">
-                <h2 id="h-video" className={styles.h2}>סרטונים<span className={styles.dotTeal}>.</span></h2>
+                <h2 id="h-video" className={styles.h2}>סרטונים<span aria-hidden="true" className={styles.dotTeal}>.</span></h2>
                 <VideoGrid videos={v.videos} />
               </section>
             )}
 
             {has.hours && v.hoursRows && (
             <section aria-labelledby="h-hours">
-              <h2 id="h-hours" className={styles.h2}>שעות פעילות<span className={styles.dotTeal}>.</span></h2>
+              <h2 id="h-hours" className={styles.h2}>שעות פעילות<span aria-hidden="true" className={styles.dotTeal}>.</span></h2>
                 <table className={styles.hours}>
                   <caption>היום מסומן. השעות לפי שעון ישראל{v.hoursRows.some(h => h.unknown) ? '; ימים שלא פורסמו מסומנים כך.' : '.'}</caption>
                   <tbody>
@@ -264,7 +264,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
 
             {has.faq && (
               <section aria-labelledby="h-faq">
-                <h2 id="h-faq" className={styles.h2}>שאלות נפוצות<span className={styles.dotTeal}>.</span></h2>
+                <h2 id="h-faq" className={styles.h2}>שאלות נפוצות<span aria-hidden="true" className={styles.dotTeal}>.</span></h2>
                 <FaqAccordion items={v.faqs} />
               </section>
             )}
@@ -273,14 +273,14 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
 
             {similar.length > 0 && (
               <section aria-labelledby="h-similar">
-                <h2 id="h-similar" className={styles.h2}>עוד {v.cats[0]?.name ?? 'עסקים'} ב{p.cityName}<span className={styles.dotTeal}>.</span></h2>
+                <h2 id="h-similar" className={styles.h2}>עוד {v.cats[0]?.name ?? 'עסקים'} ב{p.cityName}<span aria-hidden="true" className={styles.dotTeal}>.</span></h2>
                 <SimilarCards items={similar} />
               </section>
             )}
 
             {nearby.length > 0 && (
               <section aria-labelledby="h-nearby">
-                <h2 id="h-nearby" className={styles.h2}>בקרבת מקום<span className={styles.dotTeal}>.</span></h2>
+                <h2 id="h-nearby" className={styles.h2}>בקרבת מקום<span aria-hidden="true" className={styles.dotTeal}>.</span></h2>
                 <SimilarCards items={nearby} />
               </section>
             )}
@@ -386,7 +386,7 @@ function Identity({ p, v }: { p: PublicProfile; v: View }) {
         <div className={styles.idText}>
           <h1 id="h-name" className={styles.h1}>
             {p.name}
-            <span className={styles.dotTeal}>.</span>
+            <span aria-hidden="true" className={styles.dotTeal}>.</span>
           </h1>
           {!p.isClaimed && (
             <Link href={claimHref(p.id)} rel="nofollow" className={styles.claimLine}>
@@ -470,7 +470,7 @@ function ReviewsSection({ p, v }: { p: PublicProfile; v: View }) {
   return (
     <section aria-labelledby="h-reviews">
       <div className={rv.head}>
-        <h2 id="h-reviews" className={styles.h2} style={{ margin: 0 }}>מה הלקוחות אומרים<span className={styles.dotTeal}>.</span></h2>
+        <h2 id="h-reviews" className={styles.h2} style={{ margin: 0 }}>מה הלקוחות אומרים<span aria-hidden="true" className={styles.dotTeal}>.</span></h2>
         <div className={rv.tools}>
           {v.googleSync && (
             <span className={rv.sync}>
@@ -578,7 +578,7 @@ function Location({ p, v }: { p: PublicProfile; v: View }) {
   const wazeUrl = p.wazeUrl ?? (p.lat != null && p.lng != null ? `https://waze.com/ul?ll=${p.lat},${p.lng}&navigate=yes` : null);
   return (
     <section aria-labelledby="h-loc">
-      <h2 id="h-loc" className={styles.h2}>איך מגיעים<span className={styles.dotTeal}>.</span></h2>
+      <h2 id="h-loc" className={styles.h2}>איך מגיעים<span aria-hidden="true" className={styles.dotTeal}>.</span></h2>
       <div className={styles.loc}>
         {EMBED_KEY ? (
           <MapEmbed embedKey={EMBED_KEY} query={mapQuery(p)} title={`מפה: ${p.name}, ${full}`} />

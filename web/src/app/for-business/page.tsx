@@ -175,7 +175,7 @@ export default function GetListedPage() {
                 <span style={{ animationDelay: '.2s' }}>יופיע בדיוק</span>
                 <br />
                 <span style={{ animationDelay: '.35s' }}>
-                  כשמחפשים אותו<span className={styles.dot}>.</span>
+                  כשמחפשים אותו<span aria-hidden="true" className={styles.dot}>.</span>
                 </span>
               </h1>
               <p className={styles.lede}>
@@ -239,7 +239,7 @@ export default function GetListedPage() {
         <section aria-labelledby="h-features" className={styles.features}>
           <div className={styles.sectionHead}>
             <h2 id="h-features" className={styles.h2}>
-              נרשמים פעם אחת. הפרופיל עושה את השאר<span className={styles.dot}>.</span>
+              נרשמים פעם אחת. הפרופיל עושה את השאר<span aria-hidden="true" className={styles.dot}>.</span>
             </h2>
             <p className={styles.sectionLede}>ההרשמה לוקחת כמה דקות, והאימות מסתיים תוך עד 2 ימי עסקים. מכאן והלאה אתם שולטים בכל מה שהלקוחות רואים: תמונות, תפריט טיפולים, מחירים, צוות ושעות פעילות.</p>
           </div>
@@ -266,7 +266,7 @@ export default function GetListedPage() {
                 מסלולי המנוי
               </span>
               <h2 id="h-pricing" className={`${styles.h2} ${styles.h2Pricing}`}>
-                שני מסלולים, לפי מספר הסניפים<span className={styles.dot}>.</span>
+                שני מסלולים, לפי מספר הסניפים<span aria-hidden="true" className={styles.dot}>.</span>
               </h2>
               <p className={styles.sectionLede}>רישום בסיסי לנראות ולקביעת תורים, או רישום מתקדם שכולל מערכת לניהול הקליניקה. בשני המסלולים המחיר הוא לסניף, בלי עמלות על תורים.</p>
               <ul className={styles.notes}>
@@ -319,7 +319,7 @@ export default function GetListedPage() {
           <div className={styles.outcomeGrid}>
             <div>
               <h2 id="h-outcome" className={styles.h2Sm}>
-                כדי שלקוחות ימצאו אתכם, וגם יבחרו בכם<span className={styles.dot}>.</span>
+                כדי שלקוחות ימצאו אתכם, וגם יבחרו בכם<span aria-hidden="true" className={styles.dot}>.</span>
               </h2>
               <div className={styles.outcomeList}>
                 {OUTCOMES.map(([title, body], i) => (
@@ -366,7 +366,7 @@ export default function GetListedPage() {
 
         <section aria-labelledby="h-faq" className={styles.faq}>
           <h2 id="h-faq" className={`${styles.h2Sm} ${styles.faqTitle}`}>
-            שאלות מבעלי עסקים<span className={styles.dot}>.</span>
+            שאלות מבעלי עסקים<span aria-hidden="true" className={styles.dot}>.</span>
           </h2>
           <FaqAccordion items={FAQS} />
         </section>
@@ -377,7 +377,7 @@ export default function GetListedPage() {
             <span aria-hidden="true" className={styles.ctaGlow} />
             <div className={styles.ctaCopy}>
               <h2 id="h-cta">
-                מוכנים שלקוחות ימצאו את העסק שלכם<span className={styles.dotLight}>?</span>
+                מוכנים שלקוחות ימצאו את העסק שלכם<span aria-hidden="true" className={styles.dotLight}>?</span>
               </h2>
               <p>רשמו את הסניף שלכם היום. האימות מסתיים תוך עד 2 ימי עסקים.</p>
             </div>

@@ -40,7 +40,7 @@ export function HomeFooter() {
       <div className={styles.inner}>
         <div className={styles.cta}>
           <p className={styles.ctaLine}>
-            התחילו מטיפול או ממקום<span className={styles.dot}>.</span> אנחנו נראה לכם את העסקים.
+            התחילו מטיפול או ממקום<span aria-hidden="true" className={styles.dot}>.</span> אנחנו נראה לכם את העסקים.
           </p>
           <BackToSearchButton className={styles.ctaBtn}>
             חזרה לחיפוש

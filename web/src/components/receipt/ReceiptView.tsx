@@ -40,7 +40,7 @@ export function ReceiptView({ data }: { data: ReceiptData }) {
               return (
                 <li key={s.name} className={styles.step} data-done={s.done || undefined} data-cur={cur || undefined} aria-current={cur ? 'step' : undefined}>
                   <span className={styles.rail} aria-hidden="true">
-                    <span className={styles.dot}>{s.done ? '✓' : i + 1}</span>
+                    <span aria-hidden="true" className={styles.dot}>{s.done ? '✓' : i + 1}</span>
                     {!last && <span className={styles.line} />}
                   </span>
                   <span className={styles.stepText}>

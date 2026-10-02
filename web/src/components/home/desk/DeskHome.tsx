@@ -61,7 +61,7 @@ const HAND = (
 const Kicker = ({ children, tone }: { children: ReactNode; tone?: 'teal' }) => (
   <div className={s.kicker} data-tone={tone}><span className={s.kickerLine} aria-hidden="true" />{children}</div>
 );
-const Dot = () => <span className={s.dot}>.</span>;
+const Dot = () => <span aria-hidden="true" className={s.dot}>.</span>;
 
 function Stars({ rating, size = 16 }: { rating: number; size?: number }) {
   return (

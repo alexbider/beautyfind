@@ -162,7 +162,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
               תחום טיפול · כל הארץ
             </span>
             <h1 className={styles.h1}>
-              {cat.name} בישראל<span className={shared.dot}>.</span>
+              {cat.name} בישראל<span aria-hidden="true" className={shared.dot}>.</span>
             </h1>
             <p className={styles.answer}>
               {body.answer}{' '}
@@ -221,7 +221,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
         <section aria-labelledby="h-what" className={`${shared.split} ${styles.block}`}>
           <div className={shared.splitCol}>
             <h2 id="h-what" className={`${shared.h2} ${shared.h2Lg} ${styles.whatH2}`}>
-              מה התחום כולל<span className={shared.dot}>.</span>
+              מה התחום כולל<span aria-hidden="true" className={shared.dot}>.</span>
             </h2>
             <ReadMore lineHeight="29px">
               {body.paras.map(p => (
@@ -259,7 +259,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
         <section aria-labelledby="h-before" className={`${shared.split} ${styles.block}`}>
           <div className={shared.splitCol}>
             <h2 id="h-before" className={`${shared.h2} ${shared.h2Lg} ${styles.whatH2}`}>
-              לפני שקובעים תור<span className={shared.dot}>.</span>
+              לפני שקובעים תור<span aria-hidden="true" className={shared.dot}>.</span>
             </h2>
             <h3 className={styles.listTitle}>מה לשאול את העסק</h3>
             <ol className={styles.askList}>
@@ -288,7 +288,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
         <section id="prices" aria-labelledby="h-prices" className={`${styles.prices} ${styles.block}`}>
           <div className={shared.rowHead}>
             <h2 id="h-prices" className={`${shared.h2} ${shared.h2Lg}`}>
-              מחירים אמצעיים<span className={shared.dot}>.</span>
+              מחירים אמצעיים<span aria-hidden="true" className={shared.dot}>.</span>
             </h2>
             <span className={styles.pricesNote}>
               תדירות אופיינית: {body.freq} · בשקלים, {VAT_LABEL}
@@ -339,7 +339,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
             headingId="h-top"
             heading={
               <h2 id="h-top" className={`${shared.h2} ${shared.h2Lg}`}>
-                העסקים המדורגים ביותר<span className={shared.dot}>.</span>
+                העסקים המדורגים ביותר<span aria-hidden="true" className={shared.dot}>.</span>
               </h2>
             }
             param="region"
@@ -369,7 +369,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
         <section aria-labelledby="h-faq" className={`${shared.split} ${styles.block}`}>
           <div className={shared.splitCol}>
             <h2 id="h-faq" className={`${shared.h2} ${shared.h2Lg} ${styles.faqH2}`}>
-              שאלות נפוצות<span className={shared.dot}>.</span>
+              שאלות נפוצות<span aria-hidden="true" className={shared.dot}>.</span>
             </h2>
             <p className={shared.faqLede}>מה שאנשים שואלים לפני שהם קובעים תור בתחום הזה.</p>
           </div>

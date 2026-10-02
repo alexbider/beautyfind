@@ -36,7 +36,7 @@ export default async function RegionsPage() {
         </ol>
       </nav>
       <main id="main" className={styles.main}>
-        <h1 id="h-title" className={styles.h1}>כל האזורים והערים<span className={styles.dot}>.</span></h1>
+        <h1 id="h-title" className={styles.h1}>כל האזורים והערים<span aria-hidden="true" className={styles.dot}>.</span></h1>
         <p className={styles.lede}>שבעה אזורים ו־<span className="ltr">{CITIES.length}</span> ערים. בחרו אזור או עיר כדי לראות את העסקים שבה.</p>
         <div className={styles.grid}>
           {MENU_REGION_ORDER.map(slug => {

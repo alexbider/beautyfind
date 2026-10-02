@@ -44,7 +44,7 @@ export function TeamPanel({ members, invites, areas }: { members: MemberDTO[]; i
   return (
     <section aria-labelledby="h-team" className={styles.section}>
       <div className={styles.head}>
-        <h1 id="h-team" className={styles.h1}>צוות והרשאות<span className={styles.dot}>.</span></h1>
+        <h1 id="h-team" className={styles.h1}>צוות והרשאות<span aria-hidden="true" className={styles.dot}>.</span></h1>
         <p className={styles.lede}>
           {usersCount(members.length)}
           {openInvites > 0 && <> · {invitesCount(openInvites)}</>}

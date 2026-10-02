@@ -84,7 +84,7 @@ export default async function TreatmentsPage() {
               אינדקס התחומים · כל הארץ
             </span>
             <h1 id="h-title" className={styles.h1}>
-              14 תחומי טיפול<span className={shared.dot}>.</span>
+              14 תחומי טיפול<span aria-hidden="true" className={shared.dot}>.</span>
             </h1>
             <p className={styles.lede}>
               {counts.total > 0 ? (
@@ -120,7 +120,7 @@ export default async function TreatmentsPage() {
         <section aria-labelledby="h-popular">
           <div className={shared.rowHead}>
             <h2 id="h-popular" className={`${shared.h2} ${shared.h2Sm}`}>
-              התחומים המבוקשים<span className={shared.dot}>.</span>
+              התחומים המבוקשים<span aria-hidden="true" className={shared.dot}>.</span>
             </h2>
             <span className={shared.rowHeadNote}>לפי מספר העסקים הרשומים</span>
           </div>
@@ -155,7 +155,7 @@ export default async function TreatmentsPage() {
         <section aria-labelledby="h-regions" className={styles.regions}>
           <div className={shared.rowHead}>
             <h2 id="h-regions" className={`${shared.h2} ${shared.h2Rg}`}>
-              לפי אזור<span className={shared.dot}>.</span>
+              לפי אזור<span aria-hidden="true" className={shared.dot}>.</span>
             </h2>
             <span className={styles.regionsNote}>
               7 אזורים · <span className="ltr tnum">{CITIES.length}</span> ערים
@@ -178,7 +178,7 @@ export default async function TreatmentsPage() {
         <section aria-labelledby="h-faq" className={`${shared.split} ${styles.block}`}>
           <div className={shared.splitCol}>
             <h2 id="h-faq" className={`${shared.h2} ${shared.h2Lg} ${styles.faqH2}`}>
-              שאלות נפוצות<span className={shared.dot}>.</span>
+              שאלות נפוצות<span aria-hidden="true" className={shared.dot}>.</span>
             </h2>
             <p className={shared.faqLede}>איך לקרוא את האינדקס, ומה חשוב לבדוק לפני שקובעים תור בכל תחום.</p>
           </div>
@@ -188,7 +188,7 @@ export default async function TreatmentsPage() {
         <section aria-labelledby="h-cta" className={`${shared.cta} ${styles.block}`}>
           <div className={shared.ctaCopy}>
             <h2 id="h-cta">
-              מנהלים עסק באחד התחומים<span className={shared.dotLight}>?</span>
+              מנהלים עסק באחד התחומים<span aria-hidden="true" className={shared.dotLight}>?</span>
             </h2>
             <p>
               רישום עסק כולל תפריט טיפולים עם מחירים, שעות פעילות, וואטסאפ וקישור Waze. <span className="ltr tnum">{nis(PLAN_MONTHLY_NIS.basic)}</span> לחודש לסניף, לא כולל מע״מ, ללא התחייבות.

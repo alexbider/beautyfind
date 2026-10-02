@@ -150,7 +150,7 @@ export default async function RegionPage({ params }: Props) {
             </ol>
           </nav>
           <h1 className={styles.h1}>
-            יופי ואסתטיקה {rc.inName}<span className={shared.dot}>.</span>
+            יופי ואסתטיקה {rc.inName}<span aria-hidden="true" className={shared.dot}>.</span>
           </h1>
           <p className={styles.lede}>
             {regionTotal > 0 ? (
@@ -197,7 +197,7 @@ export default async function RegionPage({ params }: Props) {
         <section id="cities" aria-labelledby="h-cities" className={styles.cities}>
           <div className={`${shared.rowHead} ${shared.rowHeadRule}`}>
             <h2 id="h-cities" className={`${shared.h2} ${shared.h2Md}`}>
-              <span className="ltr tnum">{cities.length}</span> ערים {rc.inName}<span className={shared.dot}>.</span>
+              <span className="ltr tnum">{cities.length}</span> ערים {rc.inName}<span aria-hidden="true" className={shared.dot}>.</span>
             </h2>
             <span className={shared.rowHeadNote}>מספר העסקים בכל עיר</span>
           </div>
@@ -218,7 +218,7 @@ export default async function RegionPage({ params }: Props) {
         <section aria-labelledby="h-cats" className={styles.block}>
           <div className={`${shared.rowHead} ${shared.rowHeadRule}`}>
             <h2 id="h-cats" className={`${shared.h2} ${shared.h2Md}`}>
-              תחומים באזור<span className={shared.dot}>.</span>
+              תחומים באזור<span aria-hidden="true" className={shared.dot}>.</span>
             </h2>
             <Link href="/treatments" className={shared.more}>
               <span>כל 14 התחומים</span>
@@ -276,7 +276,7 @@ export default async function RegionPage({ params }: Props) {
             headingId="h-top"
             heading={
               <h2 id="h-top" className={`${shared.h2} ${shared.h2Md}`}>
-                המדורגים ביותר {rc.inName}<span className={shared.dot}>.</span>
+                המדורגים ביותר {rc.inName}<span aria-hidden="true" className={shared.dot}>.</span>
               </h2>
             }
             param="city"
@@ -288,7 +288,7 @@ export default async function RegionPage({ params }: Props) {
         <section aria-labelledby="h-local" className={`${shared.split} ${styles.block}`}>
           <div className={shared.splitCol}>
             <h2 id="h-local" className={`${shared.h2} ${shared.h2Md} ${styles.localH2}`}>
-              מה כדאי לדעת על האזור<span className={shared.dot}>.</span>
+              מה כדאי לדעת על האזור<span aria-hidden="true" className={shared.dot}>.</span>
             </h2>
             <ReadMore lineHeight="29px">
               {rc.paras.map(p => (
@@ -323,7 +323,7 @@ export default async function RegionPage({ params }: Props) {
         <section aria-labelledby="h-faq" className={`${shared.split} ${styles.block}`}>
           <div className={shared.splitCol}>
             <h2 id="h-faq" className={`${shared.h2} ${shared.h2Md} ${styles.faqH2}`}>
-              שאלות נפוצות<span className={shared.dot}>.</span>
+              שאלות נפוצות<span aria-hidden="true" className={shared.dot}>.</span>
             </h2>
             <p className={`${shared.faqLede} ${styles.faqLede}`}>מה שאנשים שואלים לפני שהם מחפשים עסק {rc.inName}.</p>
           </div>
@@ -352,7 +352,7 @@ export default async function RegionPage({ params }: Props) {
         <section aria-labelledby="h-cta" className={`${shared.cta} ${styles.block}`}>
           <div className={shared.ctaCopy}>
             <h2 id="h-cta">
-              יש לכם עסק {rc.inName}<span className={shared.dotLight}>?</span>
+              יש לכם עסק {rc.inName}<span aria-hidden="true" className={shared.dotLight}>?</span>
             </h2>
             <p>
               {regionTotal > 0 ? (

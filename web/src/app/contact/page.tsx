@@ -108,7 +108,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
               יצירת קשר
             </span>
             <h1 id="h-title" className={styles.h1}>
-              נשמח לשמוע מכם<span className={styles.dot}>.</span>
+              נשמח לשמוע מכם<span aria-hidden="true" className={styles.dot}>.</span>
             </h1>
             <p className={styles.lede}>
               בחרו את סוג הפנייה כדי שהיא תגיע ישר לאדם הנכון. אנחנו עונים על כל פנייה: גם על תלונות, גם על תיקונים, וגם כשהתשובה היא לא.

@@ -177,7 +177,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
                 <span className={styles.eyebrow}>{eyebrow}</span>
                 <h1 className={styles.h1}>
                   {title}
-                  <span className={styles.dot}>.</span>
+                  <span aria-hidden="true" className={styles.dot}>.</span>
                 </h1>
                 <p className={styles.answer}>
                   {s.category
@@ -279,7 +279,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
               <span className={styles.eyebrow}>{eyebrow}</span>
               <h1 className={styles.h1}>
                 {title}
-                <span className={styles.dot}>.</span>
+                <span aria-hidden="true" className={styles.dot}>.</span>
               </h1>
               <p className={styles.answer}>{answer}</p>
               <p className={styles.lede}>
@@ -319,7 +319,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
                 <div className={styles.listHead}>
                   <h2 id="h-list" className={styles.h2}>
                     {s.category ? `עסקים ל${s.category.name}` : 'העסקים המובילים'}
-                    <span className={styles.dot}>.</span>
+                    <span aria-hidden="true" className={styles.dot}>.</span>
                   </h2>
                   <span className={styles.resultCount}>{resultCount}</span>
                 </div>
@@ -371,7 +371,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
 
               <section aria-labelledby="h-related" className={styles.related}>
                 <h2 id="h-related" className={styles.relatedH2}>
-                  להמשיך לחקור<span className={styles.dot}>.</span>
+                  להמשיך לחקור<span aria-hidden="true" className={styles.dot}>.</span>
                 </h2>
                 <div className={styles.relatedGrid}>
                   <div className={styles.relatedCol}>
@@ -430,7 +430,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
             <aside aria-label="על האינדקס" className={styles.aside}>
               <div id="method" className={styles.trust}>
                 <h2 className={styles.asideH2}>
-                  למה לסמוך על BeautyFind<span className={styles.dot}>.</span>
+                  למה לסמוך על BeautyFind<span aria-hidden="true" className={styles.dot}>.</span>
                 </h2>
                 <p className={styles.trustLede}>עסקים אינם יכולים לשלם כדי לשנות את מקומם ברשימה הזו.</p>
                 {TRUST.map(t => (
@@ -482,7 +482,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
               <section aria-labelledby="h-faq" className={styles.faq}>
                 <h2 id="h-faq" className={styles.asideH2}>
                   {s.category ? `שאלות על ${s.category.name} ${where}` : `שאלות על מכוני יופי ${where}`}
-                  <span className={styles.dot}>.</span>
+                  <span aria-hidden="true" className={styles.dot}>.</span>
                 </h2>
                 <SidebarFaq items={faqs} />
                 <p className={styles.disclaimer}>מידע כללי בלבד, לא ייעוץ רפואי. התאמת טיפול נקבעת על ידי איש מקצוע מוסמך לאחר בדיקה.</p>

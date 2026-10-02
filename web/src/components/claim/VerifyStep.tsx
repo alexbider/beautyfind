@@ -49,7 +49,7 @@ export function VerifyStep(p: Props) {
   return (
     <section aria-labelledby="h-verify" className={styles.section}>
       <h2 id="h-verify" ref={p.headingRef} tabIndex={-1} className={styles.h2}>
-        אימות בעלות<span className={styles.dot}>.</span>
+        אימות בעלות<span aria-hidden="true" className={styles.dot}>.</span>
       </h2>
       <p className={styles.lede}>
         בחרו דרך אימות ל<strong>{p.picked.name}</strong>. הקוד תקף ל־<span className="ltr">10</span> דקות, ואפשר לבקש חדש.

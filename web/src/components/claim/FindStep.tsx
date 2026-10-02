@@ -30,7 +30,7 @@ export function FindStep({ headingRef, q, onQuery, hits, searching, searchFailed
   return (
     <section aria-labelledby="h-find" className={styles.section}>
       <h2 id="h-find" ref={headingRef} tabIndex={-1} className={styles.h2}>
-        איתור העסק<span className={styles.dot}>.</span>
+        איתור העסק<span aria-hidden="true" className={styles.dot}>.</span>
       </h2>
       <p className={styles.lede}>חפשו את העסק לפי שם או עיר. אם הוא כבר באינדקס, בחרו אותו. אם לא מצאתם אותו, אפשר לפתוח פרופיל חדש בסוף הרשימה.</p>
 

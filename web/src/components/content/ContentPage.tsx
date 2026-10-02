@@ -316,7 +316,7 @@ export function ContentPage(props: ContentPageProps) {
             </span>
             <h1 id="h-title" className={styles.h1}>
               {view.title}
-              <span className={styles.dot}>.</span>
+              <span aria-hidden="true" className={styles.dot}>.</span>
             </h1>
             <p className={styles.dek}>{rich(view.dek, 'dek')}</p>
             {introExtra}

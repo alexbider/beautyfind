@@ -31,7 +31,7 @@ export default function MagazinePage() {
     <div className={shared.root}>
       <SiteHeader variant="public" title="מדריכים" backHref="/" />
       <main id="main" className={styles.main}>
-        <h1 className={styles.h1}>מדריכים<span className={styles.dot}>.</span></h1>
+        <h1 className={styles.h1}>מדריכים<span aria-hidden="true" className={styles.dot}>.</span></h1>
         <p className={styles.lede}>המדריכים הראשונים נכתבים עכשיו ויעלו כאן בקרוב, כל אחד עם תאריך עדכון גלוי.</p>
         <div className={styles.grid}>
           {ARTICLES.map(a => (

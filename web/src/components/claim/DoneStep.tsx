@@ -29,7 +29,7 @@ export function DoneStep({ headingRef, bizName, refCode, onRestart }: Props) {
         </svg>
       </span>
       <h2 id="h-done" ref={headingRef} tabIndex={-1} className={styles.h2}>
-        הבקשה התקבלה<span className={styles.dot}>.</span>
+        הבקשה התקבלה<span aria-hidden="true" className={styles.dot}>.</span>
       </h2>
       <p className={`${styles.lede} ${styles.doneLede}`}>
         הבקשה לאישור בעלות על <strong>{bizName}</strong> ממתינה לבדיקה, מספר הבקשה <span className={`${styles.strong} ltr`}>{refCode}</span>. בדרך כלל אנחנו בודקים בתוך יום עסקים ומעדכנים בדוא״ל. בינתיים אפשר להכין את מה שנשאר: תפריט המחירים הוא הדבר הראשון שלקוחות מחפשים.

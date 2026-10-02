@@ -114,7 +114,7 @@ const Kicker = ({ children, tone }: { children: ReactNode; tone?: 'teal' }) => (
     {children}
   </div>
 );
-const Dot = ({ ch = '.' }: { ch?: string }) => <span className={s.dot}>{ch}</span>;
+const Dot = ({ ch = '.' }: { ch?: string }) => <span aria-hidden="true" className={s.dot}>{ch}</span>;
 
 /** Three rotating rings (hero decoration). */
 export function Rings({ size, className }: { size: number; className: string }) {

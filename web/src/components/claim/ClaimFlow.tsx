@@ -380,7 +380,7 @@ export function ClaimFlow({ initialHits, devCode, preselected = null }: { initia
                 אישור בעלות
               </span>
               <h1 className={styles.h1}>
-                העסק הזה שלכם<span className={styles.dot}>?</span>
+                העסק הזה שלכם<span aria-hidden="true" className={styles.dot}>?</span>
               </h1>
             </div>
             <ol className={styles.steps}>

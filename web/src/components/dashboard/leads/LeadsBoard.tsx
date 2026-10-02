@@ -99,7 +99,7 @@ export function LeadsBoard({ leads, canEdit }: { leads: LeadDTO[]; canEdit: bool
     <section aria-labelledby="h-leads" className={styles.section}>
       <div className={styles.head}>
         <div className={styles.headText}>
-          <h1 id="h-leads" ref={headingRef} tabIndex={-1} className={styles.h1}>ניהול לקוחות<span className={styles.dot}>.</span></h1>
+          <h1 id="h-leads" ref={headingRef} tabIndex={-1} className={styles.h1}>ניהול לקוחות<span aria-hidden="true" className={styles.dot}>.</span></h1>
           <p className={styles.lede}>
             טופס יצירת הקשר בפרופיל שולח לכם מייל ובמקביל פותח כרטיס לקוח כאן, עם תאריך ושעה. את מי שהתקשר או כתב ב־WhatsApp הוסיפו ידנית,
             כדי שכל ההיסטוריה תהיה במקום אחד.{CLINIC_HREF && ' לתיק לקוח מלא, ליומן ולקופה, עברו ל־CRM של הקליניקה.'}
