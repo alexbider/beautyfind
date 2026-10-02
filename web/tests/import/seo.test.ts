@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { composeDescription, publicMetadata } from '../../src/lib/seo/meta';
-import { META_ACTION, composeMetaDescription, metaDescriptionOk, metaDescriptionProblems } from '../../src/lib/seo/metaRules';
+import { META_ACTION, composeMetaDescription, joinHe, metaDescriptionOk, metaDescriptionProblems, metaLead, repeatsTitle } from '../../src/lib/seo/metaRules';
 import { capWords, sameNameAcrossScripts, seoCityName, seoName } from '../../src/lib/seo/seoName';
 import { hebrewTreatmentName, hebrewTreatmentNames } from '../../src/lib/seo/treatmentNames';
 
@@ -86,10 +86,26 @@ describe('meta description rules', () => {
   });
 
   it('composes the pattern and shrinks the treatment list so the action always fits', () => {
-    const long = composeMetaDescription({ lead: 'סלון דוגמה 91 בתל אביב-יפו: מניקור ופדיקור.', treatments: ['טיפול פנים קלאסי', 'הרמת ריסים', 'עיצוב גבות'], moreTreatments: true, rating: 'דירוג 4.0 בגוגל (100 ביקורות).', fillers: ['מחירים, טיפולים וביקורות.'] });
-    assert.ok(long.endsWith(META_ACTION) && metaDescriptionOk(long), long);
-    const thin = composeMetaDescription({ lead: 'נתבע בחיפה.', treatments: [], fillers: ['כל הטיפולים והמחירים של נתבע במקום אחד.', 'מכוני יופי ואסתטיקה בחיפה להשוואה.', 'מחירים, טיפולים וביקורות.'] });
+    const lead = (t: string[]) => metaLead('nails', 'סלון דוגמה 91', 'תל אביב-יפו', t);
+    const long = composeMetaDescription({ lead, treatments: ['טיפול פנים קלאסי', 'הרמת ריסים', 'עיצוב גבות'], rating: 'דירוג 4.0 בגוגל (100 ביקורות).', facts: ['פתוח ראשון עד חמישי.'] });
+    assert.ok(long.endsWith(META_ACTION) && metaDescriptionOk(long, { title: 'סלון דוגמה 91 בתל אביב-יפו: מניקור ופדיקור' }), long);
+    assert.ok(long.startsWith('טיפול פנים קלאסי'), 'leads with the treatments, not the title');
+    const thin = composeMetaDescription({ lead: t => metaLead(null, 'נתבע', 'חיפה', t), treatments: [], facts: ['פתוח ראשון עד חמישי.', 'הכתובת: רחוב הרצל 5.', 'שירות בעברית ורוסית.', 'באזור חיפה.'] });
     assert.ok(metaDescriptionOk(thin) && !thin.includes('  '), thin);
+  });
+
+  it('opens by category, never with the title, and joins Hebrew lists naturally', () => {
+    assert.equal(joinHe(['תספורת', 'צבע לשיער', 'פן']), 'תספורת, צבע לשיער ופן');
+    assert.equal(joinHe(['מניקור', 'Hydrafacial']), 'מניקור ו־Hydrafacial');
+    assert.equal(metaLead('hair-salons', 'רון', 'חיפה', ['תספורת', 'צבע לשיער', 'פן']), 'תספורת, צבע לשיער ופן במספרת רון בחיפה.');
+    assert.equal(metaLead('hair-salons', 'מספרת רון', 'חיפה', ['תספורת']), 'תספורת במספרת רון בחיפה.');
+    assert.equal(metaLead('medical-aesthetics', 'Glow Clinic', 'נתניה', ['בוטוקס', 'חומרי מילוי']), 'בוטוקס וחומרי מילוי ב־Glow Clinic בנתניה, מרפאה לאסתטיקה רפואית.');
+    assert.equal(metaLead('facials', 'דנה כהן', 'חיפה', []), 'קוסמטיקה וטיפולי פנים בחיפה אצל דנה כהן.');
+    const shapes = ['facials', 'hair-salons', 'nails', 'medical-aesthetics', 'brows-lashes', 'spa-massage', 'makeup', 'hair-removal'].map(c => metaLead(c, 'דוגמה', 'חיפה', ['א', 'ב']).replace('א וב', 'T'));
+    assert.equal(new Set(shapes).size, shapes.length, 'every category has its own sentence shape');
+    assert.ok(repeatsTitle('מספרת רון בחיפה: תספורות ועוד.', 'מספרת רון בחיפה: מספרה | BeautyFind'));
+    assert.ok(!repeatsTitle('תספורת, צבע לשיער ופן במספרת רון בחיפה.', 'מספרת רון בחיפה: מספרה | BeautyFind'));
+    assert.ok(metaDescriptionProblems('מספרת רון בחיפה: מספרה. תספורת ופן. דירוג 4.8 בגוגל (212 ביקורות). השוו מחירים וביקורות ב־BeautyFind. פתוח ראשון עד חמישי.', { title: 'מספרת רון בחיפה: מספרה' }).some(p => p.code === 'title_repeat'));
   });
 });
 
@@ -105,6 +121,8 @@ describe('treatment names in Hebrew', () => {
     assert.equal(hebrewTreatmentName('טיפול Morpheus8'), 'טיפול Morpheus8', 'a device inside a Hebrew name stays');
     assert.equal(hebrewTreatmentName("לק ג'ל"), 'לק ג׳ל', 'Hebrew names get their typography');
     assert.equal(hebrewTreatmentName('Something Unknown'), null);
+    assert.equal(hebrewTreatmentName('מתמחה בטיפולי פנים מתקדמים ופילינג.'), null, 'a sentence is not a treatment name');
+    assert.equal(hebrewTreatmentName('הסרת שיער בלייזר חבילת 6 מפגשים'), null, 'a package line is not a treatment name');
     assert.equal(hebrewTreatmentName('Классический массаж'), null);
     assert.deepEqual(hebrewTreatmentNames(['Hairstyling', 'Unknown Thing', 'Hair colouring', 'hairstyling', 'Haircut', 'Keratin'], 3), ['עיצוב שיער', 'צבע לשיער', 'תספורת']);
   });

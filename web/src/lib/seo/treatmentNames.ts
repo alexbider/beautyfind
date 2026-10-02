@@ -70,7 +70,8 @@ const isBrand = (word: string) => BRANDS.has(key(word));
  */
 export function hebrewTreatmentName(raw: string): string | null {
   const name = raw.replace(/\s+/g, ' ').trim();
-  if (!name) return null;
+  // A sentence (ends with a period, has a verb like מתמחה or מציעים), a package line or a long label is not a treatment name.
+  if (!name || name.length > 40 || name.split(' ').length > 5 || /[.!?;]$/u.test(name) || /(^|\s)(מתמחה|מתמחים|מציע|מציעה|מציעים|אנחנו|אנו|שלנו)(\s|$)/u.test(name)) return null;
   if (CYRILLIC.test(name)) return null;
   if (!LATIN.test(name)) return normalizeHebrew(name);
   // Hebrew with a Latin brand word inside ("טיפול Hydrafacial") stays; Hebrew with other English is cut to the Hebrew part.

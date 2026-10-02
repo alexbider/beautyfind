@@ -16,7 +16,7 @@
 import { createHash } from 'node:crypto';
 import { CATEGORIES } from '../catalog';
 import { DESCRIPTION_MAX, DESCRIPTION_MIN } from '../seo/meta';
-import { composeMetaDescription, metaDescriptionProblems } from '../seo/metaRules';
+import { composeMetaDescription, joinHe, metaDescriptionProblems, metaLead } from '../seo/metaRules';
 import { hebrewTreatmentNames } from '../seo/treatmentNames';
 import type { DayHours, ImportedTreatment } from './rules';
 import { normalizeHebrew, problemCode, textProblems } from './textRules';
@@ -272,7 +272,7 @@ Language:
 Write, in Hebrew:
 1. "description": paragraphs separated by a blank line. Scale the length to the facts: two short paragraphs when the packet is thin (name, place, field, how to contact), three to five paragraphs when it is rich (services and what each is for in everyday terms, prices, team, premises, hours, languages, year, accessibility, parking, how to arrange a visit). Name the business and the city in the first sentence. Never pad with general advice, invented details or generic praise.
 2. "faqs": three to eight question-and-answer pairs that the packet can answer fully (location, services, prices, booking, hours, team, accessibility, parking, languages). Skip any question the packet cannot answer. Answers are one to three sentences and state the facts directly. Each pair carries "basis": the packet fields it rests on.
-3. "metaTitle" (up to 60 characters), plain and specific, and "metaDescription" (130 to 155 characters) in one fixed shape: what the business is (name, city, field), its two or three main treatments named in Hebrew (an English treatment name is translated: Hairstyling = עיצוב שיער, Hair colouring = צבע לשיער; a brand or device name such as Hydrafacial stays), the Google rating with its review count when the packet has one, then one short closing action such as "השוו מחירים וביקורות ב־BeautyFind". The metaDescription never mentions booking, contact channels (phone, WhatsApp, email, navigation), "phone only", or anything missing.
+3. "metaTitle" (up to 60 characters), plain and specific, and "metaDescription" (130 to 155 characters): one natural sentence that leads with what the business offers in its city (its two or three main treatments named in Hebrew; an English treatment name is translated: Hairstyling = עיצוב שיער, Hair colouring = צבע לשיער; a brand or device name such as Hydrafacial stays), phrased for its field (a salon, a clinic, a studio), then the Google rating with its review count when the packet has one, then one short closing action such as "השוו מחירים וביקורות ב־BeautyFind". It never opens with the words of metaTitle, never mentions booking, contact channels (phone, WhatsApp, email, navigation), "phone only", or anything missing, and never pads with generic closers; when it is short, add a real fact (opening days, another treatment, the founding year, the street).
 4. "serviceSummaries": for each service in the packet, one factual sentence about what it is (no price, no promise).
 5. "heading": one of "על הקליניקה" (doctor-led clinic), "על המספרה" (hair salon), "על הספא", "על הסטודיו" (nails, brows, makeup), "על העסק" (anything else).
 6. "insufficientEvidence": true only when the packet has no services, no source description and no hours, so only a two-paragraph introduction is possible. Then list in "missing" (Hebrew, short items) what the business could add. The description itself still says nothing about what is missing.
@@ -378,7 +378,7 @@ export function checkOutput(o: EditorialOutput, p: EvidencePacket): string[] {
   }
   if (o.metaTitle.length > 70 || o.metaTitle.length < 10) v.push('meta_title');
   // The meta description follows the site's pattern and rules (src/lib/seo/metaRules.ts).
-  for (const m of metaDescriptionProblems(o.metaDescription)) v.push(`meta:${m.code}${m.match ? `:${m.match}` : ''}`);
+  for (const m of metaDescriptionProblems(o.metaDescription, { title: o.metaTitle })) v.push(`meta:${m.code}${m.match ? `:${m.match}` : ''}`);
   if (!o.description.includes(p.name.split(/\s+/)[0]) && !o.description.includes(p.name)) v.push('name_missing');
   return [...new Set(v)];
 }
@@ -412,6 +412,7 @@ export function repairMessage(v: string[]): string {
     if (x.startsWith('meta:contact')) return `metaDescription mentions a contact channel ("${x.split(':').slice(2).join(':')}"): remove phone, WhatsApp, email, navigation and contact details from it.`;
     if (x.startsWith('meta:phone_only')) return `metaDescription says "phone only" ("${x.split(':').slice(2).join(':')}"): remove it.`;
     if (x.startsWith('meta:ratings_line')) return 'metaDescription carries the line about Google ratings and BeautyFind reviews: remove it.';
+    if (x.startsWith('meta:title_repeat')) return 'metaDescription opens with the words of metaTitle: open with what the business offers in its city (its treatments) instead.';
     if (x === 'name_missing') return 'Name the business in the description.';
     return `Fix: ${x}`;
   });
@@ -445,6 +446,14 @@ const ownWords = (p: EvidencePacket): string | null => {
   const cut = whole.length <= 420 ? whole : (() => { const head = whole.slice(0, 420); const end = Math.max(head.lastIndexOf('. '), head.lastIndexOf('! '), head.lastIndexOf('? ')); return end > 60 ? head.slice(0, end + 1) : head.replace(/\s+\S*$/, ''); })();
   const c = cut.trim();
   return c.length >= 40 && textProblems(c, allowedLatin(p)).length === 0 && !FIRST_PERSON.test(c) ? (/[.!?]$/.test(c) ? c : `${c}.`) : null;
+};
+/** The open days as one phrase ("ראשון עד חמישי"), or null when the source said nothing. */
+const hoursDays = (hours: DayHours[]): string | null => {
+  const open = hours.map((h, i) => (h.closed || h.unknown ? -1 : i)).filter(i => i >= 0);
+  if (!open.length) return null;
+  if (open.length === 7) return 'כל ימות השבוע';
+  const consecutive = open.every((d, k) => k === 0 || d === open[k - 1] + 1);
+  return consecutive && open.length >= 3 ? `${DAY_NAMES[open[0]]} עד ${DAY_NAMES[open[open.length - 1]]}` : open.map(i => DAY_NAMES[i]).join(', ');
 };
 const hoursText = (hours: DayHours[]): string => {
   const open = hours.map((h, i) => ({ day: DAY_NAMES[i], h })).filter(x => !x.h.unknown);
@@ -557,13 +566,23 @@ export function templateDraft(p: EvidencePacket): EditorialOutput {
   const headingOf = (): EditorialOutput['heading'] => (kind === 'קליניקה' ? 'על הקליניקה' : kind === 'מספרה' ? 'על המספרה' : kind === 'ספא' ? 'על הספא' : cats.some(c => /ציפורניים|גבות|איפור/.test(c)) ? 'על הסטודיו' : 'על העסק');
   const title = `${p.name}${cats[0] ? `: ${cats[0]}` : ''}${where}`.slice(0, 60);
   // The meta description pattern (src/lib/seo/metaRules.ts): the business, its treatments in Hebrew, the rating, the action.
-  const topTreatments = hebrewTreatmentNames(p.services.map(s => s.name), 3);
+  const topTreatments = hebrewTreatmentNames(p.services.map(s => s.name), 4);
+  const catSlug = CATEGORIES.find(c => c.name === cats[0])?.slug ?? null;
+  const openDays = p.hours ? hoursDays(p.hours) : null;
   const md = composeMetaDescription({
-    lead: `${p.name}${where}${cats[0] ? `: ${cats[0]}` : ''}.`,
-    treatments: topTreatments,
-    moreTreatments: p.services.length > topTreatments.length,
+    lead: t => metaLead(catSlug, p.name, p.city ?? '', t),
+    treatments: topTreatments.slice(0, 3),
     rating: p.rating ? `דירוג ${p.rating.value.toFixed(1)} בגוגל (${p.rating.count === 1 ? 'ביקורת אחת' : `${p.rating.count} ביקורות`}).` : null,
-    fillers: [cats[1] ? `גם ${cats[1]}.` : '', `כל הטיפולים והמחירים של ${p.name} במקום אחד.`, cats[0] ? `${cats[0]}${where} להשוואה.` : `מכוני יופי ואסתטיקה${where} להשוואה.`, 'מחירים, טיפולים וביקורות.'],
+    facts: [
+      openDays ? (/עד|,|כל/u.test(openDays) ? `פתוח ${openDays}.` : `פתוח בימי ${openDays}.`) : '',
+      topTreatments[3] ? `גם ${topTreatments[3]}.` : '',
+      p.establishedYear ? `פועל מאז ${p.establishedYear}.` : '',
+      hebrewAddress ? `הכתובת: ${hebrewAddress}.` : '',
+      p.languages.length ? `שירות ב${joinHe(p.languages)}.` : '',
+      p.freeParking === true ? 'חניה חינם במקום.' : '',
+      p.accessible === true ? 'נגיש לכיסא גלגלים.' : '',
+      cats[1] ? `גם ${cats[1]}.` : '',
+    ],
   });
   return normalizeOutput({
     heading: headingOf(),

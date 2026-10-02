@@ -14,7 +14,8 @@
 //   inside Hebrew, em dashes, emoji) from src/lib/import/textRules.ts;
 // - straight-quote Hebrew abbreviations (ד"ר, דוא"ל, ג'ל) that should be gershayim and geresh;
 // - profile and city + category meta descriptions checked against src/lib/seo/metaRules.ts: 130 to 155
-//   characters, nothing about missing data, booking, contact channels or "phone only", no ratings line;
+//   characters, nothing about missing data, booking, contact channels or "phone only", no ratings line,
+//   not opening with the title's own words;
 // - the internal link graph: profiles with fewer than three inbound links from other pages.
 // The report is JSON plus a Markdown summary; with --compare a before/after table is printed.
 
@@ -226,7 +227,7 @@ function analyse(path: string, status: number, redirectTo: string | null, html: 
   const titleLen = [...title].length;
   const descriptionLen = [...description].length;
   const ruled = template === 'profile' || template === 'city-category';
-  const descriptionRules = ruled && status === 200 ? metaDescriptionProblems(description).map(p => `${p.code}${p.match ? `:${p.match}` : ''}`) : [];
+  const descriptionRules = ruled && status === 200 ? metaDescriptionProblems(description, { title }).map(p => `${p.code}${p.match ? `:${p.match}` : ''}`) : [];
   return {
     url: BASE + path,
     path,

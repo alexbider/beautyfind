@@ -8,14 +8,14 @@ import { cleanTeam } from '@/lib/import/profileExtract';
 import { listBranches, nearbyBranches, type ListingCard, type PublicProfile } from '@/lib/server/public';
 import { listingTitle } from '@/lib/seo/listingTitle';
 import { normalizeHebrew } from '@/lib/import/textRules';
-import { composeMetaDescription, metaDescriptionOk } from '@/lib/seo/metaRules';
+import { composeMetaDescription, joinHe, metaDescriptionOk, metaLead } from '@/lib/seo/metaRules';
 import { seoCityName, seoName } from '@/lib/seo/seoName';
 import { coverAlt, galleryAlts } from '@/lib/seo/imageAlt';
-import { CATEGORY_SHORT, SEO_TERM } from '@/lib/seo/terms';
+import { CATEGORY_SHORT } from '@/lib/seo/terms';
 import { hebrewTreatmentNames } from '@/lib/seo/treatmentNames';
 import { absoluteUrl, breadcrumbNode, businessId, businessType, faqNode, graph, ldJson, pageId, webPageNode, type Crumb } from '@/lib/seo/schema';
 import {
-  COMPARABLE_PRICE_TYPES, DAY_NAMES, PROFESSION_NAME, hoursKnown, jerusalemNow, longDateHe, openState, openingHoursSpec, parseHours, priceParts, relHe, servicePrice,
+  COMPARABLE_PRICE_TYPES, DAY_NAMES, PROFESSION_NAME, hoursKnown, jerusalemNow, longDateHe, openDaysLabel, openState, openingHoursSpec, parseHours, priceParts, relHe, servicePrice,
   type DayHours, type OpenState, type PractitionerProfession, type PriceView,
 } from '@/components/profile/format';
 import { CATEGORY_ICONS, DEFAULT_CATEGORY_ICON } from '@/components/profile/icons';
@@ -311,30 +311,41 @@ export function metaTitle(p: PublicProfile, v: ProfileView): string {
 }
 
 /**
- * 130 to 155 characters, one pattern for every listing (src/lib/seo/metaRules.ts): what the business is
- * (name, city, main field), its first two or three treatments in Hebrew, the Google rating with its review
- * count when there is one, then the action. Nothing about missing data, booking, contact channels or
- * "phone only". A saved override is used only when it follows the same rules.
+ * 130 to 155 characters, one pattern for every listing (src/lib/seo/metaRules.ts): one sentence that leads
+ * with what the business offers in its city (its first treatments in Hebrew, phrased by category so it
+ * never opens with the title's words), the Google rating with its review count when there is one, then
+ * the action. When that is short, real facts follow: the responsible doctor, the opening days, another
+ * treatment, the founding year, the street, languages, parking, access. Nothing about missing data,
+ * booking, contact channels or "phone only". A saved override is used only when it follows the same rules.
  */
-export function metaDescription(p: PublicProfile, v: ProfileView): string {
+export function metaDescription(p: PublicProfile, v: ProfileView, extraFacts: string[] = []): string {
+  const title = metaTitle(p, v);
   const saved = p.metaDescription ? normalizeHebrew(p.metaDescription.replace(/\s+/g, ' ').trim()) : '';
-  if (saved && metaDescriptionOk(saved)) return saved;
+  if (saved && metaDescriptionOk(saved, { title })) return saved;
   const name = seoName(p.name);
   const city = seoCityName(p.cityName);
   const cat = v.cats[0];
-  const treatments = hebrewTreatmentNames(p.treatments.map(t => t.name), 3);
+  const treatments = hebrewTreatmentNames(p.treatments.map(t => t.name), 4);
   const g = v.google && v.google.count > 0 ? v.google : null;
+  const days = openDaysLabel(v.hours);
+  const street = p.address && /^[א-ת]/u.test(p.address) && !/[A-Za-z]/.test(p.address) ? p.address.replace(p.cityName, '').replace(/[\s,]+$/u, '').trim() : '';
+  const langs = p.languages.filter(l => /^[א-ת\s]+$/u.test(l));
   return composeMetaDescription({
-    lead: `${name} ב${city}${cat ? `: ${CATEGORY_SHORT[cat.slug] ?? cat.name}` : ''}.`,
-    treatments,
-    moreTreatments: p.treatments.length > treatments.length,
+    lead: t => metaLead(cat?.slug, name, city, t),
+    treatments: treatments.slice(0, 3),
     rating: g ? `דירוג ${g.rating.toFixed(1)} בגוגל (${reviewsLabel(g.count)}).` : null,
-    fillers: [
+    facts: [
       v.responsible ? `${v.responsible.label}: ${v.responsible.name}.` : '',
-      `כל הטיפולים והמחירים של ${name} במקום אחד.`,
-      cat ? `${SEO_TERM[cat.slug] ?? cat.name} ב${city} להשוואה.` : `מכוני יופי ואסתטיקה ב${city} להשוואה.`,
-      'מחירים, טיפולים וביקורות.',
-      `עוד עסקים ב${city}.`,
+      days ? (/עד|,|כל/u.test(days) ? `פתוח ${days}.` : `פתוח בימי ${days}.`) : '',
+      treatments[3] ? `גם ${treatments[3]}.` : '',
+      p.establishedYear ? `פועל מאז ${p.establishedYear}.` : '',
+      street.length >= 4 ? (/^רחוב /u.test(street) ? `ב${street}.` : `הכתובת: ${street}.`) : '',
+      langs.length ? `שירות ב${joinHe(langs)}.` : '',
+      v.attributes.parking === true ? 'חניה חינם במקום.' : '',
+      v.attributes.accessible === true ? 'נגיש לכיסא גלגלים.' : '',
+      v.cats[1] ? `גם ${v.cats[1].name}.` : '',
+      ...extraFacts,
+      v.region ? `באזור ${v.region.name}.` : '',
     ],
   });
 }

@@ -19,7 +19,7 @@ import { ListingCard } from './ListingCard';
 import { canonicalHref, dirHref, hasParams, pageCount, parseQuery, type DirQuery } from './params';
 import { Pager } from './Pager';
 import { composeDescription, fitTitle, publicMetadata } from '@/lib/seo/meta';
-import { META_ACTION } from '@/lib/seo/metaRules';
+import { META_ACTION, composeMetaDescription, joinHe } from '@/lib/seo/metaRules';
 import { seoCityName } from '@/lib/seo/seoName';
 import { breadcrumbNode, faqNode, graph, itemListNode, ldJson, listId, webPageNode } from '@/lib/seo/schema';
 import { ResultsShell } from './ResultsShell';
@@ -66,6 +66,7 @@ export async function directoryMetadata(params: DirParams, searchParams: DirSear
   const where = `ב${seoCityName(s.city.name)}`;
   // "{noun} ב{city}: מחירים והשוואה | BeautyFind"; the layout appends the brand.
   const noun = s.category ? SEO_TERM[s.category.slug] ?? s.category.name : 'מכוני יופי ואסתטיקה';
+  const nounOf = s.category ? SEO_TERM[s.category.slug] ?? s.category.name : 'יופי, אסתטיקה וקוסמטיקה';
   const pageTag = q.page > 1 ? ` (עמוד ${q.page})` : '';
   const title = fitTitle([`${noun} ${where}: מחירים והשוואה${pageTag}`, `${noun} ${where}: מחירים${pageTag}`, `${noun} ${where}${pageTag}`]);
   const verifiedPart =
@@ -79,16 +80,19 @@ export async function directoryMetadata(params: DirParams, searchParams: DirSear
           [s.category ? `עדיין אין עסקים ל${s.category.name} ${where}.` : `עדיין אין עסקים רשומים ${where}.`, `עסקים בערים סמוכות באזור ${s.region.name}, ורישום עסק חדש ב־BeautyFind.`],
           [META_ACTION],
         )
-      : composeDescription(
-          [
-            `${countText(o.total, BIZ)}${s.category ? ` ל${SEO_TERM[s.category.slug] ?? s.category.name}` : ' ליופי, אסתטיקה וקוסמטיקה'} ${where}.`,
-            o.topTreatments.length ? `${o.topTreatments.join(', ')}.` : null,
-            o.medianGoogle != null ? `דירוג Google אמצעי ${o.medianGoogle.toFixed(1)}.` : null,
-            ownPrice ? `מחיר אמצעי ${nis(ownPrice.price)}.` : null,
-            META_ACTION,
+      : composeMetaDescription({
+          // Leads with the treatments the listings publish, not with the title's words.
+          lead: t => (t.length ? `${joinHe(t)} ${where}: ${countText(o.total, BIZ)} ל${nounOf}.` : `${where} ${countText(o.total, BIZ)} ל${nounOf}.`),
+          treatments: o.topTreatments,
+          rating: o.medianGoogle != null ? `דירוג Google אמצעי ${o.medianGoogle.toFixed(1)}.` : null,
+          facts: [
+            ownPrice ? `מחיר אמצעי ${nis(ownPrice.price)}.` : '',
+            verifiedPart ?? '',
+            s.category && o.cityCategories.filter(c => c.slug !== s.category!.slug).length ? `${where} גם ${joinHe(o.cityCategories.filter(c => c.slug !== s.category!.slug).slice(0, 3).map(c => SEO_TERM[c.slug] ?? c.name))}.` : '',
+            o.siblings.length ? `עוד ${nounOf} ${joinHe(o.siblings.slice(0, 2).map(x => `ב${seoCityName(x.city.name)}`))}.` : '',
+            o.regionTotal > o.total ? `באזור ${s.region.name} ${countText(o.regionTotal, BIZ)} ל${nounOf}.` : `באזור ${s.region.name}.`,
           ],
-          [verifiedPart ?? '', 'הסדר אינו נמכר: לפי אימות, דירוג ומספר ביקורות.', 'מחירים אמצעיים לפי תחום.'],
-        );
+        });
   // Filtered or sorted lists are noindex; page 2 and on are indexable with their own canonical.
   return applySeo(s.path, publicMetadata({ path: canonicalHref(s.path, q), title, description, image: `/assets/region-${s.region.slug}.jpg`, noindex: o.total === 0 || hasParams(q) }));
 }

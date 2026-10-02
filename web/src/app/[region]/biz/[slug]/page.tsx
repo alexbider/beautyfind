@@ -22,13 +22,14 @@ import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { ROUTES } from '@/lib/routes';
 import { fromE164, telHref } from '@/lib/format';
-import { getProfile, type PublicProfile } from '@/lib/server/public';
+import { getProfile, listingCounts, type PublicProfile } from '@/lib/server/public';
 import { vatRatePct } from '@/lib/server/vat';
 import { PRICES_INCLUDE_VAT } from '@/lib/features';
 import { applySeo } from '@/lib/server/seo';
 import { buildView, jsonLd, ldJson, metaDescription, metaTitle, nearbyBusinesses, reviewsLabel, similarBusinesses, type ProfileView as View } from './data';
 import { cityPageHref, CITIES } from '@/lib/catalog';
 import { publicMetadata } from '@/lib/seo/meta';
+import { seoCityName, seoName } from '@/lib/seo/seoName';
 import btn from '@/components/profile/buttons.module.css';
 import rv from '@/components/profile/Reviews.module.css';
 import styles from './page.module.css';
@@ -48,7 +49,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!p) return { title: 'העסק לא נמצא', robots: { index: false } };
   const v = buildView(p, new Date(), await vatRatePct());
   const title = metaTitle(p, v);
-  const description = metaDescription(p, v);
+  // A real fact for thin listings: how many businesses the city has on BeautyFind.
+  const cityCount = v.citySlug ? ((await listingCounts()).city[v.citySlug] ?? 0) : 0;
+  const description = metaDescription(p, v, cityCount > 1 ? [`אחד מ־${cityCount} עסקי יופי ואסתטיקה ב${seoCityName(p.cityName)}.`] : []);
   // Section switch and per-listing noindex (staff, branch editor) come through applySeo.
   return applySeo(p.href, publicMetadata({ path: p.href, title, description, image: v.photos[0] ? { url: v.photos[0].url, alt: v.photos[0].alt } : null }), { noindex: p.noindex });
 }
