@@ -43,7 +43,7 @@ function VideoCard({ v }: { v: VideoView }) {
         ) : (
           <button type="button" className={styles.poster} onClick={() => setPlay(true)} aria-label={`הפעלת הסרטון: ${title}`}>
             {/* The poster is our own copy of the thumbnail (no request to YouTube before the visitor presses play); without one, a neutral frame. */}
-            {v.poster && <img className={styles.posterImg} src={v.poster} alt="" loading="lazy" />}
+            {v.poster && <img className={styles.posterImg} src={v.poster} alt="" role="presentation" width={640} height={360} loading="lazy" decoding="async" />}
             <span aria-hidden="true" className={styles.play}>
               <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><path d="M6 3.6 14 9l-8 5.4z" /></svg>
             </span>

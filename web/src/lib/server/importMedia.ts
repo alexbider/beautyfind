@@ -1,3 +1,4 @@
+import { seoCityName, seoName } from '@/lib/seo/seoName';
 import 'server-only';
 import { createHash, randomUUID } from 'node:crypto';
 import { imageInfo, usable } from '@/lib/import/imageInfo';
@@ -230,7 +231,7 @@ export async function copyListingImages(
   const provenance: MediaProvenance[] = [];
   const meta = new Map((place.candidates ?? []).map(c => [c.url, c]));
   const cand = (url: string): Candidate => meta.get(url) ?? { url, provider: /googleusercontent\.com|ggpht\.com/.test(url) ? 'google_profile' : 'website' };
-  const altFor = (c: Candidate, i: number) => (c.alt && !generic(c.alt) && isHebrew(c.alt) ? `${c.alt.slice(0, 80)}, ${place.name}` : `${place.name}${where}${i > 0 ? `, תמונה ${i + 1}` : ''}`);
+  const altFor = (c: Candidate, i: number) => (c.alt && !generic(c.alt) && isHebrew(c.alt) ? `${c.alt.slice(0, 80)}, ${seoName(place.name)}` : i === 0 ? `${seoName(place.name)}${where ? ` ב${seoCityName(place.cityName!)}` : ''}` : `${seoName(place.name)}: תמונה ${i + 1}`);
 
   const logoJob = (async () => {
     // Every logo candidate is read (the site's own logo, the Google profile logo, social profile pictures, a touch

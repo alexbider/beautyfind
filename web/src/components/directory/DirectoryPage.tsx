@@ -156,7 +156,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
 
   const hero = (
     <figure className={styles.hero}>
-      <Image src={`/assets/region-${s.region.slug}.jpg`} alt={`נוף באזור ${s.region.name}`} fill priority sizes="(min-width:1080px) 36vw, 100vw" />
+      <Image src={`/assets/region-${s.region.slug}.jpg`} alt={`נוף באזור ${s.region.name}`} fill priority sizes="(min-width:1080px) 36vw, (min-width:768px) 100vw, 360px" />
       <span aria-hidden="true" className={styles.ping} />
     </figure>
   );

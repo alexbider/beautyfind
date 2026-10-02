@@ -173,7 +173,7 @@ export function SavedView({ initialCards, initialCmp, serverSignedIn }: { initia
                     <span className={styles.thumb} aria-hidden="true">
                       {c.coverUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={c.coverUrl} alt="" loading="lazy" />
+                        <img src={c.coverUrl} alt="" role="presentation" width={96} height={96} loading="lazy" />
                       ) : (
                         c.name.slice(0, 2)
                       )}
@@ -221,7 +221,7 @@ export function SavedView({ initialCards, initialCmp, serverSignedIn }: { initia
               <div className={styles.media}>
                 {c.coverUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={c.coverUrl} alt={c.coverAlt} loading="lazy" className={styles.img} />
+                  <img src={c.coverUrl} alt={c.coverAlt} width={640} height={400} loading="lazy" className={styles.img} />
                 ) : (
                   <span className={styles.ph} aria-hidden="true">{c.name}</span>
                 )}

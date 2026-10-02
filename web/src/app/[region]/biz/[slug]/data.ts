@@ -9,6 +9,7 @@ import { listBranches, nearbyBranches, type ListingCard, type PublicProfile } fr
 import { listingTitle } from '@/lib/seo/listingTitle';
 import { composeDescription } from '@/lib/seo/meta';
 import { seoCityName, seoName } from '@/lib/seo/seoName';
+import { coverAlt, galleryAlts } from '@/lib/seo/imageAlt';
 import { CATEGORY_SHORT } from '@/lib/seo/terms';
 import { absoluteUrl, breadcrumbNode, businessId, businessType, faqNode, graph, ldJson, pageId, webPageNode, type Crumb } from '@/lib/seo/schema';
 import {
@@ -133,11 +134,14 @@ export function buildView(p: PublicProfile, now = new Date(), vatPct = DEFAULT_V
   const gallery = parseGallery(p.gallery);
   const ba = gallery.filter(g => g.tag === BEFORE_AFTER_TAG);
   const plain = gallery.filter(g => g.tag !== BEFORE_AFTER_TAG);
+  const rest = plain.filter(g => g.url !== p.coverUrl);
+  const restAlts = galleryAlts(p.name, rest);
   const photos: Photo[] = [
-    ...(p.coverUrl ? [{ url: p.coverUrl, alt: p.coverAlt || p.name }] : []),
-    ...plain.filter(g => g.url !== p.coverUrl).map(g => ({ url: g.url, alt: g.alt || p.name })),
+    ...(p.coverUrl ? [{ url: p.coverUrl, alt: coverAlt(p) }] : []),
+    ...rest.map((g, i) => ({ url: g.url, alt: restAlts[i] })),
   ];
-  const beforeAfter: Photo[] = ba.map(g => ({ url: g.url, alt: g.alt || 'לפני ואחרי' }));
+  const baAlts = galleryAlts(p.name, ba.map(g => ({ alt: g.alt, tag: 'לפני ואחרי' })));
+  const beforeAfter: Photo[] = ba.map((g, i) => ({ url: g.url, alt: baAlts[i] }));
 
   const cats = orderCategories(p.categories).map(c => c.category); // [0] is the primary category, the one in the canonical URL
   const medicalBiz = cats.some(c => c.isMedical);

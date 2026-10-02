@@ -3,6 +3,7 @@ import { orderCategories, profileHref } from '../category';
 import { Prisma, type RegionSlug } from '@prisma/client';
 import { cache } from 'react';
 import { BOOKING_LIVE, PRICES_INCLUDE_VAT } from '../features';
+import { coverAlt } from '../seo/imageAlt';
 import { consumerAgorot } from '../vat';
 import { db } from './db';
 import { vatRatePct } from './vat';
@@ -115,7 +116,7 @@ function toCard(b: CardRow, stats: Map<string, { rating: number; count: number }
     citySlug: b.city?.slug ?? null,
     categories: cats.map(c => ({ slug: c.categorySlug, name: c.category.name, isMedical: c.category.isMedical })),
     coverUrl: b.coverUrl,
-    coverAlt: b.coverAlt ?? b.name,
+    coverAlt: coverAlt(b),
     verified: b.isClaimed,
     google: b.googleRating != null ? { rating: b.googleRating, count: b.googleReviewCount ?? 0 } : null,
     beautyfind: stats.get(b.id) ?? null,

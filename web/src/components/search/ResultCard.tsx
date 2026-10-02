@@ -58,7 +58,7 @@ export function ResultCard({ card: c, extra, index, delay, query }: { card: List
         {c.coverUrl ? (
           // Covers come from our media route or storage; plain img keeps them independent of next/image remote config.
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={c.coverUrl} alt="" loading="lazy" decoding="async" />
+          <img src={c.coverUrl} alt={c.coverAlt} width={640} height={480} loading="lazy" decoding="async" />
         ) : (
           <span className={s.photoEmpty}>
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">

@@ -11,6 +11,8 @@ const privateSources = PRIVATE_PREFIXES.flatMap(p => (p.endsWith('/') ? [`${p}:p
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Every next/image (the heroes, hero-clinic on /for-business, category and region photos) is served as AVIF or WebP.
+  images: { formats: ['image/avif', 'image/webp'] },
   // Onboarding uploads photos through a server action (8MB max per file, see lib/server/media.ts).
   experimental: { serverActions: { bodySizeLimit: '9mb' } },
   // Listing pages live at /:region/:category/:slug (the listing's primary category). They are served by

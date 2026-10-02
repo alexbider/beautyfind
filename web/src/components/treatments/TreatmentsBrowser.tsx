@@ -235,7 +235,7 @@ export function TreatmentsBrowser({ rows, groupOrder }: { rows: TreatmentRow[]; 
                     <Link href={`/treatments/${c.slug}`} className={styles.row}>
                       <span className={`${styles.cImg} ${styles.thumb}`}>
                         {/* eslint-disable-next-line @next/next/no-img-element -- small static thumbnail */}
-                        <img src={c.img} alt="" loading="lazy" decoding="async" />
+                        <img src={c.img} alt="" role="presentation" width={96} height={96} loading="lazy" decoding="async" />
                       </span>
                       <span className={styles.cName}>
                         <span className={styles.name}>{c.name}</span>

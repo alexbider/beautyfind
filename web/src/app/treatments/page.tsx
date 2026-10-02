@@ -129,7 +129,7 @@ export default async function TreatmentsPage() {
               <li key={c.slug} style={{ animationDelay: `${i * 60}ms` }}>
                 <Link href={`/treatments/${c.slug}`} className={styles.popCard}>
                   {/* eslint-disable-next-line @next/next/no-img-element -- decorative background */}
-                  <img src={c.img} alt="" loading="lazy" decoding="async" className={styles.popImg} />
+                  <img src={c.img} alt="" role="presentation" width={640} height={360} loading="lazy" decoding="async" className={styles.popImg} />
                   <span aria-hidden="true" className={styles.popShade} />
                   <span className={styles.popText}>
                     <span className={styles.popName}>{c.name}</span>

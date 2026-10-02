@@ -177,7 +177,7 @@ export default async function RegionPage({ params }: Props) {
           </div>
         </div>
         <figure className={styles.heroFig}>
-          <Image src={`/assets/region-${r}.jpg`} alt={rc.imgAlt} fill priority sizes="(min-width:1180px) 42vw, 100vw" style={{ objectFit: 'cover' }} />
+          <Image src={`/assets/region-${r}.jpg`} alt={rc.imgAlt} fill priority sizes="(min-width:1180px) 42vw, (min-width:768px) 100vw, 360px" style={{ objectFit: 'cover' }} />
         </figure>
       </div>
 

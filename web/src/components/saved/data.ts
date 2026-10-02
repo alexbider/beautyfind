@@ -5,6 +5,7 @@ import { db } from '@/lib/server/db';
 import { PUBLIC_WHERE, profileHref } from '@/lib/server/public';
 import { vatRatePct } from '@/lib/server/vat';
 import { consumerAgorot } from '@/lib/vat';
+import { coverAlt } from '@/lib/seo/imageAlt';
 import { currentUser } from '@/lib/server/session';
 import { jerusalemNow, parseHours } from '@/components/profile/format';
 import type { CompareColumn, Rating, SavedCard } from './types';
@@ -93,7 +94,7 @@ export async function savedCards(ids: string[], savedAt?: Map<string, Date>): Pr
         cats: cats.slice(0, 2).map(c => c.category.name).join(', '),
         medical: cats.some(c => c.category.isMedical),
         coverUrl: b.coverUrl,
-        coverAlt: b.coverAlt ?? b.name,
+        coverAlt: coverAlt(b),
         google: google(b),
         beautyfind: stats.get(b.id) ?? null,
         responsible: resp ? `${resp.label}: ${resp.name}` : null,

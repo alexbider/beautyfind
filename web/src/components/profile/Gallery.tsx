@@ -64,7 +64,7 @@ export function Gallery({ photos }: { photos: Photo[] }) {
     <div className={styles.frame}>
       <div ref={strip} className={styles.grid} data-tiles={tiles}>
         <button type="button" className={`${styles.tile} ${styles.primary}`} onClick={() => lb.open(0)} aria-label={`פתיחת גלריית התמונות, ${photos[0].alt}`}>
-          <img src={photos[0].url} alt={photos[0].alt} fetchPriority="high" />
+          <img src={photos[0].url} alt={photos[0].alt} width={1200} height={900} loading="eager" fetchPriority="high" decoding="async" />
         </button>
         {rest.map((p, j) => {
           const i = j + 1;
@@ -79,7 +79,7 @@ export function Gallery({ photos }: { photos: Photo[] }) {
               onClick={() => lb.open(i)}
               aria-label={isLast ? `כל ${n} התמונות` : `פתיחת הגלריה, ${p.alt}`}
             >
-              <img src={p.url} alt={p.alt} loading="lazy" />
+              <img src={p.url} alt={p.alt} width={600} height={450} loading="lazy" decoding="async" />
               {isLast && <span className={styles.more}>כל {n} התמונות</span>}
             </button>
           );
@@ -116,7 +116,7 @@ export function BeforeAfter({ photos }: { photos: Photo[] }) {
         {photos.map((p, i) => (
           <button key={p.url + i} type="button" className={styles.baCard} onClick={() => lb.open(i)}>
             <span className={styles.baImg}>
-              <img src={p.url} alt={p.alt} loading="lazy" />
+              <img src={p.url} alt={p.alt} width={600} height={450} loading="lazy" decoding="async" />
             </span>
             <span className={styles.baCap}>{p.alt}</span>
           </button>
@@ -204,7 +204,7 @@ function Lightbox({ photos, index, onIndex, onClose, label }: { photos: Photo[];
           </button>
         )}
         <div key={index} className={styles.lbStage} onClick={e => e.stopPropagation()} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-          <img src={p.url} alt={p.alt} />
+          <img src={p.url} alt={p.alt} width={1600} height={1200} decoding="async" />
         </div>
         {n > 1 && (
           <button type="button" className={`${styles.lbRound} ${styles.lbStep}`} onClick={e => { e.stopPropagation(); step(1); }} aria-label="התמונה הבאה">
@@ -218,7 +218,7 @@ function Lightbox({ photos, index, onIndex, onClose, label }: { photos: Photo[];
           <div ref={thumbs} className={styles.lbThumbs}>
             {photos.map((t, i) => (
               <button key={t.url + i} type="button" className={styles.lbThumb} aria-current={i === index} aria-label={t.alt} onClick={() => onIndex(i)}>
-                <img src={t.url} alt="" loading="lazy" />
+                <img src={t.url} alt="" role="presentation" width={160} height={120} loading="lazy" decoding="async" />
               </button>
             ))}
           </div>

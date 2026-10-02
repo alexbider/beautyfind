@@ -44,7 +44,7 @@ export function ListingCard({ c, delayIndex }: { c: DirectoryCard; delayIndex: n
       <Link href={c.href} tabIndex={-1} aria-hidden="true" className={styles.media} data-single={!mosaic || undefined}>
         <span className={`${styles.tile} ${styles.tileMain}`}>
           {c.coverUrl ? (
-            <img src={c.coverUrl} alt="" loading="lazy" decoding="async" />
+            <img src={c.coverUrl} alt={c.coverAlt} width={640} height={480} loading="lazy" decoding="async" />
           ) : (
             <span className={styles.placeholder}>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -57,10 +57,10 @@ export function ListingCard({ c, delayIndex }: { c: DirectoryCard; delayIndex: n
         {mosaic && (
           <>
             <span className={styles.tile}>
-              <img src={thumbs[0].url} alt="" loading="lazy" decoding="async" />
+              <img src={thumbs[0].url} alt={thumbs[0].alt || `${c.coverAlt}, תמונה 2`} width={320} height={240} loading="lazy" decoding="async" />
             </span>
             <span className={styles.tile}>
-              <img src={thumbs[1].url} alt="" loading="lazy" decoding="async" />
+              <img src={thumbs[1].url} alt={thumbs[1].alt || `${c.coverAlt}, תמונה 3`} width={320} height={240} loading="lazy" decoding="async" />
               {extra > 0 && <span className={`${styles.more} ltr`}>+{extra}</span>}
             </span>
           </>

@@ -341,7 +341,7 @@ function SimilarCards({ items }: { items: Awaited<ReturnType<typeof similarBusin
     <div className={styles.similar} data-n={items.length}>
       {items.map(s => (
         <Link key={s.id} href={s.href} className={styles.simCard}>
-          <span className={styles.simImg}>{s.coverUrl && <img src={s.coverUrl} alt={s.coverAlt} loading="lazy" />}</span>
+          <span className={styles.simImg}>{s.coverUrl && <img src={s.coverUrl} alt={s.coverAlt} width={640} height={400} loading="lazy" decoding="async" />}</span>
           <span className={styles.simBody}>
             <span className={styles.simName}>{s.name}</span>
             <span className={styles.simMeta}>{[s.cityName, s.categories[0]?.name].filter(Boolean).join(' · ')}</span>
@@ -381,7 +381,7 @@ function Identity({ p, v }: { p: PublicProfile; v: View }) {
     <section className={styles.identity} aria-labelledby="h-name">
       <div className={styles.idRow}>
         <span aria-hidden="true" className={styles.logo}>
-          {p.logoUrl ? <img src={p.logoUrl} alt="" /> : initials(p.name)}
+          {p.logoUrl ? <img src={p.logoUrl} alt="" role="presentation" width={96} height={96} decoding="async" /> : initials(p.name)}
         </span>
         <div className={styles.idText}>
           <h1 id="h-name" className={styles.h1}>

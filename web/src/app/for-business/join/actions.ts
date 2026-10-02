@@ -5,6 +5,7 @@ import { randomBytes } from 'node:crypto';
 import { z } from 'zod';
 import { CATEGORIES, REGIONS } from '@/lib/catalog';
 import { withPrimary } from '@/lib/category';
+import { seoCityName, seoName } from '@/lib/seo/seoName';
 import { toE164 } from '@/lib/format';
 import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
 import { db } from '@/lib/server/db';
@@ -161,13 +162,13 @@ export async function submitJoin(input: JoinPayload & { media?: z.input<typeof M
           hours,
           status: 'draft',
           coverUrl: mediaUrl(media.cover),
-          coverAlt: mediaUrl(media.cover) ? f.name.trim() : null,
+          coverAlt: mediaUrl(media.cover) ? `${seoName(f.name)} ב${seoCityName(f.city.trim())}` : null,
           logoUrl: mediaUrl(media.logo),
           // Alt text is required on the public profile; seeded here and editable in the dashboard.
           gallery: media.gallery
             .map(id => mediaUrl(id))
             .filter((u): u is string => !!u)
-            .map((url, i) => ({ url, alt: `${f.name.trim()}, תמונה ${i + 1}`, tag: 'הקליניקה' })),
+            .map((url, i) => ({ url, alt: `${seoName(f.name)}: הקליניקה${i > 0 ? ` ${i + 1}` : ''}`, tag: 'הקליניקה' })),
         },
       });
 
