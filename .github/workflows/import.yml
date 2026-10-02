@@ -73,7 +73,7 @@ jobs:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           # Image storage for listings enhanced by the worker (same store the site uses).
           # After automatic publication the worker asks the site to refresh its cached pages (optional).
-          SITE_URL: ${{ vars.SITE_URL || 'https://beautyfind.vercel.app' }}
+          SITE_URL: ${{ vars.SITE_URL || 'https://beautyfind.co.il' }}
           REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
           STORAGE_ADAPTER: ${{ secrets.BLOB_READ_WRITE_TOKEN != '' && 'blob' || 'none' }}
           BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
