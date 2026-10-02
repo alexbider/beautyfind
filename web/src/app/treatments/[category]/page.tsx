@@ -1,6 +1,8 @@
 import { VAT_LABEL } from '@/lib/features';
 import type { Metadata } from 'next';
 import { applySeo } from '@/lib/server/seo';
+import { composeDescription, publicMetadata } from '@/lib/seo/meta';
+import { SEO_TERM } from '@/lib/seo/terms';
 import type { ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -43,13 +45,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!cat) return {};
   const counts = await listingCounts();
   const n = counts.category[cat.slug] ?? 0;
-  return applySeo(`/treatments/${cat.slug}`, {
-    title: `${cat.name} בישראל`,
-    description:
-      `${cat.name} בישראל: מה כולל התחום, מחירים אמצעיים, מי מורשה לבצע, והעסקים המדורגים ביותר בכל אזור.` +
-      (n > 0 ? ` ${countText(n, 'עסק אחד', 'עסקים')} ב־7 אזורים.` : ''),
-    alternates: { canonical: `/treatments/${cat.slug}` },
-  });
+  const body = CATEGORY_CONTENT[cat.slug];
+  return applySeo(`/treatments/${cat.slug}`, publicMetadata({
+    path: `/treatments/${cat.slug}`,
+    title: `${SEO_TERM[cat.slug] ?? cat.name} בישראל: מחירים והשוואה`,
+    description: composeDescription(
+      [`${cat.name} בישראל: מה כולל התחום, מחירים אמצעיים ומי מורשה לבצע.`, n > 0 ? `${countText(n, 'עסק אחד', 'עסקים')} ב־7 אזורים.` : null, 'העסקים המדורגים ביותר בכל אזור.', 'השוו מחירים וקבעו תור.'],
+      ['דירוג Google וביקורות BeautyFind בנפרד.'],
+    ),
+    image: body?.img ?? null,
+  }));
 }
 
 export default async function TreatmentCategoryPage({ params }: Props) {

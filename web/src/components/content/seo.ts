@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { publicMetadata } from '@/lib/seo/meta';
 import type { Crumb } from './ContentPage';
 import type { ContentView } from './types';
 
@@ -10,20 +11,7 @@ export const SITE = 'https://beautyfind.co.il';
  * low priority, which is a sitemap concern (priority 0.3), not a robots one.
  */
 export function contentMetadata(view: ContentView): Metadata {
-  return {
-    title: view.metaTitle,
-    description: view.description,
-    alternates: { canonical: view.href },
-    robots: { index: true, follow: true },
-    openGraph: {
-      type: 'website',
-      locale: 'he_IL',
-      siteName: 'BeautyFind',
-      url: view.href,
-      title: view.metaTitle,
-      description: view.description,
-    },
-  };
+  return { ...publicMetadata({ path: view.href, title: view.metaTitle, description: view.description }), robots: { index: true, follow: true } };
 }
 
 export function breadcrumbJsonLd(crumbs: Crumb[], currentHref: string) {

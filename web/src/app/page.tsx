@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { applySeo } from '@/lib/server/seo';
+import { publicMetadata } from '@/lib/seo/meta';
 import { cardExtras } from '@/app/search/extras';
 import { CATEGORY_IMAGE } from '@/components/home/content';
 import { DeskHome } from '@/components/home/desk/DeskHome';
@@ -21,12 +22,7 @@ const DESCRIPTION =
   'מצאו מכוני יופי, קליניקות לאסתטיקה רפואית, מספרות וספא בכל רחבי ישראל, מהצפון ועד אילת. השוו מחירים וביקורות, גלו טיפולים וקבעו את הפגישה הבאה.';
 
 export async function generateMetadata(): Promise<Metadata> {
-  return applySeo('/', {
-    title: { absolute: TITLE },
-    description: DESCRIPTION,
-    alternates: { canonical: '/' },
-    openGraph: { type: 'website', locale: 'he_IL', url: '/', siteName: 'BeautyFind', title: TITLE, description: DESCRIPTION, images: ['/assets/hero-clinic.jpg'] },
-  });
+  return applySeo('/', publicMetadata({ path: '/', title: { absolute: TITLE }, description: DESCRIPTION, image: '/assets/hero-clinic.jpg' }));
 }
 
 // Counts and cards change as listings go live; refresh the cached page every 5 minutes.

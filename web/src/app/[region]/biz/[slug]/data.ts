@@ -7,6 +7,9 @@ import { DEFAULT_VAT_PCT, withConsumerPrices } from '@/lib/vat';
 import { cleanTeam } from '@/lib/import/profileExtract';
 import { listBranches, type ListingCard, type PublicProfile } from '@/lib/server/public';
 import { listingTitle } from '@/lib/seo/listingTitle';
+import { composeDescription } from '@/lib/seo/meta';
+import { seoCityName, seoName } from '@/lib/seo/seoName';
+import { CATEGORY_SHORT } from '@/lib/seo/terms';
 import {
   COMPARABLE_PRICE_TYPES, DAY_NAMES, PROFESSION_NAME, hoursKnown, jerusalemNow, longDateHe, openState, openingHoursSpec, parseHours, priceParts, relHe, servicePrice,
   type DayHours, type OpenState, type PractitionerProfession, type PriceView,
@@ -287,27 +290,36 @@ export async function similarBusinesses(p: PublicProfile, mainCategory: string |
 // ---------- SEO ----------
 
 /**
- * The page title. An owner's own title (claimed listing) is kept; every other listing gets the one
- * shape built to win searches for the business itself: name, city, main category, prices and reviews.
+ * The page title: "{seoName} ב{city}: {short category}" (the layout appends " | BeautyFind"), under 60
+ * characters. An owner's own title (claimed listing) is kept.
  */
 export function metaTitle(p: PublicProfile, v: ProfileView): string {
   if (p.isClaimed && p.metaTitle && p.metaTitle.trim().length >= 10) return p.metaTitle.trim().slice(0, 70);
-  return listingTitle({ name: p.name, city: p.cityName, category: v.cats[0]?.name ?? null });
+  const cat = v.cats[0];
+  return listingTitle({ name: p.name, city: p.cityName, category: cat ? CATEGORY_SHORT[cat.slug] ?? cat.name : null });
 }
 
+/**
+ * 130 to 155 characters from facts: name, city, the first treatments, the Google rating with its count,
+ * and the action. A saved override (60+ characters) wins.
+ */
 export function metaDescription(p: PublicProfile, v: ProfileView): string {
   if (p.metaDescription && p.metaDescription.trim().length >= 60) return p.metaDescription.trim().slice(0, 170);
-  const cats = v.cats.map(c => c.name).join(', ');
-  const parts = [`${p.name} ב${p.cityName}${cats ? `: ${cats}` : ''}.`];
-  if (v.google && v.google.count > 0) parts.push(`דירוג ${v.google.rating.toFixed(1)} בגוגל על סמך ${reviewsLabel(v.google.count)}.`);
-  if (p.beautyfind) parts.push(`${reviewsLabel(p.beautyfind.count)} ב־BeautyFind אחרי ביקור מאומת.`);
-  if (p.treatments.length) parts.push(`${p.treatments.slice(0, 3).map(t => t.name).join(', ')}${p.treatments.length > 3 ? ' ועוד' : ''}.`);
-  if (v.responsible) parts.push(`${v.responsible.label}: ${v.responsible.name}.`);
-  if (p.description) parts.push(p.description.replace(/\s+/g, ' ').trim());
-  const text = parts.join(' ').replace(/\s+/g, ' ').trim();
-  if (text.length <= 160) return text;
-  const cut = text.slice(0, 159);
-  return `${cut.slice(0, cut.lastIndexOf(' ') > 120 ? cut.lastIndexOf(' ') : 159).trim()}…`;
+  const name = seoName(p.name);
+  const city = seoCityName(p.cityName);
+  const cat = v.cats[0];
+  const treatments = p.treatments.slice(0, 3).map(t => t.name);
+  const g = v.google && v.google.count > 0 ? v.google : null;
+  return composeDescription(
+    [
+      `${name} ב${city}${cat ? `: ${CATEGORY_SHORT[cat.slug] ?? cat.name}` : ''}.`,
+      treatments.length ? `${treatments.join(', ')}${p.treatments.length > 3 ? ' ועוד' : ''}.` : null,
+      g ? `דירוג ${g.rating.toFixed(1)} בגוגל (${reviewsLabel(g.count)}).` : null,
+      v.responsible ? `${v.responsible.label}: ${v.responsible.name}.` : null,
+      'השוו מחירים וקבעו תור ב־BeautyFind.',
+    ],
+    [p.address ? `הכתובת: ${p.address}.` : '', v.hoursKnown ? 'שעות פעילות, טלפון וניווט בעמוד.' : 'טלפון, וואטסאפ וניווט בעמוד.', 'פרטי קשר ומחירים כפי שהעסק פרסם.'],
+  );
 }
 
 /**

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { publicMetadata } from '@/lib/seo/meta';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaqAccordion } from '@/components/faq/FaqAccordion';
@@ -17,12 +18,7 @@ import styles from './page.module.css';
 const TITLE = 'רישום עסק באינדקס ופרסום למכוני יופי וקליניקות';
 const DESCRIPTION = `פרסום עסק ב־BeautyFind, אינדקס מכוני היופי והקליניקות לאסתטיקה בישראל: פרופיל מאומת, מחירון, ביקורות ומערכת זימון תורים. מ־${nis(PLAN_MONTHLY_NIS.basic)} לסניף בחודש, בלי עמלות.`;
 
-const BASE: Metadata = {
-  title: TITLE,
-  description: DESCRIPTION,
-  alternates: { canonical: '/for-business' },
-  openGraph: { type: 'website', locale: 'he_IL', url: '/for-business', siteName: 'BeautyFind', title: TITLE, description: DESCRIPTION, images: ['/assets/hero-clinic.jpg'] },
-};
+const BASE: Metadata = publicMetadata({ path: '/for-business', title: TITLE, description: DESCRIPTION, image: '/assets/hero-clinic.jpg' });
 export const generateMetadata = () => applySeo('/for-business', BASE);
 
 const PROOF = [

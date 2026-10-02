@@ -584,11 +584,12 @@ describe('import coverage per city and category', async () => {
 
 describe('listing page title', async () => {
   const { listingTitle, nameSays } = await import('../../src/lib/seo/listingTitle');
-  it('puts the name, the city and the main category first, then prices and reviews, within 60 characters', () => {
-    const t = listingTitle({ name: 'סלון אהוד אלבז', city: 'חיפה', category: 'מספרות ועיצוב שיער' });
-    assert.ok(t.startsWith('סלון אהוד אלבז חיפה: מספרות ועיצוב שיער'), t);
-    assert.ok(t.length <= 60, t);
-    assert.ok(/מחירים/.test(t), t);
+  it('is "{name} ב{city}: {category}" and leaves room for the brand suffix within 60 characters', () => {
+    const t = listingTitle({ name: 'סלון אהוד אלבז', city: 'חיפה', category: 'מספרה' });
+    assert.equal(t, 'סלון אהוד אלבז בחיפה: מספרה');
+    assert.ok(`${t} | BeautyFind`.length <= 60, t);
+    const stripped = listingTitle({ name: 'מספרת רון | מספרה בחיפה, תספורות, צבע, פן', city: 'חיפה', category: 'מספרה' });
+    assert.equal(stripped, 'מספרת רון בחיפה: מספרה');
   });
   it('does not repeat a city or category the name already carries, and shortens long names', () => {
     assert.ok(nameSays('מספרת חיפה', 'חיפה'));
@@ -598,9 +599,10 @@ describe('listing page title', async () => {
     const t = listingTitle({ name: 'מספרת חיפה', city: 'חיפה', category: 'מספרות ועיצוב שיער' });
     assert.ok(!/חיפה.*חיפה/.test(t), t);
     const long = listingTitle({ name: 'המרכז הבינלאומי לרפואה אסתטית ולכירורגיה פלסטית של פרופסור ישראלי', city: 'תל אביב–יפו', category: 'כירורגיה פלסטית' });
-    assert.ok(long.length <= 60, long);
+    assert.ok(`${long} | BeautyFind`.length <= 60, long);
     assert.ok(long.startsWith('המרכז הבינלאומי'), long);
-    assert.equal(listingTitle({ name: 'Nail Bar', city: null, category: null }), 'Nail Bar | מחירים, ביקורות ושעות פתיחה');
+    assert.ok(!long.includes('–'), 'titles use a plain hyphen for תל אביב-יפו');
+    assert.equal(listingTitle({ name: 'Nail Bar', city: null, category: null }), 'Nail Bar');
   });
 });
 

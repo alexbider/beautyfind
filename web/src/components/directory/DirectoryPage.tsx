@@ -17,6 +17,8 @@ import { applySeo } from '@/lib/server/seo';
 import { GuideExpander } from './GuideExpander';
 import { ListingCard } from './ListingCard';
 import { PAGE, dirHref, hasParams, parseQuery, type DirQuery } from './params';
+import { composeDescription, publicMetadata } from '@/lib/seo/meta';
+import { seoCityName } from '@/lib/seo/seoName';
 import { ResultsShell } from './ResultsShell';
 import { SidebarFaq } from './SidebarFaq';
 import styles from './Directory.module.css';
@@ -61,31 +63,30 @@ export async function directoryMetadata(params: DirParams, searchParams: DirSear
   const s = await resolveScope(params);
   const q = parseQuery(await searchParams);
   const o = await getOverview(s.region.slug, s.city.slug, s.category?.slug);
-  const where = `ב${s.city.name}`;
-  const title = s.category ? `${SEO_TERM[s.category.slug] ?? s.category.name} ${where}` : `מכוני יופי ואסתטיקה ${where}`;
+  const where = `ב${seoCityName(s.city.name)}`;
+  // "{noun} ב{city}: מחירים והשוואה | BeautyFind"; the layout appends the brand.
+  const title = s.category ? `${SEO_TERM[s.category.slug] ?? s.category.name} ${where}: מחירים והשוואה` : `מכוני יופי ואסתטיקה ${where}: מחירים והשוואה`;
+  const verifiedPart =
+    o.verified === 0 ? null : o.total === 1 ? 'העסק מאומת.' : o.verified === o.total ? 'כולם מאומתים.' : o.verified === 1 ? 'אחד מהם מאומת.' : `${fmtNum(o.verified)} מהם מאומתים.`;
+  const ownPrice = s.category ? o.prices.find(p => p.slug === s.category!.slug && !p.fromRegion) : null;
   const description =
     o.total === 0
-      ? s.category
-        ? `עדיין אין עסקים ל${s.category.name} ${where}. עסקים בערים סמוכות באזור ${s.region.name}, ורישום עסק חדש ב־BeautyFind.`
-        : `עדיין אין עסקים רשומים ${where}. עסקים בערים סמוכות באזור ${s.region.name}, ורישום עסק חדש ב־BeautyFind.`
-      : `${countText(o.total, BIZ)}${s.category ? ` ל${s.category.name}` : ' ליופי, אסתטיקה וקוסמטיקה'} ${where}` +
-        (o.verified === 0
-          ? ''
-          : o.total === 1
-            ? ', מאומת'
-            : o.verified === o.total
-              ? ', כולם מאומתים'
-              : o.verified === 1
-                ? ', אחד מהם מאומת'
-                : `, מתוכם ${fmtNum(o.verified)} מאומתים`) +
-        `. דירוג Google וביקורות BeautyFind בנפרד, מחירים אמצעיים ${BOOKING_LIVE ? 'וקביעת תור אונליין בעסקים שמציעים אותה' : 'ופנייה ישירה לעסק'}.`;
-  return applySeo(s.path, {
-    title,
-    description,
-    alternates: { canonical: s.path },
-    robots: o.total === 0 || hasParams(q) ? { index: false, follow: true } : undefined,
-    openGraph: { title, description, url: s.path, locale: 'he_IL', type: 'website', images: [`/assets/region-${s.region.slug}.jpg`] },
-  });
+      ? composeDescription(
+          [s.category ? `עדיין אין עסקים ל${s.category.name} ${where}.` : `עדיין אין עסקים רשומים ${where}.`, `עסקים בערים סמוכות באזור ${s.region.name}, ורישום עסק חדש ב־BeautyFind.`],
+          ['השוו מחירים וקבעו תור.'],
+        )
+      : composeDescription(
+          [
+            `${countText(o.total, BIZ)}${s.category ? ` ל${SEO_TERM[s.category.slug] ?? s.category.name}` : ' ליופי, אסתטיקה וקוסמטיקה'} ${where}.`,
+            verifiedPart,
+            o.medianGoogle != null ? `דירוג Google אמצעי ${o.medianGoogle.toFixed(1)}.` : null,
+            ownPrice ? `מחיר אמצעי ${nis(ownPrice.price)}.` : null,
+            'דירוג Google וביקורות BeautyFind בנפרד.',
+            'השוו מחירים וקבעו תור.',
+          ],
+          [`${BOOKING_LIVE ? 'קביעת תור אונליין בעסקים שמציעים אותה' : 'פנייה ישירה לעסק'} ומחירים אמצעיים לפי תחום.`, 'הסדר אינו נמכר: לפי אימות, דירוג ומספר ביקורות.'],
+        );
+  return applySeo(s.path, publicMetadata({ path: s.path, title, description, image: `/assets/region-${s.region.slug}.jpg`, noindex: o.total === 0 || hasParams(q) }));
 }
 
 // ---------- JSON-LD ----------

@@ -26,6 +26,7 @@ import s from '@/components/search/search.module.css';
 import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { CATEGORIES, MENU_REGION_ORDER, regionBySlug } from '@/lib/catalog';
 import { listBranches, listingCounts, type ListingFilter } from '@/lib/server/public';
+import { publicMetadata } from '@/lib/seo/meta';
 import { cardExtras } from './extras';
 import p from './page.module.css';
 
@@ -37,13 +38,8 @@ const DESCRIPTION = 'חיפוש מכוני יופי, אסתטיקה וקוסמט
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const st = parseSearch(await searchParams);
-  return {
-    title: headline(st),
-    description: DESCRIPTION,
-    // Search result pages are not indexed; the region, city and category pages are the canonical ones.
-    robots: { index: false, follow: true },
-    alternates: { canonical: '/search' },
-  };
+  // Search result pages (and every query variant) are noindex,follow; the region, city and category pages are the canonical ones.
+  return publicMetadata({ path: '/search', title: headline(st), description: DESCRIPTION, noindex: true });
 }
 
 const SORT_LINE: Record<SearchState['sort'], string> = {

@@ -17,23 +17,8 @@ export const RESULTS = { one: 'תוצאה אחת', two: 'שתי תוצאות', m
 export const CITIES_N = { one: 'עיר אחת', two: 'שתי ערים', many: 'ערים' };
 export const FIELDS_N = { one: 'תחום אחד', two: 'שני תחומים', many: 'תחומים' };
 
-/** Search-intent phrase per category for <title> ("קוסמטיקאיות בתל אביב–יפו"). */
-export const SEO_TERM: Record<string, string> = {
-  facials: 'קוסמטיקאיות',
-  'medical-aesthetics': 'מרפאות אסתטיקה',
-  'plastic-surgery': 'כירורגיה פלסטית',
-  'dental-aesthetics': 'אסתטיקה דנטלית',
-  'hair-restoration': 'השתלות שיער',
-  'hair-salons': 'מספרות',
-  'hair-removal': 'הסרת שיער',
-  'brows-lashes': 'גבות וריסים',
-  makeup: 'מאפרות',
-  'permanent-makeup': 'איפור קבוע',
-  nails: 'מניקור ופדיקור',
-  'spa-massage': 'ספא ועיסויים',
-  'body-contouring': 'עיצוב וחיטוב הגוף',
-  tanning: 'שיזוף',
-};
+/** Search-intent noun per category for <title> ("קוסמטיקאיות בתל אביב-יפו"); src/lib/seo/terms.ts. */
+export { SEO_TERM } from '@/lib/seo/terms';
 
 const TZ = 'Asia/Jerusalem';
 /** "16 בספטמבר 2026" */

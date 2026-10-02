@@ -1,9 +1,11 @@
-// The <title> of a business profile. Built to win the searches people make for the business itself:
-// the exact business name first, then the city, then the main category and the words a searcher adds
-// (prices, reviews, opening hours). Deterministic, so every listing gets the same shape and a rewrite
-// never drifts. The site's layout appends " | BeautyFind".
+// The <title> of a business profile: "{seoName} ב{city}: {short category} | BeautyFind", under 60
+// characters with the brand. Deterministic, so every listing gets the same shape and a rewrite never
+// drifts. The site's layout appends " | BeautyFind"; this module returns the part before it.
 
-export const TITLE_MAX = 60;
+import { capWords, seoCityName, seoName } from './seoName';
+import { BRAND_SUFFIX, TITLE_MAX } from './terms';
+
+export { TITLE_MAX };
 
 /** Letters only, lower case, for "does the name already say this" checks. */
 const bare = (s: string) => s.toLowerCase().replace(/[^a-z0-9א-ת]+/g, ' ').trim();
@@ -23,22 +25,17 @@ export function nameSays(name: string, what: string | null | undefined): boolean
 }
 
 /**
- * Title candidates from the fullest to the shortest; the first within `max` characters wins. The city
- * and the category are skipped when the name already contains them, so "מספרת חיפה" never becomes
- * "מספרת חיפה חיפה".
+ * "{seoName} ב{city}: {category}", then without the category, then without the city, each tried until
+ * the whole title with the brand suffix fits TITLE_MAX. The city and the category are skipped when the
+ * name already says them, so "מספרת חיפה" never becomes "מספרת חיפה בחיפה".
  */
 export function listingTitle(b: { name: string; city: string | null; category: string | null }, max = TITLE_MAX): string {
-  const name = b.name.replace(/\s+/g, ' ').trim();
-  const city = b.city && !nameSays(name, b.city) ? b.city.replace(/\s+/g, ' ').trim() : null;
+  const room = max - BRAND_SUFFIX.length;
+  const name = seoName(b.name);
+  const city = b.city && !nameSays(name, b.city) ? seoCityName(b.city.replace(/\s+/g, ' ').trim()) : null;
   const cat = b.category && !nameSays(name, b.category) ? b.category.trim() : null;
-  const head = city ? `${name} ${city}` : name;
-  const tiers = [
-    cat ? `${head}: ${cat} | מחירים, ביקורות ושעות פתיחה` : `${head} | מחירים, ביקורות ושעות פתיחה`,
-    cat ? `${head}: ${cat} | מחירים וביקורות` : `${head} | מחירים וביקורות`,
-    cat ? `${head}: ${cat}` : `${head} | ביקורות`,
-    head,
-    name,
-  ];
-  for (const t of tiers) if (t.length <= max) return t;
-  return name.slice(0, max).replace(/\s+\S*$/, '').trim() || name.slice(0, max);
+  const head = city ? `${name} ב${city}` : name;
+  const tiers = [cat ? `${head}: ${cat}` : head, head, name];
+  for (const t of tiers) if (t.length <= room) return t;
+  return capWords(name, room) || name.slice(0, room);
 }

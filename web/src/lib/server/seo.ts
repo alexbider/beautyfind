@@ -29,10 +29,12 @@ export async function applySeo(path: string, base: Metadata, opts: { noindex?: b
   if (o?.title) {
     out.title = { absolute: o.title };
     if (out.openGraph) out.openGraph = { ...out.openGraph, title: o.title };
+    if (out.twitter) out.twitter = { ...out.twitter, title: o.title };
   }
   if (o?.description) {
     out.description = o.description;
     if (out.openGraph) out.openGraph = { ...out.openGraph, description: o.description };
+    if (out.twitter) out.twitter = { ...out.twitter, description: o.description };
   }
   if (o?.noindex || opts.noindex || !pathIndexable(policy, path)) out.robots = { index: false, follow: true };
   return out;

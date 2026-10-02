@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://beautyfind.co.il'),
   title: { default: 'BeautyFind', template: '%s | BeautyFind' },
   applicationName: 'BeautyFind',
+  // Shared share-card defaults; every public page sets its own title, description and image on top (src/lib/seo/meta.ts).
+  openGraph: { type: 'website', locale: 'he_IL', siteName: 'BeautyFind', images: ['/assets/hero-clinic.jpg'] },
+  twitter: { card: 'summary_large_image', images: ['/assets/hero-clinic.jpg'] },
   appleWebApp: { capable: true, title: 'BeautyFind', statusBarStyle: 'default' },
   formatDetection: { telephone: false },
 };

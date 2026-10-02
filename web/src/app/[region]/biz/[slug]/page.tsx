@@ -27,6 +27,7 @@ import { vatRatePct } from '@/lib/server/vat';
 import { PRICES_INCLUDE_VAT } from '@/lib/features';
 import { applySeo } from '@/lib/server/seo';
 import { buildView, jsonLd, ldJson, metaDescription, metaTitle, reviewsLabel, similarBusinesses, type ProfileView as View } from './data';
+import { publicMetadata } from '@/lib/seo/meta';
 import btn from '@/components/profile/buttons.module.css';
 import rv from '@/components/profile/Reviews.module.css';
 import styles from './page.module.css';
@@ -48,12 +49,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = metaTitle(p, v);
   const description = metaDescription(p, v);
   // Section switch and per-listing noindex (staff, branch editor) come through applySeo.
-  return applySeo(p.href, {
-    title,
-    description,
-    alternates: { canonical: p.href },
-    openGraph: { title, description, url: p.href, type: 'website', locale: 'he_IL', siteName: 'BeautyFind', ...(v.photos[0] ? { images: [{ url: v.photos[0].url, alt: v.photos[0].alt }] } : {}) },
-  }, { noindex: p.noindex });
+  return applySeo(p.href, publicMetadata({ path: p.href, title, description, image: v.photos[0] ? { url: v.photos[0].url, alt: v.photos[0].alt } : null }), { noindex: p.noindex });
 }
 
 const FACT_ICONS: Record<string, string[]> = {

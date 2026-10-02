@@ -14,6 +14,7 @@ import { CATEGORIES, CITIES, GROUP_ORDER, MENU_REGION_ORDER, citiesOf, regionByS
 import { nis } from '@/lib/format';
 import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
 import { listingCounts, medianPrices } from '@/lib/server/public';
+import { composeDescription, publicMetadata } from '@/lib/seo/meta';
 import styles from './page.module.css';
 
 // Design: project/BeautyFind Treatments.dc.html
@@ -23,11 +24,11 @@ export const revalidate = 600;
 export async function generateMetadata(): Promise<Metadata> {
   const counts = await listingCounts();
   const lead = counts.total > 0 ? `${countText(counts.total, 'עסק אחד', 'עסקים')} ב־7 אזורים` : '7 אזורים';
-  return applySeo('/treatments', {
-    title: '14 תחומי טיפול',
-    description: `14 תחומי הטיפול באינדקס BeautyFind: ${lead}, מחירים אמצעיים בשקלים ומי מורשה לבצע כל טיפול בישראל.`,
-    alternates: { canonical: '/treatments' },
-  });
+  return applySeo('/treatments', publicMetadata({
+    path: '/treatments',
+    title: '14 תחומי טיפול: מחירים והשוואה',
+    description: composeDescription([`14 תחומי הטיפול באינדקס BeautyFind: ${lead}.`, 'מחירים אמצעיים בשקלים ומי מורשה לבצע כל טיפול בישראל.', 'השוו מחירים וקבעו תור.'], ['מאסתטיקה רפואית ועד מספרות, ציפורניים וספא.']),
+  }));
 }
 
 export default async function TreatmentsPage() {

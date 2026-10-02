@@ -7,6 +7,7 @@ import type { ImportedTreatment } from '@/lib/import/rules';
 import { chooseVideos, type VideoRecord } from '@/lib/import/youtube';
 import type { MediaProvenance } from '@/lib/server/importMedia';
 import { listingTitle } from '@/lib/seo/listingTitle';
+import { CATEGORY_SHORT } from '@/lib/seo/terms';
 
 // What an import record contributes to a listing, shared by approve, merge and enhance:
 // services with their real price states, the profile facts with evidence, the editorial draft, and the
@@ -99,7 +100,7 @@ export function profileFields(p: ImportPlace, opts: { maxVideos: number }): Prof
     attributes: attributes as unknown as Prisma.InputJsonValue,
     // The page title follows one shape for every listing (name, city, main category, then prices and
     // reviews) so it wins searches for the business itself; the writer's title stays in the draft only.
-    metaTitle: listingTitle({ name: p.name, city: p.cityName, category: CATEGORIES.find(c => c.slug === p.categories[0])?.name ?? null }),
+    metaTitle: listingTitle({ name: p.name, city: p.cityName, category: p.categories[0] ? CATEGORY_SHORT[p.categories[0]] ?? CATEGORIES.find(c => c.slug === p.categories[0])?.name ?? null : null }),
     ...(ed ? { editorial: { ...ed, ownerApproved: false, appliedAt: new Date().toISOString() } as unknown as Prisma.InputJsonValue, metaDescription: ed.metaDescription.slice(0, 170) } : {}),
   };
 }
