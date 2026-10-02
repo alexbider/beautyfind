@@ -12,6 +12,7 @@
 //   role="presentation"), every <img> with width and height (or a fill-style size), no skipped heading level;
 // - visible text and JSON-LD descriptions scanned for the text rules (sentences about missing data, English
 //   inside Hebrew, em dashes, emoji) from src/lib/import/textRules.ts;
+// - straight-quote Hebrew abbreviations (ד"ר, דוא"ל, ג'ל) that should be gershayim and geresh;
 // - profile and city + category meta descriptions checked against src/lib/seo/metaRules.ts: 130 to 155
 //   characters, nothing about missing data, booking, contact channels or "phone only", no ratings line;
 // - the internal link graph: profiles with fewer than three inbound links from other pages.
@@ -19,7 +20,7 @@
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { textProblems } from '../src/lib/import/textRules';
+import { STRAIGHT_QUOTE_ABBREVIATION, textProblems } from '../src/lib/import/textRules';
 import { SITE_ORIGIN } from '../src/lib/seo/meta';
 import { metaDescriptionProblems } from '../src/lib/seo/metaRules';
 
@@ -61,7 +62,7 @@ interface PageReport {
   ogOk: boolean;
   jsonLd: { blocks: number; parseErrors: number; types: string[]; expectedOk: boolean; duplicateIds: string[] };
   images: { total: number; missingAlt: number; emptyAltNotDecorative: number; missingSize: number };
-  text: { missingInfo: number; latin: string[]; dashes: number; emoji: number; spelling: number };
+  text: { missingInfo: number; latin: string[]; dashes: number; emoji: number; spelling: number; straightQuotes: number };
   internalLinks: string[];
 }
 
@@ -217,6 +218,8 @@ function analyse(path: string, status: number, redirectTo: string | null, html: 
   const problems = textProblems(`${text}\n${descriptions.join('\n')}`, UI_LATIN, { strict: false });
   const emDashes = (text.match(/\u2014/g) ?? []).length + descriptions.reduce((n, d) => n + (d.match(/\u2014/g) ?? []).length, 0);
   const latin = [...new Set(problems.filter(p => p.code === 'latin').map(p => p.match))];
+  const quoteRe = new RegExp(STRAIGHT_QUOTE_ABBREVIATION.source, 'gu');
+  const straightQuotes = (`${title}\n${description}\n${text}\n${descriptions.join('\n')}`.match(quoteRe) ?? []).length;
   const h1Count = tags(html, 'h1').length;
   const internalLinks = [...new Set(tags(html, 'a').map(t => toPath(attr(t, 'href') ?? '')).filter((p): p is string => !!p))];
   const brand = /BeautyFind/.test(title);
@@ -247,7 +250,7 @@ function analyse(path: string, status: number, redirectTo: string | null, html: 
     ogOk: Object.values(og).every(Boolean),
     jsonLd: { blocks: ldBlocks.length, parseErrors, types, expectedOk, duplicateIds: dupIds },
     images: { total: imgs.length, missingAlt, emptyAltNotDecorative, missingSize },
-    text: { missingInfo: problems.filter(p => p.code === 'missing_info').length, latin, dashes: emDashes, emoji: problems.filter(p => p.code === 'emoji').length, spelling: problems.filter(p => p.code === 'spelling').length },
+    text: { missingInfo: problems.filter(p => p.code === 'missing_info').length, latin, dashes: emDashes, emoji: problems.filter(p => p.code === 'emoji').length, spelling: problems.filter(p => p.code === 'spelling').length, straightQuotes },
     internalLinks,
   };
 }
@@ -325,6 +328,7 @@ async function main() {
     textLatin: sm.reduce((n, p) => n + p.text.latin.length, 0),
     textDashes: sm.reduce((n, p) => n + p.text.dashes, 0),
     textEmoji: sm.reduce((n, p) => n + p.text.emoji, 0),
+    textStraightQuotes: sm.reduce((n, p) => n + p.text.straightQuotes, 0),
     linksToRedirectingUrls: linksToRedirects.size,
     pagesLinkingToRedirects: redirecting.length,
     profiles: profiles.length,
@@ -353,6 +357,7 @@ async function main() {
     ['Text: English words inside Hebrew (distinct per page)', summary.textLatin],
     ['Text: em dashes', summary.textDashes],
     ['Text: emoji', summary.textEmoji],
+    ['Text: straight-quote abbreviations (ד"ר, דוא"ל, ג\'ל)', summary.textStraightQuotes],
     ['Internal links pointing at redirecting URLs', summary.linksToRedirectingUrls],
     ['Profiles with fewer than 3 inbound links', `${summary.profilesUnder3Inbound}/${summary.profiles}`],
   ];
@@ -376,6 +381,7 @@ async function main() {
       ['Text: missing-data sentences', b.textMissingInfo, summary.textMissingInfo],
       ['Text: English inside Hebrew', b.textLatin, summary.textLatin],
       ['Text: dashes', b.textDashes, summary.textDashes],
+      ['Text: straight-quote abbreviations', b.textStraightQuotes ?? 'n/a', summary.textStraightQuotes],
       ['Links to redirecting URLs', b.linksToRedirectingUrls, summary.linksToRedirectingUrls],
       ['Profiles under 3 inbound links', b.profilesUnder3Inbound, summary.profilesUnder3Inbound],
     ];

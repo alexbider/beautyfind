@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { checkOutput, repairMessage, templateDraft, textRuleViolations, type EvidencePacket } from '../../src/lib/import/editorial';
-import { latinInsideHebrew, normalizeHebrew, textProblems } from '../../src/lib/import/textRules';
+import { STRAIGHT_QUOTE_ABBREVIATION, latinInsideHebrew, normalizeHebrew, textProblems } from '../../src/lib/import/textRules';
 
 const codes = (t: string, allow: string[] = []) => textProblems(t, allow).map(p => p.code);
 
@@ -42,6 +42,9 @@ describe('text rules', () => {
     assert.ok(codes('אפשר לפנות בווטסאפ').includes('spelling'));
     assert.deepEqual(codes('אפשר לפנות בוואטסאפ'), []);
     assert.equal(normalizeHebrew('ד"ר כהן, מע"מ, 30 דק\', המצויין, בווטסאפ'), 'ד״ר כהן, מע״מ, 30 דק׳, המצוין, בוואטסאפ');
+    assert.equal(normalizeHebrew('דוא"ל, אא"ג, ד"ר לוי, לק ג\'ל, ד\'\'ר חנקין, ד”ר חסן, ג’ל'), 'דוא״ל, אא״ג, ד״ר לוי, לק ג׳ל, ד״ר חנקין, ד״ר חסן, ג׳ל');
+    assert.equal(normalizeHebrew('מכון "גזום" פתוח'), 'מכון "גזום" פתוח', 'quotes around a word stay');
+    assert.ok(STRAIGHT_QUOTE_ABBREVIATION.test('פנו בדוא"ל') && STRAIGHT_QUOTE_ABBREVIATION.test("לק ג'ל") && !STRAIGHT_QUOTE_ABBREVIATION.test('פנו בדוא״ל'));
   });
 
   it('the writer checks carry the text rules and the repair message names them', () => {

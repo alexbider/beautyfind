@@ -19,7 +19,7 @@ import { DESCRIPTION_MAX, DESCRIPTION_MIN, composeDescription } from '../seo/met
 import { META_ACTION, metaDescriptionProblems } from '../seo/metaRules';
 import { hebrewTreatmentNames } from '../seo/treatmentNames';
 import type { DayHours, ImportedTreatment } from './rules';
-import { problemCode, textProblems } from './textRules';
+import { normalizeHebrew, problemCode, textProblems } from './textRules';
 
 export const PROMPT_VERSION = '2026-10-02.1';
 /** Below this a draft is "thin": stored and flagged, applied only to a listing without a description. */
@@ -328,6 +328,19 @@ export function packetNumbers(p: EvidencePacket): Set<string> {
 
 const NAME_TITLE = /(ד["״]?ר|דר['׳]|פרופ['׳]?)\s+([א-ת]+(?:\s+[א-ת]+)?)/g;
 
+/** Hebrew typography fixed in place on every string of a draft (gershayim, geresh, house spellings), before the checks and before storage. */
+export function normalizeOutput(o: EditorialOutput): EditorialOutput {
+  return {
+    ...o,
+    description: normalizeHebrew(o.description),
+    faqs: o.faqs.map(f => ({ ...f, q: normalizeHebrew(f.q), a: normalizeHebrew(f.a) })),
+    metaTitle: normalizeHebrew(o.metaTitle),
+    metaDescription: normalizeHebrew(o.metaDescription),
+    serviceSummaries: o.serviceSummaries.map(s => ({ ...s, name: s.name, summary: normalizeHebrew(s.summary) })),
+    missing: o.missing.map(normalizeHebrew),
+  };
+}
+
 /** The published text of a draft: what the text rules apply to. */
 export const publishedText = (o: EditorialOutput) => [o.description, ...o.faqs.flatMap(f => [f.q, f.a]), o.metaTitle, o.metaDescription, ...o.serviceSummaries.map(s => s.summary)].join('\n');
 
@@ -554,7 +567,7 @@ export function templateDraft(p: EvidencePacket): EditorialOutput {
     ],
     [cats[1] ? `גם ${cats[1]}.` : '', `כל הטיפולים והמחירים של ${p.name} במקום אחד.`, cats[0] ? `${cats[0]}${where} להשוואה.` : ''],
   );
-  return {
+  return normalizeOutput({
     heading: headingOf(),
     description,
     faqs: faqs.slice(0, FAQ_MAX),
@@ -563,7 +576,7 @@ export function templateDraft(p: EvidencePacket): EditorialOutput {
     serviceSummaries: [],
     insufficientEvidence: words < WORDS_MIN,
     missing,
-  };
+  });
 }
 
 /** What each category is for, in plain words (the template's "practical purpose" of the services). */

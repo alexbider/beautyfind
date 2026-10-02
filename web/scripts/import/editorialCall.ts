@@ -8,8 +8,7 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
-import { checkOutput, OUTPUT_SCHEMA, PROMPT_VERSION, repairable, repairMessage, SYSTEM_PROMPT, templateDraft, textRuleViolations, userMessage, type EditorialOutput, type EvidencePacket } from '../../src/lib/import/editorial';
-import { normalizeHebrew } from '../../src/lib/import/textRules';
+import { checkOutput, normalizeOutput, OUTPUT_SCHEMA, PROMPT_VERSION, repairable, repairMessage, SYSTEM_PROMPT, templateDraft, textRuleViolations, userMessage, type EditorialOutput, type EvidencePacket } from '../../src/lib/import/editorial';
 import { openaiErrorKind } from '../../src/lib/import/openai';
 import { editorialCostUsd, pricing } from '../../src/lib/import/pricing';
 import { responses } from './providers/openai';
@@ -116,17 +115,8 @@ async function onceOpenAI(turns: Turn[]): Promise<Once> {
 
 const onceClaude = (turns: Turn[]): Promise<Once> => once(turns.map(t => ({ role: t.role, content: t.content })) as Anthropic.MessageParam[]);
 
-/** Hebrew typography fixed in place on every string the writer returns (gershayim, geresh, house spellings). */
-function tidy(o: EditorialOutput): EditorialOutput {
-  return {
-    ...o,
-    description: normalizeHebrew(o.description),
-    faqs: o.faqs.map(f => ({ ...f, q: normalizeHebrew(f.q), a: normalizeHebrew(f.a) })),
-    metaTitle: normalizeHebrew(o.metaTitle),
-    metaDescription: normalizeHebrew(o.metaDescription),
-    serviceSummaries: o.serviceSummaries.map(s => ({ ...s, summary: normalizeHebrew(s.summary) })),
-  };
-}
+/** Hebrew typography fixed in place on every string the writer returns (src/lib/import/editorial.ts normalizeOutput). */
+const tidy = normalizeOutput;
 
 /**
  * One generation call, then one repair call when the checks find something a rewrite can fix. When the text

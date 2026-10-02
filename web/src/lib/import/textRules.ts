@@ -95,12 +95,23 @@ export function textProblems(text: string, allow: string[] = [], opts: { strict?
   return out;
 }
 
-/** Hebrew typography that is safe to fix in place: ASCII quotes inside Hebrew words become gershayim and geresh, house spellings applied. */
+/**
+ * Hebrew typography that is safe to fix in place, applied to every generated or stored Hebrew text before
+ * it is published: a straight or curly double quote (or two single quotes) inside a Hebrew word becomes
+ * gershayim (דוא"ל -> דוא״ל, אא"ג -> אא״ג, ד"ר -> ד״ר, ד''ר -> ד״ר), a straight or curly single quote
+ * inside or at the end of a Hebrew word becomes a geresh (ג'ל -> ג׳ל, דק' -> דק׳), and the house
+ * spellings are applied. Quotes around a word ("גזום") are left alone.
+ */
 export function normalizeHebrew(text: string): string {
-  let t = text.replace(/([א-ת])"([א-ת])/gu, '$1״$2').replace(/([א-ת])'(?=[א-ת\s,.;:)]|$)/gu, '$1׳');
+  let t = text
+    .replace(/([א-ת])(?:"|''|“|”|״)([א-ת])/gu, '$1״$2')
+    .replace(/([א-ת])(?:'|‘|’)(?=[א-ת\s,.;:)!?]|$)/gu, '$1׳');
   for (const s of SPELLING_PATTERNS) t = t.replace(s.re, s.fix);
   return t;
 }
+
+/** A straight-quote abbreviation that normalizeHebrew would fix: ד"ר, דוא"ל, ג'ל, דק'. */
+export const STRAIGHT_QUOTE_ABBREVIATION = /[א-ת](?:"|''|“|”)[א-ת]|[א-ת](?:'|‘|’)(?=[א-ת\s,.;:)!?]|$)/u;
 
 /** Short codes for violation lists and reports: text:missing_info:לא פורסם */
 export const problemCode = (p: TextProblem) => `text:${p.code}:${p.match}`;

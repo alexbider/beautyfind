@@ -3,6 +3,7 @@ import { Prisma, type ImportPlace } from '@prisma/client';
 import { CATEGORY_IMAGE } from '@/components/home/content';
 import { CATEGORIES } from '@/lib/catalog';
 import { composeDescription } from '@/lib/import/completeness';
+import { normalizeHebrew } from '@/lib/import/textRules';
 import type { ImportedTreatment } from '@/lib/import/rules';
 import { serviceKey } from '@/lib/import/services';
 import type { ImportSettings } from '@/lib/import/settings';
@@ -56,7 +57,7 @@ export async function enhanceBranch(branchId: string, p: ImportPlace, s: ImportS
   if (text.description && text.description !== b.description) set('description', text.description, 'description');
   else if (!b.description) {
     const d = p.description ?? composeDescription(p);
-    if (d) set('description', d, 'description');
+    if (d) set('description', normalizeHebrew(d), 'description');
   }
   if (text.faqs) set('faqs', text.faqs, 'faqs');
   else if ((!Array.isArray(b.faqs) || !b.faqs.length) && Array.isArray(p.faqs) && p.faqs.length) set('faqs', p.faqs as Prisma.InputJsonValue, 'faqs');

@@ -3,6 +3,7 @@ import type { Branch, ImportPlace, Prisma } from '@prisma/client';
 import { CATEGORIES } from '@/lib/catalog';
 import { coverageOf, type Coverage } from '@/lib/import/coverage';
 import { FAQ_MIN, WORDS_MIN, textRuleViolations, type EditorialRecord } from '@/lib/import/editorial';
+import { normalizeHebrew } from '@/lib/import/textRules';
 import type { ImportedTreatment } from '@/lib/import/rules';
 import { chooseVideos, type VideoRecord } from '@/lib/import/youtube';
 import type { MediaProvenance } from '@/lib/server/importMedia';
@@ -27,8 +28,8 @@ export function treatmentRows(p: ImportPlace, cats: string[]): Prisma.TreatmentC
     const known = t.priceNis != null && t.priceNis > 0;
     const free = t.priceType === 'free';
     return {
-      name: t.name.slice(0, 120),
-      description: summaries.get(t.name.trim().toLowerCase())?.slice(0, 400) ?? t.description?.slice(0, 400) ?? null,
+      name: normalizeHebrew(t.name.slice(0, 120)),
+      description: normalizeHebrew(summaries.get(t.name.trim().toLowerCase())?.slice(0, 400) ?? t.description?.slice(0, 400) ?? ''),
       category: t.category && cats.includes(t.category) ? { connect: { slug: t.category } } : undefined,
       priceType: known ? t.priceType : free ? 'free' : 'on_request',
       priceAgorot: known ? Math.round(t.priceNis! * 100) : free ? 0 : null,
@@ -101,7 +102,7 @@ export function profileFields(p: ImportPlace, opts: { maxVideos: number }): Prof
     // The page title follows one shape for every listing (name, city, main category, then prices and
     // reviews) so it wins searches for the business itself; the writer's title stays in the draft only.
     metaTitle: listingTitle({ name: p.name, city: p.cityName, category: p.categories[0] ? CATEGORY_SHORT[p.categories[0]] ?? CATEGORIES.find(c => c.slug === p.categories[0])?.name ?? null : null }),
-    ...(ed ? { editorial: { ...ed, ownerApproved: false, appliedAt: new Date().toISOString() } as unknown as Prisma.InputJsonValue, metaDescription: ed.metaDescription.slice(0, 170) } : {}),
+    ...(ed ? { editorial: { ...ed, ownerApproved: false, appliedAt: new Date().toISOString() } as unknown as Prisma.InputJsonValue, metaDescription: normalizeHebrew(ed.metaDescription).slice(0, 170) } : {}),
   };
 }
 
@@ -117,8 +118,9 @@ export function editorialText(p: ImportPlace, current: { description: string | n
   const curFaqs = Array.isArray(current?.faqs) ? (current!.faqs as unknown[]).length : 0;
   const complete = editorialComplete(ed);
   const out: { description?: string; faqs?: Prisma.InputJsonValue; heading?: string } = {};
-  if (complete || !current?.description) out.description = ed.description;
-  if (ed.faqs.length >= FAQ_MIN && (complete || curFaqs < FAQ_MIN)) out.faqs = ed.faqs.map(f => ({ q: f.q, a: f.a })) as Prisma.InputJsonValue;
+  // Hebrew typography is fixed on the way in (gershayim, geresh), whatever the draft's age.
+  if (complete || !current?.description) out.description = normalizeHebrew(ed.description);
+  if (ed.faqs.length >= FAQ_MIN && (complete || curFaqs < FAQ_MIN)) out.faqs = ed.faqs.map(f => ({ q: normalizeHebrew(f.q), a: normalizeHebrew(f.a) })) as Prisma.InputJsonValue;
   out.heading = ed.heading;
   return out;
 }

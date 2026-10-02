@@ -42,7 +42,7 @@ export function parseFaqs(json: unknown): Array<{ q: string; a: string }> {
   if (!Array.isArray(json)) return [];
   return json.flatMap(f => {
     const o = (f ?? {}) as Record<string, unknown>;
-    return typeof o.q === 'string' && typeof o.a === 'string' && o.q.trim() && o.a.trim() ? [{ q: o.q.trim(), a: o.a.trim() }] : [];
+    return typeof o.q === 'string' && typeof o.a === 'string' && o.q.trim() && o.a.trim() ? [{ q: normalizeHebrew(o.q.trim()), a: normalizeHebrew(o.a.trim()) }] : [];
   });
 }
 
@@ -150,8 +150,8 @@ export function buildView(p: PublicProfile, now = new Date(), vatPct = DEFAULT_V
   const medicalBiz = cats.some(c => c.isMedical);
   const citySlug = p.city?.slug ?? null;
   const bookingOnline = BOOKING_LIVE && p.onlineBooking && p.isClaimed;
-  // Every amount on the page is the consumer price (src/lib/vat.ts): including VAT when the display includes it.
-  const treatments = p.treatments.map(t => withConsumerPrices(t, vatPct));
+  // Every amount on the page is the consumer price (src/lib/vat.ts); every name and summary gets Hebrew typography.
+  const treatments = p.treatments.map(t => ({ ...withConsumerPrices(t, vatPct), name: normalizeHebrew(t.name), description: t.description ? normalizeHebrew(t.description) : t.description }));
 
   // Services grouped by category, in the branch's category order; uncategorised last.
   const order = new Map(cats.map((c, i) => [c.slug, i]));
@@ -269,7 +269,7 @@ export function buildView(p: PublicProfile, now = new Date(), vatPct = DEFAULT_V
     googleHref,
     googleSync,
     faqs: parseFaqs(p.faqs),
-    description: (p.description ?? '').split(/\n\s*\n|\r?\n/).map(s => s.trim()).filter(Boolean),
+    description: normalizeHebrew(p.description ?? '').split(/\n\s*\n|\r?\n/).map(s => s.trim()).filter(Boolean),
     heading,
     attributes,
     facts,
@@ -306,7 +306,7 @@ export async function nearbyBusinesses(p: PublicProfile, exclude: string[]): Pro
  * characters. An owner's own title (claimed listing) is kept.
  */
 export function metaTitle(p: PublicProfile, v: ProfileView): string {
-  if (p.isClaimed && p.metaTitle && p.metaTitle.trim().length >= 10) return p.metaTitle.trim().slice(0, 70);
+  if (p.isClaimed && p.metaTitle && p.metaTitle.trim().length >= 10) return normalizeHebrew(p.metaTitle.trim()).slice(0, 70);
   const cat = v.cats[0];
   return listingTitle({ name: p.name, city: p.cityName, category: cat ? CATEGORY_SHORT[cat.slug] ?? cat.name : null });
 }
@@ -372,7 +372,7 @@ export function jsonLd(p: PublicProfile, v: ProfileView) {
     ...(p.phone ? { telephone: p.phone } : {}),
     ...(p.email && p.isClaimed ? { email: p.email } : {}),
     ...(images.length ? { image: images } : {}),
-    ...(p.description ? { description: p.description.slice(0, 5000) } : {}),
+    ...(p.description ? { description: normalizeHebrew(p.description).slice(0, 5000) } : {}),
     // The street address as stored (Hebrew for every listing the import geocoded); the city in Hebrew; no postal code is stored.
     address: { '@type': 'PostalAddress', streetAddress: p.address, addressLocality: seoCityName(p.cityName), addressRegion: v.region?.name, addressCountry: 'IL' },
     ...(p.lat != null && p.lng != null ? { geo: { '@type': 'GeoCoordinates', latitude: p.lat, longitude: p.lng } } : {}),
