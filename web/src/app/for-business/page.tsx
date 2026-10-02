@@ -8,6 +8,7 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { nis } from '@/lib/format';
 import { PLAN_MONTHLY_NIS, PLATFORM_BILLING_LINE, PLATFORM_PRICE_NOTE, type PlanKey } from '@/lib/pricing';
 import { ROUTES, joinWithPlan } from '@/lib/routes';
+import { applySeo } from '@/lib/server/seo';
 import { StickyJoinBar } from './StickyJoinBar';
 import styles from './page.module.css';
 
@@ -16,12 +17,13 @@ import styles from './page.module.css';
 const TITLE = 'רישום עסק באינדקס ופרסום למכוני יופי וקליניקות';
 const DESCRIPTION = `פרסום עסק ב־BeautyFind, אינדקס מכוני היופי והקליניקות לאסתטיקה בישראל: פרופיל מאומת, מחירון, ביקורות ומערכת זימון תורים. מ־${nis(PLAN_MONTHLY_NIS.basic)} לסניף בחודש, בלי עמלות.`;
 
-export const metadata: Metadata = {
+const BASE: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: '/for-business' },
   openGraph: { type: 'website', locale: 'he_IL', url: '/for-business', siteName: 'BeautyFind', title: TITLE, description: DESCRIPTION, images: ['/assets/hero-clinic.jpg'] },
 };
+export const generateMetadata = () => applySeo('/for-business', BASE);
 
 const PROOF = [
   { strong: '7 אזורים ומעל 60 ערים', post: ' בכל רחבי ישראל' },

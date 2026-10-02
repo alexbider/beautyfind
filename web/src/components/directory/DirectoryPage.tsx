@@ -13,6 +13,7 @@ import { BIZ, CITIES_N, FIELDS_N, SEO_TERM, TRUST, countText, directoryFaqs, fmt
 import { Count } from './Count';
 import { getListings, getOverview, type DirectoryCard, type Overview } from './data';
 import { EmptyCity } from './EmptyCity';
+import { applySeo } from '@/lib/server/seo';
 import { GuideExpander } from './GuideExpander';
 import { ListingCard } from './ListingCard';
 import { PAGE, dirHref, hasParams, parseQuery, type DirQuery } from './params';
@@ -78,13 +79,13 @@ export async function directoryMetadata(params: DirParams, searchParams: DirSear
                 ? ', אחד מהם מאומת'
                 : `, מתוכם ${fmtNum(o.verified)} מאומתים`) +
         `. דירוג Google וביקורות BeautyFind מאומתות בנפרד, מחירים אמצעיים ${BOOKING_LIVE ? 'וקביעת תור אונליין' : 'ופנייה ישירה לעסק'}.`;
-  return {
+  return applySeo(s.path, {
     title,
     description,
     alternates: { canonical: s.path },
     robots: o.total === 0 || hasParams(q) ? { index: false, follow: true } : undefined,
     openGraph: { title, description, url: s.path, locale: 'he_IL', type: 'website', images: [`/assets/region-${s.region.slug}.jpg`] },
-  };
+  });
 }
 
 // ---------- JSON-LD ----------

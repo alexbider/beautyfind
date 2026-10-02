@@ -1,8 +1,13 @@
 import type { NextConfig } from 'next';
 import { CATEGORIES, REGIONS } from './src/lib/catalog';
+import { PRIVATE_PREFIXES } from './src/lib/indexing';
 
 // STAGING=1 (test deployments): nothing may be indexed, whatever a page's own robots metadata says.
 const staging = process.env.STAGING === '1';
+const NOINDEX = [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }];
+// The admin, the business dashboard, the clinic system, accounts, token pages and the API are never
+// indexed, on every response (HTML, exports, JSON), whatever the deployment or the settings say.
+const privateSources = PRIVATE_PREFIXES.flatMap(p => (p.endsWith('/') ? [`${p}:path*`] : [p, `${p}/:path*`]));
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -25,7 +30,7 @@ const nextConfig: NextConfig = {
     return [
       // The service worker must always be re-checked, or clients keep an old one.
       { source: '/sw.js', headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }, { key: 'Service-Worker-Allowed', value: '/' }] },
-      ...(staging ? [{ source: '/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] }] : []),
+      ...(staging ? [{ source: '/:path*', headers: NOINDEX }] : privateSources.map(source => ({ source, headers: NOINDEX }))),
     ];
   },
 };

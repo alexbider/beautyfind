@@ -147,6 +147,7 @@ function DetailsSection({ data, canEdit }: { data: BranchEdit; canEdit: boolean 
           <label className={s.check}><input type="checkbox" checked={f.freeParking} disabled={ro} onChange={e => set({ freeParking: e.target.checked })} /> חניה חינם</label>
           <label className={s.check}><input type="checkbox" checked={f.onlineBooking} disabled={ro} onChange={e => set({ onlineBooking: e.target.checked })} /> קביעת תור אונליין</label>
           <label className={s.check}><input type="checkbox" checked={f.isClaimed} disabled={ro} onChange={e => set({ isClaimed: e.target.checked })} /> בבעלות מאומתת (ההשלמה האוטומטית לא נוגעת)</label>
+          <label className={s.check}><input type="checkbox" checked={f.noindex} disabled={ro} onChange={e => set({ noindex: e.target.checked })} /> מוסתר ממנועי חיפוש (noindex): הפרופיל נשאר באתר, אך לא במפת האתר ולא בגוגל</label>
         </div>
       </div>
       <SaveBar pending={pending} msg={msg} canEdit={canEdit} />

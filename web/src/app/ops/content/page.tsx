@@ -4,8 +4,11 @@ import { AdminShell } from '@/components/ops/AdminShell';
 import { areaLevel, requireArea } from '@/components/ops/guard';
 import { atLeast } from '@/components/ops/roles';
 import { Card, Chip, Empty, Kpis, PageHead, Pills, Table, Tabs, dateIL, int, pct, ui } from '@/components/ops/ui';
+import { PRIVATE_AREAS, PRIVATE_PREFIXES } from '@/lib/indexing';
+import { indexingPolicy } from '@/lib/server/indexing';
 import { siteUrl } from '@/lib/server/site';
-import { analytics30, articles, categoryRows, JSON_LD_TYPES, pageRows, sitemapFacts } from './data';
+import { analytics30, articles, categoryRows, indexingFacts, JSON_LD_TYPES, pageRows, sitemapFacts } from './data';
+import { IndexingToggle } from './IndexingControls';
 import { SeoForm } from './SeoForm';
 
 export const metadata: Metadata = { title: 'תוכן ו־SEO · ניהול', robots: { index: false, follow: false } };
@@ -14,7 +17,7 @@ export const dynamic = 'force-dynamic';
 type SP = Promise<Record<string, string | string[] | undefined>>;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? '';
 const TABS = [
-  { key: 'pages', name: 'עמודים' }, { key: 'posts', name: 'פוסטים' }, { key: 'categories', name: 'קטגוריות' }, { key: 'settings', name: 'הגדרות SEO' },
+  { key: 'pages', name: 'עמודים' }, { key: 'indexing', name: 'אינדוקס' }, { key: 'posts', name: 'פוסטים' }, { key: 'categories', name: 'קטגוריות' }, { key: 'settings', name: 'הגדרות SEO' },
   { key: 'schema', name: 'סכמה' }, { key: 'redirects', name: 'הפניות ו־404' }, { key: 'sitemap', name: 'מפת אתר ו־robots' }, { key: 'performance', name: 'ביצועים ומעקב' },
 ] as const;
 type Tab = (typeof TABS)[number]['key'];
@@ -66,6 +69,7 @@ export default async function ContentPage({ searchParams }: { searchParams: SP }
           </Card>
         </>
       ) : null}
+      {tab === 'indexing' ? <IndexingTab canEdit={canEdit} /> : null}
       {tab === 'posts' ? <PostsTab /> : null}
       {tab === 'categories' ? <CategoriesTab /> : null}
       {tab === 'settings' ? (
@@ -100,6 +104,45 @@ export default async function ContentPage({ searchParams }: { searchParams: SP }
   );
 }
 
+async function IndexingTab({ canEdit }: { canEdit: boolean }) {
+  const f = await indexingFacts();
+  const blocked = f.policy.staging || !f.policy.site;
+  return (
+    <div className={ui.stack}>
+      <Kpis items={[
+        { label: 'מצב האתר', value: f.policy.staging ? 'חסום (STAGING)' : f.policy.site ? 'פתוח לאינדוקס' : 'חסום מההגדרות', tone: blocked ? 'bad' : 'ok', note: f.policy.staging ? 'משתנה הסביבה STAGING=1 חוסם הכול' : 'robots.txt, מפת האתר ותגיות robots' },
+        { label: 'כתובות במפת האתר', value: int(blocked ? 0 : f.total), note: 'מתעדכן תוך שעה' },
+        { label: 'אזורים כבויים', value: int(f.sections.filter(s => !s.on).length), note: `מתוך ${f.sections.length}`, tone: f.sections.some(s => !s.on) ? 'warn' : undefined },
+        { label: 'חריגים', value: int(f.hiddenPages + f.hiddenBranches), note: `${int(f.hiddenPages)} עמודים · ${int(f.hiddenBranches)} פרופילי עסקים`, tone: f.hiddenPages + f.hiddenBranches ? 'warn' : undefined },
+      ]} />
+      {f.policy.staging ? <Card><Chip tone="warn">סביבת בדיקה</Chip><p className={ui.note} style={{ marginTop: 8 }}>הפריסה הזו רצה עם <span className={ui.mono}>STAGING=1</span>: robots.txt חוסם הכול, כל תשובה נושאת noindex ומפת האתר ריקה. המתגים כאן נשמרים וייכנסו לתוקף כשהמשתנה יוסר מ־Vercel.</p></Card> : null}
+      <div className={ui.grid2}>
+        <Card title="האתר כולו" sub="המתג הראשי. כבוי: robots.txt חוסם הכול, מפת האתר ריקה וכל עמוד ציבורי מקבל noindex" flush>
+          <IndexingToggle name="site" checked={f.policy.site} title="האתר פתוח למנועי חיפוש" sub="כיבוי מתאים לפני השקה או בתקלה חמורה; ההפעלה מחדש מיידית, אבל גוגל חוזר לסרוק לפי הקצב שלו" canEdit={canEdit} />
+        </Card>
+        <Card title="אזורים פרטיים" sub="תמיד מחוץ לאינדקס, אין מתג" flush>
+          <p className={`${ui.hint} ${ui.cardPad}`}>robots.txt חוסם אותם, כל תשובה בהם נושאת X-Robots-Tag: noindex, והעמודים מצהירים noindex בעצמם.</p>
+          <Table head={['אזור', 'נתיב']}>
+            {PRIVATE_AREAS.map(a => <tr key={a.prefix}><td>{a.name}</td><td className={ui.mono} dir="ltr">{a.prefix}</td></tr>)}
+          </Table>
+        </Card>
+      </div>
+      <Card title="אזורי האתר הציבוריים" sub="אזור כבוי ממשיך להיות מוצג למבקרים, אבל יוצא ממפת האתר ומקבל noindex. עמוד בודד מסתירים בלשונית ״עמודים״, פרופיל בודד בעורך הסניף" flush>
+        {f.sections.map(s => (
+          <IndexingToggle key={s.key} name={`section:${s.key}`} checked={s.on} title={`${s.name} · ${int(s.count)}`} sub={`${s.desc} · לדוגמה ${s.example}`} canEdit={canEdit} />
+        ))}
+      </Card>
+      <Card title="חריגים">
+        <ul className={ui.list}>
+          <li className={ui.note}><b>{int(f.hiddenPages)} עמודים</b> מסומנים noindex בלשונית ״עמודים״. <Link href="/ops/content?filter=noindex" className={ui.rowLink}>לרשימה</Link>.</li>
+          <li className={ui.note}><b>{int(f.hiddenBranches)} פרופילי עסקים</b> חיים מוסתרים ממנועי חיפוש (הסימון ״מוסתר ממנועי חיפוש״ בלשונית הפרטים של עורך הסניף). הם לא במפת האתר ונושאים noindex.</li>
+          <li className={ui.note}><b>עמודי חיפוש, מדריכים ותוצאות עם סינון</b> מסומנים noindex בקוד ולא תלויים במתגים.</li>
+        </ul>
+      </Card>
+    </div>
+  );
+}
+
 function PostsTab() {
   const rows = articles();
   return (
@@ -123,17 +166,16 @@ async function CategoriesTab() {
 }
 
 async function SitemapTab() {
-  const f = await sitemapFacts();
-  const staging = process.env.STAGING === '1';
+  const [f, policy] = await Promise.all([sitemapFacts(), indexingPolicy()]);
   return (
     <div className={ui.grid2}>
       <Card title="מפת אתר" sub={<a href={`${siteUrl()}/sitemap.xml`} className={ui.rowLink} target="_blank" rel="noreferrer">/sitemap.xml</a>}>
         <Kpis items={[{ label: 'כתובות', value: int(f.total) }, { label: 'עמודי עסקים', value: int(f.branches) }, { label: 'עיר + תחום', value: int(f.cityCats), note: 'רק עם עסקים חיים' }, { label: 'עמודי ערים', value: int(f.cityPages) }]} />
-        <p className={ui.hint}>מתחדשת כל שעה. עמודי עיר ותחום נכללים רק כשיש בהם עסקים חיים, כדי לא לשלוח את גוגל לעמודים ריקים.</p>
+        <p className={ui.hint}>מתחדשת כל שעה. עמודי עיר ותחום נכללים רק כשיש בהם עסקים חיים, כדי לא לשלוח את גוגל לעמודים ריקים. אזורים כבויים ועמודים ופרופילים שסומנו noindex אינם נכללים (לשונית ״אינדוקס״).</p>
       </Card>
       <Card title="robots.txt" sub={<a href={`${siteUrl()}/robots.txt`} className={ui.rowLink} target="_blank" rel="noreferrer">/robots.txt</a>}>
-        {staging ? <Chip tone="warn">סביבת בדיקה: הכול חסום לסריקה</Chip> : <Chip tone="ok">ייצור: סריקה פתוחה</Chip>}
-        <p className={ui.note} style={{ marginTop: 10 }}>חסומים: <span dir="ltr">/biz, /ops, /login, /logout, /invite, /for-business/join, /for-business/claim, /api</span>.</p>
+        {policy.staging ? <Chip tone="warn">סביבת בדיקה: הכול חסום לסריקה</Chip> : policy.site ? <Chip tone="ok">ייצור: סריקה פתוחה</Chip> : <Chip tone="warn">האתר כבוי לאינדוקס מההגדרות</Chip>}
+        <p className={ui.note} style={{ marginTop: 10 }}>חסומים תמיד: <span dir="ltr">{PRIVATE_PREFIXES.join(', ')}</span>.</p>
       </Card>
     </div>
   );

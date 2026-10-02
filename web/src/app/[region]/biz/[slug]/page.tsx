@@ -23,6 +23,7 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { ROUTES } from '@/lib/routes';
 import { fromE164, telHref } from '@/lib/format';
 import { getProfile, type PublicProfile } from '@/lib/server/public';
+import { applySeo } from '@/lib/server/seo';
 import { buildView, jsonLd, ldJson, metaDescription, metaTitle, reviewsLabel, similarBusinesses, type ProfileView as View } from './data';
 import btn from '@/components/profile/buttons.module.css';
 import rv from '@/components/profile/Reviews.module.css';
@@ -44,12 +45,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const v = buildView(p);
   const title = metaTitle(p, v);
   const description = metaDescription(p, v);
-  return {
+  // Section switch and per-listing noindex (staff, branch editor) come through applySeo.
+  return applySeo(p.href, {
     title,
     description,
     alternates: { canonical: p.href },
     openGraph: { title, description, url: p.href, type: 'website', locale: 'he_IL', siteName: 'BeautyFind', ...(v.photos[0] ? { images: [{ url: v.photos[0].url, alt: v.photos[0].alt }] } : {}) },
-  };
+  }, { noindex: p.noindex });
 }
 
 const FACT_ICONS: Record<string, string[]> = {

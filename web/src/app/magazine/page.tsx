@@ -6,17 +6,19 @@ import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import shared from '@/components/treatments/shared.module.css';
 import { ROUTES } from '@/lib/routes';
+import { applySeo } from '@/lib/server/seo';
 import styles from './page.module.css';
 
 // Guides index. TODO(cms): the articles are not written yet, so this page lists what is coming
 // and points to the reference pages that exist today. Kept out of the index until articles exist.
 
-export const metadata: Metadata = {
+const BASE: Metadata = {
   title: 'מדריכים',
   description: 'מדריכים של BeautyFind לבחירת מכון יופי או קליניקה, להבנת מחירי טיפולים ולהכנה לפגישת ייעוץ.',
   alternates: { canonical: '/magazine' },
   robots: { index: false, follow: true },
 };
+export const generateMetadata = () => applySeo('/magazine', BASE);
 
 const NOW = [
   { href: ROUTES.treatments, title: 'תחומי טיפול', sub: 'מה כולל כל תחום, מחירים חציוניים ועסקים לפי אזור' },

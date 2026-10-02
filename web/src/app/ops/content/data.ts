@@ -1,6 +1,8 @@
 import 'server-only';
 import { CATEGORIES, CITIES, REGIONS } from '@/lib/catalog';
+import { INDEX_SECTIONS, type IndexSectionKey } from '@/lib/indexing';
 import { db } from '@/lib/server/db';
+import { indexingPolicy } from '@/lib/server/indexing';
 import { PUBLIC_WHERE } from '@/lib/server/public';
 import { seoScore, sitePages, type SitePage } from '@/lib/server/seo';
 import { ARTICLES } from '@/components/home/content';
@@ -41,15 +43,31 @@ export async function categoryRows() {
   return CATEGORIES.map(c => ({ ...c, live: counts.find(x => x.categorySlug === c.slug)?._count ?? 0 }));
 }
 
+/** The indexing tab: the saved policy, what each public section holds, and the exceptions staff made. */
+export async function indexingFacts() {
+  const [policy, f, hiddenBranches, hiddenPages] = await Promise.all([
+    indexingPolicy(),
+    sitemapFacts(),
+    db.branch.count({ where: { ...PUBLIC_WHERE, noindex: true } }),
+    db.pageSeo.count({ where: { noindex: true } }).catch(() => 0),
+  ]);
+  const counts: Record<IndexSectionKey, number> = {
+    home: 1, regions: REGIONS.length + 1, cities: f.cityPages, categories: CATEGORIES.length + 1, cityCategories: f.cityCats,
+    profiles: f.branches, content: 9, legal: 3,
+  };
+  const sections = INDEX_SECTIONS.map(s => ({ ...s, on: policy.sections[s.key], count: counts[s.key] }));
+  return { policy, sections, hiddenBranches, hiddenPages, total: f.total };
+}
+
 export async function sitemapFacts() {
   const [branches, pairs, citiesWithListings] = await Promise.all([
-    db.branch.count({ where: PUBLIC_WHERE }),
+    db.branch.count({ where: { ...PUBLIC_WHERE, noindex: false } }),
     db.branchCategory.findMany({ where: { branch: { ...PUBLIC_WHERE, cityId: { not: null } } }, select: { categorySlug: true, branch: { select: { city: { select: { slug: true } } } } } }),
     db.branch.findMany({ where: { ...PUBLIC_WHERE, cityId: { not: null } }, select: { city: { select: { slug: true } } }, distinct: ['cityId'] }),
   ]);
   const cityCats = new Set(pairs.map(p => `${p.branch.city!.slug}|${p.categorySlug}`)).size;
   const cityPages = citiesWithListings.filter(b => b.city && CITIES.some(c => c.slug === b.city!.slug && c.slug !== c.region)).length;
-  const fixed = 3 + CATEGORIES.length + REGIONS.length + 6;
+  const fixed = 3 + CATEGORIES.length + REGIONS.length + 12; // home, treatments, regions, categories, regions, the content and legal pages
   return { branches, cityCats, cityPages, fixed, total: fixed + branches + cityCats + cityPages };
 }
 

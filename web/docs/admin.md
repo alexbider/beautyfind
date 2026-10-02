@@ -25,7 +25,7 @@ Two-factor authentication does not exist in the system; the team page says so fo
 | `/ops/moderation` | Reviews queue (publish, reject, remove) and reports from contact messages. |
 | `/ops/verification` and `/ops/import/*` | The existing consoles, unchanged in behaviour, rendered inside the new shell. |
 | `/ops/accounting` | Income ledger, subscriptions and charges, expenses, VAT note, profit and loss, manual platform invoices, accountant export. Platform invoices carry no Israeli VAT (`docs/decisions.md`). |
-| `/ops/content` | Per-page SEO overrides (`PageSeo`, applied through `applySeo`), catalog, sitemap and robots state. |
+| `/ops/content` | Per-page SEO overrides (`PageSeo`, applied through `applySeo`), the indexing switches (below), catalog, sitemap and robots state. |
 | `/ops/messages` | The 25-template catalog with what the code already sends, the messaging adapter state, consent counts, editable draft copy. |
 | `/ops/ai` | The operations assistant, AI providers, MCP state, the approvals queue, usage and costs (below). |
 | `/ops/integrations` | Payments and invoicing providers with connected-business counts, messaging, calendars, analytics, import sources, operations. "בדיקה" runs a free check (database round trip, site, GitHub workflow state, key presence). Secrets are never shown. |
@@ -45,6 +45,17 @@ One JSON row (`platform_settings`, id 1) parsed with `PlatformSettingsSchema`; c
 - `maintenanceMode`, `maintenanceMessage`: a banner on the home page and the same gates above show the message.
 - `clientAssistant`: stored only; nothing on the site reads it yet.
 - `rolePermissions`, `templateDrafts`: the team matrix and the messages page.
+- `indexSite`, `indexSections`: the indexing switches (below).
+
+## Indexing
+
+What search engines may index is decided in `src/lib/indexing.ts` (pure) and read on the server by `indexingPolicy()`.
+
+- **Private areas are never indexed and have no switch:** `/ops`, `/biz`, `/clinic`, `/account`, `/saved`, `/login`, `/logout`, `/invite`, `/for-business/join`, `/for-business/claim`, `/pay`, `/receipt`, `/unsubscribe`, `/b/`, `/w/`, `/review/`, `/api`. Three layers: `robots.txt` disallows them, every response under them carries `X-Robots-Tag: noindex, nofollow` (`next.config.ts`, so exports and JSON are covered too), and the `/ops`, `/biz` and `/clinic` layouts declare `robots: noindex, nofollow`.
+- **Public sections** (`/ops/content`, tab אינדוקס): one master switch (`indexSite`) and one per section (`indexSections`: home, regions, cities, categories, cityCategories, profiles, content, legal). A section that is off keeps serving its pages, but they get `robots: noindex, follow` through `applySeo` and leave the sitemap. The master switch off also makes `robots.txt` disallow everything and empties the sitemap. Every change is an `indexing_update` audit row and refreshes all public pages, `/robots.txt` and `/sitemap.xml`.
+- **Single pages:** the noindex box in the עמודים tab (`PageSeo.noindex`). **Single listings:** the "מוסתר ממנועי חיפוש" box in the branch editor's details (`Branch.noindex`); the profile gets noindex and leaves the sitemap.
+- **`STAGING=1`** on the deployment overrides everything: robots.txt disallows all, every response is noindex, the sitemap is empty, and the tab says so. Remove the variable in Vercel to launch; the switches saved meanwhile take effect then.
+- Every public page passes its metadata through `applySeo(path, metadata)`, including the directory pages and the business profile, so the policy is applied in one place. Pages that are noindex by design (search, magazine, filtered directories) keep their own robots metadata.
 
 ## AI completion of listings
 

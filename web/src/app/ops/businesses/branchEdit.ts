@@ -13,7 +13,7 @@ export interface DetailsForm {
   name: string; slug: string; regionSlug: string; cityName: string; address: string; lat: string; lng: string;
   phone: string; whatsapp: string; email: string; websiteUrl: string; wazeUrl: string; googlePlaceUrl: string; googlePlaceId: string;
   accessible: boolean; freeParking: boolean; onlineBooking: boolean;
-  status: 'draft' | 'live' | 'unpublished'; isClaimed: boolean;
+  status: 'draft' | 'live' | 'unpublished'; isClaimed: boolean; noindex: boolean;
   cats: string[]; primaryCat: string; medicalResponsibleId: string;
   hours: HoursRow[];
 }
@@ -80,7 +80,7 @@ export async function loadBranchEdit(branchId: string): Promise<BranchEdit | nul
     details: {
       name: b.name, slug: b.slug, regionSlug: b.regionSlug, cityName: b.cityName, address: b.address, lat: b.lat == null ? '' : String(b.lat), lng: b.lng == null ? '' : String(b.lng),
       phone: b.phone ? fromE164(b.phone) : '', whatsapp: b.whatsapp ? fromE164(b.whatsapp) : '', email: b.email ?? '', websiteUrl: b.websiteUrl ?? '', wazeUrl: b.wazeUrl ?? '', googlePlaceUrl: b.googlePlaceUrl ?? '', googlePlaceId: b.googlePlaceId ?? '',
-      accessible: b.accessible, freeParking: b.freeParking, onlineBooking: b.onlineBooking, status: b.status, isClaimed: b.isClaimed,
+      accessible: b.accessible, freeParking: b.freeParking, onlineBooking: b.onlineBooking, status: b.status, isClaimed: b.isClaimed, noindex: b.noindex,
       cats: b.categories.map(c => c.categorySlug), primaryCat: primary?.categorySlug ?? '', medicalResponsibleId: b.medicalResponsibleId ?? '',
       hours: readHours(b.hours),
     },

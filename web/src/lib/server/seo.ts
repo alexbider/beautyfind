@@ -1,7 +1,9 @@
 import 'server-only';
 import type { Metadata } from 'next';
 import { CATEGORIES, REGIONS } from '@/lib/catalog';
+import { pathIndexable } from '@/lib/indexing';
 import { db } from './db';
+import { indexingPolicy } from './indexing';
 
 // Per-path SEO overrides edited on /ops/content. A public page builds its own metadata as before and
 // passes it through `applySeo(path, metadata)`: a saved title, description or noindex for that path
@@ -16,19 +18,23 @@ export async function seoOverride(path: string) {
   }
 }
 
-export async function applySeo(path: string, base: Metadata): Promise<Metadata> {
-  const o = await seoOverride(path);
-  if (!o) return base;
+/**
+ * The saved override for the path plus the indexing policy (src/lib/indexing.ts): a page whose section is
+ * switched off, a page marked noindex by staff, or `opts.noindex` (a listing hidden by staff) gets a
+ * noindex robots tag; a page's own robots metadata (search results, filtered directories) stays as it is.
+ */
+export async function applySeo(path: string, base: Metadata, opts: { noindex?: boolean } = {}): Promise<Metadata> {
+  const [o, policy] = await Promise.all([seoOverride(path), indexingPolicy()]);
   const out: Metadata = { ...base };
-  if (o.title) {
+  if (o?.title) {
     out.title = { absolute: o.title };
     if (out.openGraph) out.openGraph = { ...out.openGraph, title: o.title };
   }
-  if (o.description) {
+  if (o?.description) {
     out.description = o.description;
     if (out.openGraph) out.openGraph = { ...out.openGraph, description: o.description };
   }
-  if (o.noindex) out.robots = { index: false, follow: true };
+  if (o?.noindex || opts.noindex || !pathIndexable(policy, path)) out.robots = { index: false, follow: true };
   return out;
 }
 
@@ -50,7 +56,9 @@ export function sitePages(): SitePage[] {
     { path: '/search', name: 'חיפוש', kind: 'page', defaultTitle: 'חיפוש', defaultDescription: null, keywordHint: '' },
     { path: '/about', name: 'אודות', kind: 'page', defaultTitle: 'אודות BeautyFind', defaultDescription: null, keywordHint: '' },
     { path: '/about/methodology', name: 'מתודולוגיה', kind: 'page', defaultTitle: 'איך אנחנו מדרגים', defaultDescription: null, keywordHint: 'אימות רופאים' },
+    { path: '/about/editorial', name: 'מדיניות העריכה', kind: 'page', defaultTitle: 'מדיניות העריכה', defaultDescription: null, keywordHint: '' },
     { path: '/listing-standards', name: 'סטנדרטים ואימות', kind: 'page', defaultTitle: 'סטנדרטים לרישום', defaultDescription: null, keywordHint: 'אימות רופאים' },
+    { path: '/listing-standards/sponsorship', name: 'מדיניות מקומות ממומנים', kind: 'page', defaultTitle: 'מקומות ממומנים', defaultDescription: null, keywordHint: '' },
     { path: '/for-business', name: 'הצטרפות לעסקים', kind: 'page', defaultTitle: 'BeautyFind לעסקים', defaultDescription: null, keywordHint: 'פרסום קליניקה' },
     { path: '/magazine', name: 'מגזין', kind: 'page', defaultTitle: 'המגזין', defaultDescription: null, keywordHint: '' },
     { path: '/help', name: 'עזרה', kind: 'page', defaultTitle: 'עזרה', defaultDescription: null, keywordHint: '' },

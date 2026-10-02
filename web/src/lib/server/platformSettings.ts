@@ -2,6 +2,7 @@ import 'server-only';
 import { z } from 'zod';
 import type { Prisma } from '@prisma/client';
 import { AREAS, LEVELS, OPS_ROLES, type PermissionOverrides } from '@/components/ops/roles';
+import { INDEX_SECTION_KEYS } from '@/lib/indexing';
 import { PLAN_MONTHLY_NIS, VAT_RATE } from '@/lib/pricing';
 import { db } from './db';
 
@@ -31,6 +32,10 @@ export const PlatformSettingsSchema = z.object({
   clientAssistant: z.boolean().default(false),
   maintenanceMode: z.boolean().default(false),
   maintenanceMessage: z.string().max(300).default('האתר בתחזוקה קצרה. הזמנות קיימות אינן נפגעות; נחזור בעוד זמן קצר.'),
+  // Indexing (/ops/content, tab אינדוקס): the master switch and the public sections search engines may
+  // index. A missing section means on. STAGING=1 on the deployment blocks everything regardless.
+  indexSite: z.boolean().default(true),
+  indexSections: z.partialRecord(z.enum(INDEX_SECTION_KEYS), z.boolean()).default({}),
   // Team: per-role area levels (ops is always full). Stored sparsely.
   // partialRecord: zod 4's record with an enum key is exhaustive, and the overrides are sparse.
   rolePermissions: z.partialRecord(z.enum(OPS_ROLES as [string, ...string[]]), z.partialRecord(z.enum(AREAS as [string, ...string[]]), Level)).default({}),

@@ -15,7 +15,7 @@ import styles from './layout.module.css';
 export const metadata: Metadata = {
   title: 'לוח הבקרה',
   description: 'לוח הבקרה לעסקים ב־BeautyFind: צפיות ופניות, שלמות הפרופיל, עריכת תפריט מחירים בשקלים, ניהול ביקורות וחיוב חודשי.',
-  robots: { index: false },
+  robots: { index: false, follow: false },
 };
 
 export default async function BizLayout({ children }: { children: React.ReactNode }) {

@@ -303,6 +303,7 @@ model Branch {
   medicalResponsible   StaffMember? @relation("MedicalResponsible", fields: [medicalResponsibleId], references: [id])
   status               BranchStatus @default(draft)
   isClaimed            Boolean      @default(false) @map("is_claimed") // an owner has verified ownership
+  noindex              Boolean      @default(false) // staff keep the profile out of search engines and the sitemap
   coverUrl             String?      @map("cover_url")
   coverAlt             String?      @map("cover_alt")
   logoUrl              String?      @map("logo_url")

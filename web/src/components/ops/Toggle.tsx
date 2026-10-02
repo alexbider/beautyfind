@@ -6,7 +6,7 @@ import styles from './ui.module.css';
 // A feature switch that saves on change through a server action and shows the saved state. The
 // server is the source of truth: a failed save flips the switch back and shows the reason.
 
-export function Toggle({ name, checked, title, sub, onChange }: { name: string; checked: boolean; title: string; sub?: string; onChange: (name: string, value: boolean) => Promise<{ ok: boolean; error?: string }> }) {
+export function Toggle({ name, checked, title, sub, onChange, disabled }: { name: string; checked: boolean; title: string; sub?: string; onChange: (name: string, value: boolean) => Promise<{ ok: boolean; error?: string }>; disabled?: boolean }) {
   const id = useId();
   const [on, setOn] = useState(checked);
   const [err, setErr] = useState<string | null>(null);
@@ -20,7 +20,7 @@ export function Toggle({ name, checked, title, sub, onChange }: { name: string; 
       </label>
       <span className={styles.toggle}>
         <input
-          id={id} type="checkbox" role="switch" checked={on} aria-checked={on} disabled={pending}
+          id={id} type="checkbox" role="switch" checked={on} aria-checked={on} disabled={pending || disabled}
           onChange={e => {
             const v = e.target.checked;
             setOn(v);

@@ -7,6 +7,7 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { fromE164, nis, telHref } from '@/lib/format';
 import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
+import { applySeo } from '@/lib/server/seo';
 import { currentUser } from '@/lib/server/session';
 import { ContactForm, type ContactPrefill } from './ContactForm';
 import { LIMITS } from './shared';
@@ -14,12 +15,13 @@ import styles from './page.module.css';
 
 // Design: project/BeautyFind Contact.dc.html
 
-export const metadata: Metadata = {
+const BASE: Metadata = {
   title: 'יצירת קשר',
   description:
     'יצירת קשר עם BeautyFind: פנייה כללית, רישום עסק, דיווח על טעות או על מחיר שאינו תואם, פניות נגישות ופניות תקשורת, עם זמני מענה מוצהרים.',
   alternates: { canonical: ROUTES.contact },
 };
+export const generateMetadata = () => applySeo('/contact', BASE);
 
 // Israfind Group (Delaware) corresponds by email. Set these to show a phone line or a postal address card.
 const SUPPORT_PHONE_E164: string | null = null;

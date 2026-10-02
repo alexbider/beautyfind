@@ -42,7 +42,7 @@ const Details = z.object({
   name: s(120), slug: s(120), regionSlug: z.enum(REGIONS.map(r => r.slug) as [string, ...string[]]), cityName: s(80), address: s(200), lat: s(20), lng: s(20),
   phone: s(30), whatsapp: s(30), email: s(160), websiteUrl: s(500), wazeUrl: s(500), googlePlaceUrl: s(500), googlePlaceId: s(200),
   accessible: z.boolean(), freeParking: z.boolean(), onlineBooking: z.boolean(),
-  status: z.enum(['draft', 'live', 'unpublished']), isClaimed: z.boolean(),
+  status: z.enum(['draft', 'live', 'unpublished']), isClaimed: z.boolean(), noindex: z.boolean(),
   cats: z.array(z.enum(CATEGORIES.map(c => c.slug) as [string, ...string[]])).max(CATEGORIES.length), primaryCat: s(60), medicalResponsibleId: s(60),
   hours: z.array(z.object({ open: s(5), close: s(5), closed: z.boolean(), unknown: z.boolean() })).length(7),
 });
@@ -88,7 +88,7 @@ export async function saveDetailsAction(branchId: string, input: DetailsForm): P
   const data: Prisma.BranchUncheckedUpdateInput = {
     name, slug, regionSlug: f.regionSlug as RegionSlug, cityName: f.cityName.trim(), cityId: city?.id ?? null, address: f.address.trim(), lat, lng,
     phone, whatsapp, email: f.email.trim().toLowerCase() || null, websiteUrl: f.websiteUrl.trim() || null, wazeUrl: f.wazeUrl.trim() || null, googlePlaceUrl: f.googlePlaceUrl.trim() || null, googlePlaceId: f.googlePlaceId.trim() || null,
-    accessible: f.accessible, freeParking: f.freeParking, onlineBooking: f.onlineBooking, status: f.status, isClaimed: f.isClaimed, medicalResponsibleId: f.medicalResponsibleId || null,
+    accessible: f.accessible, freeParking: f.freeParking, onlineBooking: f.onlineBooking, status: f.status, isClaimed: f.isClaimed, noindex: f.noindex, medicalResponsibleId: f.medicalResponsibleId || null,
     hours: hours as unknown as Prisma.InputJsonValue,
   };
   const before = { ...ctx.b, cats: ctx.b.categories.map(c => c.categorySlug).sort(), primaryCat: ctx.b.categories.find(c => c.isPrimary)?.categorySlug ?? null } as unknown as Record<string, unknown>;

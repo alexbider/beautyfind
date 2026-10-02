@@ -7,17 +7,19 @@ import { JsonLd, breadcrumbLd } from '@/components/treatments/format';
 import shared from '@/components/treatments/shared.module.css';
 import { CITIES, MENU_REGION_ORDER, citiesOf, cityPageHref, regionBySlug } from '@/lib/catalog';
 import { listingCounts } from '@/lib/server/public';
+import { applySeo } from '@/lib/server/seo';
 import styles from './page.module.css';
 
 // All regions and their cities, linked from the homepage "כל הערים". Counts are live listings.
 
 export const revalidate = 600;
 
-export const metadata: Metadata = {
+const BASE: Metadata = {
   title: 'כל האזורים והערים',
   description: `מכוני יופי ואסתטיקה בכל ${CITIES.length} הערים שבאינדקס, לפי שבעה אזורים: מהצפון ועד אילת.`,
   alternates: { canonical: '/regions' },
 };
+export const generateMetadata = () => applySeo('/regions', BASE);
 
 export default async function RegionsPage() {
   const counts = await listingCounts();

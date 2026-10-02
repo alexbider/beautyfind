@@ -33,6 +33,7 @@ const AUDIT: Record<string, string> = {
   platform_invoice: 'הפיק/ה חשבונית',
   subscription_update: 'עדכן/ה מנוי',
   seo_update: 'עדכן/ה SEO של עמוד',
+  indexing_update: 'שינה/תה הגדרות אינדוקס',
   template_draft: 'עדכן/ה טיוטת תבנית',
   ai_action_decide: 'החליט/ה על בקשת AI',
   ai_action_execute: 'ביצע/ה בקשת AI',
@@ -83,7 +84,7 @@ const DECISION: Record<string, string> = {
 const SUBJECT: Record<string, string> = {
   user: 'חשבון', business: 'עסק', branch: 'סניף', booking: 'תור', review: 'ביקורת', dispute: 'מחלוקת', campaign: 'מקום ממומן',
   verification_request: 'בקשת אימות', consult_request: 'בקשת ייעוץ', contact_message: 'פנייה', expense: 'הוצאה', document: 'מסמך',
-  platform_settings: 'הגדרות', import_settings: 'הגדרות ייבוא', import_run: 'ריצת ייבוא', import_place: 'רשומת ייבוא', ai_action: 'בקשת AI', page_seo: 'עמוד', subscription: 'מנוי',
+  platform_settings: 'הגדרות', import_settings: 'הגדרות ייבוא', import_run: 'ריצת ייבוא', import_place: 'רשומת ייבוא', ai_action: 'בקשת AI', page_seo: 'עמוד', indexing: 'אינדוקס', subscription: 'מנוי',
 };
 
 export function actorKind(actorId: string | null, meta: Meta, actorRole?: string | null): ActorKind {
