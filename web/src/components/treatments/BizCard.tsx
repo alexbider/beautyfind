@@ -55,7 +55,7 @@ export function BizCard({ card, meta, contact, size = 92, index = 0 }: { card: L
       <SaveHeart id={card.id} name={card.name} className={`${styles.heart} bf-shell-only`} />
       <Link href={card.href} tabIndex={-1} aria-hidden="true" className={styles.thumb}>
         {/* eslint-disable-next-line @next/next/no-img-element -- covers are user uploads or external URLs */}
-        <img src={img} alt={card.coverUrl ? card.coverAlt : ''} width={size} height={size} loading="lazy" decoding="async" />
+        <img src={img} alt={card.coverUrl ? card.coverAlt : ''} role={card.coverUrl ? undefined : 'presentation'} width={size} height={size} loading="lazy" decoding="async" />
       </Link>
       <div className={styles.body}>
         <div className={styles.titleRow}>

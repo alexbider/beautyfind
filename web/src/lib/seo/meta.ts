@@ -9,6 +9,12 @@ export const SITE_ORIGIN = 'https://beautyfind.co.il';
 /** The fallback share image for pages without one of their own. */
 export const DEFAULT_OG_IMAGE = '/assets/hero-clinic.jpg';
 
+/** The first candidate that fits Google's title width with the brand suffix; the last one is used as is. */
+export function fitTitle(candidates: string[], max = 60, suffix = ' | BeautyFind'): string {
+  for (const c of candidates) if ([...c].length + suffix.length <= max) return c;
+  return candidates[candidates.length - 1];
+}
+
 export const DESCRIPTION_MIN = 130;
 export const DESCRIPTION_MAX = 155;
 

@@ -3,12 +3,15 @@
 // inside Hebrew sentences (business and brand names excepted), no em dashes, no emoji, no empty quotes,
 // and the house spellings. Pure, so the writer's checks, the cleanup script and the tests share it.
 
-/** Phrases that mean "we did not have this" or that talk about the data instead of the business. */
+/** Phrases that mean "we did not have this" or that talk about the data instead of the business (the brief's list). */
 export const MISSING_INFO_PATTERNS: RegExp[] = [
   /חבילת המידע/u, /בחבילת/u, /בדחיפה/u, /השדות והנתונים/u, /במקורות/u, /במידע שנבדק/u, /נכון לעת בדיקה/u,
   /שסופק/u, /לא צוינו/u, /לא צוין/u, /לא פורסמו/u, /לא פורסם/u, /לא נמצאו/u, /אין תיעוד/u, /אין מידע/u,
   /עמוד העסק כולל/u, /הפרופיל כולל/u, /תיאור זה/u, /''/u,
-  // the same idea in other words
+];
+
+/** The same idea in other words: the writer is held to these too; interface copy that names the profile is not. */
+export const MISSING_INFO_EXTRA: RegExp[] = [
   /לא ידוע/u, /לא נמסר/u, /טרם פורסם/u, /טרם עודכן/u, /אין פירוט/u, /ללא פירוט/u, /לא זמין/u, /מידע חסר/u, /חסר מידע/u,
   /במידע שהתקבל/u, /בנתונים שהתקבלו/u, /על פי הנתונים/u, /לפי הנתונים/u, /הנתונים הזמינים/u, /המידע הזמין/u,
   /בעמוד זה/u, /בעמוד העסק/u, /בעמוד הזה/u, /בפרופיל זה/u, /בפרופיל העסק/u, /בכרטיס העסק/u, /בתיאור זה/u,
@@ -22,7 +25,7 @@ export const SPELLING_PATTERNS: Array<{ re: RegExp; fix: string }> = [
 ];
 
 const DASH = /[–—]/u;
-const EMOJI = /\p{Extended_Pictographic}/u;
+const EMOJI = /(?![©®™])\p{Extended_Pictographic}/u;
 const HEBREW = /[א-ת]/u;
 const LATIN_WORD = /^[A-Za-z][A-Za-z'’.&-]*$/;
 const DOMAIN = /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i;
@@ -73,10 +76,10 @@ export function latinInsideHebrew(text: string, allow: string[] = []): string[] 
   return [...new Set(out)];
 }
 
-/** Every rule the text breaks. Empty means the text may be published. */
-export function textProblems(text: string, allow: string[] = []): TextProblem[] {
+/** Every rule the text breaks. Empty means the text may be published. `strict` adds the writer's wider list. */
+export function textProblems(text: string, allow: string[] = [], opts: { strict?: boolean } = {}): TextProblem[] {
   const out: TextProblem[] = [];
-  for (const re of MISSING_INFO_PATTERNS) {
+  for (const re of opts.strict === false ? MISSING_INFO_PATTERNS : [...MISSING_INFO_PATTERNS, ...MISSING_INFO_EXTRA]) {
     const m = text.match(re);
     if (m) out.push({ code: 'missing_info', match: m[0] });
   }

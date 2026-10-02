@@ -85,7 +85,7 @@ function BizCard({ c, last }: { c: PhoneCard; last: boolean }) {
     <article className={s.card} style={{ scrollSnapAlign: last ? 'end' : 'start' }}>
       <div className={s.cardMedia}>
         <Link href={c.href} tabIndex={-1} aria-hidden="true" className={s.fill} draggable={false}>
-          <Image src={c.img} alt="" fill sizes="(min-width: 1280px) 340px, 30vw" className={s.cover} draggable={false} />
+          <Image src={c.img} alt="" role="presentation" fill sizes="(min-width: 1280px) 340px, 30vw" className={s.cover} draggable={false} />
         </Link>
         {c.verified && (
           <span className={s.verifiedBadge}>

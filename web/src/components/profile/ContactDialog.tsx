@@ -188,7 +188,7 @@ function ContactDialog({ branch, treatments, preset, serviceId, onClose }: { bra
         {branch.phone && <CallButton branchId={branch.id} e164={branch.phone} showNumber />}
         {branch.email && <a href={`mailto:${branch.email}${preset ? `?subject=${encodeURIComponent(`פנייה דרך BeautyFind: ${preset}`)}` : ''}`} className={styles.directLink} dir="ltr">{branch.email}</a>}
         {branch.website && <a href={branch.website} target="_blank" rel="noopener nofollow" className={styles.directLink}>לאתר העסק</a>}
-        {!branch.whatsapp && !branch.phone && !branch.email && !branch.website && <p className={styles.fine}>לעסק הזה לא פורסמו פרטי קשר במקורות שנבדקו.</p>}
+        {!branch.whatsapp && !branch.phone && !branch.email && !branch.website && <p className={styles.fine}>לעסק הזה אין עדיין פרטי קשר באתר.</p>}
       </div>
       <p className={styles.fine}>
         זה העסק שלכם? <Link href={ROUTES.claim} rel="nofollow">אישור בעלות</Link> יאפשר לקבל פניות ישירות מהעמוד.

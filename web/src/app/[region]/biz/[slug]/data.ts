@@ -236,7 +236,7 @@ export function buildView(p: PublicProfile, now = new Date(), vatPct = DEFAULT_V
   ];
   const alternates: Fact[] = [
     ...(responsible ? [{ key: 'responsible' as const, label: responsible.label, value: responsible.name, note: responsible.note, href: `/pro/${responsible.staffId}` }] : []),
-    ...(known ? [{ key: 'hours' as const, label: 'שעות היום', value: todayRange ?? (todayRange === null ? 'סגור היום' : 'לא פורסם להיום'), note: open?.label ?? null, ltr: !!todayRange }] : []),
+    ...(known ? [{ key: 'hours' as const, label: 'שעות היום', value: todayRange ?? (todayRange === null ? 'סגור היום' : 'ללא שעות להיום'), note: open?.label ?? null, ltr: !!todayRange }] : []),
     ...(google && google.count > 0 ? [{ key: 'rating' as const, label: 'דירוג בגוגל', value: `${google.rating.toFixed(1)} מתוך 5`, note: reviewsLabel(google.count), ltr: false }] : []),
   ];
   const facts: Fact[] = [...primary.filter((f): f is Fact => !!f), ...alternates].slice(0, 3);

@@ -45,7 +45,7 @@ export default async function RegionsPage() {
             return (
               <section key={slug} aria-labelledby={`r-${slug}`} className={styles.card}>
                 <Link href={`/${slug}`} className={styles.head}>
-                  <span className={styles.img}><Image src={`/assets/landmark-${slug}.jpg`} alt="" fill sizes="(min-width: 1024px) 400px, 100vw" className={styles.cover} /></span>
+                  <span className={styles.img}><Image src={`/assets/landmark-${slug}.jpg`} alt="" role="presentation" fill sizes="(min-width: 1024px) 400px, 100vw" className={styles.cover} /></span>
                   <span className={styles.headText}>
                     <h2 id={`r-${slug}`} className={styles.h2}>{r.name}</h2>
                     <span className={styles.count}>{n === 1 ? 'עסק אחד' : <><span className="ltr">{n}</span> עסקים</>}</span>

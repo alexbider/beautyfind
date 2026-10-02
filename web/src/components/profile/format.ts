@@ -139,7 +139,7 @@ export function priceParts(type: PriceType, agorot: number, opts: { max?: number
 }
 
 /** Unknown-price wording (feature request §7). The cost is unknown, not free: never "ללא עלות" here. */
-export const PRICE_UNKNOWN = 'המחיר לא פורסם';
+export const PRICE_UNKNOWN = 'מחיר לפי פנייה';
 export const PRICE_UNKNOWN_ACTION = 'לקבלת מחיר ופרטים';
 export const PRICE_UNKNOWN_NOTE = 'לקבלת הצעת מחיר, צרו קשר עם העסק.';
 

@@ -5,16 +5,16 @@ import { ROUTES } from '@/lib/routes';
 import { applySeo } from '@/lib/server/seo';
 import { isAudience, type Audience } from './content';
 import { HelpCenter } from './HelpCenter';
+import { publicMetadata } from '@/lib/seo/meta';
 import styles from './page.module.css';
 
 // Design: project/BeautyFind Help.dc.html
 
-const BASE: Metadata = {
-  title: 'מרכז עזרה',
-  description:
-    'מרכז העזרה של BeautyFind: שאלות נפוצות ללקוחות ולעסקים על תורים, מקדמות, ביקורות, שוברים, חשבוניות, פרטיות ורישום עסק.',
-  alternates: { canonical: ROUTES.help },
-};
+const BASE: Metadata = publicMetadata({
+  path: ROUTES.help,
+  title: 'מרכז העזרה של BeautyFind',
+  description: 'מרכז העזרה של BeautyFind: שאלות נפוצות ללקוחות ולעסקים על תורים, מקדמות, ביקורות, שוברים, חשבוניות, פרטיות ורישום עסק.',
+});
 export const generateMetadata = () => applySeo('/help', BASE);
 
 export default async function HelpPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {

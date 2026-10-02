@@ -180,7 +180,7 @@ function BlockView({ block, section }: { block: Block; section: Section }) {
           {block.team.map((m, i) => (
             <li key={m.role} className={styles.member}>
               <span aria-hidden="true" className={styles.avatar}>
-                {m.img ? <Image src={m.img} alt="" fill sizes="52px" style={{ objectFit: 'cover' }} /> : <PersonIcon />}
+                {m.img ? <Image src={m.img} alt="" role="presentation" fill sizes="52px" style={{ objectFit: 'cover' }} /> : <PersonIcon />}
               </span>
               <span className={styles.memberName}>{rich(m.name ?? m.role, `mn${i}`)}</span>
               {m.name && <span className={styles.memberRole}>{m.role}</span>}
@@ -216,7 +216,7 @@ function BlockView({ block, section }: { block: Block; section: Section }) {
           <figcaption>כך נראה כרטיס ממומן באינדקס</figcaption>
           <div className={styles.specCard} aria-hidden="true">
             <span className={styles.specThumb}>
-              <Image src="/assets/biz-facial.jpg" alt="" fill sizes="52px" style={{ objectFit: 'cover' }} />
+              <Image src="/assets/biz-facial.jpg" alt="" role="presentation" fill sizes="52px" style={{ objectFit: 'cover' }} />
             </span>
             <span className={styles.specText}>
               <span className={styles.specTop}>

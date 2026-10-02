@@ -155,7 +155,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
             <div className={styles.heroFallback} role="img" aria-label={`${p.name}: עדיין אין תמונות מהעסק`}>
               <span aria-hidden="true" className={styles.heroMono}>{initials(p.name)}</span>
               <span className={styles.heroText}>
-                {p.isClaimed ? 'העסק טרם העלה תמונות.' : 'לא נמצאו תמונות מהעסק במקורות שנבדקו.'}{' '}
+                {p.isClaimed ? 'העסק טרם העלה תמונות.' : 'עדיין אין תמונות מהעסק.'}{' '}
                 {p.isClaimed ? <Link href="/biz/profile">העלאת תמונות</Link> : <Link href={claimHref(p.id)} rel="nofollow">בעלי העסק יכולים להוסיף תמונות אחרי אישור בעלות</Link>}
               </span>
             </div>
@@ -244,7 +244,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
             <section aria-labelledby="h-hours">
               <h2 id="h-hours" className={styles.h2}>שעות פעילות<span aria-hidden="true" className={styles.dotTeal}>.</span></h2>
                 <table className={styles.hours}>
-                  <caption>היום מסומן. השעות לפי שעון ישראל{v.hoursRows.some(h => h.unknown) ? '; ימים שלא פורסמו מסומנים כך.' : '.'}</caption>
+                  <caption>היום מסומן. השעות לפי שעון ישראל{v.hoursRows.some(h => h.unknown) ? '; ימים ללא שעות מסומנים כך.' : '.'}</caption>
                   <tbody>
                     {v.hoursRows.map(h => (
                       <tr key={h.day} data-today={h.today || undefined}>
@@ -253,7 +253,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
                           {h.today && <span className={styles.todayBadge}> · היום</span>}
                         </th>
                         <td data-closed={(!h.range && !h.unknown) || undefined} data-unknown={h.unknown || undefined}>
-                          {h.range ? <span dir="ltr" className={`ltr ${styles.range}`}>{h.range}</span> : h.unknown ? 'לא פורסם' : 'סגור'}
+                          {h.range ? <span dir="ltr" className={`ltr ${styles.range}`}>{h.range}</span> : h.unknown ? 'ללא שעות' : 'סגור'}
                         </td>
                       </tr>
                     ))}
@@ -685,7 +685,7 @@ function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null
               <TrackedLink branchId={p.id} type="call_click" href={telHref(p.phone)} dir="ltr">
                 {fromE164(p.phone)}
               </TrackedLink>
-            ) : <span className={styles.dlMissing}>טלפון לא פורסם</span>}
+            ) : <span className={styles.dlMissing}>ללא טלפון</span>}
           </dd>
         </div>
         <div>
@@ -695,7 +695,7 @@ function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null
               <TrackedLink branchId={p.id} type="contact_click" href={`mailto:${p.email}`} dir="ltr">
                 {p.email}
               </TrackedLink>
-            ) : <span className={styles.dlMissing}>דוא״ל לא פורסם</span>}
+            ) : <span className={styles.dlMissing}>ללא דוא״ל</span>}
           </dd>
         </div>
         {p.websiteUrl && (

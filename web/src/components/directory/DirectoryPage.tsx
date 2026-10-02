@@ -18,7 +18,7 @@ import { GuideExpander } from './GuideExpander';
 import { ListingCard } from './ListingCard';
 import { canonicalHref, dirHref, hasParams, pageCount, parseQuery, type DirQuery } from './params';
 import { Pager } from './Pager';
-import { composeDescription, publicMetadata } from '@/lib/seo/meta';
+import { composeDescription, fitTitle, publicMetadata } from '@/lib/seo/meta';
 import { seoCityName } from '@/lib/seo/seoName';
 import { breadcrumbNode, faqNode, graph, itemListNode, ldJson, listId, webPageNode } from '@/lib/seo/schema';
 import { ResultsShell } from './ResultsShell';
@@ -64,7 +64,9 @@ export async function directoryMetadata(params: DirParams, searchParams: DirSear
   const o = await getOverview(s.region.slug, s.city.slug, s.category?.slug);
   const where = `ב${seoCityName(s.city.name)}`;
   // "{noun} ב{city}: מחירים והשוואה | BeautyFind"; the layout appends the brand.
-  const title = `${s.category ? `${SEO_TERM[s.category.slug] ?? s.category.name} ${where}: מחירים והשוואה` : `מכוני יופי ואסתטיקה ${where}: מחירים והשוואה`}${q.page > 1 ? ` (עמוד ${q.page})` : ''}`;
+  const noun = s.category ? SEO_TERM[s.category.slug] ?? s.category.name : 'מכוני יופי ואסתטיקה';
+  const pageTag = q.page > 1 ? ` (עמוד ${q.page})` : '';
+  const title = fitTitle([`${noun} ${where}: מחירים והשוואה${pageTag}`, `${noun} ${where}: מחירים${pageTag}`, `${noun} ${where}${pageTag}`]);
   const verifiedPart =
     o.verified === 0 ? null : o.total === 1 ? 'העסק מאומת.' : o.verified === o.total ? 'כולם מאומתים.' : o.verified === 1 ? 'אחד מהם מאומת.' : `${fmtNum(o.verified)} מהם מאומתים.`;
   const ownPrice = s.category ? o.prices.find(p => p.slug === s.category!.slug && !p.fromRegion) : null;

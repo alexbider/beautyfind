@@ -34,7 +34,7 @@ import p from './page.module.css';
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-const DESCRIPTION = 'חיפוש מכוני יופי, אסתטיקה וקוסמטיקה בכל רחבי ישראל. סינון לפי אזור, עיר, תחום טיפול, מאפיינים ומחיר.';
+const DESCRIPTION = 'חיפוש מכוני יופי, אסתטיקה וקוסמטיקה בכל רחבי ישראל. סינון לפי אזור, עיר, תחום טיפול, מאפיינים ומחיר, והשוואת מחירים וביקורות לפני קביעת תור.';
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const st = parseSearch(await searchParams);

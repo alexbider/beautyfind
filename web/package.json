@@ -22,6 +22,7 @@
     "import:cleanup": "tsx scripts/import/cleanup.ts",
     "import:category-audit": "tsx scripts/import/categoryAudit.ts",
     "import:description-cleanup": "tsx scripts/import/descriptionCleanup.ts",
+    "seo:verify": "tsx scripts/seo-verify.ts",
     "import:manifest": "tsx scripts/import/manifest.ts",
     "import:screenshots": "tsx scripts/import/screenshots.ts"
   },

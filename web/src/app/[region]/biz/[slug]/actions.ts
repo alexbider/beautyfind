@@ -62,7 +62,7 @@ export async function submitProfileLead(input: LeadInput): Promise<LeadResult> {
     // A quote request names the service (business, branch and service context travel with the lead).
     const service = d.serviceId ? await db.treatment.findFirst({ where: { id: d.serviceId, branchId: branch.id }, select: { id: true, name: true, priceAgorot: true } }) : null;
     const treatmentName = service?.name ?? (d.treatment || null);
-    const notes = [service ? `בקשת מחיר ופרטים לשירות: ${service.name}${service.priceAgorot == null ? ' (המחיר לא פורסם)' : ''} [${service.id}]` : null, d.message || null].filter(Boolean).join('\n') || null;
+    const notes = [service ? `בקשת מחיר ופרטים לשירות: ${service.name}${service.priceAgorot == null ? ' (מחיר לפי פנייה)' : ''} [${service.id}]` : null, d.message || null].filter(Boolean).join('\n') || null;
     const lead = await db.lead.create({
       data: {
         businessId: branch.businessId,

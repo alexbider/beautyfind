@@ -1,7 +1,7 @@
 import { VAT_LABEL } from '@/lib/features';
 import type { Metadata } from 'next';
 import { applySeo } from '@/lib/server/seo';
-import { composeDescription, publicMetadata } from '@/lib/seo/meta';
+import { composeDescription, fitTitle, publicMetadata } from '@/lib/seo/meta';
 import { SEO_TERM } from '@/lib/seo/terms';
 import type { ReactNode } from 'react';
 import Image from 'next/image';
@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const body = CATEGORY_CONTENT[cat.slug];
   return applySeo(`/treatments/${cat.slug}`, publicMetadata({
     path: `/treatments/${cat.slug}`,
-    title: `${SEO_TERM[cat.slug] ?? cat.name} בישראל: מחירים והשוואה`,
+    title: fitTitle([`${SEO_TERM[cat.slug] ?? cat.name} בישראל: מחירים והשוואה`, `${SEO_TERM[cat.slug] ?? cat.name} בישראל: מחירים`, `${SEO_TERM[cat.slug] ?? cat.name} בישראל`]),
     description: composeDescription(
       [`${cat.name} בישראל: מה כולל התחום, מחירים אמצעיים ומי מורשה לבצע.`, n > 0 ? `${countText(n, 'עסק אחד', 'עסקים')} ב־7 אזורים.` : null, 'העסקים המדורגים ביותר בכל אזור.', 'השוו מחירים וקבעו תור.'],
       ['דירוג Google וביקורות BeautyFind בנפרד.'],

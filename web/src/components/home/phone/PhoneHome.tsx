@@ -484,7 +484,7 @@ export function ListingSteps({ variant }: { variant?: 'desk' }) {
           <div className={s.paneText}>בעלות מאומתת מסומנת בתג "מאומת", ורישיון רופא, אחות או תעודת קוסמטיקאית שנבדקו מסומנים בפרופיל בנפרד.</div>
         </div>
         <div className={`${s.pane} ${s.paneProfile}`} style={pane(2)}>
-          <span className={s.profileImg}><Image src="/assets/biz-facial.jpg" alt="" fill sizes="96px" className={s.cover} /></span>
+          <span className={s.profileImg}><Image src="/assets/biz-facial.jpg" alt="" role="presentation" fill sizes="96px" className={s.cover} /></span>
           <span className={s.profileText}>
             <span className={s.livePill}><span className={s.openDot} />הפרופיל באוויר</span>
             <span className={s.profileName}>סטודיו ליה לטיפוח</span>

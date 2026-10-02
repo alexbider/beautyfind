@@ -10,18 +10,20 @@ import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
 import { applySeo } from '@/lib/server/seo';
 import { currentUser } from '@/lib/server/session';
+import { publicMetadata } from '@/lib/seo/meta';
+import { breadcrumbNode, graph, ldJson, webPageNode } from '@/lib/seo/schema';
 import { ContactForm, type ContactPrefill } from './ContactForm';
 import { LIMITS } from './shared';
 import styles from './page.module.css';
 
 // Design: project/BeautyFind Contact.dc.html
 
-const BASE: Metadata = {
-  title: 'יצירת קשר',
-  description:
-    'יצירת קשר עם BeautyFind: פנייה כללית, רישום עסק, דיווח על טעות או על מחיר שאינו תואם, פניות נגישות ופניות תקשורת, עם זמני מענה מוצהרים.',
-  alternates: { canonical: ROUTES.contact },
-};
+const DESCRIPTION = 'יצירת קשר עם BeautyFind: פנייה כללית, רישום עסק, דיווח על טעות או על מחיר שאינו תואם, פניות נגישות ופניות תקשורת, עם זמני מענה מוצהרים.';
+const BASE: Metadata = publicMetadata({ path: ROUTES.contact, title: 'יצירת קשר עם BeautyFind', description: DESCRIPTION });
+const JSON_LD = graph([
+  webPageNode({ path: ROUTES.contact, type: 'ContactPage', name: 'יצירת קשר עם BeautyFind', description: DESCRIPTION, breadcrumb: true }),
+  breadcrumbNode(ROUTES.contact, [{ name: 'ראשי', path: '/' }, { name: 'יצירת קשר', path: ROUTES.contact }]),
+]);
 export const generateMetadata = () => applySeo('/contact', BASE);
 
 // Israfind Group (Delaware) corresponds by email. Set these to show a phone line or a postal address card.
@@ -90,6 +92,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
 
   return (
     <div className={styles.root}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(JSON_LD) }} />
       <SiteHeader variant="public" title="יצירת קשר" backHref="/more" />
 
       <nav aria-label="נתיב ניווט" className={styles.crumbs}>

@@ -100,7 +100,7 @@ describe('price states', () => {
     assert.equal(r.kind === 'amount' ? r.amount : '', '₪400 עד ₪600');
     const pk = servicePrice({ priceType: 'package', priceAgorot: 180000, priceNote: '6 מפגשים' });
     assert.equal(pk.kind === 'amount' ? pk.post : '', ' (6 מפגשים)');
-    assert.equal(PRICE_UNKNOWN, 'המחיר לא פורסם');
+    assert.equal(PRICE_UNKNOWN, 'מחיר לפי פנייה'); // says what to do, not what is missing (text rules)
   });
 });
 
