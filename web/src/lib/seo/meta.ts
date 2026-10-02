@@ -58,7 +58,9 @@ export function composeDescription(parts: Array<string | null | undefined>, fill
   }
   for (const f of filler) {
     if (text.length >= min) break;
-    const next = text ? `${text} ${clean(f)}` : clean(f);
+    const c = clean(f);
+    if (!c) continue;
+    const next = text ? `${text} ${c}` : c;
     if (next.length <= max) text = next;
   }
   if (text.length > max) {

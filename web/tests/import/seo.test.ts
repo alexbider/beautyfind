@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { composeDescription, publicMetadata } from '../../src/lib/seo/meta';
-import { META_ACTION, metaDescriptionOk, metaDescriptionProblems } from '../../src/lib/seo/metaRules';
+import { META_ACTION, composeMetaDescription, metaDescriptionOk, metaDescriptionProblems } from '../../src/lib/seo/metaRules';
 import { capWords, sameNameAcrossScripts, seoCityName, seoName } from '../../src/lib/seo/seoName';
 import { hebrewTreatmentName, hebrewTreatmentNames } from '../../src/lib/seo/treatmentNames';
 
@@ -83,6 +83,13 @@ describe('meta description rules', () => {
     assert.ok(codes(`${base} דירוג Google וביקורות BeautyFind בנפרד.`).includes('ratings_line'));
     assert.ok(codes('מספרה בחיפה.').includes('short'));
     assert.ok(codes(`${base} ${'א'.repeat(80)}`).includes('long'));
+  });
+
+  it('composes the pattern and shrinks the treatment list so the action always fits', () => {
+    const long = composeMetaDescription({ lead: 'סלון דוגמה 91 בתל אביב-יפו: מניקור ופדיקור.', treatments: ['טיפול פנים קלאסי', 'הרמת ריסים', 'עיצוב גבות'], moreTreatments: true, rating: 'דירוג 4.0 בגוגל (100 ביקורות).', fillers: ['מחירים, טיפולים וביקורות.'] });
+    assert.ok(long.endsWith(META_ACTION) && metaDescriptionOk(long), long);
+    const thin = composeMetaDescription({ lead: 'נתבע בחיפה.', treatments: [], fillers: ['כל הטיפולים והמחירים של נתבע במקום אחד.', 'מכוני יופי ואסתטיקה בחיפה להשוואה.', 'מחירים, טיפולים וביקורות.'] });
+    assert.ok(metaDescriptionOk(thin) && !thin.includes('  '), thin);
   });
 });
 

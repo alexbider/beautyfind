@@ -15,8 +15,8 @@
 
 import { createHash } from 'node:crypto';
 import { CATEGORIES } from '../catalog';
-import { DESCRIPTION_MAX, DESCRIPTION_MIN, composeDescription } from '../seo/meta';
-import { META_ACTION, metaDescriptionProblems } from '../seo/metaRules';
+import { DESCRIPTION_MAX, DESCRIPTION_MIN } from '../seo/meta';
+import { composeMetaDescription, metaDescriptionProblems } from '../seo/metaRules';
 import { hebrewTreatmentNames } from '../seo/treatmentNames';
 import type { DayHours, ImportedTreatment } from './rules';
 import { normalizeHebrew, problemCode, textProblems } from './textRules';
@@ -558,15 +558,13 @@ export function templateDraft(p: EvidencePacket): EditorialOutput {
   const title = `${p.name}${cats[0] ? `: ${cats[0]}` : ''}${where}`.slice(0, 60);
   // The meta description pattern (src/lib/seo/metaRules.ts): the business, its treatments in Hebrew, the rating, the action.
   const topTreatments = hebrewTreatmentNames(p.services.map(s => s.name), 3);
-  const md = composeDescription(
-    [
-      `${p.name}${where}${cats[0] ? `: ${cats[0]}` : ''}.`,
-      topTreatments.length ? `${topTreatments.join(', ')}${p.services.length > topTreatments.length ? ' ועוד' : ''}.` : null,
-      p.rating ? `דירוג ${p.rating.value.toFixed(1)} בגוגל (${p.rating.count === 1 ? 'ביקורת אחת' : `${p.rating.count} ביקורות`}).` : null,
-      META_ACTION,
-    ],
-    [cats[1] ? `גם ${cats[1]}.` : '', `כל הטיפולים והמחירים של ${p.name} במקום אחד.`, cats[0] ? `${cats[0]}${where} להשוואה.` : ''],
-  );
+  const md = composeMetaDescription({
+    lead: `${p.name}${where}${cats[0] ? `: ${cats[0]}` : ''}.`,
+    treatments: topTreatments,
+    moreTreatments: p.services.length > topTreatments.length,
+    rating: p.rating ? `דירוג ${p.rating.value.toFixed(1)} בגוגל (${p.rating.count === 1 ? 'ביקורת אחת' : `${p.rating.count} ביקורות`}).` : null,
+    fillers: [cats[1] ? `גם ${cats[1]}.` : '', `כל הטיפולים והמחירים של ${p.name} במקום אחד.`, cats[0] ? `${cats[0]}${where} להשוואה.` : `מכוני יופי ואסתטיקה${where} להשוואה.`, 'מחירים, טיפולים וביקורות.'],
+  });
   return normalizeOutput({
     heading: headingOf(),
     description,

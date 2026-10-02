@@ -6,7 +6,7 @@
 // stored-override check and scripts/seo-verify.ts.
 
 import { MISSING_INFO_EXTRA, MISSING_INFO_PATTERNS } from '../import/textRules';
-import { DESCRIPTION_MAX, DESCRIPTION_MIN } from './meta';
+import { DESCRIPTION_MAX, DESCRIPTION_MIN, composeDescription } from './meta';
 
 export type MetaProblem = 'missing_info' | 'booking' | 'contact' | 'phone_only' | 'ratings_line' | 'short' | 'long';
 
@@ -53,3 +53,20 @@ export const metaDescriptionOk = (text: string, opts?: { min?: number; max?: num
 
 /** The closing action of a description: one short Hebrew sentence that is not a booking or contact claim. */
 export const META_ACTION = 'השוו מחירים וביקורות ב־BeautyFind.';
+
+/**
+ * A description in the pattern: the lead (what the business is), its treatments, the rating line, then
+ * the action, padded with the fillers when short. The treatment list shrinks (three, two, one, none)
+ * until the action fits inside the range, so every description ends with the action.
+ */
+export function composeMetaDescription(input: { lead: string; treatments: string[]; moreTreatments?: boolean; rating?: string | null; fillers?: string[] }): string {
+  let best = '';
+  for (let n = input.treatments.length; n >= 0; n--) {
+    const list = input.treatments.slice(0, n);
+    const more = n > 0 && (input.moreTreatments || n < input.treatments.length);
+    const text = composeDescription([input.lead, list.length ? `${list.join(', ')}${more ? ' ועוד' : ''}.` : null, input.rating ?? null, META_ACTION], input.fillers ?? []);
+    if (!best) best = text;
+    if (text.endsWith(META_ACTION) || text.includes(`${META_ACTION} `)) return text;
+  }
+  return best;
+}

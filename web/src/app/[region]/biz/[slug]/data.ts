@@ -8,8 +8,7 @@ import { cleanTeam } from '@/lib/import/profileExtract';
 import { listBranches, nearbyBranches, type ListingCard, type PublicProfile } from '@/lib/server/public';
 import { listingTitle } from '@/lib/seo/listingTitle';
 import { normalizeHebrew } from '@/lib/import/textRules';
-import { composeDescription } from '@/lib/seo/meta';
-import { META_ACTION, metaDescriptionOk } from '@/lib/seo/metaRules';
+import { composeMetaDescription, metaDescriptionOk } from '@/lib/seo/metaRules';
 import { seoCityName, seoName } from '@/lib/seo/seoName';
 import { coverAlt, galleryAlts } from '@/lib/seo/imageAlt';
 import { CATEGORY_SHORT, SEO_TERM } from '@/lib/seo/terms';
@@ -325,15 +324,19 @@ export function metaDescription(p: PublicProfile, v: ProfileView): string {
   const cat = v.cats[0];
   const treatments = hebrewTreatmentNames(p.treatments.map(t => t.name), 3);
   const g = v.google && v.google.count > 0 ? v.google : null;
-  return composeDescription(
-    [
-      `${name} ב${city}${cat ? `: ${CATEGORY_SHORT[cat.slug] ?? cat.name}` : ''}.`,
-      treatments.length ? `${treatments.join(', ')}${p.treatments.length > treatments.length ? ' ועוד' : ''}.` : null,
-      g ? `דירוג ${g.rating.toFixed(1)} בגוגל (${reviewsLabel(g.count)}).` : null,
-      META_ACTION,
+  return composeMetaDescription({
+    lead: `${name} ב${city}${cat ? `: ${CATEGORY_SHORT[cat.slug] ?? cat.name}` : ''}.`,
+    treatments,
+    moreTreatments: p.treatments.length > treatments.length,
+    rating: g ? `דירוג ${g.rating.toFixed(1)} בגוגל (${reviewsLabel(g.count)}).` : null,
+    fillers: [
+      v.responsible ? `${v.responsible.label}: ${v.responsible.name}.` : '',
+      `כל הטיפולים והמחירים של ${name} במקום אחד.`,
+      cat ? `${SEO_TERM[cat.slug] ?? cat.name} ב${city} להשוואה.` : `מכוני יופי ואסתטיקה ב${city} להשוואה.`,
+      'מחירים, טיפולים וביקורות.',
+      `עוד עסקים ב${city}.`,
     ],
-    [v.responsible ? `${v.responsible.label}: ${v.responsible.name}.` : '', `כל הטיפולים והמחירים של ${name} במקום אחד.`, cat ? `${SEO_TERM[cat.slug] ?? cat.name} ב${city} להשוואה.` : ''],
-  );
+  });
 }
 
 /**
