@@ -34,7 +34,7 @@ export default async function AftercarePage({ params }: { params: Promise<{ toke
     include: {
       treatment: { select: { name: true, categorySlug: true, isMedical: true } },
       practitioner: { select: { displayName: true } },
-      branch: { select: { name: true, phone: true, whatsapp: true, slug: true, regionSlug: true, categories: { select: { categorySlug: true } } } },
+      branch: { select: { name: true, phone: true, whatsapp: true, slug: true, regionSlug: true, categories: { select: { categorySlug: true, isPrimary: true } } } },
     },
   });
   // Available only once the treatment is completed.

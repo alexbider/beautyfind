@@ -20,7 +20,7 @@ export interface Breakdown {
   cityCat: Record<string, Record<string, number>>;
 }
 
-/** Listing counts per region × category and per city × category. */
+/** Listing counts per region × category and per city × category, by primary category (the category page a listing belongs to). */
 export const listingBreakdown = cache(async (): Promise<Breakdown> => {
   const rows = await db.$queryRaw<Array<{ region: string; city: string | null; cat: string; n: bigint }>>`
     SELECT b.region_slug::text AS region, c.slug AS city, bc.category_slug AS cat, count(*) AS n
@@ -28,7 +28,7 @@ export const listingBreakdown = cache(async (): Promise<Breakdown> => {
     JOIN branches b ON b.id = bc.branch_id
     JOIN businesses bz ON bz.id = b.business_id
     LEFT JOIN cities c ON c.id = b.city_id
-    WHERE ${LIVE}
+    WHERE ${LIVE} AND bc.is_primary
     GROUP BY 1, 2, 3`;
   const regionCat: Breakdown['regionCat'] = {};
   const cityCat: Breakdown['cityCat'] = {};

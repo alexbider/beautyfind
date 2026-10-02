@@ -12,3 +12,4 @@ CLAUDE.md
 
 # Self-hosted worker secrets
 .env.worker
+reports/

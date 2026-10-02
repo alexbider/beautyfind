@@ -26,6 +26,7 @@ export const getPractitioner = cache(async (id: string) => {
     include: {
       city: { select: { slug: true } },
       region: { select: { name: true } },
+      categories: { select: { categorySlug: true, isPrimary: true } },
       treatments: { where: { isPublished: true }, orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }], include: { category: { select: { name: true, isMedical: true } } } },
       medicalResponsible: { select: { id: true, displayName: true, profession: true, license: { select: { kind: true, status: true } } } },
     },

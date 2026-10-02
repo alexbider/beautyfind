@@ -33,7 +33,7 @@ export async function loadReviewBooking(token: string) {
       id: true, ref: true, status: true, startsAt: true, clientName: true, clientUserId: true, kind: true,
       treatment: { select: { name: true } },
       practitioner: { select: { displayName: true } },
-      branch: { select: { id: true, name: true, cityName: true, slug: true, regionSlug: true, businessId: true, business: { select: { ownerUserId: true } } } },
+      branch: { select: { id: true, name: true, cityName: true, slug: true, regionSlug: true, businessId: true, categories: { select: { categorySlug: true, isPrimary: true } }, business: { select: { ownerUserId: true } } } },
       review: { select: { status: true, rating: true, title: true, nameMode: true, photos: true, photoConsent: true } },
     },
   });

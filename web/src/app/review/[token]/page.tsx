@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { profileHref as profilePath } from '@/lib/category';
 import { ROUTES } from '@/lib/routes';
 import { ilDate } from '@/lib/time';
 import { ReviewForm } from '@/components/review/ReviewForm';
@@ -40,7 +41,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ token: 
     );
   }
 
-  const profileHref = `/${b.branch.regionSlug}/biz/${b.branch.slug}`;
+  const profileHref = profilePath(b.branch);
 
   if (b.review) {
     return (

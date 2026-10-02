@@ -31,6 +31,7 @@ async function loadBranch(slug: string) {
     where: { AND: [PUBLIC_WHERE, { slug }] },
     include: {
       business: { select: { id: true, depositPolicy: true } },
+      categories: { select: { categorySlug: true, isPrimary: true } },
       treatments: { where: { isPublished: true }, orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }], include: { category: true } },
       medicalResponsible: { select: { id: true, displayName: true, license: { select: { number: true, status: true } } } },
     },

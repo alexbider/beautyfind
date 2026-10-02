@@ -24,7 +24,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 async function loadBranch(slug: string) {
   return db.branch.findFirst({
     where: { AND: [PUBLIC_WHERE, { slug }] },
-    include: { business: { select: { id: true, settings: true } }, city: { select: { name: true } } },
+    include: { business: { select: { id: true, settings: true } }, city: { select: { name: true } }, categories: { select: { categorySlug: true, isPrimary: true } } },
   });
 }
 

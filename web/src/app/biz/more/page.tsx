@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { MoreMenu, type MoreRow } from '@/components/more/MoreMenu';
 import { visibleViews } from '@/components/dashboard/views';
+import { profileHref as profilePath } from '@/lib/category';
 import { bizContext } from '@/lib/server/biz';
 import { isAdvanced } from '@/lib/server/clinic';
 import s from './page.module.css';
@@ -14,7 +15,7 @@ export default async function BizMorePage() {
   const ctx = await bizContext();
   const views = visibleViews(ctx).filter(v => !IN_TABS.has(v.href));
   const advanced = await isAdvanced(ctx.business.id);
-  const profileHref = ctx.branch ? `/${ctx.branch.regionSlug}/biz/${ctx.branch.slug}` : null;
+  const profileHref = ctx.branch ? profilePath(ctx.branch) : null;
 
   const manage: MoreRow[] = views.map(v => ({ kind: 'link', label: v.name, href: v.href }));
   const business: MoreRow[] = [

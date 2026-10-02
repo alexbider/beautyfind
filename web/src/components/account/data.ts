@@ -160,7 +160,7 @@ export async function loadAccount(user: User, now = new Date()): Promise<Account
       orderBy: { startsAt: 'desc' },
       take: 200,
       include: {
-        branch: { select: { name: true, slug: true, regionSlug: true, address: true, cityName: true, whatsapp: true, wazeUrl: true, businessId: true } },
+        branch: { select: { name: true, slug: true, regionSlug: true, address: true, cityName: true, whatsapp: true, wazeUrl: true, businessId: true, categories: { select: { categorySlug: true, isPrimary: true } } } },
         treatment: { select: { name: true } },
         practitioner: { select: { displayName: true } },
         review: { select: { id: true } },

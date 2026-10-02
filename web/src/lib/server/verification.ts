@@ -1,5 +1,6 @@
 import 'server-only';
 import type { OpsRole, Prisma, VerificationStatus } from '@prisma/client';
+import { withPrimary } from '../category';
 import { db } from './db';
 import { messaging } from '../vendors/messaging';
 
@@ -126,7 +127,7 @@ async function onApprove(tx: Tx, req: Req): Promise<'license_pending' | 'already
     }
     case 'claim': {
       if (!req.branchId || !req.submittedById) return 'invalid';
-      const branch = await tx.branch.findUnique({ where: { id: req.branchId }, include: { business: true } });
+      const branch = await tx.branch.findUnique({ where: { id: req.branchId }, include: { business: true, categories: { select: { categorySlug: true, isPrimary: true } } } });
       if (!branch) return 'invalid';
       if (branch.isClaimed || branch.business.ownerUserId) return 'already_owned';
       const user = await tx.user.findUnique({ where: { id: req.submittedById } });
@@ -165,7 +166,7 @@ async function onApprove(tx: Tx, req: Req): Promise<'license_pending' | 'already
           whatsapp: str(d.whatsapp) ?? branch.whatsapp,
           ...(Array.isArray(d.hours) && d.hours.length === 7 ? { hours: d.hours as Prisma.InputJsonValue } : {}),
           ...(known.length
-            ? { categories: { deleteMany: {}, create: known.map(k => ({ categorySlug: k.slug })) } }
+            ? { categories: { deleteMany: {}, create: withPrimary(known.map(k => k.slug), branch.categories.find(c => c.isPrimary)?.categorySlug) } }
             : {}),
         },
       });

@@ -56,7 +56,7 @@ export default async function ManageBookingPage({ params, searchParams }: Props)
       treatment: { select: { name: true } },
       practitioner: { select: { displayName: true, profession: true } },
       declaration: { select: { id: true, validUntil: true, supersededById: true } },
-      branch: { select: { name: true, slug: true, regionSlug: true, cityName: true, address: true, phone: true, whatsapp: true, wazeUrl: true, hours: true, freeParking: true } },
+      branch: { select: { name: true, slug: true, regionSlug: true, cityName: true, address: true, phone: true, whatsapp: true, wazeUrl: true, hours: true, freeParking: true, categories: { select: { categorySlug: true, isPrimary: true } } } },
       payments: {
         orderBy: { createdAt: 'desc' },
         select: { purpose: true, status: true, checkoutUrl: true, refunds: { select: { status: true } } },

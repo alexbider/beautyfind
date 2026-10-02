@@ -1,5 +1,5 @@
 import 'server-only';
-import { CATEGORIES } from '../catalog';
+import { orderCategories, profileHref } from '../category';
 import { Prisma, type RegionSlug } from '@prisma/client';
 import { cache } from 'react';
 import { BOOKING_LIVE } from '../features';
@@ -16,6 +16,8 @@ export interface ListingFilter {
   region?: RegionSlug;
   citySlug?: string;
   category?: string;
+  /** Match any category the listing carries, not only its primary one (search filter). */
+  anyCategory?: boolean;
   q?: string; // free text: business name, city or treatment name
   verifiedOnly?: boolean;
   accessible?: boolean;
@@ -48,28 +50,16 @@ export interface ListingCard {
   hasMedicalResponsible: boolean;
 }
 
-/**
- * The listing's primary category: the row flagged primary; for an ordered list of slugs (an import record)
- * the first one; for older rows without a flag, catalog order.
- */
-export function primaryCategory(cats: Array<string | { categorySlug: string; isPrimary?: boolean }> | undefined): string | null {
-  const list = cats ?? [];
-  const flagged = list.find(c => typeof c !== 'string' && c.isPrimary);
-  if (flagged && typeof flagged !== 'string') return flagged.categorySlug;
-  if (list.length && list.every(c => typeof c === 'string')) return (list as string[]).find(s => CATEGORIES.some(c => c.slug === s)) ?? null;
-  const have = new Set(list.map(c => (typeof c === 'string' ? c : c.categorySlug)));
-  return CATEGORIES.find(c => have.has(c.slug))?.slug ?? null;
-}
-
-/** /:region/:category/:slug; a listing without categories keeps /:region/biz/:slug. */
-export const profileHref = (b: { regionSlug: string; slug: string; categories?: Array<string | { categorySlug: string; isPrimary?: boolean }> }) =>
-  `/${b.regionSlug}/${primaryCategory(b.categories) ?? 'biz'}/${b.slug}`;
+// The primary category and the profile address come from one pure module (src/lib/category.ts), so the
+// sitemap, the cards, the scripts and the tests all agree on which URL is canonical.
+export { primaryCategory, profileHref } from '../category';
 
 function where(f: ListingFilter): Prisma.BranchWhereInput {
   const and: Prisma.BranchWhereInput[] = [PUBLIC_WHERE];
   if (f.region) and.push({ regionSlug: f.region });
   if (f.citySlug) and.push({ city: { slug: f.citySlug } });
-  if (f.category) and.push({ categories: { some: { categorySlug: f.category } } });
+  // A business belongs to one category page: the one of its primary category (the canonical address).
+  if (f.category) and.push({ categories: { some: { categorySlug: f.category, ...(f.anyCategory ? {} : { isPrimary: true }) } } });
   if (f.verifiedOnly) and.push({ isClaimed: true });
   if (f.accessible) and.push({ accessible: true });
   if (f.freeParking) and.push({ freeParking: true });
@@ -112,7 +102,7 @@ async function reviewStats(branchIds: string[]) {
 function toCard(b: CardRow, stats: Map<string, { rating: number; count: number }>): ListingCard {
   // "From" price: comparable published amounts only (no per-unit, per-ml, per-area or package totals, no unknown prices).
   const prices = b.treatments.filter(t => t.priceAgorot != null && t.priceAgorot > 0 && ['fixed', 'from', 'range'].includes(t.priceType)).map(t => t.priceAgorot as number);
-  const cats = [...b.categories].sort((a, c) => a.category.sortOrder - c.category.sortOrder);
+  const cats = orderCategories(b.categories); // [0] is the primary category, the one in the URL
   return {
     id: b.id,
     slug: b.slug,
@@ -169,7 +159,7 @@ export const listingCounts = cache(async () => {
   const [byRegion, byCity, byCat] = await Promise.all([
     db.branch.groupBy({ by: ['regionSlug'], where: PUBLIC_WHERE, _count: { _all: true } }),
     db.branch.groupBy({ by: ['cityId'], where: { ...PUBLIC_WHERE, cityId: { not: null } }, _count: { _all: true } }),
-    db.branchCategory.groupBy({ by: ['categorySlug'], where: { branch: PUBLIC_WHERE }, _count: { _all: true } }),
+    db.branchCategory.groupBy({ by: ['categorySlug'], where: { branch: PUBLIC_WHERE, isPrimary: true }, _count: { _all: true } }),
   ]);
   const cities = await db.city.findMany({ select: { id: true, slug: true } });
   const citySlug = new Map(cities.map(c => [c.id, c.slug]));
@@ -220,7 +210,7 @@ export async function recentReviews(take = 6): Promise<RecentReview[]> {
     take,
     select: {
       id: true, authorName: true, rating: true, body: true, treatmentName: true, createdAt: true, bookingId: true,
-      branch: { select: { name: true, slug: true, regionSlug: true } },
+      branch: { select: { name: true, slug: true, regionSlug: true, categories: { select: { categorySlug: true, isPrimary: true } } } },
     },
   });
   return rows.map(r => ({

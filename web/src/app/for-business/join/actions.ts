@@ -4,6 +4,7 @@ import { saveUpload } from '@/lib/server/media';
 import { randomBytes } from 'node:crypto';
 import { z } from 'zod';
 import { CATEGORIES, REGIONS } from '@/lib/catalog';
+import { withPrimary } from '@/lib/category';
 import { toE164 } from '@/lib/format';
 import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
 import { db } from '@/lib/server/db';
@@ -170,7 +171,7 @@ export async function submitJoin(input: JoinPayload & { media?: z.input<typeof M
         },
       });
 
-      await tx.branchCategory.createMany({ data: v.pickedCats.map(c => ({ branchId: branch.id, categorySlug: c.slug })) });
+      await tx.branchCategory.createMany({ data: withPrimary(v.pickedCats.map(c => c.slug), null).map(r => ({ branchId: branch.id, ...r })) });
 
       await tx.treatment.createMany({
         data: v.filledSvcs.map((s, i) => {

@@ -96,8 +96,8 @@ const joinHe = (xs: string[]) => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, 
 const firstName = (n: string) => n.trim().split(/\s+/)[0] ?? '';
 
 async function businessFace(businessId: string) {
-  const branches = await db.branch.findMany({ where: { businessId, ...PUBLIC_WHERE }, orderBy: { createdAt: 'asc' }, select: { name: true, slug: true, regionSlug: true, cityName: true } });
-  const main = branches[0] ?? (await db.branch.findFirst({ where: { businessId }, orderBy: { createdAt: 'asc' }, select: { name: true, slug: true, regionSlug: true, cityName: true } }));
+  const branches = await db.branch.findMany({ where: { businessId, ...PUBLIC_WHERE }, orderBy: { createdAt: 'asc' }, select: { name: true, slug: true, regionSlug: true, cityName: true, categories: { select: { categorySlug: true, isPrimary: true } } } });
+  const main = branches[0] ?? (await db.branch.findFirst({ where: { businessId }, orderBy: { createdAt: 'asc' }, select: { name: true, slug: true, regionSlug: true, cityName: true, categories: { select: { categorySlug: true, isPrimary: true } } } }));
   return {
     name: main?.name ?? 'הקליניקה',
     cities: joinHe([...new Set(branches.map(b => b.cityName))]),
@@ -169,7 +169,7 @@ export interface SellableBranch {
 export async function sellableBranch(slug: string): Promise<SellableBranch | null> {
   const b = await db.branch.findFirst({
     where: { slug, ...PUBLIC_WHERE },
-    select: { id: true, name: true, slug: true, regionSlug: true, cityName: true, phone: true, whatsapp: true, email: true, businessId: true, business: { select: { settings: true } } },
+    select: { id: true, name: true, slug: true, regionSlug: true, cityName: true, phone: true, whatsapp: true, email: true, businessId: true, business: { select: { settings: true } }, categories: { select: { categorySlug: true, isPrimary: true } } },
   });
   if (!b) return null;
   const advanced = await isAdvanced(b.businessId);

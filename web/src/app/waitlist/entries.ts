@@ -61,6 +61,7 @@ export async function loadJoinPage(slug: string) {
     where: { AND: [PUBLIC_WHERE, { slug }] },
     select: {
       id: true, name: true, slug: true, cityName: true, regionSlug: true, phone: true, whatsapp: true, businessId: true,
+      categories: { select: { categorySlug: true, isPrimary: true } },
       business: { select: { settings: true } },
       treatments: {
         where: { isPublished: true, isMedical: false, onlineBookable: true },

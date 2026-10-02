@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Wordmark } from '@/components/Wordmark';
+import { profileHref as profilePath } from '@/lib/category';
 import { DashNav } from '@/components/dashboard/DashNav';
 import { DashTopBar } from '@/components/dashboard/DashTopBar';
 import { visibleViews } from '@/components/dashboard/views';
@@ -27,7 +28,7 @@ export default async function BizLayout({ children }: { children: React.ReactNod
     db.lead.count({ where: { businessId: business.id, stage: 'new' } }),
     branch ? db.region.findUnique({ where: { slug: branch.regionSlug } }) : null,
   ]);
-  const firstCat = branch ? await db.branchCategory.findFirst({ where: { branchId: branch.id }, include: { category: true } }) : null;
+  const firstCat = branch ? await db.branchCategory.findFirst({ where: { branchId: branch.id }, orderBy: { isPrimary: 'desc' }, include: { category: true } }) : null;
 
   const views = visibleViews({ member, preview, perms }).map(v => ({
     ...v,
@@ -38,7 +39,7 @@ export default async function BizLayout({ children }: { children: React.ReactNod
   const line = [firstCat?.category.name, branch?.cityName, cityRegion?.name].filter(Boolean).join(' · ');
   const verified = business.status === 'live';
   const branchCount = business.branches.length;
-  const profileHref = branch ? `/${branch.regionSlug}/biz/${branch.slug}` : '/';
+  const profileHref = branch ? profilePath(branch) : '/';
   const roles = Object.entries(PRESET_NAMES).map(([key, v]) => ({ key, ...v }));
 
   return (

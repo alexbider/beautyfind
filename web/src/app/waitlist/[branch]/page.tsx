@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { profileHref as profilePath } from '@/lib/category';
 import { fromE164 } from '@/lib/format';
 import { currentUser } from '@/lib/server/session';
 import { JoinForm } from '@/components/waitlist/JoinForm';
@@ -31,7 +32,7 @@ export default async function WaitlistJoinPage({ params, searchParams }: Props) 
   const data = await loadJoinPage(slug);
   if (!data) notFound();
   const { branch, advanced, treatments, holdMinutes } = data;
-  const profileHref = `/${branch.regionSlug}/biz/${branch.slug}`;
+  const profileHref = profilePath(branch);
   const t = typeof sp.t === 'string' ? sp.t : null;
   const g = await gate('waitlist');
   if (g.off) return <FeatureOff flag="waitlist" reason={g.reason} message={g.message} closeHref={profileHref} />;

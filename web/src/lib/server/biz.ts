@@ -20,7 +20,7 @@ export const bizContext = cache(async () => {
 
   const memberships = await db.staffMember.findMany({
     where: { userId: user.id, status: 'active' },
-    include: { business: { include: { branches: { orderBy: { createdAt: 'asc' } }, subscription: true } } },
+    include: { business: { include: { branches: { orderBy: { createdAt: 'asc' }, include: { categories: { select: { categorySlug: true, isPrimary: true } } } }, subscription: true } } },
     orderBy: { createdAt: 'asc' },
   });
   if (memberships.length === 0) redirect(ROUTES.join);

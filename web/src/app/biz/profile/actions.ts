@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { CATEGORIES } from '@/lib/catalog';
+import { withPrimary } from '@/lib/category';
 import { toE164 } from '@/lib/format';
 import { requireArea } from '@/lib/server/biz';
 import { db } from '@/lib/server/db';
@@ -72,8 +73,13 @@ export async function saveProfile(input: ProfileForm): Promise<SaveProfileResult
         },
       });
       // Categories: replace the set. Treatments keep their own category; the menu tab flags mismatches.
+      const current = await tx.branchCategory.findFirst({ where: { branchId: branch.id, isPrimary: true }, select: { categorySlug: true } });
+      const rows = withPrimary(f.cats, current?.categorySlug);
       await tx.branchCategory.deleteMany({ where: { branchId: branch.id, categorySlug: { notIn: f.cats } } });
-      await tx.branchCategory.createMany({ data: f.cats.map(slug => ({ branchId: branch.id, categorySlug: slug })), skipDuplicates: true });
+      await tx.branchCategory.createMany({ data: rows.map(r => ({ branchId: branch.id, ...r })), skipDuplicates: true });
+      // The primary row may already exist unflagged (older listings); the set has exactly one primary.
+      const primary = rows.find(r => r.isPrimary);
+      if (primary) await tx.branchCategory.updateMany({ where: { branchId: branch.id }, data: { isPrimary: false } }).then(() => tx.branchCategory.update({ where: { branchId_categorySlug: { branchId: branch.id, categorySlug: primary.categorySlug } }, data: { isPrimary: true } }));
     });
   } catch (e) {
     console.error('[biz/profile] save failed', e);

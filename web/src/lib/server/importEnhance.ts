@@ -129,7 +129,7 @@ export async function enhanceBranch(branchId: string, p: ImportPlace, s: ImportS
 
   await db.$transaction(async tx => {
     if (Object.keys(data).length) await tx.branch.update({ where: { id: b.id }, data });
-    if (addCats.length) await tx.branchCategory.createMany({ data: addCats.map(c => ({ branchId: b.id, categorySlug: c })), skipDuplicates: true });
+    if (addCats.length) await tx.branchCategory.createMany({ data: addCats.map((c, i) => ({ branchId: b.id, categorySlug: c, isPrimary: have.size === 0 && i === 0 })), skipDuplicates: true });
     for (const [i, r] of newRows.entries()) await tx.treatment.create({ data: { ...r, sortOrder: b.treatments.length + i, branch: { connect: { id: b.id } } } });
     for (const r of priceFill) {
       const row = known.get(serviceKey(r.name))!;
