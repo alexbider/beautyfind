@@ -27,7 +27,7 @@ Two-factor authentication does not exist in the system; the team page says so fo
 | `/ops/accounting` | Income ledger, subscriptions and charges, expenses, VAT note, profit and loss, manual platform invoices, accountant export. Platform invoices carry no Israeli VAT (`docs/decisions.md`). |
 | `/ops/content` | Per-page SEO overrides (`PageSeo`, applied through `applySeo`), the indexing switches (below), catalog, sitemap and robots state. |
 | `/ops/messages` | The 25-template catalog with what the code already sends, the messaging adapter state, consent counts, editable draft copy. |
-| `/ops/ai` | The operations assistant, AI providers, MCP state, the approvals queue, usage and costs (below). |
+| `/ops/ai` | The operations assistant, AI providers, the MCP server tab (connection steps, tools, personal tokens, connected apps, recent calls), the approvals queue, usage and costs (below). |
 | `/ops/integrations` | Payments and invoicing providers with connected-business counts, messaging, calendars, analytics, import sources, operations. "בדיקה" runs a free check (database round trip, site, GitHub workflow state, key presence). Secrets are never shown. |
 | `/ops/team` | Staff accounts, last admin sign-in (from the audit log), invites, role changes, the permissions matrix. |
 | `/ops/audit` | Audit log and decisions merged, filtered by people, AI or system, CSV export. Append-only. |
@@ -46,6 +46,16 @@ One JSON row (`platform_settings`, id 1) parsed with `PlatformSettingsSchema`; c
 - `clientAssistant`: stored only; nothing on the site reads it yet.
 - `rolePermissions`, `templateDrafts`: the team matrix and the messages page.
 - `indexSite`, `indexSections`: the indexing switches (below).
+
+## MCP server
+
+Claude (claude.ai, Claude Desktop, Claude Code) can work with the admin through the site's own MCP server at `/api/mcp` (Streamable HTTP, stateless, one `McpServer` per request).
+
+- **Tools:** the assistant's catalog (`TOOL_CATALOG` in `src/lib/server/assistant.ts`): `platform_summary`, `search_businesses`, `billing_overview`, `list_disputes`, `approvals_queue`, `propose_action`. Each tool names the admin area and level it needs; a caller is offered only the tools their role allows (the matrix on `/ops/team`, with overrides). Writes still go through `propose_action` into the approvals queue with source `mcp:claude`. Every call is an `mcp_call` audit row (tool, client, token kind, proposals, error).
+- **Auth:** every request carries a bearer token that belongs to one staff member. Unauthenticated requests get `401` with `WWW-Authenticate: Bearer resource_metadata=".../.well-known/oauth-protected-resource/api/mcp"`, which is how MCP clients discover the OAuth flow.
+- **OAuth 2.1 (claude.ai, Desktop, Code):** `/.well-known/oauth-authorization-server` (RFC 8414) and `/.well-known/oauth-protected-resource[/api/mcp]` (RFC 9728); dynamic client registration at `POST /api/mcp/oauth/register` (RFC 7591, public clients by default, redirect URIs must be https or loopback http); the staff member approves on `/ops/mcp/authorize` (login first, then consent listing the tools their role allows); `POST /api/mcp/oauth/token` exchanges the one-time code (PKCE S256, ten minutes) for an access token (7 days) and a refresh token (180 days, rotated on use). Tables: `mcp_clients`, `mcp_tokens` (hashes only), `mcp_auth_codes`.
+- **Personal tokens:** on `/ops/ai`, tab שרת MCP, a staff member creates a `bfmcp_...` token (shown once, up to ten live per person) for clients that take a header, such as Claude Code with `--header "Authorization: Bearer ..."`. Revocable there; disconnecting an app revokes every token it holds for that person.
+- The tab shows the server URL, connection steps, the tool table with the caller's access, their personal tokens, their connected apps and the last twenty calls. Pure helpers (metadata, PKCE, redirect rules) live in `src/lib/mcp.ts`; the database side in `src/lib/server/mcp.ts`.
 
 ## Indexing
 

@@ -2,12 +2,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { AdminShell } from '@/components/ops/AdminShell';
 import { areaLevel, requireArea } from '@/components/ops/guard';
-import { atLeast } from '@/components/ops/roles';
+import type { User } from '@prisma/client';
+import { AREA_NAMES, LEVEL_NAMES, atLeast } from '@/components/ops/roles';
 import { Card, Chip, Empty, Kpis, PageHead, Pills, Table, Tabs, dateTimeIL, int, relIL, ui } from '@/components/ops/ui';
 import { AI_ACTION_NAMES } from '@/lib/server/aiActions';
 import { ASSISTANT_MODEL, assistantConfigured } from '@/lib/server/assistant';
+import { mcpOverview } from '@/lib/server/mcp';
 import { ApprovalButtons } from './ApprovalButtons';
 import { AssistantChat } from './AssistantChat';
+import { RevokeButton, TokenCreator } from './McpPanel';
 import styles from './ai.module.css';
 import { AI_TABS, approvals, providers, usage, type AiTab, type QueueFilter } from './data';
 
@@ -33,7 +36,7 @@ export default async function AiPage({ searchParams }: { searchParams: SP }) {
 
   return (
     <AdminShell user={user}>
-      <PageHead eyebrow="AI ונתונים" title="AI ו־MCP" lead="ספקי מודלים, שרת MCP לניהול מתוך Claude ו־ChatGPT, ותור אישורים לכל פעולת כתיבה." />
+      <PageHead eyebrow="AI ונתונים" title="AI ו־MCP" lead="ספקי מודלים, שרת MCP לניהול מתוך Claude, ותור אישורים לכל פעולת כתיבה." />
       <Tabs label="AI ו־MCP" current={tab} items={AI_TABS.map(t => ({ key: t.key, name: t.name, href: `/ops/ai?tab=${t.key}` }))} />
 
       {tab === 'assistant' ? (
@@ -57,7 +60,7 @@ export default async function AiPage({ searchParams }: { searchParams: SP }) {
       ) : null}
 
       {tab === 'providers' ? <ProvidersTab /> : null}
-      {tab === 'mcp' ? <McpTab /> : null}
+      {tab === 'mcp' ? <McpTab user={user} /> : null}
       {tab === 'queue' ? <QueueTab filter={qf} canEdit={canEdit} /> : null}
       {tab === 'usage' ? <UsageTab /> : null}
     </AdminShell>
@@ -85,19 +88,64 @@ async function ProvidersTab() {
   );
 }
 
-function McpTab() {
+async function McpTab({ user }: { user: User }) {
+  const m = await mcpOverview(user);
+  const allowed = m.tools.filter(t => t.allowed).length;
   return (
-    <div className={ui.grid2}>
-      <Card title="שרת MCP" sub="ניהול מתוך Claude ו־ChatGPT">
-        <p className={ui.note}><Chip tone="neutral">טרם הופעל</Chip></p>
-        <p className={ui.note} style={{ marginTop: 10 }}>שרת ה־MCP של BeautyFind עוד לא פרוס. כשהוא יופעל, הכלים שלו יהיו אותם כלי הקריאה של העוזר, וכל פעולת כתיבה תיכנס לאותו תור אישורים עם המקור <span className={ui.mono}>mcp:claude</span> או <span className={ui.mono}>mcp:chatgpt</span>. ההרשאות ייגזרו ממטריצת התפקידים ב־<Link href="/ops/team" className={ui.rowLink}>צוות והרשאות</Link>.</p>
+    <div className={ui.stack}>
+      <Kpis items={[
+        { label: 'שרת MCP', value: 'פעיל', tone: 'ok', note: 'Streamable HTTP · OAuth 2.1 עם PKCE' },
+        { label: 'כלים זמינים לכם', value: `${int(allowed)} / ${int(m.tools.length)}`, note: 'לפי ההרשאות שלכם במטריצת התפקידים' },
+        { label: 'אסימונים אישיים', value: int(m.personal.length), note: 'פעילים, שלכם' },
+        { label: 'אפליקציות מחוברות', value: int(m.apps.length), note: 'דרך OAuth, שלכם' },
+      ]} />
+      <div className={ui.grid2}>
+        <Card title="חיבור מ־Claude" sub="כתובת השרת">
+          <p className={ui.mono} dir="ltr" style={{ margin: 0, wordBreak: 'break-all', fontSize: 15 }}>{m.url}</p>
+          <ul className={ui.list} style={{ marginTop: 12 }}>
+            <li className={ui.note}><b>claude.ai ו־Claude Desktop:</b> הגדרות ← Connectors ← Add custom connector ← הדביקו את הכתובת. Claude יפתח את עמוד האישור של BeautyFind; היכנסו עם חשבון הצוות שלכם ואשרו. אין צורך במפתח.</li>
+            <li className={ui.note}><b>Claude Code:</b> <span className={ui.mono} dir="ltr">claude mcp add --transport http beautyfind {m.url}</span> ואז <span className={ui.mono} dir="ltr">/mcp</span> כדי להתחבר, או צרו אסימון אישי למטה והוסיפו <span className={ui.mono} dir="ltr">--header &quot;Authorization: Bearer ...&quot;</span>.</li>
+            <li className={ui.note}><b>מה Claude יוכל לעשות:</b> רק מה שההרשאות שלכם מאפשרות. קריאת נתונים חיה; כל פעולת כתיבה נכנסת ל<Link href="/ops/ai?tab=queue" className={ui.rowLink}>תור האישורים</Link> עם המקור <span className={ui.mono}>mcp:claude</span>, ואדם מחליט.</li>
+          </ul>
+        </Card>
+        <Card title="הכלים" sub="אותם כלים של העוזר; ההרשאה הנדרשת לכל כלי" flush>
+          <Table head={['כלי', 'אזור', 'סוג', 'לכם']}>
+            {m.tools.map(t => (
+              <tr key={t.name}>
+                <td><span className={ui.mono} dir="ltr">{t.name}</span><span className={ui.sub}>{t.description}</span></td>
+                <td>{AREA_NAMES[t.area]} · {LEVEL_NAMES[t.level]}</td>
+                <td>{t.write ? <Chip tone="warn">הצעה לאישור</Chip> : <Chip tone="neutral">קריאה</Chip>}</td>
+                <td>{t.allowed ? <Chip tone="ok">זמין</Chip> : <Chip tone="bad">אין הרשאה</Chip>}</td>
+              </tr>
+            ))}
+          </Table>
+        </Card>
+      </div>
+      <Card title="אסימונים אישיים" sub="לחיבורים בלי OAuth (Claude Code, סקריפטים). האסימון נושא את ההרשאות שלכם ומוצג פעם אחת" flush>
+        <div className={ui.cardPad}><TokenCreator canEdit /></div>
+        {m.personal.length ? (
+          <Table head={['שם', 'נוצר', 'שימוש אחרון', '']}>
+            {m.personal.map(t => (
+              <tr key={t.id}><td className={ui.strong}>{t.name}</td><td className={ui.num}>{dateTimeIL(t.createdAt)}</td><td className={ui.num}>{t.lastUsedAt ? relIL(t.lastUsedAt) : 'עוד לא'}</td><td><RevokeButton kind="token" id={t.id} label={t.name} /></td></tr>
+            ))}
+          </Table>
+        ) : <Empty title="אין אסימונים אישיים" text="ל־claude.ai ול־Claude Desktop לא צריך אסימון: החיבור עובר דרך OAuth." />}
       </Card>
-      <Card title="כלים מתוכננים">
-        <Table head={['כלי', 'סוג', 'מצב']}>
-          {[['platform_summary', 'קריאה'], ['search_businesses', 'קריאה'], ['billing_overview', 'קריאה'], ['list_disputes', 'קריאה'], ['approvals_queue', 'קריאה'], ['propose_action', 'הצעה · דורש אישור אדם']].map(([n, k]) => (
-            <tr key={n}><td className={ui.mono} dir="ltr">{n}</td><td>{k}</td><td><Chip tone="info">זמין לעוזר</Chip></td></tr>
-          ))}
-        </Table>
+      <Card title="אפליקציות מחוברות" sub="אפליקציות שאישרתם דרך OAuth. ניתוק מבטל את כל האסימונים שלהן בשמכם" flush>
+        {m.apps.length ? (
+          <Table head={['אפליקציה', 'מאז', 'שימוש אחרון', 'אסימונים', '']}>
+            {m.apps.map(a => (
+              <tr key={a.id}><td className={ui.strong}>{a.name}<span className={ui.sub} dir="ltr">{a.host}</span></td><td className={ui.num}>{dateTimeIL(a.since)}</td><td className={ui.num}>{a.lastUsedAt ? relIL(a.lastUsedAt) : 'עוד לא'}</td><td className={ui.num}>{int(a.tokens)}</td><td><RevokeButton kind="app" id={a.id} label={a.name} /></td></tr>
+            ))}
+          </Table>
+        ) : <Empty title="עוד אין אפליקציות מחוברות" text="אחרי שתאשרו את Claude בעמוד האישור, היא תופיע כאן." />}
+      </Card>
+      <Card title="קריאות אחרונות" sub="20 הקריאות האחרונות דרך השרת, מכל הצוות. הרשימה המלאה ביומן הפעולות" flush>
+        {m.recent.length ? (
+          <Table head={['מתי', 'מי', 'כלי', 'תוצאה']}>
+            {m.recent.map((r, i) => <tr key={i}><td className={ui.num}>{dateTimeIL(r.at)}</td><td>{r.who}</td><td className={ui.mono} dir="ltr">{r.tool}</td><td>{r.error ? <Chip tone="bad">שגיאה</Chip> : <Chip tone="ok">הצליח</Chip>}</td></tr>)}
+          </Table>
+        ) : <Empty title="עוד לא היו קריאות" />}
       </Card>
     </div>
   );

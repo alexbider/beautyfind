@@ -1,6 +1,7 @@
 import 'server-only';
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
+import type { Area, Level } from '@/components/ops/roles';
 import { db } from './db';
 import { businessLabel, proposeAiAction } from './aiActions';
 import { monthStart, monthlyPlatformIncome, mrr } from './opsStats';
@@ -33,21 +34,33 @@ const SYSTEM = `אתה עוזר התפעול של BeautyFind, מדריך יופ�
 - עובדות חיוב: הפלטפורמה מחייבת דרך ${PLATFORM_BILLING_LINE}; על חיובי הפלטפורמה (מנויים ומקומות ממומנים) אין מע״מ ישראלי. מע״מ של 18% מופיע רק במסמכים שקליניקות מפיקות ללקוחותיהן.
 - כשמבקשים "מה דורש טיפול", השתמש ב-platform_summary והצג את התורים הלא ריקים עם קישור לעמוד המתאים (/ops/...).`;
 
-const TOOLS: Anthropic.Beta.BetaTool[] = [
-  { name: 'platform_summary', description: 'מצב הפלטפורמה עכשיו: עסקים לפי מצב, MRR, תורים שמחכים לאדם (חיובים שנכשלו, מחלוקות, ממומנים, פרטיות, אימות, ביקורות, ייבוא, בקשות AI).', input_schema: { type: 'object', properties: {}, additionalProperties: false } },
-  { name: 'search_businesses', description: 'חיפוש עסקים לפי שם, מצב או חוב. מחזיר מזהה, שם, מצב, תוכנית, סניפים, אזורים, מצב מנוי וחיוב חודשי.', input_schema: { type: 'object', properties: { query: { type: 'string', description: 'חלק מהשם' }, status: { type: 'string', enum: ['pending', 'live', 'past_due', 'hidden'] }, in_debt: { type: 'boolean', description: 'רק עסקים עם מנוי בחוב' }, limit: { type: 'integer', minimum: 1, maximum: 50 } }, additionalProperties: false } },
-  { name: 'billing_overview', description: 'הכנסות הפלטפורמה לפי חודש (מנויים ומקומות ממומנים, באגורות ברוטו), המדיניות על מע״מ, ורשימת המנויים בחוב.', input_schema: { type: 'object', properties: { months: { type: 'integer', minimum: 1, maximum: 24 } }, additionalProperties: false } },
-  { name: 'list_disputes', description: 'מחלוקות מקדמה ושובר: טענה, עובדות המערכת, מדיניות שהוצגה, המלצה ומצב.', input_schema: { type: 'object', properties: { status: { type: 'string', enum: ['open', 'recommended_refund', 'closed_policy_upheld', 'escalated_legal'] }, limit: { type: 'integer', minimum: 1, maximum: 50 } }, additionalProperties: false } },
-  { name: 'approvals_queue', description: 'בקשות AI שמחכות לאישור אדם.', input_schema: { type: 'object', properties: {}, additionalProperties: false } },
-  { name: 'propose_action', description: 'מגיש הצעה לפעולת כתיבה לתור האישורים. לא מבצע כלום בעצמו. hide_business מסיר עסק מהמדריך; restore_business מחזיר אותו; note רושם הערה בתיק העסק.', input_schema: { type: 'object', properties: { action: { type: 'string', enum: ['hide_business', 'restore_business', 'note'] }, business_id: { type: 'string', description: 'מזהה העסק מתוך search_businesses' }, reason: { type: 'string', description: 'הנימוק שיוצג לאדם המאשר' } }, required: ['action', 'business_id', 'reason'], additionalProperties: false } },
-];
+// The tool catalog, shared with the MCP server (src/lib/server/mcp.ts): the same six tools, the same
+// executor, the same approvals queue. `area`/`level` is the admin permission a caller needs for the tool.
+export interface AssistantTool { name: string; description: string; schema: z.ZodObject<z.ZodRawShape> | null; area: Area; level: Level; write: boolean }
 
-const SearchIn = z.object({ query: z.string().max(120).optional(), status: z.enum(['pending', 'live', 'past_due', 'hidden']).optional(), in_debt: z.boolean().optional(), limit: z.number().int().min(1).max(50).optional() });
+const SearchIn = z.object({ query: z.string().max(120).optional().describe('חלק מהשם'), status: z.enum(['pending', 'live', 'past_due', 'hidden']).optional(), in_debt: z.boolean().optional().describe('רק עסקים עם מנוי בחוב'), limit: z.number().int().min(1).max(50).optional() });
 const BillingIn = z.object({ months: z.number().int().min(1).max(24).optional() });
 const DisputesIn = z.object({ status: z.enum(['open', 'recommended_refund', 'closed_policy_upheld', 'escalated_legal']).optional(), limit: z.number().int().min(1).max(50).optional() });
-const ProposeIn = z.object({ action: z.enum(['hide_business', 'restore_business', 'note']), business_id: z.string().uuid(), reason: z.string().min(3).max(1000) });
+const ProposeIn = z.object({ action: z.enum(['hide_business', 'restore_business', 'note']), business_id: z.string().uuid().describe('מזהה העסק מתוך search_businesses'), reason: z.string().min(3).max(1000).describe('הנימוק שיוצג לאדם המאשר') });
 
-async function runTool(name: string, input: unknown, proposals: Proposal[]): Promise<unknown> {
+export const TOOL_CATALOG: AssistantTool[] = [
+  { name: 'platform_summary', description: 'מצב הפלטפורמה עכשיו: עסקים לפי מצב, MRR, תורים שמחכים לאדם (חיובים שנכשלו, מחלוקות, ממומנים, פרטיות, אימות, ביקורות, ייבוא, בקשות AI).', schema: null, area: 'overview', level: 'view', write: false },
+  { name: 'search_businesses', description: 'חיפוש עסקים לפי שם, מצב או חוב. מחזיר מזהה, שם, מצב, תוכנית, סניפים, אזורים, מצב מנוי וחיוב חודשי.', schema: SearchIn, area: 'businesses', level: 'view', write: false },
+  { name: 'billing_overview', description: 'הכנסות הפלטפורמה לפי חודש (מנויים ומקומות ממומנים, באגורות ברוטו), המדיניות על מע״מ, ורשימת המנויים בחוב.', schema: BillingIn, area: 'accounting', level: 'view', write: false },
+  { name: 'list_disputes', description: 'מחלוקות מקדמה ושובר: טענה, עובדות המערכת, מדיניות שהוצגה, המלצה ומצב.', schema: DisputesIn, area: 'disputes', level: 'view', write: false },
+  { name: 'approvals_queue', description: 'בקשות AI שמחכות לאישור אדם.', schema: null, area: 'ai', level: 'view', write: false },
+  { name: 'propose_action', description: 'מגיש הצעה לפעולת כתיבה לתור האישורים. לא מבצע כלום בעצמו. hide_business מסיר עסק מהמדריך; restore_business מחזיר אותו; note רושם הערה בתיק העסק.', schema: ProposeIn, area: 'ai', level: 'edit', write: true },
+];
+
+const TOOLS: Anthropic.Beta.BetaTool[] = TOOL_CATALOG.map(t => ({
+  name: t.name,
+  description: t.description,
+  input_schema: (t.schema ? { ...z.toJSONSchema(t.schema), additionalProperties: false } : { type: 'object', properties: {}, additionalProperties: false }) as Anthropic.Beta.BetaTool['input_schema'],
+}));
+
+
+/** Runs one catalog tool. `source` names the caller in the approvals queue (assistant, mcp:claude). */
+export async function runTool(name: string, input: unknown, proposals: Proposal[], source = 'assistant'): Promise<unknown> {
   const safe = (p: Promise<number>) => p.catch(() => null);
   switch (name) {
     case 'platform_summary': {
@@ -125,7 +138,7 @@ async function runTool(name: string, input: unknown, proposals: Proposal[]): Pro
     }
     case 'propose_action': {
       const p = ProposeIn.parse(input);
-      const r = await proposeAiAction({ source: 'assistant', action: p.action, businessId: p.business_id, reason: p.reason });
+      const r = await proposeAiAction({ source, action: p.action, businessId: p.business_id, reason: p.reason });
       if (!r.ok) return { error: r.error };
       proposals.push({ ref: r.ref, action: p.action, label: await businessLabel(p.business_id) });
       return { ok: true, ref: r.ref, status: 'proposed', note: 'ממתין לאישור אדם בתור האישורים (/ops/ai?tab=queue)' };

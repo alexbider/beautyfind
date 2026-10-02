@@ -34,6 +34,12 @@ const AUDIT: Record<string, string> = {
   subscription_update: 'עדכן/ה מנוי',
   seo_update: 'עדכן/ה SEO של עמוד',
   indexing_update: 'שינה/תה הגדרות אינדוקס',
+  mcp_call: 'הפעיל/ה כלי דרך MCP',
+  mcp_token_created: 'יצר/ה אסימון MCP אישי',
+  mcp_token_revoked: 'ביטל/ה אסימון MCP',
+  mcp_client_registered: 'אפליקציית MCP נרשמה',
+  mcp_authorized: 'אישר/ה חיבור אפליקציית MCP',
+  mcp_client_revoked: 'ניתק/ה אפליקציית MCP',
   template_draft: 'עדכן/ה טיוטת תבנית',
   ai_action_decide: 'החליט/ה על בקשת AI',
   ai_action_execute: 'ביצע/ה בקשת AI',
@@ -84,7 +90,7 @@ const DECISION: Record<string, string> = {
 const SUBJECT: Record<string, string> = {
   user: 'חשבון', business: 'עסק', branch: 'סניף', booking: 'תור', review: 'ביקורת', dispute: 'מחלוקת', campaign: 'מקום ממומן',
   verification_request: 'בקשת אימות', consult_request: 'בקשת ייעוץ', contact_message: 'פנייה', expense: 'הוצאה', document: 'מסמך',
-  platform_settings: 'הגדרות', import_settings: 'הגדרות ייבוא', import_run: 'ריצת ייבוא', import_place: 'רשומת ייבוא', ai_action: 'בקשת AI', page_seo: 'עמוד', indexing: 'אינדוקס', subscription: 'מנוי',
+  platform_settings: 'הגדרות', import_settings: 'הגדרות ייבוא', import_run: 'ריצת ייבוא', import_place: 'רשומת ייבוא', ai_action: 'בקשת AI', page_seo: 'עמוד', indexing: 'אינדוקס', mcp: 'MCP', mcp_token: 'אסימון MCP', mcp_client: 'אפליקציית MCP', subscription: 'מנוי',
 };
 
 export function actorKind(actorId: string | null, meta: Meta, actorRole?: string | null): ActorKind {

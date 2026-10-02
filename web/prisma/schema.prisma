@@ -87,6 +87,8 @@ model User {
   updatedAt       DateTime    @updatedAt @map("updated_at")
 
   sessions             Session[]
+  mcpTokens            McpToken[]
+  mcpAuthCodes         McpAuthCode[]
   staff                StaffMember[]
   bookings             Booking[]             @relation("ClientBookings")
   declarations         HealthDeclaration[]
@@ -1690,4 +1692,62 @@ model PageSeo {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("page_seo")
+}
+
+// ---------- MCP server (/api/mcp): OAuth clients, tokens and authorization codes ----------
+
+// An app registered through OAuth dynamic client registration (claude.ai, Claude Desktop, Claude Code).
+model McpClient {
+  id           String   @id @default(uuid()) @db.Uuid // the client_id
+  name         String
+  redirectUris String[] @map("redirect_uris")
+  secretHash   String?  @map("secret_hash") // confidential clients only
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  tokens    McpToken[]
+  authCodes McpAuthCode[]
+
+  @@map("mcp_clients")
+}
+
+enum McpTokenKind {
+  personal // created by a staff member on /ops/ai, pasted into a client as a bearer token
+  access // issued by the OAuth token endpoint
+  refresh // issued with an access token, rotated on use
+}
+
+// Only the SHA-256 of a token is stored. A token carries the permissions of the staff member who owns it.
+model McpToken {
+  id         String       @id @default(uuid()) @db.Uuid
+  userId     String       @map("user_id") @db.Uuid
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId   String?      @map("client_id") @db.Uuid
+  client     McpClient?   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  kind       McpTokenKind
+  name       String? // personal tokens: the label the staff member gave
+  tokenHash  String       @unique @map("token_hash")
+  expiresAt  DateTime?    @map("expires_at")
+  lastUsedAt DateTime?    @map("last_used_at")
+  revokedAt  DateTime?    @map("revoked_at")
+  createdAt  DateTime     @default(now()) @map("created_at")
+
+  @@index([userId, kind])
+  @@map("mcp_tokens")
+}
+
+// A one-time authorization code (PKCE S256), ten minutes, consumed by the token endpoint.
+model McpAuthCode {
+  id            String    @id @default(uuid()) @db.Uuid
+  codeHash      String    @unique @map("code_hash")
+  clientId      String    @map("client_id") @db.Uuid
+  client        McpClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  userId        String    @map("user_id") @db.Uuid
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  redirectUri   String    @map("redirect_uri")
+  codeChallenge String    @map("code_challenge")
+  expiresAt     DateTime  @map("expires_at")
+  usedAt        DateTime? @map("used_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@map("mcp_auth_codes")
 }

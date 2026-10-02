@@ -6,6 +6,7 @@ import { areaUserOrNull } from '@/components/ops/guard';
 import { decideAiAction } from '@/lib/server/aiActions';
 import { askAssistant, assistantConfigured, type AssistantAnswer, type ChatTurn } from '@/lib/server/assistant';
 import { db } from '@/lib/server/db';
+import { createPersonalToken, revokeClientForUser, revokeToken } from '@/lib/server/mcp';
 
 // Server actions for /ops/ai. Asking the assistant needs view access to the area (it only reads);
 // deciding a proposal needs edit access, because approving executes it.
@@ -53,4 +54,38 @@ export async function decideAiActionAction(input: z.input<typeof Decide>): Promi
   revalidatePath('/ops');
   if (!r.ok) return { ok: false, error: r.error === 'not_found' ? 'הבקשה לא נמצאה' : r.error === 'already_decided' ? 'כבר הוחלט על הבקשה הזו' : `הביצוע נכשל: ${r.error}` };
   return r;
+}
+
+// ---------- MCP server (tab שרת MCP) ----------
+
+
+/** A personal bearer token for the signed-in staff member. Returned once; only its hash is kept. */
+export async function createMcpTokenAction(name: string): Promise<{ ok: true; token: string } | { ok: false; error: string }> {
+  const user = await areaUserOrNull('ai', 'view');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const label = String(name ?? '').trim();
+  if (label.length < 2 || label.length > 60) return { ok: false, error: 'שם בין 2 ל־60 תווים' };
+  const open = await db.mcpToken.count({ where: { userId: user.id, kind: 'personal', revokedAt: null } });
+  if (open >= 10) return { ok: false, error: 'עד עשרה אסימונים פעילים לאדם; בטלו אחד קודם' };
+  const r = await createPersonalToken(user, label);
+  revalidatePath('/ops/ai');
+  return { ok: true, token: r.token };
+}
+
+export async function revokeMcpTokenAction(id: string): Promise<{ ok: boolean; error?: string }> {
+  const user = await areaUserOrNull('ai', 'view');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return { ok: false, error: 'מזהה לא תקין' };
+  const done = await revokeToken(user, id);
+  revalidatePath('/ops/ai');
+  return done ? { ok: true } : { ok: false, error: 'האסימון לא נמצא או כבר בוטל' };
+}
+
+export async function revokeMcpClientAction(clientId: string): Promise<{ ok: boolean; error?: string }> {
+  const user = await areaUserOrNull('ai', 'view');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  if (!/^[0-9a-f-]{36}$/i.test(clientId)) return { ok: false, error: 'מזהה לא תקין' };
+  await revokeClientForUser(user, clientId);
+  revalidatePath('/ops/ai');
+  return { ok: true };
 }
