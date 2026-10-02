@@ -6,7 +6,7 @@ import { PUBLIC_WHERE } from './public';
 // How many businesses each city + category page lists, under the old rule (primary category only) and
 // the current one (every business that offers the category), bucketed into empty, one business and two
 // or more. One read over the live category rows, so the same numbers come from the script
-// (scripts/seo-city-category-report.ts) and the preview route (/api/reports/city-category).
+// (scripts/seo-city-category-report.ts) and the preview route (/api/seo/city-category).
 
 export interface CityCategoryBuckets {
   pages: number;
