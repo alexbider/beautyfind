@@ -2,7 +2,7 @@ import 'server-only';
 import type { Branch, ImportPlace, Prisma } from '@prisma/client';
 import { CATEGORIES } from '@/lib/catalog';
 import { coverageOf, type Coverage } from '@/lib/import/coverage';
-import { WORDS_MIN, type EditorialRecord } from '@/lib/import/editorial';
+import { FAQ_MIN, WORDS_MIN, textRuleViolations, type EditorialRecord } from '@/lib/import/editorial';
 import type { ImportedTreatment } from '@/lib/import/rules';
 import { chooseVideos, type VideoRecord } from '@/lib/import/youtube';
 import type { MediaProvenance } from '@/lib/server/importMedia';
@@ -13,7 +13,10 @@ import { listingTitle } from '@/lib/seo/listingTitle';
 // readiness classification written back to the listing. Owner-approved text is never replaced.
 
 export const editorialOf = (p: { editorial: unknown }) => (p.editorial && typeof p.editorial === 'object' && typeof (p.editorial as EditorialRecord).description === 'string' ? (p.editorial as EditorialRecord) : null);
-export const editorialComplete = (e: EditorialRecord | null) => !!e && e.words >= WORDS_MIN && !e.needsMoreInfo && e.faqs.length >= 5;
+/** A draft that may replace existing text: long enough, not flagged, enough FAQs, and clean under the text rules. */
+export const editorialComplete = (e: EditorialRecord | null) => !!e && e.words >= WORDS_MIN && !e.needsMoreInfo && e.faqs.length >= FAQ_MIN && textRuleViolations(e.violations ?? []).length === 0;
+/** A draft that breaks the text rules is never published, not even into an empty field. */
+export const editorialClean = (e: EditorialRecord | null) => !!e && textRuleViolations(e.violations ?? []).length === 0;
 
 /** Treatment rows from an import record. Prices are stored as published (tax status unknown), never converted. */
 export function treatmentRows(p: ImportPlace, cats: string[]): Prisma.TreatmentCreateWithoutBranchInput[] {
@@ -109,12 +112,12 @@ export function profileFields(p: ImportPlace, opts: { maxVideos: number }): Prof
 export function editorialText(p: ImportPlace, current: { description: string | null; faqs: unknown; isClaimed: boolean; editorial?: unknown } | null): { description?: string; faqs?: Prisma.InputJsonValue; heading?: string } {
   const ed = editorialOf(p);
   const ownerApproved = current?.isClaimed || (current?.editorial as { ownerApproved?: boolean } | undefined)?.ownerApproved === true;
-  if (!ed || ownerApproved) return {};
+  if (!ed || ownerApproved || !editorialClean(ed)) return {};
   const curFaqs = Array.isArray(current?.faqs) ? (current!.faqs as unknown[]).length : 0;
   const complete = editorialComplete(ed);
   const out: { description?: string; faqs?: Prisma.InputJsonValue; heading?: string } = {};
   if (complete || !current?.description) out.description = ed.description;
-  if (ed.faqs.length >= 5 && (complete || curFaqs < 5) ) out.faqs = ed.faqs.map(f => ({ q: f.q, a: f.a })) as Prisma.InputJsonValue;
+  if (ed.faqs.length >= FAQ_MIN && (complete || curFaqs < FAQ_MIN)) out.faqs = ed.faqs.map(f => ({ q: f.q, a: f.a })) as Prisma.InputJsonValue;
   out.heading = ed.heading;
   return out;
 }

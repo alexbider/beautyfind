@@ -206,10 +206,11 @@ const RICH: EvidencePacket = {
 const SPARSE: EvidencePacket = { ...RICH, services: [], hours: null, team: [], languages: [], establishedYear: null, accessible: null, freeParking: null, sourceDescription: null, sourceFaqs: [], rating: null, photos: 0, videos: 0, website: null, email: false, whatsapp: false, socials: [] };
 
 describe('editorial checks and the template draft', () => {
-  it('rich evidence gives 450 to 550 words and at least five FAQs (acceptance 2)', () => {
+  it('rich evidence gives a full draft with several FAQs and no text-rule breaks (acceptance 2)', () => {
     const d = templateDraft(RICH);
     const words = countWords(d.description);
     assert.ok(words >= WORDS_MIN && words <= 620, `words ${words}`);
+    assert.ok(d.description.split('\n\n').length >= 3 && d.description.split('\n\n').length <= 5, 'three to five paragraphs');
     assert.ok(d.faqs.length >= 5 && d.faqs.length <= 8);
     assert.equal(d.insufficientEvidence, false);
     assert.equal(d.heading, 'על הקליניקה');
@@ -220,8 +221,9 @@ describe('editorial checks and the template draft', () => {
     assert.ok(countWords(d.description) < WORDS_MIN);
     assert.equal(d.insufficientEvidence, true);
     assert.ok(d.missing.includes('רשימת שירותים') && d.missing.includes('שעות פעילות'));
-    assert.ok(d.faqs.length >= 5); // truthful "not published" answers, no invented facts
-    assert.ok(d.faqs.every(f => !/מובטח|ללא עלות/.test(f.a)));
+    assert.equal(d.description.split('\n\n').length, 2, 'two short paragraphs');
+    assert.ok(d.faqs.length >= 2 && d.faqs.every(f => !/מובטח|ללא עלות|לא פורסם|לא צוין/.test(f.a))); // only questions the facts answer
+    assert.ok(!/לא פורסם|לא צוינ|במקורות|אין מידע|בעמוד/.test(d.description), 'nothing about what is missing');
     const v = checkOutput(d, SPARSE);
     assert.ok(v.every(x => x.startsWith('short:')), v.join(','));
     assert.deepEqual(repairable(v), []);
@@ -230,7 +232,7 @@ describe('editorial checks and the template draft', () => {
     const base = templateDraft(RICH);
     const bad = { ...base, description: `${base.description} הקליניקה מובילים בתחום מאז 1999 – ד"ר משה כהן מטפל אצלנו.` };
     const v = checkOutput(bad, RICH);
-    assert.ok(v.includes('dash') && v.includes('first_person') && v.includes('number:1999') && v.includes('person:משה כהן') && v.some(x => x.startsWith('phrase:')));
+    assert.ok(v.some(x => x.startsWith('text:dash')) && v.includes('first_person') && v.includes('number:1999') && v.includes('person:משה כהן') && v.some(x => x.startsWith('phrase:')), v.join(','));
     assert.ok(repairable(v).length > 0);
     assert.ok(BANNED_PHRASES.includes('חוויה בלתי נשכחת'));
   });

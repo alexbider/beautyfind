@@ -254,7 +254,7 @@ describe('ChatGPT research stage and writer', { skip }, () => {
     assert.ok(packet.researchNotes?.length);
     const before = openai.requests.length;
     const res = await writeEditorial(packet, 'openai');
-    assert.equal(res.ok, true);
+    assert.equal(res.ok, true, JSON.stringify(res));
     if (!res.ok) return;
     assert.ok(openai.requests.length > before);
     const body = openai.requests[before].body as { text: { format: { strict: boolean; name: string } }; tools?: unknown };

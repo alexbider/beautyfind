@@ -21,6 +21,7 @@
     "test:import": "tsx --conditions=react-server --test --test-concurrency=1 tests/import/*.test.ts",
     "import:cleanup": "tsx scripts/import/cleanup.ts",
     "import:category-audit": "tsx scripts/import/categoryAudit.ts",
+    "import:description-cleanup": "tsx scripts/import/descriptionCleanup.ts",
     "import:manifest": "tsx scripts/import/manifest.ts",
     "import:screenshots": "tsx scripts/import/screenshots.ts"
   },

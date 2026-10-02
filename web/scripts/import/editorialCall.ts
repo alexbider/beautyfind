@@ -1,11 +1,15 @@
-// The editorial API call: one structured request on the evidence packet, at most one repair request.
+// The editorial API call: one structured request on the evidence packet, at most one repair request, and
+// one fresh attempt when the repaired draft still breaks the text rules (sentences about missing data,
+// English inside Hebrew, dashes, emoji). A draft that still breaks them is rejected: the caller keeps the
+// listing's current text instead of publishing it.
 // The writer is ChatGPT (OpenAI Responses API) or Claude, chosen by the llmProvider setting. With
 // IMPORT_EDITORIAL_MOCK=1 (tests, simulation) the deterministic template draft stands in and no
 // request leaves the machine.
 
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
-import { checkOutput, OUTPUT_SCHEMA, PROMPT_VERSION, repairable, repairMessage, SYSTEM_PROMPT, templateDraft, userMessage, type EditorialOutput, type EvidencePacket } from '../../src/lib/import/editorial';
+import { checkOutput, OUTPUT_SCHEMA, PROMPT_VERSION, repairable, repairMessage, SYSTEM_PROMPT, templateDraft, textRuleViolations, userMessage, type EditorialOutput, type EvidencePacket } from '../../src/lib/import/editorial';
+import { normalizeHebrew } from '../../src/lib/import/textRules';
 import { openaiErrorKind } from '../../src/lib/import/openai';
 import { editorialCostUsd, pricing } from '../../src/lib/import/pricing';
 import { responses } from './providers/openai';
@@ -112,7 +116,23 @@ async function onceOpenAI(turns: Turn[]): Promise<Once> {
 
 const onceClaude = (turns: Turn[]): Promise<Once> => once(turns.map(t => ({ role: t.role, content: t.content })) as Anthropic.MessageParam[]);
 
-/** One generation call, then one repair call when the checks find something a rewrite can fix. */
+/** Hebrew typography fixed in place on every string the writer returns (gershayim, geresh, house spellings). */
+function tidy(o: EditorialOutput): EditorialOutput {
+  return {
+    ...o,
+    description: normalizeHebrew(o.description),
+    faqs: o.faqs.map(f => ({ ...f, q: normalizeHebrew(f.q), a: normalizeHebrew(f.a) })),
+    metaTitle: normalizeHebrew(o.metaTitle),
+    metaDescription: normalizeHebrew(o.metaDescription),
+    serviceSummaries: o.serviceSummaries.map(s => ({ ...s, summary: normalizeHebrew(s.summary) })),
+  };
+}
+
+/**
+ * One generation call, then one repair call when the checks find something a rewrite can fix. When the text
+ * rules are still broken after that, one fresh generation with the problems spelled out; a draft that still
+ * breaks them is rejected (error `text_rules`).
+ */
 export async function writeEditorial(packet: EvidencePacket, provider: WriterProvider = 'openai'): Promise<EditorialResult> {
   const key = provider === 'openai' ? process.env.OPENAI_API_KEY : process.env.ANTHROPIC_API_KEY;
   if (mock() || !key) {
@@ -127,7 +147,7 @@ export async function writeEditorial(packet: EvidencePacket, provider: WriterPro
   if ('error' in first) return { ok: false, ...first };
   let inputTokens = first.inputTokens;
   let outputTokens = first.outputTokens;
-  let output = first.output;
+  let output = tidy(first.output);
   let violations = checkOutput(output, packet);
   let repairs = 0;
   if (repairable(violations).length) {
@@ -136,15 +156,33 @@ export async function writeEditorial(packet: EvidencePacket, provider: WriterPro
     if (!('error' in second)) {
       inputTokens += second.inputTokens;
       outputTokens += second.outputTokens;
-      const v2 = checkOutput(second.output, packet);
+      const fixed = tidy(second.output);
+      const v2 = checkOutput(fixed, packet);
       // Keep whichever draft has fewer problems left.
       if (repairable(v2).length <= repairable(violations).length) {
-        output = second.output;
+        output = fixed;
         violations = v2;
       }
     }
   }
-  return { ok: true, output, violations, repairs, inputTokens, outputTokens, costUsd: editorialCostUsd(inputTokens, outputTokens, pricing(), provider), model };
+  if (textRuleViolations(violations).length) {
+    // The repair left text-rule breaks in: write the whole thing again with the breaks named up front.
+    repairs += 1;
+    const again = await call([{ role: 'user', content: `${userMessage(packet)}\n\nA previous draft was rejected for breaking these rules; do not repeat them:\n- ${textRuleViolations(violations).map(v => v.slice(5)).join('\n- ')}` }]);
+    if (!('error' in again)) {
+      inputTokens += again.inputTokens;
+      outputTokens += again.outputTokens;
+      const fresh = tidy(again.output);
+      const v3 = checkOutput(fresh, packet);
+      if (textRuleViolations(v3).length < textRuleViolations(violations).length) {
+        output = fresh;
+        violations = v3;
+      }
+    }
+  }
+  const costUsd = editorialCostUsd(inputTokens, outputTokens, pricing(), provider);
+  if (textRuleViolations(violations).length) return { ok: false, error: `text_rules: ${textRuleViolations(violations).slice(0, 6).join(', ')}`.slice(0, 240), inputTokens, outputTokens, costUsd };
+  return { ok: true, output, violations, repairs, inputTokens, outputTokens, costUsd, model };
 }
 
 export { PROMPT_VERSION };

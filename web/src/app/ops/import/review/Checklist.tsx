@@ -97,7 +97,7 @@ export function Checklist({ id, decided, info }: { id: string; decided: boolean;
                   {ed.violations.length ? ` · בעיות שנותרו: ${ed.violations.join(', ')}` : ' · עבר את כל הבדיקות'}
                   {ed.error ? ` · שגיאה: ${ed.error}` : ''}
                 </p>
-                {ed.needsMoreInfo ? <p className={`${styles.result} ${styles.resultBad}`}>needs_more_business_information: {ed.missing.length ? ed.missing.join(', ') : 'הראיות לא מספיקות ל־450 מילים'}</p> : null}
+                {ed.needsMoreInfo ? <p className={`${styles.result} ${styles.resultBad}`}>needs_more_business_information: {ed.missing.length ? ed.missing.join(', ') : 'הראיות מספיקות רק לתיאור קצר'}</p> : null}
                 <button type="button" className={styles.btn} onClick={() => setDraft(!draft)} aria-expanded={draft}>{draft ? 'הסתרת הטיוטה' : 'הצגת הטיוטה'}</button>
                 {draft ? (
                   <div className={styles.stack}>

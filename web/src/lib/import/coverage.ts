@@ -6,6 +6,7 @@
 //
 // docs/coverage-manifest.md is generated from MANIFEST by `npm run import:manifest`.
 
+import { WORDS_MIN } from './editorial';
 import { CATEGORIES } from '../catalog';
 
 export type SectionState = 'populated' | 'fallback' | 'missing';
@@ -30,7 +31,7 @@ export const MANIFEST: ManifestEntry[] = [
   { id: 'rating', element: 'Rating summary', selector: '.rating (identity) and h-reviews box', fields: 'googleRating, googleReviewCount, beautyfind stats', source: 'Google rating via DataForSEO (labelled), BeautyFind verified reviews; never merged into one number', fallback: '"אין עדיין דירוג" with a link to search the business on Google', cta: 'Google link', test: 'unit: reviews never merged; fixture claims absent', weight: 4, ownerField: false },
   { id: 'chips', element: 'Highlight chips', selector: '.chips', fields: 'attributes.accessible, attributes.parking, verified responsibility, prices', source: 'Google attributes and explicit statements on the site; tri-state (true, false, unknown)', fallback: 'Unknown attributes are not shown, never shown as false', cta: 'None', test: 'unit: tri-state chips', weight: 3, ownerField: false },
   { id: 'facts', element: 'Three fact cards', selector: '.facts', fields: 'establishedYear, teamSize/team, languages', source: 'Explicit statements on the site ("מאז 2014", "דוברות רוסית"); never inferred from the site language or the number of cards', fallback: 'Known alternate fact (responsibility, hours today, Google rating); fewer cards otherwise, none when nothing is sourced', cta: 'None', test: 'unit: facts fallback', weight: 4, ownerField: true },
-  { id: 'about', element: 'h-about', selector: '#h-about', fields: 'description, editorial.words, editorial.needsMoreInfo', source: 'Editorial call on the evidence packet (450 to 550 words); the source description otherwise', fallback: 'Short accurate draft, flagged needs_more_business_information in admin; with no description at all the section is left out of the page', cta: 'Claim', test: 'unit: editorial checks; db: short draft flagged', weight: 12, ownerField: true },
+  { id: 'about', element: 'h-about', selector: '#h-about', fields: 'description, editorial.words, editorial.needsMoreInfo', source: 'Editorial call on the evidence packet (two paragraphs for thin evidence, up to five for rich); the source description otherwise', fallback: 'Short accurate draft, flagged needs_more_business_information in admin; with no description at all the section is left out of the page', cta: 'Claim', test: 'unit: editorial checks; db: short draft flagged', weight: 12, ownerField: true },
   { id: 'promises', element: 'Promises / policy copy', selector: 'Services note, booking card note', fields: 'none imported', source: 'Only policies the business published (deposit, cancellation) after claiming', fallback: 'Neutral copy: no guarantees, no free consultation, no sample policies', cta: 'None', test: 'unit: no fixture claims', weight: 0, ownerField: false },
   { id: 'services', element: 'h-services', selector: 'Services accordion (#h-services)', fields: 'treatments[] with priceType, priceAgorot, priceMaxAgorot, priceNote, source', source: 'Website price lists, JSON-LD offers, Google services; missing price is null (on_request)', fallback: 'Section left out of the page without services; unpriced rows show "המחיר לא פורסם" + "לקבלת מחיר ופרטים"', cta: 'Quote request with business, branch and service ids; direct contact when unclaimed', test: 'unit: services view never renders ₪0; db: quote CTA context', weight: 12, ownerField: true },
   { id: 'compare', element: 'Comparison links', selector: 'Services foot link', fields: 'category, city', source: 'Existing /region/city/category routes only', fallback: 'No link when the city has no page', cta: 'Compare', test: 'unit: compare href', weight: 0, ownerField: false },
@@ -106,7 +107,7 @@ export function coverageOf(i: CoverageInput): Coverage {
   row('chips', i.accessible != null || i.parking != null || i.servicesPriced > 0 ? 'populated' : 'fallback', `accessible=${i.accessible ?? 'unknown'} parking=${i.parking ?? 'unknown'}`);
   const factSlots = [i.establishedYear != null, i.verifiedStaff > 0, i.languages > 0].filter(Boolean).length;
   row('facts', factSlots >= 2 ? 'populated' : factSlots === 1 ? 'fallback' : 'fallback', `${factSlots}/3 template facts`);
-  const aboutOk = !!i.description && (i.editorialWords ?? 0) >= 450 && i.editorialNeedsMore !== true;
+  const aboutOk = !!i.description && (i.editorialWords ?? 0) >= WORDS_MIN && i.editorialNeedsMore !== true;
   row('about', aboutOk ? 'populated' : i.description ? 'fallback' : 'missing', i.editorialWords != null ? `${i.editorialWords} words${i.editorialNeedsMore ? ', needs_more_business_information' : ''}` : i.description ? 'source description only' : 'no description');
   row('promises', 'populated', 'neutral copy');
   row('services', i.services > 0 ? 'populated' : 'fallback', i.services ? `${i.services} services, ${i.servicesPriced} priced` : 'פירוט השירותים טרם עודכן');
