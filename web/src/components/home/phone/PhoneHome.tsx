@@ -583,17 +583,16 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
         {/* ---------- Hero ---------- */}
         <section className={s.hero} aria-labelledby="h1-phone">
           <div className={s.heroArt}>
-            <Image src="/assets/biz-facial.jpg" alt={IMAGE_ALT['/assets/biz-facial.jpg']} fill loading="eager" fetchPriority="high" sizes="(max-width: 1023px) 430px, 1px" className={s.heroImg} />
+            <Image src="/assets/biz-facial.jpg" alt={IMAGE_ALT['/assets/biz-facial.jpg']} fill loading="eager" fetchPriority="high" sizes="430px" className={s.heroImg} />
             <div className={s.heroWash1} />
             <div className={s.heroWash2} />
             <Rings size={200} className={s.ringsA} />
             <Rings size={150} className={s.ringsB} />
             <Kicker>אינדקס היופי והאסתטיקה של ישראל</Kicker>
-            {/* The desktop layout holds the page's single <h1> in the same HTML; this one is a level-1 heading for screen readers only. */}
-            <p id="h1-phone" role="heading" aria-level={1} className={s.h1}>
+            <h1 id="h1-phone" className={s.h1}>
               מצאו את מיטב<br />
               <span className={s.nowrap}>מכוני היופי שלידכם<Dot /></span>
-            </p>
+            </h1>
             <p className={s.lede}>אסתטיקה רפואית, קוסמטיקה, מספרות, ספא ועיצוב הגוף, מקריית שמונה ועד אילת. השוו בין עסקים וקבעו את הפגישה הבאה.</p>
           </div>
           <form role="search" className={s.search} onSubmit={submit}>

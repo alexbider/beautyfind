@@ -292,7 +292,7 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
     <div className={s.root}>
       {/* ---------- Hero ---------- */}
       <section className={s.hero} aria-labelledby="hero-h1">
-        <Image src="/assets/hero-facial.jpg" alt={IMAGE_ALT['/assets/hero-facial.jpg']} fill loading="eager" fetchPriority="high" sizes="(max-width: 767px) 1px, 100vw" className={s.heroImg} />
+        <Image src="/assets/hero-facial.jpg" alt={IMAGE_ALT['/assets/hero-facial.jpg']} fill loading="eager" fetchPriority="high" sizes="100vw" className={s.heroImg} />
         <div className={s.heroWash1} />
         <div className={s.heroWash2} />
         <Rings size={300} className={s.ringsA} />
