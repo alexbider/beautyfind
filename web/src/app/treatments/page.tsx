@@ -6,7 +6,7 @@ import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { CATEGORY_CONTENT, CONTENT_UPDATED, TREATMENTS_FAQS } from '@/components/treatments/content';
 import { Faq } from '@/components/treatments/Faq';
-import { BIZ, Count, JsonLd, breadcrumbLd, countText, faqLd, fmtInt } from '@/components/treatments/format';
+import { BIZ, Count, JsonLd, countText, fmtInt, pageLd } from '@/components/treatments/format';
 import { ratingMedians } from '@/components/treatments/queries';
 import shared from '@/components/treatments/shared.module.css';
 import { TreatmentsBrowser, type TreatmentRow } from '@/components/treatments/TreatmentsBrowser';
@@ -65,8 +65,7 @@ export default async function TreatmentsPage() {
 
   return (
     <div className={shared.root}>
-      <JsonLd data={breadcrumbLd([{ name: 'ראשי', path: '/' }, { name: 'תחומי טיפול', path: '/treatments' }])} />
-      <JsonLd data={faqLd(TREATMENTS_FAQS)} />
+      <JsonLd data={pageLd({ path: '/treatments', type: 'CollectionPage', name: '14 תחומי טיפול', crumbs: [{ name: 'ראשי', path: '/' }, { name: 'תחומי טיפול', path: '/treatments' }], faqs: TREATMENTS_FAQS })} />
       <SiteHeader variant="public" title="תחומי טיפול" backHref="/search" />
 
       <nav aria-label="נתיב ניווט" className={shared.crumbBar}>

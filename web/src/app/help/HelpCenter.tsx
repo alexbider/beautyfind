@@ -52,7 +52,7 @@ export function HelpCenter({ initialAudience, initialQuery = '' }: { initialAudi
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(aud)) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(aud)).replace(/</g, '\\u003c') }} />
 
       {/* App shell: the search field sits under the top bar and stays there while scrolling. */}
       <form role="search" className={`${styles.phoneSearch} bf-shell-only`} onSubmit={e => e.preventDefault()}>

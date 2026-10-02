@@ -84,10 +84,16 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
         <li><Link href="/">ראשי</Link></li>
         <li aria-hidden="true">/</li>
         <li><Link href={`/${p.regionSlug}`}>{p.region.name}</Link></li>
-        {v.citySlug && (
+        {v.citySlug && v.citySlug !== p.regionSlug && (
           <>
             <li aria-hidden="true">/</li>
-            {v.citySlug !== p.regionSlug && <li><Link href={`/${p.regionSlug}/${v.citySlug}`}>{p.cityName}</Link></li>}
+            <li><Link href={`/${p.regionSlug}/${v.citySlug}`}>{p.cityName}</Link></li>
+          </>
+        )}
+        {v.cats[0] && (
+          <>
+            <li aria-hidden="true">/</li>
+            <li><Link href={v.citySlug ? `/${p.regionSlug}/${v.citySlug}/${v.cats[0].slug}` : `/treatments/${v.cats[0].slug}`}>{v.cats[0].name}</Link></li>
           </>
         )}
         <li aria-hidden="true">/</li>

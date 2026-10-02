@@ -16,7 +16,7 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { BizTabs, type BizTab } from '@/components/treatments/BizTabs';
 import { CATEGORY_CONTENT, CONTENT_UPDATED, priceFaq } from '@/components/treatments/content';
 import { Faq } from '@/components/treatments/Faq';
-import { BIZ, Count, JsonLd, breadcrumbLd, countText, faqLd, fmtInt, pctDelta } from '@/components/treatments/format';
+import { BIZ, Count, JsonLd, countText, fmtInt, pageLd, pctDelta } from '@/components/treatments/format';
 import { InfoGlyph } from '@/components/treatments/InfoGlyph';
 import { listingBreakdown, ratingMedians } from '@/components/treatments/queries';
 import shared from '@/components/treatments/shared.module.css';
@@ -129,13 +129,19 @@ export default async function TreatmentCategoryPage({ params }: Props) {
   return (
     <div className={shared.root}>
       <JsonLd
-        data={breadcrumbLd([
-          { name: 'ראשי', path: '/' },
-          { name: 'תחומי טיפול', path: '/treatments' },
-          { name: cat.name, path: `/treatments/${cat.slug}` },
-        ])}
+        data={pageLd({
+          path: `/treatments/${cat.slug}`,
+          type: 'CollectionPage',
+          name: `${cat.name} בישראל`,
+          image: body.img ?? null,
+          crumbs: [
+            { name: 'ראשי', path: '/' },
+            { name: 'תחומי טיפול', path: '/treatments' },
+            { name: cat.name, path: `/treatments/${cat.slug}` },
+          ],
+          faqs,
+        })}
       />
-      <JsonLd data={faqLd(faqs)} />
       <SiteHeader variant="public" title={cat.name} backHref="/treatments" />
 
       <nav aria-label="נתיב ניווט" className={shared.crumbBar}>

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
-import { JsonLd, breadcrumbLd } from '@/components/treatments/format';
+import { JsonLd, pageLd } from '@/components/treatments/format';
 import shared from '@/components/treatments/shared.module.css';
 import { CITIES, MENU_REGION_ORDER, citiesOf, cityPageHref, regionBySlug } from '@/lib/catalog';
 import { listingCounts } from '@/lib/server/public';
@@ -26,7 +26,7 @@ export default async function RegionsPage() {
   const counts = await listingCounts();
   return (
     <div className={shared.root}>
-      <JsonLd data={breadcrumbLd([{ name: 'ראשי', path: '/' }, { name: 'כל האזורים והערים', path: '/regions' }])} />
+      <JsonLd data={pageLd({ path: '/regions', type: 'CollectionPage', name: 'כל האזורים והערים', crumbs: [{ name: 'ראשי', path: '/' }, { name: 'כל האזורים והערים', path: '/regions' }] })} />
       <SiteHeader variant="public" title="אזורים וערים" backHref="/" />
       <nav aria-label="נתיב ניווט" className={shared.crumbBar}>
         <ol className={shared.crumbs}>

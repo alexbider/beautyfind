@@ -10,6 +10,7 @@ import { listingTitle } from '@/lib/seo/listingTitle';
 import { composeDescription } from '@/lib/seo/meta';
 import { seoCityName, seoName } from '@/lib/seo/seoName';
 import { CATEGORY_SHORT } from '@/lib/seo/terms';
+import { absoluteUrl, breadcrumbNode, businessId, businessType, faqNode, graph, ldJson, pageId, webPageNode, type Crumb } from '@/lib/seo/schema';
 import {
   COMPARABLE_PRICE_TYPES, DAY_NAMES, PROFESSION_NAME, hoursKnown, jerusalemNow, longDateHe, openState, openingHoursSpec, parseHours, priceParts, relHe, servicePrice,
   type DayHours, type OpenState, type PractitionerProfession, type PriceView,
@@ -21,8 +22,6 @@ import type { ServiceGroupView } from '@/components/profile/Services';
 import type { VideoView } from '@/components/profile/VideoEmbed';
 
 export const BEFORE_AFTER_TAG = 'לפני/אחרי';
-
-const SITE = 'https://beautyfind.co.il';
 
 // ---------- JSON columns ----------
 
@@ -323,34 +322,46 @@ export function metaDescription(p: PublicProfile, v: ProfileView): string {
 }
 
 /**
- * LocalBusiness (MedicalBusiness when a medical category is listed) + BreadcrumbList, FAQPage when
- * FAQs are visible. Only visible, sourced facts: no offers for unpublished prices, no aggregate rating
- * from Google (its structured-data policy), sameAs only for verified accounts.
+ * The profile's graph: the ItemPage (part of the site, published by BeautyFind) with its breadcrumb
+ * (ראשי > region > city > category > business), the business node typed by its primary category with the
+ * same @id the URL carries, and the FAQPage when FAQs are visible. Only visible, sourced facts: no offers
+ * for unpublished prices, no aggregate rating from Google (its structured-data policy; BeautyFind's own
+ * reviews only), sameAs only for verified accounts.
  */
 export function jsonLd(p: PublicProfile, v: ProfileView) {
-  const url = `${SITE}${p.href}`;
-  const crumbs = [
-    { name: v.region?.name ?? p.regionSlug, item: `${SITE}/${p.regionSlug}` },
-    ...(v.citySlug ? [{ name: p.cityName, item: `${SITE}/${p.regionSlug}/${v.citySlug}` }] : []),
-    { name: p.name, item: url },
+  const path = p.href;
+  const url = absoluteUrl(path);
+  const cat = v.cats[0];
+  const cityPath = v.citySlug && v.citySlug !== p.regionSlug ? `/${p.regionSlug}/${v.citySlug}` : null;
+  const name = seoName(p.name);
+  const crumbs: Crumb[] = [
+    { name: 'ראשי', path: '/' },
+    { name: v.region?.name ?? p.regionSlug, path: `/${p.regionSlug}` },
+    ...(cityPath ? [{ name: seoCityName(p.cityName), path: cityPath }] : []),
+    ...(cat ? [{ name: cat.name, path: v.citySlug ? `/${p.regionSlug}/${v.citySlug}/${cat.slug}` : `/treatments/${cat.slug}` }] : []),
+    { name, path },
   ];
   const priced = v.treatments.filter(t => t.priceAgorot != null && t.priceAgorot > 0);
   const comparable = priced.filter(t => COMPARABLE_PRICE_TYPES.has(t.priceType)).map(t => t.priceAgorot as number);
-  const images = v.photos.map(ph => (ph.url.startsWith('http') ? ph.url : `${SITE}${ph.url}`));
+  const images = v.photos.map(ph => absoluteUrl(ph.url));
   const sameAs = [...(p.websiteUrl ? [p.websiteUrl] : []), ...v.socials.map(s => s.url)];
   const biz: Record<string, unknown> = {
-    '@type': v.medicalBiz ? 'MedicalBusiness' : 'LocalBusiness',
-    '@id': `${url}#biz`,
-    name: p.name,
+    '@type': businessType(cat?.slug, v.medicalBiz),
+    '@id': businessId(path),
+    name,
+    ...(name !== p.name ? { alternateName: p.name } : {}),
     url,
+    mainEntityOfPage: { '@id': pageId(path) },
+    isPartOf: { '@id': pageId(path) },
     ...(sameAs.length ? { sameAs } : {}),
     ...(p.phone ? { telephone: p.phone } : {}),
     ...(p.email && p.isClaimed ? { email: p.email } : {}),
     ...(images.length ? { image: images } : {}),
     ...(p.description ? { description: p.description.slice(0, 5000) } : {}),
-    address: { '@type': 'PostalAddress', streetAddress: p.address, addressLocality: p.cityName, addressRegion: v.region?.name, addressCountry: 'IL' },
+    // The street address as stored (Hebrew for every listing the import geocoded); the city in Hebrew; no postal code is stored.
+    address: { '@type': 'PostalAddress', streetAddress: p.address, addressLocality: seoCityName(p.cityName), addressRegion: v.region?.name, addressCountry: 'IL' },
     ...(p.lat != null && p.lng != null ? { geo: { '@type': 'GeoCoordinates', latitude: p.lat, longitude: p.lng } } : {}),
-    ...(comparable.length ? { priceRange: comparable.length > 1 && Math.min(...comparable) !== Math.max(...comparable) ? `${nisFromAgorot(Math.min(...comparable))}–${nisFromAgorot(Math.max(...comparable))}` : nisFromAgorot(comparable[0]) } : {}),
+    ...(comparable.length ? { priceRange: comparable.length > 1 && Math.min(...comparable) !== Math.max(...comparable) ? `${nisFromAgorot(Math.min(...comparable))}-${nisFromAgorot(Math.max(...comparable))}` : nisFromAgorot(comparable[0]) } : {}),
     ...(openingHoursSpec(v.hours) ? { openingHoursSpecification: openingHoursSpec(v.hours) } : {}),
     ...(p.establishedYear ? { foundingDate: String(p.establishedYear) } : {}),
     ...(v.treatments.length
@@ -377,17 +388,14 @@ export function jsonLd(p: PublicProfile, v: ProfileView) {
       : {}),
     ...(v.responsible?.label === 'אחריות רפואית' ? { employee: [{ '@type': 'Person', name: v.responsible.name, jobTitle: 'רופא/ה אחראי/ת' }] } : {}),
   };
-  const graph: unknown[] = [
-    { '@type': 'BreadcrumbList', itemListElement: crumbs.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, item: c.item })) },
+  return graph([
+    webPageNode({ path, type: 'ItemPage', name: `${name} ב${seoCityName(p.cityName)}`, image: v.photos[0]?.url ?? null, breadcrumb: true, mainEntityId: businessId(path) }),
+    breadcrumbNode(path, crumbs),
     biz,
-  ];
-  if (v.faqs.length) {
-    graph.push({ '@type': 'FAQPage', mainEntity: v.faqs.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) });
-  }
-  return { '@context': 'https://schema.org', '@graph': graph };
+    ...(v.faqs.length ? [faqNode(path, v.faqs)] : []),
+  ]);
 }
 
-/** JSON for a <script type="application/ld+json"> without breaking out of the tag. */
-export const ldJson = (data: unknown) => JSON.stringify(data).replace(/</g, '\\u003c');
+export { ldJson };
 
 export const categoryName = (slug: string) => categoryBySlug(slug)?.name ?? slug;

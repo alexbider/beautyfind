@@ -7,7 +7,7 @@ import { ABOUT_TABS, ABOUT_VIEWS, LIVE_COUNT, type AboutKey } from './data/about
 import { LEGAL_TABS, LEGAL_VIEWS, type LegalKey } from './data/legal';
 import { SPONSORSHIP_FAQS, STANDARDS_TABS, STANDARDS_VIEWS, type StandardsKey } from './data/standards';
 import { COMPANY, DOC_UPDATED, formatDate } from './meta';
-import { breadcrumbJsonLd, faqJsonLd, organizationJsonLd } from './seo';
+import { contentJsonLd } from './seo';
 import type { ContentView, Stat } from './types';
 import styles from './content.module.css';
 
@@ -35,8 +35,7 @@ export async function AboutPage({ view: key }: { view: AboutKey }) {
   const view = ABOUT_VIEWS[key];
   const crumbs: Crumb[] = [{ name: 'ראשי', href: '/' }, { name: 'אודות', href: '/about' }];
   if (key !== 'about') crumbs.push({ name: view.name });
-  const jsonLd: object[] = [breadcrumbJsonLd(crumbs, view.href)];
-  if (key === 'about') jsonLd.unshift(organizationJsonLd(view.description));
+  const jsonLd: object[] = [contentJsonLd(view as ContentView, crumbs, { organization: key === 'about', type: key === 'about' ? 'AboutPage' : 'WebPage' })];
   return (
     <ContentPage
       variant="content"
@@ -55,8 +54,7 @@ export async function AboutPage({ view: key }: { view: AboutKey }) {
 export async function StandardsPage({ view: key }: { view: StandardsKey }) {
   const view = STANDARDS_VIEWS[key];
   const crumbs: Crumb[] = [{ name: 'ראשי', href: '/' }, { name: 'לעסקים', href: ROUTES.forBusiness }, { name: view.name }];
-  const jsonLd: object[] = [breadcrumbJsonLd(crumbs, view.href)];
-  if (key === 'sponsorship') jsonLd.push(faqJsonLd(SPONSORSHIP_FAQS));
+  const jsonLd: object[] = [contentJsonLd(view as ContentView, crumbs, { faqs: key === 'sponsorship' ? SPONSORSHIP_FAQS : undefined })];
   const { date, version } = DOC_UPDATED.standards;
   return (
     <ContentPage
@@ -101,7 +99,7 @@ export function LegalPage({ view: key }: { view: LegalKey }) {
       statsLabel="פרטי המסמך"
       tocTitle="סעיפים"
       tocLabel="סעיפי המסמך"
-      jsonLd={[breadcrumbJsonLd(crumbs, view.href)]}
+      jsonLd={[contentJsonLd(view as ContentView, crumbs)]}
     />
   );
 }

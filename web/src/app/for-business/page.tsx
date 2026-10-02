@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { publicMetadata } from '@/lib/seo/meta';
+import { breadcrumbNode, faqNode, graph, ldJson, webPageNode } from '@/lib/seo/schema';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaqAccordion } from '@/components/faq/FaqAccordion';
@@ -138,11 +139,11 @@ const FAQS = [
   },
 ];
 
-const faqJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: FAQS.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
-};
+const JSON_LD = graph([
+  webPageNode({ path: '/for-business', name: TITLE, description: DESCRIPTION, image: '/assets/hero-clinic.jpg', breadcrumb: true }),
+  breadcrumbNode('/for-business', [{ name: 'ראשי', path: '/' }, { name: 'לעסקים', path: '/for-business' }]),
+  faqNode('/for-business', FAQS),
+]);
 
 function VerifiedBadge() {
   return (
@@ -156,7 +157,7 @@ function VerifiedBadge() {
 export default function GetListedPage() {
   return (
     <div className={styles.root}>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(JSON_LD) }} />
       <SiteHeader title="רישום עסק" backHref="/more" />
 
       <main>

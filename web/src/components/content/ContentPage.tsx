@@ -289,7 +289,7 @@ export function ContentPage(props: ContentPageProps) {
   return (
     <div className={styles.root} data-variant={variant}>
       {jsonLd?.map((j, i) => (
-        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(j) }} />
+        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(j).replace(/</g, '\\u003c') }} />
       ))}
       <SiteHeader variant="public" title={view.name} backHref="/more" />
 

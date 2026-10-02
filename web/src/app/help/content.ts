@@ -4,6 +4,7 @@
 
 import { PRICES_INCLUDE_VAT } from '@/lib/features';
 import { nis } from '@/lib/format';
+import { breadcrumbNode, faqNode, graph, webPageNode } from '@/lib/seo/schema';
 import { PLAN_MONTHLY_NIS, YEARLY_MULTIPLIER, PLATFORM_BILLING_LINE } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
 
@@ -212,10 +213,11 @@ export const SIDE: Record<Audience, { title: string; body: string; links: Array<
 
 export const faqsFor = (aud: Audience) => FAQS.filter(f => f.audience === aud);
 
+/** The help page's graph: the WebPage, its breadcrumb and the FAQ of the audience on screen. */
 export function faqJsonLd(aud: Audience) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqsFor(aud).map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
-  };
+  return graph([
+    webPageNode({ path: '/help', type: 'FAQPage', name: 'מרכז העזרה של BeautyFind', breadcrumb: true }),
+    breadcrumbNode('/help', [{ name: 'ראשי', path: '/' }, { name: 'עזרה', path: '/help' }]),
+    faqNode('/help', faqsFor(aud)),
+  ]);
 }

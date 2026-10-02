@@ -1,8 +1,7 @@
 // Small presentational helpers shared by the Region, Treatments and Treatment Category pages.
 
 import { nis } from '@/lib/format';
-
-export const ORIGIN = 'https://beautyfind.co.il'; // matches metadataBase in app/layout.tsx
+import { breadcrumbNode, faqNode, graph, webPageNode, type Crumb, type WebPageInput } from '@/lib/seo/schema';
 
 export const fmtInt = (n: number) => n.toLocaleString('en-US');
 
@@ -41,21 +40,13 @@ export function median(nums: number[]): number | null {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
-/** BreadcrumbList JSON-LD. The last crumb is the current page. */
-export function breadcrumbLd(items: Array<{ name: string; path: string }>) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: items.map((it, i) => ({ '@type': 'ListItem', position: i + 1, name: it.name, item: ORIGIN + it.path })),
-  };
-}
-
-export function faqLd(faqs: Array<{ q: string; a: string }>) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqs.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
-  };
+/**
+ * The page's structured data as one graph: a WebPage that belongs to the site, its BreadcrumbList (the
+ * last crumb is the page itself) and, when given, its FAQPage. Node ids derive from the page path.
+ */
+export function pageLd(p: Omit<WebPageInput, 'breadcrumb'> & { crumbs: Crumb[]; faqs?: Array<{ q: string; a: string }> }) {
+  const { crumbs, faqs, ...page } = p;
+  return graph([webPageNode({ ...page, breadcrumb: true }), breadcrumbNode(p.path, crumbs), ...(faqs?.length ? [faqNode(p.path, faqs)] : [])]);
 }
 
 export function JsonLd({ data }: { data: object }) {

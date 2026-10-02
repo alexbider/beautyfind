@@ -19,15 +19,13 @@ import { ListingCard } from './ListingCard';
 import { PAGE, dirHref, hasParams, parseQuery, type DirQuery } from './params';
 import { composeDescription, publicMetadata } from '@/lib/seo/meta';
 import { seoCityName } from '@/lib/seo/seoName';
+import { breadcrumbNode, faqNode, graph, itemListNode, ldJson, listId, webPageNode } from '@/lib/seo/schema';
 import { ResultsShell } from './ResultsShell';
 import { SidebarFaq } from './SidebarFaq';
 import styles from './Directory.module.css';
 
 // Design: project/BeautyFind Directory.dc.html (pageType=city and pageType=treatment).
 // Empty city: project/BeautyFind States.dc.html → "אזור ללא עסקים".
-
-/** Same origin as the root layout's metadataBase, so JSON-LD URLs match the canonical. */
-const ORIGIN = 'https://beautyfind.co.il';
 
 export type DirParams = Promise<{ region: string; city: string; category?: string }>;
 export type DirSearch = Promise<Record<string, string | string[] | undefined>>;
@@ -92,39 +90,27 @@ export async function directoryMetadata(params: DirParams, searchParams: DirSear
 // ---------- JSON-LD ----------
 
 function JsonLd({ data }: { data: object }) {
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, '\\u003c') }} />;
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(data) }} />;
 }
 
-function breadcrumbLd(s: Scope) {
-  const trail = [
-    { name: 'ראשי', url: `${ORIGIN}/` },
-    { name: s.region.name, url: `${ORIGIN}/${s.region.slug}` },
-    { name: s.city.name, url: `${ORIGIN}${s.cityPath}` },
-    ...(s.category ? [{ name: s.category.name, url: `${ORIGIN}${s.path}` }] : []),
+/** ראשי > region > city > category: the city crumb links to the region page when the city carries the region's name. */
+function crumbsOf(s: Scope) {
+  return [
+    { name: 'ראשי', path: '/' },
+    { name: s.region.name, path: `/${s.region.slug}` },
+    ...(s.city.slug !== s.region.slug ? [{ name: seoCityName(s.city.name), path: s.cityPath }] : []),
+    ...(s.category ? [{ name: s.category.name, path: s.path }] : []),
   ];
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: trail.map((t, i) => ({ '@type': 'ListItem', position: i + 1, name: t.name, item: t.url })),
-  };
 }
 
-function itemListLd(items: DirectoryCard[], name: string) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'ItemList',
-    name,
-    numberOfItems: items.length,
-    itemListElement: items.map((c, i) => ({ '@type': 'ListItem', position: i + 1, url: `${ORIGIN}${c.href}`, name: c.name })),
-  };
-}
-
-function faqLd(faqs: Array<{ q: string; a: string }>) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqs.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
-  };
+/** One graph: the CollectionPage, its breadcrumb, the ItemList of the businesses on it and the FAQ. */
+function pageGraph(s: Scope, title: string, items: DirectoryCard[], faqs: Array<{ q: string; a: string }>) {
+  return graph([
+    webPageNode({ path: s.path, type: 'CollectionPage', name: title, image: `/assets/region-${s.region.slug}.jpg`, breadcrumb: true, ...(items.length ? { mainEntityId: listId(s.path) } : {}) }),
+    breadcrumbNode(s.path, crumbsOf(s)),
+    ...(items.length ? [itemListNode(s.path, title, items.map(c => ({ path: c.href, name: c.name })))] : []),
+    ...(faqs.length ? [faqNode(s.path, faqs)] : []),
+  ]);
 }
 
 // ---------- page ----------
@@ -180,7 +166,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
     const cityAll = s.category ? await getOverview(s.region.slug, s.city.slug, undefined) : null;
     return (
       <div className={styles.root}>
-        <JsonLd data={breadcrumbLd(s)} />
+        <JsonLd data={pageGraph(s, title, [], [])} />
         {header}
         <main>
           <div className={styles.wrap}>
@@ -280,9 +266,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
 
   return (
     <div className={styles.root}>
-      <JsonLd data={breadcrumbLd(s)} />
-      {list.items.length > 0 && <JsonLd data={itemListLd(list.items.slice(0, PAGE), title)} />}
-      <JsonLd data={faqLd(faqs)} />
+      <JsonLd data={pageGraph(s, title, list.items, faqs)} />
       {header}
 
       <main>

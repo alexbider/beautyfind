@@ -1,10 +1,8 @@
 import type { Metadata } from 'next';
 import { publicMetadata } from '@/lib/seo/meta';
+import { breadcrumbNode, faqNode, graph, organizationNode, webPageNode } from '@/lib/seo/schema';
 import type { Crumb } from './ContentPage';
 import type { ContentView } from './types';
-
-/** Same origin as metadataBase in app/layout.tsx. */
-export const SITE = 'https://beautyfind.co.il';
 
 /**
  * Per-route metadata with a canonical. All these pages are indexable; the legal ones are meant to be
@@ -14,40 +12,18 @@ export function contentMetadata(view: ContentView): Metadata {
   return { ...publicMetadata({ path: view.href, title: view.metaTitle, description: view.description }), robots: { index: true, follow: true } };
 }
 
-export function breadcrumbJsonLd(crumbs: Crumb[], currentHref: string) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: crumbs.map((c, i) => ({
-      '@type': 'ListItem',
-      position: i + 1,
-      name: c.name,
-      item: `${SITE}${c.href ?? currentHref}`,
-    })),
-  };
+const plain = (s: string) => s.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+
+/**
+ * The page's structured data as one graph: the WebPage (AboutPage for /about) with its breadcrumb, the
+ * Organization on the about page, and the FAQ where the page has one.
+ */
+export function contentJsonLd(view: ContentView, crumbs: Crumb[], opts: { organization?: boolean; faqs?: Array<{ q: string; a: string }>; type?: 'WebPage' | 'AboutPage' } = {}) {
+  return graph([
+    webPageNode({ path: view.href, type: opts.type ?? 'WebPage', name: view.metaTitle, description: view.description, breadcrumb: true }),
+    breadcrumbNode(view.href, crumbs.map(c => ({ name: c.name, path: c.href ?? view.href }))),
+    ...(opts.organization ? [organizationNode(view.description)] : []),
+    ...(opts.faqs?.length ? [faqNode(view.href, opts.faqs.map(f => ({ q: plain(f.q), a: plain(f.a) })))] : []),
+  ]);
 }
 
-export function faqJsonLd(faqs: Array<{ q: string; a: string }>) {
-  const plain = (s: string) => s.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqs.map(f => ({ '@type': 'Question', name: plain(f.q), acceptedAnswer: { '@type': 'Answer', text: plain(f.a) } })),
-  };
-}
-
-export function organizationJsonLd(description: string) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'BeautyFind',
-    alternateName: 'ביוטיפיינד',
-    url: SITE,
-    description,
-    areaServed: { '@type': 'Country', name: 'Israel' },
-    knowsLanguage: 'he',
-    contactPoint: [{ '@type': 'ContactPoint', contactType: 'customer support', url: `${SITE}/contact`, availableLanguage: 'he' }],
-    legalName: 'Israfind Group',
-    address: { '@type': 'PostalAddress', addressRegion: 'DE', addressCountry: 'US' },
-  };
-}

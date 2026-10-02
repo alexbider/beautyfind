@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { applySeo } from '@/lib/server/seo';
 import { publicMetadata } from '@/lib/seo/meta';
+import { graph, ldJson, organizationNode, webPageNode, webSiteNode } from '@/lib/seo/schema';
 import { cardExtras } from '@/app/search/extras';
 import { CATEGORY_IMAGE } from '@/components/home/content';
 import { DeskHome } from '@/components/home/desk/DeskHome';
@@ -16,7 +17,6 @@ import { MaintenanceNotice } from '@/components/shell/FeatureOff';
 // unchanged) and BeautyFind_Homepage_Mobile.html (app shell). Server component: both layouts
 // get the same live data from lib/server/public.ts (live listings only).
 
-const SITE = 'https://beautyfind.co.il';
 const TITLE = 'מכוני יופי, קליניקות לאסתטיקה וספא בישראל | BeautyFind';
 const DESCRIPTION =
   'מצאו מכוני יופי, קליניקות לאסתטיקה רפואית, מספרות וספא בכל רחבי ישראל, מהצפון ועד אילת. השוו מחירים וביקורות, גלו טיפולים וקבעו את הפגישה הבאה.';
@@ -30,32 +30,12 @@ export const revalidate = 120;
 
 const CARDS_PER_TAB = 10;
 
-const JSON_LD = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'WebSite',
-      '@id': `${SITE}/#website`,
-      url: `${SITE}/`,
-      name: 'BeautyFind',
-      inLanguage: 'he-IL',
-      publisher: { '@id': `${SITE}/#organization` },
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: { '@type': 'EntryPoint', urlTemplate: `${SITE}/search?q={search_term_string}` },
-        'query-input': 'required name=search_term_string',
-      },
-    },
-    {
-      '@type': 'Organization',
-      '@id': `${SITE}/#organization`,
-      name: 'BeautyFind',
-      url: `${SITE}/`,
-      description: 'BeautyFind הוא אינדקס מכוני יופי, קליניקות לאסתטיקה רפואית, מספרות וספא בכל רחבי ישראל, עם מחירים, ביקורות ופרטי קשר של כל עסק.',
-      areaServed: { '@type': 'Country', name: 'Israel' },
-    },
-  ],
-};
+// The site graph: the WebSite and the Organization (stable ids every other page refers to) and the home page itself.
+const JSON_LD = graph([
+  webSiteNode(),
+  organizationNode('BeautyFind הוא אינדקס מכוני יופי, קליניקות לאסתטיקה רפואית, מספרות וספא בכל רחבי ישראל, עם מחירים, ביקורות ופרטי קשר של כל עסק.'),
+  webPageNode({ path: '/', name: TITLE, description: DESCRIPTION, image: '/assets/hero-clinic.jpg' }),
+]);
 
 export default async function HomePage() {
   const [counts, reviews, ...perRegion] = await Promise.all([
@@ -118,7 +98,7 @@ export default async function HomePage() {
 
   return (
     <div className={styles.root}>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(JSON_LD) }} />
       <MaintenanceNotice />
       <div className="bf-shell-only">
         <PhoneHome lists={cardLists} reviews={cardReviews} regionCities={regionCities} catCount={CATEGORIES.length} />

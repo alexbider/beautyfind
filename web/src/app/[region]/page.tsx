@@ -14,7 +14,7 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { BizTabs, type BizTab } from '@/components/treatments/BizTabs';
 import { CATEGORY_CONTENT } from '@/components/treatments/content';
 import { Faq } from '@/components/treatments/Faq';
-import { BIZ, Count, JsonLd, breadcrumbLd, countText, faqLd, fmtInt, median, pctDelta } from '@/components/treatments/format';
+import { BIZ, Count, JsonLd, countText, fmtInt, median, pageLd, pctDelta } from '@/components/treatments/format';
 import { InfoGlyph } from '@/components/treatments/InfoGlyph';
 import { listingBreakdown, ratingMedians, regionFacts } from '@/components/treatments/queries';
 import shared from '@/components/treatments/shared.module.css';
@@ -137,8 +137,7 @@ export default async function RegionPage({ params }: Props) {
 
   return (
     <div className={shared.root}>
-      <JsonLd data={breadcrumbLd([{ name: 'ראשי', path: '/' }, { name: region.name, path: `/${r}` }])} />
-      <JsonLd data={faqLd(faqs)} />
+      <JsonLd data={pageLd({ path: `/${r}`, type: 'CollectionPage', name: `יופי ואסתטיקה ${rc.inName}`, image: `/assets/region-${r}.jpg`, crumbs: [{ name: 'ראשי', path: '/' }, { name: region.name, path: `/${r}` }], faqs })} />
       <SiteHeader variant="public" title={region.name} backHref="/" />
 
       <div className={styles.hero}>
