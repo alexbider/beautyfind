@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { composeDescription, publicMetadata } from '../../src/lib/seo/meta';
 import { META_ACTION, metaDescriptionOk, metaDescriptionProblems } from '../../src/lib/seo/metaRules';
-import { capWords, seoCityName, seoName } from '../../src/lib/seo/seoName';
+import { capWords, sameNameAcrossScripts, seoCityName, seoName } from '../../src/lib/seo/seoName';
 import { hebrewTreatmentName, hebrewTreatmentNames } from '../../src/lib/seo/treatmentNames';
 
 describe('seo name', () => {
@@ -16,6 +16,21 @@ describe('seo name', () => {
     assert.equal(seoName('Glow Clinic'), 'Glow Clinic', 'a Latin-only name stays');
     assert.equal(seoName('סטודיו Glow'), 'סטודיו Glow', 'one Latin brand word inside a Hebrew name stays');
     assert.equal(seoName('ד"ר שיין'), 'ד״ר שיין');
+    // A hyphen glued to one side is a separator too; a hyphen inside a word is not.
+    assert.equal(seoName('אניגמה- מרכז לאסתטיקה מתקדמת'), 'אניגמה');
+    assert.equal(seoName('יוסי כהן -מומחה לשיער'), 'יוסי כהן');
+    assert.equal(seoName('שרית אטיאס-עיצוב גבות'), 'שרית אטיאס-עיצוב גבות');
+    assert.equal(seoName('מספרה - אנה עיצוב שיער | салон Анна'), 'מספרה אנה עיצוב שיער', 'a lone kind word keeps the name after the separator');
+    // A Latin or Cyrillic copy of the Hebrew name is dropped; a different foreign name is not.
+    assert.equal(seoName('Glow Clinic | קליניקת גלואו'), 'קליניקת גלואו');
+    assert.equal(seoName('Rivky Blau רבקי בלאו'), 'רבקי בלאו');
+    assert.equal(seoName('Dr. Allan Schuman - ד״ר אלן שומן'), 'ד״ר אלן שומן');
+    assert.equal(seoName('אנה דיזיין Анна Дизайн'), 'אנה דיזיין');
+    assert.equal(seoName('Lumiere לומייר'), 'לומייר');
+    assert.equal(seoName('Barak clinic - קליניקה לאסתטיקה מתקדמת בנהריה'), 'Barak clinic', 'a Hebrew slogan is not the name');
+    assert.equal(seoName('Shiran Ben Yehuda איפור קבוע'), 'Shiran Ben Yehuda איפור קבוע', 'a Hebrew category after a foreign name stays');
+    assert.ok(sameNameAcrossScripts(['Mona', 'Medical', 'Jerusalem'], ['מונה', 'מדיקל', 'ירושלים']));
+    assert.ok(!sameNameAcrossScripts(['Tamar', 'Cosmetics'], ['קוסמטיקאית', 'פרא', 'רפואית']));
     const long = seoName('המרכז הבינלאומי לרפואה אסתטית ולכירורגיה פלסטית של פרופסור ישראלי');
     assert.ok(long.length <= 35 && long.startsWith('המרכז הבינלאומי'), long);
     assert.equal(capWords('אבג דהו זחט', 7), 'אבג דהו');
