@@ -1,15 +1,14 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useId, useRef, useState, useTransition, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, useTransition, type KeyboardEvent, type ReactNode } from 'react';
 import { Check, ChevronDown } from '@/components/icons';
 import { useMedia } from '@/components/search/useMedia';
 import { BottomSheet } from '@/components/shell/BottomSheet';
-import { Skeleton } from '@/components/shell/Skeleton';
 import { SHELL_MQ } from '@/lib/ui/shell';
 import { BIZ, RESULTS, fmtNum } from './copy';
 import { Count } from './Count';
-import { FILTER_KEYS, FILTER_LABELS, MAX_SHOW, PAGE, SORTS, dirHref, type DirQuery, type FilterKey } from './params';
+import { FILTER_KEYS, FILTER_LABELS, SORTS, dirHref, type DirQuery, type FilterKey } from './params';
 import styles from './Directory.module.css';
 
 type Menu = 'filter' | 'sort' | null;
@@ -20,37 +19,29 @@ interface Props {
   filterCounts: Record<FilterKey, number>;
   matched: number; // results for the current filters
   total: number; // results with no filters
-  shown: number; // cards rendered
-  searchHref: string; // fallback once ?show hits MAX_SHOW
+  shown: number; // cards on this page
   children: ReactNode; // server-rendered cards or the no-results box
 }
 
 /**
- * The only client part of the list: filter and sort dropdowns plus "show more". Every action
- * just updates the URL; the server re-renders the list, so the page stays crawlable and
- * shareable. The status line is a polite live region, so the new count is announced.
- * App shell: the dropdowns open as bottom sheets, and the next cards load by themselves when
- * the end of the list scrolls into view (skeletons instead of the button, spec §3.1).
+ * The only client part of the list: filter and sort dropdowns. Every action just updates the URL and the
+ * server re-renders the list, so the page stays crawlable and shareable. Paging is plain links (Pager).
+ * The status line is a polite live region, so the new count is announced. App shell: the dropdowns open
+ * as bottom sheets.
  */
-export function ResultsShell({ base, query, filterCounts, matched, total, shown, searchHref, children }: Props) {
+export function ResultsShell({ base, query, filterCounts, matched, total, shown, children }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [menu, setMenu] = useState<Menu>(null);
   const [sheet, setSheet] = useState<Menu>(null);
-  const [more, setMore] = useState(false);
   const shell = useMedia(SHELL_MQ);
-  const sentinel = useRef<HTMLDivElement>(null);
   const uid = useId();
   const filterBtn = useRef<HTMLButtonElement>(null);
   const sortBtn = useRef<HTMLButtonElement>(null);
   const filterPanel = useRef<HTMLDivElement>(null);
   const sortPanel = useRef<HTMLDivElement>(null);
 
-  const go = (q: DirQuery, opts?: { more?: boolean }) => {
-    setMore(!!opts?.more);
-    // Loading more cards replaces the entry, so back leaves the page instead of stepping through batches.
-    startTransition(() => (opts?.more ? router.replace : router.push)(dirHref(base, q), { scroll: false }));
-  };
+  const go = (q: DirQuery) => startTransition(() => router.push(dirHref(base, q), { scroll: false }));
   const open = (m: Exclude<Menu, null>) => (shell ? setSheet(m) : setMenu(cur => (cur === m ? null : m)));
 
   // Focus the checked (or first) item when a menu opens, per the ARIA menu pattern.
@@ -107,37 +98,15 @@ export function ResultsShell({ base, query, filterCounts, matched, total, shown,
     }
   };
 
+  // A filter or sort change starts from the first page again.
   const toggleFilter = (k: FilterKey) => {
     const on = query.filters.includes(k);
-    go({ ...query, filters: on ? query.filters.filter(f => f !== k) : [...query.filters, k], show: PAGE });
+    go({ ...query, filters: on ? query.filters.filter(f => f !== k) : [...query.filters, k], page: 1 });
   };
-  const clearFilters = () => go({ ...query, filters: [], show: PAGE });
+  const clearFilters = () => go({ ...query, filters: [], page: 1 });
 
   const nFilters = query.filters.length;
   const sortName = SORTS.find(s => s.key === query.sort)!.name;
-
-  const remaining = Math.max(0, matched - shown);
-  const nextShow = shown + PAGE;
-  const canLoadMore = remaining > 0 && nextShow <= MAX_SHOW;
-  const step = Math.min(PAGE, remaining);
-  const moreLabel =
-    step === 1 ? 'הצגת עסק נוסף' : step === 2 ? 'הצגת שני עסקים נוספים' : <>הצגת <span className="ltr">{fmtNum(step)}</span> עסקים נוספים</>;
-  const moreHref = dirHref(base, { ...query, show: nextShow });
-  const onMore = (e: MouseEvent<HTMLAnchorElement>) => {
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-    e.preventDefault();
-    go({ ...query, show: nextShow }, { more: true });
-  };
-
-  useEffect(() => {
-    const el = sentinel.current;
-    if (!shell || !canLoadMore || pending || !el) return;
-    const io = new IntersectionObserver(([e]) => e.isIntersecting && go({ ...query, show: nextShow }, { more: true }), { rootMargin: '0px 0px 600px 0px' });
-    io.observe(el);
-    return () => io.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shell, canLoadMore, pending, nextShow]);
-  const pct = `${Math.round(Math.min(1, shown / Math.max(1, matched)) * 100)}%`;
 
   return (
     <>
@@ -220,7 +189,7 @@ export function ResultsShell({ base, query, filterCounts, matched, total, shown,
                     data-kind="sort"
                     onClick={() => {
                       close(true);
-                      if (!on) go({ ...query, sort: o.key, show: PAGE });
+                      if (!on) go({ ...query, sort: o.key, page: 1 });
                     }}
                   >
                     <span>{o.name}</span>
@@ -300,7 +269,7 @@ export function ResultsShell({ base, query, filterCounts, matched, total, shown,
                 data-kind="sort"
                 onClick={() => {
                   setSheet(null);
-                  if (!on) go({ ...query, sort: o.key, show: PAGE });
+                  if (!on) go({ ...query, sort: o.key, page: 1 });
                 }}
               >
                 <span>{o.name}</span>
@@ -313,40 +282,9 @@ export function ResultsShell({ base, query, filterCounts, matched, total, shown,
         </div>
       </BottomSheet>
 
-      <div className={styles.results} aria-busy={(pending && !more) || undefined}>
+      <div className={styles.results} aria-busy={pending || undefined}>
         {children}
       </div>
-
-      {canLoadMore && (
-        <div ref={sentinel} className={`${styles.autoMore} bf-shell-only`} aria-hidden="true">
-          {Array.from({ length: pending && more ? Math.min(step, 2) : 1 }, (_, i) => (
-            <div key={i} className={styles.skelCard}>
-              <Skeleton height="auto" radius={16} className={styles.skelImg} />
-              <Skeleton width="58%" height={16} />
-              <Skeleton width="38%" height={13} />
-            </div>
-          ))}
-        </div>
-      )}
-
-      {matched > 0 && (
-        <div className={styles.moreRow}>
-          {canLoadMore ? (
-            <a href={moreHref} rel="nofollow" className={`${styles.moreBtn} bf-desk-only`} onClick={onMore} aria-disabled={pending || undefined}>
-              {pending ? 'טוענים…' : moreLabel}
-            </a>
-          ) : (
-            remaining > 0 && (
-              <a href={searchHref} className={styles.moreBtn}>
-                לכל <Count n={matched} f={BIZ} /> בחיפוש
-              </a>
-            )
-          )}
-          <div role="presentation" className={styles.progress}>
-            <span style={{ width: pct }} />
-          </div>
-        </div>
-      )}
     </>
   );
 }

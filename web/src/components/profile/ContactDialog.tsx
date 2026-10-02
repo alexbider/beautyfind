@@ -191,7 +191,7 @@ function ContactDialog({ branch, treatments, preset, serviceId, onClose }: { bra
         {!branch.whatsapp && !branch.phone && !branch.email && !branch.website && <p className={styles.fine}>לעסק הזה לא פורסמו פרטי קשר במקורות שנבדקו.</p>}
       </div>
       <p className={styles.fine}>
-        זה העסק שלכם? <Link href={ROUTES.claim}>אישור בעלות</Link> יאפשר לקבל פניות ישירות מהעמוד.
+        זה העסק שלכם? <Link href={ROUTES.claim} rel="nofollow">אישור בעלות</Link> יאפשר לקבל פניות ישירות מהעמוד.
       </p>
       <button type="button" className={styles.doneBtn} onClick={onClose}>סגירה</button>
     </div>

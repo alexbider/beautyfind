@@ -8,7 +8,7 @@ import { REGIONS, type RegionSlug } from '@/lib/catalog';
 import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
 import { BOOKING_LIVE, VAT_LABEL, VAT_VERB } from '@/lib/features';
 import { nis } from '@/lib/format';
-import { ROUTES } from '@/lib/routes';
+import { ROUTES, relFor } from '@/lib/routes';
 import { SaveHeart, useSavedIds } from '../../save-heart/SaveHeart';
 import { haptic } from '../../shell/haptics';
 import { ARTICLES, IMAGE_ALT, LANDMARK_ALT } from '../content';
@@ -323,7 +323,7 @@ function Menu({ open, section, setSection, onClose, region, pickRegion }: {
                 { href: ROUTES.listingStandards, label: 'תקן הרישום', d: 'M10 2 4 4.5v4.8c0 3.9 2.6 6.7 6 8.2 3.4-1.5 6-4.3 6-8.2V4.5L10 2Zm-2.6 8 1.9 1.9 3.5-3.6' },
                 { href: ROUTES.help, label: 'מרכז עזרה', d: 'M10 17.5a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15ZM7.8 7.6a2.3 2.3 0 0 1 4.4.8c0 1.6-2.2 2-2.2 3.3M10 14.2h.01' },
               ].map((l, i) => (
-                <Link key={l.href} href={l.href} className={`${s.menuItem} ${s.menuLink} ${s.stagger}`} style={d(4 + i)} onClick={onClose}>
+                <Link key={l.href} href={l.href} rel={relFor(l.href)} className={`${s.menuItem} ${s.menuLink} ${s.stagger}`} style={d(4 + i)} onClick={onClose}>
                   <span className={s.menuIcon}><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={l.d} /></svg></span>
                   <span className={s.menuLabel}>{l.label}</span>
                   {l.badge ? <span dir="ltr" className={s.menuBadge}>{l.badge}</span> : null}
@@ -811,7 +811,7 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
           <ListingSteps />
           <div className={`${s.two} ${s.mt16}`}>
             <Link href={ROUTES.join} className={s.bizJoin}>הצטרפות לאינדקס<Arrow /></Link>
-            <Link href={ROUTES.claim} className={s.bizClaim}>העסק כבר כאן?</Link>
+            <Link href={ROUTES.claim} rel="nofollow" className={s.bizClaim}>העסק כבר כאן?</Link>
           </div>
           <div className={s.bizPrice}>מ־<span dir="ltr" className={s.bizPriceN}>{nis(PLAN_MONTHLY_NIS.basic)}</span> לסניף בחודש, ללא מע״מ ישראלי.</div>
         </section>
@@ -858,7 +858,7 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
                   <span className={s.footChev} data-open={open || undefined}><Chevron size={14} /></span>
                 </button>
                 <div id={`foot-m-${i}`} className={s.footLinks} hidden={!open}>
-                  {g.links.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}
+                  {g.links.map(([label, href]) => <Link key={href} href={href} rel={relFor(href)}>{label}</Link>)}
                 </div>
               </div>
             );

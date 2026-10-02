@@ -368,7 +368,7 @@ export default async function RegionPage({ params }: Props) {
               <span>רישום עסק</span>
               <ArrowForward />
             </Link>
-            <Link href="/for-business/claim" className={shared.ctaGhost}>אישור בעלות על עסק קיים</Link>
+            <Link href="/for-business/claim" rel="nofollow" className={shared.ctaGhost}>אישור בעלות על עסק קיים</Link>
           </div>
         </section>
       </main>

@@ -16,7 +16,8 @@ import { EmptyCity } from './EmptyCity';
 import { applySeo } from '@/lib/server/seo';
 import { GuideExpander } from './GuideExpander';
 import { ListingCard } from './ListingCard';
-import { PAGE, dirHref, hasParams, parseQuery, type DirQuery } from './params';
+import { canonicalHref, dirHref, hasParams, pageCount, parseQuery, type DirQuery } from './params';
+import { Pager } from './Pager';
 import { composeDescription, publicMetadata } from '@/lib/seo/meta';
 import { seoCityName } from '@/lib/seo/seoName';
 import { breadcrumbNode, faqNode, graph, itemListNode, ldJson, listId, webPageNode } from '@/lib/seo/schema';
@@ -63,7 +64,7 @@ export async function directoryMetadata(params: DirParams, searchParams: DirSear
   const o = await getOverview(s.region.slug, s.city.slug, s.category?.slug);
   const where = `ב${seoCityName(s.city.name)}`;
   // "{noun} ב{city}: מחירים והשוואה | BeautyFind"; the layout appends the brand.
-  const title = s.category ? `${SEO_TERM[s.category.slug] ?? s.category.name} ${where}: מחירים והשוואה` : `מכוני יופי ואסתטיקה ${where}: מחירים והשוואה`;
+  const title = `${s.category ? `${SEO_TERM[s.category.slug] ?? s.category.name} ${where}: מחירים והשוואה` : `מכוני יופי ואסתטיקה ${where}: מחירים והשוואה`}${q.page > 1 ? ` (עמוד ${q.page})` : ''}`;
   const verifiedPart =
     o.verified === 0 ? null : o.total === 1 ? 'העסק מאומת.' : o.verified === o.total ? 'כולם מאומתים.' : o.verified === 1 ? 'אחד מהם מאומת.' : `${fmtNum(o.verified)} מהם מאומתים.`;
   const ownPrice = s.category ? o.prices.find(p => p.slug === s.category!.slug && !p.fromRegion) : null;
@@ -84,7 +85,8 @@ export async function directoryMetadata(params: DirParams, searchParams: DirSear
           ],
           [`${BOOKING_LIVE ? 'קביעת תור אונליין בעסקים שמציעים אותה' : 'פנייה ישירה לעסק'} ומחירים אמצעיים לפי תחום.`, 'הסדר אינו נמכר: לפי אימות, דירוג ומספר ביקורות.'],
         );
-  return applySeo(s.path, publicMetadata({ path: s.path, title, description, image: `/assets/region-${s.region.slug}.jpg`, noindex: o.total === 0 || hasParams(q) }));
+  // Filtered or sorted lists are noindex; page 2 and on are indexable with their own canonical.
+  return applySeo(s.path, publicMetadata({ path: canonicalHref(s.path, q), title, description, image: `/assets/region-${s.region.slug}.jpg`, noindex: o.total === 0 || hasParams(q) }));
 }
 
 // ---------- JSON-LD ----------
@@ -204,6 +206,8 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
   // ---------- listing ----------
   const matched = list.total;
   const shown = list.items.length;
+  const pages = pageCount(matched);
+  if (q.page > pages) notFound();
   const topCat = [...o.cityCategories].sort((a, b) => b.count - a.count)[0];
   const ownPrice = s.category ? o.prices.find(p => p.slug === s.category!.slug) : undefined;
   const headlinePrice = s.category ? ownPrice : (o.prices.find(p => p.slug === topCat?.slug) ?? o.prices[0]);
@@ -258,8 +262,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
       <Count n={o.total} f={BIZ} />
     );
 
-  const clearHref = dirHref(s.path, { ...q, filters: [], show: PAGE } satisfies DirQuery);
-  const searchHref = `/search?region=${s.region.slug}&city=${s.city.slug}${s.category ? `&t=${s.category.slug}` : ''}`;
+  const clearHref = dirHref(s.path, { ...q, filters: [], page: 1 } satisfies DirQuery);
   const anyPrice = list.items.some(c => c.priceFromShekels != null);
   const few = o.total <= 3 && o.siblings.length > 0;
   const siblingHref = (c: City) => (s.category ? `/${c.region}/${c.slug}/${s.category.slug}` : `/${c.region}/${c.slug}`);
@@ -323,7 +326,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
 
                 {/* TODO(sponsored): up to 2 "ממומן" slots per list go here, rendered apart from the ranked list,
                     once the campaigns table exists. Sponsored never changes the order below. */}
-                <ResultsShell base={s.path} query={q} filterCounts={o.filterCounts} matched={matched} total={o.total} shown={shown} searchHref={searchHref}>
+                <ResultsShell base={s.path} query={q} filterCounts={o.filterCounts} matched={matched} total={o.total} shown={shown}>
                   {list.items.length === 0 ? (
                     <div className={styles.none}>
                       <span className={styles.noneTitle}>אין עסקים שעומדים בכל הסינונים</span>
@@ -336,13 +339,14 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
                     <>
                       <ol className={styles.cards}>
                         {list.items.map((c, i) => (
-                          <ListingCard key={c.id} c={c} delayIndex={i % PAGE} />
+                          <ListingCard key={c.id} c={c} delayIndex={i % 12} />
                         ))}
                       </ol>
                       {anyPrice && <p className={styles.vatNote}>המחירים בכרטיסים {VAT_LABEL_BEFORE}.</p>}
                     </>
                   )}
                 </ResultsShell>
+                <Pager base={s.path} query={q} pages={pages} />
 
                 {few && (
                   <div className={styles.nearby}>

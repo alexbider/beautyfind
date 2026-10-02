@@ -566,7 +566,7 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
             <p className={s.bizLede}>פרופיל מאומת, יומן שמסתנכרן עם Google, Outlook או מערכת הקליניקה, ואישורי תור בוואטסאפ, ב־SMS ובמייל.</p>
             <div className={s.bizCtas}>
               <Link href={ROUTES.join} className={s.bizJoin}>הצטרפות לאינדקס<Arrow width={1.7} /></Link>
-              <Link href={ROUTES.claim} className={s.bizClaim}>העסק כבר כאן?</Link>
+              <Link href={ROUTES.claim} rel="nofollow" className={s.bizClaim}>העסק כבר כאן?</Link>
             </div>
             <div className={s.bizPrice}>מ־<span dir="ltr" className={s.bizPriceN}>{nis(PLAN_MONTHLY_NIS.basic)}</span> לסניף בחודש, ללא מע״מ ישראלי.</div>
           </div>

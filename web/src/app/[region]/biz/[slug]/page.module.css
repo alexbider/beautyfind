@@ -150,8 +150,11 @@ a.rating { color: inherit; }
 
 /* Similar businesses */
 .similar { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.explore { margin-top: 28px; font-size: 15px; color: var(--muted, #5b6675); line-height: 1.7; }
+.explore p { margin: 0; }
+.explore a { color: var(--teal-deep, #0B7A87); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 @media (min-width: 480px) { .similar { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (min-width: 768px) and (max-width: 1023px), (min-width: 1280px) { .similar[data-n="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 768px) and (max-width: 1023px), (min-width: 1280px) { .similar[data-n="3"], .similar[data-n="5"], .similar[data-n="6"] { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .simCard { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: #ffffff; color: inherit; transition: border-color .22s, box-shadow .22s, transform .22s; }
 @media (hover: hover) and (pointer: fine) { .simCard:hover { border-color: var(--line-strong); box-shadow: var(--shadow-card); transform: translateY(-3px); color: inherit; } }
 .simImg { position: relative; aspect-ratio: 16 / 10; background: #EDF1F3; }

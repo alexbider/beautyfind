@@ -5,7 +5,7 @@ import { cache } from 'react';
 import { CATEGORIES, citiesOf, type City, type RegionSlug } from '@/lib/catalog';
 import { db } from '@/lib/server/db';
 import { PUBLIC_WHERE, listBranches, medianPrices, medianPricesForCity, type ListingCard } from '@/lib/server/public';
-import type { DirQuery, FilterKey } from './params';
+import { PAGE, type DirQuery, type FilterKey } from './params';
 
 // Directory-only reads. Listing cards come from lib/server/public (listBranches); this file
 // adds the per-city aggregates the page shows and the few card fields ListingCard lacks.
@@ -131,7 +131,7 @@ function parseGallery(v: Prisma.JsonValue): Array<{ url: string; alt: string }> 
   return v.flatMap(g => (g && typeof g === 'object' && !Array.isArray(g) && typeof g.url === 'string' ? [{ url: g.url, alt: typeof g.alt === 'string' ? g.alt : '' }] : []));
 }
 
-/** Listing cards for the current URL state: the first `show` results, fetched in chunks of 60 (listBranches' cap). */
+/** Listing cards for the current URL state: one page of PAGE cards (listBranches caps a read at 60). */
 export async function getListings(scope: DirScope, q: DirQuery): Promise<{ total: number; items: DirectoryCard[] }> {
   const base = {
     region: scope.region,
@@ -143,13 +143,8 @@ export async function getListings(scope: DirScope, q: DirQuery): Promise<{ total
     freeParking: q.filters.includes('parking'),
     accessible: q.filters.includes('accessible'),
   };
-  const CHUNK = 60;
-  const first = await listBranches({ ...base, take: Math.min(CHUNK, q.show), skip: 0 });
+  const first = await listBranches({ ...base, take: PAGE, skip: (q.page - 1) * PAGE });
   const items = [...first.items];
-  for (let skip = CHUNK; skip < Math.min(q.show, first.total); skip += CHUNK) {
-    const next = await listBranches({ ...base, take: Math.min(CHUNK, q.show - skip), skip });
-    items.push(...next.items);
-  }
 
   const extras = await db.branch.findMany({
     where: { id: { in: items.map(i => i.id) } },

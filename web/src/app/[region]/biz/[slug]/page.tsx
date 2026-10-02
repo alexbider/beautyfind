@@ -26,7 +26,8 @@ import { getProfile, type PublicProfile } from '@/lib/server/public';
 import { vatRatePct } from '@/lib/server/vat';
 import { PRICES_INCLUDE_VAT } from '@/lib/features';
 import { applySeo } from '@/lib/server/seo';
-import { buildView, jsonLd, ldJson, metaDescription, metaTitle, reviewsLabel, similarBusinesses, type ProfileView as View } from './data';
+import { buildView, jsonLd, ldJson, metaDescription, metaTitle, nearbyBusinesses, reviewsLabel, similarBusinesses, type ProfileView as View } from './data';
+import { cityPageHref, CITIES } from '@/lib/catalog';
 import { publicMetadata } from '@/lib/seo/meta';
 import btn from '@/components/profile/buttons.module.css';
 import rv from '@/components/profile/Reviews.module.css';
@@ -105,6 +106,9 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
   const ld = <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(jsonLd(p, v)) }} />;
 
   const similar = await similarBusinesses(p, v.cats[0]?.slug);
+  const nearby = await nearbyBusinesses(p, similar.map(b => b.id));
+  const city = CITIES.find(c => c.slug === v.citySlug);
+  const hub = v.cats[0] && v.citySlug ? { href: `/${p.regionSlug}/${v.citySlug}/${v.cats[0].slug}`, label: `${v.cats[0].name} ב${p.cityName}` } : null;
   const cta = primaryCta(p, v);
   const bookHref = cta?.kind === 'book' ? cta.href : null;
 
@@ -152,7 +156,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
               <span aria-hidden="true" className={styles.heroMono}>{initials(p.name)}</span>
               <span className={styles.heroText}>
                 {p.isClaimed ? 'העסק טרם העלה תמונות.' : 'לא נמצאו תמונות מהעסק במקורות שנבדקו.'}{' '}
-                {p.isClaimed ? <Link href="/biz/profile">העלאת תמונות</Link> : <Link href={claimHref(p.id)}>בעלי העסק יכולים להוסיף תמונות אחרי אישור בעלות</Link>}
+                {p.isClaimed ? <Link href="/biz/profile">העלאת תמונות</Link> : <Link href={claimHref(p.id)} rel="nofollow">בעלי העסק יכולים להוסיף תמונות אחרי אישור בעלות</Link>}
               </span>
             </div>
           </section>
@@ -269,27 +273,27 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
 
             {similar.length > 0 && (
               <section aria-labelledby="h-similar">
-                <h2 id="h-similar" className={styles.h2}>עסקים נוספים ב{p.cityName}<span className={styles.dotTeal}>.</span></h2>
-                <div className={styles.similar} data-n={similar.length}>
-                  {similar.map(s => (
-                    <Link key={s.id} href={s.href} className={styles.simCard}>
-                      <span className={styles.simImg}>{s.coverUrl && <img src={s.coverUrl} alt={s.coverAlt} loading="lazy" />}</span>
-                      <span className={styles.simBody}>
-                        <span className={styles.simName}>{s.name}</span>
-                        <span className={styles.simMeta}>{[s.cityName, s.categories[0]?.name].filter(Boolean).join(' · ')}</span>
-                        {s.google && (
-                          <span className={styles.simRating}>
-                            <RatingStars rating={s.google.rating} width={72} height={14} />
-                            <b className="ltr">{ratingText(s.google.rating)}</b>
-                            בגוגל
-                          </span>
-                        )}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
+                <h2 id="h-similar" className={styles.h2}>עוד {v.cats[0]?.name ?? 'עסקים'} ב{p.cityName}<span className={styles.dotTeal}>.</span></h2>
+                <SimilarCards items={similar} />
               </section>
             )}
+
+            {nearby.length > 0 && (
+              <section aria-labelledby="h-nearby">
+                <h2 id="h-nearby" className={styles.h2}>בקרבת מקום<span className={styles.dotTeal}>.</span></h2>
+                <SimilarCards items={nearby} />
+              </section>
+            )}
+
+            <nav aria-label="עוד באזור" className={styles.explore}>
+              <p>
+                {city && <>כל <Link href={cityPageHref(city)}>העסקים ב{p.cityName}</Link></>}
+                {city && hub && <>, </>}
+                {hub && <Link href={hub.href}>{hub.label}: השוואת מחירים</Link>}
+                {v.cats[0] && <>, <Link href={`/treatments/${v.cats[0].slug}`}>{v.cats[0].name} בישראל</Link></>}
+                {' '}ו<Link href={`/${p.regionSlug}`}>כל אזור {p.region.name}</Link>.
+              </p>
+            </nav>
           </div>
 
           <aside aria-label="יצירת קשר עם העסק" className={styles.aside}>
@@ -332,6 +336,29 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
 
 // ---------- Sections ----------
 
+function SimilarCards({ items }: { items: Awaited<ReturnType<typeof similarBusinesses>> }) {
+  return (
+    <div className={styles.similar} data-n={items.length}>
+      {items.map(s => (
+        <Link key={s.id} href={s.href} className={styles.simCard}>
+          <span className={styles.simImg}>{s.coverUrl && <img src={s.coverUrl} alt={s.coverAlt} loading="lazy" />}</span>
+          <span className={styles.simBody}>
+            <span className={styles.simName}>{s.name}</span>
+            <span className={styles.simMeta}>{[s.cityName, s.categories[0]?.name].filter(Boolean).join(' · ')}</span>
+            {s.google && (
+              <span className={styles.simRating}>
+                <RatingStars rating={s.google.rating} width={72} height={14} />
+                <b className="ltr">{ratingText(s.google.rating)}</b>
+                בגוגל
+              </span>
+            )}
+          </span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 function Identity({ p, v }: { p: PublicProfile; v: View }) {
   // Highlight chips are tri-state: an evidenced "yes" is highlighted, an evidenced "no" shows plainly, unknown is not shown.
   const highlights = [
@@ -362,7 +389,7 @@ function Identity({ p, v }: { p: PublicProfile; v: View }) {
             <span className={styles.dotTeal}>.</span>
           </h1>
           {!p.isClaimed && (
-            <Link href={claimHref(p.id)} className={styles.claimLine}>
+            <Link href={claimHref(p.id)} rel="nofollow" className={styles.claimLine}>
               <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z" /><path d="m9 12 2 2 4-4" /></svg>
               <span>העסק שלכם? לאימות בעלות</span>
               <ArrowForward size={13} />
@@ -634,7 +661,7 @@ function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null
       ) : (
         <div className={styles.claimBox}>
           <p>העסק עוד לא מנהל את הכרטיס, לכן אין כאן תיאום תור. אפשר לפנות לעסק ישירות בטלפון, בוואטסאפ או באתר.</p>
-          <Link href={claimHref(p.id)} className={styles.claimLink}>זה העסק שלכם? אישור בעלות</Link>
+          <Link href={claimHref(p.id)} rel="nofollow" className={styles.claimLink}>זה העסק שלכם? אישור בעלות</Link>
         </div>
       )}
 

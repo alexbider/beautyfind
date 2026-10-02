@@ -15,10 +15,7 @@ const GROUPS = [
   {
     name: 'תחומי טיפול',
     links: [
-      ...['medical-aesthetics', 'plastic-surgery', 'dental-aesthetics', 'hair-restoration', 'facials'].map(s => {
-        const c = CATEGORIES.find(x => x.slug === s)!;
-        return { name: c.name, href: `/treatments/${c.slug}` };
-      }),
+      ...CATEGORIES.map(c => ({ name: c.name, href: `/treatments/${c.slug}` })),
       { name: 'כל תחומי הטיפול', href: '/treatments' },
     ],
   },

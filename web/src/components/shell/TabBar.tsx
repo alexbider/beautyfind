@@ -1,5 +1,6 @@
 'use client';
 
+import { relFor } from '@/lib/routes';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { TABS, isFocused, tabFor, variantFor, type ShellTab } from '@/lib/ui/shell';
@@ -105,7 +106,7 @@ export function TabBar() {
         const on = active?.key === tab.key;
         const n = tab.badge ? badges[tab.badge] ?? 0 : 0;
         return (
-          <a key={tab.key} href={tab.href} onClick={go(tab)} className={styles.tab} aria-current={on ? 'page' : undefined} data-on={on || undefined}>
+          <a key={tab.key} href={tab.href} rel={relFor(tab.href)} onClick={go(tab)} className={styles.tab} aria-current={on ? 'page' : undefined} data-on={on || undefined}>
             <span className={styles.icon}>
               <TabIcon name={tab.icon} active={on} />
               {n > 0 && (

@@ -1,14 +1,13 @@
 import Link from 'next/link';
-import { categoryBySlug, regionBySlug } from '@/lib/catalog';
+import { CATEGORIES, MENU_REGION_ORDER, regionBySlug } from '@/lib/catalog';
+import { relFor } from '@/lib/routes';
 import { Wordmark } from '../Wordmark';
 import styles from './SiteFooter.module.css';
 
 const GROUPS: Array<{ name: string; links: Array<{ name: string; href: string }> }> = [
-  { name: 'אזורים', links: (['dan', 'sharon', 'haifa', 'jerusalem', 'shfela'] as const).map(s => ({ name: regionBySlug(s)!.name, href: `/${s}` })) },
-  {
-    name: 'תחומי טיפול',
-    links: ['facials', 'medical-aesthetics', 'brows-lashes', 'makeup', 'permanent-makeup'].map(s => ({ name: categoryBySlug(s)!.name, href: `/treatments/${s}` })),
-  },
+  { name: 'אזורים', links: MENU_REGION_ORDER.map(s => ({ name: regionBySlug(s)!.name, href: `/${s}` })) },
+  // Every category, so each hub is one click from every public page.
+  { name: 'תחומי טיפול', links: CATEGORIES.map(c => ({ name: c.name, href: `/treatments/${c.slug}` })) },
   {
     name: 'לעסקים',
     links: [
@@ -48,7 +47,7 @@ export function SiteFooter({ note, wide = false }: { note?: string; wide?: boole
             <div className={styles.groupName}>{g.name}</div>
             <div className={styles.links}>
               {g.links.map(l => (
-                <Link key={l.href} href={l.href} className={styles.link}>{l.name}</Link>
+                <Link key={l.href} href={l.href} rel={relFor(l.href)} className={styles.link}>{l.name}</Link>
               ))}
             </div>
           </nav>

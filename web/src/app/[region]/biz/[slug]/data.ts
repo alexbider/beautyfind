@@ -5,7 +5,7 @@ import { nisFromAgorot } from '@/lib/format';
 import { BOOKING_LIVE } from '@/lib/features';
 import { DEFAULT_VAT_PCT, withConsumerPrices } from '@/lib/vat';
 import { cleanTeam } from '@/lib/import/profileExtract';
-import { listBranches, type ListingCard, type PublicProfile } from '@/lib/server/public';
+import { listBranches, nearbyBranches, type ListingCard, type PublicProfile } from '@/lib/server/public';
 import { listingTitle } from '@/lib/seo/listingTitle';
 import { composeDescription } from '@/lib/seo/meta';
 import { seoCityName, seoName } from '@/lib/seo/seoName';
@@ -280,10 +280,16 @@ export function buildView(p: PublicProfile, now = new Date(), vatPct = DEFAULT_V
 
 export type ProfileView = ReturnType<typeof buildView>;
 
-/** Up to three other public businesses in the same city (or region) and main category. */
+/** Up to six other public businesses with the same primary category in the same city ("עוד X ב{city}"). */
 export async function similarBusinesses(p: PublicProfile, mainCategory: string | undefined): Promise<ListingCard[]> {
-  const res = await listBranches({ region: p.regionSlug, citySlug: p.city?.slug ?? undefined, category: mainCategory, take: 4 });
-  return res.items.filter(b => b.id !== p.id).slice(0, 3);
+  const res = await listBranches({ region: p.regionSlug, citySlug: p.city?.slug ?? undefined, category: mainCategory, take: 7 });
+  return res.items.filter(b => b.id !== p.id).slice(0, 6);
+}
+
+/** Up to six public businesses closest to this one ("בקרבת מקום"), not already shown. */
+export async function nearbyBusinesses(p: PublicProfile, exclude: string[]): Promise<ListingCard[]> {
+  if (p.lat == null || p.lng == null) return [];
+  return nearbyBranches({ id: p.id, lat: p.lat, lng: p.lng }, 6, exclude);
 }
 
 // ---------- SEO ----------

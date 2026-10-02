@@ -27,3 +27,8 @@ export const ROUTES = {
 } as const;
 
 export const joinWithPlan = (plan: 'basic' | 'advanced') => `${ROUTES.join}?plan=${plan}`;
+
+/** Account, saved, claim and the "more" tab are app screens, not pages to index: links to them carry rel="nofollow". */
+export const NOFOLLOW_PATHS = ['/account', '/saved', '/for-business/claim', '/more'] as const;
+export const relFor = (href: string): 'nofollow' | undefined =>
+  NOFOLLOW_PATHS.some(p => href === p || href.startsWith(`${p}?`) || href.startsWith(`${p}/`) || href.startsWith(`${p}#`)) ? 'nofollow' : undefined;

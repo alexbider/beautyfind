@@ -157,6 +157,32 @@ export async function listBranches(f: ListingFilter = {}): Promise<{ total: numb
   return { total, items: rows.map(b => toCard(b, stats, vatPct)) };
 }
 
+/** Cards for the given ids, in that order (ids that are not public are dropped). */
+export async function cardsByIds(ids: string[]): Promise<ListingCard[]> {
+  if (!ids.length) return [];
+  const [rows, vatPct] = await Promise.all([db.branch.findMany({ where: { AND: [PUBLIC_WHERE, { id: { in: ids } }] }, include: CARD_INCLUDE }), vatRatePct()]);
+  const stats = await reviewStats(rows.map(b => b.id));
+  const byId = new Map(rows.map(b => [b.id, toCard(b, stats, vatPct)]));
+  return ids.map(id => byId.get(id)).filter((c): c is ListingCard => !!c);
+}
+
+/**
+ * The closest public listings to a point, by straight-line distance (equirectangular, fine at city scale),
+ * excluding the listing itself and any ids already shown. Listings without coordinates never appear.
+ */
+export async function nearbyBranches(from: { id: string; lat: number; lng: number }, take = 6, exclude: string[] = []): Promise<ListingCard[]> {
+  const skip = [from.id, ...exclude];
+  const rows = await db.$queryRaw<Array<{ id: string }>>`
+    SELECT b.id
+    FROM branches b
+    JOIN businesses bz ON bz.id = b.business_id
+    WHERE b.status = 'live' AND bz.status = 'live' AND b.lat IS NOT NULL AND b.lng IS NOT NULL
+      AND b.id::text <> ALL(${skip}::text[])
+    ORDER BY power(b.lat - ${from.lat}, 2) + power((b.lng - ${from.lng}) * cos(radians(${from.lat})), 2) ASC
+    LIMIT ${take}`;
+  return cardsByIds(rows.map(r => r.id));
+}
+
 /** Live listing counts per region, per city (slug) and per category (slug). */
 export const listingCounts = cache(async () => {
   const [byRegion, byCity, byCat] = await Promise.all([
