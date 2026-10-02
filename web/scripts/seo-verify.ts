@@ -12,6 +12,8 @@
 //   role="presentation"), every <img> with width and height (or a fill-style size), no skipped heading level;
 // - visible text and JSON-LD descriptions scanned for the text rules (sentences about missing data, English
 //   inside Hebrew, em dashes, emoji) from src/lib/import/textRules.ts;
+// - profile and city + category meta descriptions checked against src/lib/seo/metaRules.ts: 130 to 155
+//   characters, nothing about missing data, booking, contact channels or "phone only", no ratings line;
 // - the internal link graph: profiles with fewer than three inbound links from other pages.
 // The report is JSON plus a Markdown summary; with --compare a before/after table is printed.
 
@@ -19,6 +21,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { textProblems } from '../src/lib/import/textRules';
 import { SITE_ORIGIN } from '../src/lib/seo/meta';
+import { metaDescriptionProblems } from '../src/lib/seo/metaRules';
 
 const arg = (name: string, def?: string) => {
   const i = process.argv.indexOf(`--${name}`);
@@ -46,6 +49,9 @@ interface PageReport {
   description: string;
   descriptionLen: number;
   descriptionOk: boolean;
+  /** Rules broken by the meta description (profile and city + category pages only; empty elsewhere). */
+  descriptionRules: string[];
+  descriptionRulesOk: boolean;
   canonical: string | null;
   canonicalSelf: boolean;
   robots: string | null;
@@ -216,6 +222,8 @@ function analyse(path: string, status: number, redirectTo: string | null, html: 
   const brand = /BeautyFind/.test(title);
   const titleLen = [...title].length;
   const descriptionLen = [...description].length;
+  const ruled = template === 'profile' || template === 'city-category';
+  const descriptionRules = ruled && status === 200 ? metaDescriptionProblems(description).map(p => `${p.code}${p.match ? `:${p.match}` : ''}`) : [];
   return {
     url: BASE + path,
     path,
@@ -228,6 +236,8 @@ function analyse(path: string, status: number, redirectTo: string | null, html: 
     description,
     descriptionLen,
     descriptionOk: descriptionLen >= 110 && descriptionLen <= 160,
+    descriptionRules,
+    descriptionRulesOk: descriptionRules.length === 0,
     canonical,
     canonicalSelf: canonical === path,
     robots,
@@ -289,6 +299,7 @@ async function main() {
   const linksToRedirects = new Set(pages.flatMap(p => p.internalLinks.filter(l => pages.find(q => q.path === l)?.redirectTo)));
 
   const sm = pages.filter(p => inSitemap.has(p.path));
+  const ruled = sm.filter(p => p.template === 'profile' || p.template === 'city-category');
   const summary = {
     label: LABEL,
     base: BASE,
@@ -302,6 +313,8 @@ async function main() {
     pagesCrawled: pages.length,
     titleOk: sm.filter(p => p.titleOk).length,
     descriptionOk: sm.filter(p => p.descriptionOk).length,
+    descriptionRulesPages: ruled.length,
+    descriptionRulesOk: ruled.filter(p => p.descriptionRulesOk).length,
     oneH1: sm.filter(p => p.h1Count === 1).length,
     headingSkips: sm.filter(p => p.headingSkips > 0).length,
     ogOk: sm.filter(p => p.ogOk).length,
@@ -329,6 +342,7 @@ async function main() {
     ['Sitemap URLs with self canonical', summary.sitemapSelfCanonical],
     ['Titles 30 to 60 chars with brand', `${summary.titleOk}/${sm.length}`],
     ['Descriptions 110 to 160 chars', `${summary.descriptionOk}/${sm.length}`],
+    ['Profile and city + category descriptions following the meta rules (130 to 155, no missing data, booking, contact or phone only)', `${summary.descriptionRulesOk}/${summary.descriptionRulesPages}`],
     ['Exactly one H1', `${summary.oneH1}/${sm.length}`],
     ['Pages with a skipped heading level', summary.headingSkips],
     ['Open Graph and Twitter complete', `${summary.ogOk}/${sm.length}`],
@@ -352,6 +366,7 @@ async function main() {
       ['Sitemap URLs with self canonical', b.sitemapSelfCanonical, summary.sitemapSelfCanonical],
       ['Titles in range with brand', b.titleOk, summary.titleOk],
       ['Descriptions in range', b.descriptionOk, summary.descriptionOk],
+      ['Profile and city + category descriptions following the meta rules', `${b.descriptionRulesOk ?? 'n/a'}/${b.descriptionRulesPages ?? 'n/a'}`, `${summary.descriptionRulesOk}/${summary.descriptionRulesPages}`],
       ['Exactly one H1', b.oneH1, summary.oneH1],
       ['Pages with skipped heading levels', b.headingSkips, summary.headingSkips],
       ['Open Graph and Twitter complete', b.ogOk, summary.ogOk],
@@ -366,10 +381,10 @@ async function main() {
     ];
     md += `\n## Before (${b.label}) and after (${LABEL})\n\n| Check | Before | After |\n|---|---|---|\n${cmp.map(r => `| ${r[0]} | ${r[1]} | ${r[2]} |`).join('\n')}\n`;
   }
-  const worst = sm.filter(p => !p.titleOk || !p.descriptionOk || p.h1Count !== 1 || !p.ogOk || p.images.missingAlt + p.images.emptyAltNotDecorative > 0 || p.text.missingInfo > 0 || p.text.latin.length > 0 || p.redirectTo).slice(0, 40);
+  const worst = sm.filter(p => !p.titleOk || !p.descriptionOk || !p.descriptionRulesOk || p.h1Count !== 1 || !p.ogOk || p.images.missingAlt + p.images.emptyAltNotDecorative > 0 || p.text.missingInfo > 0 || p.text.latin.length > 0 || p.redirectTo).slice(0, 40);
   if (worst.length) {
-    md += `\n## Pages with findings (first ${worst.length})\n\n| Path | Status | Title | Desc | H1 | OG | Alt | Missing-data | Latin |\n|---|---|---|---|---|---|---|---|---|\n`;
-    md += worst.map(p => `| ${p.path} | ${p.status}${p.redirectTo ? ` -> ${p.redirectTo}` : ''} | ${p.titleLen} | ${p.descriptionLen} | ${p.h1Count} | ${p.ogOk ? 'ok' : 'missing'} | ${p.images.missingAlt + p.images.emptyAltNotDecorative} | ${p.text.missingInfo} | ${p.text.latin.slice(0, 4).join(' ')} |`).join('\n');
+    md += `\n## Pages with findings (first ${worst.length})\n\n| Path | Status | Title | Desc | Meta rules | H1 | OG | Alt | Missing-data | Latin |\n|---|---|---|---|---|---|---|---|---|---|\n`;
+    md += worst.map(p => `| ${p.path} | ${p.status}${p.redirectTo ? ` -> ${p.redirectTo}` : ''} | ${p.titleLen} | ${p.descriptionLen} | ${p.descriptionRules.slice(0, 3).join(' ') || 'ok'} | ${p.h1Count} | ${p.ogOk ? 'ok' : 'missing'} | ${p.images.missingAlt + p.images.emptyAltNotDecorative} | ${p.text.missingInfo} | ${p.text.latin.slice(0, 4).join(' ')} |`).join('\n');
     md += '\n';
   }
   if (weakProfiles.length) md += `\n## Profiles with fewer than 3 inbound links\n\n${weakProfiles.map(p => `- ${p.path} (${p.inbound})`).join('\n')}\n`;

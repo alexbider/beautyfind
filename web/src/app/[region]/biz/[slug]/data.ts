@@ -7,10 +7,13 @@ import { DEFAULT_VAT_PCT, withConsumerPrices } from '@/lib/vat';
 import { cleanTeam } from '@/lib/import/profileExtract';
 import { listBranches, nearbyBranches, type ListingCard, type PublicProfile } from '@/lib/server/public';
 import { listingTitle } from '@/lib/seo/listingTitle';
+import { normalizeHebrew } from '@/lib/import/textRules';
 import { composeDescription } from '@/lib/seo/meta';
+import { META_ACTION, metaDescriptionOk } from '@/lib/seo/metaRules';
 import { seoCityName, seoName } from '@/lib/seo/seoName';
 import { coverAlt, galleryAlts } from '@/lib/seo/imageAlt';
-import { CATEGORY_SHORT } from '@/lib/seo/terms';
+import { CATEGORY_SHORT, SEO_TERM } from '@/lib/seo/terms';
+import { hebrewTreatmentNames } from '@/lib/seo/treatmentNames';
 import { absoluteUrl, breadcrumbNode, businessId, businessType, faqNode, graph, ldJson, pageId, webPageNode, type Crumb } from '@/lib/seo/schema';
 import {
   COMPARABLE_PRICE_TYPES, DAY_NAMES, PROFESSION_NAME, hoursKnown, jerusalemNow, longDateHe, openState, openingHoursSpec, parseHours, priceParts, relHe, servicePrice,
@@ -309,25 +312,27 @@ export function metaTitle(p: PublicProfile, v: ProfileView): string {
 }
 
 /**
- * 130 to 155 characters from facts: name, city, the first treatments, the Google rating with its count,
- * and the action. A saved override (60+ characters) wins.
+ * 130 to 155 characters, one pattern for every listing (src/lib/seo/metaRules.ts): what the business is
+ * (name, city, main field), its first two or three treatments in Hebrew, the Google rating with its review
+ * count when there is one, then the action. Nothing about missing data, booking, contact channels or
+ * "phone only". A saved override is used only when it follows the same rules.
  */
 export function metaDescription(p: PublicProfile, v: ProfileView): string {
-  if (p.metaDescription && p.metaDescription.trim().length >= 60) return p.metaDescription.trim().slice(0, 170);
+  const saved = p.metaDescription ? normalizeHebrew(p.metaDescription.replace(/\s+/g, ' ').trim()) : '';
+  if (saved && metaDescriptionOk(saved)) return saved;
   const name = seoName(p.name);
   const city = seoCityName(p.cityName);
   const cat = v.cats[0];
-  const treatments = p.treatments.slice(0, 3).map(t => t.name);
+  const treatments = hebrewTreatmentNames(p.treatments.map(t => t.name), 3);
   const g = v.google && v.google.count > 0 ? v.google : null;
   return composeDescription(
     [
       `${name} ב${city}${cat ? `: ${CATEGORY_SHORT[cat.slug] ?? cat.name}` : ''}.`,
-      treatments.length ? `${treatments.join(', ')}${p.treatments.length > 3 ? ' ועוד' : ''}.` : null,
+      treatments.length ? `${treatments.join(', ')}${p.treatments.length > treatments.length ? ' ועוד' : ''}.` : null,
       g ? `דירוג ${g.rating.toFixed(1)} בגוגל (${reviewsLabel(g.count)}).` : null,
-      v.responsible ? `${v.responsible.label}: ${v.responsible.name}.` : null,
-      'השוו מחירים וקבעו תור ב־BeautyFind.',
+      META_ACTION,
     ],
-    [p.address ? `הכתובת: ${p.address}.` : '', v.hoursKnown ? 'שעות פעילות, טלפון וניווט בעמוד.' : 'טלפון, וואטסאפ וניווט בעמוד.', 'פרטי קשר ומחירים כפי שהעסק פרסם.'],
+    [v.responsible ? `${v.responsible.label}: ${v.responsible.name}.` : '', `כל הטיפולים והמחירים של ${name} במקום אחד.`, cat ? `${SEO_TERM[cat.slug] ?? cat.name} ב${city} להשוואה.` : ''],
   );
 }
 

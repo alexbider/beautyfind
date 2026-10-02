@@ -15,6 +15,9 @@
 
 import { createHash } from 'node:crypto';
 import { CATEGORIES } from '../catalog';
+import { DESCRIPTION_MAX, DESCRIPTION_MIN, composeDescription } from '../seo/meta';
+import { META_ACTION, metaDescriptionProblems } from '../seo/metaRules';
+import { hebrewTreatmentNames } from '../seo/treatmentNames';
 import type { DayHours, ImportedTreatment } from './rules';
 import { problemCode, textProblems } from './textRules';
 
@@ -269,7 +272,7 @@ Language:
 Write, in Hebrew:
 1. "description": paragraphs separated by a blank line. Scale the length to the facts: two short paragraphs when the packet is thin (name, place, field, how to contact), three to five paragraphs when it is rich (services and what each is for in everyday terms, prices, team, premises, hours, languages, year, accessibility, parking, how to arrange a visit). Name the business and the city in the first sentence. Never pad with general advice, invented details or generic praise.
 2. "faqs": three to eight question-and-answer pairs that the packet can answer fully (location, services, prices, booking, hours, team, accessibility, parking, languages). Skip any question the packet cannot answer. Answers are one to three sentences and state the facts directly. Each pair carries "basis": the packet fields it rests on.
-3. "metaTitle" (up to 60 characters) and "metaDescription" (70 to 160 characters), plain and specific.
+3. "metaTitle" (up to 60 characters), plain and specific, and "metaDescription" (130 to 155 characters) in one fixed shape: what the business is (name, city, field), its two or three main treatments named in Hebrew (an English treatment name is translated: Hairstyling = עיצוב שיער, Hair colouring = צבע לשיער; a brand or device name such as Hydrafacial stays), the Google rating with its review count when the packet has one, then one short closing action such as "השוו מחירים וביקורות ב־BeautyFind". The metaDescription never mentions booking, contact channels (phone, WhatsApp, email, navigation), "phone only", or anything missing.
 4. "serviceSummaries": for each service in the packet, one factual sentence about what it is (no price, no promise).
 5. "heading": one of "על הקליניקה" (doctor-led clinic), "על המספרה" (hair salon), "על הספא", "על הסטודיו" (nails, brows, makeup), "על העסק" (anything else).
 6. "insufficientEvidence": true only when the packet has no services, no source description and no hours, so only a two-paragraph introduction is possible. Then list in "missing" (Hebrew, short items) what the business could add. The description itself still says nothing about what is missing.
@@ -361,7 +364,8 @@ export function checkOutput(o: EditorialOutput, p: EvidencePacket): string[] {
     if (!p.bookingOnline && /דרך BeautyFind|באתר BeautyFind|ב־BeautyFind/.test(f.a) && /לקבוע|להזמין|תור/.test(f.a)) v.push('faq_booking_claim');
   }
   if (o.metaTitle.length > 70 || o.metaTitle.length < 10) v.push('meta_title');
-  if (o.metaDescription.length > 170 || o.metaDescription.length < 60) v.push('meta_description');
+  // The meta description follows the site's pattern and rules (src/lib/seo/metaRules.ts).
+  for (const m of metaDescriptionProblems(o.metaDescription)) v.push(`meta:${m.code}${m.match ? `:${m.match}` : ''}`);
   if (!o.description.includes(p.name.split(/\s+/)[0]) && !o.description.includes(p.name)) v.push('name_missing');
   return [...new Set(v)];
 }
@@ -389,7 +393,12 @@ export function repairMessage(v: string[]): string {
     if (x === 'markup') return 'Remove Markdown, brackets and code characters.';
     if (x === 'exclamation') return 'Remove exclamation marks.';
     if (x === 'meta_title') return 'metaTitle must be 10 to 60 characters.';
-    if (x === 'meta_description') return 'metaDescription must be 70 to 160 characters.';
+    if (x.startsWith('meta:short') || x.startsWith('meta:long')) return `metaDescription must be ${DESCRIPTION_MIN} to ${DESCRIPTION_MAX} characters (it has ${x.split(':')[2]}): what the business is, two or three treatments in Hebrew, the rating with its review count when there is one, then one short closing action.`;
+    if (x.startsWith('meta:missing_info')) return `metaDescription says something about missing information ("${x.split(':').slice(2).join(':')}"): state only what the business is and does.`;
+    if (x.startsWith('meta:booking')) return `metaDescription mentions booking ("${x.split(':').slice(2).join(':')}"): remove it; the closing action is "השוו מחירים וביקורות ב־BeautyFind".`;
+    if (x.startsWith('meta:contact')) return `metaDescription mentions a contact channel ("${x.split(':').slice(2).join(':')}"): remove phone, WhatsApp, email, navigation and contact details from it.`;
+    if (x.startsWith('meta:phone_only')) return `metaDescription says "phone only" ("${x.split(':').slice(2).join(':')}"): remove it.`;
+    if (x.startsWith('meta:ratings_line')) return 'metaDescription carries the line about Google ratings and BeautyFind reviews: remove it.';
     if (x === 'name_missing') return 'Name the business in the description.';
     return `Fix: ${x}`;
   });
@@ -534,13 +543,23 @@ export function templateDraft(p: EvidencePacket): EditorialOutput {
   }
   const headingOf = (): EditorialOutput['heading'] => (kind === 'קליניקה' ? 'על הקליניקה' : kind === 'מספרה' ? 'על המספרה' : kind === 'ספא' ? 'על הספא' : cats.some(c => /ציפורניים|גבות|איפור/.test(c)) ? 'על הסטודיו' : 'על העסק');
   const title = `${p.name}${cats[0] ? `: ${cats[0]}` : ''}${where}`.slice(0, 60);
-  const md = `${p.name}${where}${cats.length ? `, ${cats.slice(0, 2).join(' ו')}` : ''}. ${p.services.length ? `שירותים: ${p.services.slice(0, 3).map(s => s.name).join(', ')}. ` : ''}${p.hours ? 'שעות פעילות, ' : ''}פרטי קשר וניווט.`.slice(0, 160);
+  // The meta description pattern (src/lib/seo/metaRules.ts): the business, its treatments in Hebrew, the rating, the action.
+  const topTreatments = hebrewTreatmentNames(p.services.map(s => s.name), 3);
+  const md = composeDescription(
+    [
+      `${p.name}${where}${cats[0] ? `: ${cats[0]}` : ''}.`,
+      topTreatments.length ? `${topTreatments.join(', ')}${p.services.length > topTreatments.length ? ' ועוד' : ''}.` : null,
+      p.rating ? `דירוג ${p.rating.value.toFixed(1)} בגוגל (${p.rating.count === 1 ? 'ביקורת אחת' : `${p.rating.count} ביקורות`}).` : null,
+      META_ACTION,
+    ],
+    [cats[1] ? `גם ${cats[1]}.` : '', `כל הטיפולים והמחירים של ${p.name} במקום אחד.`, cats[0] ? `${cats[0]}${where} להשוואה.` : ''],
+  );
   return {
     heading: headingOf(),
     description,
     faqs: faqs.slice(0, FAQ_MAX),
     metaTitle: title,
-    metaDescription: md.length < 70 ? `${md} השוו מחירים וקבעו תור ב־BeautyFind.`.slice(0, 160) : md,
+    metaDescription: md,
     serviceSummaries: [],
     insufficientEvidence: words < WORDS_MIN,
     missing,

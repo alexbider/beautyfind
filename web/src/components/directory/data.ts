@@ -5,6 +5,7 @@ import { cache } from 'react';
 import { CATEGORIES, citiesOf, type City, type RegionSlug } from '@/lib/catalog';
 import { db } from '@/lib/server/db';
 import { PUBLIC_WHERE, listBranches, medianPrices, medianPricesForCity, type ListingCard } from '@/lib/server/public';
+import { hebrewTreatmentNames } from '@/lib/seo/treatmentNames';
 import { PAGE, type DirQuery, type FilterKey } from './params';
 
 // Directory-only reads. Listing cards come from lib/server/public (listBranches); this file
@@ -58,6 +59,8 @@ export interface Overview {
   siblings: Array<{ city: City; count: number }>;
   regionTotal: number;
   prices: PriceRow[];
+  /** The treatments most of the listings in scope publish, in Hebrew, for the meta description (up to three). */
+  topTreatments: string[];
 }
 
 /** Aggregates for the page, metadata and JSON-LD. Cached per request. */
@@ -67,7 +70,7 @@ export const getOverview = cache(async (region: RegionSlug, citySlug: string, ca
   const s: DirScope = { region, city, category };
   const catFilter: Prisma.BranchWhereInput[] = category ? [offers(category)] : [];
 
-  const [total, rated, fc, byCat, bySibling, regionTotal, cityMed, regionMed, cityRows] = await Promise.all([
+  const [total, rated, fc, byCat, bySibling, regionTotal, cityMed, regionMed, cityRows, byTreatment] = await Promise.all([
     db.branch.count({ where: scopeWhere(s) }),
     db.branch.findMany({ where: scopeWhere(s), select: { googleRating: true, updatedAt: true } }),
     Promise.all((Object.keys(FILTER_WHERE) as FilterKey[]).map(async k => [k, await db.branch.count({ where: scopeWhere(s, [FILTER_WHERE[k]]) })] as const)),
@@ -81,6 +84,13 @@ export const getOverview = cache(async (region: RegionSlug, citySlug: string, ca
     medianPricesForCity(citySlug),
     medianPrices(region),
     db.city.findMany({ where: { regionSlug: region }, select: { id: true, slug: true } }),
+    db.treatment.groupBy({
+      by: ['name'],
+      where: { isPublished: true, branch: scopeWhere(s), ...(category ? { categorySlug: category } : {}) },
+      _count: { _all: true },
+      orderBy: [{ _count: { name: 'desc' } }, { name: 'asc' }],
+      take: 12,
+    }),
   ]);
 
   const filterCounts = Object.fromEntries(fc) as Record<FilterKey, number>;
@@ -117,6 +127,7 @@ export const getOverview = cache(async (region: RegionSlug, citySlug: string, ca
     siblings,
     regionTotal,
     prices,
+    topTreatments: hebrewTreatmentNames(byTreatment.map(t => t.name), 3),
   };
 });
 

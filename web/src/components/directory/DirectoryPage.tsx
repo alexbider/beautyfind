@@ -1,4 +1,4 @@
-import { BOOKING_LIVE, VAT_LABEL_BEFORE } from '@/lib/features';
+import { VAT_LABEL_BEFORE } from '@/lib/features';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -19,6 +19,7 @@ import { ListingCard } from './ListingCard';
 import { canonicalHref, dirHref, hasParams, pageCount, parseQuery, type DirQuery } from './params';
 import { Pager } from './Pager';
 import { composeDescription, fitTitle, publicMetadata } from '@/lib/seo/meta';
+import { META_ACTION } from '@/lib/seo/metaRules';
 import { seoCityName } from '@/lib/seo/seoName';
 import { breadcrumbNode, faqNode, graph, itemListNode, ldJson, listId, webPageNode } from '@/lib/seo/schema';
 import { ResultsShell } from './ResultsShell';
@@ -70,22 +71,23 @@ export async function directoryMetadata(params: DirParams, searchParams: DirSear
   const verifiedPart =
     o.verified === 0 ? null : o.total === 1 ? 'העסק מאומת.' : o.verified === o.total ? 'כולם מאומתים.' : o.verified === 1 ? 'אחד מהם מאומת.' : `${fmtNum(o.verified)} מהם מאומתים.`;
   const ownPrice = s.category ? o.prices.find(p => p.slug === s.category!.slug && !p.fromRegion) : null;
+  // One pattern (src/lib/seo/metaRules.ts): what the page lists, the common treatments in Hebrew, the
+  // rating, the median price, then the action. Nothing about booking, contact channels or missing data.
   const description =
     o.total === 0
       ? composeDescription(
           [s.category ? `עדיין אין עסקים ל${s.category.name} ${where}.` : `עדיין אין עסקים רשומים ${where}.`, `עסקים בערים סמוכות באזור ${s.region.name}, ורישום עסק חדש ב־BeautyFind.`],
-          ['השוו מחירים וקבעו תור.'],
+          [META_ACTION],
         )
       : composeDescription(
           [
             `${countText(o.total, BIZ)}${s.category ? ` ל${SEO_TERM[s.category.slug] ?? s.category.name}` : ' ליופי, אסתטיקה וקוסמטיקה'} ${where}.`,
-            verifiedPart,
+            o.topTreatments.length ? `${o.topTreatments.join(', ')}.` : null,
             o.medianGoogle != null ? `דירוג Google אמצעי ${o.medianGoogle.toFixed(1)}.` : null,
             ownPrice ? `מחיר אמצעי ${nis(ownPrice.price)}.` : null,
-            'דירוג Google וביקורות BeautyFind בנפרד.',
-            'השוו מחירים וקבעו תור.',
+            META_ACTION,
           ],
-          [`${BOOKING_LIVE ? 'קביעת תור אונליין בעסקים שמציעים אותה' : 'פנייה ישירה לעסק'} ומחירים אמצעיים לפי תחום.`, 'הסדר אינו נמכר: לפי אימות, דירוג ומספר ביקורות.'],
+          [verifiedPart ?? '', 'הסדר אינו נמכר: לפי אימות, דירוג ומספר ביקורות.', 'מחירים אמצעיים לפי תחום.'],
         );
   // Filtered or sorted lists are noindex; page 2 and on are indexable with their own canonical.
   return applySeo(s.path, publicMetadata({ path: canonicalHref(s.path, q), title, description, image: `/assets/region-${s.region.slug}.jpg`, noindex: o.total === 0 || hasParams(q) }));
