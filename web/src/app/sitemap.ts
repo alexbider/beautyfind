@@ -9,8 +9,9 @@ import { siteUrl } from '@/lib/server/site';
 export const revalidate = 3600;
 
 // Public, indexable pages only: what the indexing policy allows (src/lib/indexing.ts), minus pages and
-// listings staff marked noindex. City + category pages are listed only where live listings have that
-// primary category, so the sitemap never points crawlers at empty pages. Profile URLs carry the primary
+// listings staff marked noindex. City + category pages are listed only where at least one live listing
+// offers the category (primary or secondary, the same set the page lists), so the sitemap never points
+// crawlers at an empty page; an empty page answers noindex,follow. Profile URLs carry the primary
 // category (src/lib/category.ts), the same one the profile page redirects to.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const policy = await indexingPolicy();
@@ -27,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const [branches, pairs, hidden] = await Promise.all([
     db.branch.findMany({ where: { ...PUBLIC_WHERE, noindex: false }, select: { slug: true, regionSlug: true, updatedAt: true, categories: { select: { categorySlug: true, isPrimary: true } } } }),
-    db.branchCategory.findMany({ where: { isPrimary: true, branch: { ...PUBLIC_WHERE, cityId: { not: null } } }, select: { categorySlug: true, branch: { select: { city: { select: { slug: true } } } } } }),
+    db.branchCategory.findMany({ where: { branch: { ...PUBLIC_WHERE, cityId: { not: null } } }, select: { categorySlug: true, branch: { select: { city: { select: { slug: true } } } } } }),
     db.pageSeo.findMany({ where: { noindex: true }, select: { path: true } }).catch(() => [] as Array<{ path: string }>),
   ]);
   const cityCats = new Set(pairs.map(p => `${p.branch.city!.slug}|${p.categorySlug}`));

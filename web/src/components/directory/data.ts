@@ -16,8 +16,12 @@ export interface DirScope {
   category?: string;
 }
 
+// A city + category page covers every business in the city that offers the category, primary or secondary
+// (lib/server/public lists the primary ones first); a page with none is noindex and out of the sitemap.
+const offers = (category: string): Prisma.BranchWhereInput => ({ categories: { some: { categorySlug: category } } });
+
 const scopeWhere = (s: DirScope, extra: Prisma.BranchWhereInput[] = []): Prisma.BranchWhereInput => ({
-  AND: [PUBLIC_WHERE, { regionSlug: s.region }, { city: { slug: s.city.slug } }, ...(s.category ? [{ categories: { some: { categorySlug: s.category, isPrimary: true } } }] : []), ...extra],
+  AND: [PUBLIC_WHERE, { regionSlug: s.region }, { city: { slug: s.city.slug } }, ...(s.category ? [offers(s.category)] : []), ...extra],
 });
 
 const FILTER_WHERE: Record<FilterKey, Prisma.BranchWhereInput> = {
@@ -48,7 +52,7 @@ export interface Overview {
   medianGoogle: number | null;
   updatedAt: Date | null;
   filterCounts: Record<FilterKey, number>;
-  /** Primary categories of the city's listings (the city + category pages that have content), catalog order. */
+  /** Categories the city's listings offer, with how many offer each (the city + category pages that have content), catalog order. */
   cityCategories: Array<{ slug: string; name: string; count: number }>;
   /** Other cities of the region with listings in scope, most listings first. */
   siblings: Array<{ city: City; count: number }>;
@@ -61,7 +65,7 @@ export const getOverview = cache(async (region: RegionSlug, citySlug: string, ca
   const cities = citiesOf(region);
   const city = cities.find(c => c.slug === citySlug)!;
   const s: DirScope = { region, city, category };
-  const catFilter: Prisma.BranchWhereInput[] = category ? [{ categories: { some: { categorySlug: category, isPrimary: true } } }] : [];
+  const catFilter: Prisma.BranchWhereInput[] = category ? [offers(category)] : [];
 
   const [total, rated, fc, byCat, bySibling, regionTotal, cityMed, regionMed, cityRows] = await Promise.all([
     db.branch.count({ where: scopeWhere(s) }),
@@ -69,7 +73,7 @@ export const getOverview = cache(async (region: RegionSlug, citySlug: string, ca
     Promise.all((Object.keys(FILTER_WHERE) as FilterKey[]).map(async k => [k, await db.branch.count({ where: scopeWhere(s, [FILTER_WHERE[k]]) })] as const)),
     db.branchCategory.groupBy({
       by: ['categorySlug'],
-      where: { isPrimary: true, branch: { AND: [PUBLIC_WHERE, { regionSlug: region }, { city: { slug: citySlug } }] } },
+      where: { branch: { AND: [PUBLIC_WHERE, { regionSlug: region }, { city: { slug: citySlug } }] } },
       _count: { _all: true },
     }),
     db.branch.groupBy({ by: ['cityId'], where: { AND: [PUBLIC_WHERE, { regionSlug: region }, { cityId: { not: null } }, ...catFilter] }, _count: { _all: true } }),

@@ -18,9 +18,8 @@ export type Sort = 'recommended' | 'rating' | 'reviews' | 'price';
 export interface ListingFilter {
   region?: RegionSlug;
   citySlug?: string;
+  /** Any category the listing carries, primary or secondary; the primary ones come first in the recommended order. */
   category?: string;
-  /** Match any category the listing carries, not only its primary one (search filter). */
-  anyCategory?: boolean;
   q?: string; // free text: business name, city or treatment name
   verifiedOnly?: boolean;
   accessible?: boolean;
@@ -61,8 +60,9 @@ function where(f: ListingFilter): Prisma.BranchWhereInput {
   const and: Prisma.BranchWhereInput[] = [PUBLIC_WHERE];
   if (f.region) and.push({ regionSlug: f.region });
   if (f.citySlug) and.push({ city: { slug: f.citySlug } });
-  // A business belongs to one category page: the one of its primary category (the canonical address).
-  if (f.category) and.push({ categories: { some: { categorySlug: f.category, ...(f.anyCategory ? {} : { isPrimary: true }) } } });
+  // Every business that offers the category is listed, whether it is its primary category (the one in its
+  // address) or a secondary one; listBranches puts the primary ones first.
+  if (f.category) and.push({ categories: { some: { categorySlug: f.category } } });
   if (f.verifiedOnly) and.push({ isClaimed: true });
   if (f.accessible) and.push({ accessible: true });
   if (f.freeParking) and.push({ freeParking: true });
@@ -130,7 +130,9 @@ function toCard(b: CardRow, stats: Map<string, { rating: number; count: number }
 
 /**
  * Listing cards for search, directory, region and category pages.
- * "recommended" ranks verified listings first, then by Google rating and review volume.
+ * "recommended" ranks verified listings first, then by Google rating and review volume; with a category
+ * filter, the businesses whose primary category it is come before those that offer it as a secondary one.
+ * An explicit sort (rating, reviews, price) orders the whole list by that key alone.
  * Sponsored placement never affects this order (07-rules: sponsored excluded from ranking).
  */
 export async function listBranches(f: ListingFilter = {}): Promise<{ total: number; items: ListingCard[] }> {
@@ -151,6 +153,20 @@ export async function listBranches(f: ListingFilter = {}): Promise<{ total: numb
     const stats = await reviewStats(all.map(b => b.id));
     const cards = all.map(b => toCard(b, stats, vatPct)).sort((a, b) => (a.priceFromShekels ?? Infinity) - (b.priceFromShekels ?? Infinity));
     return { total: cards.length, items: cards.slice(skip, skip + take) };
+  }
+
+  // Recommended order with a category: the primary-category businesses form the first block of the list
+  // and the secondary-category ones the second, each block in the recommended order, paged as one list.
+  if (f.category && (f.sort ?? 'recommended') === 'recommended') {
+    const primaryMatch: Prisma.BranchWhereInput = { categories: { some: { categorySlug: f.category, isPrimary: true } } };
+    const wPrimary: Prisma.BranchWhereInput = { AND: [w, primaryMatch] };
+    const wSecondary: Prisma.BranchWhereInput = { AND: [w, { NOT: primaryMatch }] };
+    const [total, nPrimary] = await Promise.all([db.branch.count({ where: w }), db.branch.count({ where: wPrimary })]);
+    const rows = skip < nPrimary ? await db.branch.findMany({ where: wPrimary, include: CARD_INCLUDE, orderBy, take, skip }) : [];
+    const need = take - rows.length;
+    if (need > 0) rows.push(...(await db.branch.findMany({ where: wSecondary, include: CARD_INCLUDE, orderBy, take: need, skip: Math.max(0, skip - nPrimary) })));
+    const stats = await reviewStats(rows.map(b => b.id));
+    return { total, items: rows.map(b => toCard(b, stats, vatPct)) };
   }
 
   const [total, rows] = await Promise.all([db.branch.count({ where: w }), db.branch.findMany({ where: w, include: CARD_INCLUDE, orderBy, take, skip })]);
@@ -184,12 +200,16 @@ export async function nearbyBranches(from: { id: string; lat: number; lng: numbe
   return cardsByIds(rows.map(r => r.id));
 }
 
-/** Live listing counts per region, per city (slug) and per category (slug). */
+/**
+ * Live listing counts per region, per city (slug) and per category (slug). A category counts every
+ * business that offers it (primary or secondary), the same set its category pages list, so the category
+ * counts overlap and do not add up to the total.
+ */
 export const listingCounts = cache(async () => {
   const [byRegion, byCity, byCat] = await Promise.all([
     db.branch.groupBy({ by: ['regionSlug'], where: PUBLIC_WHERE, _count: { _all: true } }),
     db.branch.groupBy({ by: ['cityId'], where: { ...PUBLIC_WHERE, cityId: { not: null } }, _count: { _all: true } }),
-    db.branchCategory.groupBy({ by: ['categorySlug'], where: { branch: PUBLIC_WHERE, isPrimary: true }, _count: { _all: true } }),
+    db.branchCategory.groupBy({ by: ['categorySlug'], where: { branch: PUBLIC_WHERE }, _count: { _all: true } }),
   ]);
   const cities = await db.city.findMany({ select: { id: true, slug: true } });
   const citySlug = new Map(cities.map(c => [c.id, c.slug]));

@@ -98,8 +98,7 @@ export function toFilter(s: SearchState): ListingFilter {
     q: s.q || undefined,
     region: s.region ?? undefined,
     citySlug: s.city ?? undefined,
-    category: s.t ?? undefined,
-    anyCategory: true, // a search for a treatment field lists every business that offers it, not only those whose main field it is
+    category: s.t ?? undefined, // every business that offers the field, as the category pages list it
     verifiedOnly: s.f.includes('verified') || undefined,
     onlineBooking: (BOOKING_LIVE && s.f.includes('online')) || undefined,
     freeParking: s.f.includes('parking') || undefined,

@@ -469,3 +469,52 @@ describe('writing stage: a leftover reservation never loops', { skip }, () => {
     assert.equal(fresh.reservedMicros, 0n, 'nothing stays reserved on the run');
   });
 });
+
+describe('city + category pages list every business that offers the category', { skip }, () => {
+  let pdb: PrismaClient;
+  const businesses: string[] = [];
+  before(async () => {
+    pdb = (await import('../../scripts/import/ctx')).db;
+  });
+  after(async () => {
+    await pdb.business.deleteMany({ where: { id: { in: businesses } } });
+  });
+
+  async function listing(name: string, cats: Array<{ categorySlug: string; isPrimary: boolean }>, googleRating: number) {
+    const city = await pdb.city.findUniqueOrThrow({ where: { slug: 'tel-aviv' } });
+    const biz = await pdb.business.create({ data: { status: 'live', type: 'salon' } });
+    businesses.push(biz.id);
+    return pdb.branch.create({
+      data: {
+        businessId: biz.id, name, slug: `cc-${biz.id.slice(0, 8)}`, regionSlug: 'dan', cityId: city.id, cityName: city.name, address: 'רחוב 1', lat: 32.08, lng: 34.78,
+        status: 'live', isClaimed: false, googleRating, googleReviewCount: 50, categories: { create: cats },
+      },
+    });
+  }
+
+  it('secondary matches are listed after the primary ones in the recommended order, and an explicit sort ignores the split', async () => {
+    const { listBranches } = await import('../../src/lib/server/public');
+    const primary = await listing('cc primary facials', [{ categorySlug: 'facials', isPrimary: true }], 4.1);
+    const secondary = await listing('cc secondary facials', [{ categorySlug: 'nails', isPrimary: true }, { categorySlug: 'facials', isPrimary: false }], 4.9);
+    const other = await listing('cc nails only', [{ categorySlug: 'nails', isPrimary: true }], 5);
+
+    const page = await listBranches({ region: 'dan', citySlug: 'tel-aviv', category: 'facials', take: 60 });
+    const ids = page.items.map(i => i.id);
+    assert.ok(ids.includes(primary.id) && ids.includes(secondary.id), 'both businesses that offer facials are listed');
+    assert.ok(!ids.includes(other.id), 'a business without the category is not');
+    assert.ok(ids.indexOf(primary.id) < ids.indexOf(secondary.id), 'the primary-category business comes first although its rating is lower');
+    assert.equal(page.total, ids.length, 'the total counts the whole set');
+    const lastPrimary = Math.max(...page.items.map((c, i) => (c.categories[0]?.slug === 'facials' ? i : -1)));
+    const firstSecondary = Math.min(...page.items.map((c, i) => (c.categories[0]?.slug !== 'facials' ? i : Infinity)));
+    assert.ok(lastPrimary < firstSecondary, 'every primary-category business precedes every secondary one');
+
+    // Paging through the two blocks never repeats or skips a card.
+    const a = await listBranches({ region: 'dan', citySlug: 'tel-aviv', category: 'facials', take: 1, skip: ids.indexOf(secondary.id) - 1 });
+    const b = await listBranches({ region: 'dan', citySlug: 'tel-aviv', category: 'facials', take: 1, skip: ids.indexOf(secondary.id) });
+    assert.deepEqual([a.items[0]?.id, b.items[0]?.id], [ids[ids.indexOf(secondary.id) - 1], secondary.id]);
+
+    const byRating = await listBranches({ region: 'dan', citySlug: 'tel-aviv', category: 'facials', sort: 'rating', take: 60 });
+    const r = byRating.items.map(i => i.id);
+    assert.ok(r.indexOf(secondary.id) < r.indexOf(primary.id), 'sorted by rating, the higher-rated secondary match comes first');
+  });
+});
