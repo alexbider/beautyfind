@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { areaUserOrNull } from '@/components/ops/guard';
+import { areaUserOrNull } from '@/components/ops/access';
 import { decideAiAction } from '@/lib/server/aiActions';
 import { askAssistant, assistantConfigured, type AssistantAnswer, type ChatTurn } from '@/lib/server/assistant';
 import { db } from '@/lib/server/db';

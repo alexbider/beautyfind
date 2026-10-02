@@ -8,7 +8,9 @@ import { AREAS, atLeast, levelOf, type Area, type Level } from '@/components/ops
 import {
   ACCESS_TOKEN_DAYS, AUTH_CODE_MINUTES, MCP_SCOPE, PERSONAL_TOKEN_PREFIX, REFRESH_TOKEN_DAYS, type AuthorizeParams, clientCredentials, pkceMatches, redirectAllowed, validRedirectUri,
 } from '@/lib/mcp';
-import { runTool, TOOL_CATALOG, type Proposal } from './assistant';
+import { withActor } from './actorContext';
+import type { Proposal } from './assistant';
+import { MCP_TOOLS } from './mcpTools';
 import { randomToken, sha256 } from './crypto';
 import { db } from './db';
 import { siteUrl } from './site';
@@ -147,7 +149,7 @@ export async function tokenEndpoint(authorization: string | null, form: URLSearc
 
 // ---------- the MCP server ----------
 
-const INSTRUCTIONS = `שרת הניהול של BeautyFind (מדריך יופי ואסתטיקה ישראלי). הכלים קוראים נתונים חיים: עסקים, חיובים, מחלוקות ותורי העבודה. כל פעולת כתיבה מוגשת דרך propose_action לתור האישורים ואדם מחליט עליה; השרת לא מבצע פעולות בעצמו. אין גישה לפרטי בריאות של לקוחות. הכלים הזמינים תלויים בהרשאות של איש הצוות שהתחבר.`;
+const INSTRUCTIONS = `שרת הניהול של BeautyFind (מדריך יופי ואסתטיקה ישראלי). הכלים הם מסכי הניהול עצמם: עסקים ופרופילים (פרטים, תוכן, מדיה, עובדות, טיפולים), עמודים ו־SEO, אינדוקס, ביקורות ודיווחים, מחלוקות, מקומות ממומנים, לקוחות ופרטיות, תור אישורי ה־AI והגדרות הפלטפורמה. כל קריאה וכל כתיבה נרשמות ביומן הפעולות על שם איש הצוות שהתחבר, וכתיבה עוברת את אותם אימותים כמו במסך. אין גישה לפרטי בריאות של לקוחות. הכלים הזמינים תלויים בהרשאות של איש הצוות. לפני שינוי, קראו את הרשומה (get_branch, get_business, list_pages) ושלחו רק את השדות שמשתנים.`;
 
 /** The caller's level in every area, after the overrides saved on /ops/team. */
 export async function callerLevels(user: Pick<User, 'opsRole'>): Promise<Record<Area, Level>> {
@@ -160,24 +162,27 @@ export const toolAllowed = (levels: Record<Area, Level>, t: { area: Area; level:
 /** Serves one MCP request for an authenticated staff member. */
 export async function handleMcpRequest(req: Request, caller: McpCaller): Promise<Response> {
   const levels = await callerLevels(caller.user);
-  const server = new McpServer({ name: 'beautyfind-ops', version: '1.0.0' }, { instructions: INSTRUCTIONS });
-  const run = async (name: string, input: unknown) => {
+  const server = new McpServer({ name: 'beautyfind-ops', version: '2.0.0' }, { instructions: INSTRUCTIONS });
+  const actor = { id: caller.user.id, opsRole: caller.user.opsRole ?? null };
+  const run = async (name: string, input: Record<string, unknown>) => {
+    const tool = MCP_TOOLS.find(t => t.name === name)!;
     const proposals: Proposal[] = [];
     let out: unknown;
     let error: string | null = null;
     try {
-      out = await runTool(name, input, proposals, SOURCE);
+      out = await withActor(caller.user, () => tool.run(input, { proposals, source: SOURCE, actor }));
+      if (out && typeof out === 'object' && ('error' in out) && (out as { ok?: boolean }).ok !== true) error = String((out as { error: unknown }).error);
     } catch (e) {
       error = e instanceof Error ? e.message : String(e);
       out = { error };
     }
-    await db.auditLog.create({ data: { actorId: caller.user.id, action: 'mcp_call', subjectType: 'mcp', subjectId: caller.user.id, meta: { ref: name, tool: name, clientId: caller.clientId, tokenKind: caller.kind, ...(proposals.length ? { proposals: proposals.map(p => p.ref) } : {}), ...(error ? { error } : {}) } } }).catch(() => undefined);
-    return { content: [{ type: 'text' as const, text: JSON.stringify(out, null, 1).slice(0, 60_000) }], isError: !!error };
+    await db.auditLog.create({ data: { actorId: caller.user.id, action: 'mcp_call', subjectType: 'mcp', subjectId: caller.user.id, meta: { ref: name, tool: name, write: tool.write, clientId: caller.clientId, tokenKind: caller.kind, ...(proposals.length ? { proposals: proposals.map(p => p.ref) } : {}), ...(error ? { error } : {}) } } }).catch(() => undefined);
+    return { content: [{ type: 'text' as const, text: JSON.stringify(out, null, 1).slice(0, 80_000) }], isError: !!error };
   };
-  for (const t of TOOL_CATALOG) {
+  for (const t of MCP_TOOLS) {
     if (!toolAllowed(levels, t)) continue;
     const annotations = { readOnlyHint: !t.write, destructiveHint: false, idempotentHint: !t.write, openWorldHint: false };
-    if (t.schema) server.registerTool(t.name, { description: t.description, inputSchema: t.schema.shape, annotations }, async args => run(t.name, args));
+    if (t.schema) server.registerTool(t.name, { description: t.description, inputSchema: t.schema.shape, annotations }, async args => run(t.name, args as Record<string, unknown>));
     else server.registerTool(t.name, { description: t.description, annotations }, async () => run(t.name, {}));
   }
   const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
@@ -211,7 +216,7 @@ export async function mcpOverview(user: User) {
   }
   return {
     url: `${siteUrl()}/api/mcp`,
-    tools: TOOL_CATALOG.map(t => ({ name: t.name, description: t.description, area: t.area, level: t.level, write: t.write, allowed: toolAllowed(levels, t) })),
+    tools: MCP_TOOLS.map(t => ({ name: t.name, description: t.description, area: t.area, level: t.level, write: t.write, allowed: toolAllowed(levels, t) })),
     personal,
     apps: [...apps.values()],
     recent: recent.map(r => ({ at: r.createdAt, who: (r.actorId && who.get(r.actorId)) || 'צוות', tool: String((r.meta as { tool?: string } | null)?.tool ?? ''), error: Boolean((r.meta as { error?: string } | null)?.error) })),

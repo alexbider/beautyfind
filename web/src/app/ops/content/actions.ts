@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { areaUserOrNull } from '@/components/ops/guard';
+import { areaUserOrNull } from '@/components/ops/access';
 import { INDEX_SECTION_KEYS, INDEX_SECTIONS, type IndexSectionKey } from '@/lib/indexing';
 import { db } from '@/lib/server/db';
 import { platformSettings, savePlatformSettings } from '@/lib/server/platformSettings';

@@ -3,7 +3,7 @@
 import type { Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { areaUserOrNull } from '@/components/ops/guard';
+import { areaUserOrNull } from '@/components/ops/access';
 import { db } from '@/lib/server/db';
 import { nextRef } from '@/lib/server/refs';
 import { depositFacts, giftCardFacts } from './data';

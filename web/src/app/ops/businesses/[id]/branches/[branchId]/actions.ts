@@ -3,7 +3,7 @@
 import type { Prisma, PriceType, RegionSlug } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { areaUserOrNull } from '@/components/ops/guard';
+import { areaUserOrNull } from '@/components/ops/access';
 import { CATEGORIES, REGIONS, categoryBySlug } from '@/lib/catalog';
 import { EMAIL_RE, toE164 } from '@/lib/format';
 import { db } from '@/lib/server/db';

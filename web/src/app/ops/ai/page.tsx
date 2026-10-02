@@ -95,7 +95,7 @@ async function McpTab({ user }: { user: User }) {
     <div className={ui.stack}>
       <Kpis items={[
         { label: 'שרת MCP', value: 'פעיל', tone: 'ok', note: 'Streamable HTTP · OAuth 2.1 עם PKCE' },
-        { label: 'כלים זמינים לכם', value: `${int(allowed)} / ${int(m.tools.length)}`, note: 'לפי ההרשאות שלכם במטריצת התפקידים' },
+        { label: 'כלים זמינים לכם', value: `${int(allowed)} / ${int(m.tools.length)}`, note: `${int(m.tools.filter(t => t.allowed && t.write).length)} מהם משנים נתונים · לפי ההרשאות שלכם` },
         { label: 'אסימונים אישיים', value: int(m.personal.length), note: 'פעילים, שלכם' },
         { label: 'אפליקציות מחוברות', value: int(m.apps.length), note: 'דרך OAuth, שלכם' },
       ]} />
@@ -105,22 +105,33 @@ async function McpTab({ user }: { user: User }) {
           <ul className={ui.list} style={{ marginTop: 12 }}>
             <li className={ui.note}><b>claude.ai ו־Claude Desktop:</b> הגדרות ← Connectors ← Add custom connector ← הדביקו את הכתובת. Claude יפתח את עמוד האישור של BeautyFind; היכנסו עם חשבון הצוות שלכם ואשרו. אין צורך במפתח.</li>
             <li className={ui.note}><b>Claude Code:</b> <span className={ui.mono} dir="ltr">claude mcp add --transport http beautyfind {m.url}</span> ואז <span className={ui.mono} dir="ltr">/mcp</span> כדי להתחבר, או צרו אסימון אישי למטה והוסיפו <span className={ui.mono} dir="ltr">--header &quot;Authorization: Bearer ...&quot;</span>.</li>
-            <li className={ui.note}><b>מה Claude יוכל לעשות:</b> רק מה שההרשאות שלכם מאפשרות. קריאת נתונים חיה; כל פעולת כתיבה נכנסת ל<Link href="/ops/ai?tab=queue" className={ui.rowLink}>תור האישורים</Link> עם המקור <span className={ui.mono}>mcp:claude</span>, ואדם מחליט.</li>
+            <li className={ui.note}><b>מה Claude יוכל לעשות:</b> כל מה שהמסכים מאפשרים לכם, בשמכם: עסקים ופרופילים (פרטים, תוכן, מדיה, טיפולים), עמודים ו־SEO, אינדוקס, ביקורות, מחלוקות, ממומנים, לקוחות, <Link href="/ops/ai?tab=queue" className={ui.rowLink}>תור האישורים</Link> והגדרות. שינוי עובר את אותם אימותים כמו במסך ונרשם ביומן הפעולות על שמכם.</li>
           </ul>
         </Card>
-        <Card title="הכלים" sub="אותם כלים של העוזר; ההרשאה הנדרשת לכל כלי" flush>
-          <Table head={['כלי', 'אזור', 'סוג', 'לכם']}>
-            {m.tools.map(t => (
-              <tr key={t.name}>
-                <td><span className={ui.mono} dir="ltr">{t.name}</span><span className={ui.sub}>{t.description}</span></td>
-                <td>{AREA_NAMES[t.area]} · {LEVEL_NAMES[t.level]}</td>
-                <td>{t.write ? <Chip tone="warn">הצעה לאישור</Chip> : <Chip tone="neutral">קריאה</Chip>}</td>
-                <td>{t.allowed ? <Chip tone="ok">זמין</Chip> : <Chip tone="bad">אין הרשאה</Chip>}</td>
-              </tr>
+        <Card title="הכלים לפי אזור" sub="כל אזור בניהול וכליו; ההרשאה הנדרשת לכל כלי" flush>
+          <Table head={['אזור', 'קריאה', 'שינוי', 'לכם']}>
+            {Object.values(m.tools.reduce<Record<string, { area: string; reads: number; writes: number; allowed: number; total: number }>>((acc, t) => {
+              const g = (acc[t.area] ??= { area: t.area, reads: 0, writes: 0, allowed: 0, total: 0 });
+              g.total += 1; if (t.write) g.writes += 1; else g.reads += 1; if (t.allowed) g.allowed += 1;
+              return acc;
+            }, {})).map(g => (
+              <tr key={g.area}><td className={ui.strong}>{AREA_NAMES[g.area as keyof typeof AREA_NAMES]}</td><td className={ui.num}>{int(g.reads)}</td><td className={ui.num}>{int(g.writes)}</td><td>{g.allowed === g.total ? <Chip tone="ok">הכול</Chip> : g.allowed ? <Chip tone="warn">{int(g.allowed)} מתוך {int(g.total)}</Chip> : <Chip tone="bad">אין הרשאה</Chip>}</td></tr>
             ))}
           </Table>
         </Card>
       </div>
+      <Card title="כל הכלים" sub="שם, מה הכלי עושה, ההרשאה הנדרשת, ואם הוא זמין לכם" flush>
+        <Table head={['כלי', 'אזור', 'סוג', 'לכם']}>
+          {m.tools.map(t => (
+            <tr key={t.name}>
+              <td><span className={ui.mono} dir="ltr">{t.name}</span><span className={ui.sub}>{t.description}</span></td>
+              <td>{AREA_NAMES[t.area]} · {LEVEL_NAMES[t.level]}</td>
+              <td>{t.write ? <Chip tone="warn">שינוי</Chip> : <Chip tone="neutral">קריאה</Chip>}</td>
+              <td>{t.allowed ? <Chip tone="ok">זמין</Chip> : <Chip tone="bad">אין הרשאה</Chip>}</td>
+            </tr>
+          ))}
+        </Table>
+      </Card>
       <Card title="אסימונים אישיים" sub="לחיבורים בלי OAuth (Claude Code, סקריפטים). האסימון נושא את ההרשאות שלכם ומוצג פעם אחת" flush>
         <div className={ui.cardPad}><TokenCreator canEdit /></div>
         {m.personal.length ? (

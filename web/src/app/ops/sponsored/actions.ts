@@ -3,7 +3,7 @@
 import type { Prisma, RegionSlug } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { areaUserOrNull } from '@/components/ops/guard';
+import { areaUserOrNull } from '@/components/ops/access';
 import { CATEGORIES, REGIONS } from '@/lib/catalog';
 import { db } from '@/lib/server/db';
 import { platformSettings } from '@/lib/server/platformSettings';

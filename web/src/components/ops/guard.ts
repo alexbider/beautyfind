@@ -3,7 +3,8 @@ import type { OpsRole, User } from '@prisma/client';
 import { notFound, redirect } from 'next/navigation';
 import { currentUser } from '@/lib/server/session';
 import { permissionOverrides } from '@/lib/server/platformSettings';
-import { AREA_HREF, atLeast, DEFAULT_PERMISSIONS, firstArea, levelOf, type Area, type Level } from './roles';
+import { areaLevel, areaUserOrNull } from './access';
+import { AREA_HREF, atLeast, DEFAULT_PERMISSIONS, firstArea, type Area, type Level } from './roles';
 
 export { OPS_ROLE_NAMES } from './roles';
 
@@ -25,18 +26,7 @@ export const canImport = (u: StaffLike): boolean => !!u?.opsRole && atLeast(DEFA
 /** Any BeautyFind staff role. */
 export const isStaff = (u: StaffLike): boolean => !!u?.opsRole;
 
-/** The signed-in staff member's level in an area, with the team's overrides applied. */
-export async function areaLevel(u: StaffLike, area: Area): Promise<Level> {
-  if (!u?.opsRole) return 'none';
-  return levelOf(u.opsRole, area, await permissionOverrides());
-}
-
-/** For server actions and route handlers: the signed-in staff member with at least `level` in `area`, or null. */
-export async function areaUserOrNull(area: Area, level: Level = 'view') {
-  const user = await currentUser();
-  if (!user) return null;
-  return atLeast(await areaLevel(user, area), level) ? user : null;
-}
+export { areaLevel, areaUserOrNull } from './access';
 
 /** For pages: login redirect when signed out, 404 when signed in without the level. */
 export async function requireArea(area: Area, level: Level, next: string) {

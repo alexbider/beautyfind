@@ -3,8 +3,8 @@ import { requireArea } from '@/components/ops/guard';
 import { AREA_NAMES } from '@/components/ops/roles';
 import { ui } from '@/components/ops/ui';
 import { parseAuthorizeQuery, redirectAllowed } from '@/lib/mcp';
-import { TOOL_CATALOG } from '@/lib/server/assistant';
 import { callerLevels, getClient, toolAllowed } from '@/lib/server/mcp';
+import { toolsByArea } from '@/lib/server/mcpTools';
 import { ConsentForm } from './ConsentForm';
 import styles from './authorize.module.css';
 
@@ -26,7 +26,10 @@ export default async function AuthorizePage({ searchParams }: { searchParams: SP
   const client = parsed.ok ? await getClient(parsed.params.clientId) : null;
   const redirectOk = parsed.ok && !!client && redirectAllowed(client.redirectUris, parsed.params.redirectUri);
   const levels = await callerLevels(user);
-  const tools = TOOL_CATALOG.map(t => ({ name: t.name, description: t.description, area: AREA_NAMES[t.area], write: t.write, allowed: toolAllowed(levels, t) }));
+  const groups = toolsByArea().map(g => {
+    const allowed = g.tools.filter(t => toolAllowed(levels, t));
+    return { area: AREA_NAMES[g.area], total: g.tools.length, reads: allowed.filter(t => !t.write).length, writes: allowed.filter(t => t.write).length, names: allowed.map(t => t.name) };
+  });
 
   return (
     <main className={styles.wrap} dir="rtl" lang="he">
@@ -50,12 +53,12 @@ export default async function AuthorizePage({ searchParams }: { searchParams: SP
         ) : (
           <>
             <h1 className={styles.h1}>{client.name} מבקשת לעבוד עם ניהול BeautyFind</h1>
-            <p className={ui.note}>אתם מחוברים כ־<b>{user.fullName || user.email}</b>. האפליקציה תוכל להפעיל את הכלים שההרשאות שלכם מאפשרות, בשמכם. כל קריאה נרשמת ביומן הפעולות, וכל פעולת כתיבה נכנסת לתור האישורים ומחכה לאדם.</p>
+            <p className={ui.note}>אתם מחוברים כ־<b>{user.fullName || user.email}</b>. האפליקציה תוכל לקרוא ולשנות בניהול בדיוק מה שההרשאות שלכם מאפשרות, בשמכם: כל קריאה וכל שינוי נרשמים ביומן הפעולות על שמכם, ושינוי עובר את אותם אימותים כמו במסך.</p>
             <ul className={styles.tools}>
-              {tools.map(t => (
-                <li key={t.name} className={styles.tool} data-off={!t.allowed}>
-                  <span className={ui.mono} dir="ltr">{t.name}</span>
-                  <span className={styles.toolMeta}>{t.area} · {t.write ? 'הצעה לתור האישורים' : 'קריאה'}{t.allowed ? '' : ' · אין לכם הרשאה, הכלי לא יוצע'}</span>
+              {groups.map(g => (
+                <li key={g.area} className={styles.tool} data-off={!g.names.length}>
+                  <span className={ui.strong}>{g.area}</span>
+                  <span className={styles.toolMeta}>{g.names.length ? `${g.reads} קריאה · ${g.writes} שינוי` : `אין לכם הרשאה · ${g.total} כלים לא יוצעו`}{g.names.length ? <> · <span dir="ltr">{g.names.join(', ')}</span></> : null}</span>
                 </li>
               ))}
             </ul>

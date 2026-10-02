@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { areaUserOrNull } from '@/components/ops/guard';
+import { areaUserOrNull } from '@/components/ops/access';
 import { PlatformSettingsSchema, savePlatformSettings, type PlatformSettings } from '@/lib/server/platformSettings';
 
 // Platform settings. Numbers are saved as one patch from the form; feature switches save one at a

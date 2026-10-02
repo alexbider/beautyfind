@@ -1,5 +1,6 @@
 import 'server-only';
 import { cookies } from 'next/headers';
+import { injectedActor } from './actorContext';
 import { db } from './db';
 import { randomToken, sha256 } from './crypto';
 
@@ -21,6 +22,8 @@ export async function createSession(userId: string, remember = true) {
 }
 
 export async function currentUser() {
+  const injected = injectedActor(); // the MCP server acting for a staff member (actorContext.ts)
+  if (injected) return injected;
   const token = (await cookies()).get(COOKIE)?.value;
   if (!token) return null;
   const session = await db.session.findUnique({ where: { tokenHash: sha256(token) }, include: { user: true } });

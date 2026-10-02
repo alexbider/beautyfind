@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { areaUserOrNull } from '@/components/ops/guard';
+import { areaUserOrNull } from '@/components/ops/access';
 import { db } from '@/lib/server/db';
 
 // Staff actions on client accounts: block or unblock (sign-in refused while blocked, records stay),

@@ -159,3 +159,67 @@ describe('mcp: OAuth flow and bearer tokens', { skip }, () => {
     assert.ok(!bad.ok && bad.error.error === 'invalid_redirect_uri');
   });
 });
+
+describe('mcp: the tool registry', () => {
+  it('covers every admin area with unique names, valid schemas and a permission on each tool', async () => {
+    const { MCP_TOOLS, toolsByArea } = await import('../../src/lib/server/mcpTools');
+    const { AREAS } = await import('../../src/components/ops/roles');
+    const { z } = await import('zod');
+    const names = MCP_TOOLS.map(t => t.name);
+    assert.equal(new Set(names).size, names.length, 'tool names are unique');
+    assert.ok(MCP_TOOLS.length >= 35, `expected a broad registry, got ${MCP_TOOLS.length}`);
+    for (const t of MCP_TOOLS) {
+      assert.ok(AREAS.includes(t.area), `${t.name}: area ${t.area}`);
+      assert.ok(['view', 'edit', 'full'].includes(t.level), `${t.name}: level`);
+      assert.ok(!t.write || t.level !== 'view', `${t.name}: a write tool needs at least edit`);
+      if (t.schema) { const js = z.toJSONSchema(t.schema); assert.equal(js.type, 'object', `${t.name}: schema is an object`); }
+    }
+    const areas = toolsByArea().map(g => g.area);
+    for (const a of ['overview', 'businesses', 'content', 'moderation', 'disputes', 'sponsored', 'clients', 'ai', 'settings', 'accounting', 'audit']) assert.ok(areas.includes(a as never), `area ${a} has tools`);
+    for (const n of ['get_branch', 'update_branch_details', 'set_branch_treatments', 'update_page_seo', 'set_indexing', 'set_business_status', 'moderate_review', 'update_platform_settings']) assert.ok(names.includes(n), n);
+  });
+});
+
+describe('mcp: write tools act as the token owner', { skip }, () => {
+  let db: PrismaClient;
+  const made = { users: [] as string[] };
+  before(async () => { const { PrismaClient } = await import('@prisma/client'); db = new PrismaClient(); });
+  after(async () => {
+    await db.pageSeo.deleteMany({ where: { path: '/listing-standards/sponsorship' } });
+    await db.auditLog.deleteMany({ where: { actorId: { in: made.users } } });
+    await db.user.deleteMany({ where: { id: { in: made.users } } });
+    await db.$disconnect();
+  });
+
+  it('update_page_seo runs the admin action under the actor context and the audit names that person', async () => {
+    // Outside a Next request there is no cache store, so page refreshes become no-ops for this test.
+    const { createRequire } = await import('node:module');
+    const { join } = await import('node:path');
+    const cache = createRequire(join(process.cwd(), 'package.json'))('next/cache') as { revalidatePath: unknown };
+    cache.revalidatePath = () => undefined;
+    const { withActor } = await import('../../src/lib/server/actorContext');
+    const { MCP_TOOLS } = await import('../../src/lib/server/mcpTools');
+    const user = await db.user.create({ data: { email: `mcp-write-${Date.now()}@example.test`, fullName: 'כותב', opsRole: 'ops' } });
+    made.users.push(user.id);
+    const tool = MCP_TOOLS.find(t => t.name === 'update_page_seo')!;
+    const ctx = { proposals: [], source: 'mcp:claude', actor: { id: user.id, opsRole: 'ops' } };
+    const r = (await withActor(user, () => tool.run({ path: '/listing-standards/sponsorship', title: 'כותרת מבדיקה', noindex: true }, ctx))) as { ok: boolean };
+    assert.equal(r.ok, true, JSON.stringify(r));
+    const row = await db.pageSeo.findUnique({ where: { path: '/listing-standards/sponsorship' } });
+    assert.equal(row?.title, 'כותרת מבדיקה');
+    assert.equal(row?.noindex, true);
+    assert.equal(row?.updatedById, user.id);
+    const audit = await db.auditLog.findFirst({ where: { actorId: user.id, action: 'seo_update' } });
+    assert.ok(audit, 'the same audit row a person leaves');
+    // a second patch keeps the fields it does not mention
+    const r2 = (await withActor(user, () => tool.run({ path: '/listing-standards/sponsorship', noindex: false }, ctx))) as { ok: boolean };
+    assert.equal(r2.ok, true);
+    const row2 = await db.pageSeo.findUnique({ where: { path: '/listing-standards/sponsorship' } });
+    assert.equal(row2?.title, 'כותרת מבדיקה');
+    assert.equal(row2?.noindex, false);
+    // without the actor context the action sees no staff member and refuses
+    let refused = false;
+    try { refused = ((await tool.run({ path: '/listing-standards/sponsorship', noindex: true }, ctx)) as { ok: boolean }).ok === false; } catch { refused = true; }
+    assert.ok(refused, 'no actor, no write');
+  });
+});
