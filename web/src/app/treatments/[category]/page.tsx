@@ -1,3 +1,4 @@
+import { VAT_LABEL } from '@/lib/features';
 import type { Metadata } from 'next';
 import { applySeo } from '@/lib/server/seo';
 import type { ReactNode } from 'react';
@@ -159,7 +160,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
                   באינדקס רשומים <Count n={count} {...BIZ} /> בתחום
                   {medianNat != null ? (
                     <>
-                      , והמחיר האמצעי הוא <span className="ltr tnum">{nis(medianNat)}</span>, לא כולל מע״מ
+                      , והמחיר האמצעי הוא <span className="ltr tnum">{nis(medianNat)}</span>, {VAT_LABEL}
                     </>
                   ) : null}
                   .
@@ -224,8 +225,8 @@ export default async function TreatmentCategoryPage({ params }: Props) {
             </div>
             <p className={styles.regNote}>
               {cat.isMedical
-                ? 'בפרופיל של כל עסק בתחום מוצג הרופא בעל האחריות הרפואית, ורישיונו נבדק מול משרד הבריאות.'
-                : 'בפרופיל של כל עסק בתחום מוצג איש המקצוע האחראי.'}
+                ? 'עסק שמסר רופא אחראי מציג את שמו בפרופיל אחרי שרישיונו נבדק מול משרד הבריאות.'
+                : 'עסק שמסר איש מקצוע אחראי מציג את שמו בפרופיל.'}
             </p>
           </div>
           <div className={shared.splitCol}>
@@ -279,7 +280,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
               מחירים אמצעיים<span className={shared.dot}>.</span>
             </h2>
             <span className={styles.pricesNote}>
-              תדירות אופיינית: {body.freq} · בשקלים, לא כולל מע״מ
+              תדירות אופיינית: {body.freq} · בשקלים, {VAT_LABEL}
             </span>
           </div>
           <div className={styles.tableWrap}>

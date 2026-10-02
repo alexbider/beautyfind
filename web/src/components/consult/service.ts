@@ -398,7 +398,7 @@ export async function approveTreatment(actor: Actor, id: string, note: string): 
   const ok = await db.$transaction(async tx => {
     const moved = await transition(tx, req, FROM.approve, {
       status: 'closed_treatment_booked', decidedById: actor.userId,
-      outcomeText: `${actor.displayName} אישר/ה טיפול${clean ? `: ${clean.replace(/[.!?]$/, '')}.` : '.'}${fee > 0 ? ` דמי הייעוץ, ₪${fee}, מתקזזים מהטיפול.` : ''}`,
+      outcomeText: `${actor.displayName} אישר/ה טיפול${clean ? `: ${clean.replace(/[.!?]$/, '')}.` : '.'}${fee > 0 ? ` דמי הייעוץ, ₪${fee.toLocaleString('en-US')}, מתקזזים מהטיפול.` : ''}`,
     });
     if (moved) await decide(tx, actor, req, 'approve_treatment', clean || null);
     return moved;

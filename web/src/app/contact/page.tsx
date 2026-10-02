@@ -4,6 +4,7 @@ import { businessDays, isContactReason, reasonInfo, type ContactReason } from '@
 import { ArrowForward } from '@/components/icons';
 import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
+import { VAT_LABEL_BEFORE } from '@/lib/features';
 import { fromE164, nis, telHref } from '@/lib/format';
 import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
@@ -62,7 +63,7 @@ const SHORTCUTS = [
     label: 'לעמוד הרישום',
     href: ROUTES.forBusiness,
   },
-  { q: 'למה המחיר באתר שונה מהמחיר בקליניקה?', a: 'המחירים לפני מע״מ ונושאים תאריך עדכון. כך הם נאספים.', label: 'למתודולוגיה', href: METHODOLOGY },
+  { q: 'למה המחיר באתר שונה מהמחיר בקליניקה?', a: `המחירים ${VAT_LABEL_BEFORE} ונושאים תאריך עדכון. כך הם נאספים.`, label: 'למתודולוגיה', href: METHODOLOGY },
   { q: 'אפשר להסיר ביקורת?', a: 'ביקורת שמפרה את הכללים: כן. ביקורת שלילית ואמיתית: לא.', label: 'לתקן הרישום', href: ROUTES.listingStandards },
 ];
 

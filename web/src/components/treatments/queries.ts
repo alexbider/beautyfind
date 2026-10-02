@@ -94,7 +94,7 @@ export async function regionFacts(region: RegionSlug): Promise<RegionFacts> {
   const [r] = await db.$queryRaw<Array<{ total: bigint; claimed: bigint; online: bigint; accessible: bigint; parking: bigint }>>`
     SELECT count(*) AS total,
            count(*) FILTER (WHERE b.is_claimed) AS claimed,
-           count(*) FILTER (WHERE b.online_booking) AS online,
+           count(*) FILTER (WHERE b.online_booking AND b.is_claimed) AS online,
            count(*) FILTER (WHERE b.accessible) AS accessible,
            count(*) FILTER (WHERE b.free_parking) AS parking
     FROM branches b

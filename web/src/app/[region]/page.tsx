@@ -1,4 +1,4 @@
-import { BOOKING_LIVE } from '@/lib/features';
+import { BOOKING_LIVE, VAT_LABEL } from '@/lib/features';
 import type { Metadata } from 'next';
 import { applySeo } from '@/lib/server/seo';
 import Image from 'next/image';
@@ -266,7 +266,7 @@ export default async function RegionPage({ params }: Props) {
             ))}
           </ul>
           <p className={shared.note}>
-            המחיר האמצעי (חציון) מתפריטי המחירים שהעסקים באזור מפרסמים. בשקלים, לא כולל מע״מ. הפער מחושב מול המחיר האמצעי הארצי באותו תחום, ותחום עם פחות משלושה מחירים מוצג בלי מחיר אמצעי.
+            המחיר האמצעי (חציון) מתפריטי המחירים שהעסקים באזור מפרסמים. בשקלים, {VAT_LABEL}. הפער מחושב מול המחיר האמצעי הארצי באותו תחום, ותחום עם פחות משלושה מחירים מוצג בלי מחיר אמצעי.
           </p>
         </section>
 

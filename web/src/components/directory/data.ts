@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 import { cache } from 'react';
 import { CATEGORIES, citiesOf, type City, type RegionSlug } from '@/lib/catalog';
 import { db } from '@/lib/server/db';
-import { PUBLIC_WHERE, listBranches, medianPrices, type ListingCard } from '@/lib/server/public';
+import { PUBLIC_WHERE, listBranches, medianPrices, medianPricesForCity, type ListingCard } from '@/lib/server/public';
 import type { DirQuery, FilterKey } from './params';
 
 // Directory-only reads. Listing cards come from lib/server/public (listBranches); this file
@@ -22,7 +22,7 @@ const scopeWhere = (s: DirScope, extra: Prisma.BranchWhereInput[] = []): Prisma.
 
 const FILTER_WHERE: Record<FilterKey, Prisma.BranchWhereInput> = {
   verified: { isClaimed: true },
-  online: BOOKING_LIVE ? { onlineBooking: true } : {},
+  online: BOOKING_LIVE ? { onlineBooking: true, isClaimed: true } : {},
   parking: { freeParking: true },
   accessible: { accessible: true },
 };
@@ -34,28 +34,11 @@ function median(xs: number[]): number | null {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
-/** Same rule as medianPrices(): fewer than 3 published prices → null. Rounded to ₪10. */
-async function cityMedianPrices(citySlug: string): Promise<Record<string, number | null>> {
-  const rows = await db.$queryRaw<Array<{ slug: string; median: number | null; n: bigint }>>`
-    SELECT t.category_slug AS slug,
-           percentile_cont(0.5) WITHIN GROUP (ORDER BY t.price_agorot) / 100.0 AS median,
-           count(*) AS n
-    FROM treatments t
-    JOIN branches b ON b.id = t.branch_id
-    JOIN businesses bz ON bz.id = b.business_id
-    JOIN cities c ON c.id = b.city_id
-    WHERE t.is_published AND t.category_slug IS NOT NULL
-      AND b.status = 'live' AND bz.status = 'live'
-      AND c.slug = ${citySlug}
-    GROUP BY t.category_slug`;
-  return Object.fromEntries(rows.map(r => [r.slug, Number(r.n) >= 3 && r.median != null ? Math.round(Number(r.median) / 10) * 10 : null]));
-}
-
 export interface PriceRow {
   slug: string;
   name: string;
   price: number;
-  fromRegion: boolean; // city had fewer than 3 prices, region median shown
+  fromRegion: boolean; // the city had too few valid prices, the region median is shown
   count: number; // listings in this city offering the category
 }
 
@@ -91,7 +74,7 @@ export const getOverview = cache(async (region: RegionSlug, citySlug: string, ca
     }),
     db.branch.groupBy({ by: ['cityId'], where: { AND: [PUBLIC_WHERE, { regionSlug: region }, { cityId: { not: null } }, ...catFilter] }, _count: { _all: true } }),
     db.branch.count({ where: { AND: [PUBLIC_WHERE, { regionSlug: region }, ...catFilter] } }),
-    cityMedianPrices(citySlug),
+    medianPricesForCity(citySlug),
     medianPrices(region),
     db.city.findMany({ where: { regionSlug: region }, select: { id: true, slug: true } }),
   ]);

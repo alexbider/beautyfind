@@ -7,7 +7,7 @@ import type { ConsultStatus } from '@prisma/client';
 import {
   approveTreatmentAction, askDetailsAction, confirmProposedAction, declineAction, proposeSlotAction, proposeSlotsAction,
 } from '@/app/clinic/consults/actions';
-import { telHref } from '@/lib/format';
+import { nis, telHref } from '@/lib/format';
 import { useDetailParam, useShell } from '../clinic/mobile';
 import { ActionBar } from '../shell/ActionBar';
 import { BottomSheet } from '../shell/BottomSheet';
@@ -554,7 +554,7 @@ function ApprovePanel({ req, busy, openMode, act }: { req: InboxRequest; busy: b
       <p className={styles.hintSm} style={{ marginTop: 9 }}>
         {req.feeShekels > 0 ? (
           <>
-            דמי הייעוץ, <span className="ltr tnum">₪{req.feeShekels}</span>, מתקזזים מהטיפול.{' '}
+            דמי הייעוץ, <span className="ltr tnum">{nis(req.feeShekels)}</span>, מתקזזים מהטיפול.{' '}
           </>
         ) : null}
         את תור הטיפול קובעים מהיומן, או מטפלים כבר בביקור הזה.

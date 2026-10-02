@@ -9,7 +9,7 @@ import { Check } from '@/components/icons';
 import { ActionBar } from '@/components/shell/ActionBar';
 import { haptic } from '@/components/shell/haptics';
 import { TopBar } from '@/components/shell/TopBar';
-import { IL_PHONE_RE } from '@/lib/format';
+import { IL_PHONE_RE, nis } from '@/lib/format';
 import { ROUTES } from '@/lib/routes';
 import {
   AREAS, DAY_LETTERS, FLAGS, FORMATS, GOAL_MAX, GOAL_MIN, NAME_MAX, PRIOR, TIMES, WHY,
@@ -270,7 +270,7 @@ export function ConsultForm({ branch, doctor, treatment, fee, slots, openDays, p
   if (done) {
     const whenText = done.slot ?? TIMES.filter(t => times.includes(t.key)).map(t => t.name).join(', ');
     const [title, body] = done.checkoutUrl
-      ? ['המועד שמור עבורכם', `כדי להשלים את קביעת הייעוץ יש לשלם את דמי הייעוץ, ₪${fee}, שמתקזזים מהטיפול. המועד שמור עבורכם ל־10 דקות.`]
+      ? ['המועד שמור עבורכם', `כדי להשלים את קביעת הייעוץ יש לשלם את דמי הייעוץ, ${nis(fee)}, שמתקזזים מהטיפול. המועד שמור עבורכם ל־10 דקות.`]
       : done.scheduled
         ? [
             'הייעוץ נקבע',
@@ -303,7 +303,7 @@ export function ConsultForm({ branch, doctor, treatment, fee, slots, openDays, p
             <div className={`${styles.row} ${styles.doneRow}`}>
               {done.checkoutUrl && (
                 <a href={done.checkoutUrl} className={styles.btnLink}>
-                  לתשלום&nbsp;<span className="ltr tnum">₪{fee}</span>
+                  לתשלום&nbsp;<span className="ltr tnum">{nis(fee)}</span>
                 </a>
               )}
               {!done.checkoutUrl && done.manageHref && <Link href={done.manageHref} className={styles.btnLink}>לניהול המועד</Link>}
@@ -603,7 +603,7 @@ export function ConsultForm({ branch, doctor, treatment, fee, slots, openDays, p
                 <dd className={styles.strong}>
                   {fee > 0 ? (
                     <>
-                      <span className="ltr tnum">₪{fee}</span> <span className={styles.soft}>· מתקזז מהטיפול</span>
+                      <span className="ltr tnum">{nis(fee)}</span> <span className={styles.soft}>· מתקזז מהטיפול</span>
                     </>
                   ) : (
                     'ללא עלות'

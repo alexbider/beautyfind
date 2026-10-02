@@ -5,7 +5,7 @@ import { buyGiftCard } from '@/app/gift/[branch]/actions';
 import { ActionBar } from '@/components/shell/ActionBar';
 import { haptic } from '@/components/shell/haptics';
 import { TopBar } from '@/components/shell/TopBar';
-import { EMAIL_RE, toE164 } from '@/lib/format';
+import { EMAIL_RE, nis, toE164 } from '@/lib/format';
 import { SHELL_MQ } from '@/lib/ui/shell';
 import { AMOUNTS, CHANNELS, CUSTOM_MAX, CUSTOM_MIN, MESSAGE_MAX, money, termsFor, yearsText, type Channel } from './shared';
 import s from './gift.module.css';
@@ -146,7 +146,7 @@ export function BuyForm({ slug, businessName, years, expiry, treatments, today, 
 
   // In the order of the form (and of the steps): the first failing check is the one reported.
   const checks = [
-    { ok: customOk, msg: `סכום בין ₪${CUSTOM_MIN} ל־₪${CUSTOM_MAX.toLocaleString('en-US')}`, step: 1, el: 'gc-custom' },
+    { ok: customOk, msg: `סכום בין ${nis(CUSTOM_MIN)} ל־${nis(CUSTOM_MAX)}`, step: 1, el: 'gc-custom' },
     { ok: valueAgorot > 0, msg: 'בחרו סכום או טיפול', step: 1, el: 'gc-sec-1' },
     { ok: toOk, msg: 'למי השובר?', step: 2, el: 'gc-to' },
     { ok: contactOk, msg: channel === 'wa' ? 'מספר וואטסאפ לא מלא' : 'כתובת הדוא״ל לא תקינה', step: 2, el: 'gc-contact' },

@@ -4,6 +4,7 @@
 // accessibility) and 08-open-decisions A1–A5. Every company fact is a placeholder until legal supplies it.
 // Generic text under Israeli law, approved by the company on 2026-09-23. Bump DOC_UPDATED on any material change.
 
+import { VAT_LABEL } from '@/lib/features';
 import { nis } from '@/lib/format';
 import { PLAN_MONTHLY_NIS, YEARLY_MULTIPLIER, PLATFORM_BILLING_LINE } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
@@ -361,7 +362,7 @@ export const LEGAL_VIEWS: Record<LegalKey, ContentView<LegalKey>> = {
           {
             kind: 'paras',
             paras: [
-              'המחירים באתר הם המחירים שהעסקים פרסמו, בשקלים, לא כולל מע״מ, נכון לתאריך המצוין לצדם. הם אינם הצעת מחיר ואינם מבטיחים שהמחיר לא השתנה מאז. לפני קביעת תור מוצגים לכם המחיר, המקדמה ומדיניות הביטול של העסק.',
+              `המחירים באתר הם המחירים שהעסקים פרסמו, בשקלים, ${VAT_LABEL}, נכון לתאריך המצוין לצדם. הם אינם הצעת מחיר ואינם מבטיחים שהמחיר לא השתנה מאז. לפני קביעת תור מוצגים לכם המחיר, המקדמה ומדיניות הביטול של העסק.`,
               'אנחנו מאמתים את המידע במסגרת [תקן הרישום](/listing-standards), אך איננו יכולים להתחייב שכל פרט מדויק בכל רגע. מצאתם פער בין המחיר באתר למחיר בפועל? דווחו לנו, ונבדוק זאת מול העסק.',
             ],
           },

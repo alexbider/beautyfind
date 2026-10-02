@@ -2,6 +2,7 @@
 // Answers follow 08-open-decisions.md A1–A5 and 07-rules-and-tokens.md; wording that
 // contradicted them in the design was corrected here (see the report in the PR).
 
+import { PRICES_INCLUDE_VAT } from '@/lib/features';
 import { nis } from '@/lib/format';
 import { PLAN_MONTHLY_NIS, YEARLY_MULTIPLIER, PLATFORM_BILLING_LINE } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
@@ -79,7 +80,7 @@ export const FAQS: Faq[] = [
   },
   {
     audience: 'client', topic: 'pay', q: 'האם המחירים כוללים מע״מ?',
-    a: 'לא. המחירים באתר מוצגים לפני מע״מ, והסכום הסופי מופיע בחשבונית המס. רוב הקליניקות מאפשרות תשלומים.',
+    a: PRICES_INCLUDE_VAT ? 'כן. המחירים באתר מוצגים כולל מע״מ לפי שיעור המע״מ הנוכחי, והסכום הסופי מופיע בחשבונית המס של העסק. רוב הקליניקות מאפשרות תשלומים.' : 'לא. המחירים באתר מוצגים לפני מע״מ, והסכום הסופי מופיע בחשבונית המס. רוב הקליניקות מאפשרות תשלומים.',
   },
   {
     audience: 'client', topic: 'pay', q: 'הקופה או הביטוח מכסים את הטיפול?',

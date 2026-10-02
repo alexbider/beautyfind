@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { BOOKING_LIVE } from '@/lib/features';
+import { BOOKING_LIVE, VAT_LABEL, VAT_VERB } from '@/lib/features';
 import { nisFromAgorot } from '@/lib/format';
 import { SavedTabs } from './SavedView';
 import { ratingText, reviewsCount, type CompareColumn } from './types';
@@ -36,7 +36,7 @@ export function CompareView({ cols }: { cols: CompareColumn[] }) {
       label: `מחיר התחלתי · ${treatName}`,
       cells: cols.map((c, i) =>
         prices[i] != null
-          ? { v: <span className="ltr tnum">{nisFromAgorot(prices[i]!)}</span>, sub: 'לא כולל מע״מ', best: prices[i] === bestPrice }
+          ? { v: <span className="ltr tnum">{nisFromAgorot(prices[i]!)}</span>, sub: VAT_LABEL, best: prices[i] === bestPrice }
           : { v: treat === 'all' ? 'אין מחירון מפורסם' : 'לא מבוצע', dim: true },
       ),
     },
@@ -133,7 +133,7 @@ export function CompareView({ cols }: { cols: CompareColumn[] }) {
             </table>
           </div>
           <p className={styles.foot2}>
-            הנתונים מגיעים מהקליניקות עצמן. המחירים לא כוללים מע״מ. דירוג Google ודירוג BeautyFind מוצגים בנפרד ואינם מתמזגים. מקום ממומן לא משפיע על ההשוואה. הערך המודגש בשורת המחיר הוא הנמוך ביותר, ואינו המלצה.
+            הנתונים מגיעים מהקליניקות עצמן. המחירים {VAT_VERB} מע״מ. דירוג Google ודירוג BeautyFind מוצגים בנפרד ואינם מתמזגים. מקום ממומן לא משפיע על ההשוואה. הערך המודגש בשורת המחיר הוא הנמוך ביותר, ואינו המלצה.
           </p>
         </div>
       )}

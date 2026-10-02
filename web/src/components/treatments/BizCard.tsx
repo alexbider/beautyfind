@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowForward, Check } from '@/components/icons';
+import { VAT_LABEL } from '@/lib/features';
 import { nis } from '@/lib/format';
 import type { ListingCard } from '@/lib/server/public';
 import { SaveHeart } from '@/components/save-heart/SaveHeart';
@@ -95,7 +96,7 @@ export function BizCard({ card, meta, contact, size = 92, index = 0 }: { card: L
           {card.priceFromShekels != null && (
             <span className={styles.from}>
               מ־<span className="ltr tnum">{nis(card.priceFromShekels)}</span>
-              <span className="sr-only"> לא כולל מע״מ</span>
+              <span className="sr-only"> {VAT_LABEL}</span>
             </span>
           )}
           <Link href={card.href} className={`${styles.cta} bf-desk-only`} aria-label={`לעסק: ${card.name}`}>

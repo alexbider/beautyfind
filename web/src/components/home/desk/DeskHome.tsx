@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import type { RegionSlug } from '@/lib/catalog';
 import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
+import { VAT_LABEL } from '@/lib/features';
+import { nis } from '@/lib/format';
 import { ROUTES } from '@/lib/routes';
 import { SaveHeart } from '../../save-heart/SaveHeart';
 import { ARTICLES, IMAGE_ALT, LANDMARK_ALT } from '../content';
@@ -47,7 +49,7 @@ const MORE_CATS = [
   { label: 'איפור קבוע', slug: 'permanent-makeup', img: '/assets/cat-pmu.jpg' },
   { label: 'עיצוב וחיטוב הגוף', slug: 'body-contouring', img: '/assets/cat-body.jpg' },
 ];
-const TRUST_SUB = ['רישיון רופא או אחות, תעודת קוסמטיקאית', 'Google ו־BeautyFind בנפרד, בלי ממוצע', 'תשלום לא משפיע על הדירוג'];
+const TRUST_SUB = ['בעלות מאומתת ורישיון שנבדק מסומנים בפרופיל', 'Google ו־BeautyFind בנפרד, בלי ממוצע', 'תשלום לא משפיע על הדירוג'];
 const REGION_CARDS: RegionSlug[] = ['dan', 'north', 'haifa', 'sharon', 'jerusalem', 'shfela', 'south'];
 const HAND = (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0B7A87" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -116,7 +118,7 @@ function BizCard({ c, last }: { c: PhoneCard; last: boolean }) {
           {!bf && !g && <span>עדיין אין ביקורות</span>}
         </div>
         {c.from != null && (
-          <div className={s.cardPrice}>החל מ־<strong dir="ltr" className={s.iso}>₪{Math.round(c.from)}</strong><span className={s.vat}>לא כולל מע״מ</span></div>
+          <div className={s.cardPrice}>החל מ־<strong dir="ltr" className={s.iso}>{nis(c.from)}</strong><span className={s.vat}>{VAT_LABEL}</span></div>
         )}
         <div className={s.cardActions} data-n={1 + (c.whatsapp ? 1 : 0) + (c.phone ? 1 : 0)}>
           <Link href={c.href} className={s.cardCta} draggable={false}>לפרופיל העסק<Arrow width={1.7} /></Link>
@@ -425,7 +427,7 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
         <section aria-labelledby="h-rev" className={`${s.wrap} ${s.pt88}`}>
           <div className={s.headGrid}>
             <div>
-              <Kicker>ביקורות מאומתות</Kicker>
+              <Kicker>ביקורות אחרי ביקור</Kicker>
               <h2 id="h-rev" className={`${s.h2} ${s.mt10}`}>מה מספרות מי שהגיעו<Dot /></h2>
               <p className={s.lead62}>רק מי שקבעה תור דרך BeautyFind והגיעה אליו יכולה לכתוב ביקורת. אנחנו לא עורכים ביקורות ולא מוחקים ביקורות שליליות.</p>
             </div>
@@ -566,7 +568,7 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
               <Link href={ROUTES.join} className={s.bizJoin}>הצטרפות לאינדקס<Arrow width={1.7} /></Link>
               <Link href={ROUTES.claim} className={s.bizClaim}>העסק כבר כאן?</Link>
             </div>
-            <div className={s.bizPrice}>מ־<span dir="ltr" className={s.bizPriceN}>₪{PLAN_MONTHLY_NIS.basic}</span> לסניף בחודש, ללא מע״מ ישראלי.</div>
+            <div className={s.bizPrice}>מ־<span dir="ltr" className={s.bizPriceN}>{nis(PLAN_MONTHLY_NIS.basic)}</span> לסניף בחודש, ללא מע״מ ישראלי.</div>
           </div>
           <ListingSteps variant="desk" />
         </div>

@@ -1,4 +1,4 @@
-import { BOOKING_LIVE } from '@/lib/features';
+import { BOOKING_LIVE, VAT_LABEL_BEFORE } from '@/lib/features';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -78,7 +78,7 @@ export async function directoryMetadata(params: DirParams, searchParams: DirSear
               : o.verified === 1
                 ? ', אחד מהם מאומת'
                 : `, מתוכם ${fmtNum(o.verified)} מאומתים`) +
-        `. דירוג Google וביקורות BeautyFind מאומתות בנפרד, מחירים אמצעיים ${BOOKING_LIVE ? 'וקביעת תור אונליין' : 'ופנייה ישירה לעסק'}.`;
+        `. דירוג Google וביקורות BeautyFind בנפרד, מחירים אמצעיים ${BOOKING_LIVE ? 'וקביעת תור אונליין בעסקים שמציעים אותה' : 'ופנייה ישירה לעסק'}.`;
   return applySeo(s.path, {
     title,
     description,
@@ -247,7 +247,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
       {headlinePrice && (
         <>
           {' '}
-          המחיר האמצעי ל{headlinePrice.name} הוא <N>{nis(headlinePrice.price)}</N> לפני מע״מ
+          המחיר האמצעי ל{headlinePrice.name} הוא <N>{nis(headlinePrice.price)}</N> {VAT_LABEL_BEFORE}
           {headlinePrice.fromRegion && ` (לפי המחיר האמצעי באזור ${s.region.name})`}.
         </>
       )}
@@ -295,7 +295,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
               </h1>
               <p className={styles.answer}>{answer}</p>
               <p className={styles.lede}>
-                הרשימה מסודרת לפי אימות הרישום, דירוג Google ומספר הביקורות, לא לפי תשלום. כל עסק מציג את תפריט הטיפולים עם מחירים ואת דרכי ההתקשרות הישירות אליו, ובעסקים עם טיפולים רפואיים גם את הרופא האחראי.
+                הרשימה מסודרת לפי אימות הבעלות, דירוג Google ומספר הביקורות, לא לפי תשלום. כל עסק מציג את תפריט הטיפולים עם מחירים ואת דרכי ההתקשרות הישירות אליו, ועסק שמסר רופא אחראי מציג גם את שמו אחרי בדיקת הרישיון.
               </p>
 
               <div className={styles.meta}>
@@ -354,7 +354,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
                           <ListingCard key={c.id} c={c} delayIndex={i % PAGE} />
                         ))}
                       </ol>
-                      {anyPrice && <p className={styles.vatNote}>המחירים בכרטיסים לפני מע״מ.</p>}
+                      {anyPrice && <p className={styles.vatNote}>המחירים בכרטיסים {VAT_LABEL_BEFORE}.</p>}
                     </>
                   )}
                 </ResultsShell>
@@ -548,7 +548,7 @@ function Guide({ s, o }: { s: Scope; o: Overview }) {
             <div className={styles.tableWrap}>
               <table className={styles.table}>
                 <caption>
-                  {citySample > 0 ? `מחיר אמצעי של הטיפולים שהעסקים ${where} מפרסמים, לפני מע״מ.` : `מחיר אמצעי באזור ${s.region.name}, לפני מע״מ.`}
+                  {citySample > 0 ? `מחיר אמצעי של הטיפולים שהעסקים ${where} מפרסמים, ${VAT_LABEL_BEFORE}.` : `מחיר אמצעי באזור ${s.region.name}, ${VAT_LABEL_BEFORE}.`}
                 </caption>
                 <thead>
                   <tr>

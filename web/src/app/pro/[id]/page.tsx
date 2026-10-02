@@ -13,7 +13,9 @@ import btn from '@/components/profile/buttons.module.css';
 import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { ActionBar } from '@/components/shell/ActionBar';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
-import { BOOKING_LIVE } from '@/lib/features';
+import { BOOKING_LIVE, VAT_LABEL } from '@/lib/features';
+import { vatRatePct } from '@/lib/server/vat';
+import { withConsumerPrices } from '@/lib/vat';
 import { ROUTES } from '@/lib/routes';
 import { getPractitioner } from './data';
 import styles from './page.module.css';
@@ -45,6 +47,7 @@ export default async function PractitionerPage({ params }: Props) {
   const { id } = await params;
   const pr = await getPractitioner(id);
   if (!pr) notFound();
+  const vatPct = await vatRatePct();
 
   const profession = pr.profession as PractitionerProfession;
   const medical = isMedicalProfession(profession);
@@ -70,7 +73,7 @@ export default async function PractitionerPage({ params }: Props) {
   const ctaLabel = medical ? 'בקשת ייעוץ' : 'פנייה לעסק';
   // Phone action bar: book (or book a consult, for medical practitioners) when the branch takes online
   // booking; otherwise the profile's contact form, as on desktop.
-  const online = BOOKING_LIVE && primary.onlineBooking;
+  const online = BOOKING_LIVE && primary.onlineBooking && primary.isClaimed;
   const barCta = online
     ? medical
       ? { href: `/consult/${primary.slug}`, label: 'קביעת ייעוץ' }
@@ -165,11 +168,11 @@ export default async function PractitionerPage({ params }: Props) {
             {treatments.length > 0 && (
               <section aria-labelledby="pr-tx">
                 <h2 id="pr-tx" className={`${styles.h2} ${styles.h2Tight}`}>{multi ? 'טיפולים בתחום' : `טיפולים ב${primary.name}`}</h2>
-                <p className={styles.lead}>מחירים מהעסק, לא כולל מע״מ.{medical ? ' הכמות והמחיר הסופי נקבעים בייעוץ.' : ''}</p>
+                <p className={styles.lead}>מחירים מהעסק, {VAT_LABEL}.{medical ? ' הכמות והמחיר הסופי נקבעים בייעוץ.' : ''}</p>
                 <div className={styles.tx}>
                   {treatments.map(t => {
                     const isMed = t.isMedical || !!t.category?.isMedical;
-                    const pv = servicePrice(t);
+                    const pv = servicePrice(withConsumerPrices(t, vatPct));
                     const note = [t.durationMin ? `כ־${t.durationMin} דקות` : null, multi ? t.branchName : null].filter(Boolean).join(' · ');
                     return (
                       <div key={t.id} className={styles.txCard}>

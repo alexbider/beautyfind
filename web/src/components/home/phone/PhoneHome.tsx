@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { REGIONS, type RegionSlug } from '@/lib/catalog';
 import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
+import { BOOKING_LIVE, VAT_LABEL, VAT_VERB } from '@/lib/features';
+import { nis } from '@/lib/format';
 import { ROUTES } from '@/lib/routes';
 import { SaveHeart, useSavedIds } from '../../save-heart/SaveHeart';
 import { haptic } from '../../shell/haptics';
@@ -135,8 +137,8 @@ export function Rings({ size, className }: { size: number; className: string }) 
 export const QUICK = ['בוטוקס', 'הסרת שיער', 'טיפול פנים', 'לק ג׳ל'];
 
 export const TRUST_STRIP = [
-  { title: 'רישיונות נבדקים', d: 'M8 1.5 3 3.5v3.8c0 3.1 2.2 5.4 5 6.5 2.8-1.1 5-3.4 5-6.5V3.5L8 1.5ZM5.8 8l1.6 1.6L10.4 6.4' },
-  { title: 'ביקורות מאומתות', d: 'M8 2l1.8 3.7 4 .6-2.9 2.8.7 4L8 11.2 4.4 13.1l.7-4-2.9-2.8 4-.6L8 2Z' },
+  { title: 'אימות מסומן בתג', d: 'M8 1.5 3 3.5v3.8c0 3.1 2.2 5.4 5 6.5 2.8-1.1 5-3.4 5-6.5V3.5L8 1.5ZM5.8 8l1.6 1.6L10.4 6.4' },
+  { title: 'ביקורות אחרי ביקור', d: 'M8 2l1.8 3.7 4 .6-2.9 2.8.7 4L8 11.2 4.4 13.1l.7-4-2.9-2.8 4-.6L8 2Z' },
   { title: 'תוכן ממומן מסומן', d: 'M8 14.5A6.5 6.5 0 1 0 8 1.5a6.5 6.5 0 0 0 0 13ZM8 7v4M8 5h.01' },
 ];
 
@@ -167,24 +169,24 @@ const MENU_CATS = [
 export const READ_TIME = ['6 דקות קריאה', '5 דקות קריאה', '4 דקות קריאה'];
 
 export const TRUST = [
-  { n: '01', title: 'אימות לפני עלייה לאוויר', desc: 'בודקים רישיון רופא או אחות מול משרד הבריאות ותעודת מקצוע של קוסמטיקאיות. הבעלות על העסק מאומתת בנפרד.' },
-  { n: '02', title: 'אחריות רפואית מסומנת', desc: 'הזרקות הן פעולה רפואית. בכל פרופיל מופיע מי הרופא האחראי, וכל טיפול רפואי מתחיל בפגישת ייעוץ.' },
+  { n: '01', title: 'אימות מסומן, לא מובלע', desc: 'עסק שבעליו אימתו את הבעלות מסומן בתג "מאומת". רישיון רופא או אחות שנבדק מול משרד הבריאות מסומן בפרופיל בתג נפרד.' },
+  { n: '02', title: 'אחריות רפואית מסומנת', desc: 'הזרקות הן פעולה רפואית. עסק שמסר רופא אחראי מציג את שמו בפרופיל אחרי בדיקת הרישיון, וכל טיפול רפואי מתחיל בפגישת ייעוץ.' },
   { n: '03', title: 'ביקורות ממי שהגיעה בפועל', desc: 'אפשר לכתוב ביקורת ב־BeautyFind רק אחרי תור שהתקיים. דירוג Google מוצג לצידה, בנפרד.' },
-  { n: '04', title: 'תוכן שנבדק רפואית', desc: 'כל מדריך נכתב בידי המערכת ונבדק בידי איש מקצוע מוסמך, ותאריך העדכון מופיע בו.' },
+  { n: '04', title: 'תוכן עם תאריך', desc: 'המדריכים נכתבים בידי המערכת לפי מדיניות העריכה, ותאריך העדכון מופיע בכל מדריך.' },
 ];
 
 const STEPS = [
   { label: 'פרטי העסק', text: 'ממלאים שם, עיר ותחומי טיפול. אפשר גם לאמת בעלות על פרופיל שכבר קיים באינדקס.' },
-  { label: 'אימות', text: 'בודקים רישיון ותעודות. טיפול רפואי מסומן באחריות רפואית של רופא.' },
+  { label: 'אימות', text: 'מאמתים את הבעלות על העסק. רופא אחראי, כשנמסר, נבדק מול משרד הבריאות ומסומן בפרופיל.' },
   { label: 'פרופיל באוויר', text: 'הפרופיל עולה לאוויר עם טיפולים, מחירים ושעות פתיחה. ביקורות Google ו־BeautyFind מוצגות בנפרד.' },
   { label: 'תורים', text: 'לקוחות קובעות תור, האישור נשלח בוואטסאפ, ב־SMS ובמייל, והתור נכנס ליומן שלכם.' },
 ];
 
 export const FAQS = [
-  { q: 'האם השימוש ב־BeautyFind עולה כסף?', a: 'לא. החיפוש, ההשוואה וקביעת התור בחינם. את הטיפול משלמים ישירות לעסק, והעסק מנפיק חשבונית מס.' },
+  { q: 'האם השימוש ב־BeautyFind עולה כסף?', a: `לא. החיפוש וההשוואה בחינם${BOOKING_LIVE ? ', וגם קביעת תור דרך האתר בעסקים שמציעים אותה' : ''}. את הטיפול משלמים ישירות לעסק, והעסק מנפיק חשבונית מס.` },
   { q: 'האם עסק יכול לשלם כדי לקבל דירוג גבוה יותר?', a: 'לא. מודעות ממומנות מסומנות תמיד, יש לכל היותר שתיים בכל רשימה, והן לא משנות את הדירוג או את הביקורות.' },
-  { q: 'האם טיפולים אסתטיים כלולים בסל הבריאות?', a: 'לא. טיפולים אסתטיים אינם כלולים בסל הבריאות. המחירים המוצגים באתר לא כוללים מע״מ.' },
-  { q: 'מי רשאי לבצע הזרקות?', a: 'רק רופא/ה. הזרקה היא פעולה רפואית, וקוסמטיקאיות אינן רשאיות להזריק. בכל פרופיל מסומן מי נושא באחריות הרפואית.' },
+  { q: 'האם טיפולים אסתטיים כלולים בסל הבריאות?', a: `לא. טיפולים אסתטיים אינם כלולים בסל הבריאות. המחירים המוצגים באתר ${VAT_VERB} מע״מ.` },
+  { q: 'מי רשאי לבצע הזרקות?', a: 'רק רופא/ה. הזרקה היא פעולה רפואית, וקוסמטיקאיות אינן רשאיות להזריק. בפרופיל של עסק שמסר רופא אחראי מסומן מי נושא באחריות הרפואית.' },
 ];
 
 const FOOT_GROUPS = [
@@ -385,8 +387,8 @@ function BizCard({ c }: { c: PhoneCard }) {
         </div>
         {c.from != null && (
           <div className={s.cardPrice}>
-            החל מ־<strong dir="ltr" className={s.iso}>₪{Math.round(c.from)}</strong>
-            <span className={s.vat}>לא כולל מע״מ</span>
+            החל מ־<strong dir="ltr" className={s.iso}>{nis(c.from)}</strong>
+            <span className={s.vat}>{VAT_LABEL}</span>
           </div>
         )}
         <div className={s.cardActions} data-n={1 + (c.whatsapp ? 1 : 0) + (c.phone ? 1 : 0)}>
@@ -478,8 +480,8 @@ export function ListingSteps({ variant }: { variant?: 'desk' }) {
             <span className={s.shieldRing} style={{ opacity: ringOn ? 0 : 1, transform: `scale(${ringOn ? 1.25 : 1})` }} />
             <svg width="32" height="32" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"><path d="M7 1.5 2.5 3.3v3.4c0 2.8 2 4.8 4.5 5.8 2.5-1 4.5-3 4.5-5.8V3.3L7 1.5Z" /><path d="m5 7 1.5 1.5L9.3 5.6" /></svg>
           </div>
-          <div className={s.paneTitle}>רישיון ותעודות אומתו</div>
-          <div className={s.paneText}>צוות BeautyFind בודק רישיון רופא, אחות או תעודת קוסמטיקאית לפני שהפרופיל עולה.</div>
+          <div className={s.paneTitle}>אימות מסומן בתג</div>
+          <div className={s.paneText}>בעלות מאומתת מסומנת בתג "מאומת", ורישיון רופא, אחות או תעודת קוסמטיקאית שנבדקו מסומנים בפרופיל בנפרד.</div>
         </div>
         <div className={`${s.pane} ${s.paneProfile}`} style={pane(2)}>
           <span className={s.profileImg}><Image src="/assets/biz-facial.jpg" alt="" fill sizes="96px" className={s.cover} /></span>
@@ -691,7 +693,7 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
         {/* ---------- Reviews (only when there are published reviews) ---------- */}
         {reviews.length > 0 && (
           <section className={s.pad40} aria-labelledby="h-rev-m">
-            <Kicker>ביקורות מאומתות</Kicker>
+            <Kicker>ביקורות אחרי ביקור</Kicker>
             <h2 id="h-rev-m" className={`${s.h2} ${s.mt8}`}>מה מספרות מי שהגיעו<Dot /></h2>
             <p className={s.sectionLede}>רק מי שקבעה תור דרך BeautyFind והגיעה אליו יכולה לכתוב ביקורת. אנחנו לא עורכים ביקורות ולא מוחקים ביקורות שליליות.</p>
             <div className={s.reviews}>
@@ -811,7 +813,7 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
             <Link href={ROUTES.join} className={s.bizJoin}>הצטרפות לאינדקס<Arrow /></Link>
             <Link href={ROUTES.claim} className={s.bizClaim}>העסק כבר כאן?</Link>
           </div>
-          <div className={s.bizPrice}>מ־<span dir="ltr" className={s.bizPriceN}>₪{PLAN_MONTHLY_NIS.basic}</span> לסניף בחודש, ללא מע״מ ישראלי.</div>
+          <div className={s.bizPrice}>מ־<span dir="ltr" className={s.bizPriceN}>{nis(PLAN_MONTHLY_NIS.basic)}</span> לסניף בחודש, ללא מע״מ ישראלי.</div>
         </section>
 
         {/* ---------- FAQ ---------- */}
@@ -840,7 +842,7 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
       <footer className={s.footer}>
         <div className={s.footTop}>
           <div dir="ltr" className={s.footMark}>beauty<span className={s.accent}>find</span><span className={s.accentDot}>.</span></div>
-          <p className={s.footLede}>אינדקס עצמאי של מכוני יופי וקליניקות לאסתטיקה בישראל, עם בדיקת רישיונות, ביקורות מאומתות ומחירים גלויים.</p>
+          <p className={s.footLede}>אינדקס עצמאי של מכוני יופי וקליניקות לאסתטיקה בישראל: עסקים מאומתים מסומנים בתג, ביקורות אחרי ביקור ומחירים גלויים.</p>
           <div className={`${s.two} ${s.mt18}`}>
             <a href={`mailto:${SUPPORT_EMAIL}`} className={s.btnMail}><Mail />שליחת מייל</a>
             <Link href={ROUTES.contact} className={s.btnWa}><WhatsApp size={16} fill="#1DA851" />צ׳אט תמיכה</Link>

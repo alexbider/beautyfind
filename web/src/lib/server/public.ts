@@ -2,8 +2,10 @@ import 'server-only';
 import { orderCategories, profileHref } from '../category';
 import { Prisma, type RegionSlug } from '@prisma/client';
 import { cache } from 'react';
-import { BOOKING_LIVE } from '../features';
+import { BOOKING_LIVE, PRICES_INCLUDE_VAT } from '../features';
+import { consumerAgorot } from '../vat';
 import { db } from './db';
+import { vatRatePct } from './vat';
 
 // Read-only queries for public pages. Only live branches of live businesses are ever returned.
 // Ratings: Google and BeautyFind are separate fields and are never averaged together (decision A4).
@@ -43,7 +45,7 @@ export interface ListingCard {
   verified: boolean; // business live and ownership verified
   google: { rating: number; count: number } | null;
   beautyfind: { rating: number; count: number } | null; // published verified reviews
-  priceFromShekels: number | null; // lowest published treatment price, before VAT
+  priceFromShekels: number | null; // lowest published treatment price, as shown to consumers (src/lib/vat.ts)
   accessible: boolean;
   freeParking: boolean;
   onlineBooking: boolean;
@@ -63,7 +65,7 @@ function where(f: ListingFilter): Prisma.BranchWhereInput {
   if (f.verifiedOnly) and.push({ isClaimed: true });
   if (f.accessible) and.push({ accessible: true });
   if (f.freeParking) and.push({ freeParking: true });
-  if (f.onlineBooking && BOOKING_LIVE) and.push({ onlineBooking: true });
+  if (f.onlineBooking && BOOKING_LIVE) and.push({ onlineBooking: true, isClaimed: true }); // booking exists only where an owner runs the listing
   if (f.maxPriceShekels != null) and.push({ treatments: { some: { isPublished: true, priceAgorot: { lte: f.maxPriceShekels * 100 } } } });
   const q = f.q?.trim();
   if (q) {
@@ -82,7 +84,7 @@ function where(f: ListingFilter): Prisma.BranchWhereInput {
 const CARD_INCLUDE = {
   city: { select: { slug: true } },
   categories: { include: { category: true } },
-  treatments: { where: { isPublished: true }, select: { priceAgorot: true, priceType: true } },
+  treatments: { where: { isPublished: true }, select: { priceAgorot: true, priceType: true, taxIncluded: true, source: true } },
   medicalResponsible: { select: { license: { select: { status: true } } } },
 } satisfies Prisma.BranchInclude;
 
@@ -99,9 +101,9 @@ async function reviewStats(branchIds: string[]) {
   return new Map(rows.map(r => [r.branchId, { rating: Math.round((r._avg.rating ?? 0) * 10) / 10, count: r._count._all }]));
 }
 
-function toCard(b: CardRow, stats: Map<string, { rating: number; count: number }>): ListingCard {
+function toCard(b: CardRow, stats: Map<string, { rating: number; count: number }>, vatPct: number): ListingCard {
   // "From" price: comparable published amounts only (no per-unit, per-ml, per-area or package totals, no unknown prices).
-  const prices = b.treatments.filter(t => t.priceAgorot != null && t.priceAgorot > 0 && ['fixed', 'from', 'range'].includes(t.priceType)).map(t => t.priceAgorot as number);
+  const prices = b.treatments.filter(t => t.priceAgorot != null && t.priceAgorot > 0 && ['fixed', 'from', 'range'].includes(t.priceType)).map(t => consumerAgorot(t.priceAgorot as number, t, vatPct));
   const cats = orderCategories(b.categories); // [0] is the primary category, the one in the URL
   return {
     id: b.id,
@@ -120,7 +122,7 @@ function toCard(b: CardRow, stats: Map<string, { rating: number; count: number }
     priceFromShekels: prices.length ? Math.min(...prices) / 100 : null,
     accessible: b.accessible,
     freeParking: b.freeParking,
-    onlineBooking: BOOKING_LIVE && b.onlineBooking,
+    onlineBooking: BOOKING_LIVE && b.onlineBooking && b.isClaimed,
     hasMedicalResponsible: b.medicalResponsible?.license?.status === 'verified',
   };
 }
@@ -142,16 +144,17 @@ export async function listBranches(f: ListingFilter = {}): Promise<{ total: numb
         : [{ isClaimed: 'desc' }, { googleRating: { sort: 'desc', nulls: 'last' } }, { googleReviewCount: { sort: 'desc', nulls: 'last' } }];
 
   // Price sort needs the computed minimum, so sort in memory over the filtered set (bounded by the directory size per filter).
+  const vatPct = await vatRatePct();
   if (f.sort === 'price') {
     const all = await db.branch.findMany({ where: w, include: CARD_INCLUDE, take: 500 });
     const stats = await reviewStats(all.map(b => b.id));
-    const cards = all.map(b => toCard(b, stats)).sort((a, b) => (a.priceFromShekels ?? Infinity) - (b.priceFromShekels ?? Infinity));
+    const cards = all.map(b => toCard(b, stats, vatPct)).sort((a, b) => (a.priceFromShekels ?? Infinity) - (b.priceFromShekels ?? Infinity));
     return { total: cards.length, items: cards.slice(skip, skip + take) };
   }
 
   const [total, rows] = await Promise.all([db.branch.count({ where: w }), db.branch.findMany({ where: w, include: CARD_INCLUDE, orderBy, take, skip })]);
   const stats = await reviewStats(rows.map(b => b.id));
-  return { total, items: rows.map(b => toCard(b, stats)) };
+  return { total, items: rows.map(b => toCard(b, stats, vatPct)) };
 }
 
 /** Live listing counts per region, per city (slug) and per category (slug). */
@@ -171,24 +174,52 @@ export const listingCounts = cache(async () => {
   };
 });
 
+/** Minimum number of valid prices before a median is shown. */
+export const MEDIAN_MIN_PRICES = 3;
+
 /**
- * Median published price per category (shekels, before VAT), optionally within a region.
- * Categories with fewer than 3 prices return null so a single outlier is never shown as "the" price.
+ * Median consumer price per category (shekels, rounded to 10) within a scope. Only real, comparable
+ * prices count: published, above zero, of type fixed, from or range (no per-unit, per-ml, per-area or
+ * package totals, no "on request"). Outliers beyond 1.5 times the interquartile range are trimmed, and a
+ * category with fewer than MEDIAN_MIN_PRICES valid prices returns null ("אין מספיק מחירים"), so a single
+ * price is never shown as "the" price. Amounts follow the consumer-price rule (src/lib/vat.ts).
  */
-export async function medianPrices(region?: RegionSlug): Promise<Record<string, number | null>> {
+async function medianPricesWhere(scope: Prisma.Sql): Promise<Record<string, number | null>> {
+  const pct = await vatRatePct();
+  const gross = PRICES_INCLUDE_VAT
+    ? Prisma.sql`CASE WHEN t.tax_included IS TRUE OR (t.tax_included IS NULL AND t.source IS DISTINCT FROM 'owner') THEN t.price_agorot ELSE round(t.price_agorot * (1 + ${pct}::numeric / 100)) END`
+    : Prisma.sql`t.price_agorot`;
   const rows = await db.$queryRaw<Array<{ slug: string; median: number | null; n: bigint }>>`
-    SELECT t.category_slug AS slug,
-           percentile_cont(0.5) WITHIN GROUP (ORDER BY t.price_agorot) / 100.0 AS median,
-           count(*) AS n
-    FROM treatments t
-    JOIN branches b ON b.id = t.branch_id
-    JOIN businesses bz ON bz.id = b.business_id
-    WHERE t.is_published AND t.category_slug IS NOT NULL
-      AND b.status = 'live' AND bz.status = 'live'
-      ${region ? Prisma.sql`AND b.region_slug = ${region}::"RegionSlug"` : Prisma.empty}
-    GROUP BY t.category_slug`;
-  return Object.fromEntries(rows.map(r => [r.slug, Number(r.n) >= 3 && r.median != null ? Math.round(Number(r.median) / 10) * 10 : null]));
+    WITH prices AS (
+      SELECT t.category_slug AS slug, (${gross})::numeric AS price
+      FROM treatments t
+      JOIN branches b ON b.id = t.branch_id
+      JOIN businesses bz ON bz.id = b.business_id
+      WHERE t.is_published AND t.category_slug IS NOT NULL
+        AND t.price_agorot IS NOT NULL AND t.price_agorot > 0
+        AND t.price_type IN ('fixed', 'from', 'range')
+        AND b.status = 'live' AND bz.status = 'live'
+        ${scope}
+    ), quartiles AS (
+      SELECT slug,
+             percentile_cont(0.25) WITHIN GROUP (ORDER BY price) AS q1,
+             percentile_cont(0.75) WITHIN GROUP (ORDER BY price) AS q3
+      FROM prices GROUP BY slug
+    ), kept AS (
+      SELECT p.slug, p.price
+      FROM prices p JOIN quartiles q ON q.slug = p.slug
+      WHERE p.price BETWEEN q.q1 - 1.5 * (q.q3 - q.q1) AND q.q3 + 1.5 * (q.q3 - q.q1)
+    )
+    SELECT slug, percentile_cont(0.5) WITHIN GROUP (ORDER BY price) / 100.0 AS median, count(*) AS n
+    FROM kept GROUP BY slug`;
+  return Object.fromEntries(rows.map(r => [r.slug, Number(r.n) >= MEDIAN_MIN_PRICES && r.median != null ? Math.round(Number(r.median) / 10) * 10 : null]));
 }
+
+/** Median consumer price per category, nationally or within a region. */
+export const medianPrices = (region?: RegionSlug) => medianPricesWhere(region ? Prisma.sql`AND b.region_slug = ${region}::"RegionSlug"` : Prisma.empty);
+
+/** Median consumer price per category within one city. */
+export const medianPricesForCity = (citySlug: string) => medianPricesWhere(Prisma.sql`AND b.city_id IN (SELECT id FROM cities WHERE slug = ${citySlug})`);
 
 export interface RecentReview {
   id: string;

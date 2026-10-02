@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { BottomSheet } from '@/components/shell/BottomSheet';
 import { CATEGORIES, REGIONS, citiesOf } from '@/lib/catalog';
 import { BizCount, PriceOption, ResultCount } from './Plural';
+import { VAT_LABEL } from '@/lib/features';
 import { FEATURES, PRICE_TIERS, hasPanelFilters, type FeatureKey } from './params';
 import { useSearch } from './SearchProvider';
 import s from './search.module.css';
@@ -42,7 +43,7 @@ export function FilterPanel({ counts }: { counts: FacetCounts }) {
           )}
         </div>
         <FilterFields counts={counts} idPrefix="fp" />
-        <p className={s.fsHint} data-foot>לפי המחיר ההתחלתי שהעסק פרסם, לא כולל מע״מ.</p>
+        <p className={s.fsHint} data-foot>לפי המחיר ההתחלתי שהעסק פרסם, {VAT_LABEL}.</p>
       </aside>
 
       <BottomSheet
@@ -64,7 +65,7 @@ export function FilterPanel({ counts }: { counts: FacetCounts }) {
         }
       >
         <FilterFields counts={counts} idPrefix="fs" />
-        <p className={s.fsHint} data-foot>לפי המחיר ההתחלתי שהעסק פרסם, לא כולל מע״מ.</p>
+        <p className={s.fsHint} data-foot>לפי המחיר ההתחלתי שהעסק פרסם, {VAT_LABEL}.</p>
       </BottomSheet>
     </>
   );

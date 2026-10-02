@@ -102,7 +102,7 @@ export function dayLabel(dateKey: string) {
 }
 
 export function proposeMessage(o: { first: string; business: string; doctor: string; day: string; time: string; fee: number }) {
-  const feeLine = o.fee > 0 ? `עלות הייעוץ ₪${o.fee} ומתקזזת מהטיפול.` : 'הייעוץ ללא עלות.';
+  const feeLine = o.fee > 0 ? `עלות הייעוץ ₪${o.fee.toLocaleString('en-US')} ומתקזזת מהטיפול.` : 'הייעוץ ללא עלות.';
   return `היי ${o.first}, כאן ${o.business}. נשמח לקבוע ייעוץ עם ${o.doctor} ביום ${o.day} בשעה ${o.time}. ${feeLine} לאשר?`;
 }
 

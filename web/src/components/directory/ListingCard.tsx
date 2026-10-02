@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BOOKING_LIVE } from '@/lib/features';
+import { BOOKING_LIVE, VAT_LABEL } from '@/lib/features';
 import { ArrowForward, Check } from '@/components/icons';
 import { SaveHeart } from '@/components/save-heart/SaveHeart';
 import { CardActions, CompactRating } from '@/components/search/PhoneCard';
@@ -130,7 +130,7 @@ export function ListingCard({ c, delayIndex }: { c: DirectoryCard; delayIndex: n
 
         {c.priceFromShekels != null && (
           <p className={`${styles.phoneFrom} bf-shell-only`}>
-            החל מ־<span className="ltr">₪{fmtNum(c.priceFromShekels)}</span>, לא כולל מע״מ
+            החל מ־<span className="ltr">₪{fmtNum(c.priceFromShekels)}</span>, {VAT_LABEL}
           </p>
         )}
         <CardActions branchId={c.id} name={c.name} href={c.href} whatsapp={c.whatsapp} phone={c.phone} className={`${styles.phoneActions} bf-shell-only`} />

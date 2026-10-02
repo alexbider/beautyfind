@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { SaveHeart } from '@/components/save-heart/SaveHeart';
+import { VAT_LABEL } from '@/lib/features';
 import { nis } from '@/lib/format';
 import type { ListingCard } from '@/lib/server/public';
 import { priceTier } from './params';
@@ -139,7 +140,7 @@ export function ResultCard({ card: c, extra, index, delay, query }: { card: List
         <div className={s.cardFoot}>
           {c.priceFromShekels != null && (
             <span className={s.from}>
-              מ־<span className="ltr">{nis(c.priceFromShekels)}</span>, לא כולל מע״מ
+              מ־<span className="ltr">{nis(c.priceFromShekels)}</span>, {VAT_LABEL}
             </span>
           )}
           <span className={s.footActions}>

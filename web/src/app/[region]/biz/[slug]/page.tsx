@@ -23,6 +23,8 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { ROUTES } from '@/lib/routes';
 import { fromE164, telHref } from '@/lib/format';
 import { getProfile, type PublicProfile } from '@/lib/server/public';
+import { vatRatePct } from '@/lib/server/vat';
+import { PRICES_INCLUDE_VAT } from '@/lib/features';
 import { applySeo } from '@/lib/server/seo';
 import { buildView, jsonLd, ldJson, metaDescription, metaTitle, reviewsLabel, similarBusinesses, type ProfileView as View } from './data';
 import btn from '@/components/profile/buttons.module.css';
@@ -42,7 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { region, slug: rawSlug } = await params;
   const p = await getProfile(region, decodeParam(rawSlug));
   if (!p) return { title: 'העסק לא נמצא', robots: { index: false } };
-  const v = buildView(p);
+  const v = buildView(p, new Date(), await vatRatePct());
   const title = metaTitle(p, v);
   const description = metaDescription(p, v);
   // Section switch and per-listing noindex (staff, branch editor) come through applySeo.
@@ -77,7 +79,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
   const via = (await searchParams).via;
   const canonicalCat = p.href.split('/')[2];
   if (canonicalCat !== 'biz' && via !== canonicalCat) permanentRedirect(encodeURI(p.href)); // a Hebrew slug must be percent-encoded in the Location header
-  const v = buildView(p);
+  const v = buildView(p, new Date(), await vatRatePct());
 
   const parentHref = v.citySlug && v.citySlug !== p.regionSlug ? `/${p.regionSlug}/${v.citySlug}` : `/${p.regionSlug}`;
   const crumbs = (
@@ -176,9 +178,11 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
               </div>
               <Services groups={v.services} contact={p.isClaimed} bookHref={bookHref} />
               <p className={styles.vat}>
-                {p.isClaimed && !v.importedPrices
-                  ? 'כל המחירים לא כוללים מע״מ.'
-                  : 'המחירים כפי שפרסם העסק; כדאי לוודא מול העסק אם הם כוללים מע״מ.'}
+                {PRICES_INCLUDE_VAT
+                  ? 'כל המחירים כוללים מע״מ.'
+                  : p.isClaimed && !v.importedPrices
+                    ? 'כל המחירים לא כוללים מע״מ.'
+                    : 'המחירים כפי שפרסם העסק; כדאי לוודא מול העסק אם הם כוללים מע״מ.'}
                 {v.medicalBiz ? ' טיפולים רפואיים נקבעים אחרי ייעוץ רפואי, ושם נקבע גם המחיר הסופי.' : ''}
               </p>
             </section>

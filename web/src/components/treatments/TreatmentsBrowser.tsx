@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowForward } from '@/components/icons';
+import { VAT_LABEL } from '@/lib/features';
 import { nis } from '@/lib/format';
 import { fmtInt } from './format';
 import shared from './shared.module.css';
@@ -279,7 +280,7 @@ export function TreatmentsBrowser({ rows, groupOrder }: { rows: TreatmentRow[]; 
         )}
 
         <p className={styles.footnote}>
-          המחירים הם המחיר האמצעי (חציון) בשקלים, לא כולל מע״מ, מתוך התפריטים שהעסקים מפרסמים, ומוצגים רק כשיש לפחות שלושה מחירים בתחום. הם אינם הצעת מחיר ואינם מחייבים אף עסק. טיפולים אסתטיים אלקטיביים אינם בסל הבריאות.
+          המחירים הם המחיר האמצעי (חציון) בשקלים, {VAT_LABEL}, מתוך התפריטים שהעסקים מפרסמים, ומוצגים רק כשיש לפחות שלושה מחירים בתחום. הם אינם הצעת מחיר ואינם מחייבים אף עסק. טיפולים אסתטיים אלקטיביים אינם בסל הבריאות.
         </p>
       </div>
     </div>

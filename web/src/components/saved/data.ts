@@ -3,6 +3,8 @@ import type { Prisma } from '@prisma/client';
 import { BOOKING_LIVE } from '@/lib/features';
 import { db } from '@/lib/server/db';
 import { PUBLIC_WHERE, profileHref } from '@/lib/server/public';
+import { vatRatePct } from '@/lib/server/vat';
+import { consumerAgorot } from '@/lib/vat';
 import { currentUser } from '@/lib/server/session';
 import { jerusalemNow, parseHours } from '@/components/profile/format';
 import type { CompareColumn, Rating, SavedCard } from './types';
@@ -57,8 +59,8 @@ async function reviewStats(ids: string[]): Promise<Map<string, Rating>> {
 const google = (b: { googleRating: number | null; googleReviewCount: number | null }): Rating | null =>
   b.googleRating != null ? { rating: b.googleRating, count: b.googleReviewCount ?? 0 } : null;
 
-const book = (b: { slug: string; regionSlug: string; onlineBooking: boolean }) => {
-  const online = BOOKING_LIVE && b.onlineBooking;
+const book = (b: { slug: string; regionSlug: string; onlineBooking: boolean; isClaimed: boolean; categories?: Array<{ categorySlug: string; isPrimary?: boolean | null }> }) => {
+  const online = BOOKING_LIVE && b.onlineBooking && b.isClaimed;
   return { online, bookHref: online ? `/book/${b.slug}` : profileHref(b), bookLabel: online ? 'קביעת תור' : 'לפרופיל' };
 };
 
@@ -120,10 +122,10 @@ export async function compareColumns(ids: string[], now = new Date()): Promise<C
     include: {
       categories: { include: { category: true } },
       medicalResponsible: { select: RESP_SELECT },
-      treatments: { where: { isPublished: true }, select: { categorySlug: true, priceAgorot: true } },
+      treatments: { where: { isPublished: true }, select: { categorySlug: true, priceAgorot: true, priceType: true, taxIncluded: true, source: true } },
     },
   });
-  const stats = await reviewStats(rows.map(r => r.id));
+  const [stats, vatPct] = await Promise.all([reviewStats(rows.map(r => r.id)), vatRatePct()]);
   const byId = new Map(rows.map(r => [r.id, r]));
   const today = jerusalemNow(now).day;
   return ids.flatMap(id => {
@@ -131,8 +133,10 @@ export async function compareColumns(ids: string[], now = new Date()): Promise<C
     if (!b) return [];
     const priceFrom: Record<string, number> = {};
     for (const t of b.treatments) {
+      if (t.priceAgorot == null || t.priceAgorot <= 0 || !['fixed', 'from', 'range'].includes(t.priceType)) continue;
+      const price = consumerAgorot(t.priceAgorot, t, vatPct);
       for (const k of ['all', t.categorySlug].filter((x): x is string => !!x)) {
-        if (t.priceAgorot != null && (priceFrom[k] == null || t.priceAgorot < priceFrom[k])) priceFrom[k] = t.priceAgorot;
+        if (priceFrom[k] == null || price < priceFrom[k]) priceFrom[k] = price;
       }
     }
     const hours = parseHours(b.hours);

@@ -3,6 +3,7 @@ import { categoryBySlug, regionBySlug } from '@/lib/catalog';
 import { orderCategories } from '@/lib/category';
 import { nisFromAgorot } from '@/lib/format';
 import { BOOKING_LIVE } from '@/lib/features';
+import { DEFAULT_VAT_PCT, withConsumerPrices } from '@/lib/vat';
 import { cleanTeam } from '@/lib/import/profileExtract';
 import { listBranches, type ListingCard, type PublicProfile } from '@/lib/server/public';
 import { listingTitle } from '@/lib/seo/listingTitle';
@@ -122,7 +123,7 @@ export interface Fact {
 
 export const HEADINGS = ['על הקליניקה', 'על המספרה', 'על הספא', 'על הסטודיו', 'על העסק'] as const;
 
-export function buildView(p: PublicProfile, now = new Date()) {
+export function buildView(p: PublicProfile, now = new Date(), vatPct = DEFAULT_VAT_PCT) {
   const region = regionBySlug(p.regionSlug);
   const hours = parseHours(p.hours);
   const known = hoursKnown(hours);
@@ -140,11 +141,13 @@ export function buildView(p: PublicProfile, now = new Date()) {
   const medicalBiz = cats.some(c => c.isMedical);
   const citySlug = p.city?.slug ?? null;
   const bookingOnline = BOOKING_LIVE && p.onlineBooking && p.isClaimed;
+  // Every amount on the page is the consumer price (src/lib/vat.ts): including VAT when the display includes it.
+  const treatments = p.treatments.map(t => withConsumerPrices(t, vatPct));
 
   // Services grouped by category, in the branch's category order; uncategorised last.
   const order = new Map(cats.map((c, i) => [c.slug, i]));
   const groupsMap = new Map<string, PublicProfile['treatments']>();
-  for (const t of p.treatments) {
+  for (const t of treatments) {
     const k = t.categorySlug ?? '_other';
     groupsMap.set(k, [...(groupsMap.get(k) ?? []), t]);
   }
@@ -175,8 +178,8 @@ export function buildView(p: PublicProfile, now = new Date()) {
         })),
       };
     });
-  const pricesUpdated = p.treatments.length ? new Date(Math.max(...p.treatments.map(t => (t.sourceAt ?? t.updatedAt).getTime()))) : null;
-  const importedPrices = p.treatments.some(t => t.source && t.source !== 'owner');
+  const pricesUpdated = treatments.length ? new Date(Math.max(...treatments.map(t => (t.sourceAt ?? t.updatedAt).getTime()))) : null;
+  const importedPrices = treatments.some(t => t.source && t.source !== 'owner');
 
   const responsible = responsibleOf(p);
   const staff = p.staff.map(s => ({
@@ -262,7 +265,8 @@ export function buildView(p: PublicProfile, now = new Date()) {
     attributes,
     facts,
     bookingOnline,
-    treatmentOptions: p.treatments.map(t => ({ name: t.name, isMedical: t.isMedical })),
+    treatments,
+    treatmentOptions: treatments.map(t => ({ name: t.name, isMedical: t.isMedical })),
     socials: [
       p.instagram && { network: 'instagram', url: p.instagram.startsWith('http') ? p.instagram : `https://instagram.com/${encodeURIComponent(p.instagram.replace(/^@/, ''))}`, label: 'אינסטגרם' },
       p.facebook && { network: 'facebook', url: p.facebook, label: 'פייסבוק' },
@@ -318,7 +322,7 @@ export function jsonLd(p: PublicProfile, v: ProfileView) {
     ...(v.citySlug ? [{ name: p.cityName, item: `${SITE}/${p.regionSlug}/${v.citySlug}` }] : []),
     { name: p.name, item: url },
   ];
-  const priced = p.treatments.filter(t => t.priceAgorot != null && t.priceAgorot > 0);
+  const priced = v.treatments.filter(t => t.priceAgorot != null && t.priceAgorot > 0);
   const comparable = priced.filter(t => COMPARABLE_PRICE_TYPES.has(t.priceType)).map(t => t.priceAgorot as number);
   const images = v.photos.map(ph => (ph.url.startsWith('http') ? ph.url : `${SITE}${ph.url}`));
   const sameAs = [...(p.websiteUrl ? [p.websiteUrl] : []), ...v.socials.map(s => s.url)];
@@ -337,9 +341,9 @@ export function jsonLd(p: PublicProfile, v: ProfileView) {
     ...(comparable.length ? { priceRange: comparable.length > 1 && Math.min(...comparable) !== Math.max(...comparable) ? `${nisFromAgorot(Math.min(...comparable))}–${nisFromAgorot(Math.max(...comparable))}` : nisFromAgorot(comparable[0]) } : {}),
     ...(openingHoursSpec(v.hours) ? { openingHoursSpecification: openingHoursSpec(v.hours) } : {}),
     ...(p.establishedYear ? { foundingDate: String(p.establishedYear) } : {}),
-    ...(p.treatments.length
+    ...(v.treatments.length
       ? {
-          makesOffer: p.treatments.map(t => ({
+          makesOffer: v.treatments.map(t => ({
             '@type': 'Offer',
             itemOffered: { '@type': 'Service', name: t.name, ...(t.category ? { category: t.category.name } : {}) },
             // Unknown prices carry no priceSpecification at all; published free services carry price 0.
