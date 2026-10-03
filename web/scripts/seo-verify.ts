@@ -23,7 +23,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { STRAIGHT_QUOTE_ABBREVIATION, textProblems } from '../src/lib/import/textRules';
 import { SITE_ORIGIN } from '../src/lib/seo/meta';
-import { metaDescriptionProblems } from '../src/lib/seo/metaRules';
+import { metaDescriptionProblems, titleHead } from '../src/lib/seo/metaRules';
 
 const arg = (name: string, def?: string) => {
   const i = process.argv.indexOf(`--${name}`);
@@ -227,7 +227,7 @@ function analyse(path: string, status: number, redirectTo: string | null, html: 
   const titleLen = [...title].length;
   const descriptionLen = [...description].length;
   const ruled = template === 'profile' || template === 'city-category';
-  const descriptionRules = ruled && status === 200 ? metaDescriptionProblems(description, { title }).map(p => `${p.code}${p.match ? `:${p.match}` : ''}`) : [];
+  const descriptionRules = ruled && status === 200 ? metaDescriptionProblems(description, { title, allow: [titleHead(title), ...UI_LATIN] }).map(p => `${p.code}${p.match ? `:${p.match}` : ''}`) : [];
   return {
     url: BASE + path,
     path,

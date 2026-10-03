@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = metaTitle(p, v);
   // A real fact for thin listings: how many businesses the city has on BeautyFind.
   const cityCount = v.citySlug ? ((await listingCounts()).city[v.citySlug] ?? 0) : 0;
-  const description = metaDescription(p, v, cityCount > 1 ? [`אחד מ־${cityCount} עסקי יופי ואסתטיקה ב${seoCityName(p.cityName)}.`] : []);
+  const description = metaDescription(p, v, cityCount > 1 ? [`העסק הוא אחד מ־${cityCount} עסקי יופי ואסתטיקה ב${seoCityName(p.cityName)}.`] : []);
   // Section switch and per-listing noindex (staff, branch editor) come through applySeo.
   return applySeo(p.href, publicMetadata({ path: p.href, title, description, image: v.photos[0] ? { url: v.photos[0].url, alt: v.photos[0].alt } : null }), { noindex: p.noindex });
 }

@@ -321,7 +321,7 @@ export function metaTitle(p: PublicProfile, v: ProfileView): string {
 export function metaDescription(p: PublicProfile, v: ProfileView, extraFacts: string[] = []): string {
   const title = metaTitle(p, v);
   const saved = p.metaDescription ? normalizeHebrew(p.metaDescription.replace(/\s+/g, ' ').trim()) : '';
-  if (saved && metaDescriptionOk(saved, { title })) return saved;
+  if (saved && metaDescriptionOk(saved, { title, allow: [p.name] })) return saved;
   const name = seoName(p.name);
   const city = seoCityName(p.cityName);
   const cat = v.cats[0];
@@ -335,17 +335,17 @@ export function metaDescription(p: PublicProfile, v: ProfileView, extraFacts: st
     treatments: treatments.slice(0, 3),
     rating: g ? `דירוג ${g.rating.toFixed(1)} בגוגל (${reviewsLabel(g.count)}).` : null,
     facts: [
-      v.responsible ? `${v.responsible.label}: ${v.responsible.name}.` : '',
-      days ? (/עד|,|כל/u.test(days) ? `פתוח ${days}.` : `פתוח בימי ${days}.`) : '',
-      treatments[3] ? `גם ${treatments[3]}.` : '',
-      p.establishedYear ? `פועל מאז ${p.establishedYear}.` : '',
-      street.length >= 4 ? (/^רחוב /u.test(street) ? `ב${street}.` : `הכתובת: ${street}.`) : '',
-      langs.length ? `שירות ב${joinHe(langs)}.` : '',
-      v.attributes.parking === true ? 'חניה חינם במקום.' : '',
-      v.attributes.accessible === true ? 'נגיש לכיסא גלגלים.' : '',
-      v.cats[1] ? `גם ${v.cats[1].name}.` : '',
+      v.responsible ? (v.responsible.label === 'אחריות רפואית' ? `האחריות הרפואית בידי ${v.responsible.name}.` : `איש המקצוע האחראי הוא ${v.responsible.name}.`) : '',
+      days ? `פתוח ${/עד|,|כל/u.test(days) ? 'בימים' : 'בימי'} ${days}.` : '',
+      treatments[3] ? `מציעים גם ${treatments[3]}.` : '',
+      p.establishedYear ? `העסק פועל מאז ${p.establishedYear}.` : '',
+      street.length >= 4 ? `העסק נמצא ${/^רחוב /u.test(street) ? `ב${street}` : `ב${street}`}.` : '',
+      langs.length ? `השירות ניתן ${joinHe(langs.map(l => `ב${l}`))}.` : '',
+      v.attributes.parking === true ? 'יש חניה חינם במקום.' : '',
+      v.attributes.accessible === true ? 'המקום נגיש לכיסא גלגלים.' : '',
+      v.cats[1] ? `עוסקים גם ב${v.cats[1].name}.` : '',
       ...extraFacts,
-      v.region ? `באזור ${v.region.name}.` : '',
+      v.region ? `העסק פועל באזור ${v.region.name}.` : '',
     ],
   });
 }

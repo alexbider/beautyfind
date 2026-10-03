@@ -50,7 +50,8 @@ export function latinInsideHebrew(text: string, allow: string[] = []): string[] 
   const allowed = new Set([...LATIN_BRANDS, ...allow.flatMap(a => a.toLowerCase().split(/[\s,/|()]+/).map(strip).filter(Boolean))]);
   const out: string[] = [];
   for (const line of text.split(/\n+/)) {
-    const tokens = line.split(/\s+/).filter(Boolean);
+    // A maqaf glues a Hebrew prefix to a foreign word ("ב־BeautyFind", "ו־Microneedling"): the word is checked on its own.
+    const tokens = line.split(/[\s־]+/).filter(Boolean);
     // A run of consecutive non-Hebrew tokens ("Derech Raziel 5, Netanya") counts as one span: it is inside
     // Hebrew prose when a Hebrew word stands right before or right after it.
     let i = 0;

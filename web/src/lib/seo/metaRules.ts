@@ -5,10 +5,11 @@
 // separately" line, 130 to 155 characters. Pure, shared by the page metadata, the writer's checks, the
 // stored-override check and scripts/seo-verify.ts.
 
-import { MISSING_INFO_EXTRA, MISSING_INFO_PATTERNS } from '../import/textRules';
+import { MISSING_INFO_EXTRA, MISSING_INFO_PATTERNS, latinInsideHebrew } from '../import/textRules';
 import { DESCRIPTION_MAX, DESCRIPTION_MIN, composeDescription } from './meta';
+import { TREATMENT_BRANDS } from './treatmentNames';
 
-export type MetaProblem = 'missing_info' | 'booking' | 'contact' | 'phone_only' | 'ratings_line' | 'title_repeat' | 'short' | 'long';
+export type MetaProblem = 'missing_info' | 'booking' | 'contact' | 'phone_only' | 'ratings_line' | 'title_repeat' | 'latin' | 'short' | 'long';
 
 /** Sentences about booking: whether, where or how a visit can be booked. */
 export const BOOKING_PATTERNS: RegExp[] = [
@@ -31,7 +32,10 @@ export const RATINGS_LINE = /דירוג\s*Google\s*וביקורות\s*BeautyFind
 const first = (text: string, patterns: RegExp[]) => patterns.find(re => re.test(text));
 
 /** Every rule the description breaks; empty means it may be published. */
-export function metaDescriptionProblems(text: string, opts: { min?: number; max?: number; title?: string | null } = {}): Array<{ code: MetaProblem; match: string }> {
+/** Latin words a description may carry besides the brands the text rules know: the devices and product names of the treatment catalog. */
+export const META_LATIN_ALLOW = TREATMENT_BRANDS;
+
+export function metaDescriptionProblems(text: string, opts: { min?: number; max?: number; title?: string | null; allow?: string[] } = {}): Array<{ code: MetaProblem; match: string }> {
   const out: Array<{ code: MetaProblem; match: string }> = [];
   const t = text.replace(/\s+/g, ' ').trim();
   const add = (code: MetaProblem, re: RegExp | undefined) => {
@@ -43,6 +47,8 @@ export function metaDescriptionProblems(text: string, opts: { min?: number; max?
   add('contact', first(t, CONTACT_PATTERNS));
   if (RATINGS_LINE.test(t)) out.push({ code: 'ratings_line', match: t.match(RATINGS_LINE)![0] });
   if (opts.title && repeatsTitle(t, opts.title)) out.push({ code: 'title_repeat', match: titleHead(opts.title) });
+  // Any Latin word that is not a brand, a device or the business's own name fails.
+  for (const w of latinInsideHebrew(t, [...META_LATIN_ALLOW, ...(opts.allow ?? [])])) out.push({ code: 'latin', match: w });
   const len = [...t].length;
   if (len < (opts.min ?? DESCRIPTION_MIN)) out.push({ code: 'short', match: String(len) });
   if (len > (opts.max ?? DESCRIPTION_MAX)) out.push({ code: 'long', match: String(len) });
@@ -50,7 +56,7 @@ export function metaDescriptionProblems(text: string, opts: { min?: number; max?
 }
 
 /** True when the description follows the rules and sits within the length range. */
-export const metaDescriptionOk = (text: string, opts?: { min?: number; max?: number; title?: string | null }) => metaDescriptionProblems(text, opts).length === 0;
+export const metaDescriptionOk = (text: string, opts?: { min?: number; max?: number; title?: string | null; allow?: string[] }) => metaDescriptionProblems(text, opts).length === 0;
 
 /** The closing action of a description: one short Hebrew sentence that is not a booking or contact claim. */
 export const META_ACTION = 'השוו מחירים וביקורות ב־BeautyFind.';
@@ -109,18 +115,33 @@ export function metaLead(category: string | null | undefined, name: string, city
   return treatments.length ? lead.withTreatments(name, city, joinHe(treatments)) : lead.without(name, city, '');
 }
 
+/** A padding fact is a complete sentence: at least three words and a final period, never a bare phrase. */
+export const isSentenceFact = (f: string) => /[.!?]$/u.test(f.trim()) && f.trim().split(/\s+/).length >= 3;
+
 /**
  * A description in the pattern: one sentence that leads with what the business offers (the lead, built
- * from the treatments), the rating line, then the action; when the text is short, real facts are added
- * one by one. The treatment list shrinks (three, two, one, none) until the action fits inside the range,
- * so every description ends with the action.
+ * from the treatments), the rating line when it fits, then real facts while the text is still short, and
+ * the action as the last sentence, always. The treatment list shrinks (three, two, one, none) until the
+ * lead and the action fit inside the range. Facts that are not complete sentences are dropped.
  */
-export function composeMetaDescription(input: { lead: (treatments: string[]) => string; treatments: string[]; rating?: string | null; facts?: string[] }): string {
-  let best = '';
+export function composeMetaDescription(input: { lead: (treatments: string[]) => string; treatments: string[]; rating?: string | null; facts?: string[] }, max = DESCRIPTION_MAX, min = DESCRIPTION_MIN): string {
+  const clean = (x: string) => x.replace(/\s+/g, ' ').trim();
+  const len = (x: string) => [...x].length;
+  const facts = (input.facts ?? []).map(clean).filter(f => f && isSentenceFact(f));
+  const closing = len(META_ACTION) + 1;
+  let fallback = '';
   for (let n = input.treatments.length; n >= 0; n--) {
-    const text = composeDescription([input.lead(input.treatments.slice(0, n)), input.rating ?? null, META_ACTION], input.facts ?? []);
-    if (!best) best = text;
-    if (text.endsWith(META_ACTION) || text.includes(`${META_ACTION} `)) return text;
+    let text = clean(input.lead(input.treatments.slice(0, n)));
+    if (!fallback) fallback = text;
+    if (len(text) + closing > max) continue;
+    const rating = input.rating ? clean(input.rating) : '';
+    if (rating && len(text) + 1 + len(rating) + closing <= max) text = `${text} ${rating}`;
+    for (const f of facts) {
+      if (len(text) + closing >= min) break;
+      if (len(text) + 1 + len(f) + closing <= max) text = `${text} ${f}`;
+    }
+    return `${text} ${META_ACTION}`;
   }
-  return best;
+  // Even the shortest lead leaves no room for the action: cut the lead itself (a long name or city).
+  return composeDescription([fallback, META_ACTION], [], max, min);
 }

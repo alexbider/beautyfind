@@ -86,11 +86,11 @@ export async function directoryMetadata(params: DirParams, searchParams: DirSear
           treatments: o.topTreatments,
           rating: o.medianGoogle != null ? `דירוג Google אמצעי ${o.medianGoogle.toFixed(1)}.` : null,
           facts: [
-            ownPrice ? `מחיר אמצעי ${nis(ownPrice.price)}.` : '',
+            ownPrice ? `המחיר האמצעי הוא ${nis(ownPrice.price)}.` : '',
             verifiedPart ?? '',
-            s.category && o.cityCategories.filter(c => c.slug !== s.category!.slug).length ? `${where} גם ${joinHe(o.cityCategories.filter(c => c.slug !== s.category!.slug).slice(0, 3).map(c => SEO_TERM[c.slug] ?? c.name))}.` : '',
-            o.siblings.length ? `עוד ${nounOf} ${joinHe(o.siblings.slice(0, 2).map(x => `ב${seoCityName(x.city.name)}`))}.` : '',
-            o.regionTotal > o.total ? `באזור ${s.region.name} ${countText(o.regionTotal, BIZ)} ל${nounOf}.` : `באזור ${s.region.name}.`,
+            s.category && o.cityCategories.filter(c => c.slug !== s.category!.slug).length ? `${where} יש גם ${joinHe(o.cityCategories.filter(c => c.slug !== s.category!.slug).slice(0, 3).map(c => SEO_TERM[c.slug] ?? c.name))}.` : '',
+            o.siblings.length ? `יש עוד ${nounOf} ${joinHe(o.siblings.slice(0, 2).map(x => `ב${seoCityName(x.city.name)}`))}.` : '',
+            o.regionTotal > o.total ? `באזור ${s.region.name} יש ${countText(o.regionTotal, BIZ)} ל${nounOf}.` : `העיר שייכת לאזור ${s.region.name}.`,
           ],
         });
   // Filtered or sorted lists are noindex; page 2 and on are indexable with their own canonical.

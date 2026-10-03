@@ -5,7 +5,7 @@ import { describe, it } from 'node:test';
 import { composeDescription, publicMetadata } from '../../src/lib/seo/meta';
 import { META_ACTION, composeMetaDescription, joinHe, metaDescriptionOk, metaDescriptionProblems, metaLead, repeatsTitle } from '../../src/lib/seo/metaRules';
 import { capWords, sameNameAcrossScripts, seoCityName, seoName } from '../../src/lib/seo/seoName';
-import { hebrewTreatmentName, hebrewTreatmentNames } from '../../src/lib/seo/treatmentNames';
+import { dedupeTreatments, hebrewTreatmentName, hebrewTreatmentNames, sameTreatment } from '../../src/lib/seo/treatmentNames';
 
 describe('seo name', () => {
   it('strips keyword tails, slogans, lists and duplicate scripts, and caps the length', () => {
@@ -19,7 +19,10 @@ describe('seo name', () => {
     // A hyphen glued to one side is a separator too; a hyphen inside a word is not.
     assert.equal(seoName('אניגמה- מרכז לאסתטיקה מתקדמת'), 'אניגמה');
     assert.equal(seoName('יוסי כהן -מומחה לשיער'), 'יוסי כהן');
-    assert.equal(seoName('שרית אטיאס-עיצוב גבות'), 'שרית אטיאס-עיצוב גבות');
+    assert.equal(seoName('שרית אטיאס-עיצוב גבות'), 'שרית אטיאס', 'a glued hyphen tail that names a treatment goes');
+    assert.equal(seoName('ניילס-בניית ציפורניים'), 'ניילס');
+    assert.equal(seoName('פרדס חנה-כרכור קוסמטיקה'), 'פרדס חנה-כרכור קוסמטיקה', 'a glued hyphen inside a place name stays');
+    assert.equal(seoName('ADM-אחים ואחיות עד הבית'), 'ADM-אחים ואחיות עד הבית');
     assert.equal(seoName('מספרה - אנה עיצוב שיער | салон Анна'), 'מספרה אנה עיצוב שיער', 'a lone kind word keeps the name after the separator');
     // A Latin or Cyrillic copy of the Hebrew name is dropped; a different foreign name is not.
     assert.equal(seoName('Glow Clinic | קליניקת גלואו'), 'קליניקת גלואו');
@@ -90,8 +93,13 @@ describe('meta description rules', () => {
     const long = composeMetaDescription({ lead, treatments: ['טיפול פנים קלאסי', 'הרמת ריסים', 'עיצוב גבות'], rating: 'דירוג 4.0 בגוגל (100 ביקורות).', facts: ['פתוח ראשון עד חמישי.'] });
     assert.ok(long.endsWith(META_ACTION) && metaDescriptionOk(long, { title: 'סלון דוגמה 91 בתל אביב-יפו: מניקור ופדיקור' }), long);
     assert.ok(long.startsWith('טיפול פנים קלאסי'), 'leads with the treatments, not the title');
-    const thin = composeMetaDescription({ lead: t => metaLead(null, 'נתבע', 'חיפה', t), treatments: [], facts: ['פתוח ראשון עד חמישי.', 'הכתובת: רחוב הרצל 5.', 'שירות בעברית ורוסית.', 'באזור חיפה.'] });
+    const thin = composeMetaDescription({ lead: t => metaLead(null, 'נתבע', 'חיפה', t), treatments: [], facts: ['פתוח בימים ראשון עד חמישי.', 'העסק נמצא ברחוב הרצל 5.', 'השירות ניתן בעברית וברוסית.', 'העסק פועל באזור חיפה.'] });
     assert.ok(metaDescriptionOk(thin) && !thin.includes('  '), thin);
+    assert.ok(thin.endsWith(META_ACTION), 'the action is the last sentence even after padding');
+    // A fragment is never used as padding; a sentence is.
+    const padded = composeMetaDescription({ lead: () => 'מספרה בחיפה.', treatments: [], facts: ['גם מניקור.', 'ברחוב 1.', 'יש חניה חינם במקום.', 'השירות ניתן בעברית וברוסית.', 'העסק פועל מאז 2010.', 'פתוח בימים ראשון עד חמישי.'] });
+    assert.ok(!padded.includes('גם מניקור') && !padded.includes('ברחוב 1.') && padded.includes('יש חניה חינם במקום.') && padded.endsWith(META_ACTION), padded);
+    assert.ok(metaDescriptionOk(padded), JSON.stringify(metaDescriptionProblems(padded)));
   });
 
   it('opens by category, never with the title, and joins Hebrew lists naturally', () => {
@@ -106,6 +114,11 @@ describe('meta description rules', () => {
     assert.ok(repeatsTitle('מספרת רון בחיפה: תספורות ועוד.', 'מספרת רון בחיפה: מספרה | BeautyFind'));
     assert.ok(!repeatsTitle('תספורת, צבע לשיער ופן במספרת רון בחיפה.', 'מספרת רון בחיפה: מספרה | BeautyFind'));
     assert.ok(metaDescriptionProblems('מספרת רון בחיפה: מספרה. תספורת ופן. דירוג 4.8 בגוגל (212 ביקורות). השוו מחירים וביקורות ב־BeautyFind. פתוח ראשון עד חמישי.', { title: 'מספרת רון בחיפה: מספרה' }).some(p => p.code === 'title_repeat'));
+    // Latin: a brand, a device or the business name passes; any other English word fails.
+    const ok = 'טיפולי פנים בחיפה: Hydrafacial ומיקרונידלינג אצל Noa Levin Studio. דירוג 4.8 בגוגל (212 ביקורות). השוו מחירים וביקורות ב־BeautyFind. יש חניה חינם במקום.';
+    assert.deepEqual(metaDescriptionProblems(ok, { allow: ['Noa Levin Studio'] }).map(p => p.code), []);
+    assert.ok(metaDescriptionProblems(ok).some(p => p.code === 'latin' && p.match === 'Noa'), 'the business name must be allowed explicitly');
+    assert.ok(metaDescriptionProblems(ok.replace('ומיקרונידלינג', 'ו־Microneedling'), { allow: ['Noa Levin Studio'] }).some(p => p.code === 'latin' && p.match === 'Microneedling'));
   });
 });
 
@@ -125,5 +138,16 @@ describe('treatment names in Hebrew', () => {
     assert.equal(hebrewTreatmentName('הסרת שיער בלייזר חבילת 6 מפגשים'), null, 'a package line is not a treatment name');
     assert.equal(hebrewTreatmentName('Классический массаж'), null);
     assert.deepEqual(hebrewTreatmentNames(['Hairstyling', 'Unknown Thing', 'Hair colouring', 'hairstyling', 'Haircut', 'Keratin'], 3), ['עיצוב שיער', 'צבע לשיער', 'תספורת']);
+    assert.equal(hebrewTreatmentName('Brazilian'), 'ברזילאית');
+    assert.equal(hebrewTreatmentName('Brazilian wax'), 'שעווה ברזילאית');
+  });
+
+  it('keeps one name per meaning, the shorter one', () => {
+    assert.deepEqual(dedupeTreatments(['טיפול פנים', 'טיפולי פנים', 'ניקוי פנים עמוק']), ['טיפול פנים', 'ניקוי פנים עמוק']);
+    assert.deepEqual(dedupeTreatments(['טיפול פנים קלאסי', 'מניקור', 'טיפול פנים']), ['טיפול פנים', 'מניקור']);
+    assert.deepEqual(dedupeTreatments(['גוונים והבהרות', 'גוונים', 'בלונד והבהרה', 'הבהרות']), ['גוונים', 'הבהרות']);
+    assert.deepEqual(dedupeTreatments(['תספורת', 'תספורות נשים', 'צבע לשיער', 'צביעת שיער', 'פן', 'פן ועיצוב']), ['תספורת', 'צבע לשיער', 'פן']);
+    assert.ok(!sameTreatment('עיסוי שוודי', 'עיסוי רקמות עמוק') && !sameTreatment('הסרת שיער בלייזר', 'הסרת שיער בשעווה') && sameTreatment('טיפולי פנים', 'טיפול פנים'));
+    assert.deepEqual(hebrewTreatmentNames(['Facial', 'טיפולי פנים', 'Highlights', 'גוונים והבהרות', 'פדיקור'], 3), ['טיפול פנים', 'גוונים', 'פדיקור']);
   });
 });

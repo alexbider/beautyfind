@@ -14,7 +14,7 @@ export const TREATMENT_HE: Record<string, string> = {
   'haircut': 'תספורת', 'hair cut': 'תספורת', 'cut': 'תספורת', 'womens haircut': 'תספורת נשים', "women's haircut": 'תספורת נשים', 'mens haircut': 'תספורת גברים', "men's haircut": 'תספורת גברים', 'kids haircut': 'תספורת ילדים', 'childrens haircut': 'תספורת ילדים', 'fringe trim': 'קיצור פוני', 'trim': 'קיצור קצוות',
   'blow dry': 'פן', 'blowdry': 'פן', 'blowout': 'פן', 'wash and blow dry': 'חפיפה ופן', 'updo': 'תסרוקת', 'hairstyle': 'תסרוקת', 'bridal hair': 'תסרוקת כלה', 'braids': 'צמות',
   'highlights': 'גוונים', 'balayage': 'באלייאז׳', 'ombre': 'אומברה', 'bleach': 'הבהרה', 'bleaching': 'הבהרה', 'toner': 'טונר', 'gloss': 'גלוס לשיער',
-  'keratin': 'החלקת קרטין', 'keratin treatment': 'החלקת קרטין', 'brazilian blowout': 'החלקה ברזילאית', 'japanese straightening': 'החלקה יפנית', 'straightening': 'החלקת שיער', 'hair straightening': 'החלקת שיער', 'perm': 'סלסול', 'curls': 'תלתלים',
+  'keratin': 'החלקת קרטין', 'keratin treatment': 'החלקת קרטין', 'brazilian': 'ברזילאית', 'brazilian blowout': 'החלקה ברזילאית', 'japanese straightening': 'החלקה יפנית', 'straightening': 'החלקת שיער', 'hair straightening': 'החלקת שיער', 'perm': 'סלסול', 'curls': 'תלתלים',
   'hair treatment': 'טיפול לשיער', 'deep conditioning': 'טיפול הזנה לשיער', 'scalp treatment': 'טיפול קרקפת', 'hair extensions': 'תוספות שיער', 'extensions': 'תוספות שיער', 'olaplex treatment': 'טיפול אולפלקס',
   'beard trim': 'עיצוב זקן', 'beard': 'עיצוב זקן', 'shave': 'גילוח', 'hot towel shave': 'גילוח במגבת חמה', 'barber': 'תספורת גברים',
   // hair removal
@@ -48,7 +48,7 @@ export const TREATMENT_HE: Record<string, string> = {
 /** Brand, product and device names that stay in Latin script. */
 export const TREATMENT_BRANDS = [
   'hydrafacial', 'hydra facial', 'dermapen', 'morpheus8', 'morpheus', 'emsculpt', 'emsella', 'coolsculpting', 'ultherapy', 'thermage', 'fraxel', 'picosure', 'picoway', 'alexandrite', 'soprano', 'gentlemax', 'gentle max', 'candela', 'lumenis', 'venus', 'elos', 'exilis', 'vaser', 'velashape',
-  'botox', 'dysport', 'xeomin', 'juvederm', 'restylane', 'profhilo', 'sculptra', 'radiesse', 'belotero', 'teosyal', 'olaplex', 'kerastase', 'kérastase', 'brazilian', 'invisalign', 'zoom', 'opalescence', 'philips zoom',
+  'botox', 'dysport', 'xeomin', 'juvederm', 'restylane', 'profhilo', 'sculptra', 'radiesse', 'belotero', 'teosyal', 'olaplex', 'kerastase', 'kérastase', 'invisalign', 'zoom', 'opalescence', 'philips zoom',
   'hifu', 'ipl', 'prp', 'led', 'rf', 'co2', 'dpl', 'shr', 'fue', 'fut', 'dhi', 'spf', 'bb glow', 'oxygeneo', 'geneo', 'dermalux', 'hollywood peel', 'carbon peel', 'ems', 'lpg', 'endermologie',
 ];
 
@@ -101,13 +101,69 @@ export function hebrewTreatmentName(raw: string): string | null {
   return best ? TREATMENT_HE[best] : null;
 }
 
-/** The first `n` treatments that have a Hebrew name, in order, without repeats. */
-export function hebrewTreatmentNames(names: string[], n = 3): string[] {
+// ---------- one treatment, one name ----------
+
+// Words that say the same thing: the right side is the stem both are reduced to.
+const SYNONYM_STEMS: Record<string, string> = {
+  'בלונד': 'הבהרה', 'הבהרות': 'הבהרה', 'הבהרת': 'הבהרה',
+  'צביעת': 'צבע', 'צביעה': 'צבע', 'צבעים': 'צבע', 'גוון': 'גוונים',
+  'תספורות': 'תספורת', 'פנים': 'פנים', 'פן': 'פן',
+  'עיסויים': 'עיסוי', 'מסאז': 'עיסוי', "מסאז׳": 'עיסוי',
+  'ריסים': 'ריס', 'גבות': 'גבה',
+  'ניקוי': 'ניקוי', 'פילינגים': 'פילינג',
+  'הסרת': 'הסרה', 'הארכת': 'הארכה', 'הרמת': 'הרמה', 'בניית': 'בנייה', 'עיצוב': 'עיצוב', 'החלקת': 'החלקה', 'השתלת': 'השתלה', 'השתלות': 'השתלה',
+  'הזרקת': 'הזרקה', 'הזרקות': 'הזרקה', 'מילוי': 'מילוי', 'חומרי': 'חומר',
+};
+// Words that never decide whether two names mean the same: the kind of thing, the body part, the audience.
+const WEAK_STEMS = new Set(['טיפול', 'טיפולים', 'שירות', 'חבילה', 'חבילת', 'מפגש', 'מפגשים', 'סדרה', 'לנשים', 'לגברים', 'לילדים', 'לילדות', 'לכלה', 'לכלות', 'מקצועי', 'מקצועית', 'מתקדם', 'מתקדמת', 'קלאסי', 'קלאסית', 'רגיל', 'רגילה', 'מלא', 'מלאה', 'חלקי', 'חלקית',
+  'פנים', 'שיער', 'גוף', 'ציפורניים', 'עור', 'ראש', 'עם', 'של', 'או', 'ללא', 'כולל', 'אזור', 'אזורים', 'אחד', 'שלושה', 'שני', 'כל']);
+
+/** A word reduced to its stem: prefixes ו/ה/ב/ל off, plural and construct endings off, synonyms folded. */
+function stem(word: string): string {
+  let w = word.replace(/[^א-ת׳״A-Za-z0-9]/gu, '');
+  if (!w) return '';
+  if (/^[A-Za-z0-9]/.test(w)) return w.toLowerCase();
+  if (SYNONYM_STEMS[w]) return SYNONYM_STEMS[w];
+  if (w.length > 3 && /^[והבל]/u.test(w) && SYNONYM_STEMS[w.slice(1)]) return SYNONYM_STEMS[w.slice(1)];
+  if (w.length > 3 && /^ו/u.test(w)) w = w.slice(1);
+  if (SYNONYM_STEMS[w]) return SYNONYM_STEMS[w];
+  if (w.length > 4 && /ים$/u.test(w)) w = w.slice(0, -2);
+  else if (w.length > 4 && /ות$/u.test(w)) w = `${w.slice(0, -2)}ה`;
+  else if (w.length > 4 && /י$/u.test(w)) w = w.slice(0, -1);
+  return SYNONYM_STEMS[w] ?? w;
+}
+
+/** The stems that carry a name's meaning (weak words left out), as a set. */
+export const treatmentStems = (name: string): Set<string> => new Set(name.split(/\s+/).map(stem).filter(x => x && !WEAK_STEMS.has(x)));
+
+/**
+ * Whether two treatment names mean the same thing: the same meaning stems, or one name's meaning stems
+ * all inside the other's (גוונים inside גוונים והבהרות; טיפול פנים and טיפולי פנים both reduce to nothing
+ * beyond the body part, so they match each other only).
+ */
+export function sameTreatment(a: string, b: string): boolean {
+  const sa = treatmentStems(a);
+  const sb = treatmentStems(b);
+  // Names made only of weak words (טיפול פנים, טיפול פנים קלאסי) are compared on every stem instead.
+  const [la, lb] = sa.size && sb.size ? [sa, sb] : [allStems(a), allStems(b)];
+  const [small, big] = la.size <= lb.size ? [la, lb] : [lb, la];
+  return small.size > 0 && [...small].every(x => big.has(x));
+}
+const allStems = (name: string) => new Set(name.split(/\s+/).map(stem).filter(Boolean));
+
+/** One name per meaning, in order of first appearance; of two names that mean the same, the shorter one stays. */
+export function dedupeTreatments(names: string[]): string[] {
   const out: string[] = [];
-  for (const raw of names) {
-    const he = hebrewTreatmentName(raw);
-    if (he && !out.includes(he)) out.push(he);
-    if (out.length >= n) break;
+  for (const n of names) {
+    const at = out.findIndex(o => sameTreatment(o, n));
+    if (at < 0) out.push(n);
+    else if (n.length < out[at].length) out[at] = n;
   }
   return out;
+}
+
+/** The first `n` treatments that have a Hebrew name, in order, one per meaning (the shorter name of two that mean the same). */
+export function hebrewTreatmentNames(names: string[], n = 3): string[] {
+  const he = names.map(hebrewTreatmentName).filter((x): x is string => !!x);
+  return dedupeTreatments(he).slice(0, n);
 }

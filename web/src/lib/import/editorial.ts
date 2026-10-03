@@ -378,7 +378,7 @@ export function checkOutput(o: EditorialOutput, p: EvidencePacket): string[] {
   }
   if (o.metaTitle.length > 70 || o.metaTitle.length < 10) v.push('meta_title');
   // The meta description follows the site's pattern and rules (src/lib/seo/metaRules.ts).
-  for (const m of metaDescriptionProblems(o.metaDescription, { title: o.metaTitle })) v.push(`meta:${m.code}${m.match ? `:${m.match}` : ''}`);
+  for (const m of metaDescriptionProblems(o.metaDescription, { title: o.metaTitle, allow: allowedLatin(p) })) v.push(`meta:${m.code}${m.match ? `:${m.match}` : ''}`);
   if (!o.description.includes(p.name.split(/\s+/)[0]) && !o.description.includes(p.name)) v.push('name_missing');
   return [...new Set(v)];
 }
@@ -412,6 +412,7 @@ export function repairMessage(v: string[]): string {
     if (x.startsWith('meta:contact')) return `metaDescription mentions a contact channel ("${x.split(':').slice(2).join(':')}"): remove phone, WhatsApp, email, navigation and contact details from it.`;
     if (x.startsWith('meta:phone_only')) return `metaDescription says "phone only" ("${x.split(':').slice(2).join(':')}"): remove it.`;
     if (x.startsWith('meta:ratings_line')) return 'metaDescription carries the line about Google ratings and BeautyFind reviews: remove it.';
+    if (x.startsWith('meta:latin')) return `metaDescription has the English word "${x.split(':').slice(2).join(':')}": write it in Hebrew (a brand, a device or the business name may stay).`;
     if (x.startsWith('meta:title_repeat')) return 'metaDescription opens with the words of metaTitle: open with what the business offers in its city (its treatments) instead.';
     if (x === 'name_missing') return 'Name the business in the description.';
     return `Fix: ${x}`;
@@ -574,14 +575,17 @@ export function templateDraft(p: EvidencePacket): EditorialOutput {
     treatments: topTreatments.slice(0, 3),
     rating: p.rating ? `דירוג ${p.rating.value.toFixed(1)} בגוגל (${p.rating.count === 1 ? 'ביקורת אחת' : `${p.rating.count} ביקורות`}).` : null,
     facts: [
-      openDays ? (/עד|,|כל/u.test(openDays) ? `פתוח ${openDays}.` : `פתוח בימי ${openDays}.`) : '',
-      topTreatments[3] ? `גם ${topTreatments[3]}.` : '',
-      p.establishedYear ? `פועל מאז ${p.establishedYear}.` : '',
-      hebrewAddress ? `הכתובת: ${hebrewAddress}.` : '',
-      p.languages.length ? `שירות ב${joinHe(p.languages)}.` : '',
-      p.freeParking === true ? 'חניה חינם במקום.' : '',
-      p.accessible === true ? 'נגיש לכיסא גלגלים.' : '',
-      cats[1] ? `גם ${cats[1]}.` : '',
+      openDays ? `פתוח ${/עד|,|כל/u.test(openDays) ? 'בימים' : 'בימי'} ${openDays}.` : '',
+      topTreatments[3] ? `מציעים גם ${topTreatments[3]}.` : '',
+      p.establishedYear ? `העסק פועל מאז ${p.establishedYear}.` : '',
+      hebrewAddress ? `העסק נמצא ב${hebrewAddress.replace(/^ב/u, '')}.` : '',
+      p.languages.length ? `השירות ניתן ${joinHe(p.languages.map(l => `ב${l}`))}.` : '',
+      p.freeParking === true ? 'יש חניה חינם במקום.' : '',
+      p.accessible === true ? 'המקום נגיש לכיסא גלגלים.' : '',
+      cats[1] ? `עוסקים גם ב${cats[1]}.` : '',
+      p.claimed ? 'בעלי העסק אימתו את הרישום.' : '',
+      cats[0] ? `העסק עוסק ב${cats[0]}.` : '',
+      p.city ? `העסק נמצא ב${p.city}.` : '',
     ],
   });
   return normalizeOutput({
