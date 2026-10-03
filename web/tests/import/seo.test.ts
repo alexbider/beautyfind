@@ -3,8 +3,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { composeDescription, publicMetadata } from '../../src/lib/seo/meta';
-import { META_ACTION, composeMetaDescription, joinHe, metaDescriptionOk, metaDescriptionProblems, metaLead, repeatsTitle } from '../../src/lib/seo/metaRules';
+import { META_ACTION, composeMetaDescription, inHe, joinHe, metaDescriptionOk, metaDescriptionProblems, metaLead, repeatsTitle, tidySentence } from '../../src/lib/seo/metaRules';
 import { capWords, sameNameAcrossScripts, seoCityName, seoName } from '../../src/lib/seo/seoName';
+import { treatmentNameProblem } from '../../src/lib/seo/treatmentHygiene';
 import { dedupeTreatments, hebrewTreatmentName, hebrewTreatmentNames, sameTreatment } from '../../src/lib/seo/treatmentNames';
 
 describe('seo name', () => {
@@ -149,5 +150,39 @@ describe('treatment names in Hebrew', () => {
     assert.deepEqual(dedupeTreatments(['תספורת', 'תספורות נשים', 'צבע לשיער', 'צביעת שיער', 'פן', 'פן ועיצוב']), ['תספורת', 'צבע לשיער', 'פן']);
     assert.ok(!sameTreatment('עיסוי שוודי', 'עיסוי רקמות עמוק') && !sameTreatment('הסרת שיער בלייזר', 'הסרת שיער בשעווה') && sameTreatment('טיפולי פנים', 'טיפול פנים'));
     assert.deepEqual(hebrewTreatmentNames(['Facial', 'טיפולי פנים', 'Highlights', 'גוונים והבהרות', 'פדיקור'], 3), ['טיפול פנים', 'גוונים', 'פדיקור']);
+  });
+});
+
+describe('treatment name hygiene', () => {
+  it('flags products, sentences, article titles and lone function words, and keeps treatments', () => {
+    assert.equal(treatmentNameProblem('קרם לחות ליום'), 'product');
+    assert.equal(treatmentNameProblem('סרום ויטמין C'), 'product');
+    assert.equal(treatmentNameProblem('קרם לילה מזין ללילה'), 'product');
+    assert.equal(treatmentNameProblem('מתמחה בטיפולי פנים מתקדמים ופילינג.'), 'sentence');
+    assert.equal(treatmentNameProblem('אנחנו מציעים מגוון טיפולים'), 'sentence');
+    assert.equal(treatmentNameProblem('היתרונות של טיפול בוטוקס'), 'article');
+    assert.equal(treatmentNameProblem('איך לבחור קוסמטיקאית'), 'article');
+    assert.equal(treatmentNameProblem('מה זה הידרה פייסיאל?'), 'article');
+    assert.equal(treatmentNameProblem('בלבד'), 'function_word');
+    assert.equal(treatmentNameProblem('ועוד'), 'function_word');
+    assert.equal(treatmentNameProblem('הסרת שיער בלייזר חבילת 6 מפגשים'), 'package');
+    for (const ok of ['טיפול פנים', 'לק ג׳ל', 'הסרת שיער בלייזר', 'Hydrafacial', 'בוטוקס אזור אחד', 'מניקור ג׳ל', 'החלקת קרטין', 'מסכת פנים מזינה']) assert.equal(treatmentNameProblem(ok), null, ok);
+    assert.equal(hebrewTreatmentName('קרם לחות ליום'), null, 'a product never reaches a description');
+    assert.deepEqual(hebrewTreatmentNames(['בלבד', 'היתרונות של בוטוקס', 'פדיקור', 'סרום לפנים', 'מניקור'], 3), ['פדיקור', 'מניקור']);
+  });
+});
+
+describe('sentence tidying and titled names', () => {
+  it('collapses doubled periods and uses אצל before a titled person', () => {
+    assert.equal(metaLead('nails', 'לירן איפור קבוע ובניית ציפורניים.', 'אשדוד', ['מניקור']), 'מניקור בסטודיו לירן איפור קבוע ובניית ציפורניים באשדוד.');
+    assert.equal(tidySentence('תספורת במספרת רון.. דירוג 4.8 .'), 'תספורת במספרת רון. דירוג 4.8.');
+    assert.equal(inHe('ד״ר יעל כהן'), 'אצל ד״ר יעל כהן');
+    assert.equal(inHe('פרופ׳ לוי'), 'אצל פרופ׳ לוי');
+    assert.equal(inHe('Dr. Allan Schuman'), 'אצל Dr. Allan Schuman');
+    assert.equal(inHe('מספרת רון'), 'במספרת רון');
+    assert.equal(metaLead('medical-aesthetics', 'ד״ר יעל כהן', 'נתניה', ['בוטוקס']), 'בוטוקס אצל ד״ר יעל כהן בנתניה, מרפאה לאסתטיקה רפואית.');
+    assert.equal(metaLead('dental-aesthetics', 'ד״ר אמיר מטר', 'נהריה', ['הלבנת שיניים']), 'אסתטיקה דנטלית בנהריה: הלבנת שיניים אצל ד״ר אמיר מטר.');
+    const d = composeMetaDescription({ lead: t => metaLead('nails', 'סטודיו דנה.', 'חיפה', t), treatments: ['מניקור', 'פדיקור'], rating: 'דירוג 4.8 בגוגל (12 ביקורות).', facts: ['פתוח בימים ראשון עד חמישי.'] });
+    assert.ok(!d.includes('..') && d.endsWith(META_ACTION), d);
   });
 });

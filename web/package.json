@@ -25,7 +25,8 @@
     "seo:verify": "tsx scripts/seo-verify.ts",
     "import:manifest": "tsx scripts/import/manifest.ts",
     "import:screenshots": "tsx scripts/import/screenshots.ts",
-    "seo:city-category-report": "tsx --conditions=react-server scripts/seo-city-category-report.ts"
+    "seo:city-category-report": "tsx --conditions=react-server scripts/seo-city-category-report.ts",
+    "import:treatment-hygiene": "tsx scripts/import/treatmentHygiene.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

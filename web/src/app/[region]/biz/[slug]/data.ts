@@ -12,6 +12,7 @@ import { composeMetaDescription, joinHe, metaDescriptionOk, metaLead } from '@/l
 import { seoCityName, seoName } from '@/lib/seo/seoName';
 import { coverAlt, galleryAlts } from '@/lib/seo/imageAlt';
 import { CATEGORY_SHORT } from '@/lib/seo/terms';
+import { isOffer } from '@/lib/seo/treatmentHygiene';
 import { hebrewTreatmentNames } from '@/lib/seo/treatmentNames';
 import { absoluteUrl, breadcrumbNode, businessId, businessType, faqNode, graph, ldJson, pageId, webPageNode, type Crumb } from '@/lib/seo/schema';
 import {
@@ -393,9 +394,10 @@ export function jsonLd(p: PublicProfile, v: ProfileView) {
     ...(comparable.length ? { priceRange: comparable.length > 1 && Math.min(...comparable) !== Math.max(...comparable) ? `${nisFromAgorot(Math.min(...comparable))}-${nisFromAgorot(Math.max(...comparable))}` : nisFromAgorot(comparable[0]) } : {}),
     ...(openingHoursSpec(v.hours) ? { openingHoursSpecification: openingHoursSpec(v.hours) } : {}),
     ...(p.establishedYear ? { foundingDate: String(p.establishedYear) } : {}),
-    ...(v.treatments.length
+    ...(v.treatments.some(t => isOffer(t.name))
       ? {
-          makesOffer: v.treatments.map(t => ({
+          // Product lines, sentences and stray words from price lists are not offers (treatmentHygiene.ts); a package of sessions is.
+          makesOffer: v.treatments.filter(t => isOffer(t.name)).map(t => ({
             '@type': 'Offer',
             itemOffered: { '@type': 'Service', name: t.name, ...(t.category ? { category: t.category.name } : {}) },
             // Unknown prices carry no priceSpecification at all; published free services carry price 0.

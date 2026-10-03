@@ -5,6 +5,7 @@
 // template and the tests.
 
 import { normalizeHebrew } from '../import/textRules';
+import { isTreatmentName } from './treatmentHygiene';
 
 /** English treatment names and their Hebrew form, matched whole (case and punctuation insensitive). */
 export const TREATMENT_HE: Record<string, string> = {
@@ -70,8 +71,8 @@ const isBrand = (word: string) => BRANDS.has(key(word));
  */
 export function hebrewTreatmentName(raw: string): string | null {
   const name = raw.replace(/\s+/g, ' ').trim();
-  // A sentence (ends with a period, has a verb like מתמחה or מציעים), a package line or a long label is not a treatment name.
-  if (!name || name.length > 40 || name.split(' ').length > 5 || /[.!?;]$/u.test(name) || /(^|\s)(מתמחה|מתמחים|מציע|מציעה|מציעים|אנחנו|אנו|שלנו)(\s|$)/u.test(name)) return null;
+  // Products, sentences, article titles and lone function words are not treatment names (treatmentHygiene.ts).
+  if (!isTreatmentName(name)) return null;
   if (CYRILLIC.test(name)) return null;
   if (!LATIN.test(name)) return normalizeHebrew(name);
   // Hebrew with a Latin brand word inside ("טיפול Hydrafacial") stays; Hebrew with other English is cut to the Hebrew part.

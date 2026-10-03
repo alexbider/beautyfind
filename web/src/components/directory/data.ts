@@ -5,6 +5,7 @@ import { cache } from 'react';
 import { CATEGORIES, citiesOf, type City, type RegionSlug } from '@/lib/catalog';
 import { db } from '@/lib/server/db';
 import { PUBLIC_WHERE, listBranches, medianPrices, medianPricesForCity, type ListingCard } from '@/lib/server/public';
+import { matchService } from '@/lib/import/services';
 import { hebrewTreatmentNames } from '@/lib/seo/treatmentNames';
 import { PAGE, type DirQuery, type FilterKey } from './params';
 
@@ -85,7 +86,7 @@ export const getOverview = cache(async (region: RegionSlug, citySlug: string, ca
     medianPrices(region),
     db.city.findMany({ where: { regionSlug: region }, select: { id: true, slug: true } }),
     db.treatment.groupBy({
-      by: ['name'],
+      by: ['name', 'categorySlug'],
       where: { isPublished: true, branch: scopeWhere(s), ...(category ? { categorySlug: category } : {}) },
       _count: { _all: true },
       orderBy: [{ _count: { name: 'desc' } }, { name: 'asc' }],
@@ -127,7 +128,13 @@ export const getOverview = cache(async (region: RegionSlug, citySlug: string, ca
     siblings,
     regionTotal,
     prices,
-    topTreatments: hebrewTreatmentNames(byTreatment.map(t => t.name), 3),
+    // A city + category lead names only treatments of that category's vocabulary (src/lib/import/services.ts):
+    // a treatment the vocabulary places elsewhere is left out, one it does not know counts only when the record
+    // itself carries the category.
+    topTreatments: hebrewTreatmentNames(
+      byTreatment.filter(t => (category ? (matchService(t.name)?.category ?? (t.categorySlug === category ? category : null)) === category : true)).map(t => t.name),
+      3,
+    ),
   };
 });
 
