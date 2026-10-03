@@ -80,12 +80,15 @@ export function joinHe(items: string[]): string {
   return `${list.slice(0, -1).join(', ')} ${/^[א-ת]/u.test(last) ? 'ו' : 'ו־'}${last}`;
 }
 
-/** "ב" glued to a Hebrew name, with a maqaf before a name in another script ("ב־Glow Clinic"). */
-export const inHe = (name: string) => (/^[א-ת]/u.test(name) ? `ב${name}` : `ב־${name}`);
+/** A name that opens with a person's title (ד״ר, פרופ׳, Dr.): the business is the person, so "אצל" fits and "ב" does not. */
+export const TITLE_START = /^(ד״ר|ד"ר|דר׳|דר'|פרופ׳|פרופ'|פרופסור|דוקטור|dr\.?|prof\.?)(?=\s|$)/iu;
+
+/** "ב" glued to a Hebrew name, a maqaf before a name in another script ("ב־Glow Clinic"), "אצל" before a titled person ("אצל ד״ר כהן"). */
+export const inHe = (name: string) => (TITLE_START.test(name) ? `אצל ${name}` : /^[א-ת]/u.test(name) ? `ב${name}` : `ב־${name}`);
 
 const KIND_WORDS = /^(מספרת|מספרה|סטודיו|קליניקה|קליניקת|מרפאה|מרפאת|ספא|מכון|סלון|בית|המרכז|מרכז|ד״ר|דר׳|פרופ׳)(?=\s|$)|\b(clinic|clinique|salon|studio|spa|nails|lab|center|centre|bar|dental|cosmetics)\b/iu;
 /** "במספרת רון" for a name without a kind word; a name that carries one (מספרת רון, Glow Clinic) is used as is. */
-const at = (kind: string, name: string) => (KIND_WORDS.test(name) ? inHe(name) : `ב${kind} ${name}`);
+const at = (kind: string, name: string) => (KIND_WORDS.test(name) || TITLE_START.test(name) ? inHe(name) : `ב${kind} ${name}`);
 
 type Lead = (name: string, city: string, t: string) => string;
 
@@ -110,10 +113,14 @@ const LEADS: Record<string, { withTreatments: Lead; without: Lead }> = {
 const DEFAULT_LEAD: { withTreatments: Lead; without: Lead } = { withTreatments: (n, c, t) => `${t} ${inHe(n)}, ${c}.`, without: (n, c) => `מכון יופי ב${c}: ${n}.` };
 
 /** The opening sentence of a business description: what it offers (the treatments in Hebrew) in its city, phrased by category. */
-export function metaLead(category: string | null | undefined, name: string, city: string, treatments: string[]): string {
+export function metaLead(category: string | null | undefined, rawName: string, city: string, treatments: string[]): string {
   const lead = (category && LEADS[category]) || DEFAULT_LEAD;
-  return treatments.length ? lead.withTreatments(name, city, joinHe(treatments)) : lead.without(name, city, '');
+  const name = rawName.replace(/[.,;:\s]+$/u, ''); // a name that ends with a period would double the sentence's own
+  return tidySentence(treatments.length ? lead.withTreatments(name, city, joinHe(treatments)) : lead.without(name, city, ''));
 }
+
+/** One space between words, no doubled periods ("...ציפורניים.." from a name that ends with a period), no space before a period. */
+export const tidySentence = (s: string) => s.replace(/\s+/g, ' ').replace(/\s+\./g, '.').replace(/\.{2,}/g, '.').replace(/\.\s*\./g, '.').trim();
 
 /** A padding fact is a complete sentence: at least three words and a final period, never a bare phrase. */
 export const isSentenceFact = (f: string) => /[.!?]$/u.test(f.trim()) && f.trim().split(/\s+/).length >= 3;
@@ -125,7 +132,7 @@ export const isSentenceFact = (f: string) => /[.!?]$/u.test(f.trim()) && f.trim(
  * lead and the action fit inside the range. Facts that are not complete sentences are dropped.
  */
 export function composeMetaDescription(input: { lead: (treatments: string[]) => string; treatments: string[]; rating?: string | null; facts?: string[] }, max = DESCRIPTION_MAX, min = DESCRIPTION_MIN): string {
-  const clean = (x: string) => x.replace(/\s+/g, ' ').trim();
+  const clean = (x: string) => tidySentence(x);
   const len = (x: string) => [...x].length;
   const facts = (input.facts ?? []).map(clean).filter(f => f && isSentenceFact(f));
   const closing = len(META_ACTION) + 1;
@@ -140,7 +147,7 @@ export function composeMetaDescription(input: { lead: (treatments: string[]) => 
       if (len(text) + closing >= min) break;
       if (len(text) + 1 + len(f) + closing <= max) text = `${text} ${f}`;
     }
-    return `${text} ${META_ACTION}`;
+    return tidySentence(`${text} ${META_ACTION}`);
   }
   // Even the shortest lead leaves no room for the action: cut the lead itself (a long name or city).
   return composeDescription([fallback, META_ACTION], [], max, min);

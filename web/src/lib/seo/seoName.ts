@@ -107,7 +107,7 @@ export function seoName(raw: string, max = SEO_NAME_MAX): string {
     const separateRuns = s === `${heText} ${foText}` || s === `${foText} ${heText}`;
     if (separateRuns && sameNameAcrossScripts(fo, he)) s = heText;
   }
-  s = normalizeHebrew(s).replace(/^[\s"'״׳“”‘’]+|[\s"'״׳“”‘’]+$/gu, '');
+  s = normalizeHebrew(s).replace(/^[\s"'״׳“”‘’]+|[\s"'״׳“”‘’.,;:]+$/gu, '');
   return capWords(s, max) || raw.slice(0, max);
 }
 
