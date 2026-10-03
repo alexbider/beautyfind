@@ -15,8 +15,8 @@ import { CATEGORY_SHORT } from '@/lib/seo/terms';
 // readiness classification written back to the listing. Owner-approved text is never replaced.
 
 export const editorialOf = (p: { editorial: unknown }) => (p.editorial && typeof p.editorial === 'object' && typeof (p.editorial as EditorialRecord).description === 'string' ? (p.editorial as EditorialRecord) : null);
-/** A draft that may replace existing text: long enough, not flagged, enough FAQs, and clean under the text rules. */
-export const editorialComplete = (e: EditorialRecord | null) => !!e && e.words >= WORDS_MIN && !e.needsMoreInfo && e.faqs.length >= FAQ_MIN && textRuleViolations(e.violations ?? []).length === 0;
+/** A draft that may replace existing text: written by the model (never the template fallback), long enough, not flagged, enough FAQs, and clean under the text rules. */
+export const editorialComplete = (e: EditorialRecord | null) => !!e && e.model !== 'template' && e.words >= WORDS_MIN && !e.needsMoreInfo && e.faqs.length >= FAQ_MIN && textRuleViolations(e.violations ?? []).length === 0;
 /** A draft that breaks the text rules is never published, not even into an empty field. */
 export const editorialClean = (e: EditorialRecord | null) => !!e && textRuleViolations(e.violations ?? []).length === 0;
 

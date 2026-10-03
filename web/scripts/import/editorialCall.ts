@@ -48,7 +48,8 @@ async function once(messages: Anthropic.MessageParam[]): Promise<{ output: Edito
   try {
     const res = await api().messages.create({
       model: EDITORIAL_MODEL,
-      max_tokens: 6000,
+      // Room for the model's own reasoning plus the full JSON: the cap counts both, and 6000 cut drafts off.
+      max_tokens: 16000,
       system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
       ...(useFormat ? { output_config: { format: { type: 'json_schema' as const, schema: OUTPUT_SCHEMA } } } : {}),
       messages,

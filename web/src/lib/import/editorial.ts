@@ -21,7 +21,7 @@ import { hebrewTreatmentNames } from '../seo/treatmentNames';
 import type { DayHours, ImportedTreatment } from './rules';
 import { normalizeHebrew, problemCode, textProblems } from './textRules';
 
-export const PROMPT_VERSION = '2026-10-02.1';
+export const PROMPT_VERSION = '2026-10-03.1';
 /** Below this a draft is "thin": stored and flagged, applied only to a listing without a description. */
 export const WORDS_MIN = 120;
 /** What a rich packet should reach. */
@@ -270,7 +270,7 @@ Language:
 - Prices are shown as given; do not say whether they include VAT unless the packet says so.
 
 Write, in Hebrew:
-1. "description": paragraphs separated by a blank line. Scale the length to the facts: two short paragraphs when the packet is thin (name, place, field, how to contact), three to five paragraphs when it is rich (services and what each is for in everyday terms, prices, team, premises, hours, languages, year, accessibility, parking, how to arrange a visit). Name the business and the city in the first sentence. Never pad with general advice, invented details or generic praise.
+1. "description": paragraphs separated by a blank line. Scale the length to the facts, inside these bounds: never under ${WORDS_MIN} words, never over ${WORDS_MAX}. A thin packet (name, place, field, how to contact) gets two paragraphs of about ${WORDS_MIN} to 200 words; a rich packet gets three to five paragraphs of about ${WORDS_TARGET} words (services and what each is for in everyday terms, prices, team, premises, hours, languages, year, accessibility, parking, how to arrange a visit). Reach the length with facts from the packet, written out in full sentences: say what each service is for, which days and hours the place is open, how to get there, how to arrange a visit. Name the business and the city in the first sentence. Never pad with general advice, invented details or generic praise.
 2. "faqs": three to eight question-and-answer pairs that the packet can answer fully (location, services, prices, booking, hours, team, accessibility, parking, languages). Skip any question the packet cannot answer. Answers are one to three sentences and state the facts directly. Each pair carries "basis": the packet fields it rests on.
 3. "metaTitle" (up to 60 characters), plain and specific, and "metaDescription" (130 to 155 characters): one natural sentence that leads with what the business offers in its city (its two or three main treatments named in Hebrew; an English treatment name is translated: Hairstyling = עיצוב שיער, Hair colouring = צבע לשיער; a brand or device name such as Hydrafacial stays), phrased for its field (a salon, a clinic, a studio), then the Google rating with its review count when the packet has one, then one short closing action such as "השוו מחירים וביקורות ב־BeautyFind". It never opens with the words of metaTitle, never mentions booking, contact channels (phone, WhatsApp, email, navigation), "phone only", or anything missing, and never pads with generic closers; when it is short, add a real fact (opening days, another treatment, the founding year, the street).
 4. "serviceSummaries": for each service in the packet, one factual sentence about what it is (no price, no promise).
@@ -297,7 +297,7 @@ export const OUTPUT_SCHEMA = {
 
 export function userMessage(p: EvidencePacket): string {
   const rich = evidenceRichness(p);
-  return `Evidence packet (JSON):\n${JSON.stringify(p)}\n\nEvidence richness: ${rich.score}/70${rich.thin.length ? `; thin on: ${rich.thin.join(', ')} (write less, never about what is missing)` : ''}.`;
+  return `Evidence packet (JSON):\n${JSON.stringify(p)}\n\nEvidence richness: ${rich.score}/70${rich.thin.length ? `; thin on: ${rich.thin.join(', ')} (fewer paragraphs, still at least ${WORDS_MIN} words, never about what is missing)` : ''}.`;
 }
 
 // ---------- checks ----------
@@ -384,7 +384,7 @@ export function checkOutput(o: EditorialOutput, p: EvidencePacket): string[] {
 }
 
 /** Violations that a targeted repair call can fix; anything else means the draft stays flagged. */
-export const repairable = (v: string[]) => v.filter(x => !x.startsWith('short:'));
+export const repairable = (v: string[]) => v;
 
 /** The text-rule violations: a draft that still has any after the repair is rejected and written again. */
 export const textRuleViolations = (v: string[]) => v.filter(x => x.startsWith('text:'));
@@ -401,6 +401,7 @@ export function repairMessage(v: string[]): string {
     if (x.startsWith('text:spelling:')) return `Spell "${x.slice(14)}" the house way: וואטסאפ, המצוין.`;
     if (x === 'first_person') return 'Rewrite in the third person: no אנחנו, שלנו, אצלנו.';
     if (x.startsWith('long:')) return `Shorten the description to at most ${WORDS_MAX} words.`;
+    if (x.startsWith('short:')) return `The description has ${x.slice(6)} words; it must have at least ${WORDS_MIN}. Expand it with facts that are in the packet, in full sentences: what each service is for in everyday terms, the open days and hours, the address and how to get there, how to arrange a visit, accessibility and parking when the packet states them. No general advice, no invented details, nothing about what is missing.`;
     if (x.startsWith('faqs:')) return `Add accurate questions the packet can answer until there are at least ${FAQ_MIN}, or set insufficientEvidence to true.`;
     if (x === 'faq_booking_claim') return 'Do not say the treatment can be booked through BeautyFind.';
     if (x === 'markup') return 'Remove Markdown, brackets and code characters.';
