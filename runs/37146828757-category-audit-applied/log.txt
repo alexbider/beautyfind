@@ -1,0 +1,11 @@
+    5  facials -> brows-lashes
+    4  facials -> nails
+    4  facials -> medical-aesthetics
+    3  facials -> hair-salons
+    1  hair-salons -> makeup
+    1  medical-aesthetics -> facials
+    1  nails -> hair-removal
+    1  facials -> hair-removal
+    1  makeup -> brows-lashes
+SUMMARY listings=816 proposals=21 applicable=21 claimed_skipped=0 csv=reports/category-audit.csv
+APPLIED 21 listings. Redeploy or revalidate the site so the sitemap and the cards pick up the new addresses.
