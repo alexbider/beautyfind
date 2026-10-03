@@ -17,7 +17,7 @@ export interface CategoryEvidence {
 
 // What a business name says about its category. Specific words only; "יופי" and "beauty" say nothing.
 const NAME_HINTS: Array<[RegExp, string]> = [
-  [/מספר(?:ה|ות|ת)|עיצוב\s*שיער|סלון\s*שיער|ספרית|\bספר\b|hair\s*(salon|studio|design|stylist)|barber|coiffure|coiffeur|\bhair\b/i, 'hair-salons'],
+  [/מספר(?:ה|ות|ת)|עיצוב\s*שיער|סלון\s*שיער|ספרית|\bספר\b|תוספות\s*שיער|(?<![א-ת])החלק(?:ה|ות)(?![א-ת])|(?<![א-ת])פאות(?![א-ת])|hair\s*(salon|studio|design|stylist)|barber|coiffure|coiffeur|\bhair\b/i, 'hair-salons'],
   [/השתלת\s*שיער|hair\s*(transplant|restoration|clinic)/i, 'hair-restoration'],
   [/הסרת\s*שיער|לייזר\s*להסרת|laser\s*hair|hair\s*removal|waxing/i, 'hair-removal'],
   [/ציפורני|מניקור|פדיקור|\bnails?\b|manicure|pedicure/i, 'nails'],

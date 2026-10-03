@@ -83,6 +83,8 @@ async function main() {
     if (nameHits.length) why.push(`השם מעיד על ${nameHits.map(label).join(', ')}`);
     if (googlePrimary.length) why.push(`סוג ראשי בגוגל: ${p!.primaryType}${googleGeneric ? ' (כללי)' : ''} -> ${googlePrimary.map(label).join('/')}`);
     else if (p) why.push('אין סוג ראשי בגוגל');
+    const extraTypes = (p?.types ?? []).filter(t => t !== p?.primaryType && slugsForType(t).length);
+    if (extraTypes.length) why.push(`סוגים נוספים בגוגל: ${extraTypes.map(t => `${t} -> ${slugsForType(t).map(label).join('/')}`).join(', ')}`);
     const top = Object.entries(services).sort((a, c) => c[1].n - a[1].n).slice(0, 2);
     if (top.length) why.push(`טיפולים: ${top.map(([c, s]) => `${label(c)} ${s.n}${s.priced ? ` (${s.priced} עם מחיר)` : ''}`).join(', ')}`);
     if (!p) why.push('ללא רשומת ייבוא');
