@@ -61,7 +61,8 @@ export function ourCategoriesFrom(item: DfsItem): string[] {
   return out;
 }
 
-const snake = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+/** Google's type label as the id DataForSEO uses: "Beauty salon" -> beauty_salon. */
+export const snake = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
 
 /** Our slugs for one Google type label or id ("Hair salon", "hair_salon"). */
 export function slugsForType(label: string): string[] {

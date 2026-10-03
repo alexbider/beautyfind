@@ -17,7 +17,7 @@ import { PrismaClient } from '@prisma/client';
 import { CATEGORIES, categoryBySlug } from '../../src/lib/catalog';
 import { primaryCategory } from '../../src/lib/category';
 import { categoriesFromName, rankCategories } from '../../src/lib/import/categoryRank';
-import { GENERIC_TYPES, slugsForType } from '../../src/lib/import/dataforseo';
+import { GENERIC_TYPES, slugsForType, snake } from '../../src/lib/import/dataforseo';
 
 const db = new PrismaClient();
 const arg = (name: string) => {
@@ -66,8 +66,10 @@ async function main() {
     const current = primaryCategory(b.categories);
     const candidates = b.categories.map(c => c.categorySlug).filter(c => KNOWN.has(c));
     const googlePrimary = p?.primaryType ? slugsForType(p.primaryType) : [];
-    const googleGeneric = !!p?.primaryType && GENERIC_TYPES.has(p.primaryType.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_'));
-    const googleAdditional = (p?.types ?? []).filter(t => t !== p?.primaryType).flatMap(slugsForType);
+    const googleGeneric = !!p?.primaryType && GENERIC_TYPES.has(snake(p.primaryType));
+    // The stored types start with the primary type as a label ("Beauty salon" next to primaryType beauty_salon): compare by id so it is not scored twice.
+    const isPrimary = (t: string) => !!p?.primaryType && snake(t) === snake(p.primaryType);
+    const googleAdditional = (p?.types ?? []).filter(t => !isPrimary(t)).flatMap(slugsForType);
     const services: Record<string, { n: number; priced: number }> = {};
     for (const t of b.treatments) {
       if (!t.categorySlug || !KNOWN.has(t.categorySlug)) continue;
@@ -83,7 +85,7 @@ async function main() {
     if (nameHits.length) why.push(`השם מעיד על ${nameHits.map(label).join(', ')}`);
     if (googlePrimary.length) why.push(`סוג ראשי בגוגל: ${p!.primaryType}${googleGeneric ? ' (כללי)' : ''} -> ${googlePrimary.map(label).join('/')}`);
     else if (p) why.push('אין סוג ראשי בגוגל');
-    const extraTypes = (p?.types ?? []).filter(t => t !== p?.primaryType && slugsForType(t).length);
+    const extraTypes = (p?.types ?? []).filter(t => !isPrimary(t) && slugsForType(t).length);
     if (extraTypes.length) why.push(`סוגים נוספים בגוגל: ${extraTypes.map(t => `${t} -> ${slugsForType(t).map(label).join('/')}`).join(', ')}`);
     const top = Object.entries(services).sort((a, c) => c[1].n - a[1].n).slice(0, 2);
     if (top.length) why.push(`טיפולים: ${top.map(([c, s]) => `${label(c)} ${s.n}${s.priced ? ` (${s.priced} עם מחיר)` : ''}`).join(', ')}`);
