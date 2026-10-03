@@ -13,11 +13,10 @@ import { ImportSettingsSchema, parseSettings } from '../../src/lib/import/settin
 
 const db = new PrismaClient();
 
-function coerce(key: string, raw: string): unknown {
-  const shape = (ImportSettingsSchema.shape as Record<string, { _def?: { typeName?: string } }>)[key];
-  const typeName = shape?._def?.typeName;
-  if (typeName === 'ZodBoolean') return raw === 'true' || raw === '1' || raw === 'on';
-  if (typeName === 'ZodNumber') return Number(raw);
+/** Command-line text as the setting's value: numbers and booleans by their spelling, anything else as text. */
+function coerce(_key: string, raw: string): unknown {
+  if (/^-?\d+(\.\d+)?$/.test(raw)) return Number(raw);
+  if (raw === 'true' || raw === 'false') return raw === 'true';
   return raw;
 }
 
