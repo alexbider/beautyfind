@@ -1,8 +1,10 @@
 # One-off data cleanups for the directory, run by hand from the Actions tab (or workflow_dispatch through
 # the GitHub API) against the production database, which only this workflow's secrets can reach. Every task
 # is a dry run unless "confirm" is ticked; the CSV it writes and the full log are uploaded as an artifact
-# for review. Tasks: category-audit (primary category per listing), description-cleanup (queue rewrites of
-# descriptions that break the text rules), treatment-hygiene (read-only CSV), city-category-report.
+# for review, and also committed to the "seo-reports" branch (runs/<run id>-<task>-<mode>/), which any clone
+# can fetch when the artifact store is out of reach. Tasks: category-audit (primary category per listing),
+# description-cleanup (queue rewrites of descriptions that break the text rules), treatment-hygiene
+# (read-only CSV), city-category-report.
 name: SEO data cleanup
 
 on:
@@ -28,7 +30,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write # the report branch; the app branches are never touched
 
 jobs:
   cleanup:
@@ -69,3 +71,28 @@ jobs:
           name: ${{ inputs.task }}-${{ inputs.confirm && 'applied' || 'dry-run' }}
           path: web/reports/
           retention-days: 30
+      - name: Commit the report to the seo-reports branch
+        if: always()
+        env:
+          RUN_ID: ${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          mode=$([ "$CONFIRM" = "true" ] && echo applied || echo dry-run)
+          dest="runs/${RUN_ID}-${TASK}-${mode}"
+          tmp=$(mktemp -d)
+          url="https://x-access-token:${TOKEN}@github.com/${REPO}.git"
+          if ! git clone --quiet --depth 1 --branch seo-reports "$url" "$tmp" 2>/dev/null; then
+            git init --quiet -b seo-reports "$tmp"
+            git -C "$tmp" remote add origin "$url"
+            printf '# SEO data cleanup reports\n\nOne folder per workflow run: runs/<run id>-<task>-<dry-run|applied>/ holds the CSV and the log.\n' > "$tmp/README.md"
+          fi
+          mkdir -p "$tmp/$dest"
+          cp -r reports/. "$tmp/$dest/"
+          git -C "$tmp" config user.name github-actions
+          git -C "$tmp" config user.email github-actions@users.noreply.github.com
+          git -C "$tmp" add -A
+          git -C "$tmp" commit --quiet -m "$TASK ($mode), run $RUN_ID" || { echo "nothing to commit"; exit 0; }
+          git -C "$tmp" push --quiet origin seo-reports
+          echo "report committed to seo-reports:$dest"
