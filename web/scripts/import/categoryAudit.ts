@@ -66,7 +66,8 @@ async function main() {
   const rows: Row[] = branches.map(b => {
     const p = placeBy.get(b.id);
     const current = primaryCategory(b.categories);
-    const candidates = b.categories.map(c => c.categorySlug).filter(c => KNOWN.has(c));
+    // Current primary first: a tie between two categories keeps what the listing has today.
+    const candidates = [...b.categories].sort((x, y) => Number(y.isPrimary) - Number(x.isPrimary)).map(c => c.categorySlug).filter(c => KNOWN.has(c));
     const googlePrimary = p?.primaryType ? slugsForType(p.primaryType) : [];
     const googleGeneric = !!p?.primaryType && GENERIC_TYPES.has(snake(p.primaryType));
     // The stored types start with the primary type as a label ("Beauty salon" next to primaryType beauty_salon): compare by id so it is not scored twice.
