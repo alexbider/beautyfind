@@ -1,0 +1,6 @@
+bad value for editorialBudgetUsd: 5 ([
+  {
+    "expected": "number",
+    "code": "invalid_type",
+    "path": [],
+    "message": "Invalid input: expected numb)
