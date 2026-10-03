@@ -1,0 +1,58 @@
+run 4af641d9-fbb9-4a4f-931a-225c47429af9 "ניקוי תיאורים 1/17" status=done started=2026-10-03T19:34:34.972Z finished=2026-10-03T20:38:57.235Z
+counters: {"improved":17,"postTasks":9,"postPhotos":13,"filled_faqs":17,"filled_prices":2,"editorialCalls":36,"nothing_to_add":33,"youtubeRequests":0,"editorial_budget":14,"editorial_failed":2,"editorial_written":34,"filled_description":17}
+listings in scope: 50, import records: 50, drafts written in this run: 50
+by model: claude-sonnet-5: 34, (none): 14, template: 2
+by error: (none): 34, budget: 14, max_tokens: 2
+words: min 18, median 120, max 161
+cost recorded on the records: 3.670 USD
+  claude-sonnet-5  words= 141 faqs= 6 violations=name_missing | Opal cosmetic - אופל קוסמטיקה מקצועית
+  claude-sonnet-5  words= 129 faqs= 5 | ליאל מילר - קוסמטיקאית קלינית פרא רפואית
+  claude-sonnet-5  words=  85 faqs= 6 violations=short:85 | name_missing | Batya Care & Beauty Institute
+  template         words= 119 faqs= 4 error=max_tokens | לירן קוסמטיקס
+  claude-sonnet-5  words=  56 faqs= 5 violations=short:56 | person:המיועד לעיסוי | person:הייעודי עולה | הפינה של טלי בנהריה-דירות אירוח וספא ברי
+  claude-sonnet-5  words=  58 faqs= 7 violations=short:58 | אורית דיין מעצבת גבות והסרת שיער בלייזר
+  claude-sonnet-5  words=  44 faqs= 5 violations=short:44 | name_missing | салон красоты " DREAM "
+  claude-sonnet-5  words=  83 faqs= 6 violations=short:83 | Osmo Professional רפאל אוסמו
+  claude-sonnet-5  words=  61 faqs= 6 violations=short:61 | name_missing | ד״ר אמיר מטר,מרפאת שיניים ואסתטיקה
+  template         words= 125 faqs= 4 error=max_tokens | ADM-אחים ואחיות עד הבית
+  claude-sonnet-5  words=  67 faqs= 6 violations=short:67 | בתאל הראל קוסמטיקה מתקדמת
+  claude-sonnet-5  words=  67 faqs= 6 violations=short:67 | Lilac Saturn cosmetics and eyebrow shapi
+  claude-sonnet-5  words=  63 faqs= 3 | L&Y beauty lab
+  claude-sonnet-5  words= 117 faqs= 5 violations=short:117 | name_missing | Meital Ram professional makeup artist an
+  claude-sonnet-5  words= 147 faqs= 6 | Permanent makeup & eyelashes Nahariya
+  claude-sonnet-5  words= 161 faqs= 5 | דיאנה שרייפר
+  claude-sonnet-5  words= 120 faqs= 5 | R&R Rina Oren & Roni Shalev
+  claude-sonnet-5  words= 131 faqs= 5 | לב מדיקל - סניף נהריה
+  claude-sonnet-5  words=  44 faqs= 5 violations=short:44 | person:יעל הירש | name_missing | ד"ר יעל הירש אסתטיקה
+  claude-sonnet-5  words= 122 faqs= 6 | Barak clinic - קליניקה לאסתטיקה מתקדמת ב
+  claude-sonnet-5  words= 145 faqs= 5 | הילה גנון מאפרת ומסרקת מקצועית מנהריה
+  claude-sonnet-5  words= 117 faqs= 5 violations=short:117 | יוניק קליניק - unique clinic
+  claude-sonnet-5  words= 125 faqs= 5 violations=person:אביטל אנדלר | ד״ר אביטל אנדלר- אסתטיקה רפואית ודנטלית
+  claude-sonnet-5  words= 121 faqs= 5 violations=meta:short:127 | Victoria Levin Cosmetics
+  claude-sonnet-5  words= 130 faqs= 3 | Laurence skin care
+  claude-sonnet-5  words= 130 faqs= 5 | בי ביוטי בתאל שפר
+                   words=     faqs=   error=budget | הסטודיו של מורן איפור וציפורניים
+                   words=     faqs=   error=budget | ד"ר מינה סקנדריון
+                   words=     faqs=   error=budget | Grace Cosmetology Nahariya
+                   words=     faqs=   error=budget | לירן איפור קבוע ובניית ציפורניים.
+                   words=     faqs=   error=budget | ARcosmetolog
+                   words=     faqs=   error=budget | Perfection studio
+                   words=     faqs=   error=budget | Glamur G_B
+  claude-sonnet-5  words=  18 faqs= 3 | יעל ביוטי
+                   words=     faqs=   error=budget | M.B- BARBER SHOP
+                   words=     faqs=   error=budget | איפור ועיצוב שיער - רבקה רחמים
+  claude-sonnet-5  words= 157 faqs= 6 | magical care yaniv azran
+  claude-sonnet-5  words= 121 faqs= 5 | לינוי מיכאלוב קוסמטיקאית מוסמכת
+                   words=     faqs=   error=budget | אורטל הר זהב קוסמטיקאית בנהריה
+  claude-sonnet-5  words= 161 faqs= 6 | LA CLÍNICA
+                   words=     faqs=   error=budget | לורנסה בוטיק ספא ראש והילינג
+  claude-sonnet-5  words= 146 faqs= 5 violations=person:לאורך זמן | Shiran Ben Yehuda איפור קבוע
+  claude-sonnet-5  words= 131 faqs= 6 | אלה שמואל - טיפוח ויופי
+  claude-sonnet-5  words=  88 faqs= 7 violations=short:88 | הלנה שינדרמן טיפולי פנים בנהריה
+                   words=     faqs=   error=budget | mimi cosmetics
+  claude-sonnet-5  words=  98 faqs= 7 violations=short:98 | Sharona Spa
+  claude-sonnet-5  words=  55 faqs= 6 violations=short:55 | Tamar Cosmetics - קוסמטיקאית פרא רפואית
+  claude-sonnet-5  words=  32 faqs= 5 violations=short:32 | BEAUTY OSK
+                   words=     faqs=   error=budget | ליאת גז
+                   words=     faqs=   error=budget | אורלי דהאן ORLY DAHAN
+CSV: reports/editorial-report.csv
