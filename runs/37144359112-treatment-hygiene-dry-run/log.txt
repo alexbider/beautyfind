@@ -1,0 +1,7 @@
+Published treatments: 8916. Not treatment names: 1881.
+  sentence: 1594
+  product: 102
+  package: 102
+  article: 61
+  function_word: 22
+CSV: reports/treatment-hygiene.csv
