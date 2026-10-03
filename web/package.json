@@ -27,7 +27,8 @@
     "import:screenshots": "tsx scripts/import/screenshots.ts",
     "seo:city-category-report": "tsx --conditions=react-server scripts/seo-city-category-report.ts",
     "import:treatment-hygiene": "tsx scripts/import/treatmentHygiene.ts",
-    "import:settings": "tsx scripts/import/settings.ts"
+    "import:settings": "tsx scripts/import/settings.ts",
+    "import:editorial-report": "tsx scripts/import/editorialReport.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
