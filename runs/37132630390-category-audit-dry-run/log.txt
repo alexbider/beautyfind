@@ -1,0 +1,15 @@
+   13  hair-removal -> facials
+    6  nails -> facials
+    4  facials -> hair-salons
+    3  permanent-makeup -> facials
+    3  facials -> medical-aesthetics
+    3  spa-massage -> facials
+    2  brows-lashes -> facials
+    1  medical-aesthetics -> spa-massage
+    1  facials -> makeup
+    1  permanent-makeup -> nails
+    1  medical-aesthetics -> hair-restoration
+    1  facials -> tanning
+    1  hair-removal -> nails
+SUMMARY listings=816 proposals=40 applicable=40 claimed_skipped=0 csv=reports/category-audit.csv
+dry run: nothing changed (review the CSV, then add --confirm)
