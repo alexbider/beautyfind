@@ -4,7 +4,10 @@
 // Latin or Cyrillic copy of a name that is also written in Hebrew ("מספרת רון | Ron Hair Salon"), capped
 // at about 35 characters on a word boundary.
 
+import { CATEGORIES } from '../catalog';
+import { matchService } from '../import/services';
 import { normalizeHebrew } from '../import/textRules';
+import { CATEGORY_SHORT, SEO_TERM } from './terms';
 
 export const SEO_NAME_MAX = 35;
 
@@ -86,6 +89,9 @@ export function seoName(raw: string, max = SEO_NAME_MAX): string {
     if (words(head).length === 1 && GENERIC.has(head) && HEBREW.test(parts[1])) head = `${head} ${parts[1]}`;
     if (letters(head) >= 3) s = head;
   }
+  // "ניילס-בניית ציפורניים": a hyphen with no spaces whose tail names a treatment or a field is a tail too.
+  const glued = s.match(/^(.+?\S)-(\S.+)$/u);
+  if (glued && letters(glued[1]) >= 3 && namesTreatment(glued[2])) s = glued[1].trim();
   // "Name, keyword, keyword, keyword"
   const list = s.split(/\s*,\s*/);
   if (list.length >= 3 && letters(list[0]) >= 3) s = list[0];
@@ -103,6 +109,18 @@ export function seoName(raw: string, max = SEO_NAME_MAX): string {
   }
   s = normalizeHebrew(s).replace(/^[\s"'״׳“”‘’]+|[\s"'״׳“”‘’]+$/gu, '');
   return capWords(s, max) || raw.slice(0, max);
+}
+
+// Words a treatment or field tail starts with: the catalog's field names plus the heads of common treatment phrases.
+const FIELD_WORDS = new Set([
+  ...CATEGORIES.flatMap(c => c.name.split(/[\s,]+/)), ...Object.values(CATEGORY_SHORT).flatMap(x => x.split(/[\s,]+/)), ...Object.values(SEO_TERM).flatMap(x => x.split(/[\s,]+/)),
+  'בניית', 'עיצוב', 'הסרת', 'הרמת', 'הארכת', 'החלקת', 'החלקות', 'הלבנת', 'השתלת', 'השתלות', 'טיפול', 'טיפולי', 'טיפולים', 'מניקור', 'פדיקור', 'לק', 'איפור', 'קוסמטיקה', 'קוסמטיקאית', 'קוסמטיקס', 'ציפורניים', 'גבות', 'ריסים', 'שיער', 'מספרה', 'מספרת', 'ספא',
+  'עיסוי', 'עיסויים', 'בוטוקס', 'לייזר', 'שעווה', 'פילינג', 'ניקוי', 'תספורת', 'תספורות', 'צבע', 'פן', 'קרטין', 'מיקרובליידינג', 'שיזוף', 'חיטוב', 'אסתטיקה', 'קליניקה', 'סטודיו', 'מכון', 'סלון', 'יופי', 'מאפרת', 'ביוטי', 'ניילס',
+].filter(w => w.length >= 2));
+/** The text starts with a treatment or field word ("בניית ציפורניים", "עיצוב גבות", "קוסמטיקה מתקדמת"). */
+function namesTreatment(text: string): boolean {
+  const first = text.split(/\s+/)[0];
+  return FIELD_WORDS.has(first) || FIELD_WORDS.has(first.replace(/^[והבל]/u, '')) || !!matchService(first);
 }
 
 /** City names for titles, meta and schema: the display name keeps its en dash (תל אביב–יפו), the SEO form uses a plain hyphen. */
