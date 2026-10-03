@@ -25,19 +25,22 @@ const NAME_HINTS: Array<[RegExp, string]> = [
   [/איפור\s*קבוע|מיקרובליידינג|microblading|permanent\s*make/i, 'permanent-makeup'],
   [/מאפר|איפור(?!\s*קבוע)|make\s*-?up\s*(artist|studio)|\bmakeup\b/i, 'makeup'],
   [/כירורג(?:יה)?\s*פלסטי|מנתח\s*פלסטי|plastic\s*surg|cosmetic\s*surg/i, 'plastic-surgery'],
-  [/אסתטיקה\s*רפואית|רפואה\s*אסתטית|בוטוקס|הזרקות|medical\s*aesthetic|aesthetic\s*(clinic|medicine)|botox|filler/i, 'medical-aesthetics'],
+  [/אסתטיקה\s*רפואית|רפואה\s*אסתטית|בוטוקס|הזרקות|נגעי\s*עור|הסרת\s*שומות|נקודות\s*חן|medical\s*aesthetic|aesthetic\s*(clinic|medicine)|botox|filler/i, 'medical-aesthetics'],
   [/שיניים|דנטל|dental|\bdent(al|ist)\b|חיוך/i, 'dental-aesthetics'],
   [/\bספא\b|\bspa\b|מסאז|עיסוי|massage/i, 'spa-massage'],
-  [/קוסמטיק|טיפולי\s*פנים|facial|skin\s*care|skincare|esthetic/i, 'facials'],
+  [/קוסמטי|טיפולי\s*פנים|facial|skin\s*care|skincare|esthetic|cosmet/i, 'facials'],
 ];
 
 const order = new Map(CATEGORIES.map((c, i) => [c.slug, i]));
 
-/** Categories that the name alone names, strongest first. */
+/** Categories that the name alone names, strongest first: the word that comes first in the name leads. */
 export function categoriesFromName(name: string): string[] {
-  const out: string[] = [];
-  for (const [re, slug] of NAME_HINTS) if (re.test(name) && !out.includes(slug) && order.has(slug)) out.push(slug);
-  return out;
+  const hits = new Map<string, number>();
+  for (const [re, slug] of NAME_HINTS) {
+    const m = re.exec(name);
+    if (m && order.has(slug) && !hits.has(slug)) hits.set(slug, m.index);
+  }
+  return [...hits.entries()].sort((a, b) => a[1] - b[1]).map(([slug]) => slug);
 }
 
 /**
