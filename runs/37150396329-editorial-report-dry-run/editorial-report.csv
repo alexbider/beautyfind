@@ -1,0 +1,51 @@
+﻿branch_id,name,draft_from_this_run,model,words,faqs,error,violations,repairs,needs_more_info,cost_usd,input_tokens,output_tokens,generated_at
+9fb03bc6-cffa-4ac9-aa3b-8cca3c9d9c34,R&R Rina Oren & Roni Shalev,no,gpt-5-mini,160,7,,,0,true,0.0059155,1470,2774,2026-09-30T22:06:26.601Z
+4833e9c5-cb30-4281-906a-ec2a727fecd2,Opal cosmetic - אופל קוסמטיקה מקצועית,no,template,97,2,text_rules: text:dash:—,,0,true,0.02045125,8437,9171,2026-10-03T15:51:17.437Z
+8aa9c929-98b3-4ae7-8ef2-c633df3ff7f4,הילה גנון מאפרת ומסרקת מקצועית מנהריה,no,gpt-5-mini,288,6,,short:288,0,true,0.00760525,1669,3594,2026-09-30T22:08:48.859Z
+91b91049-672e-40a2-b689-2161570e2b4f,"ליאל מילר - קוסמטיקאית קלינית פרא רפואית מומחית בפיגמנטציה, אקנה ופוסט אקנה בעור הפנים והגוף",yes,claude-sonnet-5,50,5,,short:50,0,true,0.07794,620,5072,2026-10-03T19:53:30.090Z
+79f45964-d5b5-4ff7-a487-79a424062603,לורנסה בוטיק ספא ראש והילינג,no,gpt-5-mini,261,7,,short:261,0,true,0.007206,1784,3380,2026-09-30T21:59:35.017Z
+75525b40-06e9-498a-a04f-5b0c0a6317ac,אורטל הר זהב קוסמטיקאית בנהריה,no,gpt-5-mini,267,7,,short:267,1,true,0.01468625,4849,6737,2026-09-30T21:58:48.740Z
+80be9c7f-a966-4f2c-9309-97bbbb8fa10b,Batya Care & Beauty Institute,yes,claude-sonnet-5,85,6,,short:85 | name_missing,1,true,0.108348,3306,6562,2026-10-03T19:38:08.759Z
+4d026a4e-c492-40cc-a8ca-d4a2d5056ced,לירן קוסמטיקס,yes,template,119,4,max_tokens,,0,true,0,0,0,2026-10-03T19:39:15.801Z
+ee4d7d41-ed59-4253-a44f-a35d78f933c7,הפינה של טלי בנהריה-דירות אירוח וספא בריאות,yes,claude-sonnet-5,56,5,,short:56 | person:המיועד לעיסוי | person:הייעודי עולה,1,true,0.078024,2033,4795,2026-10-03T19:41:13.556Z
+31167bd4-b539-47fb-8a00-f9ed653212c2,אורית דיין מעצבת גבות והסרת שיער בלייזר,yes,claude-sonnet-5,58,7,,short:58,0,true,0.041955,500,2697,2026-10-03T19:42:13.930Z
+c1d074c8-2287-4d62-b421-1ba5f1c08c70,"салон красоты "" DREAM """,yes,claude-sonnet-5,44,5,,short:44 | name_missing,1,true,0.047226,1622,2824,2026-10-03T19:42:45.924Z
+9df5dfd6-0cbd-410b-8ec1-ffdcb83ec9b4,Osmo Professional רפאל אוסמו,yes,claude-sonnet-5,83,6,,short:83,1,true,0.09267,2835,5611,2026-10-03T19:44:39.132Z
+53e4393c-8b32-4615-b714-bd46cb2541ca,"ד״ר אמיר מטר,מרפאת שיניים ואסתטיקה",yes,claude-sonnet-5,61,6,,short:61 | name_missing,1,true,0.095088,2576,5824,2026-10-03T19:45:43.137Z
+ff559e86-3f3e-4252-ae5d-8810b0eb1050,ADM-אחים ואחיות עד הבית,yes,template,125,4,max_tokens,,0,false,0,0,0,2026-10-03T19:48:04.625Z
+64642c0f-f2ea-43cb-b0a3-cbd9b66517e9,בתאל הראל קוסמטיקה מתקדמת,yes,claude-sonnet-5,67,6,,short:67,1,true,0.070182,3249,4029,2026-10-03T19:49:14.988Z
+caa416ae-8f10-4aee-ac00-d5f35227bbd0,Lilac Saturn cosmetics and eyebrow shaping,yes,claude-sonnet-5,67,6,,short:67,0,true,0.063555,620,4113,2026-10-03T19:50:00.882Z
+ad544cb8-7e77-4524-9640-0befa25de827,L&Y beauty lab,yes,claude-sonnet-5,28,4,,,1,true,0.065472,1244,4116,2026-10-03T19:52:40.610Z
+14e6f29b-d0e6-4733-bca8-8f0541f268fe,Barak clinic - קליניקה לאסתטיקה מתקדמת בנהריה,no,gpt-5-mini,284,7,,short:284 | dash,1,true,0.01347775,4511,6175,2026-09-30T22:08:03.763Z
+8d6eddba-0a9d-466f-84d5-94586d40f31b,Meital Ram professional makeup artist and cosmetologist,yes,claude-sonnet-5,56,4,,short:56 | name_missing,1,true,0.109932,3274,6674,2026-10-03T19:51:56.457Z
+142d077d-f5ce-4904-aeba-eaa2eb286855,דיאנה שרייפר,no,gpt-5-mini,43,6,,short:43,1,true,0.0096865,4978,4221,2026-10-03T15:52:52.013Z
+c1ea549c-d06c-4606-8a0b-c00d8b09725f,"ד""ר יעל הירש אסתטיקה",yes,claude-sonnet-5,44,5,,short:44 | person:יעל הירש | name_missing,1,true,0.082227,1679,5146,2026-10-03T19:43:42.757Z
+49c69891-3bae-4cf8-ab22-e473f85244b5,יוניק קליניק - unique clinic,no,gpt-5-mini,157,6,,,0,true,0.00705825,1401,3354,2026-09-30T22:08:47.375Z
+3b5f58db-d47c-40e8-9816-0c87f5a6b947,יעל ביוטי,yes,claude-sonnet-5,18,3,,,1,true,0.069699,1173,4412,2026-10-03T19:50:45.327Z
+0dc89d04-4269-4f7c-96ca-df421920dbf1,magical care yaniv azran,no,gpt-5-mini,87,6,,short:87,1,true,0.017025,9772,7291,2026-10-03T15:52:18.799Z
+f276095e-d7ef-4f16-b6ad-bf523bc2e6cc,לינוי מיכאלוב קוסמטיקאית מוסמכת,no,template,61,2,text_rules: text:dash:—,,0,true,0.01312,5328,5894,2026-10-03T15:53:39.989Z
+046a4123-029b-4df9-aba7-951606c2b568,Permanent makeup & eyelashes Nahariya,no,gpt-5-mini,288,7,,short:288 | dash,1,true,0.013777,4844,6283,2026-09-30T22:06:56.148Z
+f519049e-b3ab-4dd0-91c4-b4f944cef39c,LA CLÍNICA,no,gpt-5-mini,303,6,,short:303,0,true,0.01001975,3695,4548,2026-09-30T22:06:45.050Z
+b5c6b28d-d5ae-4ca1-b53e-25f795617481,לב מדיקל - סניף נהריה,no,gpt-5-mini,161,7,,,0,true,0.00597525,1373,2816,2026-09-30T22:07:33.748Z
+fd8ad20d-1caa-4a2e-aa1a-f2a43a6d80db,Shiran Ben Yehuda איפור קבוע,no,gpt-5-mini,275,7,,short:275 | person:כ,1,true,0.0141085,6730,6213,2026-09-30T22:09:16.703Z
+0e5b7bdb-b90b-4576-a535-ab77269958df,אלה שמואל - טיפוח ויופי,no,gpt-5-mini,271,8,,short:271,0,true,0.007172,1368,3415,2026-09-30T22:07:32.018Z
+ff590aaf-bf24-47fe-94af-30f52187b8c5,הלנה שינדרמן טיפולי פנים בנהריה,yes,claude-sonnet-5,88,7,,short:88,1,true,0.126669,3558,7733,2026-10-03T19:46:59.782Z
+30491085-9e7e-462d-887e-70b5ac899ef4,ד״ר אביטל אנדלר- אסתטיקה רפואית ודנטלית,no,gpt-5-mini,190,7,,name_missing,1,true,0.01191625,4321,5418,2026-09-30T22:10:48.124Z
+d44aee6a-cef9-4a1c-8dc0-6d9a18a77742,בי ביוטי בתאל שפר,no,gpt-5-mini,307,7,,short:307,0,true,0.00803275,1667,3808,2026-09-30T22:12:42.276Z
+af4ecf73-badc-4b6c-a7f7-4ec3f15393dc,הסטודיו של מורן איפור וציפורניים,no,gpt-5-mini,181,7,,dash,1,true,0.012207,4268,5570,2026-09-30T22:12:58.085Z
+06390e24-6f82-4bb1-8bc5-caecf3f12a37,mimi cosmetics,no,gpt-5-mini,148,8,,,0,true,0.006575,1380,3115,2026-09-30T22:12:36.358Z
+7e8c91ea-4b2e-4e75-b211-194e1188fbce,Sharona Spa,yes,claude-sonnet-5,98,7,,short:98,1,true,0.097584,3553,5795,2026-10-03T19:40:20.618Z
+e58b2a2e-29a8-4d41-988b-51bab7c40d3b,Tamar Cosmetics - קוסמטיקאית פרא רפואית,yes,claude-sonnet-5,55,6,,short:55,0,true,0.036354,553,2313,2026-10-03T19:41:43.523Z
+5e7d4d4f-5aa6-41f1-b660-3e4cf7c5525f,Victoria Levin Cosmetics,no,gpt-5-mini,297,8,,short:297,1,true,0.012107,4796,5454,2026-09-30T22:10:48.427Z
+dddabe69-f356-4d08-bcd8-1d39cef0d770,Laurence skin care,no,gpt-5-mini,185,7,,,0,true,0.00584025,1241,2765,2026-09-30T22:11:28.445Z
+2ccbad7e-ae74-4814-afcb-89d1d6d34d30,Grace Cosmetology Nahariya,no,gpt-5-mini,275,5,,short:275,1,true,0.0117565,4426,5325,2026-09-30T22:12:54.093Z
+b5afada9-287f-47af-9a19-2bbd854a7400,BEAUTY OSK,yes,claude-sonnet-5,32,5,,short:32,0,true,0.033027,439,2114,2026-10-03T19:48:31.665Z
+2a7539f0-8de3-43fc-b286-3eec171e7cb3,"ד""ר מינה סקנדריון",no,gpt-5-mini,144,7,,name_missing,1,true,0.01261375,4831,5703,2026-09-30T22:12:59.719Z
+ac0b76e1-fa40-4d39-a307-7d29bff52c2f,ליאת גז,no,gpt-5-mini,284,8,,short:284,1,true,0.012051,5268,5367,2026-09-30T22:13:51.269Z
+428b9c2b-b87d-4cb3-82d5-83d155ae79c1,ARcosmetolog,no,gpt-5-mini,260,7,,short:260,1,true,0.014762,5616,6679,2026-09-30T22:14:49.801Z
+76c423b1-7a82-4e86-8b99-cab9c99707af,אורלי דהאן ORLY DAHAN,no,gpt-5-mini,287,7,,short:287,0,true,0.00751525,1845,3527,2026-09-30T22:14:29.999Z
+0e665d70-a4cd-4499-bf50-514a2bb29577,איפור ועיצוב שיער - רבקה רחמים,no,gpt-5-mini,265,7,,short:265 | dash,1,true,0.02136375,10047,9426,2026-09-30T22:17:23.859Z
+cc65a219-ea6b-4325-8cea-7807dd28a4fa,לירן איפור קבוע ובניית ציפורניים.,no,gpt-5-mini,290,7,,short:290,0,true,0.00705075,2179,3253,2026-09-30T22:15:38.432Z
+7ec6706c-f25f-4e12-803e-7f24c0ddd609,Perfection studio,no,gpt-5-mini,295,7,,short:295,1,true,0.013141,5124,5930,2026-09-30T22:16:03.230Z
+388a5b73-0aed-4fea-9b38-a28b0b4b0aaa,Glamur G_B,no,gpt-5-mini,171,7,,short:171,0,true,0.00586875,1731,2718,2026-09-30T22:16:30.834Z
+bcbde7dc-9a86-447f-940d-a440d716402c,M.B- BARBER SHOP,no,gpt-5-mini,257,6,,short:257,1,true,0.012034,3936,5525,2026-09-30T22:17:00.819Z
