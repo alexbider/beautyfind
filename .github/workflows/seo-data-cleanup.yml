@@ -4,7 +4,8 @@
 # for review, and also committed to the "seo-reports" branch (runs/<run id>-<task>-<mode>/), which any clone
 # can fetch when the artifact store is out of reach. Tasks: category-audit (primary category per listing),
 # description-cleanup (queue rewrites of descriptions that break the text rules), treatment-hygiene
-# (read-only CSV), city-category-report.
+# (staff CSV; with confirm it hides sentence and article-title records, reversible with undo_run),
+# city-category-report.
 name: SEO data cleanup
 
 on:
@@ -22,6 +23,10 @@ on:
         default: false
       actor:
         description: Staff user id recorded on queued runs (description-cleanup only; empty = the first ops user)
+        required: false
+        default: ''
+      undo_run:
+        description: treatment-hygiene only. Run id of an earlier applied run whose hidden records should be published again (ignores confirm)
         required: false
         default: ''
 
@@ -45,6 +50,7 @@ jobs:
       TASK: ${{ inputs.task }}
       CONFIRM: ${{ inputs.confirm }}
       ACTOR: ${{ inputs.actor }}
+      UNDO_RUN: ${{ inputs.undo_run }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -61,7 +67,15 @@ jobs:
           case "$TASK" in
             category-audit) npm run -s import:category-audit -- --out reports/category-audit.csv $flag 2>&1 | tee reports/log.txt ;;
             description-cleanup) npm run -s import:description-cleanup -- --out reports/description-cleanup.csv $flag ${ACTOR:+--actor "$ACTOR"} 2>&1 | tee reports/log.txt ;;
-            treatment-hygiene) npm run -s import:treatment-hygiene -- --out reports/treatment-hygiene.csv 2>&1 | tee reports/log.txt ;;
+            treatment-hygiene)
+              if [ -n "$UNDO_RUN" ]; then
+                # The undo list lives on the report branch, in the folder of the run that hid the records.
+                git fetch --quiet origin seo-reports
+                git show "origin/seo-reports:runs/${UNDO_RUN}-treatment-hygiene-applied/treatment-hygiene-unpublished.csv" > reports/undo-source.csv
+                npm run -s import:treatment-hygiene -- --republish reports/undo-source.csv 2>&1 | tee reports/log.txt
+              else
+                npm run -s import:treatment-hygiene -- --out reports/treatment-hygiene.csv --undo-out reports/treatment-hygiene-unpublished.csv $flag 2>&1 | tee reports/log.txt
+              fi ;;
             city-category-report) npm run -s seo:city-category-report 2>&1 | tee reports/log.txt ;;
           esac
           echo "::notice title=$TASK ($([ "$CONFIRM" = "true" ] && echo applied || echo dry run))::$(tail -1 reports/log.txt)"
@@ -79,7 +93,7 @@ jobs:
           TOKEN: ${{ github.token }}
         run: |
           set -e
-          mode=$([ "$CONFIRM" = "true" ] && echo applied || echo dry-run)
+          mode=$([ "$CONFIRM" = "true" ] && echo applied || echo dry-run); [ -n "$UNDO_RUN" ] && mode="undo-${UNDO_RUN}"
           dest="runs/${RUN_ID}-${TASK}-${mode}"
           tmp=$(mktemp -d)
           url="https://x-access-token:${TOKEN}@github.com/${REPO}.git"

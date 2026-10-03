@@ -18,6 +18,8 @@ import { CATEGORIES, categoryBySlug } from '../../src/lib/catalog';
 import { primaryCategory } from '../../src/lib/category';
 import { categoriesFromName, rankCategories } from '../../src/lib/import/categoryRank';
 import { GENERIC_TYPES, slugsForType, snake } from '../../src/lib/import/dataforseo';
+import { matchService } from '../../src/lib/import/services';
+import { isTreatmentName } from '../../src/lib/seo/treatmentHygiene';
 
 const db = new PrismaClient();
 const arg = (name: string) => {
@@ -51,7 +53,7 @@ async function main() {
     select: {
       id: true, businessId: true, name: true, cityName: true, isClaimed: true,
       categories: { select: { categorySlug: true, isPrimary: true } },
-      treatments: { where: { isPublished: true }, select: { categorySlug: true, priceAgorot: true } },
+      treatments: { where: { isPublished: true }, select: { name: true, categorySlug: true, priceAgorot: true } },
     },
     orderBy: [{ regionSlug: 'asc' }, { cityName: 'asc' }, { name: 'asc' }],
   });
@@ -72,8 +74,12 @@ async function main() {
     const googleAdditional = (p?.types ?? []).filter(t => !isPrimary(t)).flatMap(slugsForType);
     const services: Record<string, { n: number; priced: number }> = {};
     for (const t of b.treatments) {
-      if (!t.categorySlug || !KNOWN.has(t.categorySlug)) continue;
-      const s = (services[t.categorySlug] ??= { n: 0, priced: 0 });
+      // Only real treatment names count, and the matcher's reading of the name wins over the stored category
+      // (an import may have filed a skin treatment under hair salons).
+      if (!isTreatmentName(t.name)) continue;
+      const cat = matchService(t.name)?.category ?? t.categorySlug;
+      if (!cat || !KNOWN.has(cat)) continue;
+      const s = (services[cat] ??= { n: 0, priced: 0 });
       s.n += 1;
       if (t.priceAgorot != null && t.priceAgorot > 0) s.priced += 1;
     }
