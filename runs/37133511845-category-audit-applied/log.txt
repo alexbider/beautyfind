@@ -1,0 +1,20 @@
+    7  facials -> hair-salons
+    7  hair-removal -> facials
+    4  permanent-makeup -> facials
+    4  facials -> medical-aesthetics
+    3  hair-removal -> nails
+    3  hair-salons -> makeup
+    2  brows-lashes -> permanent-makeup
+    2  spa-massage -> facials
+    1  hair-removal -> brows-lashes
+    1  nails -> makeup
+    1  medical-aesthetics -> spa-massage
+    1  nails -> permanent-makeup
+    1  facials -> nails
+    1  facials -> makeup
+    1  permanent-makeup -> nails
+    1  hair-removal -> hair-salons
+    1  nails -> facials
+    1  facials -> tanning
+SUMMARY listings=816 proposals=42 applicable=42 claimed_skipped=0 csv=reports/category-audit.csv
+APPLIED 42 listings. Redeploy or revalidate the site so the sitemap and the cards pick up the new addresses.
