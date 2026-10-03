@@ -26,7 +26,7 @@ const NAME_HINTS: Array<[RegExp, string]> = [
   [/מאפר|איפור(?!\s*קבוע)|make\s*-?up\s*(artist|studio)|\bmakeup\b/i, 'makeup'],
   [/כירורג(?:יה)?\s*פלסטי|מנתח\s*פלסטי|plastic\s*surg|cosmetic\s*surg/i, 'plastic-surgery'],
   [/אסתטיקה\s*רפואית|רפואה\s*אסתטית|בוטוקס|הזרקות|medical\s*aesthetic|aesthetic\s*(clinic|medicine)|botox|filler/i, 'medical-aesthetics'],
-  [/שיניים|dental|\bdent(al|ist)\b|חיוך/i, 'dental-aesthetics'],
+  [/שיניים|דנטל|dental|\bdent(al|ist)\b|חיוך/i, 'dental-aesthetics'],
   [/\bספא\b|\bspa\b|מסאז|עיסוי|massage/i, 'spa-massage'],
   [/קוסמטיק|טיפולי\s*פנים|facial|skin\s*care|skincare|esthetic/i, 'facials'],
 ];
@@ -42,8 +42,8 @@ export function categoriesFromName(name: string): string[] {
 
 /**
  * Orders the record's categories by evidence: the name (4 points per hit), Google's primary type (5, or 1
- * when generic), Google's additional types (2), and the site's services in that category (1 each, up to
- * 5, plus 1 when any is priced). A category named by the business name or by three services joins even
+ * when generic), Google's additional types (2 per category, however many labels map to it), and the site's
+ * services in that category (1 each, up to 5, plus 1 when any is priced). A category named by the business name or by three services joins even
  * when Google did not list it. Ties keep catalog order. Unknown slugs are dropped.
  */
 export function rankCategories(e: CategoryEvidence): string[] {
@@ -53,7 +53,7 @@ export function rankCategories(e: CategoryEvidence): string[] {
   };
   for (const c of e.candidates) bump(c, 0.5); // present on the record
   for (const c of e.googlePrimary ?? []) bump(c, e.googleGeneric ? 1 : 5);
-  for (const c of e.googleAdditional ?? []) bump(c, 2);
+  for (const c of new Set(e.googleAdditional ?? [])) bump(c, 2);
   categoriesFromName(e.name).forEach((c, i) => bump(c, i === 0 ? 4 : 2));
   for (const [c, s] of Object.entries(e.services ?? {})) bump(c, Math.min(5, s.n) + (s.priced > 0 ? 1 : 0));
   const known = new Set(e.candidates.filter(c => order.has(c)));
