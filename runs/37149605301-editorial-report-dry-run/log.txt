@@ -1,0 +1,27 @@
+run 4af641d9-fbb9-4a4f-931a-225c47429af9 "ניקוי תיאורים 1/17" status=running started=2026-10-03T19:34:34.972Z finished=-
+counters: {"improved":1,"postTasks":9,"postPhotos":13,"filled_faqs":1,"editorialCalls":16,"nothing_to_add":15,"youtubeRequests":0,"editorial_failed":2,"editorial_written":14,"filled_description":1}
+listings in scope: 50, import records: 50, drafts written in this run: 19
+by model: claude-sonnet-5: 17, template: 2
+by error: (none): 17, max_tokens: 2
+words: min 18, median 58, max 125
+cost recorded on the records: 1.296 USD
+  claude-sonnet-5  words=  50 faqs= 5 violations=short:50 | ליאל מילר - קוסמטיקאית קלינית פרא רפואית
+  claude-sonnet-5  words=  85 faqs= 6 violations=short:85 | name_missing | Batya Care & Beauty Institute
+  template         words= 119 faqs= 4 error=max_tokens | לירן קוסמטיקס
+  claude-sonnet-5  words=  56 faqs= 5 violations=short:56 | person:המיועד לעיסוי | person:הייעודי עולה | הפינה של טלי בנהריה-דירות אירוח וספא ברי
+  claude-sonnet-5  words=  58 faqs= 7 violations=short:58 | אורית דיין מעצבת גבות והסרת שיער בלייזר
+  claude-sonnet-5  words=  44 faqs= 5 violations=short:44 | name_missing | салон красоты " DREAM "
+  claude-sonnet-5  words=  83 faqs= 6 violations=short:83 | Osmo Professional רפאל אוסמו
+  claude-sonnet-5  words=  61 faqs= 6 violations=short:61 | name_missing | ד״ר אמיר מטר,מרפאת שיניים ואסתטיקה
+  template         words= 125 faqs= 4 error=max_tokens | ADM-אחים ואחיות עד הבית
+  claude-sonnet-5  words=  67 faqs= 6 violations=short:67 | בתאל הראל קוסמטיקה מתקדמת
+  claude-sonnet-5  words=  67 faqs= 6 violations=short:67 | Lilac Saturn cosmetics and eyebrow shapi
+  claude-sonnet-5  words=  28 faqs= 4 | L&Y beauty lab
+  claude-sonnet-5  words=  56 faqs= 4 violations=short:56 | name_missing | Meital Ram professional makeup artist an
+  claude-sonnet-5  words=  44 faqs= 5 violations=short:44 | person:יעל הירש | name_missing | ד"ר יעל הירש אסתטיקה
+  claude-sonnet-5  words=  18 faqs= 3 | יעל ביוטי
+  claude-sonnet-5  words=  88 faqs= 7 violations=short:88 | הלנה שינדרמן טיפולי פנים בנהריה
+  claude-sonnet-5  words=  98 faqs= 7 violations=short:98 | Sharona Spa
+  claude-sonnet-5  words=  55 faqs= 6 violations=short:55 | Tamar Cosmetics - קוסמטיקאית פרא רפואית
+  claude-sonnet-5  words=  32 faqs= 5 violations=short:32 | BEAUTY OSK
+CSV: reports/editorial-report.csv
