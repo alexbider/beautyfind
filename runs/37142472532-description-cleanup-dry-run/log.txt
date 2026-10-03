@@ -1,0 +1,34 @@
+by rule:
+  3945  missing_info
+  1472  latin
+   421  spelling
+    60  dash
+     3  emoji
+most frequent matches:
+   784  missing_info:במקורות
+   614  missing_info:לא פורסמו
+   535  missing_info:לא פורסם
+   351  missing_info:לא צוינו
+   293  latin:St
+   260  missing_info:שסופק
+   249  missing_info:אין פירוט
+   235  missing_info:המידע הזמין
+   211  spelling:מצויין
+   129  missing_info:לא נמסר
+   121  spelling:ווטסאפ
+   118  missing_info:בעמוד העסק
+   117  missing_info:אין מידע
+    93  missing_info:בפרופיל העסק
+    89  spelling:המצויין
+    82  missing_info:לא נמצאו
+    75  missing_info:לפי הנתונים
+    71  missing_info:לא צוין
+    55  latin:Netanya
+    41  missing_info:לא זמין
+    37  missing_info:ללא פירוט
+    35  latin:Haifa
+    34  latin:Nahariyya
+    33  dash:–
+    27  dash:—
+SUMMARY scanned=816 failing=813 rewrite=813 needs_import_record=0 skipped_claimed=0 skipped_approved=0 csv=reports/description-cleanup.csv
+dry run: nothing queued (review the CSV, then add --confirm --actor <userId>)
