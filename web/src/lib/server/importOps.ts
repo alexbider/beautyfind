@@ -23,6 +23,8 @@ import { storage } from '@/lib/vendors/storage';
 import { PERSON_REASONS } from '@/lib/import/placeCoverage';
 import { resolveCity } from '@/lib/import/geo';
 import { chainKeyOf, sameChain } from '@/lib/import/chain';
+import { composeHebrewAddress, type GoogleAddress, type ResolvedAddress } from '@/lib/import/address';
+import { fetchGoogleAddress } from '@/lib/import/placesAddress';
 
 export type OpResult = { ok: true; branchId?: string; slug?: string; href?: string } | { ok: false; error: string };
 type Actor = { id: string };
@@ -405,6 +407,23 @@ async function audit(actor: Actor, action: string, p: ImportPlace, meta: Record<
 }
 
 /**
+ * The address a new listing is created with: Google's Hebrew street and number when the record has a
+ * Google place id and the server has the key (one essentials call, 8 seconds at most, failures fall
+ * through), otherwise the dictionary or the city alone. A listing never arrives with a Latin address.
+ */
+export async function importAddress(p: Pick<ImportPlace, 'address' | 'placeId'>, city: string, googleId: string | null): Promise<ResolvedAddress> {
+  let google: GoogleAddress | null = null;
+  if (googleId && process.env.GOOGLE_MAPS_API_KEY) {
+    try {
+      google = await fetchGoogleAddress(googleId, { timeoutMs: 8_000 });
+    } catch {
+      google = null;
+    }
+  }
+  return composeHebrewAddress(google, p.address, city);
+}
+
+/**
  * New listing from an import record. Unclaimed, live, with our category photo until the owner adds theirs.
  * `images: false` publishes without copying the logo and photos (a few hundred milliseconds instead of
  * several seconds); the listing then waits in the pending-images queue (copyPendingImages), which the
@@ -434,6 +453,7 @@ export async function approvePlace(actor: Actor, id: string, opts: { images?: bo
   const chain = chainKey
     ? (await db.business.findMany({ where: { chainKey }, include: { branches: { select: { name: true } } }, orderBy: { createdAt: 'asc' } })).find(b => b.branches.some(x => sameChain(x.name, p.name)))
     : null;
+  const addr = await importAddress(p, city?.name ?? p.cityName ?? '', googleId);
 
   try {
     const branch = await db.$transaction(async tx => {
@@ -449,7 +469,10 @@ export async function approvePlace(actor: Actor, id: string, opts: { images?: bo
           regionSlug: p.regionSlug as RegionSlug,
           cityId: city?.id ?? null,
           cityName: city?.name ?? p.cityName ?? '',
-          address: p.address.replace(/,?\s*ישראל$/, ''),
+          address: addr.address || p.address.replace(/,?\s*ישראל$/, ''),
+          addressRaw: p.address,
+          postalCode: addr.postalCode,
+          addressSource: addr.source,
           lat: p.lat,
           lng: p.lng,
           phone: p.phone,

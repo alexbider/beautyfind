@@ -290,7 +290,10 @@ model Branch {
   cityId               String?      @map("city_id") @db.Uuid
   city                 City?        @relation(fields: [cityId], references: [id])
   cityName             String       @map("city_name") // free text as typed; cityId set when it matches the catalog
-  address              String
+  address              String // the display line, in Hebrew: street and number, kept building details, city (src/lib/import/address.ts)
+  addressRaw           String?      @map("address_raw") // the address as it arrived (Google, DataForSEO or the site), before the Hebrew pass
+  postalCode           String?      @map("postal_code") // from Google Places; the schema's own field, never in the display line
+  addressSource        String?      @map("address_source") // google | dictionary | city_only | unchanged | owner (owner-entered addresses are never rewritten)
   lat                  Float?
   lng                  Float?
   phone                String? // E.164

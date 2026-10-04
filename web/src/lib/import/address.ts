@@ -6,6 +6,9 @@
 // packet then carries the city alone and the text says nothing about the street, which is better than an
 // English or an invented one. Pure, shared by the packet builder, the template draft and the tests.
 
+import { CITIES } from '../catalog';
+import { LATIN_ADDRESS } from './textRules';
+
 const HEBREW = /[א-ת]/u;
 
 /** Street-type words, Latin and transliterated, with the Hebrew word that leads the Hebrew form. */
@@ -130,4 +133,122 @@ export function hebrewAddress(raw: string | null | undefined, city: string | nul
   const translated = latinName && !/[A-Za-z]/.test(city ?? '') ? hebrewStreet(latinName) : null;
   if (translated) return `${translated}${number ? ` ${number}` : ''}${city ? `, ${city}` : ''}`;
   return city ?? '';
+}
+
+// ---------- Google Places (language he) and the stored display line ----------
+
+/** What Place Details returns for the address, already in Hebrew when asked with languageCode=he. */
+export interface GoogleAddress {
+  formatted: string | null;
+  route: string | null;
+  streetNumber: string | null;
+  locality: string | null;
+  postalCode: string | null;
+  premise: string | null;
+  subpremise: string | null;
+}
+
+/** The address parts of a Places API (New) place body (formattedAddress, addressComponents with types). */
+export function parseGoogleAddress(body: unknown): GoogleAddress | null {
+  if (!body || typeof body !== 'object') return null;
+  const b = body as { formattedAddress?: unknown; addressComponents?: Array<{ longText?: string; shortText?: string; types?: string[] }> };
+  const comp = (t: string) => b.addressComponents?.find(c => Array.isArray(c.types) && c.types.includes(t))?.longText?.trim() || null;
+  return {
+    formatted: typeof b.formattedAddress === 'string' ? b.formattedAddress : null,
+    route: comp('route'),
+    streetNumber: comp('street_number'),
+    locality: comp('locality') ?? comp('administrative_area_level_2'),
+    postalCode: comp('postal_code'),
+    premise: comp('premise'),
+    subpremise: comp('subpremise'),
+  };
+}
+
+export type AddressSource = 'google' | 'dictionary' | 'city_only' | 'unchanged' | 'owner';
+export interface ResolvedAddress {
+  address: string;
+  postalCode: string | null;
+  source: AddressSource;
+}
+
+const COUNTRY = /,?\s*(?:ישראל|Israel)\s*$/iu;
+const POSTAL = /^\d{5,7}$/;
+const HEBREW_ONLY = (s: string) => HEBREW.test(s) && !/[A-Za-z]/.test(s);
+/** Floor, building, mall, entrance: the details worth keeping from the original line. */
+const DETAIL_WORDS = /(?<![א-ת])(קומה|קומת|מתחם|בניין|בנין|מרכז|קניון|חנות|כניסה|דירה|אגף|מגדל|בית\s[א-ת]|פארק|מול)(?![א-ת])/u;
+const LATIN_FLOOR = /^(?:floor|fl\.?)\s*(\d+)$|^(\d+)(?:st|nd|rd|th)?\s*floor$/i;
+
+/**
+ * The floor and building details of the original line that the Hebrew line keeps ("קומה 3", "מתחם בית
+ * הפסנתר", "Floor 2" as קומה 2). The city, the country, a postal code, the street itself and Latin parts
+ * the dictionary or Google already replaced are not details.
+ */
+export function addressDetails(original: string, city: string | null, route: string | null): string[] {
+  const parts = (original ?? '').replace(COUNTRY, '').split(/\s*,\s*/).map(p => p.trim()).filter(Boolean);
+  const out: string[] = [];
+  for (const p of parts) {
+    if ((city && p === city) || POSTAL.test(p)) continue;
+    const floor = p.match(LATIN_FLOOR);
+    if (floor) {
+      out.push(`קומה ${floor[1] ?? floor[2]}`);
+      continue;
+    }
+    if (!HEBREW_ONLY(p)) continue;
+    if (route && p.includes(route)) continue;
+    if (DETAIL_WORDS.test(p)) out.push(p);
+  }
+  return [...new Set(out)];
+}
+
+/** The display line without its trailing city, for the schema's streetAddress. */
+export function streetLine(address: string, city: string | null): string {
+  const a = address.replace(COUNTRY, '').trim();
+  if (!city) return a;
+  const esc = city.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return a.replace(new RegExp(`(?:^|,\\s*)${esc}\\s*$`, 'u'), '').replace(/[\s,]+$/u, '').trim() || a;
+}
+
+/**
+ * The stored display line for a listing. Google's Hebrew street and number come first (with the details the
+ * original carried, or Google's own building name), then the city already stored on the branch, so the line
+ * matches the city pages; the country and the postal code never appear in it. Without a usable Google
+ * answer: an all-Hebrew original is kept, a Latin street the dictionary knows is translated, and an unknown
+ * street leaves the city alone.
+ */
+export function composeHebrewAddress(google: GoogleAddress | null, original: string, city: string): ResolvedAddress {
+  const cleaned = (original ?? '').replace(COUNTRY, '').replace(/\s+/g, ' ').trim();
+  if (google?.route && HEBREW_ONLY(google.route)) {
+    const street = `${google.route}${google.streetNumber ? ` ${google.streetNumber}` : ''}`;
+    const details = addressDetails(cleaned, city, google.route);
+    if (!details.length && google.premise && HEBREW_ONLY(google.premise) && google.premise !== google.route) details.push(google.premise);
+    return { address: [street, ...details, city].filter(Boolean).join(', '), postalCode: google.postalCode && POSTAL.test(google.postalCode) ? google.postalCode : null, source: 'google' };
+  }
+  if (cleaned && HEBREW_ONLY(cleaned)) return { address: cleaned, postalCode: null, source: 'unchanged' };
+  if (!city) return { address: cleaned, postalCode: null, source: 'unchanged' };
+  const dict = hebrewAddress(cleaned, city);
+  if (dict && dict !== city) {
+    const details = addressDetails(cleaned, city, null);
+    return { address: [streetLine(dict, city), ...details, city].filter(Boolean).join(', '), postalCode: null, source: 'dictionary' };
+  }
+  return { address: city, postalCode: null, source: 'city_only' };
+}
+
+const LATIN_CITIES = new Set([...CITIES.flatMap(c => [c.slug.replace(/-/g, ' '), c.slug.replace(/-/g, '')]), 'israel', 'tel aviv', 'telaviv', 'jerusalem', 'haifa', 'beersheba', 'beer sheva', 'netanya', 'ashdod', 'eilat', 'petah tikva', 'rishon lezion', 'holon', 'ramat gan', 'bat yam', 'herzliya', 'kfar saba', 'raanana', 'nahariya', 'acre', 'akko', 'tiberias', 'nazareth', 'afula', 'modiin', 'rehovot', 'ashkelon', 'hadera', 'lod', 'ramla', 'bnei brak', 'givatayim', 'yavne', 'nes ziona', 'kiryat ono', 'hod hasharon', 'rosh haayin', 'beit shemesh', 'kiryat gat', 'dimona', 'sderot', 'ofakim', 'arad', 'kiryat ata', 'kiryat bialik', 'kiryat motzkin', 'kiryat yam', 'nesher', 'tirat carmel', 'karmiel', 'safed', 'tzfat', 'kiryat shmona', 'migdal haemek', 'beit shean', 'yokneam', 'zichron yaakov', 'pardes hanna', 'or akiva', 'binyamina']);
+
+/**
+ * Why an address may not be shown: a Latin street word (St, Rd, Derech, Rehov...), a Latin city or country
+ * name, or any other Latin word. Empty means the line is Hebrew (digits and punctuation allowed).
+ */
+export function addressProblems(address: string | null | undefined): string[] {
+  const a = (address ?? '').trim();
+  if (!a) return [];
+  const out: string[] = [];
+  const street = a.match(LATIN_ADDRESS);
+  if (street) out.push(`latin_street:${street[0]}`);
+  const words = a.split(/[\s,]+/).map(w => w.replace(/^[^A-Za-z]+|[^A-Za-z]+$/g, '')).filter(w => /^[A-Za-z]{2,}$/.test(w));
+  const lower = a.toLowerCase();
+  for (const c of LATIN_CITIES) if (new RegExp(`(?<![a-z])${c}(?![a-z])`, 'i').test(lower)) out.push(`latin_city:${c}`);
+  const streetWords = new Set((street ? [street[0]] : []).map(w => w.toLowerCase()));
+  for (const w of words) if (!streetWords.has(w.toLowerCase()) && ![...LATIN_CITIES].some(c => c.split(' ').includes(w.toLowerCase()))) out.push(`latin:${w}`);
+  return [...new Set(out)];
 }

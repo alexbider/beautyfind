@@ -162,6 +162,7 @@ async function onApprove(tx: Tx, req: Req): Promise<'license_pending' | 'already
           isClaimed: true,
           name: str(d.name) ?? branch.name,
           address: str(d.address) ?? branch.address,
+          ...(str(d.address) && str(d.address) !== branch.address ? { addressSource: 'owner' } : {}),
           phone: str(d.phone) ?? branch.phone,
           whatsapp: str(d.whatsapp) ?? branch.whatsapp,
           ...(Array.isArray(d.hours) && d.hours.length === 7 ? { hours: d.hours as Prisma.InputJsonValue } : {}),

@@ -22,6 +22,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { STRAIGHT_QUOTE_ABBREVIATION, textProblems } from '../src/lib/import/textRules';
+import { addressProblems } from '../src/lib/import/address';
 import { SITE_ORIGIN } from '../src/lib/seo/meta';
 import { metaDescriptionProblems, titleHead } from '../src/lib/seo/metaRules';
 
@@ -64,6 +65,8 @@ interface PageReport {
   jsonLd: { blocks: number; parseErrors: number; types: string[]; expectedOk: boolean; duplicateIds: string[] };
   images: { total: number; missingAlt: number; emptyAltNotDecorative: number; missingSize: number };
   text: { missingInfo: number; latin: string[]; dashes: number; emoji: number; spelling: number; straightQuotes: number };
+  /** Latin street words, Latin city names or other Latin words in the page's <address> elements and the schema's streetAddress. */
+  addressProblems: string[];
   internalLinks: string[];
 }
 
@@ -183,6 +186,7 @@ function analyse(path: string, status: number, redirectTo: string | null, html: 
   const ldBlocks = [...html.matchAll(/<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
   const types: string[] = [];
   const descriptions: string[] = [];
+  const addresses: string[] = [...html.matchAll(/<address[^>]*>([\s\S]*?)<\/address>/gi)].map(m => decode(m[1].replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim());
   let parseErrors = 0;
   let dupIds: string[] = [];
   for (const b of ldBlocks) {
@@ -192,6 +196,8 @@ function analyse(path: string, status: number, redirectTo: string | null, html: 
       for (const n of nodes) {
         if (typeof n['@type'] === 'string') types.push(n['@type']);
         if (typeof n.description === 'string') descriptions.push(n.description);
+        const addr = n.address as { streetAddress?: unknown; addressLocality?: unknown } | undefined;
+        if (addr && typeof addr === 'object') for (const v of [addr.streetAddress, addr.addressLocality]) if (typeof v === 'string') addresses.push(v);
       }
       dupIds = [...dupIds, ...duplicateIds(nodes)];
     } catch {
@@ -252,6 +258,7 @@ function analyse(path: string, status: number, redirectTo: string | null, html: 
     jsonLd: { blocks: ldBlocks.length, parseErrors, types, expectedOk, duplicateIds: dupIds },
     images: { total: imgs.length, missingAlt, emptyAltNotDecorative, missingSize },
     text: { missingInfo: problems.filter(p => p.code === 'missing_info').length, latin, dashes: emDashes, emoji: problems.filter(p => p.code === 'emoji').length, spelling: problems.filter(p => p.code === 'spelling').length, straightQuotes },
+    addressProblems: [...new Set(addresses.flatMap(a => addressProblems(a)))],
     internalLinks,
   };
 }
@@ -327,6 +334,7 @@ async function main() {
     imagesMissingSize: sm.reduce((n, p) => n + p.images.missingSize, 0),
     textMissingInfo: sm.reduce((n, p) => n + p.text.missingInfo, 0),
     textLatin: sm.reduce((n, p) => n + p.text.latin.length, 0),
+    addressLatin: sm.filter(p => p.addressProblems.length > 0).length,
     textDashes: sm.reduce((n, p) => n + p.text.dashes, 0),
     textEmoji: sm.reduce((n, p) => n + p.text.emoji, 0),
     textStraightQuotes: sm.reduce((n, p) => n + p.text.straightQuotes, 0),
@@ -356,6 +364,7 @@ async function main() {
     ['Images without width and height', summary.imagesMissingSize],
     ['Text: sentences about missing data', summary.textMissingInfo],
     ['Text: English words inside Hebrew (distinct per page)', summary.textLatin],
+    ['Addresses with Latin street words, Latin city names or other Latin (pages)', summary.addressLatin],
     ['Text: em dashes', summary.textDashes],
     ['Text: emoji', summary.textEmoji],
     ['Text: straight-quote abbreviations (ד"ר, דוא"ל, ג\'ל)', summary.textStraightQuotes],
@@ -381,6 +390,7 @@ async function main() {
       ['Images without size', b.imagesMissingSize, summary.imagesMissingSize],
       ['Text: missing-data sentences', b.textMissingInfo, summary.textMissingInfo],
       ['Text: English inside Hebrew', b.textLatin, summary.textLatin],
+      ['Addresses with Latin (pages)', b.addressLatin ?? 'n/a', summary.addressLatin],
       ['Text: dashes', b.textDashes, summary.textDashes],
       ['Text: straight-quote abbreviations', b.textStraightQuotes ?? 'n/a', summary.textStraightQuotes],
       ['Links to redirecting URLs', b.linksToRedirectingUrls, summary.linksToRedirectingUrls],

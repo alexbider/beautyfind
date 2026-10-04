@@ -10,6 +10,7 @@ import { listingTitle } from '@/lib/seo/listingTitle';
 import { normalizeHebrew } from '@/lib/import/textRules';
 import { composeMetaDescription, joinHe, metaDescriptionOk, metaLead } from '@/lib/seo/metaRules';
 import { seoCityName, seoName } from '@/lib/seo/seoName';
+import { streetLine } from '@/lib/import/address';
 import { coverAlt, galleryAlts } from '@/lib/seo/imageAlt';
 import { CATEGORY_SHORT } from '@/lib/seo/terms';
 import { isOffer } from '@/lib/seo/treatmentHygiene';
@@ -388,8 +389,8 @@ export function jsonLd(p: PublicProfile, v: ProfileView) {
     ...(p.email && p.isClaimed ? { email: p.email } : {}),
     ...(images.length ? { image: images } : {}),
     ...(p.description ? { description: normalizeHebrew(p.description).slice(0, 5000) } : {}),
-    // The street address as stored (Hebrew for every listing the import geocoded); the city in Hebrew; no postal code is stored.
-    address: { '@type': 'PostalAddress', streetAddress: p.address, addressLocality: seoCityName(p.cityName), addressRegion: v.region?.name, addressCountry: 'IL' },
+    // The Hebrew street line without the city (src/lib/import/address.ts), the city in Hebrew, the postal code from Google as its own field.
+    address: { '@type': 'PostalAddress', streetAddress: streetLine(p.address, p.cityName), addressLocality: seoCityName(p.cityName), ...(p.postalCode ? { postalCode: p.postalCode } : {}), addressRegion: v.region?.name, addressCountry: 'IL' },
     ...(p.lat != null && p.lng != null ? { geo: { '@type': 'GeoCoordinates', latitude: p.lat, longitude: p.lng } } : {}),
     ...(comparable.length ? { priceRange: comparable.length > 1 && Math.min(...comparable) !== Math.max(...comparable) ? `${nisFromAgorot(Math.min(...comparable))}-${nisFromAgorot(Math.max(...comparable))}` : nisFromAgorot(comparable[0]) } : {}),
     ...(openingHoursSpec(v.hours) ? { openingHoursSpecification: openingHoursSpec(v.hours) } : {}),

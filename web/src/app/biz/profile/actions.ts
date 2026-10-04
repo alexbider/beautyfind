@@ -56,6 +56,7 @@ export async function saveProfile(input: ProfileForm): Promise<SaveProfileResult
         data: {
           name,
           address: f.address.trim(),
+          ...(f.address.trim() !== branch.address ? { addressSource: 'owner' } : {}),
           phone: toE164(f.phone),
           whatsapp: f.whatsapp.trim() ? toE164(f.whatsapp) : null,
           email: f.email.trim().toLowerCase() || null,

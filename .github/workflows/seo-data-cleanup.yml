@@ -15,7 +15,7 @@ on:
         description: Which cleanup to run
         required: true
         type: choice
-        options: [category-audit, description-cleanup, treatment-hygiene, city-category-report, import-settings, editorial-report, gold-examples, medical-report]
+        options: [category-audit, description-cleanup, treatment-hygiene, city-category-report, import-settings, editorial-report, gold-examples, medical-report, hebrew-addresses]
       confirm:
         description: Apply changes (off = dry run, CSV only)
         required: false
@@ -39,6 +39,10 @@ on:
         default: ''
       extra:
         description: description-cleanup only. Extra script arguments (for example "--rewritten-since 2026-10-03 --limit 10 --cancel-queued")
+        required: false
+        default: ''
+      from_run:
+        description: hebrew-addresses only. Run id of an earlier dry run whose CSV should be applied as it is (no new Google calls; implies confirm)
         required: false
         default: ''
 
@@ -69,6 +73,9 @@ jobs:
       SETTING: ${{ inputs.setting }}
       RUN_ID: ${{ inputs.run_id }}
       EXTRA: ${{ inputs.extra }}
+      FROM_RUN: ${{ inputs.from_run }}
+      # hebrew-addresses: one Place Details call (essentials) per listing with a Google place id. Server-side only; never printed.
+      GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -99,6 +106,15 @@ jobs:
             editorial-report) npm run -s import:editorial-report -- --run "$RUN_ID" --out reports/editorial-report.csv 2>&1 | tee reports/log.txt ;;
             gold-examples) npm run -s import:gold-examples -- --out reports/gold-examples.json 2>&1 | tee reports/log.txt ;;
             medical-report) npm run -s import:medical-report -- --out reports/medical-report.csv 2>&1 | tee reports/log.txt ;;
+            hebrew-addresses)
+              if [ -n "$FROM_RUN" ]; then
+                # Apply exactly what an earlier dry run proposed: its CSV lives on the report branch.
+                git fetch --quiet origin seo-reports
+                git show "origin/seo-reports:runs/${FROM_RUN}-hebrew-addresses-dry-run/hebrew-addresses.csv" > reports/from.csv
+                npm run -s import:hebrew-addresses -- --confirm --from reports/from.csv --out reports/hebrew-addresses.csv --fallbacks-out reports/hebrew-addresses-fallbacks.csv 2>&1 | tee reports/log.txt
+              else
+                npm run -s import:hebrew-addresses -- --out reports/hebrew-addresses.csv --fallbacks-out reports/hebrew-addresses-fallbacks.csv $flag 2>&1 | tee reports/log.txt
+              fi ;;
             import-settings)
               # Shows the import settings; with "setting" (key=value) and confirm it changes that one key.
               if [ -n "$SETTING" ] && [ "$CONFIRM" = "true" ]; then
@@ -122,7 +138,7 @@ jobs:
           TOKEN: ${{ github.token }}
         run: |
           set -e
-          mode=$([ "$CONFIRM" = "true" ] && echo applied || echo dry-run); [ -n "$UNDO_RUN" ] && mode="undo-${UNDO_RUN}"
+          mode=$([ "$CONFIRM" = "true" ] && echo applied || echo dry-run); [ -n "$UNDO_RUN" ] && mode="undo-${UNDO_RUN}"; [ -n "$FROM_RUN" ] && mode="applied-from-${FROM_RUN}"
           dest="runs/${RUN_ID}-${TASK}-${mode}"
           tmp=$(mktemp -d)
           url="https://x-access-token:${TOKEN}@github.com/${REPO}.git"

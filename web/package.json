@@ -27,6 +27,7 @@
     "import:screenshots": "tsx scripts/import/screenshots.ts",
     "seo:city-category-report": "tsx --conditions=react-server scripts/seo-city-category-report.ts",
     "import:treatment-hygiene": "tsx scripts/import/treatmentHygiene.ts",
+    "import:hebrew-addresses": "tsx scripts/import/hebrewAddresses.ts",
     "import:settings": "tsx scripts/import/settings.ts",
     "import:editorial-report": "tsx scripts/import/editorialReport.ts",
     "import:gold-examples": "tsx scripts/import/goldExamples.ts",
