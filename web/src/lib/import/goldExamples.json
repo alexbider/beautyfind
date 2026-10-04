@@ -194,46 +194,6 @@
      "isMedical": false
     },
     {
-     "name": "פיסול אף ללא ניתוח",
-     "category": "כירורגיה פלסטית",
-     "priceNis": null,
-     "priceMaxNis": null,
-     "priceType": "on_request",
-     "priceNote": null,
-     "durationMin": null,
-     "isMedical": true
-    },
-    {
-     "name": "ניתוח הגדלת חזה/ הקטנת",
-     "category": "כירורגיה פלסטית",
-     "priceNis": null,
-     "priceMaxNis": null,
-     "priceType": "on_request",
-     "priceNote": null,
-     "durationMin": null,
-     "isMedical": true
-    },
-    {
-     "name": "ניתוח הגדלת / הקטנת שדיים",
-     "category": "כירורגיה פלסטית",
-     "priceNis": null,
-     "priceMaxNis": null,
-     "priceType": "on_request",
-     "priceNote": null,
-     "durationMin": null,
-     "isMedical": true
-    },
-    {
-     "name": "ניתוח הגדלת חזה",
-     "category": "כירורגיה פלסטית",
-     "priceNis": null,
-     "priceMaxNis": null,
-     "priceType": "on_request",
-     "priceNote": null,
-     "durationMin": null,
-     "isMedical": true
-    },
-    {
      "name": "ניתוח הקטנת חזה",
      "category": "כירורגיה פלסטית",
      "priceNis": null,
@@ -345,7 +305,8 @@
    },
    "photos": 8,
    "videos": 1,
-   "claimed": false
+   "claimed": false,
+   "medicalResponsible": true
   },
   "output": {
    "heading": "על הקליניקה",
@@ -474,7 +435,8 @@
    },
    "photos": 3,
    "videos": 0,
-   "claimed": false
+   "claimed": false,
+   "medicalResponsible": false
   },
   "output": {
    "heading": "על הסטודיו",
@@ -565,7 +527,8 @@
    "rating": null,
    "photos": 4,
    "videos": 0,
-   "claimed": false
+   "claimed": false,
+   "medicalResponsible": false
   },
   "output": {
    "heading": "על העסק",
