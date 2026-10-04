@@ -1,0 +1,20 @@
+live listings: 816; with a Google place id: 816; Google calls: 816 (errors 0, no usable address 33), about 4.08 USD at list price
+Hebrew address from Google: 748
+street from the dictionary: 34
+city only (street unknown): 30
+already Hebrew, unchanged: 4
+skipped (owner-entered address on a claimed listing): 0; skipped (no city): 0
+would change: 812; still with Latin after the pass: 0
+  [google] אומנית היופי החלק - IRIT WAK (בהנהלת אירית וייסמן ) (אשדוד) | before: שי בשקל, Tsahal St 26, קומה 1, Gan Yavne | after: צה"ל 26, קומה 1, אשדוד
+  [google] אוראל בטיטו - עיצוב גבות באשדוד (אשדוד) | before: Brenner St, Ashdod | after: ברנר, אשדוד
+  [google] אוראל שאלתיאל מאפרת ומסרקת כלות וערב (אשדוד) | before: Rabi Me'ir Ba'al ha-Nes St 7, Ashdod | after: רבי מאיר בעל הנס 7, אשדוד
+  [google] אושר בן חמו קליניקה לטיפוח (אשדוד) | before: Mevo Yehu HaMelech 3, Ashdod | after: מבוא יהוא המלך 3, אשדוד
+  [google] אלי אלמוזנינו בוטיק שיער - EA Eli Almoznino (אשדוד) | before: HaKlita St 1, Ashdod | after: הקליטה 1, אשדוד
+  [dictionary] מרטין קליניק (אשדוד) | before: K-Tower שדרות ירושלים 18 אשדוד, ים, 7752311 | after: שדרות ירושלים 18, אשדוד
+  [dictionary] iStudio-Ashdod (אשדוד) | before: Ha'Atzma'ut 87, Ashdod | after: רחוב העצמאות 87, אשדוד
+  [dictionary] Queens Clinic (בני ברק) | before: מגדל הכשרת היישוב זאב, Jabotinsky St 9, Bnei Brak, 5126417 | after: רחוב ז׳בוטינסקי 9, מגדל הכשרת היישוב זאב, בני ברק
+  [city_only] מרפאת נרקיסיה (אשדוד) | before: גן העיר, Ha-Gdud ha-Ivri St 5, Ashdod, 7745511 | after: אשדוד
+  [city_only] Sarah beauty (אשדוד) | before: 87 haatsmaout, Ashdod, 7777700 | after: אשדוד
+CSV: reports/hebrew-addresses.csv (816 rows); fallbacks for staff: reports/hebrew-addresses-fallbacks.csv (64 rows)
+SUMMARY dry_run google=748 dictionary=34 city_only=30 unchanged=4 skipped_owner=0 would_change=812 calls=816
+dry run: nothing changed (add --confirm, or run with --confirm --from <this CSV> to apply without new Google calls)
