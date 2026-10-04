@@ -54,6 +54,8 @@ export interface ListingCard {
   freeParking: boolean;
   onlineBooking: boolean;
   hasMedicalResponsible: boolean;
+  /** A published treatment flagged isMedical: without a verified medical responsible the card shows the "טיפול רפואי" label. */
+  hasMedicalTreatments: boolean;
 }
 
 // The primary category and the profile address come from one pure module (src/lib/category.ts), so the
@@ -89,7 +91,7 @@ function where(f: ListingFilter): Prisma.BranchWhereInput {
 const CARD_INCLUDE = {
   city: { select: { slug: true } },
   categories: { include: { category: true } },
-  treatments: { where: { isPublished: true }, select: { priceAgorot: true, priceType: true, taxIncluded: true, source: true } },
+  treatments: { where: { isPublished: true }, select: { priceAgorot: true, priceType: true, taxIncluded: true, source: true, isMedical: true } },
   medicalResponsible: { select: { license: { select: { status: true } } } },
 } satisfies Prisma.BranchInclude;
 
@@ -130,6 +132,7 @@ function toCard(b: CardRow, stats: Map<string, { rating: number; count: number }
     freeParking: b.freeParking,
     onlineBooking: BOOKING_LIVE && b.onlineBooking && b.isClaimed,
     hasMedicalResponsible: b.medicalResponsible?.license?.status === 'verified',
+    hasMedicalTreatments: b.treatments.some(t => t.isMedical),
   };
 }
 

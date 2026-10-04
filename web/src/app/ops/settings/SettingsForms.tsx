@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Toggle } from '@/components/ops/Toggle';
 import { ui } from '@/components/ops/ui';
-import { saveMaintenanceMessageAction, saveNumbersAction, setFlagAction, type FlagKey, type NumberKey } from './actions';
+import { saveMaintenanceMessageAction, saveMedicalDisclaimerAction, saveNumbersAction, setFlagAction, type FlagKey, type NumberKey } from './actions';
 
 export interface NumberField { key: NumberKey; label: string; unit: string; step?: number }
 export interface NumberGroup { title: string; fields: NumberField[] }
@@ -64,6 +64,22 @@ export function MaintenanceMessage({ message, canEdit }: { message: string; canE
       <label className={ui.label} htmlFor="s-maint">הודעת התחזוקה שמוצגת באתר</label>
       <textarea id="s-maint" className={ui.textarea} value={text} onChange={e => setText(e.target.value)} maxLength={300} disabled={!canEdit} style={{ minHeight: 70 }} />
       {canEdit ? <div className={ui.actions}><button type="submit" className={`${ui.btn} ${ui.small}`} disabled={pending}>שמירת ההודעה</button>{msg ? <span className={msg.ok ? ui.ok : ui.error}>{msg.text}</span> : null}</div> : null}
+    </form>
+  );
+}
+
+/** The medical treatment disclaimer shown on profiles next to medical treatments without a doctor on file. */
+export function MedicalDisclaimerText({ text: initial, canEdit }: { text: string; canEdit: boolean }) {
+  const router = useRouter();
+  const [text, setText] = useState(initial);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [pending, start] = useTransition();
+  return (
+    <form className={ui.stack} style={{ gap: 8, padding: '12px 20px 16px' }} onSubmit={e => { e.preventDefault(); start(async () => { const r = await saveMedicalDisclaimerAction(text); setMsg(r.ok ? { ok: true, text: 'נשמר' } : { ok: false, text: r.error }); if (r.ok) router.refresh(); }); }}>
+      <label className={ui.label} htmlFor="s-medical">הסבר ״טיפול רפואי״ שמוצג ליד טיפולים רפואיים ללא רופא רשום</label>
+      <textarea id="s-medical" className={ui.textarea} value={text} onChange={e => setText(e.target.value)} maxLength={800} disabled={!canEdit} style={{ minHeight: 110 }} />
+      <p className={ui.hint} style={{ margin: 0 }}>מופיע בחלון המידע בפרופיל. שני הקישורים (פנקס הרופאים, הוספת רופא) מתווספים אוטומטית אחרי הטקסט.</p>
+      {canEdit ? <div className={ui.actions}><button type="submit" className={`${ui.btn} ${ui.small}`} disabled={pending}>שמירת ההסבר</button>{msg ? <span className={msg.ok ? ui.ok : ui.error}>{msg.text}</span> : null}</div> : null}
     </form>
   );
 }

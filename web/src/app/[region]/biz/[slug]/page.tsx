@@ -23,7 +23,9 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { ROUTES } from '@/lib/routes';
 import { fromE164, telHref } from '@/lib/format';
 import { getProfile, listingCounts, type PublicProfile } from '@/lib/server/public';
+import { platformSettings } from '@/lib/server/platformSettings';
 import { vatRatePct } from '@/lib/server/vat';
+import { medicalDoctor, medicalState } from '@/lib/medical';
 import { PRICES_INCLUDE_VAT } from '@/lib/features';
 import { applySeo } from '@/lib/server/seo';
 import { buildView, jsonLd, ldJson, metaDescription, metaTitle, nearbyBusinesses, reviewsLabel, similarBusinesses, type ProfileView as View } from './data';
@@ -185,7 +187,7 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
                   ? v.pricesUpdated && <span className={styles.secNote}>המחירים נמסרו על ידי העסק ועודכנו ב־{v.pricesUpdated}</span>
                   : <span className={styles.secNote}>{v.pricesUpdated ? `כפי שפורסמו על ידי העסק, נאספו ב־${v.pricesUpdated}` : 'כפי שפורסמו על ידי העסק'}</span>)}
               </div>
-              <Services groups={v.services} contact={p.isClaimed} bookHref={bookHref} />
+              <Services groups={v.services} contact={p.isClaimed} bookHref={bookHref} medical={{ state: medicalState(medicalDoctor(p)), text: (await platformSettings()).medicalDisclaimer, claimHref: claimHref(p.id) }} />
               <p className={styles.vat}>
                 {PRICES_INCLUDE_VAT
                   ? 'כל המחירים כוללים מע״מ.'

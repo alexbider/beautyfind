@@ -209,6 +209,7 @@
   display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border: 1px solid var(--line);
   border-radius: 7px; background: var(--bg-soft); font-size: 13px; font-weight: 500; color: var(--text);
 }
+.chipMedical { border-color: var(--warn-line); background: var(--warn-bg); color: var(--warn-text); font-weight: 700; }
 .actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: auto; padding-top: 6px; }
 .iconBtn {
   display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0;

@@ -3,6 +3,7 @@ import { BOOKING_LIVE, VAT_LABEL } from '@/lib/features';
 import { ArrowForward, Check } from '@/components/icons';
 import { SaveHeart } from '@/components/save-heart/SaveHeart';
 import { CardActions, CompactRating } from '@/components/search/PhoneCard';
+import { MEDICAL_LABEL } from '@/lib/medical';
 import { fmtNum } from './copy';
 import type { DirectoryCard } from './data';
 import styles from './Directory.module.css';
@@ -36,6 +37,8 @@ export function ListingCard({ c, delayIndex }: { c: DirectoryCard; delayIndex: n
   if (BOOKING_LIVE && c.onlineBooking) chips.push('קביעת תור אונליין');
   if (c.freeParking) chips.push('חניה חינם');
   if (c.accessible) chips.push('נגיש');
+  // The medical disclaimer label (src/lib/medical.ts), without the popover: the profile has the full text.
+  const medicalLabel = c.hasMedicalTreatments && !c.hasMedicalResponsible;
 
   return (
     <li className={styles.card} style={{ animationDelay: `${delayIndex * 50}ms` }}>
@@ -121,6 +124,7 @@ export function ListingCard({ c, delayIndex }: { c: DirectoryCard; delayIndex: n
               {ch}
             </span>
           ))}
+          {medicalLabel && <span className={`${styles.chip} ${styles.chipMedical}`}>{MEDICAL_LABEL}</span>}
           {c.priceFromShekels != null && (
             <span className={styles.chip}>
               החל מ־<span className="ltr">₪{fmtNum(c.priceFromShekels)}</span>

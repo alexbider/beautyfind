@@ -5,7 +5,7 @@ import { atLeast } from '@/components/ops/roles';
 import { Card, Chip, PageHead, dateTimeIL, ui } from '@/components/ops/ui';
 import { db } from '@/lib/server/db';
 import { platformSettings } from '@/lib/server/platformSettings';
-import { FlagToggle, MaintenanceMessage, NumbersForm, type NumberGroup } from './SettingsForms';
+import { FlagToggle, MaintenanceMessage, MedicalDisclaimerText, NumbersForm, type NumberGroup } from './SettingsForms';
 
 export const metadata: Metadata = { title: 'הגדרות פלטפורמה · ניהול', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
@@ -50,6 +50,9 @@ export default async function SettingsPage() {
         <FlagToggle name="clientAssistant" checked={s.clientAssistant} title="עוזר AI ללקוחות · ניסיוני" sub="טרם מומש באתר; ההגדרה נשמרת לקראת ההפעלה ולא משנה דבר עכשיו" />
         <FlagToggle name="maintenanceMode" checked={s.maintenanceMode} title="מצב תחזוקה" sub="דף הבית ומסכי ההזמנה, רשימת ההמתנה והשוברים מציגים הודעת תחזוקה; הזמנות קיימות לא נפגעות" />
         <MaintenanceMessage message={s.maintenanceMessage} canEdit={canEdit} />
+      </Card>
+      <Card title="טיפולים רפואיים" flush>
+        <MedicalDisclaimerText text={s.medicalDisclaimer} canEdit={canEdit} />
       </Card>
     </AdminShell>
   );

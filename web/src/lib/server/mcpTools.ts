@@ -21,7 +21,7 @@ import { listCampaigns } from '@/app/ops/sponsored/data';
 import { createCampaignAction, reviewCampaignAction } from '@/app/ops/sponsored/actions';
 import { listClients, privacyRequests } from '@/app/ops/clients/data';
 import { blockClientAction, completePrivacyRequestAction } from '@/app/ops/clients/actions';
-import { saveMaintenanceMessageAction, saveNumbersAction, setFlagAction } from '@/app/ops/settings/actions';
+import { saveMaintenanceMessageAction, saveMedicalDisclaimerAction, saveNumbersAction, setFlagAction } from '@/app/ops/settings/actions';
 
 // Everything the MCP server offers Claude: the whole admin, as tools. Reads return the same data the
 // admin screens show; writes call the same server actions the screens call, so validation, audit rows,
@@ -208,7 +208,8 @@ export const MCP_TOOLS: McpTool[] = [
     numbers: z.object(Object.fromEntries(SETTING_NUMBERS.map(k => [k, z.number().optional()]))).optional().describe('מחירים (ש״ח), מע״מ להצגה (%), ימי ניסיון חיוב, הסתרה בחוב, שנות תוקף שובר'),
     flags: z.object(Object.fromEntries(SETTING_FLAGS.map(k => [k, z.boolean().optional()]))).optional().describe('onlineBooking, giftCards, waitlist, clientAssistant, maintenanceMode'),
     maintenance_message: z.string().max(300).optional(),
-  }), description: 'עדכון הגדרות הפלטפורמה: מספרים (מחירים, מע״מ, מדיניות חיוב), מתגי תכונות, מצב תחזוקה והודעתו. שדות שלא נשלחו נשארים.', run: async a => {
+    medical_disclaimer: z.string().min(20).max(800).optional().describe('הסבר ״טיפול רפואי״ שמוצג בפרופילים ליד טיפולים רפואיים ללא רופא רשום'),
+  }), description: 'עדכון הגדרות הפלטפורמה: מספרים (מחירים, מע״מ, מדיניות חיוב), מתגי תכונות, מצב תחזוקה והודעתו, הסבר הטיפול הרפואי. שדות שלא נשלחו נשארים.', run: async a => {
     const cur = await platformSettings();
     const out: Record<string, unknown> = {};
     const nums = a.numbers as Partial<Record<(typeof SETTING_NUMBERS)[number], number>> | undefined;
@@ -221,6 +222,7 @@ export const MCP_TOOLS: McpTool[] = [
     const flags = a.flags as Partial<Record<(typeof SETTING_FLAGS)[number], boolean>> | undefined;
     if (flags) for (const [k, v] of Object.entries(flags)) if (typeof v === 'boolean') out[k] = await setFlagAction(k, v);
     if (typeof a.maintenance_message === 'string') out.maintenance_message = await saveMaintenanceMessageAction(a.maintenance_message);
+    if (typeof a.medical_disclaimer === 'string') out.medical_disclaimer = await saveMedicalDisclaimerAction(a.medical_disclaimer);
     return { ok: true, saved: out };
   } },
 ];

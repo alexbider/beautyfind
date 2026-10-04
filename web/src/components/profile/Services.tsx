@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { ArrowForward } from '@/components/icons';
 import { ContactTrigger } from './ContactDialog';
 import { PRICE_UNKNOWN, PRICE_UNKNOWN_ACTION, PRICE_UNKNOWN_NOTE, type PriceView } from './format';
+import { MedicalMark, type MedicalContext } from './MedicalInfo';
 import styles from './Services.module.css';
 
 export interface ServiceItemView {
@@ -46,8 +47,10 @@ export function Price({ p }: { p: PriceView }) {
  * Services & prices accordion, one card per category, all closed until the visitor opens one.
  * `contact`: whether a request can be sent through the platform (claimed listing with a lead inbox);
  * otherwise the quote action opens the direct-contact panel. Both carry the service id.
+ * `medical`: the disclaimer state for the medical rows (src/lib/medical.ts): the "performed by" badge or
+ * the "טיפול רפואי" trigger right after the treatment name.
  */
-export function Services({ groups, contact = true, bookHref }: { groups: ServiceGroupView[]; contact?: boolean; bookHref?: string | null }) {
+export function Services({ groups, contact = true, bookHref, medical }: { groups: ServiceGroupView[]; contact?: boolean; bookHref?: string | null; medical?: MedicalContext }) {
   const [open, setOpen] = useState(-1);
   return (
     <div className={styles.list}>
@@ -91,11 +94,12 @@ export function Services({ groups, contact = true, bookHref }: { groups: Service
                     <li key={t.id} className={styles.row} data-unknown={t.price.kind === 'unknown' || undefined}>
                       <span className={styles.rowName}>
                         {t.name}
+                        {t.medical && medical && <MedicalMark ctx={medical} treatment={t.name} />}
                         {t.duration && <span className={styles.dur}>{t.duration}</span>}
                         {t.summary && <span className={styles.summary}>{t.summary}</span>}
                       </span>
                       <span className={styles.rowPrice}>
-                        {t.medical && <span className={styles.medTag}>בתיאום ייעוץ רפואי</span>}
+                        {t.medical && !medical && <span className={styles.medTag}>בתיאום ייעוץ רפואי</span>}
                         <Price p={t.price} />
                         {t.price.kind === 'unknown' && (
                           <ContactTrigger className={styles.quote} treatment={t.name} serviceId={t.id}>
