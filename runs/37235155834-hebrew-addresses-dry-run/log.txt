@@ -1,0 +1,164 @@
+google c68541b2-741c-41d7-b6df-8930807aeded: {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'GetPlaceRequest' and limit 'GetPlaceRequest per minute' of service 'places.googleapis.com' for consumer 'project_number:125899410369'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "typ
+google b4d58d2b-ce08-4bf2-8047-a4fcfa856522: {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'GetPlaceRequest' and limit 'GetPlaceRequest per minute' of service 'places.googleapis.com' for consumer 'project_number:125899410369'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "typ
+google 91a1118d-d90b-40a9-94fc-7b0c3c36fe11: {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'GetPlaceRequest' and limit 'GetPlaceRequest per minute' of service 'places.googleapis.com' for consumer 'project_number:125899410369'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "typ
+google 79a3e972-7790-409b-b609-74c024ac2458: {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'GetPlaceRequest' and limit 'GetPlaceRequest per minute' of service 'places.googleapis.com' for consumer 'project_number:125899410369'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "typ
+google 94e895c7-7082-4699-ab4a-bbe8c646ab31: {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'GetPlaceRequest' and limit 'GetPlaceRequest per minute' of service 'places.googleapis.com' for consumer 'project_number:125899410369'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "typ
+google 749c9b92-04c4-4187-9846-724ac681c48f: {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'GetPlaceRequest' and limit 'GetPlaceRequest per minute' of service 'places.googleapis.com' for consumer 'project_number:125899410369'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "typ
+google 05e5d539-54eb-41e2-a3a5-0357b91cfa8c: {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'GetPlaceRequest' and limit 'GetPlaceRequest per minute' of service 'places.googleapis.com' for consumer 'project_number:125899410369'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "typ
+google f3c5dd83-360f-458e-b302-3f43c8ac252e: {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'GetPlaceRequest' and limit 'GetPlaceRequest per minute' of service 'places.googleapis.com' for consumer 'project_number:125899410369'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "typ
+google 62d946fd-3bbc-4bfc-a895-3dced0660ce2: {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'GetPlaceRequest' and limit 'GetPlaceRequest per minute' of service 'places.googleapis.com' for consumer 'project_number:125899410369'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "typ
+google 8afa9d11-2f8d-47a5-884d-839edb6be5bc: {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'GetPlaceRequest' and limit 'GetPlaceRequest per minute' of service 'places.googleapis.com' for consumer 'project_number:125899410369'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "typ
+google c491e952-e97a-4f4e-9cf6-d02a340749ca: {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'GetPlaceRequest' and limit 'GetPlaceRequest per minute' of service 'places.googleapis.com' for consumer 'project_number:125899410369'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "typ
+google e1a9d50c-dcc5-4fbe-9a1d-daa8a1b6dff1: {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'GetPlaceRequest' and limit 'GetPlaceRequest per minute' of service 'places.googleapis.com' for consumer 'project_number:125899410369'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "typ
+google 44571512-39d9-432f-b704-052de5f583ad: {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'GetPlaceRequest' and limit 'GetPlaceRequest per minute' of service 'places.googleapis.com' for consumer 'project_number:125899410369'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "typ
+google 0cf10daa-6231-4464-af2f-0c9dad0bdec7: {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'GetPlaceRequest' and limit 'GetPlaceRequest per minute' of service 'places.googleapis.com' for consumer 'project_number:125899410369'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "typ
+google 3e75a41a-03f3-4d98-8a56-21a89a4c7225: {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'GetPlaceRequest' and limit 'GetPlaceRequest per minute' of service 'places.googleapis.com' for consumer 'project_number:125899410369'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "typ
+google 9814d9be-8073-4222-a5c2-2482f08a1d3a: {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'GetPlaceRequest' and limit 'GetPlaceRequest per minute' of service 'places.googleapis.com' for consumer 'project_number:125899410369'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "typ
+google 736ea499-991d-470b-af2e-bd051277db68: {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'GetPlaceRequest' and limit 'GetPlaceRequest per minute' of service 'places.googleapis.com' for consumer 'project_number:125899410369'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "typ
+google 967798ad-a15f-4fa3-903a-791e623c5993: {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for quota metric 'GetPlaceRequest' and limit 'GetPlaceRequest per minute' of service 'places.googleapis.com' for consumer 'project_number:125899410369'.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "typ
+live listings: 816; with a Google place id: 816; Google calls: 816 (errors 18, no usable address 50), about 4.08 USD at list price
+Hebrew address from Google: 731
+street from the dictionary: 44
+city only (street unknown): 37
+already Hebrew, unchanged: 4
+skipped (owner-entered address on a claimed listing): 0; skipped (no city): 0
+would change: 812; still with Latin after the pass: 0
+  [google] אומנית היופי החלק - IRIT WAK (בהנהלת אירית וייסמן ) (אשדוד) | before: שי בשקל, Tsahal St 26, קומה 1, Gan Yavne | after: צה"ל 26, קומה 1, אשדוד
+  [google] אוראל בטיטו - עיצוב גבות באשדוד (אשדוד) | before: Brenner St, Ashdod | after: ברנר, אשדוד
+  [google] אוראל שאלתיאל מאפרת ומסרקת כלות וערב (אשדוד) | before: Rabi Me'ir Ba'al ha-Nes St 7, Ashdod | after: רבי מאיר בעל הנס 7, אשדוד
+  [google] אושר בן חמו קליניקה לטיפוח (אשדוד) | before: Mevo Yehu HaMelech 3, Ashdod | after: מבוא יהוא המלך 3, אשדוד
+  [google] אלי אלמוזנינו בוטיק שיער - EA Eli Almoznino (אשדוד) | before: HaKlita St 1, Ashdod | after: הקליטה 1, אשדוד
+  [dictionary] מרטין קליניק (אשדוד) | before: K-Tower שדרות ירושלים 18 אשדוד, ים, 7752311 | after: ים, אשדוד
+  [dictionary] מרפאת נרקיסיה (אשדוד) | before: גן העיר, Ha-Gdud ha-Ivri St 5, Ashdod, 7745511 | after: גן העיר, אשדוד
+  [dictionary] iStudio-Ashdod (אשדוד) | before: Ha'Atzma'ut 87, Ashdod | after: רחוב העצמאות 87, אשדוד
+  [city_only] Sarah beauty (אשדוד) | before: 87 haatsmaout, Ashdod, 7777700 | after: אשדוד
+  [city_only] Студия Красоты Veranda (אשדוד) | before: QJFW+F45, Ashdod, 7748415 | after: אשדוד
+CSV: reports/hebrew-addresses.csv (816 rows); fallbacks for staff: reports/hebrew-addresses-fallbacks.csv (81 rows)
+SUMMARY dry_run google=731 dictionary=44 city_only=37 unchanged=4 skipped_owner=0 would_change=812 calls=816
+dry run: nothing changed (add --confirm, or run with --confirm --from <this CSV> to apply without new Google calls)
