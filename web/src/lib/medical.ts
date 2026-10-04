@@ -57,9 +57,11 @@ export function medicalDoctor(p: { medicalResponsible: MedicalPerson | null; sta
 
 const TITLED = /^(ד["״]ר|דר['׳]|ד״ר|dr\.?|פרופ['׳]?)\s/iu;
 
-const DOCTOR_TITLE = /(?<![א-תA-Za-z])(ד["״]ר|דר['׳]|dr\.?|פרופ['׳]?|prof\.?)\s+([^\-–—|,:()\n/]+)/iu;
-/** Words that end a person's name inside a listing name ("ד״ר מנאר קעואר - מומחה", "Dr. Thaer Clinic"). */
-const NAME_STOP = /^(clinic|clinics|center|centre|medical|med|beauty|cosmetics|aesthetics|קליניקה|קליניקת|מרפאת|מרפאה|מרכז|מומחה|מומחית|רופא|רופאה|רופאת|אסתטיקה|רפואה|רפואית|יופי|בע״מ|בע"מ)$/iu;
+const DOCTOR_TITLE = /(?<![א-תA-Za-z])(ד["״]ר|דר['׳]|dr\.?|פרופ['׳]?|prof\.?)\s+([^|,:()\n/]+)/iu;
+/** A dash between words ends the name ("ד״ר אביטל אנדלר- אסתטיקה"); a dash inside a word stays ("Bar-Meir", "בן-שלמה"). */
+const DASH_BREAK = /\s[-–—]|[-–—]\s/u;
+/** Words that end a person's name inside a listing name ("ד״ר מנאר קעואר - מומחה", "Dr. Thaer Clinic", "Dr. Sharon Porat Dental Clinic"). */
+const NAME_STOP = /^(clinic|clinics|center|centre|medical|med|dental|beauty|cosmetics|aesthetics|aesthetic|קליניקה|קליניקת|מרפאת|מרפאה|מרפאות|מרכז|מומחה|מומחית|רופא|רופאה|רופאת|שיניים|יישור|ניתוחים|מנתח|כירורג|אסתטיקה|רפואה|רפואית|יופי|בע״מ|בע"מ)$/iu;
 const normalizeTitle = (t: string) => (/^d/i.test(t) ? 'Dr.' : /^p/i.test(t) ? 'Prof.' : /^פרופ/u.test(t) ? 'פרופ׳' : 'ד״ר');
 
 /**
@@ -71,7 +73,7 @@ export function statedDoctorName(texts: Array<string | null | undefined>): strin
     const m = (t ?? '').match(DOCTOR_TITLE);
     if (!m) continue;
     const words: string[] = [];
-    for (const w of m[2].trim().split(/\s+/)) {
+    for (const w of m[2].split(DASH_BREAK)[0].trim().split(/\s+/)) {
       if (!w || NAME_STOP.test(w) || words.length === 3) break;
       words.push(w);
     }

@@ -67,6 +67,12 @@ describe('stated doctor (third state)', () => {
     assert.equal(statedDoctorName(['פרופ׳ דן כהן אסתטיקה']), 'פרופ׳ דן כהן');
     assert.equal(statedDoctorName(['קליניקה של סדר השעות']), null);
     assert.equal(statedDoctorName(['Barak clinic', 'דר׳ יעל לוינסון']), 'ד״ר יעל לוינסון');
+    // A dash inside a name stays; a dash between words ends it; dental and יישור end it too.
+    assert.equal(statedDoctorName(['Clinic Dr. Eran Bar-Meir']), 'Dr. Eran Bar-Meir');
+    assert.equal(statedDoctorName(['ד"ר דרור בן-שלמה רופא שיניים וטיפולים אסתטיים בתל אביב']), 'ד״ר דרור בן-שלמה');
+    assert.equal(statedDoctorName(['ד״ר אביטל אנדלר- אסתטיקה רפואית ודנטלית']), 'ד״ר אביטל אנדלר');
+    assert.equal(statedDoctorName(["Dr. Sharon Porat Dental Clinic מרפאת שיניים דר' שרון פורת"]), 'Dr. Sharon Porat');
+    assert.equal(statedDoctorName(['ד"ר זיידמן אלון יישור שיניים נסתר']), 'ד״ר זיידמן אלון');
   });
   it('a stated doctor without a verified one gives the stated state; a verified doctor wins', () => {
     assert.deepEqual(medicalState(null, 'ד״ר מנאר קעואר'), { kind: 'stated', label: MEDICAL_LABEL, name: 'ד״ר מנאר קעואר' });
