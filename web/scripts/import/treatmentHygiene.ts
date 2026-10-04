@@ -38,7 +38,7 @@ const writeCsv = (path: string, header: string[], rows: unknown[][]) => {
 /** Problems that --confirm hides: text that can never be a service. */
 const HIDE: ReadonlySet<TreatmentNameProblem> = new Set<TreatmentNameProblem>(['sentence', 'article']);
 /** Problems staff review by hand: real offers filed wrong, or words that need a rename. */
-const REVIEW: ReadonlySet<TreatmentNameProblem> = new Set<TreatmentNameProblem>(['product', 'package', 'function_word', 'empty']);
+const REVIEW: ReadonlySet<TreatmentNameProblem> = new Set<TreatmentNameProblem>(['product', 'package', 'function_word', 'empty', 'trailing_comma']);
 
 type Problem = TreatmentNameProblem | 'category';
 
@@ -114,7 +114,7 @@ async function main() {
   const header = ['treatment_id', 'branch_id', 'business', 'city', 'region', 'claimed', 'name', 'problem', 'action', 'category', 'matcher_category', 'price_type', 'price_nis', 'source', 'admin_href'];
   writeCsv(out, header, review.map(r => [
     r.id, r.branch.id, r.branch.name, r.branch.cityName, r.branch.regionSlug, r.branch.isClaimed ? 'yes' : 'no', r.name, r.problem,
-    HIDE.has(r.problem as TreatmentNameProblem) ? (r.branch.isClaimed ? 'claimed: review by hand' : confirm ? 'hidden' : 'would hide with --confirm') : r.problem === 'category' ? 'recategorize' : 'review',
+    HIDE.has(r.problem as TreatmentNameProblem) ? (r.branch.isClaimed ? 'claimed: review by hand' : confirm ? 'hidden' : 'would hide with --confirm') : r.problem === 'category' ? 'recategorize' : r.problem === 'trailing_comma' ? 'rename: drop the comma' : 'review',
     r.categorySlug ?? '', r.matcher ?? '', r.priceType, r.priceAgorot != null ? r.priceAgorot / 100 : '', r.source ?? '', `/ops/businesses?branch=${r.branch.id}`,
   ]));
   console.log(`CSV: ${out} (${review.length} rows)`);

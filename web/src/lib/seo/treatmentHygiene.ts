@@ -3,7 +3,9 @@
 // city aggregates or the business schema, and staff review them from the CSV that
 // scripts/import/treatmentHygiene.ts writes. Pure, shared by the pages, the catalog and the script.
 
-export type TreatmentNameProblem = 'product' | 'sentence' | 'article' | 'function_word' | 'package' | 'empty';
+import { matchService } from '../import/services';
+
+export type TreatmentNameProblem = 'product' | 'sentence' | 'article' | 'function_word' | 'package' | 'empty' | 'trailing_comma';
 
 /** A bundle of sessions or a subscription: a real offer, but not a treatment name for a description or an aggregate. */
 const PACKAGE_WORDS = /(^|\s)(חבילת|חבילה|חבילות|מפגשים|סדרה|סדרת|מנוי|קורס|קורסים|package|sessions|course|bundle)(?=\s|$|\d)/iu;
@@ -34,8 +36,16 @@ export function treatmentNameProblem(raw: string): TreatmentNameProblem | null {
   if (ARTICLE_OPENERS.test(name) || /\?$/u.test(name)) return 'article';
   if (PRODUCT_WORDS.test(name)) return 'product';
   if (PACKAGE_WORDS.test(name)) return 'package';
-  // A trailing comma or a pronoun or connector at the start marks a fragment of a sentence, whatever its length.
-  if (/[.!,]$/u.test(name) || SENTENCE_OPENERS.test(name) || name.length > 40 || words.length > 5 || SENTENCE_WORDS.test(name) || /[.!?;]\s+\S/u.test(name)) return 'sentence';
+  // A trailing comma marks a fragment of a sentence ("זאת שמחליפה את הניתוחים הפלסטיים,"), unless what stands
+  // before it is a short name the service matcher recognizes ("מניקור ,", "הסרת שיער ,"): a real offer with a
+  // stray comma, listed for staff to rename rather than hidden.
+  if (/,$/u.test(name)) {
+    const before = name.replace(/\s*,+$/u, '').trim();
+    const short = before.split(' ').length <= 3 && !SENTENCE_OPENERS.test(before) && !SENTENCE_WORDS.test(before) && !PRODUCT_WORDS.test(before) && !PACKAGE_WORDS.test(before);
+    return short && matchService(before) ? 'trailing_comma' : 'sentence';
+  }
+  // A pronoun or connector at the start is the tail of a sentence, whatever its length.
+  if (/[.!]$/u.test(name) || SENTENCE_OPENERS.test(name) || name.length > 40 || words.length > 5 || SENTENCE_WORDS.test(name) || /[.!?;]\s+\S/u.test(name)) return 'sentence';
   return null;
 }
 

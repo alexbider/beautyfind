@@ -179,7 +179,9 @@ describe('treatment name hygiene', () => {
     assert.equal(treatmentNameProblem('הסרת שיער בלייזר חבילת 6 מפגשים'), 'package');
     // Fragments of a sentence: a trailing comma, or a pronoun or connector at the start (the Pro Aesthetics record).
     assert.equal(treatmentNameProblem('זאת שמחליפה את הניתוחים הפלסטיים,'), 'sentence');
-    assert.equal(treatmentNameProblem('טיפול פנים,'), 'sentence');
+    assert.equal(treatmentNameProblem('טיפול פנים,'), 'trailing_comma'); // a real offer with a stray comma: renamed, not hidden
+    assert.equal(treatmentNameProblem('מניקור ,'), 'trailing_comma');
+    assert.equal(treatmentNameProblem('המעניקה טיפולי פנים משקמים,'), 'sentence');
     assert.equal(treatmentNameProblem('זה הטיפול המבוקש'), 'sentence');
     assert.equal(treatmentNameProblem('אשר מתאים לכל סוגי העור'), 'sentence');
     assert.equal(treatmentNameProblem('אם יש כתמים'), 'sentence');
