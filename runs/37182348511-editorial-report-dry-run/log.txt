@@ -1,0 +1,16 @@
+QUEUE 15 run(s) queued or running
+  queued   enhance    2026-10-03T19:30:33.222Z 315a02a2-9bde-42dc-b6ec-43f28bb61e21 "ניקוי תיאורים 3/17" records=50
+  queued   enhance    2026-10-03T19:30:33.519Z 4d9db3bd-da5b-45ac-a111-3d4fd114d6da "ניקוי תיאורים 4/17" records=50
+  queued   enhance    2026-10-03T19:30:33.816Z 89e7af85-73ab-4eb5-816f-af3e1c6dfb85 "ניקוי תיאורים 5/17" records=50
+  queued   enhance    2026-10-03T19:30:34.112Z 61bc6861-c404-401a-b756-3e528e682622 "ניקוי תיאורים 6/17" records=50
+  queued   enhance    2026-10-03T19:30:34.408Z 06095f2c-419e-4ef5-86b8-faba5738878c "ניקוי תיאורים 7/17" records=50
+  queued   enhance    2026-10-03T19:30:34.707Z e421a1cb-9859-4bfa-b321-2836e63611d5 "ניקוי תיאורים 8/17" records=50
+  queued   enhance    2026-10-03T19:30:35.003Z f1a40761-c5b3-4811-ae9e-720e75657a24 "ניקוי תיאורים 9/17" records=50
+  queued   enhance    2026-10-03T19:30:35.300Z fc00b9de-ffff-4e62-bb1b-0c31758bd1c2 "ניקוי תיאורים 10/17" records=50
+  queued   enhance    2026-10-03T19:30:35.598Z 64835f62-63f1-4620-a1b1-7343b4857edc "ניקוי תיאורים 11/17" records=50
+  queued   enhance    2026-10-03T19:30:35.893Z c8f8dc64-b87d-4987-b4cb-e5d944cd01df "ניקוי תיאורים 12/17" records=50
+  queued   enhance    2026-10-03T19:30:36.289Z 53615a04-a996-4f18-9521-1bedfca9ef05 "ניקוי תיאורים 13/17" records=50
+  queued   enhance    2026-10-03T19:30:36.586Z 3e075066-1fb5-4172-b271-29008fbe2cd6 "ניקוי תיאורים 14/17" records=50
+  queued   enhance    2026-10-03T19:30:36.883Z 53beb447-42b2-4154-bc11-7379e064e8ce "ניקוי תיאורים 15/17" records=50
+  queued   enhance    2026-10-03T19:30:37.180Z 2bafffcd-57ac-45b6-8ec8-569f3936fa25 "ניקוי תיאורים 16/17" records=50
+  queued   enhance    2026-10-03T19:30:37.476Z 56195439-6123-4fa0-9a25-de45a1b38ace "ניקוי תיאורים 17/17" records=13
