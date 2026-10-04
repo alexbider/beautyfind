@@ -28,7 +28,7 @@ import { hebrewAddress } from './address';
 import type { DayHours, ImportedTreatment } from './rules';
 import { normalizeHebrew, problemCode, textProblems } from './textRules';
 
-export const PROMPT_VERSION = '2026-10-04.2';
+export const PROMPT_VERSION = '2026-10-04.3';
 /** Word bounds per evidence tier. The tier comes from the packet (lengthTier), never from the writer. */
 export const LENGTH_TIERS = {
   sparse: { min: 150, max: 200, paragraphs: 'two' },
@@ -330,7 +330,7 @@ export function userMessage(p: EvidencePacket): string {
   const rich = evidenceRichness(p);
   const tier = lengthTier(p);
   const t = LENGTH_TIERS[tier];
-  return `Evidence packet (JSON):\n${JSON.stringify(p)}\n\nEvidence richness: ${rich.score}/70${rich.thin.length ? `; thin on: ${rich.thin.join(', ')} (never about what is missing)` : ''}.\nLength tier: ${tier}. The description must have ${t.min} to ${t.max} words in ${t.paragraphs} paragraphs, from the packet's facts alone.`;
+  return `Evidence packet (JSON):\n${JSON.stringify(p)}\n\nEvidence richness: ${rich.score}/70${rich.thin.length ? `; thin on: ${rich.thin.join(', ')} (never about what is missing)` : ''}.\nLength tier: ${tier}. Write the description to about ${Math.round((t.min + t.max) / 2)} words in ${t.paragraphs} paragraphs (never under ${t.min}, never over ${t.max}; count every Hebrew word, prefixes included), from the packet's facts alone.`;
 }
 
 // ---------- proofreading ----------
@@ -475,7 +475,8 @@ export function checkOutput(o: EditorialOutput, p: EvidencePacket): string[] {
   const nums = packetNumbers(p);
   // "2,200" in prose is the packet's 2200; times (09:00) are digit runs the packet carries too.
   for (const m of all.replace(/(\d),(\d{3})(?!\d)/g, '$1$2').matchAll(/\d+/g)) if (!nums.has(m[0])) v.push(`number:${m[0]}`);
-  const names = new Set(p.team.map(t => t.name.replace(/^(ד["״]?ר|דר['׳]|פרופ['׳]?)\s+/, '').split(/\s+/)[0]));
+  // People the text may name: the team, and the person a business is named after ("ד״ר מנאר קעואר - מומחה בכירורגיה פלסטית").
+  const names = new Set([...p.team.map(t => t.name.replace(/^(ד["״]?ר|דר['׳]|פרופ['׳]?)\s+/, '').split(/\s+/)[0]), ...normalizeHebrew(p.name).split(/\s+/).filter(w => /^[א-ת]{2,}$/.test(w))]);
   for (const m of all.matchAll(NAME_TITLE)) {
     const first = m[2].split(/\s+/)[0];
     if (![...names].some(n => n.startsWith(first) || first.startsWith(n))) v.push(`person:${m[2]}`);
@@ -491,7 +492,10 @@ export function checkOutput(o: EditorialOutput, p: EvidencePacket): string[] {
   if (o.metaTitle.length > 70 || o.metaTitle.length < 10) v.push('meta_title');
   // The meta description follows the site's pattern and rules (src/lib/seo/metaRules.ts).
   for (const m of metaDescriptionProblems(o.metaDescription, { title: o.metaTitle, allow: allowedLatin(p) })) v.push(`meta:${m.code}${m.match ? `:${m.match}` : ''}`);
-  if (!o.description.includes(p.name.split(/\s+/)[0]) && !o.description.includes(p.name)) v.push('name_missing');
+  // The name as the packet spells it (typography normalized on both sides: ד"ר and ד״ר are the same name).
+  const nameNorm = normalizeHebrew(p.name);
+  const nameHead = nameNorm.split(/\s+[-|:,]\s+|\s+/)[0];
+  if (!o.description.includes(nameNorm) && !(nameHead.length >= 2 && o.description.includes(nameHead))) v.push('name_missing');
   return [...new Set(v)];
 }
 
@@ -522,7 +526,7 @@ export function repairMessage(v: string[], p?: EvidencePacket): string {
     if (x.startsWith('text:spelling:')) return `Spell "${x.slice(14)}" the house way: וואטסאפ.`;
     if (x === 'first_person') return 'Rewrite in the third person: no אנחנו, שלנו, אצלנו.';
     if (x.startsWith('long:')) return `The description has ${x.slice(5)} words; its tier allows at most ${t.max}. Shorten it to ${t.min} to ${t.max} words by cutting repetition and general sentences, keeping every fact.`;
-    if (x.startsWith('short:')) return `The description has ${x.slice(6)} words; its tier requires ${t.min} to ${t.max}. Expand it with facts that are in the packet, in full sentences: what each service is for in everyday terms, the open days and hours, the address and how to get there, how to arrange a visit, accessibility and parking when the packet states them. No general advice, no invented details, nothing about what is missing.`;
+    if (x.startsWith('short:')) return `The description has ${x.slice(6)} words; its tier requires ${t.min} to ${t.max}, so add at least ${Math.max(20, t.min - Number(x.slice(6)) + 20)} words and aim for about ${Math.round((t.min + t.max) / 2)}. Expand it with facts that are in the packet, in full sentences: what each service is for in everyday terms, the open days and hours, the address and how to get there, how to arrange a visit, accessibility and parking when the packet states them. No general advice, no invented details, nothing about what is missing.`;
     if (x.startsWith('faqs:')) return `Add accurate questions the packet can answer until there are at least ${FAQ_MIN}, or set insufficientEvidence to true.`;
     if (x === 'faq_booking_claim') return 'Do not say the treatment can be booked through BeautyFind.';
     if (x === 'markup') return 'Remove Markdown, brackets and code characters.';
