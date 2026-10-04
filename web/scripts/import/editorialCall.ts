@@ -10,7 +10,7 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
-import { applyProofread, checkOutput, normalizeOutput, OUTPUT_SCHEMA, PROMPT_VERSION, PROOFREAD_PROMPT, PROOFREAD_SCHEMA, proofreadMessage, repairable, repairMessage, SYSTEM_PROMPT, templateDraft, textRuleViolations, userMessage, type EditorialOutput, type EvidencePacket, type ProofreadOutput } from '../../src/lib/import/editorial';
+import { applyProofread, checkOutput, normalizeOutput, onlyLength, OUTPUT_SCHEMA, PROMPT_VERSION, PROOFREAD_PROMPT, PROOFREAD_SCHEMA, proofreadMessage, repairable, repairMessage, SYSTEM_PROMPT, templateDraft, textRuleViolations, userMessage, type EditorialOutput, type EvidencePacket, type ProofreadOutput } from '../../src/lib/import/editorial';
 import { openaiErrorKind } from '../../src/lib/import/openai';
 import { editorialCostUsd, pricing } from '../../src/lib/import/pricing';
 import { responses } from './providers/openai';
@@ -48,6 +48,14 @@ export type EditorialResult =
 let client: Anthropic | null = null;
 const api = () => (client ??= new Anthropic({ maxRetries: 3 }));
 let useFormat = true;
+// Low effort keeps the model's reasoning short: profile copy needs the facts laid out, not a long think.
+// Sonnet 5 accepts low to max; a model that rejects the field falls back to its default once per process.
+let useEffort = true;
+// Room for the reasoning plus the full JSON: Sonnet 5's tokenizer spends about a token per Hebrew syllable,
+// so a rich draft with eight FAQs and forty service summaries runs to several thousand output tokens, and
+// 16000 cut four drafts in ten off on 2026-10-04. Streamed, because the SDK refuses a non-streaming request
+// this large.
+const MAX_TOKENS = 32000;
 
 function parseJson(text: string): unknown {
   const t = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
@@ -67,14 +75,16 @@ interface Request {
 
 async function rawClaude(req: Request): Promise<Raw> {
   try {
-    const res = await api().messages.create({
-      model: EDITORIAL_MODEL,
-      // Room for the model's own reasoning plus the full JSON: the cap counts both, and 6000 cut drafts off.
-      max_tokens: 16000,
-      system: [{ type: 'text', text: req.system, cache_control: { type: 'ephemeral' } }],
-      ...(useFormat ? { output_config: { format: { type: 'json_schema' as const, schema: req.schema } } } : {}),
-      messages: req.turns.map(t => ({ role: t.role, content: t.content })) as Anthropic.MessageParam[],
-    } as Anthropic.MessageCreateParamsNonStreaming);
+    const outputConfig = { ...(useFormat ? { format: { type: 'json_schema' as const, schema: req.schema } } : {}), ...(useEffort ? { effort: 'low' as const } : {}) };
+    const res = await api().messages
+      .stream({
+        model: EDITORIAL_MODEL,
+        max_tokens: MAX_TOKENS,
+        system: [{ type: 'text', text: req.system, cache_control: { type: 'ephemeral' } }],
+        ...(Object.keys(outputConfig).length ? { output_config: outputConfig } : {}),
+        messages: req.turns.map(t => ({ role: t.role, content: t.content })) as Anthropic.MessageParam[],
+      } as Anthropic.MessageStreamParams)
+      .finalMessage();
     if (res.stop_reason === 'refusal') return { error: 'refusal' };
     if (res.stop_reason === 'max_tokens') return { error: 'max_tokens' };
     const text = res.content.find(b => b.type === 'text');
@@ -89,6 +99,10 @@ async function rawClaude(req: Request): Promise<Raw> {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     if (e instanceof Anthropic.BadRequestError) {
+      if (useEffort && /effort/i.test(msg)) {
+        useEffort = false;
+        return rawClaude(req);
+      }
       if (useFormat && /output_config|format|schema|json_schema/i.test(msg)) {
         useFormat = false;
         return rawClaude(req);
@@ -166,9 +180,10 @@ export async function writeEditorial(packet: EvidencePacket, provider: WriterPro
   let output = tidy(first.output);
   let violations = checkOutput(output, packet);
   let repairs = 0;
+  let raw = first.raw;
   if (repairable(violations).length) {
     repairs = 1;
-    const second = await write([...turns, { role: 'assistant', content: first.raw }, { role: 'user', content: repairMessage(repairable(violations), packet) }]);
+    const second = await write([...turns, { role: 'assistant', content: raw }, { role: 'user', content: repairMessage(repairable(violations), packet) }]);
     if (!('error' in second)) {
       inputTokens += second.inputTokens;
       outputTokens += second.outputTokens;
@@ -178,6 +193,23 @@ export async function writeEditorial(packet: EvidencePacket, provider: WriterPro
       if (repairable(v2).length <= repairable(violations).length) {
         output = fixed;
         violations = v2;
+        raw = second.raw;
+      }
+    }
+  }
+  if (onlyLength(violations)) {
+    // Everything else is right and only the word count misses its tier: one more targeted pass, since a
+    // draft outside its tier is stored but never published.
+    repairs += 1;
+    const third = await write([...turns, { role: 'assistant', content: raw }, { role: 'user', content: repairMessage(violations, packet) }]);
+    if (!('error' in third)) {
+      inputTokens += third.inputTokens;
+      outputTokens += third.outputTokens;
+      const fixed = tidy(third.output);
+      const v3 = checkOutput(fixed, packet);
+      if (v3.length <= violations.length) {
+        output = fixed;
+        violations = v3;
       }
     }
   }
@@ -198,6 +230,11 @@ export async function writeEditorial(packet: EvidencePacket, provider: WriterPro
   }
   const cost = () => editorialCostUsd(inputTokens, outputTokens, pricing(), provider);
   if (textRuleViolations(violations).length) return { ok: false, error: `text_rules: ${textRuleViolations(violations).slice(0, 6).join(', ')}`.slice(0, 240), inputTokens, outputTokens, costUsd: cost() };
+  if (violations.some(v => /^(short|long):/.test(v))) {
+    // The draft is clean but outside its tier: stored with the violation (the listing keeps its text), and
+    // the reason is visible on the record, so the proofreading call is not spent on it.
+    return { ok: true, output, violations, repairs, proofread: false, inputTokens, outputTokens, costUsd: cost(), model };
+  }
 
   // Proofreading: spelling and grammar only. A failed or refused proofreading call leaves the draft as it is.
   let proofread = false;

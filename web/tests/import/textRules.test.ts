@@ -44,7 +44,7 @@ describe('text rules', () => {
     assert.deepEqual(codes('הסלון מתמחה בתספורות נשים ובצבע, ופתוח בימים ראשון עד חמישי.'), []);
     assert.deepEqual(codes('הרופאה מציעה ייעוץ ראשון ללא עלות; הטיפולים מתאימים לעור רגיש.'), []); // מציעה is not מציינת
     assert.deepEqual(codes('הקליניקה נמצאת ברחוב הרצל 12 ומופיעה גם בגוגל מפות.').filter(c => c !== 'record'), [], 'other codes stay quiet');
-    assert.ok(codes('העסק מופיע כבר שנים').includes('record') === false, 'מופיע כבר (appears already) is not a record phrase: כ is part of כבר');
+    assert.ok(codes('בין השירותים הנוספים מופיעים גם לק ג׳ל').includes('record'), 'every form of מופיע is record language');
   });
 
   it('flags street words in Latin letters', () => {

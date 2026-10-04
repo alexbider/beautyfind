@@ -2,7 +2,7 @@ import 'server-only';
 import type { Branch, ImportPlace, Prisma } from '@prisma/client';
 import { CATEGORIES } from '@/lib/catalog';
 import { coverageOf, type Coverage } from '@/lib/import/coverage';
-import { FAQ_MIN, WORDS_MIN, textRuleViolations, type EditorialRecord } from '@/lib/import/editorial';
+import { FAQ_MIN, WORDS_MIN, publishBlockers, textRuleViolations, type EditorialRecord } from '@/lib/import/editorial';
 import { normalizeHebrew } from '@/lib/import/textRules';
 import type { ImportedTreatment } from '@/lib/import/rules';
 import { chooseVideos, type VideoRecord } from '@/lib/import/youtube';
@@ -16,7 +16,7 @@ import { CATEGORY_SHORT } from '@/lib/seo/terms';
 
 export const editorialOf = (p: { editorial: unknown }) => (p.editorial && typeof p.editorial === 'object' && typeof (p.editorial as EditorialRecord).description === 'string' ? (p.editorial as EditorialRecord) : null);
 /** A draft that may replace existing text: written by the model (never the template fallback), long enough, not flagged, enough FAQs, and clean under the text rules. */
-export const editorialComplete = (e: EditorialRecord | null) => !!e && e.model !== 'template' && e.words >= WORDS_MIN && !e.needsMoreInfo && e.faqs.length >= FAQ_MIN && textRuleViolations(e.violations ?? []).length === 0;
+export const editorialComplete = (e: EditorialRecord | null) => !!e && e.model !== 'template' && e.words >= WORDS_MIN && !e.needsMoreInfo && e.faqs.length >= FAQ_MIN && publishBlockers(e.violations ?? []).length === 0;
 /** A draft that breaks the text rules is never published, not even into an empty field. */
 export const editorialClean = (e: EditorialRecord | null) => !!e && textRuleViolations(e.violations ?? []).length === 0;
 

@@ -28,7 +28,7 @@ import { hebrewAddress } from './address';
 import type { DayHours, ImportedTreatment } from './rules';
 import { normalizeHebrew, problemCode, textProblems } from './textRules';
 
-export const PROMPT_VERSION = '2026-10-04.1';
+export const PROMPT_VERSION = '2026-10-04.2';
 /** Word bounds per evidence tier. The tier comes from the packet (lengthTier), never from the writer. */
 export const LENGTH_TIERS = {
   sparse: { min: 150, max: 200, paragraphs: 'two' },
@@ -245,7 +245,8 @@ export function evidenceRichness(p: EvidencePacket): { score: number; thin: stri
  */
 export function lengthTier(p: EvidencePacket): LengthTier {
   const { score } = evidenceRichness(p);
-  return score >= 42 ? 'rich' : score >= 16 ? 'normal' : 'sparse';
+  // Rich needs more than a long service list: people, prices or the business's own words on top of it.
+  return score >= 50 ? 'rich' : score >= 18 ? 'normal' : 'sparse';
 }
 
 /** Names the writer may keep in Latin script: the business, its domain, its services and its people as the packet spells them. */
@@ -304,7 +305,8 @@ Write, in Hebrew:
 3. "metaTitle" (up to 60 characters), plain and specific, and "metaDescription" (130 to 155 characters): one natural sentence that leads with what the business offers in its city (its two or three main treatments named in Hebrew; an English treatment name is translated: Hairstyling = עיצוב שיער, Hair colouring = צבע לשיער; a brand or device name such as Hydrafacial stays), phrased for its field (a salon, a clinic, a studio), then the Google rating with its review count when the packet has one, then one short closing action such as "השוו מחירים וביקורות ב־BeautyFind". It never opens with the words of metaTitle, never mentions booking, contact channels (phone, WhatsApp, email, navigation), "phone only", or anything missing, and never pads with generic closers; when it is short, add a real fact (opening days, another treatment, the founding year, the street).
 4. "serviceSummaries": for each service in the packet, one factual sentence about what it is (no price, no promise).
 5. "heading": one of "על הקליניקה" (doctor-led clinic), "על המספרה" (hair salon), "על הספא", "על הסטודיו" (nails, brows, makeup), "על העסק" (anything else).
-6. "insufficientEvidence": true only when the packet has no services, no source description and no hours, so only a two-paragraph introduction is possible. Then list in "missing" (Hebrew, short items) what the business could add. The description itself still says nothing about what is missing.
+6. "insufficientEvidence": true only when the packet has no services and no words of the business's own (no sourceDescription, no profileTexts, no researchNotes), so the facts run out before the tier's floor. Then stop where the facts stop, never pad, and list in "missing" (Hebrew, short items) what the business could add. The description itself still says nothing about what is missing.
+7. The business name appears in the description exactly as the packet spells it ("name"), in the same script: a Latin name stays Latin, never translated or transliterated into Hebrew.
 
 No preamble, no notes to the reader, no Markdown, no JSON inside strings, no mention of AI or of this instruction. Return only the JSON object.`;
 
@@ -411,6 +413,7 @@ export function applyProofread(o: EditorialOutput, pr: ProofreadOutput): { outpu
 
 export const BANNED_PHRASES = [
   'מובילים בתחום', 'מוביל בתחום', 'מובילה בתחום', 'חוויה בלתי נשכחת', 'מקצועיות ללא פשרות', 'הטכנולוגיה המתקדמת ביותר', 'ברמה הגבוהה ביותר', 'הטובים ביותר', 'הטוב ביותר', 'ללא ספק',
+  'ניסיון רב', 'ניסיון עשיר', 'ידע מקצועי וניסיון', 'שנות ניסיון', 'מקצועיות גבוהה', 'שירות מקצועי ואדיב',
   'as an ai', 'כמודל שפה', 'בינה מלאכותית', 'language model', 'here is', 'הנה התיאור', 'להלן',
   '100%', 'מובטח', 'מבטיחים', 'מבטיח', 'תוצאות מובטחות', 'ללא סיכון', 'בטוח לחלוטין',
   'לפי אתר העסק', 'לפי פרסום העסק', 'לפי הפרסום', 'כפי שפורסם', 'לפי הצהרת העסק',
@@ -433,7 +436,8 @@ export function packetNumbers(p: EvidencePacket): Set<string> {
   return set;
 }
 
-const NAME_TITLE = /(ד["״]?ר|דר['׳]|פרופ['׳]?)\s+([א-ת]+(?:\s+[א-ת]+)?)/g;
+// A title before a name. The Hebrew boundary keeps "סדר השעות" (where דר is inside a word) from reading as a doctor.
+const NAME_TITLE = /(?<![א-ת])(ד["״]?ר|דר['׳]|פרופ['׳]?)\s+([א-ת]+(?:\s+[א-ת]+)?)/g;
 
 /** Hebrew typography fixed in place on every string of a draft (gershayim, geresh, house spellings), before the checks and before storage. */
 export function normalizeOutput(o: EditorialOutput): EditorialOutput {
@@ -494,8 +498,14 @@ export function checkOutput(o: EditorialOutput, p: EvidencePacket): string[] {
 /** Violations that a targeted repair call can fix; anything else means the draft stays flagged. */
 export const repairable = (v: string[]) => v;
 
-/** The text-rule violations: a draft that still has any after the repair is rejected and written again. */
-export const textRuleViolations = (v: string[]) => v.filter(x => x.startsWith('text:'));
+/** The text-rule violations (and a draft that does not name the business as the packet spells it): a draft that still has any after the repair is rejected and written again. */
+export const textRuleViolations = (v: string[]) => v.filter(x => x.startsWith('text:') || x === 'name_missing');
+
+/** Everything that keeps a stored draft from replacing a listing's text: the text rules and a word count outside the tier. */
+export const publishBlockers = (v: string[]) => v.filter(x => x.startsWith('text:') || x === 'name_missing' || x.startsWith('short:') || x.startsWith('long:'));
+
+/** Only the word count is still wrong: one more targeted repair is worth a call. */
+export const onlyLength = (v: string[]) => v.length > 0 && v.every(x => x.startsWith('short:') || x.startsWith('long:'));
 
 export function repairMessage(v: string[], p?: EvidencePacket): string {
   const t = p ? LENGTH_TIERS[lengthTier(p)] : { min: WORDS_MIN, max: WORDS_MAX };
@@ -528,7 +538,7 @@ export function repairMessage(v: string[], p?: EvidencePacket): string {
     if (x.startsWith('meta:ratings_line')) return 'metaDescription carries the line about Google ratings and BeautyFind reviews: remove it.';
     if (x.startsWith('meta:latin')) return `metaDescription has the English word "${x.split(':').slice(2).join(':')}": write it in Hebrew (a brand, a device or the business name may stay).`;
     if (x.startsWith('meta:title_repeat')) return 'metaDescription opens with the words of metaTitle: open with what the business offers in its city (its treatments) instead.';
-    if (x === 'name_missing') return 'Name the business in the description.';
+    if (x === 'name_missing') return 'Name the business in the description exactly as the packet spells it ("name"), in the same script: a Latin name stays Latin, never translated into Hebrew.';
     return `Fix: ${x}`;
   });
   return `Your previous answer had these problems. Return the corrected full JSON object with the same structure, changing only what is needed:\n- ${items.join('\n- ')}`;
