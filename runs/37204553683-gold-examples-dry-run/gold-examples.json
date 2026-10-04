@@ -1,0 +1,558 @@
+[
+ {
+  "branchId": "9c7c2244-996d-45b2-88a2-9160cd872e80",
+  "tier": "rich",
+  "words": 203,
+  "packet": {
+   "name": "ד״ר מנאר קעואר",
+   "city": "חיפה",
+   "address": "שד׳ בן גוריון 6, קניון סיטי סנטר, קומה 7, חיפה",
+   "categories": [
+    "כירורגיה פלסטית",
+    "עיצוב וחיטוב הגוף"
+   ],
+   "businessType": null,
+   "services": [
+    {
+     "name": "הגדלה והרמת חזה",
+     "category": "כירורגיה פלסטית",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "fixed",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": true
+    },
+    {
+     "name": "הזעת יתר",
+     "category": null,
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "fixed",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": false
+    },
+    {
+     "name": "חוות דעת משפטית",
+     "category": null,
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "fixed",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": false
+    },
+    {
+     "name": "מתיחת בטן",
+     "category": "כירורגיה פלסטית",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "fixed",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": true
+    },
+    {
+     "name": "מתיחת זרועות",
+     "category": null,
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "fixed",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": false
+    },
+    {
+     "name": "מתיחת עפעפיים",
+     "category": null,
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "fixed",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": false
+    },
+    {
+     "name": "מתיחת פנים מינימלית",
+     "category": "כירורגיה פלסטית",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "fixed",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": true
+    },
+    {
+     "name": "עיצוב הפנים",
+     "category": null,
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "fixed",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": false
+    },
+    {
+     "name": "פיסול אף",
+     "category": null,
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "fixed",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": false
+    },
+    {
+     "name": "טיפולים וניתוחים",
+     "category": "כירורגיה פלסטית",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "on_request",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": true
+    },
+    {
+     "name": "ניתוח הגדלת / הקטנת חזה",
+     "category": "כירורגיה פלסטית",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "on_request",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": true
+    },
+    {
+     "name": "ניתוח שאיבת שומן",
+     "category": "כירורגיה פלסטית",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "on_request",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": true
+    },
+    {
+     "name": "עיצוב גוף",
+     "category": "עיצוב וחיטוב הגוף",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "on_request",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": false
+    },
+    {
+     "name": "ניתוח תיקון שד גברי-גניקומסטיה",
+     "category": "כירורגיה פלסטית",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "on_request",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": true
+    },
+    {
+     "name": "ניתוח מהוס",
+     "category": "כירורגיה פלסטית",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "on_request",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": true
+    },
+    {
+     "name": "הגדלת חזה",
+     "category": "כירורגיה פלסטית",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "on_request",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": true
+    },
+    {
+     "name": "בוטוקס",
+     "category": "אסתטיקה רפואית",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "on_request",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": true
+    },
+    {
+     "name": "עיצוב הגוף",
+     "category": "עיצוב וחיטוב הגוף",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "on_request",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": false
+    },
+    {
+     "name": "ניתוח הקטנת חזה",
+     "category": "כירורגיה פלסטית",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "on_request",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": true
+    },
+    {
+     "name": "כל השיטות למען עיצוב גוף",
+     "category": "עיצוב וחיטוב הגוף",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "on_request",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": false
+    },
+    {
+     "name": "ניתוחים לא מוצלחים",
+     "category": "כירורגיה פלסטית",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "on_request",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": true
+    }
+   ],
+   "hours": [
+    {
+     "open": "",
+     "close": "",
+     "closed": true
+    },
+    {
+     "open": "",
+     "close": "",
+     "closed": true
+    },
+    {
+     "open": "",
+     "close": "",
+     "closed": true
+    },
+    {
+     "open": "08:30",
+     "close": "12:30",
+     "closed": false
+    },
+    {
+     "open": "19:00",
+     "close": "21:30",
+     "closed": false
+    },
+    {
+     "open": "08:00",
+     "close": "15:00",
+     "closed": false
+    },
+    {
+     "open": "",
+     "close": "",
+     "closed": true
+    }
+   ],
+   "phone": true,
+   "email": true,
+   "whatsapp": false,
+   "website": "drkawar.com",
+   "bookingOnline": false,
+   "bookingLink": false,
+   "socials": [
+    "Facebook"
+   ],
+   "team": [
+    {
+     "name": "ד\"ר מנאר קעואר",
+     "role": "מומחה בכירורגיה פלסטית",
+     "bio": "ד״ר קעואר מומחה בכירורגיה פלסטית. בעל ניסיון רב שנים, לצד מוניטין עשיר בתחום. בוגר האוניברסיטה העברית בירושלים, סיים התמחותו בכירורגיה פלסטית בבית חולים איכילוב בתל אביב. במהלך התמחותו צבר ידע וניסיון רב בתחום הכירורגיה הפלסטית והמשחזרת, דר קעואר מקפיד על עדכניות מקסימלית בכל תחומי המקצוע כדי להביא את המילה האחרונה בחידושים ובטכנולוגיה לטיפולים וללקוחות שלו"
+    },
+    {
+     "name": "Dr. Manar Kawar",
+     "role": "Plastic surgeon",
+     "bio": null
+    },
+    {
+     "name": "נסיון עשיר בבתי החולים",
+     "role": "כירורג פלסטי במכבי שירותי בריאות",
+     "bio": null
+    }
+   ],
+   "languages": [],
+   "establishedYear": null,
+   "accessible": true,
+   "freeParking": null,
+   "sourceDescription": "ד״ר קעואר, רופא מומחה בכירוגיה פלסטית ואסתטית. חבר באיגוד לכירורגיה פלסטית ואסתטית בישראל. מבצע ניתוחים פלסטיית ואסתטיים בנוסף על הזרקות לעיצוב ופיסול הפנים.\nד״ר קעואר משתמש בשיטות המתקדמות ביותר והחדשניות ביותר לצורך קבלת תוצאה מצויינת.\nהכל בנעימות, יסודיות ומקצועיות",
+   "profileTexts": [
+    {
+     "source": "facebook",
+     "text": "دكتور منار قعوار - اخصائي جراحة تجميلية מומחה כירורגיה פלסטית خريج هداسا بالطب وتخصص في مستشفى ايخيلوف بتل ابيب عمليات وعلاجات تجميلية ‎Manar kawar دكتور منار قعوار‎, Haifa. 2,220 followers 446 talking about this 5 were here. ‎دكتور منار قعوار - اخصائي جراحة تجميلية מומחה כירורגיה..."
+    }
+   ],
+   "sourceFaqs": [],
+   "rating": {
+    "value": 5,
+    "count": 10
+   },
+   "photos": 8,
+   "videos": 1,
+   "claimed": false,
+   "medicalResponsible": true
+  },
+  "output": {
+   "heading": "על הקליניקה",
+   "description": "ד״ר מנאר קעואר הוא מומחה בכירורגיה פלסטית ואסתטית. הקליניקה שלו נמצאת בחיפה, בשדרות בן גוריון 6, בקומה 7 של קניון סיטי סנטר. הוא בוגר האוניברסיטה העברית בירושלים, השלים את ההתמחות בכירורגיה פלסטית בבית החולים איכילוב בתל אביב, ומשמש גם ככירורג פלסטי במכבי שירותי בריאות.\n\nרוב העבודה בקליניקה מתמקדת בניתוחי חזה ובעיצוב הגוף. בתחום החזה מבוצעים הגדלה והרמה, הקטנת חזה וניתוח לתיקון שד גברי (גניקומסטיה), שמטפל בהגדלה של רקמת החזה אצל גברים. בעיצוב הגוף מבוצעים שאיבת שומן, מתיחת בטן ומתיחת זרועות, ניתוחים שמסירים עודפי עור ושומן. באתר הקליניקה מוצג גם הליך \"מאמי מייקאובר\", שמשלב ניתוחי חזה ובטן לנשים אחרי היריון ולידה.\n\nבאזור הפנים מבוצעים מתיחת עפעפיים, מתיחת פנים מינימלית ופיסול אף, כולל פיסול אף ללא ניתוח. לצד הניתוחים יש גם טיפולים שאינם כירורגיים: הזרקות בוטוקס וטיפול בהזעת יתר. בנוסף, ד״ר קעואר כותב חוות דעת משפטיות בתחום הכירורגיה הפלסטית, למשל בתביעות שנוגעות לתוצאות של ניתוח.\n\nכל ההליכים האלה רפואיים, ולכן ההחלטה על סוג הטיפול מתקבלת בפגישת ייעוץ אישית עם ד״ר קעואר. בפגישה כדאי לשאול על משך ההחלמה, על סוג ההרדמה ועל המעקב אחרי הניתוח.\n\nהקליניקה פתוחה שלושה ימים בשבוע: ביום רביעי בין 08:30 ל־12:30, ביום חמישי בין 19:00 ל־21:30 וביום שישי בין 08:00 ל־15:00. המקום נגיש לאנשים עם מוגבלות, ואפשר לתאם פגישה בטלפון או בדוא״ל.",
+   "faqs": [
+    {
+     "q": "היכן נמצאת הקליניקה של ד״ר מנאר קעואר?",
+     "a": "בחיפה, בשדרות בן גוריון 6, בקומה 7 של קניון סיטי סנטר. המקום נגיש לאנשים עם מוגבלות."
+    },
+    {
+     "q": "אילו ניתוחים מבצע ד״ר קעואר?",
+     "a": "ניתוחי חזה (הגדלה, הרמה, הקטנה ותיקון שד גברי), שאיבת שומן, מתיחת בטן, מתיחת זרועות, מתיחת עפעפיים, מתיחת פנים מינימלית ופיסול אף."
+    },
+    {
+     "q": "האם יש בקליניקה טיפולים ללא ניתוח?",
+     "a": "כן. הזרקות בוטוקס, טיפול בהזעת יתר ופיסול אף ללא ניתוח."
+    },
+    {
+     "q": "מה ההכשרה של ד״ר קעואר?",
+     "a": "הוא בוגר האוניברסיטה העברית בירושלים, השלים התמחות בכירורגיה פלסטית בבית החולים איכילוב ומשמש ככירורג פלסטי במכבי שירותי בריאות."
+    },
+    {
+     "q": "מתי הקליניקה פתוחה?",
+     "a": "ביום רביעי בין 08:30 ל־12:30, ביום חמישי בין 19:00 ל־21:30 וביום שישי בין 08:00 ל־15:00. בשאר הימים הקליניקה סגורה."
+    },
+    {
+     "q": "האם ד״ר קעואר כותב חוות דעת משפטית?",
+     "a": "כן, הוא כותב חוות דעת מקצועיות בתחום הכירורגיה הפלסטית לצורך הליכים משפטיים."
+    }
+   ],
+   "metaTitle": "ד״ר מנאר קעואר בחיפה: מנתח פלסטי",
+   "metaDescription": "ניתוחי חזה, שאיבת שומן, מתיחת בטן, פיסול אף ובוטוקס אצל ד״ר מנאר קעואר, מומחה בכירורגיה פלסטית בחיפה. השוו מחירים וביקורות ב־BeautyFind."
+  }
+ },
+ {
+  "branchId": "80be9c7f-a966-4f2c-9309-97bbbb8fa10b",
+  "tier": "normal",
+  "words": 82,
+  "packet": {
+   "name": "Batya Care & Beauty Institute",
+   "city": "נהריה",
+   "address": "רחוב השקד 38, נהריה",
+   "categories": [
+    "הסרת שיער",
+    "ציפורניים, מניקור ופדיקור",
+    "קוסמטיקה וטיפולי פנים",
+    "שיזוף"
+   ],
+   "businessType": null,
+   "services": [
+    {
+     "name": "טיפולי פנים במכשור מתקדם",
+     "category": "קוסמטיקה וטיפולי פנים",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "fixed",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": false
+    },
+    {
+     "name": "טיפולי גוף במכשור מתקדם",
+     "category": null,
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "fixed",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": false
+    }
+   ],
+   "hours": [
+    {
+     "open": "09:00",
+     "close": "20:00",
+     "closed": false
+    },
+    {
+     "open": "09:00",
+     "close": "20:00",
+     "closed": false
+    },
+    {
+     "open": "09:00",
+     "close": "20:00",
+     "closed": false
+    },
+    {
+     "open": "09:00",
+     "close": "20:00",
+     "closed": false
+    },
+    {
+     "open": "09:00",
+     "close": "20:00",
+     "closed": false
+    },
+    {
+     "open": "09:00",
+     "close": "16:00",
+     "closed": false
+    },
+    {
+     "open": "",
+     "close": "",
+     "closed": true
+    }
+   ],
+   "phone": true,
+   "email": false,
+   "whatsapp": false,
+   "website": "batya-beauty.com",
+   "bookingOnline": false,
+   "bookingLink": false,
+   "socials": [],
+   "team": [],
+   "languages": [],
+   "establishedYear": null,
+   "accessible": true,
+   "freeParking": null,
+   "sourceDescription": "המרכז המוביל והמתקדם בצפון לטיפולי אסתטיקה, טיפוח ויופי.\nבתיה מכון לטיפוח וליופי בנהריה, מציע מגוון רחב של טיפולי אסתטיקה מתקדמים המתבצעים ע\"י מומחים מקצועיים לקבלת התוצאות הטוביות ביותר עבורך.\n\nמגוון הטיפולים המוצע במקום בשילוב הידע המקצועי הרב והניסיון של בתיה והצוות המקצועי, הפכו אותנו למובילים בכל תחומי האסתטיקה והטיפוח באזור נהריה בפרט ובאזור הצפון בכלל.\n\nאנו מזמינים אותך לבוא ולהתפנק במגוון טיפולים מתקדמים כגון: הסרת שיער בלייזר, הצרת היקפים בטכנולוגיה מתקדמת, הקפאת שומן, מגוון טיפולי אסתטיקה רפואית - וליהנות מהתוצאות הנפלאות.\n\nאנחנו כאן בשבילך.\nשלך, בתיה.",
+   "sourceFaqs": [],
+   "rating": {
+    "value": 4.9,
+    "count": 77
+   },
+   "photos": 3,
+   "videos": 0,
+   "claimed": false,
+   "medicalResponsible": false
+  },
+  "output": {
+   "heading": "על הסטודיו",
+   "description": "Batya Care & Beauty Institute הוא מכון יופי בנהריה, ברחוב השקד 38, שעובד בכמה תחומים: הסרת שיער, טיפולי פנים, ציפורניים ושיזוף. הסרת שיער היא התחום המרכזי של המכון.\n\nטיפולי הפנים נעשים במכשור, בסדרות שמטרתן לשפר את מראה העור ואת המרקם שלו. לצדם יש טיפולי גוף במכשור, שמיועדים לשיפור מרקם העור ולעיצוב קווי הגוף.\n\nהמכון פתוח בימים ראשון עד חמישי בין 09:00 ל־20:00 וביום שישי בין 09:00 ל־16:00, ובשבת הוא סגור. המקום נגיש לאנשים עם מוגבלות. בגוגל המכון מדורג 4.9 על סמך 77 ביקורות.",
+   "faqs": [
+    {
+     "q": "אילו טיפולים יש במכון?",
+     "a": "הסרת שיער, טיפולי פנים וטיפולי גוף במכשור, ציפורניים ושיזוף."
+    },
+    {
+     "q": "איפה המכון נמצא?",
+     "a": "ברחוב השקד 38 בנהריה. המקום נגיש לאנשים עם מוגבלות."
+    },
+    {
+     "q": "מה שעות הפתיחה?",
+     "a": "ראשון עד חמישי בין 09:00 ל־20:00, שישי בין 09:00 ל־16:00. בשבת המכון סגור."
+    },
+    {
+     "q": "מה הדירוג של המכון בגוגל?",
+     "a": "4.9 על סמך 77 ביקורות."
+    }
+   ],
+   "metaTitle": "Batya Care & Beauty Institute בנהריה: הסרת שיער",
+   "metaDescription": "הסרת שיער, טיפולי פנים וגוף, ציפורניים ושיזוף ב־Batya Care & Beauty Institute בנהריה. דירוג 4.9 בגוגל (77 ביקורות). השוו מחירים וביקורות ב־BeautyFind."
+  }
+ },
+ {
+  "branchId": "2ccbad7e-ae74-4814-afcb-89d1d6d34d30",
+  "tier": "sparse",
+  "words": 51,
+  "packet": {
+   "name": "Grace Cosmetology Nahariya",
+   "city": "נהריה",
+   "address": "רחוב הרצל 67, נהריה",
+   "categories": [
+    "קוסמטיקה וטיפולי פנים"
+   ],
+   "businessType": null,
+   "services": [
+    {
+     "name": "Acne treatments",
+     "category": "קוסמטיקה וטיפולי פנים",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "fixed",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": false
+    },
+    {
+     "name": "Massage",
+     "category": "ספא ועיסויים",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "fixed",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": false
+    },
+    {
+     "name": "Skincare for all ages",
+     "category": "קוסמטיקה וטיפולי פנים",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "fixed",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": false
+    }
+   ],
+   "hours": null,
+   "phone": true,
+   "email": false,
+   "whatsapp": false,
+   "website": null,
+   "bookingOnline": false,
+   "bookingLink": false,
+   "socials": [
+    "Facebook"
+   ],
+   "team": [],
+   "languages": [],
+   "establishedYear": null,
+   "accessible": true,
+   "freeParking": null,
+   "sourceDescription": "קוסמטיקאית רפואית\nМедик-косметолог\nMedical Cosmetologist\n\nЭффективный anti-age и anti-stress уходы. Массажи и лечебные процедуры для лица, шеи, декольте и головы.\nРабота с морщинами и пигментацией.\nЛечение акне у подростков.",
+   "sourceFaqs": [],
+   "rating": null,
+   "photos": 4,
+   "videos": 0,
+   "claimed": false,
+   "medicalResponsible": false
+  },
+  "output": {
+   "heading": "על העסק",
+   "description": "Grace Cosmetology היא קליניקה לקוסמטיקה בנהריה, ברחוב הרצל 67, שמתמקדת בטיפולי עור לפנים. בין הטיפולים יש טיפולי אקנה, כולל טיפולים שמיועדים לבני נוער, וטיפוח עור שמותאם לכל הגילים. לצד טיפולי הפנים יש בקליניקה גם עיסויים.\n\nהמקום נגיש לאנשים עם מוגבלות. את התור קובעים בטלפון, ותמונות ועדכונים מתפרסמים בעמוד הפייסבוק של הקליניקה.",
+   "faqs": [
+    {
+     "q": "אילו טיפולים יש ב־Grace Cosmetology?",
+     "a": "טיפולי אקנה, טיפוח עור לכל הגילים ועיסויים."
+    },
+    {
+     "q": "האם יש טיפולי אקנה לבני נוער?",
+     "a": "כן, חלק מטיפולי האקנה בקליניקה מיועדים לבני נוער."
+    },
+    {
+     "q": "איפה הקליניקה נמצאת?",
+     "a": "ברחוב הרצל 67 בנהריה. המקום נגיש לאנשים עם מוגבלות."
+    },
+    {
+     "q": "איך קובעים תור?",
+     "a": "בטלפון."
+    }
+   ],
+   "metaTitle": "Grace Cosmetology בנהריה: קוסמטיקה",
+   "metaDescription": "טיפולי אקנה לבני נוער ולמבוגרים, טיפוח עור לכל הגילים ועיסויים ב־Grace Cosmetology, קליניקה לקוסמטיקה ברחוב הרצל בנהריה. השוו מחירים וביקורות ב־BeautyFind."
+  }
+ }
+]
