@@ -30,12 +30,12 @@ import GOLD_EXAMPLES_JSON from './goldExamples.json';
 import type { DayHours, ImportedTreatment } from './rules';
 import { normalizeHebrew, problemCode, textProblems } from './textRules';
 
-export const PROMPT_VERSION = '2026-10-04.4';
+export const PROMPT_VERSION = '2026-10-04.5';
 /** Word bounds per evidence tier. The tier comes from the packet (lengthTier), never from the writer. */
 export const LENGTH_TIERS = {
-  sparse: { min: 60, max: 150, paragraphs: 'one or two' },
-  normal: { min: 100, max: 280, paragraphs: 'two or three' },
-  rich: { min: 250, max: 500, paragraphs: 'three to five' },
+  sparse: { min: 40, max: 150, paragraphs: 'one or two' },
+  normal: { min: 70, max: 280, paragraphs: 'two or three' },
+  rich: { min: 180, max: 500, paragraphs: 'three to five' },
 } as const;
 export type LengthTier = keyof typeof LENGTH_TIERS;
 /** Below this a draft is "thin": stored and flagged, applied only to a listing without a description. */
@@ -91,6 +91,10 @@ export interface EvidencePacket {
   photos: number;
   videos: number;
   claimed: boolean;
+  // A medical responsible or a licensed doctor or nurse is on record for the listing. Without it the text never
+  // calls the business a medical or medical-aesthetics clinic and never puts a doctor or a certified
+  // cosmetician there (absent on packets before 2026-10-04.5, which keeps older hashes stable).
+  medicalResponsible?: boolean;
 }
 
 export interface EditorialOutput {
@@ -114,6 +118,8 @@ export interface EditorialRecord extends EditorialOutput {
   generatedAt: string;
   needsMoreInfo: boolean;
   violations: string[]; // left after the repair call, if any
+  unsupportedClaims?: string[]; // what the grounding check found and the repair removed (or could not)
+  grounded?: boolean; // the grounding check ran and every claim was supported at the end
   repairs: number;
   inputTokens: number;
   outputTokens: number;
@@ -177,12 +183,36 @@ export function profileTextsOf(crawl: unknown): Array<{ source: string; text: st
 /** Treatment names compared loosely: case, spacing and typography do not separate "לק ג'ל" from "לק ג׳ל". */
 const treatmentKey = (name: string) => normalizeHebrew(name).toLowerCase().replace(/[^a-z0-9א-ת]+/gu, ' ').trim();
 
-export function buildPacket(s: PacketSource, opts: { claimed?: boolean; bookingOnline?: boolean; publishedTreatments?: string[] } = {}): EvidencePacket {
+/**
+ * The family a treatment name belongs to, so near-duplicates count once: "Acne treatments" and "Acne facial"
+ * are both "acne"; "ניתוח הגדלת חזה" and "הגדלת חזה" are both "הגדלת חזה". Generic words (treatment, facial,
+ * טיפול, ניתוח, the business's own name) are dropped and the first two words that remain are the key.
+ */
+const FAMILY_STOP = new Set(['treatment', 'treatments', 'therapy', 'therapies', 'facial', 'facials', 'care', 'service', 'services', 'procedure', 'the', 'and', 'for', 'of', 'with', 'טיפול', 'טיפולי', 'טיפולים', 'ניתוח', 'ניתוחי', 'ניתוחים', 'שירות', 'שירותי', 'שירותים', 'הליך', 'הליכי', 'סדרת', 'מגוון', 'כל', 'את', 'של', 'עם', 'ו']);
+export function treatmentFamily(name: string): string {
+  const words = treatmentKey(name).split(' ').filter(w => w && !FAMILY_STOP.has(w) && !/^\d+$/.test(w));
+  return words.slice(0, 2).join(' ') || treatmentKey(name);
+}
+
+export function buildPacket(s: PacketSource, opts: { claimed?: boolean; bookingOnline?: boolean; publishedTreatments?: string[]; medicalResponsible?: boolean } = {}): EvidencePacket {
   // Published treatments only: when the listing's published list is known, the writer gets nothing else
-  // (sentences, products and article titles the hygiene pass hid never reach the text).
-  const published = opts.publishedTreatments ? new Set(opts.publishedTreatments.map(treatmentKey)) : null;
-  const treatments = ((Array.isArray(s.treatments) ? s.treatments : []) as ImportedTreatment[]).filter(t => !published || published.has(treatmentKey(t.name)));
+  // (sentences, products and article titles the hygiene pass hid never reach the text). A family of
+  // near-duplicate names is one treatment: the first spelling stays.
   const team = (Array.isArray(s.team) ? s.team : []) as EvidenceTeam[];
+  const published = opts.publishedTreatments ? new Set(opts.publishedTreatments.map(treatmentKey)) : null;
+  const families = new Set<string>();
+  const treatments = ((Array.isArray(s.treatments) ? s.treatments : []) as ImportedTreatment[]).filter(t => {
+    if (published && !published.has(treatmentKey(t.name))) return false;
+    const fam = treatmentFamily(t.name);
+    if (families.has(fam)) return false;
+    families.add(fam);
+    return true;
+  });
+  // Without a medical responsible on record the business is not presented as a medical clinic: the medical
+  // category names leave the packet (the medical services stay, by name, with their isMedical flag).
+  const medical = !!opts.medicalResponsible || team.some(m => MEDICAL_ROLE.test(`${m.role ?? ''} ${m.name ?? ''}`));
+  const medicalSlugs = new Set(CATEGORIES.filter(c => c.isMedical).map(c => c.slug));
+  const categories = s.categories.filter(c => medical || !medicalSlugs.has(c));
   const videos = Array.isArray(s.videos) ? (s.videos as Array<{ status?: string }>).filter(v => v.status === 'ok') : [];
   let domain: string | null = null;
   if (s.website && s.websiteKind === 'own') {
@@ -198,9 +228,9 @@ export function buildPacket(s: PacketSource, opts: { claimed?: boolean; bookingO
     city: s.cityName,
     // Hebrew street and number with the Hebrew city; a street the dictionary cannot translate is dropped.
     address: hebrewAddress(s.address, s.cityName),
-    categories: s.categories.map(catName),
+    categories: categories.map(catName),
     businessType: s.businessType,
-    services: treatments.slice(0, 40).map(t => ({ name: t.name, category: t.category ? catName(t.category) : null, priceNis: t.priceNis, priceMaxNis: t.priceMaxNis ?? null, priceType: t.priceType, priceNote: t.priceNote ?? null, durationMin: t.durationMin, isMedical: t.isMedical })),
+    services: treatments.slice(0, 40).map(t => ({ name: t.name, category: t.category && (medical || !medicalSlugs.has(t.category)) ? catName(t.category) : null, priceNis: t.priceNis, priceMaxNis: t.priceMaxNis ?? null, priceType: t.priceType, priceNote: t.priceNote ?? null, durationMin: t.durationMin, isMedical: t.isMedical })),
     hours: Array.isArray(s.hours) && s.hours.length === 7 ? (s.hours as DayHours[]) : null,
     phone: !!s.phone,
     email: !!s.email,
@@ -222,6 +252,7 @@ export function buildPacket(s: PacketSource, opts: { claimed?: boolean; bookingO
     photos: s.photoUrls.length,
     videos: videos.length,
     claimed: !!opts.claimed,
+    medicalResponsible: medical,
   };
 }
 
@@ -336,7 +367,8 @@ Language:
 - One mention per fact. The address, the opening hours, the rating, the accessibility, the parking, each contact channel and the founding year are each stated once in the description, in the paragraph where they belong; the FAQs may state them again. Never repeat the hours or the street in a closing paragraph.
 - Only the services in the packet exist. The packet lists the listing's published treatments; never name a treatment, device or product that is not in it, and never generalize from a category name to services it does not list.
 - No numbers, prices, years, addresses, device names or people that are not in the packet. Do not invent experience, credentials, results, guarantees, discounts, deposits, cancellation rules or free consultations.
-- Medical treatments: do not describe suitability, safety or results; say that a doctor decides in a consultation only when a medical category or a medical service is in the packet.
+- Medical treatments: do not describe suitability, safety or results. Never call the business a medical clinic, a medical-aesthetics clinic, a מרפאה or a קליניקה רפואית, never say a doctor, a nurse, a "קוסמטיקאית מוסמכת" or medical supervision is there, and never say a doctor decides in a consultation, unless "medicalResponsible" is true in the packet or a team member's role names a doctor or nurse. A business with a medical service and no medical responsible on record is described by what it offers, in neutral words ("הקליניקה מציעה גם מזותרפיה"), nothing more.
+- Every claim must trace to a packet field: a treatment, a credential, a staff member, a device, a location detail, an audience ("לבני נוער", "לנשים") or a year that is not in the packet is an invented claim and fails the draft. Do not infer an audience from a category, a credential from a title, or equipment from a treatment name.
 - Prices are shown as given; do not say whether they include VAT unless the packet says so.
 
 Write, in Hebrew:
@@ -460,6 +492,61 @@ export const BANNED_PHRASES = [
 ];
 const FIRST_PERSON = /(^|[^א-ת])(אנחנו|אנו|שלנו|אצלנו|איתנו|נשמח|צרו איתנו|הצוות שלנו|אצלינו)(?![א-ת])/;
 
+/** Words that present the business as medical or put a doctor, a nurse or a certified cosmetician there. */
+const MEDICAL_CLAIMS: RegExp[] = [
+  /אסתטיקה רפואית/u, /קליניקה רפואית/u, /מרפאה/u, /מרפאת/u, /(?<![א-ת])רופא(?:ה|ים|ות)?(?![א-ת])/u, /(?<![א-ת])ד״ר(?![א-ת])/u, /(?<![א-ת])דר׳(?![א-ת])/u, /(?<![א-ת])אחות(?![א-ת])/u, /(?<![א-ת])אחיות(?![א-ת])/u,
+  /קוסמטיקאית מוסמכת/u, /קוסמטיקאי מוסמך/u, /פיקוח רפואי/u, /בפיקוח רופא/u, /צוות רפואי/u, /ליווי רפואי/u, /מנתח(?:ת|ים)?(?![א-ת])/u, /בוגר(?:ת)? (?:האוניברסיטה|הטכניון|בית הספר לרפואה)/u,
+];
+const MEDICAL_ROLE = /רופא|ד״ר|ד"ר|דר׳|אחות|מנתח|כירורג|מומחה ב|dr\.?\s|md\b|nurse|surgeon|doctor|physician/iu;
+/** True when the packet lets the text speak of a doctor: a medical responsible on record, or a team member whose role says doctor or nurse. */
+export const medicalAllowed = (p: EvidencePacket) => !!p.medicalResponsible || p.team.some(t => MEDICAL_ROLE.test(`${t.role} ${t.name}`));
+/** Medical claims the packet does not back. Business and team names are left out of the search so a doctor's own name is not a hit. */
+export function medicalClaims(text: string, p: EvidencePacket): string[] {
+  if (medicalAllowed(p)) return [];
+  let t = text;
+  for (const n of [p.name, ...p.team.map(x => x.name)]) if (n) t = t.split(n).join(' ');
+  const out: string[] = [];
+  for (const re of MEDICAL_CLAIMS) {
+    const m = t.match(re);
+    if (m) out.push(m[0].trim());
+  }
+  return [...new Set(out)];
+}
+
+// ---------- grounding ----------
+
+/** The fact-grounding call: every claim in the description and FAQs, each marked supported or not by the packet. */
+export const GROUNDING_PROMPT = `You are a fact checker for BeautyFind, an Israeli directory of beauty businesses. You get one JSON evidence packet about a business and the Hebrew text written from it (a description and FAQs). List every factual claim the text makes about the business and mark each one supported or unsupported by the packet.
+
+A claim is any statement a reader would take as a fact: a treatment or service offered, what a treatment is for, a credential or qualification, a person and their role, equipment or a device, a brand or method, a location detail (street, floor, mall, neighbourhood, near what), the audience served (teenagers, women, men, children), opening days and hours, a price, a rating or review count, a founding year, languages, accessibility, parking, a contact channel, a social profile, a website, how a visit is arranged, and the kind of business (clinic, salon, studio, medical clinic).
+
+Supported means the packet states it or it follows directly from a packet field (a service in the list, hours in "hours", a rating in "rating", a street in "address", a person in "team", the kind of business from "categories" or "businessType"). A general description of what a listed treatment is, in everyday words, is supported when the treatment is in the packet. Unsupported means the packet does not state it: an audience the packet never mentions, a credential or title not in "team", a doctor or nurse when "medicalResponsible" is not true and no team role says so, a device, method or brand not in any service name or source text, a treatment not in "services", experience or years not in the packet, a location detail not in "address", a result or a promise. "sourceDescription", "profileTexts" and "researchNotes" count as packet facts. Judge each claim on its own; quote the words of the text that carry it.
+
+Return only a JSON object: {"claims": [{"text": "<the words from the text>", "kind": "treatment|purpose|credential|staff|equipment|location|audience|hours|price|rating|year|language|access|contact|kind_of_business|other", "supported": true|false, "basis": "<packet field or a short reason>"}]}.`;
+
+export const GROUNDING_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['claims'],
+  properties: {
+    claims: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['text', 'kind', 'supported', 'basis'], properties: { text: { type: 'string' }, kind: { type: 'string' }, supported: { type: 'boolean' }, basis: { type: 'string' } } } },
+  },
+};
+
+export interface GroundingClaim {
+  text: string;
+  kind: string;
+  supported: boolean;
+  basis: string;
+}
+
+export const groundingMessage = (o: EditorialOutput, p: EvidencePacket) => `Evidence packet (JSON):\n${JSON.stringify(p)}\n\nText to check (JSON):\n${JSON.stringify({ description: o.description, faqs: o.faqs.map(f => ({ q: f.q, a: f.a })) })}`;
+
+/** The repair that follows a failed grounding check: remove the unsupported claims, change nothing else. */
+export function groundingRepairMessage(claims: GroundingClaim[]): string {
+  return `Your previous answer makes claims the packet does not support. Remove each of them from the description and the FAQs: delete the words or the sentence, never replace a claim with another one, and do not add anything. Return the corrected full JSON object with the same structure.\n- ${claims.map(c => `"${c.text}" (${c.kind}: ${c.basis})`).join('\n- ')}`;
+}
+
 export const countWords = (s: string) => s.trim().split(/\s+/).filter(w => /[א-תa-z0-9]/i.test(w)).length;
 
 /** Every digit run the packet contains, so a number in the text can be traced back to it. */
@@ -512,6 +599,7 @@ export function checkOutput(o: EditorialOutput, p: EvidencePacket): string[] {
   for (const b of BANNED_PHRASES) if (lower.includes(b)) v.push(`phrase:${b}`);
   for (const f of FILLER_PHRASES) if (all.includes(f)) v.push(`filler:${f}`);
   for (const f of repeatedFacts(o.description, p)) v.push(`repeat:${f}`);
+  for (const m of medicalClaims(`${o.description}\n${o.faqs.map(f => `${f.q}\n${f.a}`).join('\n')}\n${o.metaDescription}`, p)) v.push(`medical:${m}`);
   if (FIRST_PERSON.test(o.description) || o.faqs.some(f => FIRST_PERSON.test(f.a))) v.push('first_person');
   v.push(...textViolations(o, p));
   // Numbers and people must exist in the packet.
@@ -549,7 +637,7 @@ export const repairable = (v: string[]) => v;
 export const textRuleViolations = (v: string[]) => v.filter(x => x.startsWith('text:') || x === 'name_missing');
 
 /** Everything that keeps a stored draft from replacing a listing's text: the text rules and a word count outside the tier. */
-export const publishBlockers = (v: string[]) => v.filter(x => x.startsWith('text:') || x === 'name_missing' || x.startsWith('short:') || x.startsWith('long:') || x.startsWith('filler:') || x.startsWith('repeat:'));
+export const publishBlockers = (v: string[]) => v.filter(x => x.startsWith('text:') || x === 'name_missing' || x.startsWith('short:') || x.startsWith('long:') || x.startsWith('filler:') || x.startsWith('repeat:') || x.startsWith('medical:'));
 
 const escapeRe = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /**
@@ -582,6 +670,7 @@ export function repairMessage(v: string[], p?: EvidencePacket): string {
     if (x.startsWith('person:')) return `Remove the person "${x.slice(7)}": not in the packet.`;
     if (x.startsWith('phrase:')) return `Remove the phrase "${x.slice(7)}".`;
     if (x.startsWith('filler:')) return `Filler: cut the sentence or clause with "${x.slice(7)}" (do not rephrase it; a sentence that adds no fact goes).`;
+    if (x.startsWith('medical:')) return `"${x.slice(8)}" presents the business as medical or puts a doctor, a nurse or a certified cosmetician there, and the packet has no medical responsible or medical team member: remove it and describe only what the business offers, in neutral words.`;
     if (x.startsWith('repeat:')) return `The ${x.slice(7)} is mentioned more than once in the description: state it once, in the paragraph where it belongs, and cut the other mention.`;
     if (x.startsWith('text:missing_info:')) return `Delete every sentence that talks about missing, unpublished or unverified information, about sources or data, or about the page itself (found: "${x.slice(18)}"). Say nothing instead.`;
     if (x.startsWith('text:record:')) return `Record language ("${x.slice(12)}"): the text speaks about the business directly ("הסלון מתמחה ב..."), never about a record, a list or a listing. Rewrite the sentence as a plain statement about the business, without רשומה, מצוין, מציינת, נרשם, מופיע כ, תוארו, מתואר, אינה מפרטת, אין פירוט or לא מפורט.`;
@@ -640,7 +729,7 @@ const ownWords = (p: EvidencePacket): string | null => {
   // Whole sentences only: cut at the last sentence end within the limit, or at a word boundary.
   const cut = whole.length <= 420 ? whole : (() => { const head = whole.slice(0, 420); const end = Math.max(head.lastIndexOf('. '), head.lastIndexOf('! '), head.lastIndexOf('? ')); return end > 60 ? head.slice(0, end + 1) : head.replace(/\s+\S*$/, ''); })();
   const c = cut.trim();
-  return c.length >= 40 && textProblems(c, allowedLatin(p)).length === 0 && !FIRST_PERSON.test(c) ? (/[.!?]$/.test(c) ? c : `${c}.`) : null;
+  return c.length >= 40 && textProblems(c, allowedLatin(p)).length === 0 && !FIRST_PERSON.test(c) && !medicalClaims(c, p).length ? (/[.!?]$/.test(c) ? c : `${c}.`) : null;
 };
 /** The open days as one phrase ("ראשון עד חמישי"), or null when the source said nothing. */
 const hoursDays = (hours: DayHours[]): string | null => {
@@ -697,10 +786,10 @@ export function templateDraft(p: EvidencePacket): EditorialOutput {
         const extras = [priceLine(s), s.durationMin ? `כ־${s.durationMin} דקות` : null].filter(Boolean);
         return extras.length ? `${s.name} (${extras.join(', ')})` : s.name;
       });
-      const purpose = CATEGORY_PURPOSE[cat];
+      const purpose = cat === 'אסתטיקה רפואית' && !medicalAllowed(p) ? null : CATEGORY_PURPOSE[cat];
       parts.push(`${purpose ? `${purpose}. ` : ''}${cat === 'שירותים נוספים' ? 'שירותים נוספים' : `בתחום ${cat}`}: ${lines.join('; ')}.`);
     }
-    if (p.services.some(s => s.isMedical)) parts.push('טיפולים רפואיים נקבעים אחרי ייעוץ עם רופא, ושם נקבע גם המחיר הסופי.');
+    if (p.services.some(s => s.isMedical) && medicalAllowed(p)) parts.push('טיפולים רפואיים נקבעים אחרי ייעוץ עם רופא, ושם נקבע גם המחיר הסופי.');
     paras.push(parts.join(' '));
   }
 
@@ -738,7 +827,7 @@ export function templateDraft(p: EvidencePacket): EditorialOutput {
   // FAQs: only questions the packet answers in full.
   const faqs: EditorialOutput['faqs'] = [];
   if (hebrewAddr) faqs.push({ q: `איפה נמצא ${p.name}?`, a: `${p.name} נמצא ב${hebrewAddr.replace(/^רחוב /, 'רחוב ')}${p.city && !hebrewAddr.includes(p.city) ? `, ${p.city}` : ''}. אפשר לנווט לשם בוויז או בגוגל מפות.`, basis: 'address' });
-  if (p.services.length) faqs.push({ q: `אילו שירותים מציע ${p.name}?`, a: `${p.name} מציע ${p.services.slice(0, 6).map(s => s.name).join(', ')}${p.services.length > 6 ? ' ועוד' : ''}.${p.services.some(s => s.isMedical) ? ' טיפולים רפואיים נקבעים אחרי ייעוץ עם רופא.' : ''}`, basis: 'services' });
+  if (p.services.length) faqs.push({ q: `אילו שירותים מציע ${p.name}?`, a: `${p.name} מציע ${p.services.slice(0, 6).map(s => s.name).join(', ')}${p.services.length > 6 ? ' ועוד' : ''}.${p.services.some(s => s.isMedical) && medicalAllowed(p) ? ' טיפולים רפואיים נקבעים אחרי ייעוץ עם רופא.' : ''}`, basis: 'services' });
   const priced = p.services.filter(s => s.priceNis != null && s.priceType !== 'free');
   if (priced.length) faqs.push({ q: `מה המחירים ב${p.name}?`, a: `לדוגמה: ${priced.slice(0, 3).map(s => `${s.name} ${priceLine(s)}`).join(', ')}. לשירותים אחרים מקבלים הצעת מחיר מהעסק.`, basis: 'services' });
   if (contact.length || p.bookingOnline) faqs.push({ q: 'איך קובעים תור?', a: p.bookingOnline ? 'תור נקבע ישירות דרך BeautyFind, ואפשר גם לפנות לעסק בטלפון או בוואטסאפ.' : `יוצרים קשר עם העסק ${contact.join(', ')} ומתאמים מועד.`, basis: 'contact' });

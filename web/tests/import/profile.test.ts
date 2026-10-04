@@ -10,7 +10,7 @@ import { after, before, describe, it } from 'node:test';
 import { PRICE_UNKNOWN, hoursKnown, openState, parseHours, servicePrice } from '../../src/components/profile/format';
 import { mapQuery, mapsEmbedUrl } from '../../src/lib/mapsEmbed';
 import { coverageOf, MANIFEST, manifestMarkdown, type CoverageInput } from '../../src/lib/import/coverage';
-import { BANNED_PHRASES, buildPacket, checkOutput, countWords, GOLD_EXAMPLES, LENGTH_TIERS, lengthTier, normalizeOutput, packetHash, repairable, templateDraft, WORDS_MAX, WORDS_MIN, type EditorialOutput, type EvidencePacket } from '../../src/lib/import/editorial';
+import { BANNED_PHRASES, buildPacket, checkOutput, countWords, GOLD_EXAMPLES, LENGTH_TIERS, lengthTier, normalizeOutput, packetHash, repairable, templateDraft, treatmentFamily, WORDS_MAX, WORDS_MIN, type EditorialOutput, type EvidencePacket } from '../../src/lib/import/editorial';
 import { cleanTeam, establishedFrom, languagesFrom, looksLikeName, teamFrom, videosFrom } from '../../src/lib/import/profileExtract';
 import { extractPage } from '../../src/lib/import/siteExtract';
 import { handleOf, publishableSocials, verifySocials } from '../../src/lib/import/socials';
@@ -201,7 +201,7 @@ const RICH: EvidencePacket = {
   ],
   languages: ['עברית', 'אנגלית', 'רוסית'], establishedYear: 2014, accessible: true, freeParking: true,
   sourceDescription: 'קליניקה לאסתטיקה רפואית וטיפולי פנים בהנהלת רופאה, הפועלת במרכז העיר עם צוות של אחיות מוסמכות וקוסמטיקאיות.',
-  sourceFaqs: [{ q: 'האם צריך לקבוע תור?', a: 'כן, בטלפון או בוואטסאפ.' }], rating: { value: 4.8, count: 212 }, photos: 8, videos: 2, claimed: false,
+  sourceFaqs: [{ q: 'האם צריך לקבוע תור?', a: 'כן, בטלפון או בוואטסאפ.' }], rating: { value: 4.8, count: 212 }, photos: 8, videos: 2, claimed: false, medicalResponsible: true,
 };
 const SPARSE: EvidencePacket = { ...RICH, services: [], hours: null, team: [], languages: [], establishedYear: null, accessible: null, freeParking: null, sourceDescription: null, sourceFaqs: [], rating: null, photos: 0, videos: 0, website: null, email: false, whatsapp: false, socials: [] };
 
@@ -226,20 +226,22 @@ describe('editorial checks and the template draft', () => {
     const sentence = 'הקליניקה פתוחה בימים ראשון עד חמישי בין 9:00 ל־20:00 ובשישי עד 14:00.';
     const pad = (n: number) => Array.from({ length: n }, () => sentence).join(' ');
     const w = (n: number) => countWords(pad(n));
-    // 170 words: over the sparse ceiling (60 to 150), inside normal (100 to 280), under the rich floor (250).
+    // 170 words: over the sparse ceiling (40 to 150), inside normal (70 to 280) and rich (180 to 500).
     const n170 = Math.ceil(170 / countWords(sentence));
     const text170 = pad(n170);
     assert.ok(w(n170) >= 166 && w(n170) <= 180, `words ${w(n170)}`);
     assert.ok(checkOutput({ ...d, description: `${SPARSE.name} ${text170}`, insufficientEvidence: false }, SPARSE).some(v => v.startsWith('long:')));
     assert.ok(!checkOutput({ ...d, description: `${normal.name} ${text170}` }, normal).some(v => /^(short|long):/.test(v)));
-    assert.ok(checkOutput({ ...d, description: `${RICH.name} ${text170}` }, RICH).some(v => v.startsWith('short:')));
+    // 150 words: under the rich floor (180).
+    const n150 = Math.ceil(150 / countWords(sentence));
+    assert.ok(checkOutput({ ...d, description: `${RICH.name} ${pad(n150)}` }, RICH).some(v => v.startsWith('short:')));
     // 560 words: over every tier's ceiling.
     const n560 = Math.ceil(560 / countWords(sentence));
     assert.ok(checkOutput({ ...d, description: `${RICH.name} ${pad(n560)}` }, RICH).some(v => v.startsWith('long:')));
-    // 90 words: fine for sparse, under the normal floor.
-    const n90 = Math.ceil(90 / countWords(sentence));
-    assert.ok(!checkOutput({ ...d, description: `${SPARSE.name} ${pad(n90)}`, insufficientEvidence: false }, SPARSE).some(v => /^(short|long):/.test(v)));
-    assert.ok(checkOutput({ ...d, description: `${normal.name} ${pad(n90)}` }, normal).some(v => v.startsWith('short:')));
+    // 50 words: fine for sparse (floor 40), under the normal floor (70).
+    const n50 = Math.ceil(50 / countWords(sentence));
+    assert.ok(!checkOutput({ ...d, description: `${SPARSE.name} ${pad(n50)}`, insufficientEvidence: false }, SPARSE).some(v => /^(short|long):/.test(v)));
+    assert.ok(checkOutput({ ...d, description: `${normal.name} ${pad(n50)}` }, normal).some(v => v.startsWith('short:')));
   });
   it('sparse evidence stays short and flagged instead of padded (acceptance 3)', () => {
     const d = templateDraft(SPARSE);
@@ -275,6 +277,30 @@ describe('editorial checks and the template draft', () => {
     assert.equal(p.name, 'ניילס');
     assert.deepEqual(p.services.map(s => s.name), ['מניקור', 'לק ג\'ל'], 'the unpublished record is left out; typography does not separate names');
     assert.equal(buildPacket(src).services.length, 3, 'without the published list every extracted treatment stays');
+  });
+  it('medical wording needs a medical responsible or a doctor on the team', () => {
+    // What buildPacket hands the writer for a listing without a medical responsible: no medical category names.
+    const noDoctor: EvidencePacket = { ...RICH, team: [], medicalResponsible: false, categories: ['קוסמטיקה וטיפולי פנים'], services: RICH.services.map(s => ({ ...s, category: s.category === 'אסתטיקה רפואית' ? null : s.category })) };
+    const text = { ...templateDraft(noDoctor), description: `${RICH.name} היא קליניקה לאסתטיקה רפואית בתל אביב, בניהולה של קוסמטיקאית מוסמכת. ההחלטה מתקבלת בייעוץ עם רופא.` };
+    const v = checkOutput(text, noDoctor);
+    assert.ok(v.includes('medical:אסתטיקה רפואית') && v.includes('medical:קוסמטיקאית מוסמכת') && v.includes('medical:רופא'), v.join(','));
+    assert.ok(!checkOutput(text, { ...noDoctor, medicalResponsible: true }).some(x => x.startsWith('medical:')), 'a medical responsible on record allows it');
+    assert.ok(!checkOutput(text, { ...noDoctor, team: RICH.team }).some(x => x.startsWith('medical:')), 'a doctor on the team allows it');
+    // The template itself never puts a doctor into a listing without one.
+    assert.ok(!checkOutput(templateDraft(noDoctor), noDoctor).some(x => x.startsWith('medical:')));
+    // Without a medical responsible the medical category names leave the packet; the medical services stay.
+    const src = { name: 'X', cityName: 'חיפה', address: 'רחוב 1, חיפה', categories: ['facials', 'medical-aesthetics'], businessType: null, treatments: [{ name: 'מזותרפיה', priceNis: null, priceType: 'on_request', category: 'medical-aesthetics', isMedical: true, durationMin: null }], hours: [], phone: null, email: null, whatsapp: null, website: null, websiteKind: null, bookingUrl: null, instagram: null, facebook: null, tiktok: null, youtube: null, team: [], languages: [], establishedYear: null, accessible: null, freeParking: null, description: null, faqs: null, googleRating: null, googleReviewCount: null, photoUrls: [], videos: [] };
+    assert.deepEqual(buildPacket(src, { medicalResponsible: false }).categories, ['קוסמטיקה וטיפולי פנים']);
+    assert.equal(buildPacket(src, { medicalResponsible: false }).services.length, 1);
+    assert.deepEqual(buildPacket(src, { medicalResponsible: true }).categories, ['קוסמטיקה וטיפולי פנים', 'אסתטיקה רפואית']);
+  });
+  it('near-duplicate treatments count once', () => {
+    assert.equal(treatmentFamily('Acne treatments'), treatmentFamily('Acne facial'));
+    assert.equal(treatmentFamily('ניתוח הגדלת חזה'), treatmentFamily('הגדלת חזה'));
+    assert.notEqual(treatmentFamily('Deep cleansing facial'), treatmentFamily('Basic facial'));
+    const t = (name: string) => ({ name, priceNis: null, priceType: 'on_request', category: 'facials', isMedical: false, durationMin: null });
+    const src = { name: 'X', cityName: 'חיפה', address: 'רחוב 1, חיפה', categories: ['facials'], businessType: null, treatments: [t('Acne treatments'), t('Acne facial'), t('Basic facial'), t('טיפול אקנה')], hours: [], phone: null, email: null, whatsapp: null, website: null, websiteKind: null, bookingUrl: null, instagram: null, facebook: null, tiktok: null, youtube: null, team: [], languages: [], establishedYear: null, accessible: null, freeParking: null, description: null, faqs: null, googleRating: null, googleReviewCount: null, photoUrls: [], videos: [] };
+    assert.deepEqual(buildPacket(src).services.map(s => s.name), ['Acne treatments', 'Basic facial', 'טיפול אקנה'], 'the English near-duplicate collapses; the Hebrew spelling is its own family');
   });
   it('the gold examples pass every check except their own word count', () => {
     assert.equal(GOLD_EXAMPLES.length, 3);

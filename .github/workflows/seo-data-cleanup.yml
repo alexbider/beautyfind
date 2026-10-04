@@ -15,7 +15,7 @@ on:
         description: Which cleanup to run
         required: true
         type: choice
-        options: [category-audit, description-cleanup, treatment-hygiene, city-category-report, import-settings, editorial-report, gold-examples]
+        options: [category-audit, description-cleanup, treatment-hygiene, city-category-report, import-settings, editorial-report, gold-examples, medical-report]
       confirm:
         description: Apply changes (off = dry run, CSV only)
         required: false
@@ -95,6 +95,7 @@ jobs:
             city-category-report) npm run -s seo:city-category-report 2>&1 | tee reports/log.txt ;;
             editorial-report) npm run -s import:editorial-report -- --run "$RUN_ID" --out reports/editorial-report.csv 2>&1 | tee reports/log.txt ;;
             gold-examples) npm run -s import:gold-examples -- --out reports/gold-examples.json 2>&1 | tee reports/log.txt ;;
+            medical-report) npm run -s import:medical-report -- --out reports/medical-report.csv 2>&1 | tee reports/log.txt ;;
             import-settings)
               # Shows the import settings; with "setting" (key=value) and confirm it changes that one key.
               if [ -n "$SETTING" ] && [ "$CONFIRM" = "true" ]; then

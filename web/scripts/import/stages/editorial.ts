@@ -28,7 +28,11 @@ export async function editorialFor(p: ImportPlace, run: ImportRun | null, opts: 
   if (isReferenceBranch(p.branchId)) return 'skipped';
   // The writer only sees the listing's published treatments (the hygiene pass hides sentences and products).
   const published = p.branchId ? (await db.treatment.findMany({ where: { branchId: p.branchId, isPublished: true }, select: { name: true } })).map(t => t.name) : undefined;
-  const packet = buildPacket(p, { claimed: opts.claimed, bookingOnline: opts.bookingOnline, publishedTreatments: published });
+  // A medical responsible on the listing, or an active doctor or nurse on the business's staff, lets the text
+  // speak of a doctor; without one the business is never presented as medical.
+  const branch = p.branchId ? await db.branch.findUnique({ where: { id: p.branchId }, select: { medicalResponsibleId: true, business: { select: { staff: { where: { status: 'active', profession: { in: ['doctor', 'nurse'] } }, select: { id: true, branchIds: true } } } } } }) : null;
+  const medicalResponsible = !!branch && (!!branch.medicalResponsibleId || branch.business.staff.some(m => !m.branchIds.length || m.branchIds.includes(p.branchId!)));
+  const packet = buildPacket(p, { claimed: opts.claimed, bookingOnline: opts.bookingOnline, publishedTreatments: published, medicalResponsible: p.branchId ? medicalResponsible : undefined });
   const hash = packetHash(packet);
   const cur = stored(p);
   if (!opts.force && cur?.evidenceHash === hash && cur.promptVersion === PROMPT_VERSION && !cur.skipped) return 'cached';
@@ -74,7 +78,7 @@ export async function editorialFor(p: ImportPlace, run: ImportRun | null, opts: 
     const draft = templateDraft(packet);
     const words = countWords(draft.description);
     const rec: EditorialRecord & { error: string } = {
-      ...draft, words, lengthTier: lengthTier(packet), proofread: false, evidenceHash: hash, promptVersion: PROMPT_VERSION, model: 'template', generatedAt: new Date().toISOString(),
+      ...draft, words, lengthTier: lengthTier(packet), proofread: false, grounded: false, unsupportedClaims: r.unsupportedClaims ?? [], evidenceHash: hash, promptVersion: PROMPT_VERSION, model: 'template', generatedAt: new Date().toISOString(),
       needsMoreInfo: words < WORDS_MIN || draft.insufficientEvidence, violations: [], repairs: 0, inputTokens: r.inputTokens ?? 0, outputTokens: r.outputTokens ?? 0, costUsd: r.costUsd ?? 0, error: r.error,
     };
     await db.importPlace.update({ where: { id: p.id }, data: { editorial: rec as unknown as Prisma.InputJsonValue, costs: { ...((p.costs as object) ?? {}), editorialUsd: (((p.costs as { editorialUsd?: number }) ?? {}).editorialUsd ?? 0) + (r.costUsd ?? 0) } as Prisma.InputJsonValue } });
@@ -83,7 +87,7 @@ export async function editorialFor(p: ImportPlace, run: ImportRun | null, opts: 
   await commit(db, key, toMicros(r.costUsd), est);
   const words = countWords(r.output.description);
   const rec: EditorialRecord = {
-    ...r.output, words, lengthTier: lengthTier(packet), proofread: r.proofread, evidenceHash: hash, promptVersion: PROMPT_VERSION, model: r.model, generatedAt: new Date().toISOString(),
+    ...r.output, words, lengthTier: lengthTier(packet), proofread: r.proofread, grounded: r.grounded, unsupportedClaims: r.unsupportedClaims, evidenceHash: hash, promptVersion: PROMPT_VERSION, model: r.model, generatedAt: new Date().toISOString(),
     needsMoreInfo: words < WORDS_MIN || r.output.insufficientEvidence, violations: r.violations, repairs: r.repairs, inputTokens: r.inputTokens, outputTokens: r.outputTokens, costUsd: r.costUsd,
   };
   const costs = (p.costs as Record<string, number> | null) ?? {};

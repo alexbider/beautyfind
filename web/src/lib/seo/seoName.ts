@@ -89,6 +89,10 @@ export function seoName(raw: string, max = SEO_NAME_MAX): string {
     if (words(head).length === 1 && GENERIC.has(head) && HEBREW.test(parts[1])) head = `${head} ${parts[1]}`;
     if (letters(head) >= 3) s = head;
   }
+  // "קוסמטיקאית Genin cosmotology", "מאפרת דנה לוי": a leading profession word before the brand is not the name
+  // (a title such as ד״ר or Dr stays). The word goes only when a name of at least three letters remains.
+  const prof = s.match(/^(?:קוסמטיקאית|קוסמטיקאי|מאפרת|מאפר|ספרית|מניקוריסטית|פדיקוריסטית|מעצבת שיער|מעצב שיער|מעצבת גבות|מעצב גבות|קוסמטיקאית רפואית)\s+(.+)$/u);
+  if (prof && letters(prof[1]) >= 3) s = prof[1].trim();
   // "ניילס-בניית ציפורניים": a hyphen with no spaces whose tail names a treatment or a field is a tail too.
   const glued = s.match(/^(.+?\S)-(\S.+)$/u);
   if (glued && letters(glued[1]) >= 3 && namesTreatment(glued[2])) s = glued[1].trim();

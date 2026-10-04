@@ -8,6 +8,7 @@ import type { ImportedTreatment } from '@/lib/import/rules';
 import { serviceKey } from '@/lib/import/services';
 import type { ImportSettings } from '@/lib/import/settings';
 import { ratingProviderOk } from '@/lib/import/sourcePolicy';
+import { metaDescriptionProblems } from '@/lib/seo/metaRules';
 import { db } from '@/lib/server/db';
 import { copyListingImages, copyVideoPosters, type MediaProvenance } from '@/lib/server/importMedia';
 import { mediaCandidatesOf, refreshProfileStatus } from '@/lib/server/importOps';
@@ -71,8 +72,13 @@ export async function enhanceBranch(branchId: string, p: ImportPlace, s: ImportS
   if (!b.youtube && f.youtube) set('youtube', f.youtube, 'youtube');
   data.attributes = f.attributes;
   if (f.editorial && !(b.editorial as { ownerApproved?: boolean } | null)?.ownerApproved) data.editorial = f.editorial;
-  if (!b.metaTitle && f.metaTitle) data.metaTitle = f.metaTitle;
-  if (!b.metaDescription && f.metaDescription) data.metaDescription = f.metaDescription;
+  // Meta title and description are the page builder's (src/app/[region]/biz/[slug]/data.ts); the worker
+  // never fills them, and a stored value that breaks the current rules (a contact channel, over 60
+  // characters, the old "| מחירים וביקורות" tail) is cleared so the builder's text takes over.
+  void f.metaTitle;
+  void f.metaDescription;
+  if (b.metaTitle && (b.metaTitle.length > 60 || /\|/.test(b.metaTitle) || /מחירים וביקורות/u.test(b.metaTitle))) set('metaTitle', null, 'meta_title_cleared');
+  if (b.metaDescription && metaDescriptionProblems(normalizeHebrew(b.metaDescription), { title: b.metaTitle ?? undefined, allow: [b.name] }).length) set('metaDescription', null, 'meta_description_cleared');
   if (!b.accessible && p.accessible === true) set('accessible', true, 'accessible');
   if (!b.freeParking && p.freeParking === true) set('freeParking', true, 'parking');
   if (!b.wazeUrl && p.lat != null && p.lng != null) set('wazeUrl', `https://waze.com/ul?ll=${p.lat},${p.lng}&navigate=yes`, 'waze');

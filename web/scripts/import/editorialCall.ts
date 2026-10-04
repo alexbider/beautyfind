@@ -10,7 +10,7 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
-import { applyProofread, checkOutput, normalizeOutput, onlyLength, OUTPUT_SCHEMA, PROMPT_VERSION, PROOFREAD_PROMPT, PROOFREAD_SCHEMA, proofreadMessage, repairable, repairMessage, SYSTEM_PROMPT, templateDraft, textRuleViolations, userMessage, type EditorialOutput, type EvidencePacket, type ProofreadOutput } from '../../src/lib/import/editorial';
+import { applyProofread, checkOutput, GROUNDING_PROMPT, GROUNDING_SCHEMA, groundingMessage, groundingRepairMessage, normalizeOutput, onlyLength, OUTPUT_SCHEMA, PROMPT_VERSION, PROOFREAD_PROMPT, PROOFREAD_SCHEMA, proofreadMessage, repairable, repairMessage, SYSTEM_PROMPT, templateDraft, textRuleViolations, userMessage, type EditorialOutput, type EvidencePacket, type GroundingClaim, type ProofreadOutput } from '../../src/lib/import/editorial';
 import { openaiErrorKind } from '../../src/lib/import/openai';
 import { editorialCostUsd, pricing } from '../../src/lib/import/pricing';
 import { responses } from './providers/openai';
@@ -41,9 +41,11 @@ const Proof = z.object({
   changes: z.number().int().min(0),
 });
 
+const Grounding = z.object({ claims: z.array(z.object({ text: z.string().max(400), kind: z.string().max(40), supported: z.boolean(), basis: z.string().max(300) })).max(200) });
+
 export type EditorialResult =
-  | { ok: true; output: EditorialOutput; violations: string[]; repairs: number; proofread: boolean; inputTokens: number; outputTokens: number; costUsd: number; model: string }
-  | { ok: false; error: string; transient?: boolean; fatal?: boolean; inputTokens?: number; outputTokens?: number; costUsd?: number };
+  | { ok: true; output: EditorialOutput; violations: string[]; repairs: number; proofread: boolean; grounded: boolean; unsupportedClaims: string[]; inputTokens: number; outputTokens: number; costUsd: number; model: string }
+  | { ok: false; error: string; transient?: boolean; fatal?: boolean; unsupportedClaims?: string[]; inputTokens?: number; outputTokens?: number; costUsd?: number };
 
 let client: Anthropic | null = null;
 const api = () => (client ??= new Anthropic({ maxRetries: 3 }));
@@ -168,7 +170,7 @@ export async function writeEditorial(packet: EvidencePacket, provider: WriterPro
   if (mock() || !key) {
     if (!mock()) return { ok: false, error: 'no_api_key', fatal: true };
     const output = templateDraft(packet);
-    return { ok: true, output, violations: checkOutput(output, packet).filter(v => !/^(short|long):/.test(v)), repairs: 0, proofread: false, inputTokens: 0, outputTokens: 0, costUsd: 0, model: 'template' };
+    return { ok: true, output, violations: checkOutput(output, packet).filter(v => !/^(short|long):/.test(v)), repairs: 0, proofread: false, grounded: false, unsupportedClaims: [], inputTokens: 0, outputTokens: 0, costUsd: 0, model: 'template' };
   }
   const model = provider === 'openai' ? OPENAI_MODEL : EDITORIAL_MODEL;
   const write = (turns: Turn[]) => structured(provider, { system: SYSTEM_PROMPT, schema: OUTPUT_SCHEMA, turns }, Out);
@@ -232,8 +234,44 @@ export async function writeEditorial(packet: EvidencePacket, provider: WriterPro
   if (textRuleViolations(violations).length) return { ok: false, error: `text_rules: ${textRuleViolations(violations).slice(0, 6).join(', ')}`.slice(0, 240), inputTokens, outputTokens, costUsd: cost() };
   if (violations.some(v => /^(short|long):/.test(v))) {
     // The draft is clean but outside its tier: stored with the violation (the listing keeps its text), and
-    // the reason is visible on the record, so the proofreading call is not spent on it.
-    return { ok: true, output, violations, repairs, proofread: false, inputTokens, outputTokens, costUsd: cost(), model };
+    // the reason is visible on the record, so the grounding and proofreading calls are not spent on it.
+    return { ok: true, output, violations, repairs, proofread: false, grounded: false, unsupportedClaims: [], inputTokens, outputTokens, costUsd: cost(), model };
+  }
+
+  // Fact grounding: every claim in the description and FAQs against the packet. Unsupported claims get one
+  // repair that removes them; a draft that still carries one is rejected. The claims are logged either way.
+  const unsupportedClaims: string[] = [];
+  let grounded = false;
+  const ground = () => structured<{ claims: GroundingClaim[] }>(provider, { system: GROUNDING_PROMPT, schema: GROUNDING_SCHEMA, turns: [{ role: 'user', content: groundingMessage(output, packet) }] }, Grounding);
+  const g1 = await ground();
+  if (!('error' in g1)) {
+    inputTokens += g1.inputTokens;
+    outputTokens += g1.outputTokens;
+    let bad = g1.output.claims.filter(c => !c.supported);
+    if (bad.length) {
+      unsupportedClaims.push(...bad.map(c => `${c.kind}: ${c.text}`));
+      console.log(`editorial: ${bad.length} unsupported claim(s) in the draft for ${packet.name}: ${bad.map(c => `"${c.text}" (${c.kind})`).join('; ')}`);
+      repairs += 1;
+      const fixed = await write([...turns, { role: 'assistant', content: JSON.stringify(output) }, { role: 'user', content: groundingRepairMessage(bad) }]);
+      if (!('error' in fixed)) {
+        inputTokens += fixed.inputTokens;
+        outputTokens += fixed.outputTokens;
+        const candidate = tidy(fixed.output);
+        const vc = checkOutput(candidate, packet);
+        if (!textRuleViolations(vc).length && !vc.some(v => /^(short|long):/.test(v))) {
+          output = candidate;
+          violations = vc;
+          const g2 = await ground();
+          if (!('error' in g2)) {
+            inputTokens += g2.inputTokens;
+            outputTokens += g2.outputTokens;
+            bad = g2.output.claims.filter(c => !c.supported);
+          }
+        }
+      }
+      if (bad.length) return { ok: false, error: `unsupported_claims: ${bad.map(c => c.text).join('; ')}`.slice(0, 240), unsupportedClaims, inputTokens, outputTokens, costUsd: cost() };
+    }
+    grounded = true;
   }
 
   // Proofreading: spelling and grammar only. A failed or refused proofreading call leaves the draft as it is.
@@ -255,7 +293,7 @@ export async function writeEditorial(packet: EvidencePacket, provider: WriterPro
       }
     }
   }
-  return { ok: true, output, violations, repairs, proofread, inputTokens, outputTokens, costUsd: cost(), model };
+  return { ok: true, output, violations, repairs, proofread, grounded, unsupportedClaims, inputTokens, outputTokens, costUsd: cost(), model };
 }
 
 /** The proofreader's strings through the same typography fixes as the writer's. */

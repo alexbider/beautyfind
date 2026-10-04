@@ -14,6 +14,8 @@
 //                                           spread across the length tiers (sparse, normal, rich)
 //            --cancel-queued                with --confirm: cancel the earlier "ניקוי תיאורים" runs still queued
 //                                           or running, so only the new runs are picked up
+//            --rerun <run id>               queue exactly the listings of an earlier run again (a review batch
+//                                           under a new prompt), whatever their text looks like now
 //
 // Never changed: claimed listings, listings whose text staff marked approved (editorial.ownerApproved) and the
 // hand-written reference profiles (src/lib/import/reference.ts).
@@ -61,6 +63,7 @@ async function main() {
   const perListingUsd = Math.max(0.01, Number(arg('budget') ?? 0.12));
   const limit = arg('limit') ? Math.max(1, Number(arg('limit'))) : null;
   const since = arg('rewritten-since') ? new Date(arg('rewritten-since')!) : null;
+  const rerun = arg('rerun') ? new Set(((await db.importRun.findUniqueOrThrow({ where: { id: arg('rerun')! }, select: { scope: true } })).scope as { branchIds?: string[] }).branchIds ?? []) : null;
   if (since && Number.isNaN(since.getTime())) throw new Error('--rewritten-since needs a date (2026-10-03)');
 
   const branches = await db.branch.findMany({
@@ -88,7 +91,7 @@ async function main() {
     const draft = (place?.editorial ?? null) as { promptVersion?: string; model?: string; generatedAt?: string } | null;
     // A draft the writer produced under an older prompt version, from the given date on (not the template fallback).
     const older = !!since && !!draft?.generatedAt && new Date(draft.generatedAt) >= since && !!draft.model && draft.model !== 'template' && draft.promptVersion !== PROMPT_VERSION;
-    if (!problems.length && !older) continue;
+    if (!problems.length && !older && !rerun?.has(b.id)) continue;
     for (const p of problems) {
       perCode.set(p.code, (perCode.get(p.code) ?? 0) + 1);
       const k = `${p.code}:${p.match}`;
@@ -117,7 +120,11 @@ async function main() {
   // The listings to queue: all candidates, or with --limit a spread across the tiers (round robin, so a
   // review batch of ten holds every tier).
   let ids = candidates.map(r => r.branchId);
-  if (limit && limit < candidates.length) {
+  if (rerun) {
+    ids = ids.filter(id => rerun.has(id));
+    console.log(`RERUN: ${ids.length} of the earlier run's ${rerun.size} listings are candidates again`);
+  }
+  if (!rerun && limit && limit < candidates.length) {
     const byTier = (['rich', 'normal', 'sparse'] as const).map(t => candidates.filter(r => r.tier === t));
     const picked: Row[] = [];
     for (let i = 0; picked.length < limit && byTier.some(l => l.length > i); i++) for (const l of byTier) if (l[i] && picked.length < limit) picked.push(l[i]);

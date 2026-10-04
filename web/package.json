@@ -29,7 +29,8 @@
     "import:treatment-hygiene": "tsx scripts/import/treatmentHygiene.ts",
     "import:settings": "tsx scripts/import/settings.ts",
     "import:editorial-report": "tsx scripts/import/editorialReport.ts",
-    "import:gold-examples": "tsx scripts/import/goldExamples.ts"
+    "import:gold-examples": "tsx scripts/import/goldExamples.ts",
+    "import:medical-report": "tsx scripts/import/medicalReport.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

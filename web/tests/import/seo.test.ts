@@ -15,6 +15,10 @@ describe('seo name', () => {
     assert.equal(seoName('סטודיו דנה, מניקור, פדיקור, לק ג׳ל'), 'סטודיו דנה');
     assert.equal(seoName('מספרת רון שיער Ron Hair Salon'), 'מספרת רון שיער');
     assert.equal(seoName('Glow Clinic'), 'Glow Clinic', 'a Latin-only name stays');
+    assert.equal(seoName('קוסמטיקאית Genin cosmotology'), 'Genin cosmotology', 'a leading profession word goes');
+    assert.equal(seoName('מאפרת דנה לוי'), 'דנה לוי');
+    assert.equal(seoName('ד״ר מנאר קעואר - מומחה בכירורגיה פלסטית'), 'ד״ר מנאר קעואר', 'a title stays');
+    assert.equal(seoName('קוסמטיקאית'), 'קוסמטיקאית', 'a lone profession word is kept rather than emptied');
     assert.equal(seoName('סטודיו Glow'), 'סטודיו Glow', 'one Latin brand word inside a Hebrew name stays');
     assert.equal(seoName('ד"ר שיין'), 'ד״ר שיין');
     // A hyphen glued to one side is a separator too; a hyphen inside a word is not.
