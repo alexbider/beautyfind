@@ -10,7 +10,7 @@ import { after, before, describe, it } from 'node:test';
 import { PRICE_UNKNOWN, hoursKnown, openState, parseHours, servicePrice } from '../../src/components/profile/format';
 import { mapQuery, mapsEmbedUrl } from '../../src/lib/mapsEmbed';
 import { coverageOf, MANIFEST, manifestMarkdown, type CoverageInput } from '../../src/lib/import/coverage';
-import { BANNED_PHRASES, buildPacket, checkOutput, countWords, LENGTH_TIERS, lengthTier, packetHash, repairable, templateDraft, WORDS_MAX, WORDS_MIN, type EvidencePacket } from '../../src/lib/import/editorial';
+import { BANNED_PHRASES, buildPacket, checkOutput, countWords, GOLD_EXAMPLES, LENGTH_TIERS, lengthTier, normalizeOutput, packetHash, repairable, templateDraft, WORDS_MAX, WORDS_MIN, type EditorialOutput, type EvidencePacket } from '../../src/lib/import/editorial';
 import { cleanTeam, establishedFrom, languagesFrom, looksLikeName, teamFrom, videosFrom } from '../../src/lib/import/profileExtract';
 import { extractPage } from '../../src/lib/import/siteExtract';
 import { handleOf, publishableSocials, verifySocials } from '../../src/lib/import/socials';
@@ -275,6 +275,13 @@ describe('editorial checks and the template draft', () => {
     assert.equal(p.name, 'ניילס');
     assert.deepEqual(p.services.map(s => s.name), ['מניקור', 'לק ג\'ל'], 'the unpublished record is left out; typography does not separate names');
     assert.equal(buildPacket(src).services.length, 3, 'without the published list every extracted treatment stays');
+  });
+  it('the gold examples pass every check except their own word count', () => {
+    assert.equal(GOLD_EXAMPLES.length, 3);
+    for (const g of GOLD_EXAMPLES) {
+      const o = normalizeOutput({ heading: (g.output.heading ?? 'על העסק') as EditorialOutput['heading'], description: g.output.description, faqs: g.output.faqs.map(f => ({ ...f, basis: '' })), metaTitle: g.output.metaTitle, metaDescription: g.output.metaDescription, serviceSummaries: [], insufficientEvidence: false, missing: [] });
+      assert.deepEqual(checkOutput(o, g.packet).filter(v => !/^(short|long):/.test(v)), [], `${g.tier}: ${checkOutput(o, g.packet).join(',')}`);
+    }
   });
   it('refuses a booking claim through the platform when native booking is off', () => {
     const d = templateDraft(RICH);
