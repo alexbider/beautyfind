@@ -184,14 +184,34 @@
      "isMedical": true
     },
     {
-     "name": "עיצוב הגוף",
-     "category": "עיצוב וחיטוב הגוף",
+     "name": "פיסול אף ללא ניתוח",
+     "category": "כירורגיה פלסטית",
      "priceNis": null,
      "priceMaxNis": null,
      "priceType": "on_request",
      "priceNote": null,
      "durationMin": null,
-     "isMedical": false
+     "isMedical": true
+    },
+    {
+     "name": "ניתוח הגדלת חזה/ הקטנת",
+     "category": "כירורגיה פלסטית",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "on_request",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": true
+    },
+    {
+     "name": "ניתוח הגדלת / הקטנת שדיים",
+     "category": "כירורגיה פלסטית",
+     "priceNis": null,
+     "priceMaxNis": null,
+     "priceType": "on_request",
+     "priceNote": null,
+     "durationMin": null,
+     "isMedical": true
     },
     {
      "name": "ניתוח הקטנת חזה",
@@ -468,7 +488,7 @@
   "tier": "sparse",
   "words": 51,
   "packet": {
-   "name": "Grace Cosmetology Nahariya",
+   "name": "Grace Cosmetology",
    "city": "נהריה",
    "address": "רחוב הרצל 67, נהריה",
    "categories": [
@@ -477,7 +497,7 @@
    "businessType": null,
    "services": [
     {
-     "name": "Acne treatments",
+     "name": "טיפול באקנה",
      "category": "קוסמטיקה וטיפולי פנים",
      "priceNis": null,
      "priceMaxNis": null,
@@ -487,7 +507,7 @@
      "isMedical": false
     },
     {
-     "name": "Massage",
+     "name": "עיסוי",
      "category": "ספא ועיסויים",
      "priceNis": null,
      "priceMaxNis": null,
