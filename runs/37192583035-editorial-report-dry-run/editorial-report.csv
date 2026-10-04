@@ -1,0 +1,11 @@
+﻿branch_id,name,draft_from_this_run,model,tier,words,faqs,proofread,prompt_version,error,violations,repairs,needs_more_info,cost_usd,input_tokens,output_tokens,generated_at
+388a5b73-0aed-4fea-9b38-a28b0b4b0aaa,Glamur G_B,yes,claude-sonnet-5,normal,116,5,yes,2026-10-04.4,,,1,false,0.04428,4575,3513,2026-10-04T09:25:31.327Z
+f5f9510a-f30f-4fda-ac5d-ed82c839117e,Epilution Haifa | Салон красоты | Beauty Salon,yes,claude-sonnet-5,rich,204,7,no,2026-10-04.4,,short:204,2,false,0.17239,20570,13125,2026-10-04T09:29:00.459Z
+1b021794-8031-4d50-9e8b-9d4d275f483d,Clinic Dr. Eran Bar-Meir,yes,claude-sonnet-5,rich,242,6,no,2026-10-04.4,,short:242 | meta:short:123,1,false,0.07747,8780,5991,2026-10-04T09:29:58.265Z
+ad544cb8-7e77-4524-9640-0befa25de827,L&Y beauty lab,yes,claude-sonnet-5,sparse,16,3,yes,2026-10-04.4,,meta:short:129,1,true,0.018114,1487,1514,2026-10-04T09:31:26.743Z
+428b9c2b-b87d-4cb3-82d5-83d155ae79c1,ARcosmetolog,yes,claude-sonnet-5,sparse,77,5,yes,2026-10-04.4,,,1,false,0.04118,4720,3174,2026-10-04T09:32:34.947Z
+caa416ae-8f10-4aee-ac00-d5f35227bbd0,Lilac Saturn cosmetics and eyebrow shaping,yes,claude-sonnet-5,normal,98,5,no,2026-10-04.4,,short:98,2,false,0.049524,4762,4000,2026-10-04T09:31:07.242Z
+e7a7ede1-2590-4d64-9f3f-ce0893975d6d,פרו אסתטיקס טיפולים אסתטיים מתקדמים צפת,yes,claude-sonnet-5,rich,304,8,yes,2026-10-04.4,,repeat:address,2,false,0.166598,20099,12640,2026-10-04T09:27:16.380Z
+14e6f29b-d0e6-4733-bca8-8f0541f268fe,Barak clinic - קליניקה לאסתטיקה מתקדמת בנהריה,yes,claude-sonnet-5,normal,130,5,yes,2026-10-04.4,,repeat:address | repeat:accessibility,1,false,0.046982,3956,3907,2026-10-04T09:32:04.517Z
+7fe75393-c4ab-4f02-90ce-af04fb37f700,קוסמטיקאית Genin cosmotology,yes,claude-sonnet-5,rich,255,7,yes,2026-10-04.4,,,1,false,0.096522,8466,7959,2026-10-04T09:33:50.938Z
+b5afada9-287f-47af-9a19-2bbd854a7400,BEAUTY OSK,yes,claude-sonnet-5,sparse,40,5,yes,2026-10-04.4,,,1,true,0.026898,2309,2228,2026-10-04T09:30:26.513Z
