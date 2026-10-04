@@ -1,0 +1,13 @@
+live listings with published medical treatments: 163; without a medical responsible or a doctor or nurse on staff: 163 (claimed 0, unclaimed 163)
+    55  facials
+    44  dental-aesthetics
+    29  medical-aesthetics
+    22  plastic-surgery
+     5  hair-removal
+     2  brows-lashes
+     2  hair-restoration
+     1  nails
+     1  permanent-makeup
+     1  hair-salons
+     1  body-contouring
+SUMMARY uncovered=163 csv=reports/medical-report.csv
