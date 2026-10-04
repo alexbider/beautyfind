@@ -34,9 +34,17 @@ interface Ed {
   faqs?: unknown[];
 }
 
+/** --run queue: every run the worker would still pick up (queued or running), oldest first. */
+async function listQueue() {
+  const runs = await db.importRun.findMany({ where: { status: { in: ['queued', 'running'] } }, orderBy: { createdAt: 'asc' }, select: { id: true, label: true, provider: true, status: true, createdAt: true, lockedUntil: true, recordLimit: true } });
+  console.log(`QUEUE ${runs.length} run(s) queued or running`);
+  for (const r of runs) console.log(`  ${r.status.padEnd(8)} ${r.provider.padEnd(10)} ${r.createdAt.toISOString()} ${r.id} "${r.label}" records=${r.recordLimit}${r.lockedUntil ? ` lockedUntil=${r.lockedUntil.toISOString()}` : ''}`);
+}
+
 async function main() {
   const runId = arg('run');
-  if (!runId) throw new Error('--run <import run id> is required');
+  if (!runId) throw new Error('--run <import run id> is required (or --run queue)');
+  if (runId === 'queue') return listQueue();
   const out = arg('out') ?? 'reports/editorial-report.csv';
   const run = await db.importRun.findUnique({ where: { id: runId }, select: { id: true, label: true, status: true, error: true, stats: true, startedAt: true, finishedAt: true, scope: true } });
   if (!run) throw new Error(`run not found: ${runId}`);
