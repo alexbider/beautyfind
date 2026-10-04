@@ -1,0 +1,39 @@
+by rule:
+  3580  missing_info
+  3141  record
+  1353  latin
+   371  spelling
+   332  address
+    56  dash
+     2  emoji
+most frequent matches:
+   711  missing_info:במקורות
+   562  missing_info:לא פורסמו
+   484  missing_info:לא פורסם
+   325  missing_info:לא צוינו
+   270  latin:St
+   267  address:St
+   258  record:מציין
+   232  record:מצוין
+   231  missing_info:שסופק
+   221  missing_info:המידע הזמין
+   218  missing_info:אין פירוט
+   203  record:אין פירוט
+   184  spelling:מצויין
+   169  record:ברשומות
+   121  record:מציינת
+   113  missing_info:בעמוד העסק
+   109  missing_info:לא נמסר
+   108  missing_info:אין מידע
+   107  spelling:ווטסאפ
+   106  record:הרשומה
+    94  record:נרשמה
+    88  record:המצוינת
+    86  missing_info:בפרופיל העסק
+    83  record:המצוינים
+    81  record:מציינים
+SUMMARY scanned=816 failing=814 text_rules=750 older_prompt=105 rewrite=814 needs_import_record=0 skipped_claimed=0 skipped_approved=0 tiers(rewrite): sparse=134 normal=532 rich=148 csv=reports/description-cleanup.csv
+LIMIT 10: queueing 10 of 814 candidates (sparse=3 normal=3 rich=4)
+CANCELED 15 earlier rewrite run(s): ניקוי תיאורים 3/17 (running), ניקוי תיאורים 4/17 (queued), ניקוי תיאורים 5/17 (queued), ניקוי תיאורים 6/17 (queued), ניקוי תיאורים 7/17 (queued), ניקוי תיאורים 8/17 (queued), ניקוי תיאורים 9/17 (queued), ניקוי תיאורים 10/17 (queued), ניקוי תיאורים 11/17 (queued), ניקוי תיאורים 12/17 (queued), ניקוי תיאורים 13/17 (queued), ניקוי תיאורים 14/17 (queued), ניקוי תיאורים 15/17 (queued), ניקוי תיאורים 16/17 (queued), ניקוי תיאורים 17/17 (queued)
+QUEUED 1 rewrite runs for 10 listings:
+  npm run import:work -- --run 12b6b32f-47ef-4957-8285-4ba1de9645d3
