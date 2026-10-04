@@ -294,13 +294,26 @@ describe('editorial checks and the template draft', () => {
     assert.equal(buildPacket(src, { medicalResponsible: false }).services.length, 1);
     assert.deepEqual(buildPacket(src, { medicalResponsible: true }).categories, ['קוסמטיקה וטיפולי פנים', 'אסתטיקה רפואית']);
   });
+  it('Russian and English treatment names reach the packet in Hebrew; languages need the languages field', () => {
+    const t = (name: string) => ({ name, priceNis: null, priceType: 'on_request', category: 'hair-removal', isMedical: false, durationMin: null });
+    const src = { name: 'Epilution', cityName: 'חיפה', address: 'רחוב 1, חיפה', categories: ['hair-removal'], businessType: null, treatments: [t('Лазер Подмышки (ж)'), t('Голени/Бедра (ж) Воск/Шугаринг'), t('Коррекция чего-то'), t('Deep cleansing facial'), t('Oxylance Institute treatments'), t('Botox בוטוקס')], hours: [], phone: null, email: null, whatsapp: null, website: null, websiteKind: null, bookingUrl: null, instagram: null, facebook: null, tiktok: null, youtube: null, team: [], languages: [], establishedYear: null, accessible: null, freeParking: null, description: null, faqs: null, googleRating: null, googleReviewCount: null, photoUrls: [], videos: [] };
+    const p = buildPacket(src);
+    assert.deepEqual(p.services.map(s => s.name), ['הסרת שיער בלייזר ב־בתי השחי לנשים', 'הסרת שיער בשעווה או בסוכר ב־שוקיים וירכיים לנשים', 'ניקוי פנים עמוק', 'Oxylance Institute treatments', 'Botox בוטוקס'], 'the unknown Russian word drops the service; an unknown English name stays for the writer to translate');
+    const d = templateDraft(p);
+    const spoken = { ...d, description: `${d.description} בעסק מדברים רוסית, אנגלית ועברית.` };
+    assert.deepEqual(checkOutput(spoken, p).filter(v => v.startsWith('language:')), ['language:רוסית', 'language:אנגלית', 'language:עברית']);
+    assert.deepEqual(checkOutput(spoken, { ...p, languages: ['עברית', 'English', 'Russian'] }).filter(v => v.startsWith('language:')), []);
+    assert.ok(checkOutput({ ...d, description: `${d.description} הטיפול Шугаринг זמין לנשים.` }, p).some(v => v === 'text:latin:Шугаринг'), 'Cyrillic inside Hebrew is foreign');
+    assert.ok(checkOutput({ ...d, description: `${d.description} יש גם Skin Resurfacing.` }, p).some(v => v.startsWith('text:latin:Skin')), 'an English treatment name is not allowed just because a service carries it');
+    assert.ok(!checkOutput({ ...d, description: `${d.description} יש גם טיפול Hydrafacial.` }, p).some(v => v === 'text:latin:Hydrafacial'), 'a catalog brand stays');
+  });
   it('near-duplicate treatments count once', () => {
     assert.equal(treatmentFamily('Acne treatments'), treatmentFamily('Acne facial'));
     assert.equal(treatmentFamily('ניתוח הגדלת חזה'), treatmentFamily('הגדלת חזה'));
     assert.notEqual(treatmentFamily('Deep cleansing facial'), treatmentFamily('Basic facial'));
     const t = (name: string) => ({ name, priceNis: null, priceType: 'on_request', category: 'facials', isMedical: false, durationMin: null });
     const src = { name: 'X', cityName: 'חיפה', address: 'רחוב 1, חיפה', categories: ['facials'], businessType: null, treatments: [t('Acne treatments'), t('Acne facial'), t('Basic facial'), t('טיפול אקנה')], hours: [], phone: null, email: null, whatsapp: null, website: null, websiteKind: null, bookingUrl: null, instagram: null, facebook: null, tiktok: null, youtube: null, team: [], languages: [], establishedYear: null, accessible: null, freeParking: null, description: null, faqs: null, googleRating: null, googleReviewCount: null, photoUrls: [], videos: [] };
-    assert.deepEqual(buildPacket(src).services.map(s => s.name), ['Acne treatments', 'Basic facial', 'טיפול אקנה'], 'the English near-duplicate collapses; the Hebrew spelling is its own family');
+    assert.deepEqual(buildPacket(src).services.map(s => s.name), ['טיפול באקנה', 'טיפול פנים'], 'the English names reach the packet in Hebrew and the near-duplicates collapse, the Hebrew spelling included');
   });
   it('the gold examples pass every check except their own word count', () => {
     assert.equal(GOLD_EXAMPLES.length, 3);

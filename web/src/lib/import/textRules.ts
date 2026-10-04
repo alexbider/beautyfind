@@ -55,7 +55,8 @@ export const SPELLING_PATTERNS: Array<{ re: RegExp; fix: string }> = [
 const DASH = /[–—]/u;
 const EMOJI = /(?![©®™])\p{Extended_Pictographic}/u;
 const HEBREW = /[א-ת]/u;
-const LATIN_WORD = /^[A-Za-z][A-Za-z'’.&-]*$/;
+// Latin or Cyrillic: a word in either script inside Hebrew prose is foreign.
+const LATIN_WORD = /^[A-Za-zЀ-ӿ][A-Za-zЀ-ӿ'’.&-]*$/;
 const DOMAIN = /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i;
 
 /** Brands that stay in Latin script inside Hebrew text. */
@@ -70,7 +71,7 @@ export type TextProblem =
   | { code: 'emoji'; match: string }
   | { code: 'spelling'; match: string };
 
-const strip = (t: string) => t.replace(/^[^A-Za-zא-ת0-9]+|[^A-Za-zא-ת0-9]+$/g, "");
+const strip = (t: string) => t.replace(/^[^A-Za-zЀ-ӿא-ת0-9]+|[^A-Za-zЀ-ӿא-ת0-9]+$/g, '');
 
 /**
  * Latin words that sit between Hebrew words. A word is allowed when it is part of an allowed name (the

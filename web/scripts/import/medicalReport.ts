@@ -8,6 +8,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { PrismaClient } from '@prisma/client';
+import { matchService } from '../../src/lib/import/services';
 
 const db = new PrismaClient();
 const arg = (name: string) => {
@@ -22,16 +23,18 @@ const csvCell = (v: unknown) => {
 async function main() {
   const out = arg('out') ?? 'reports/medical-report.csv';
   const branches = await db.branch.findMany({
-    where: { status: 'live', treatments: { some: { isMedical: true, isPublished: true } } },
+    where: { status: 'live', treatments: { some: { isPublished: true } } },
     select: {
       id: true, name: true, cityName: true, regionSlug: true, slug: true, isClaimed: true, medicalResponsibleId: true,
       categories: { select: { categorySlug: true, isPrimary: true } },
-      treatments: { where: { isMedical: true, isPublished: true }, select: { name: true } },
+      treatments: { where: { isPublished: true }, select: { name: true, isMedical: true } },
       business: { select: { staff: { where: { status: 'active', profession: { in: ['doctor', 'nurse'] } }, select: { displayName: true, profession: true, branchIds: true } } } },
     },
     orderBy: [{ regionSlug: 'asc' }, { cityName: 'asc' }, { name: 'asc' }],
   });
-  const rows = branches
+  // A treatment is medical by its stored flag or by the classifier on its name (which knows the Russian terms too).
+  const withMedical = branches.map(b => ({ ...b, treatments: b.treatments.filter(t => t.isMedical || matchService(t.name)?.isMedical) })).filter(b => b.treatments.length);
+  const rows = withMedical
     .map(b => {
       const staff = b.business.staff.filter(m => !m.branchIds.length || m.branchIds.includes(b.id));
       return { ...b, staff, covered: !!b.medicalResponsibleId || staff.length > 0 };
@@ -47,7 +50,7 @@ async function main() {
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, `﻿${[header.join(','), ...lines].join('\n')}\n`);
   const claimed = rows.filter(r => r.isClaimed).length;
-  console.log(`live listings with published medical treatments: ${branches.length}; without a medical responsible or a doctor or nurse on staff: ${rows.length} (claimed ${claimed}, unclaimed ${rows.length - claimed})`);
+  console.log(`live listings with published medical treatments: ${withMedical.length}; without a medical responsible or a doctor or nurse on staff: ${rows.length} (claimed ${claimed}, unclaimed ${rows.length - claimed})`);
   const byCat = new Map<string, number>();
   for (const r of rows) {
     const k = r.categories.find(c => c.isPrimary)?.categorySlug ?? '(none)';

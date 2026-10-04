@@ -19,6 +19,13 @@ describe('seo name', () => {
     assert.equal(seoName('מאפרת דנה לוי'), 'דנה לוי');
     assert.equal(seoName('ד״ר מנאר קעואר - מומחה בכירורגיה פלסטית'), 'ד״ר מנאר קעואר', 'a title stays');
     assert.equal(seoName('קוסמטיקאית'), 'קוסמטיקאית', 'a lone profession word is kept rather than emptied');
+    assert.equal(seoName('פרו אסתטיקס טיפולים אסתטיים מתקדמים צפת'), 'פרו אסתטיקס', 'descriptor tail and city go');
+    assert.equal(seoName('דנה מכון יופי'), 'דנה');
+    assert.equal(seoName('Grace Cosmetology Nahariya'), 'Grace Cosmetology', 'a Latin city tail goes');
+    assert.equal(seoName('Barak clinic - קליניקה לאסתטיקה מתקדמת בנהריה'), 'Barak clinic');
+    assert.equal(seoName('גלואו קליניקה לאסתטיקה'), 'גלואו');
+    assert.equal(seoName('ניילס בחיפה'), 'ניילס');
+    assert.equal(seoName('מכון יופי'), 'מכון יופי', 'a name that is only a descriptor stays');
     assert.equal(seoName('סטודיו Glow'), 'סטודיו Glow', 'one Latin brand word inside a Hebrew name stays');
     assert.equal(seoName('ד"ר שיין'), 'ד״ר שיין');
     // A hyphen glued to one side is a separator too; a hyphen inside a word is not.

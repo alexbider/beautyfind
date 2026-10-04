@@ -23,14 +23,15 @@ import { createHash } from 'node:crypto';
 import { CATEGORIES } from '../catalog';
 import { DESCRIPTION_MAX, DESCRIPTION_MIN } from '../seo/meta';
 import { composeMetaDescription, joinHe, metaDescriptionProblems, metaLead } from '../seo/metaRules';
-import { hebrewTreatmentNames } from '../seo/treatmentNames';
+import { TREATMENT_BRANDS, hebrewTreatmentName, hebrewTreatmentNames } from '../seo/treatmentNames';
 import { seoName } from '../seo/seoName';
 import { hebrewAddress } from './address';
+import { CYRILLIC, translateCyrillicTreatment } from './cyrillic';
 import GOLD_EXAMPLES_JSON from './goldExamples.json';
 import type { DayHours, ImportedTreatment } from './rules';
 import { normalizeHebrew, problemCode, textProblems } from './textRules';
 
-export const PROMPT_VERSION = '2026-10-04.5';
+export const PROMPT_VERSION = '2026-10-04.6';
 /** Word bounds per evidence tier. The tier comes from the packet (lengthTier), never from the writer. */
 export const LENGTH_TIERS = {
   sparse: { min: 40, max: 150, paragraphs: 'one or two' },
@@ -190,8 +191,10 @@ const treatmentKey = (name: string) => normalizeHebrew(name).toLowerCase().repla
  */
 const FAMILY_STOP = new Set(['treatment', 'treatments', 'therapy', 'therapies', 'facial', 'facials', 'care', 'service', 'services', 'procedure', 'the', 'and', 'for', 'of', 'with', 'טיפול', 'טיפולי', 'טיפולים', 'ניתוח', 'ניתוחי', 'ניתוחים', 'שירות', 'שירותי', 'שירותים', 'הליך', 'הליכי', 'סדרת', 'מגוון', 'כל', 'את', 'של', 'עם', 'ו']);
 export function treatmentFamily(name: string): string {
-  const words = treatmentKey(name).split(' ').filter(w => w && !FAMILY_STOP.has(w) && !/^\d+$/.test(w));
-  return words.slice(0, 2).join(' ') || treatmentKey(name);
+  // A one-letter Hebrew prefix (ב, ל, ו, ה) does not make "טיפול באקנה" and "טיפול אקנה" two treatments.
+  const bare = (w: string) => (/^[בלוה][א-ת]{3,}$/u.test(w) ? w.slice(1) : w);
+  const words = treatmentKey(name).split(' ').map(bare).filter(w => w && !FAMILY_STOP.has(w) && !/^\d+$/.test(w));
+  return words.slice(0, 5).join(' ') || treatmentKey(name);
 }
 
 export function buildPacket(s: PacketSource, opts: { claimed?: boolean; bookingOnline?: boolean; publishedTreatments?: string[]; medicalResponsible?: boolean } = {}): EvidencePacket {
@@ -201,13 +204,25 @@ export function buildPacket(s: PacketSource, opts: { claimed?: boolean; bookingO
   const team = (Array.isArray(s.team) ? s.team : []) as EvidenceTeam[];
   const published = opts.publishedTreatments ? new Set(opts.publishedTreatments.map(treatmentKey)) : null;
   const families = new Set<string>();
-  const treatments = ((Array.isArray(s.treatments) ? s.treatments : []) as ImportedTreatment[]).filter(t => {
-    if (published && !published.has(treatmentKey(t.name))) return false;
-    const fam = treatmentFamily(t.name);
-    if (families.has(fam)) return false;
-    families.add(fam);
-    return true;
-  });
+  // Names the writer can use: a Russian name through the body-area glossary (or out, when a word is unknown),
+  // an English catalog name in its Hebrew form, a brand or an unknown English name as it is (the writer
+  // translates it; the text rules catch what stays English).
+  const hebrewName = (name: string): string | null => {
+    if (CYRILLIC.test(name)) return translateCyrillicTreatment(name);
+    if (!/[A-Za-z]/.test(name)) return name;
+    const he = hebrewTreatmentName(name);
+    return he && /[א-ת]/.test(he) ? he : name;
+  };
+  const treatments = ((Array.isArray(s.treatments) ? s.treatments : []) as ImportedTreatment[])
+    .filter(t => !published || published.has(treatmentKey(t.name)))
+    .map(t => ({ ...t, name: hebrewName(t.name) ?? '' }))
+    .filter(t => {
+      if (!t.name) return false;
+      const fam = treatmentFamily(t.name);
+      if (families.has(fam)) return false;
+      families.add(fam);
+      return true;
+    });
   // Without a medical responsible on record the business is not presented as a medical clinic: the medical
   // category names leave the packet (the medical services stay, by name, with their isMedical flag).
   const medical = !!opts.medicalResponsible || team.some(m => MEDICAL_ROLE.test(`${m.role ?? ''} ${m.name ?? ''}`));
@@ -292,8 +307,9 @@ export function lengthTier(p: EvidencePacket): LengthTier {
 }
 
 /** Names the writer may keep in Latin script: the business, its domain, its services and its people as the packet spells them. */
+/** Names the writer may keep in Latin script: the business name, its domain and the catalog's brand and device names. Nothing else. */
 export function allowedLatin(p: EvidencePacket): string[] {
-  return [p.name, p.website ?? '', ...p.services.map(s => s.name), ...p.team.map(t => t.name), ...p.socials];
+  return [p.name, p.website ?? '', ...TREATMENT_BRANDS, ...p.socials];
 }
 
 // ---------- prompt ----------
@@ -304,7 +320,7 @@ export const FILLER_PHRASES = [
   'סביבה נעימה', 'אווירה נעימה', 'מיקום מרכזי', 'נוח להגעה', 'נוחה להגעה', 'קל להגעה', 'בלב העיר', 'מרחק נסיעה', 'בנוחות ובפשטות', 'בנוחות', 'מה שמעיד', 'המעיד על', 'שביעות רצון', 'לאורך זמן', 'לאורך השנים',
   'גישה אישית', 'יחס אישי', 'יסודיות ומקצועיות', 'ידע מקצועי', 'המחפשים', 'למי שמחפש', 'למי שמעוניין', 'מי שמעוניין', 'מי שמתעניין', 'מי שמתגורר', 'בהתאם לנוחיותו', 'לפי הצורך', 'הדרך הטובה ביותר', 'כך שניתן', 'כך שההגעה', 'כך שהביקור',
   'השילוב בין', 'הופך את', 'הופכת את', 'מרחב נעים', 'מרחב טיפולים', 'מראה בריא ורענן', 'רענן ובריא', 'ביטחון עצמי', 'שינוי משמעותי', 'מקיף יותר', 'רחב יותר', 'אחד הכולל',
-  'כפי שמשתקף', 'מספרת על עצמה', 'ראוי לציין', 'חשוב לציין', 'יש לציין', 'בנוסף לכך', 'מעבר לכך', 'יתרה מזאת', 'לסיכום',
+  'כפי שמשתקף', 'מספרת על עצמה', 'מענה', 'בו זמנית', 'בו-זמנית', 'בו־זמנית', 'ראוי לציין', 'חשוב לציין', 'יש לציין', 'בנוסף לכך', 'מעבר לכך', 'יתרה מזאת', 'לסיכום',
 ];
 
 interface GoldExample {
@@ -358,7 +374,8 @@ Good sentences:
 
 Language:
 - Natural, warm, professional Hebrew. Vary sentence length. Third person only: never "אנחנו", "שלנו", "אצלנו".
-- Hebrew only inside Hebrew sentences. Business names, brand names, a domain name and product names may stay in Latin script; any other English word is an error ("under", "clinic", "studio" as common words).
+- Hebrew only inside Hebrew sentences. Only the business name ("name") and a brand or device name from the catalog (Hydrafacial, Morpheus8, Dermapen, RF, LED, PRP, Olaplex and the like) may stay in Latin script. Every other English or Russian word is an error, including English treatment names: translate them (Skin Resurfacing = החלקת עור, threading = הסרת שיער בחוט, Microneedling = מיקרונידלינג, Facial = טיפול פנים, Peelings = פילינגים, Mesotherapy = מזותרפיה, Massage = עיסוי, Oxylance Institute treatments = טיפולי אוקסילנס). A method or institute name that is not a catalog brand is written in Hebrew letters or left out.
+- Languages: say which languages the staff speak only when "languages" in the packet lists them. A Russian or English business name, a Cyrillic price list or a foreign-sounding owner is not a fact about languages.
 - Addresses in Hebrew only, exactly as the packet's "address" spells them, and always the Hebrew city name from the packet ("city"). Never write St, Rd, Ave, Blvd, Street, Road, Avenue, Derech, Rehov, Sderot or Kikar, and never transliterate a street name yourself: when the packet's address has no street, say nothing about the street.
 - Spelling: וואטסאפ (not ווטסאפ). Hebrew abbreviations take gershayim and geresh: ד״ר, מע״מ, דק׳.
 - No em dash or en dash characters. Use commas, periods or a Hebrew maqaf. No emoji. No empty quotes.
@@ -500,6 +517,17 @@ const MEDICAL_CLAIMS: RegExp[] = [
 const MEDICAL_ROLE = /רופא|ד״ר|ד"ר|דר׳|אחות|מנתח|כירורג|מומחה ב|dr\.?\s|md\b|nurse|surgeon|doctor|physician/iu;
 /** True when the packet lets the text speak of a doctor: a medical responsible on record, or a team member whose role says doctor or nurse. */
 export const medicalAllowed = (p: EvidencePacket) => !!p.medicalResponsible || p.team.some(t => MEDICAL_ROLE.test(`${t.role} ${t.name}`));
+/** Language names as the text and the packet spell them, in Hebrew. */
+const LANGUAGE_HE: Record<string, string> = { hebrew: 'עברית', english: 'אנגלית', russian: 'רוסית', arabic: 'ערבית', french: 'צרפתית', spanish: 'ספרדית', amharic: 'אמהרית', german: 'גרמנית', ukrainian: 'אוקראינית', italian: 'איטלקית', portuguese: 'פורטוגזית', yiddish: 'יידיש', 'עברית': 'עברית', 'אנגלית': 'אנגלית', 'רוסית': 'רוסית', 'ערבית': 'ערבית', 'צרפתית': 'צרפתית', 'ספרדית': 'ספרדית', 'אמהרית': 'אמהרית', 'גרמנית': 'גרמנית', 'אוקראינית': 'אוקראינית', 'איטלקית': 'איטלקית', 'פורטוגזית': 'פורטוגזית', 'יידיש': 'יידיש' };
+const LANGUAGE_WORD = /(?<![א-ת])(?:ב|וב|ו)?(עברית|אנגלית|רוסית|ערבית|צרפתית|ספרדית|אמהרית|גרמנית|אוקראינית|איטלקית|פורטוגזית|יידיש)(?![א-ת])/gu;
+/** Languages the text says the staff speak that the packet's "languages" field does not list (a name or a price list is not a fact about languages). */
+export function languageClaims(text: string, p: EvidencePacket): string[] {
+  const known = new Set(p.languages.map(l => LANGUAGE_HE[l.trim().toLowerCase()] ?? LANGUAGE_HE[l.trim()] ?? l.trim()));
+  const out = new Set<string>();
+  for (const m of text.matchAll(LANGUAGE_WORD)) if (!known.has(m[1])) out.add(m[1]);
+  return [...out];
+}
+
 /** Medical claims the packet does not back. Business and team names are left out of the search so a doctor's own name is not a hit. */
 export function medicalClaims(text: string, p: EvidencePacket): string[] {
   if (medicalAllowed(p)) return [];
@@ -520,7 +548,7 @@ export const GROUNDING_PROMPT = `You are a fact checker for BeautyFind, an Israe
 
 A claim is any statement a reader would take as a fact: a treatment or service offered, what a treatment is for, a credential or qualification, a person and their role, equipment or a device, a brand or method, a location detail (street, floor, mall, neighbourhood, near what), the audience served (teenagers, women, men, children), opening days and hours, a price, a rating or review count, a founding year, languages, accessibility, parking, a contact channel, a social profile, a website, how a visit is arranged, and the kind of business (clinic, salon, studio, medical clinic).
 
-Supported means the packet states it or it follows directly from a packet field (a service in the list, hours in "hours", a rating in "rating", a street in "address", a person in "team", the kind of business from "categories" or "businessType"). A general description of what a listed treatment is, in everyday words, is supported when the treatment is in the packet. Unsupported means the packet does not state it: an audience the packet never mentions, a credential or title not in "team", a doctor or nurse when "medicalResponsible" is not true and no team role says so, a device, method or brand not in any service name or source text, a treatment not in "services", experience or years not in the packet, a location detail not in "address", a result or a promise. "sourceDescription", "profileTexts" and "researchNotes" count as packet facts. Judge each claim on its own; quote the words of the text that carry it.
+Supported means one of exactly three things backs it: (1) a published treatment, that is an entry in "services" (a general description of what that treatment is, in everyday words, counts); (2) a listing fact, that is a field of the packet ("hours", "address", "city", "rating", "languages", "establishedYear", "accessible", "freeParking", "phone", "email", "whatsapp", "website", "socials", "team", "categories", "businessType", "medicalResponsible"); (3) quoted source text, that is words in "sourceDescription", "profileTexts" or "researchNotes". Nothing else supports a claim. An inference is unsupported however reasonable it looks: a language inferred from the business name, its script or a Cyrillic price list; an audience (women, men, teenagers, children) not named in a service or a source text; a credential or title not in "team"; a doctor, nurse or medical supervision when "medicalResponsible" is not true and no team role says so; a device, method or brand not in a service name or a source text; a treatment not in "services"; experience, years or awards not in the packet; a location detail (floor, mall, neighbourhood, near what, parking, access) not in "address" or the fields; a result, a promise or a guarantee; a kind of business ("clinic", "medical clinic") the categories, businessType or source text do not give. Judge each claim on its own; quote the words of the text that carry it.
 
 Return only a JSON object: {"claims": [{"text": "<the words from the text>", "kind": "treatment|purpose|credential|staff|equipment|location|audience|hours|price|rating|year|language|access|contact|kind_of_business|other", "supported": true|false, "basis": "<packet field or a short reason>"}]}.`;
 
@@ -600,6 +628,7 @@ export function checkOutput(o: EditorialOutput, p: EvidencePacket): string[] {
   for (const f of FILLER_PHRASES) if (all.includes(f)) v.push(`filler:${f}`);
   for (const f of repeatedFacts(o.description, p)) v.push(`repeat:${f}`);
   for (const m of medicalClaims(`${o.description}\n${o.faqs.map(f => `${f.q}\n${f.a}`).join('\n')}\n${o.metaDescription}`, p)) v.push(`medical:${m}`);
+  for (const l of languageClaims(`${o.description}\n${o.faqs.map(f => `${f.q}\n${f.a}`).join('\n')}`, p)) v.push(`language:${l}`);
   if (FIRST_PERSON.test(o.description) || o.faqs.some(f => FIRST_PERSON.test(f.a))) v.push('first_person');
   v.push(...textViolations(o, p));
   // Numbers and people must exist in the packet.
@@ -637,7 +666,7 @@ export const repairable = (v: string[]) => v;
 export const textRuleViolations = (v: string[]) => v.filter(x => x.startsWith('text:') || x === 'name_missing');
 
 /** Everything that keeps a stored draft from replacing a listing's text: the text rules and a word count outside the tier. */
-export const publishBlockers = (v: string[]) => v.filter(x => x.startsWith('text:') || x === 'name_missing' || x.startsWith('short:') || x.startsWith('long:') || x.startsWith('filler:') || x.startsWith('repeat:') || x.startsWith('medical:'));
+export const publishBlockers = (v: string[]) => v.filter(x => x.startsWith('text:') || x === 'name_missing' || x.startsWith('short:') || x.startsWith('long:') || x.startsWith('filler:') || x.startsWith('repeat:') || x.startsWith('medical:') || x.startsWith('language:'));
 
 const escapeRe = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /**
@@ -661,7 +690,7 @@ export function repeatedFacts(description: string, p: EvidencePacket): string[] 
 }
 
 /** Only deterministic publication blockers are left (word count, filler, a repeated fact, medical wording): one more targeted repair is worth a call. */
-export const onlyPolish = (v: string[]) => v.length > 0 && v.every(x => /^(short|long|filler|repeat|medical):/.test(x));
+export const onlyPolish = (v: string[]) => v.length > 0 && v.every(x => /^(short|long|filler|repeat|medical|language):/.test(x));
 /** @deprecated use onlyPolish */
 export const onlyLength = onlyPolish;
 
@@ -672,12 +701,13 @@ export function repairMessage(v: string[], p?: EvidencePacket): string {
     if (x.startsWith('person:')) return `Remove the person "${x.slice(7)}": not in the packet.`;
     if (x.startsWith('phrase:')) return `Remove the phrase "${x.slice(7)}".`;
     if (x.startsWith('filler:')) return `Filler: cut the sentence or clause with "${x.slice(7)}" (do not rephrase it; a sentence that adds no fact goes).`;
+    if (x.startsWith('language:')) return `The text says the staff speak ${x.slice(9)}, and the packet's "languages" does not list it: remove the language. A name, a script or a price list is not a fact about languages.`;
     if (x.startsWith('medical:')) return `"${x.slice(8)}" presents the business as medical or puts a doctor, a nurse or a certified cosmetician there, and the packet has no medical responsible or medical team member: remove it and describe only what the business offers, in neutral words.`;
     if (x.startsWith('repeat:')) return `The ${x.slice(7)} is mentioned more than once in the description: state it once, in the paragraph where it belongs, and cut the other mention.`;
     if (x.startsWith('text:missing_info:')) return `Delete every sentence that talks about missing, unpublished or unverified information, about sources or data, or about the page itself (found: "${x.slice(18)}"). Say nothing instead.`;
     if (x.startsWith('text:record:')) return `Record language ("${x.slice(12)}"): the text speaks about the business directly ("הסלון מתמחה ב..."), never about a record, a list or a listing. Rewrite the sentence as a plain statement about the business, without רשומה, מצוין, מציינת, נרשם, מופיע כ, תוארו, מתואר, אינה מפרטת, אין פירוט or לא מפורט.`;
     if (x.startsWith('text:address:')) return `"${x.slice(13)}" is a street word in Latin letters: write the address exactly as the packet's "address" field spells it in Hebrew, and when the packet has no street, say nothing about the street.`;
-    if (x.startsWith('text:latin:')) return `The word "${x.slice(11)}" is English inside a Hebrew sentence: write it in Hebrew, or leave it out when it is a street or place name the packet does not spell in Hebrew.`;
+    if (x.startsWith('text:latin:')) return `The word "${x.slice(11)}" is English or Russian inside a Hebrew sentence: write it in Hebrew (translate a treatment name; a method or institute name that is not a catalog brand is written in Hebrew letters or left out), or leave it out when it is a street or place name the packet does not spell in Hebrew.`;
     if (x.startsWith('text:dash')) return 'Replace every em dash and en dash with a comma, a period or a maqaf.';
     if (x.startsWith('text:emoji')) return 'Remove every emoji.';
     if (x.startsWith('text:spelling:')) return `Spell "${x.slice(14)}" the house way: וואטסאפ.`;

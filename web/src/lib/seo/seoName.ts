@@ -4,7 +4,7 @@
 // Latin or Cyrillic copy of a name that is also written in Hebrew ("מספרת רון | Ron Hair Salon"), capped
 // at about 35 characters on a word boundary.
 
-import { CATEGORIES } from '../catalog';
+import { CATEGORIES, CITIES } from '../catalog';
 import { matchService } from '../import/services';
 import { normalizeHebrew } from '../import/textRules';
 import { CATEGORY_SHORT, SEO_TERM } from './terms';
@@ -99,6 +99,14 @@ export function seoName(raw: string, max = SEO_NAME_MAX): string {
   // "Name, keyword, keyword, keyword"
   const list = s.split(/\s*,\s*/);
   if (list.length >= 3 && letters(list[0]) >= 3) s = list[0];
+  // "פרו אסתטיקס טיפולים אסתטיים מתקדמים צפת", "דנה מכון יופי", "Grace Cosmetology Nahariya": a generic descriptor
+  // tail (what the business is, how good it is, where it is) is not the name. Stripped from the end, phrase by
+  // phrase, as long as a name of three letters stays.
+  for (let i = 0; i < 4; i++) {
+    const cut = stripDescriptorTail(s);
+    if (cut === s) break;
+    s = cut;
+  }
   // "מספרת רון שיער Ron Hair Salon", "Rivky Blau רבקי בלאו": the same name twice; keep the Hebrew when the
   // two scripts form separate runs and the foreign run reads as the Hebrew one. A single brand word in
   // another script inside a Hebrew name ("סטודיו Glow") stays.
@@ -113,6 +121,41 @@ export function seoName(raw: string, max = SEO_NAME_MAX): string {
   }
   s = normalizeHebrew(s).replace(/^[\s"'״׳“”‘’]+|[\s"'״׳“”‘’.,;:]+$/gu, '');
   return capWords(s, max) || raw.slice(0, max);
+}
+
+const CITY_HE = new Set(CITIES.map(c => c.name));
+const CITY_LATIN = new Set(CITIES.map(c => c.slug.replace(/-/g, '')));
+const DESCRIPTOR_TAILS: RegExp[] = [
+  /(?:טיפולים|טיפולי|טיפול)\s+(?:אסתטיים|אסתטי|קוסמטיים|רפואיים|מתקדמים)(?:\s+(?:מתקדמים|מתקדם|ברמה\s+גבוהה))?$/u,
+  /(?:מכון|סלון|סטודיו|מרכז|בית|קליניקה|קליניקת|מרפאה|מרפאת)\s+(?:ל|ה)?(?:יופי|קוסמטיקה|אסתטיקה|ציפורניים|איפור|שיער|טיפוח|עיצוב\s+שיער|אסתטיקה\s+רפואית|אסתטיקה\s+מתקדמת|אסתטיקה\s+ו[א-ת]+)(?:\s+(?:מתקדמת|מתקדם|רפואית|רפואי))?$/u,
+  /(?:אסתטיקה|קוסמטיקה)\s+(?:רפואית|מתקדמת|ו[א-ת]+)$/u,
+  /(?:מתקדמים|מתקדמת|מתקדם|מתקדמות|מקצועי|מקצועית|בוטיק)$/u,
+  /(?:קוסמטיקאית|מאפרת|ספרית|מניקוריסטית|מעצבת\s+שיער|מעצבת\s+גבות|מעצב\s+שיער)(?:\s+(?:רפואית|מוסמכת|מקצועית))?$/u,
+];
+/** One generic descriptor phrase or a city name off the end of a name, when at least three letters of name remain. */
+function stripDescriptorTail(s: string): string {
+  const words = s.split(' ');
+  if (words.length < 2) return s;
+  const tryCut = (n: number) => {
+    const head = words.slice(0, words.length - n).join(' ').replace(/[\s,:;|-]+$/u, '').trim();
+    return letters(head) >= 3 ? head : null;
+  };
+  // A city, Hebrew (with or without a ב prefix) or Latin, in its one or two words.
+  for (const n of [2, 1]) {
+    if (words.length <= n) continue;
+    const tail = words.slice(words.length - n).join(' ');
+    if (CITY_HE.has(tail) || CITY_HE.has(tail.replace(/^ב/u, '')) || CITY_LATIN.has(tail.toLowerCase().replace(/[^a-z]/g, ''))) {
+      const cut = tryCut(n);
+      if (cut) return cut;
+    }
+  }
+  for (const re of DESCRIPTOR_TAILS) {
+    const m = s.match(re);
+    if (!m || m.index === 0) continue;
+    const head = s.slice(0, m.index).replace(/[\s,:;|-]+$/u, '').trim();
+    if (letters(head) >= 3) return head;
+  }
+  return s;
 }
 
 // Words a treatment or field tail starts with: the catalog's field names plus the heads of common treatment phrases.
