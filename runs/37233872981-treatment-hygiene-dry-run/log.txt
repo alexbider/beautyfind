@@ -1,0 +1,8 @@
+Published treatments: 7265. Flagged: 247.
+  product: 102
+  package: 102
+  function_word: 22
+  sentence: 21
+To hide (sentence + article): 21, on unclaimed listings: 21, on claimed listings (kept): 0.
+CSV: reports/treatment-hygiene.csv (247 rows)
+dry run: nothing changed (add --confirm to hide sentences and article titles)
