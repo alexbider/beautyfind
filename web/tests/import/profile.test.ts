@@ -344,7 +344,7 @@ describe('editorial checks and the template draft', () => {
     // A Latin street reaches the writer in Hebrew, or not at all.
     const latin = (address: string) => buildPacket({ name: 'X', cityName: 'נתניה', address, categories: [], businessType: null, treatments: [], hours: [], phone: null, email: null, whatsapp: null, website: null, websiteKind: null, bookingUrl: null, instagram: null, facebook: null, tiktok: null, youtube: null, team: [], languages: [], establishedYear: null, accessible: null, freeParking: null, description: null, faqs: null, googleRating: null, googleReviewCount: null, photoUrls: [], videos: [] }).address;
     assert.equal(latin('Derech Raziel 5, Netanya, Israel'), 'דרך רזיאל 5, נתניה');
-    assert.equal(latin('Herzl St 12, Netanya'), 'רחוב הרצל 12, נתניה');
+    assert.equal(latin('Herzl St 12, Netanya'), 'הרצל 12, נתניה');
     assert.equal(latin('Some Unknown Rd 3, Netanya'), 'נתניה');
     assert.equal(p.hours, null);
     assert.equal(p.rating, null); // zero reviews is no rating

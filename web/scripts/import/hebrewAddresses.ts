@@ -14,12 +14,13 @@
 //   npm run import:hebrew-addresses -- --revert reports/hebrew-addresses.csv
 //                                                         undo: put address_before back for the rows that were applied
 //   options: --out reports/hebrew-addresses.csv  --fallbacks-out reports/hebrew-addresses-fallbacks.csv
+//            --mismatch-out reports/hebrew-addresses-city-mismatch.csv (Google's locality is another city than the stored one)
 //            --max-calls 1000  --concurrency 2  --rpm 90 (Google calls per minute, the per-minute quota)  --limit N (first N listings)
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { PrismaClient } from '@prisma/client';
-import { addressProblems, composeHebrewAddress, type AddressSource, type GoogleAddress } from '../../src/lib/import/address';
+import { addressProblems, catalogCityFor, composeHebrewAddress, type AddressSource, type GoogleAddress } from '../../src/lib/import/address';
 import { ADDRESS_CALL_USD, fetchGoogleAddress, validPlaceId } from '../../src/lib/import/placesAddress';
 
 const db = new PrismaClient();
@@ -71,7 +72,8 @@ function readCsv(path: string): Array<Record<string, string>> {
   return data.filter(r => r.length > 1).map(r => Object.fromEntries(header.map((h, i) => [h, r[i] ?? ''])));
 }
 
-const HEADER = ['branch_id', 'name', 'city', 'claimed', 'place_id', 'address_before', 'address_after', 'source', 'postal_code', 'google_formatted', 'action', 'problems_after', 'public_url'];
+const HEADER = ['branch_id', 'name', 'city', 'claimed', 'place_id', 'address_before', 'address_after', 'source', 'postal_code', 'google_formatted', 'google_route', 'google_number', 'google_locality', 'google_postal', 'google_premise', 'city_line', 'city_mismatch', 'proposed_city_slug', 'action', 'problems_after', 'public_url'];
+const MISMATCH_HEADER = ['branch_id', 'business', 'stored_city', 'stored_city_slug', 'google_city', 'address_after', 'google_city_slug', 'proposed_move', 'public_url', 'admin_url'];
 type Action = 'apply' | 'unchanged' | 'skipped_owner' | 'skipped_no_city';
 
 interface Row {
@@ -85,10 +87,17 @@ interface Row {
   source: AddressSource;
   postalCode: string;
   googleFormatted: string;
+  google: GoogleAddress | null;
+  cityLine: string;
+  cityMismatch: boolean;
+  storedCitySlug: string;
+  proposedCitySlug: string;
   action: Action;
   problems: string[];
   url: string;
 }
+const toLine = (r: Row) => [r.branchId, r.name, r.city, r.claimed ? 'yes' : 'no', r.placeId, r.before, r.after, r.source, r.postalCode, r.googleFormatted, r.google?.route ?? '', r.google?.streetNumber ?? '', r.google?.locality ?? '', r.google?.postalCode ?? '', r.google?.premise ?? '', r.cityLine, r.cityMismatch ? 'yes' : 'no', r.proposedCitySlug, r.action, r.problems.join(' | '), r.url];
+const mismatchLine = (r: Row) => [r.branchId, r.name, r.city, r.storedCitySlug, r.google?.locality ?? '', r.after, r.proposedCitySlug, r.proposedCitySlug && r.proposedCitySlug !== r.storedCitySlug ? 'yes' : 'no city page', r.url, `https://beautyfind.co.il/ops/businesses/branch/${r.branchId}`];
 
 async function pool<T>(items: T[], n: number, fn: (t: T) => Promise<void>) {
   let next = 0;
@@ -136,6 +145,7 @@ async function main() {
   const from = arg('from') ?? null;
   const out = arg('out') ?? 'reports/hebrew-addresses.csv';
   const fallbacksOut = arg('fallbacks-out') ?? 'reports/hebrew-addresses-fallbacks.csv';
+  const mismatchOut = arg('mismatch-out') ?? 'reports/hebrew-addresses-city-mismatch.csv';
   const maxCalls = Math.max(0, Number(arg('max-calls') ?? 1000));
   const concurrency = Math.max(1, Math.min(8, Number(arg('concurrency') ?? 2)));
   const rpm = Math.max(10, Math.min(600, Number(arg('rpm') ?? 90)));
@@ -151,21 +161,23 @@ async function main() {
 
   if (from) {
     if (!confirm) throw new Error('--from needs --confirm');
-    // Google rows are applied as proposed; dictionary and city-only rows are composed again with the current
-    // rules (no Google call), so a fix to the composer reaches them without another paid dry run.
+    // Every row is composed again from the Google components the dry run stored and the current rules (no
+    // Google call), so a fix to the composer reaches the whole set without another paid dry run. Skips stay skips.
     const rows: Row[] = readCsv(from).map(r => {
-      const fallback = r.action === 'apply' && (r.source === 'dictionary' || r.source === 'city_only');
-      const re = fallback ? composeHebrewAddress(null, r.address_before, r.city) : null;
-      const after = re ? re.address : r.address_after;
-      const source = re ? re.source : (r.source as AddressSource);
-      const action: Action = re && after === r.address_before.trim() ? 'unchanged' : (r.action as Action);
+      const google: GoogleAddress | null = r.google_route || r.google_locality || r.google_postal ? { formatted: r.google_formatted || null, route: r.google_route || null, streetNumber: r.google_number || null, locality: r.google_locality || null, postalCode: r.google_postal || null, premise: r.google_premise || null, subpremise: null } : null;
+      const skip = r.action === 'skipped_owner' || r.action === 'skipped_no_city';
+      const re = skip ? null : composeHebrewAddress(google, r.address_before, r.city);
+      const after = re ? re.address : r.address_before;
+      const action: Action = skip ? (r.action as Action) : after !== r.address_before.trim() || (!!re?.postalCode && re.postalCode !== r.postal_code) ? 'apply' : 'unchanged';
       return {
         branchId: r.branch_id, name: r.name, city: r.city, claimed: r.claimed === 'yes', placeId: r.place_id, before: r.address_before, after,
-        source, postalCode: r.postal_code, googleFormatted: r.google_formatted, action, problems: addressProblems(after), url: r.public_url,
+        source: re ? re.source : (r.source as AddressSource), postalCode: re?.postalCode ?? '', googleFormatted: r.google_formatted, google, cityLine: re?.city ?? r.city, cityMismatch: !!re?.cityMismatch,
+        storedCitySlug: '', proposedCitySlug: re?.cityMismatch ? catalogCityFor(re.googleCity)?.slug ?? '' : '', action, problems: addressProblems(after), url: r.public_url,
       };
     });
     const n = await apply(rows, from);
-    writeCsv(out, HEADER, rows.map(r => [r.branchId, r.name, r.city, r.claimed ? 'yes' : 'no', r.placeId, r.before, r.after, r.source, r.postalCode, r.googleFormatted, r.action, r.problems.join(' | '), r.url]));
+    writeCsv(out, HEADER, rows.map(toLine));
+    writeCsv(mismatchOut, MISMATCH_HEADER, rows.filter(r => r.cityMismatch).map(mismatchLine));
     console.log(`APPLIED ${n} addresses from ${from}. Undo: npm run import:hebrew-addresses -- --revert ${out}`);
     console.log(`SUMMARY applied=${n} csv=${out}`);
     return;
@@ -176,7 +188,7 @@ async function main() {
 
   const branches = await db.branch.findMany({
     where: { status: 'live' },
-    select: { id: true, name: true, cityName: true, address: true, addressRaw: true, addressSource: true, postalCode: true, isClaimed: true, googlePlaceId: true, regionSlug: true, slug: true },
+    select: { id: true, name: true, cityName: true, address: true, addressRaw: true, addressSource: true, postalCode: true, isClaimed: true, googlePlaceId: true, regionSlug: true, slug: true, city: { select: { slug: true } } },
     orderBy: [{ regionSlug: 'asc' }, { cityName: 'asc' }, { name: 'asc' }],
     ...(limit ? { take: limit } : {}),
   });
@@ -206,20 +218,23 @@ async function main() {
       }
       if (!google?.route) noGoogle++;
     }
-    const r = city ? composeHebrewAddress(google, b.address, city) : { address: b.address, postalCode: null, source: 'unchanged' as AddressSource };
+    const r = composeHebrewAddress(google, b.address, city);
     const changed = r.address !== b.address.trim() || (!!r.postalCode && r.postalCode !== b.postalCode);
     const action: Action = ownerEdited ? 'skipped_owner' : !city ? 'skipped_no_city' : changed ? 'apply' : 'unchanged';
     rows.push({
       branchId: b.id, name: b.name, city, claimed: b.isClaimed, placeId: b.googlePlaceId ?? '', before: b.address, after: action === 'apply' ? r.address : b.address,
-      source: action === 'apply' ? r.source : (b.addressSource as AddressSource | null) ?? (googleCalled ? r.source : 'unchanged'), postalCode: action === 'apply' ? r.postalCode ?? '' : b.postalCode ?? '',
-      googleFormatted: google?.formatted ?? '', action, problems: addressProblems(action === 'apply' ? r.address : b.address), url: `https://beautyfind.co.il/${b.regionSlug}/biz/${b.slug}`,
+      source: action === 'apply' ? r.source : (b.addressSource as AddressSource | null) ?? (googleCalled ? r.source : 'original'), postalCode: action === 'apply' ? r.postalCode ?? '' : b.postalCode ?? '',
+      googleFormatted: google?.formatted ?? '', google, cityLine: r.city, cityMismatch: r.cityMismatch && !ownerEdited, storedCitySlug: b.city?.slug ?? '',
+      proposedCitySlug: r.cityMismatch ? catalogCityFor(r.googleCity)?.slug ?? '' : '', action, problems: addressProblems(action === 'apply' ? r.address : b.address), url: `https://beautyfind.co.il/${b.regionSlug}/biz/${b.slug}`,
     });
   });
   rows.sort((a, b) => a.city.localeCompare(b.city, 'he') || a.name.localeCompare(b.name, 'he'));
 
-  writeCsv(out, HEADER, rows.map(r => [r.branchId, r.name, r.city, r.claimed ? 'yes' : 'no', r.placeId, r.before, r.after, r.source, r.postalCode, r.googleFormatted, r.action, r.problems.join(' | '), r.url]));
+  writeCsv(out, HEADER, rows.map(toLine));
   const fallbacks = rows.filter(r => r.action !== 'skipped_owner' && (r.source === 'dictionary' || r.source === 'city_only' || r.problems.length));
-  writeCsv(fallbacksOut, HEADER, fallbacks.map(r => [r.branchId, r.name, r.city, r.claimed ? 'yes' : 'no', r.placeId, r.before, r.after, r.source, r.postalCode, r.googleFormatted, r.action, r.problems.join(' | '), r.url]));
+  writeCsv(fallbacksOut, HEADER, fallbacks.map(toLine));
+  const mismatches = rows.filter(r => r.cityMismatch);
+  writeCsv(mismatchOut, MISMATCH_HEADER, mismatches.map(mismatchLine));
 
   const count = (f: (r: Row) => boolean) => rows.filter(f).length;
   const applying = rows.filter(r => r.action === 'apply');
@@ -227,18 +242,19 @@ async function main() {
   console.log(`Hebrew address from Google: ${count(r => r.source === 'google' && r.action !== 'skipped_owner')}`);
   console.log(`street from the dictionary: ${count(r => r.source === 'dictionary' && r.action !== 'skipped_owner')}`);
   console.log(`city only (street unknown): ${count(r => r.source === 'city_only' && r.action !== 'skipped_owner')}`);
-  console.log(`already Hebrew, unchanged: ${count(r => r.source === 'unchanged' && r.action === 'unchanged')}`);
+  console.log(`Hebrew original restyled: ${count(r => r.source === 'original' && r.action === 'apply')}; unchanged: ${count(r => r.action === 'unchanged')}`);
+  console.log(`city mismatches (Google's locality is another city than the stored one; the line keeps Google's city): ${mismatches.length}, with a city page to move to: ${mismatches.filter(r => r.proposedCitySlug && r.proposedCitySlug !== r.storedCitySlug).length}`);
   console.log(`skipped (owner-entered address on a claimed listing): ${count(r => r.action === 'skipped_owner')}; skipped (no city): ${count(r => r.action === 'skipped_no_city')}`);
   console.log(`would change: ${applying.length}; still with Latin after the pass: ${count(r => r.problems.length > 0 && r.action !== 'skipped_owner')}`);
 
   // Ten before/after samples across the sources.
   const pick = (src: AddressSource, n: number) => applying.filter(r => r.source === src).slice(0, n);
-  const samples = [...pick('google', 5), ...pick('dictionary', 3), ...pick('city_only', 2)];
-  for (const r of [...samples, ...applying.filter(r => !samples.includes(r))].slice(0, 10)) console.log(`  [${r.source}] ${r.name} (${r.city}) | before: ${r.before} | after: ${r.after}${r.postalCode ? ` | postal ${r.postalCode}` : ''}`);
-  console.log(`CSV: ${out} (${rows.length} rows); fallbacks for staff: ${fallbacksOut} (${fallbacks.length} rows)`);
+  const samples = [...pick('google', 5), ...pick('dictionary', 2), ...pick('original', 1), ...pick('city_only', 2)];
+  for (const r of [...samples, ...applying.filter(r => !samples.includes(r))].slice(0, 10)) console.log(`  [${r.source}] ${r.name} (${r.city}) | before: ${r.before} | after: ${r.after}${r.postalCode ? ` | postal ${r.postalCode}` : ''}${r.cityMismatch ? ` | Google city ${r.google?.locality}` : ''}`);
+  console.log(`CSV: ${out} (${rows.length} rows); fallbacks for staff: ${fallbacksOut} (${fallbacks.length} rows); city mismatches: ${mismatchOut} (${mismatches.length} rows)`);
 
   if (!confirm) {
-    console.log(`SUMMARY dry_run google=${count(r => r.source === 'google' && r.action === 'apply')} dictionary=${count(r => r.source === 'dictionary' && r.action === 'apply')} city_only=${count(r => r.source === 'city_only' && r.action === 'apply')} unchanged=${count(r => r.action === 'unchanged')} skipped_owner=${count(r => r.action === 'skipped_owner')} would_change=${applying.length} calls=${calls}`);
+    console.log(`SUMMARY dry_run google=${count(r => r.source === 'google' && r.action === 'apply')} dictionary=${count(r => r.source === 'dictionary' && r.action === 'apply')} original=${count(r => r.source === 'original' && r.action === 'apply')} city_only=${count(r => r.source === 'city_only' && r.action === 'apply')} unchanged=${count(r => r.action === 'unchanged')} skipped_owner=${count(r => r.action === 'skipped_owner')} mismatches=${mismatches.length} would_change=${applying.length} calls=${calls}`);
     console.log('dry run: nothing changed (add --confirm, or run with --confirm --from <this CSV> to apply without new Google calls)');
     return;
   }
