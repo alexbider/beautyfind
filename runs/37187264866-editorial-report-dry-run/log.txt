@@ -1,0 +1,20 @@
+run eebefd36-435d-448a-bb71-d02435b488d2 "ניקוי תיאורים 1/1" status=done started=2026-10-04T07:44:30.337Z finished=2026-10-04T07:55:01.481Z
+counters: {"improved":3,"filled_faqs":2,"filled_prices":1,"editorialCalls":10,"nothing_to_add":7,"youtubeRequests":0,"editorial_failed":1,"editorial_written":9,"filled_description":2}
+listings in scope: 10, import records: 10, drafts written in this run: 10
+by model: claude-sonnet-5: 9, template: 1
+by tier: rich: 4, normal: 3, sparse: 3
+proofread: no: 7, yes: 3
+by error: (none): 9, text_rules: name_missing: 1
+words: min 11, median 201, max 305
+cost recorded on the records: 0.776 USD
+  claude-sonnet-5  normal words= 169 faqs= 6 pr=no violations=short:169 | meta:contact:טלפון | meta:short:123 | 428b9c2b-b87d-4cb3-82d5-83d155ae79c1 ARcosmetolog
+  claude-sonnet-5  normal words= 165 faqs= 5 pr=no violations=short:165 | 14e6f29b-d0e6-4733-bca8-8f0541f268fe Barak clinic - קליניקה לאסתטיקה מתקדמת ב
+  claude-sonnet-5  rich   words= 305 faqs= 8 pr=no violations=short:305 | 9f0933ee-94c6-42cd-b69c-d61d71d5bf37 Salon boutique Paradise
+  claude-sonnet-5  rich   words= 293 faqs= 7 pr=no violations=short:293 | meta:short:126 | fbf7b660-ab28-41a7-9061-b21e2685803e Ruchla Cosmetics
+  claude-sonnet-5  rich   words= 201 faqs= 6 pr=no violations=short:201 | person:קעואר הוא | 9c7c2244-996d-45b2-88a2-9160cd872e80 ד״ר מנאר קעואר - מומחה בכירורגיה פלסטית 
+  claude-sonnet-5  normal words= 257 faqs= 6 pr=yes | 80be9c7f-a966-4f2c-9309-97bbbb8fa10b Batya Care & Beauty Institute
+  template         rich   words= 301 faqs= 5 pr=no error=text_rules: name_missing | b00a083f-d8a8-4b23-84c4-f76e955d1576 ד"ר רוני מוסקונה - מרפאות ניתוחים פלסטיי
+  claude-sonnet-5  sparse words=  11 faqs= 0 pr=yes | ad544cb8-7e77-4524-9640-0befa25de827 L&Y beauty lab
+  claude-sonnet-5  sparse words= 159 faqs= 5 pr=yes | 2ccbad7e-ae74-4814-afcb-89d1d6d34d30 Grace Cosmetology Nahariya
+  claude-sonnet-5  sparse words=  40 faqs= 5 pr=no | b5afada9-287f-47af-9a19-2bbd854a7400 BEAUTY OSK
+CSV: reports/editorial-report.csv
