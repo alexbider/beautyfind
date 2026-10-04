@@ -1,0 +1,37 @@
+by rule:
+  3580  missing_info
+  3141  record
+  1353  latin
+   371  spelling
+   332  address
+    56  dash
+     2  emoji
+most frequent matches:
+   711  missing_info:במקורות
+   562  missing_info:לא פורסמו
+   484  missing_info:לא פורסם
+   325  missing_info:לא צוינו
+   270  latin:St
+   267  address:St
+   258  record:מציין
+   232  record:מצוין
+   231  missing_info:שסופק
+   221  missing_info:המידע הזמין
+   218  missing_info:אין פירוט
+   203  record:אין פירוט
+   184  spelling:מצויין
+   169  record:ברשומות
+   121  record:מציינת
+   113  missing_info:בעמוד העסק
+   109  missing_info:לא נמסר
+   108  missing_info:אין מידע
+   107  spelling:ווטסאפ
+   106  record:הרשומה
+    94  record:נרשמה
+    88  record:המצוינת
+    86  missing_info:בפרופיל העסק
+    83  record:המצוינים
+    81  record:מציינים
+SUMMARY scanned=816 failing=814 text_rules=750 older_prompt=105 rewrite=814 needs_import_record=0 skipped_claimed=0 skipped_approved=0 tiers(rewrite): sparse=134 normal=532 rich=148 csv=reports/description-cleanup.csv
+LIMIT 10: queueing 10 of 814 candidates (sparse=3 normal=3 rich=4)
+dry run: nothing queued (review the CSV, then add --confirm --actor <userId>); --cancel-queued would cancel the earlier queued runs
