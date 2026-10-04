@@ -1,0 +1,14 @@
+live listings with published medical treatments: 167; without a medical responsible or a doctor or nurse on staff: 167 (claimed 0, unclaimed 167)
+disclaimer state: stated doctor (a doctor title in the listing name or on staff, license unchecked): 69; no doctor on file: 98
+    56  facials
+    44  dental-aesthetics
+    29  medical-aesthetics
+    23  plastic-surgery
+     6  hair-removal
+     3  brows-lashes
+     2  hair-restoration
+     1  nails
+     1  permanent-makeup
+     1  hair-salons
+     1  body-contouring
+SUMMARY uncovered=167 stated_doctor=69 no_doctor=98 csv=reports/medical-report.csv
