@@ -14,7 +14,7 @@
 //   npm run import:hebrew-addresses -- --revert reports/hebrew-addresses.csv
 //                                                         undo: put address_before back for the rows that were applied
 //   options: --out reports/hebrew-addresses.csv  --fallbacks-out reports/hebrew-addresses-fallbacks.csv
-//            --max-calls 1000  --concurrency 4  --limit N (first N listings, for a test)
+//            --max-calls 1000  --concurrency 2  --rpm 90 (Google calls per minute, the per-minute quota)  --limit N (first N listings)
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
@@ -137,7 +137,16 @@ async function main() {
   const out = arg('out') ?? 'reports/hebrew-addresses.csv';
   const fallbacksOut = arg('fallbacks-out') ?? 'reports/hebrew-addresses-fallbacks.csv';
   const maxCalls = Math.max(0, Number(arg('max-calls') ?? 1000));
-  const concurrency = Math.max(1, Math.min(8, Number(arg('concurrency') ?? 4)));
+  const concurrency = Math.max(1, Math.min(8, Number(arg('concurrency') ?? 2)));
+  const rpm = Math.max(10, Math.min(600, Number(arg('rpm') ?? 90)));
+  // A pacer: calls are spaced at least 60/rpm seconds apart across the pool, so the per-minute quota holds.
+  let nextSlot = 0;
+  const pace = async () => {
+    const now = Date.now();
+    const at = Math.max(now, nextSlot);
+    nextSlot = at + Math.ceil(60_000 / rpm);
+    if (at > now) await new Promise(r => setTimeout(r, at - now));
+  };
   const limit = arg('limit') ? Math.max(1, Number(arg('limit'))) : null;
 
   if (from) {
@@ -180,6 +189,7 @@ async function main() {
       calls++;
       googleCalled = true;
       try {
+        await pace();
         google = await fetchGoogleAddress(b.googlePlaceId, { key });
       } catch (e) {
         errors++;

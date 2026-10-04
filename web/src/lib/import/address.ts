@@ -225,10 +225,24 @@ export function composeHebrewAddress(google: GoogleAddress | null, original: str
   }
   if (cleaned && HEBREW_ONLY(cleaned)) return { address: cleaned, postalCode: null, source: 'unchanged' };
   if (!city) return { address: cleaned, postalCode: null, source: 'unchanged' };
-  const dict = hebrewAddress(cleaned, city);
+  // A mixed line ("K-Tower שדרות ירושלים 18 אשדוד, ים, 7752311"): the Hebrew words of each part stay, Latin
+  // words, the postal code and the city inside a part go; a Hebrew street (a number or a street type word)
+  // is kept as the street, other Hebrew parts are details.
+  const esc = city.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const hebrewParts = [...new Set(cleaned.split(/\s*,\s*/)
+    .filter(p => HEBREW.test(p))
+    .map(p => p.replace(/[A-Za-z][A-Za-z'’.&-]*/g, ' ').replace(/\s+/g, ' ').replace(new RegExp(`(?:^|\\s)${esc}(?=\\s|$)`, 'u'), ' ').replace(/^[\s,.\-]+|[\s,.\-]+$/g, '').trim())
+    .filter(p => p && p !== city && !POSTAL.test(p)))];
+  const streetLike = (p: string) => /\d/.test(p) || /^(?:רחוב|רח['׳]|דרך|שדרות|שד['׳]|סמטת|כיכר|כביש)\s/u.test(p);
+  const hebrewStreetPart = hebrewParts.find(streetLike);
+  if (hebrewStreetPart) {
+    const details = hebrewParts.filter(p => p !== hebrewStreetPart && DETAIL_WORDS.test(p));
+    return { address: [hebrewStreetPart, ...details, city].join(', '), postalCode: null, source: 'dictionary' };
+  }
+  const dict = hebrewAddress(cleaned.split(/\s*,\s*/).filter(p => !HEBREW.test(p)).join(', '), city);
   if (dict && dict !== city) {
-    const details = addressDetails(cleaned, city, null);
-    return { address: [streetLine(dict, city), ...details, city].filter(Boolean).join(', '), postalCode: null, source: 'dictionary' };
+    const details = [...addressDetails(cleaned, city, null), ...hebrewParts.filter(p => DETAIL_WORDS.test(p))];
+    return { address: [streetLine(dict, city), ...new Set(details), city].filter(Boolean).join(', '), postalCode: null, source: 'dictionary' };
   }
   return { address: city, postalCode: null, source: 'city_only' };
 }

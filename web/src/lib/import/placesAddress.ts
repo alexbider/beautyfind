@@ -32,7 +32,12 @@ export async function fetchGoogleAddress(placeId: string, opts: { key?: string; 
     });
     if (res.ok) return parseGoogleAddress(await res.json());
     if (res.status === 404) return null;
-    if ((res.status === 429 || res.status >= 500) && attempt < 3) {
+    // 429 is Google's per-minute quota: wait out the minute, up to five times. 5xx: a short backoff.
+    if (res.status === 429 && attempt < 5) {
+      await sleep(15_000 * (attempt + 1));
+      continue;
+    }
+    if (res.status >= 500 && attempt < 3) {
       await sleep(1500 * 2 ** attempt);
       continue;
     }

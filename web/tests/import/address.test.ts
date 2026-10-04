@@ -41,6 +41,10 @@ describe('hebrew addresses', () => {
     assert.deepEqual(composeHebrewAddress(latinRoute, 'Herzl St 5, Netanya', 'נתניה'), { address: 'רחוב הרצל 5, נתניה', postalCode: null, source: 'dictionary' });
     assert.deepEqual(composeHebrewAddress(null, 'Unknownstreet 7, Netanya', 'נתניה'), { address: 'נתניה', postalCode: null, source: 'city_only' });
     assert.deepEqual(composeHebrewAddress(null, 'רחוב הרצל 5, נתניה, ישראל', 'נתניה'), { address: 'רחוב הרצל 5, נתניה', postalCode: null, source: 'unchanged' });
+    // A mixed line keeps its Hebrew street; Latin words, the postal code and the city inside the part go.
+    assert.deepEqual(composeHebrewAddress(null, 'K-Tower שדרות ירושלים 18 אשדוד, ים, 7752311', 'אשדוד'), { address: 'שדרות ירושלים 18, אשדוד', postalCode: null, source: 'dictionary' });
+    assert.equal(composeHebrewAddress(null, 'גן העיר, Ha-Gdud ha-Ivri St 5, Ashdod, 7745511', 'אשדוד').address, 'אשדוד');
+    assert.equal(composeHebrewAddress(null, 'Herzl St 5, קניון הסיטי, Netanya', 'נתניה').address, 'רחוב הרצל 5, קניון הסיטי, נתניה');
   });
 
   it('keeps floor and building details only', () => {
