@@ -12,6 +12,8 @@ const PACKAGE_WORDS = /(^|\s)(חבילת|חבילה|חבילות|מפגשים|ס
 const PRODUCT_WORDS = /(^|[\s,/(])(קרם|קרמים|סרום|סרומים|שמפו|מרכך|תחליב|לוסיון|אמפולה|אמפולות|ליום|ללילה|מוצר|מוצרי|מוצרים|ערכת|ערכה|סט|בקבוק|שפופרת|אריזת|אריזה|מארז|קופסה|cream|serum|shampoo|conditioner|lotion|kit|bottle)(?=$|[\s,/).])/iu;
 /** Verbs and pronouns that make a line a sentence rather than a name. */
 const SENTENCE_WORDS = /(^|\s)(מתמחה|מתמחים|מתמחות|מציע|מציעה|מציעים|מציעות|אנחנו|אנו|שלנו|אצלנו|אתם|אתן|תוכלו|ניתן|אפשר|כדאי|חשוב|מומלץ|נשמח|בואו|הגיעו|צרו|התקשרו)(?=\s|$)/u;
+/** A line that opens with a pronoun or a connector is the tail or the middle of a sentence ("זאת שמחליפה את הניתוחים", "אשר מתאים לכל סוגי העור"). */
+const SENTENCE_OPENERS = /^(זאת|זה|זו|אלה|אלו|אשר|אם|כי|אבל|אך|וגם|כך|לכן|ולכן|כאשר|שהוא|שהיא|שהם|שהן|that|which|this|these|those|if|because|also)(?=\s|$)/iu;
 /** Openers of an article or a guide title. */
 const ARTICLE_OPENERS = /^(היתרונות|היתרון|החסרונות|איך|כיצד|מה|מהו|מהי|מהם|למה|מדוע|האם|מתי|כמה|טיפים|מדריך|המדריך|כל מה ש|הסוד|סודות|\d+\s+(דברים|טיפים|סיבות|שאלות|דרכים)|how|what|why|when|tips|guide)(?=\s|$|\?)/iu;
 /** Lone words that carry no treatment: qualifiers, list labels, filler. */
@@ -19,7 +21,8 @@ const FUNCTION_WORDS = new Set(['בלבד', 'ועוד', 'עוד', 'כולל', '�
 
 /**
  * Why a stored name is not a treatment name, or null when it is one: a product line (קרם ליום, סרום), a
- * package of sessions (חבילת 6 מפגשים), a sentence (ends with a period, carries a verb, or runs long), an
+ * package of sessions (חבילת 6 מפגשים), a sentence (ends with a period or a comma, opens with a pronoun or a
+ * connector such as זאת, זה, אשר or אם, carries a verb, or runs long), an
  * article title (היתרונות של..., איך...) or a lone function word (בלבד, ועוד).
  */
 export function treatmentNameProblem(raw: string): TreatmentNameProblem | null {
@@ -31,7 +34,8 @@ export function treatmentNameProblem(raw: string): TreatmentNameProblem | null {
   if (ARTICLE_OPENERS.test(name) || /\?$/u.test(name)) return 'article';
   if (PRODUCT_WORDS.test(name)) return 'product';
   if (PACKAGE_WORDS.test(name)) return 'package';
-  if (/[.!]$/u.test(name) || name.length > 40 || words.length > 5 || SENTENCE_WORDS.test(name) || /[.!?;]\s+\S/u.test(name)) return 'sentence';
+  // A trailing comma or a pronoun or connector at the start marks a fragment of a sentence, whatever its length.
+  if (/[.!,]$/u.test(name) || SENTENCE_OPENERS.test(name) || name.length > 40 || words.length > 5 || SENTENCE_WORDS.test(name) || /[.!?;]\s+\S/u.test(name)) return 'sentence';
   return null;
 }
 

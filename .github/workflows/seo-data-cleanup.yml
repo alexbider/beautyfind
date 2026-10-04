@@ -42,8 +42,11 @@ on:
         required: false
         default: ''
 
+# Its own group: reports, hygiene and queueing do not conflict with a running import worker (the worker reads
+# published treatments per listing and picks up queued runs as they appear), and a drain that runs for hours
+# must not hold the reports back.
 concurrency:
-  group: import-worker
+  group: seo-data-cleanup
   cancel-in-progress: false
 
 permissions:

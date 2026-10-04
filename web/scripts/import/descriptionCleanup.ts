@@ -16,6 +16,9 @@
 //                                           or running, so only the new runs are picked up
 //            --rerun <run id>               queue exactly the listings of an earlier run again (a review batch
 //                                           under a new prompt), whatever their text looks like now
+//            --rejected                     also include listings whose last draft the grounding check rejected
+//                                           (error unsupported_claims) under an older prompt version, so a
+//                                           softer grounding rule gets another go at them
 //
 // Never changed: claimed listings, listings whose text staff marked approved (editorial.ownerApproved) and the
 // hand-written reference profiles (src/lib/import/reference.ts).
@@ -49,7 +52,7 @@ interface Row {
   ownerApproved: boolean;
   hasImportRecord: boolean;
   tier: LengthTier | '';
-  why: 'text_rules' | 'older_prompt' | 'both';
+  why: string; // text_rules, older_prompt, rejected, joined with + when several apply
   draftVersion: string;
   problems: TextProblem[];
   action: 'rewrite' | 'skipped_claimed' | 'skipped_approved' | 'skipped_reference' | 'needs_import_record';
@@ -58,6 +61,7 @@ interface Row {
 async function main() {
   const confirm = process.argv.includes('--confirm');
   const cancelQueued = process.argv.includes('--cancel-queued');
+  const rejectedToo = process.argv.includes('--rejected');
   const out = arg('out') ?? 'reports/description-cleanup.csv';
   const batch = Math.max(1, Math.min(200, Number(arg('batch') ?? 50)));
   const perListingUsd = Math.max(0.01, Number(arg('budget') ?? 0.12));
@@ -88,10 +92,12 @@ async function main() {
     }
     const problems = textProblems(text, [b.name, domain, ...b.treatments.map(t => t.name)]);
     const place = placeOf.get(b.id);
-    const draft = (place?.editorial ?? null) as { promptVersion?: string; model?: string; generatedAt?: string } | null;
+    const draft = (place?.editorial ?? null) as { promptVersion?: string; model?: string; generatedAt?: string; error?: string } | null;
     // A draft the writer produced under an older prompt version, from the given date on (not the template fallback).
     const older = !!since && !!draft?.generatedAt && new Date(draft.generatedAt) >= since && !!draft.model && draft.model !== 'template' && draft.promptVersion !== PROMPT_VERSION;
-    if (!problems.length && !older && !rerun?.has(b.id)) continue;
+    // A draft the grounding check rejected under an older prompt version (the listing kept its earlier text).
+    const rejected = rejectedToo && typeof draft?.error === 'string' && draft.error.startsWith('unsupported_claims') && draft.promptVersion !== PROMPT_VERSION;
+    if (!problems.length && !older && !rejected && !rerun?.has(b.id)) continue;
     for (const p of problems) {
       perCode.set(p.code, (perCode.get(p.code) ?? 0) + 1);
       const k = `${p.code}:${p.match}`;
@@ -100,7 +106,7 @@ async function main() {
     const ownerApproved = (b.editorial as { ownerApproved?: boolean } | null)?.ownerApproved === true;
     const action: Row['action'] = isReferenceBranch(b.id) ? 'skipped_reference' : b.isClaimed ? 'skipped_claimed' : ownerApproved ? 'skipped_approved' : place ? 'rewrite' : 'needs_import_record';
     const tier: Row['tier'] = place ? lengthTier(buildPacket(place, { claimed: b.isClaimed, publishedTreatments: b.treatments.filter(t => t.isPublished).map(t => t.name) })) : '';
-    rows.push({ branchId: b.id, name: b.name, city: b.cityName, status: b.status, claimed: b.isClaimed, ownerApproved, hasImportRecord: !!place, tier, why: problems.length && older ? 'both' : older ? 'older_prompt' : 'text_rules', draftVersion: draft?.promptVersion ?? '', problems, action });
+    rows.push({ branchId: b.id, name: b.name, city: b.cityName, status: b.status, claimed: b.isClaimed, ownerApproved, hasImportRecord: !!place, tier, why: [problems.length && 'text_rules', older && 'older_prompt', rejected && 'rejected', !problems.length && !older && !rejected && 'rerun'].filter(Boolean).join('+'), draftVersion: draft?.promptVersion ?? '', problems, action });
   }
 
   const header = ['branch_id', 'name', 'city', 'status', 'claimed', 'owner_approved', 'has_import_record', 'tier', 'why', 'draft_prompt_version', 'action', 'problems'];
@@ -115,7 +121,7 @@ async function main() {
   const count = (a: Row['action']) => rows.filter(r => r.action === a).length;
   const tiers = (list: Row[]) => (['sparse', 'normal', 'rich'] as const).map(t => `${t}=${list.filter(r => r.tier === t).length}`).join(' ');
   const candidates = rows.filter(r => r.action === 'rewrite');
-  console.log(`SUMMARY scanned=${branches.length} failing=${rows.length} text_rules=${rows.filter(r => r.why !== 'older_prompt').length} older_prompt=${rows.filter(r => r.why !== 'text_rules').length} rewrite=${count('rewrite')} needs_import_record=${count('needs_import_record')} skipped_claimed=${count('skipped_claimed')} skipped_approved=${count('skipped_approved')} skipped_reference=${count('skipped_reference')} tiers(rewrite): ${tiers(candidates)} csv=${out}`);
+  console.log(`SUMMARY scanned=${branches.length} failing=${rows.length} text_rules=${rows.filter(r => r.why.includes('text_rules')).length} older_prompt=${rows.filter(r => r.why.includes('older_prompt')).length} rejected=${rows.filter(r => r.why.includes('rejected')).length} rewrite=${count('rewrite')} needs_import_record=${count('needs_import_record')} skipped_claimed=${count('skipped_claimed')} skipped_approved=${count('skipped_approved')} skipped_reference=${count('skipped_reference')} tiers(rewrite): ${tiers(candidates)} csv=${out}`);
 
   // The listings to queue: all candidates, or with --limit a spread across the tiers (round robin, so a
   // review batch of ten holds every tier).

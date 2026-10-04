@@ -177,6 +177,13 @@ describe('treatment name hygiene', () => {
     assert.equal(treatmentNameProblem('בלבד'), 'function_word');
     assert.equal(treatmentNameProblem('ועוד'), 'function_word');
     assert.equal(treatmentNameProblem('הסרת שיער בלייזר חבילת 6 מפגשים'), 'package');
+    // Fragments of a sentence: a trailing comma, or a pronoun or connector at the start (the Pro Aesthetics record).
+    assert.equal(treatmentNameProblem('זאת שמחליפה את הניתוחים הפלסטיים,'), 'sentence');
+    assert.equal(treatmentNameProblem('טיפול פנים,'), 'sentence');
+    assert.equal(treatmentNameProblem('זה הטיפול המבוקש'), 'sentence');
+    assert.equal(treatmentNameProblem('אשר מתאים לכל סוגי העור'), 'sentence');
+    assert.equal(treatmentNameProblem('אם יש כתמים'), 'sentence');
+    assert.equal(treatmentNameProblem('זהב 24 קראט מסכה'), null);
     for (const ok of ['טיפול פנים', 'לק ג׳ל', 'הסרת שיער בלייזר', 'Hydrafacial', 'בוטוקס אזור אחד', 'מניקור ג׳ל', 'החלקת קרטין', 'מסכת פנים מזינה']) assert.equal(treatmentNameProblem(ok), null, ok);
     assert.equal(hebrewTreatmentName('קרם לחות ליום'), null, 'a product never reaches a description');
     assert.deepEqual(hebrewTreatmentNames(['בלבד', 'היתרונות של בוטוקס', 'פדיקור', 'סרום לפנים', 'מניקור'], 3), ['פדיקור', 'מניקור']);
