@@ -660,8 +660,10 @@ export function repeatedFacts(description: string, p: EvidencePacket): string[] 
   return out;
 }
 
-/** Only the word count is still wrong: one more targeted repair is worth a call. */
-export const onlyLength = (v: string[]) => v.length > 0 && v.every(x => x.startsWith('short:') || x.startsWith('long:'));
+/** Only deterministic publication blockers are left (word count, filler, a repeated fact, medical wording): one more targeted repair is worth a call. */
+export const onlyPolish = (v: string[]) => v.length > 0 && v.every(x => /^(short|long|filler|repeat|medical):/.test(x));
+/** @deprecated use onlyPolish */
+export const onlyLength = onlyPolish;
 
 export function repairMessage(v: string[], p?: EvidencePacket): string {
   const t = p ? LENGTH_TIERS[lengthTier(p)] : { min: WORDS_MIN, max: WORDS_MAX };

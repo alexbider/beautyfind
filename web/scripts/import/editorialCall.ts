@@ -10,7 +10,7 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
-import { applyProofread, checkOutput, GROUNDING_PROMPT, GROUNDING_SCHEMA, groundingMessage, groundingRepairMessage, normalizeOutput, onlyLength, OUTPUT_SCHEMA, PROMPT_VERSION, PROOFREAD_PROMPT, PROOFREAD_SCHEMA, proofreadMessage, repairable, repairMessage, SYSTEM_PROMPT, templateDraft, textRuleViolations, userMessage, type EditorialOutput, type EvidencePacket, type GroundingClaim, type ProofreadOutput } from '../../src/lib/import/editorial';
+import { applyProofread, checkOutput, GROUNDING_PROMPT, GROUNDING_SCHEMA, groundingMessage, groundingRepairMessage, normalizeOutput, onlyPolish, OUTPUT_SCHEMA, PROMPT_VERSION, PROOFREAD_PROMPT, PROOFREAD_SCHEMA, proofreadMessage, repairable, repairMessage, SYSTEM_PROMPT, templateDraft, textRuleViolations, userMessage, type EditorialOutput, type EvidencePacket, type GroundingClaim, type ProofreadOutput } from '../../src/lib/import/editorial';
 import { openaiErrorKind } from '../../src/lib/import/openai';
 import { editorialCostUsd, pricing } from '../../src/lib/import/pricing';
 import { responses } from './providers/openai';
@@ -199,9 +199,9 @@ export async function writeEditorial(packet: EvidencePacket, provider: WriterPro
       }
     }
   }
-  if (onlyLength(violations)) {
-    // Everything else is right and only the word count misses its tier: one more targeted pass, since a
-    // draft outside its tier is stored but never published.
+  if (onlyPolish(violations)) {
+    // Everything else is right and only deterministic blockers remain (word count, filler, a repeated fact,
+    // medical wording): one more targeted pass, since such a draft is stored but never published.
     repairs += 1;
     const third = await write([...turns, { role: 'assistant', content: raw }, { role: 'user', content: repairMessage(violations, packet) }]);
     if (!('error' in third)) {
