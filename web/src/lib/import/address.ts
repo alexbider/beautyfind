@@ -222,11 +222,13 @@ const CITY_HE = new Set(CITIES.map(c => c.name));
 /** One style for every source, Google's: no "רחוב" or "רח׳" before a plain street; שדרות, דרך and כיכר stay as part of the name. */
 export const styleStreet = (s: string) => s.replace(/^(?:רחוב|רח['׳"״]?)\s+/u, '').replace(/\s+/g, ' ').trim();
 
-/** Two Hebrew city names for the same city: dashes, quotes and the "-יפו" tail aside ("תל אביב" and "תל אביב-יפו"). */
+const normCity = (s: string) => s.normalize('NFKC').replace(/[\u2013\u2014\-]/g, ' ').replace(/['׳"״]/g, '').replace(/\s+/g, ' ').replace(/\s*יפו$/u, '').trim();
+/** The same city name, dashes, quotes and the "-יפו" tail aside ("תל אביב" and "תל אביב-יפו"). */
+const sameCity = (a: string, b: string) => !!normCity(a) && normCity(a) === normCity(b);
+/** Two Hebrew city names for the same city: the same name, or one that extends the other by a word ("קריית ים" and "קריית ים החדשה"). */
 export function cityMatches(a: string | null | undefined, b: string | null | undefined): boolean {
-  const norm = (s: string) => s.normalize('NFKC').replace(/[\u2013\u2014\-]/g, ' ').replace(/['׳"״]/g, '').replace(/\s+/g, ' ').replace(/\s*יפו$/u, '').trim();
-  const x = norm(a ?? '');
-  const y = norm(b ?? '');
+  const x = normCity(a ?? '');
+  const y = normCity(b ?? '');
   if (!x || !y) return false;
   return x === y || x.startsWith(`${y} `) || y.startsWith(`${x} `);
 }
@@ -279,7 +281,16 @@ export function streetLine(address: string, city: string | null): string {
 export function composeHebrewAddress(google: GoogleAddress | null, original: string, storedCity: string): ResolvedAddress {
   const cleaned = (original ?? '').replace(COUNTRY, '').replace(/\s+/g, ' ').trim();
   const googleCity = google?.locality && HEBREW_ONLY(google.locality) ? google.locality.trim() : null;
-  const cityMismatch = !!googleCity && !!storedCity && !cityMatches(storedCity, googleCity);
+  // A mismatch only when Google's formatted address does not name the stored city either: a business-supplied
+  // line such as "הצוללים 5 אשדוד, ים" makes Google read the quarter ("ים") as the locality.
+  const namesStoredCity = (text: string) => {
+    for (const part of text.split(/\s*,\s*/)) {
+      const w = part.split(/\s+/).filter(Boolean);
+      for (let i = 0; i < w.length; i++) for (let n = 1; n <= 3 && i + n <= w.length; n++) if (sameCity(w.slice(i, i + n).join(' '), storedCity)) return true;
+    }
+    return false;
+  };
+  const cityMismatch = !!googleCity && !!storedCity && !cityMatches(storedCity, googleCity) && !namesStoredCity(google?.formatted ?? '');
   const city = cityMismatch ? googleCity! : storedCity;
   const isCity = (p: string) => cityMatches(p, storedCity) || cityMatches(p, googleCity);
   const finish = (parts: string[], source: AddressSource, postalCode: string | null = null): ResolvedAddress => ({
@@ -299,14 +310,16 @@ export function composeHebrewAddress(google: GoogleAddress | null, original: str
   }
   if (!city) return { address: normalizeHebrew(cleaned), postalCode: null, source: 'original', city: '', googleCity, cityMismatch: false };
   const parts = cleaned.split(/\s*,\s*/).map(p => p.trim()).filter(Boolean);
-  if (cleaned && HEBREW_ONLY(cleaned)) return finish(parts.filter(p => !isCity(p) && !POSTAL.test(p)), 'original');
+  // The stored city and Google's city are stripped from inside a part ("הצוללים 5 אשדוד").
+  const cityWords = [storedCity, googleCity].filter((c): c is string => !!c).map(c => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const stripCities = (p: string) => cityWords.reduce((acc, esc) => acc.replace(new RegExp(`(?:^|\\s)${esc}(?=\\s|$)`, 'u'), ' '), p).replace(/\s+/g, ' ').trim();
+  if (cleaned && HEBREW_ONLY(cleaned)) return finish(parts.map(stripCities).filter(p => p && !isCity(p) && !POSTAL.test(p)), 'original');
   // A mixed line ("K-Tower שדרות ירושלים 18 אשדוד, ים, 7752311"): the Hebrew words of each part stay, Latin
   // words, the postal code and the city inside a part go; a Hebrew street (a number or a street type word)
   // is kept as the street, other Hebrew parts are details.
-  const esc = city.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const hebrewParts = [...new Set(parts
     .filter(p => HEBREW.test(p))
-    .map(p => p.replace(/[A-Za-z][A-Za-z'’.&-]*/g, ' ').replace(/\s+/g, ' ').replace(new RegExp(`(?:^|\\s)${esc}(?=\\s|$)`, 'u'), ' ').replace(/^[\s,.\-]+|[\s,.\-]+$/g, '').trim())
+    .map(p => stripCities(p.replace(/[A-Za-z][A-Za-z'’.&-]*/g, ' ').replace(/\s+/g, ' ')).replace(/\s+/g, ' ').replace(/^[\s,.\-]+|[\s,.\-]+$/g, '').trim())
     .filter(p => p && !isCity(p) && !POSTAL.test(p)))];
   const streetLike = (p: string) => /\d/.test(p) || /^(?:רחוב|רח['׳]|דרך|שדרות|שד['׳]|סמטת|כיכר|כביש)\s/u.test(p);
   const hebrewStreetPart = hebrewParts.find(streetLike);

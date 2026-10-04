@@ -47,6 +47,9 @@ describe('hebrew addresses', () => {
     assert.equal(r.cityMismatch, true);
     assert.equal(r.googleCity, 'גן יבנה');
     assert.equal(r.city, 'גן יבנה');
+    // A quarter Google read as the locality from a business-supplied line is not a mismatch when the formatted address names the stored city.
+    const q = composeHebrewAddress({ formatted: 'הצוללים 5 אשדוד, ים', route: null, streetNumber: null, locality: 'ים', postalCode: null, premise: null, subpremise: null }, 'הצוללים 5 אשדוד, ים', 'אשדוד');
+    assert.deepEqual([q.address, q.cityMismatch, q.source], ['הצוללים 5, אשדוד', false, 'original']);
     assert.ok(cityMatches('תל אביב', 'תל אביב-יפו'));
     assert.ok(cityMatches('תל אביב–יפו', 'תל אביב-יפו'));
     assert.ok(!cityMatches('אשדוד', 'גן יבנה'));
