@@ -151,10 +151,19 @@ async function main() {
 
   if (from) {
     if (!confirm) throw new Error('--from needs --confirm');
-    const rows: Row[] = readCsv(from).map(r => ({
-      branchId: r.branch_id, name: r.name, city: r.city, claimed: r.claimed === 'yes', placeId: r.place_id, before: r.address_before, after: r.address_after,
-      source: r.source as AddressSource, postalCode: r.postal_code, googleFormatted: r.google_formatted, action: r.action as Action, problems: r.problems_after ? r.problems_after.split(' | ') : [], url: r.public_url,
-    }));
+    // Google rows are applied as proposed; dictionary and city-only rows are composed again with the current
+    // rules (no Google call), so a fix to the composer reaches them without another paid dry run.
+    const rows: Row[] = readCsv(from).map(r => {
+      const fallback = r.action === 'apply' && (r.source === 'dictionary' || r.source === 'city_only');
+      const re = fallback ? composeHebrewAddress(null, r.address_before, r.city) : null;
+      const after = re ? re.address : r.address_after;
+      const source = re ? re.source : (r.source as AddressSource);
+      const action: Action = re && after === r.address_before.trim() ? 'unchanged' : (r.action as Action);
+      return {
+        branchId: r.branch_id, name: r.name, city: r.city, claimed: r.claimed === 'yes', placeId: r.place_id, before: r.address_before, after,
+        source, postalCode: r.postal_code, googleFormatted: r.google_formatted, action, problems: addressProblems(after), url: r.public_url,
+      };
+    });
     const n = await apply(rows, from);
     writeCsv(out, HEADER, rows.map(r => [r.branchId, r.name, r.city, r.claimed ? 'yes' : 'no', r.placeId, r.before, r.after, r.source, r.postalCode, r.googleFormatted, r.action, r.problems.join(' | '), r.url]));
     console.log(`APPLIED ${n} addresses from ${from}. Undo: npm run import:hebrew-addresses -- --revert ${out}`);

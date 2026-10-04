@@ -45,6 +45,9 @@ describe('hebrew addresses', () => {
     assert.deepEqual(composeHebrewAddress(null, 'K-Tower שדרות ירושלים 18 אשדוד, ים, 7752311', 'אשדוד'), { address: 'שדרות ירושלים 18, אשדוד', postalCode: null, source: 'dictionary' });
     assert.equal(composeHebrewAddress(null, 'גן העיר, Ha-Gdud ha-Ivri St 5, Ashdod, 7745511', 'אשדוד').address, 'אשדוד');
     assert.equal(composeHebrewAddress(null, 'Herzl St 5, קניון הסיטי, Netanya', 'נתניה').address, 'רחוב הרצל 5, קניון הסיטי, נתניה');
+    // A Latin city name alone, or an address in another script, is never read as a street.
+    assert.deepEqual(composeHebrewAddress(null, 'Haifa', 'חיפה'), { address: 'חיפה', postalCode: null, source: 'city_only' });
+    assert.deepEqual(composeHebrewAddress(null, 'جادة موريا 100, Haifa', 'חיפה'), { address: 'חיפה', postalCode: null, source: 'city_only' });
   });
 
   it('keeps floor and building details only', () => {

@@ -239,13 +239,19 @@ export function composeHebrewAddress(google: GoogleAddress | null, original: str
     const details = hebrewParts.filter(p => p !== hebrewStreetPart && DETAIL_WORDS.test(p));
     return { address: [hebrewStreetPart, ...details, city].join(', '), postalCode: null, source: 'dictionary' };
   }
-  const dict = hebrewAddress(cleaned.split(/\s*,\s*/).filter(p => !HEBREW.test(p)).join(', '), city);
+  // The Latin parts go to the dictionary, except a city or country name (never a street) and a part in
+  // another script (Arabic, Cyrillic) the dictionary cannot read.
+  const latinParts = cleaned.split(/\s*,\s*/).filter(p => !HEBREW.test(p) && /[A-Za-z]/.test(p) && !isLatinCity(p));
+  const dict = hebrewAddress(latinParts.join(', '), city);
   if (dict && dict !== city) {
     const details = [...addressDetails(cleaned, city, null), ...hebrewParts.filter(p => DETAIL_WORDS.test(p))];
     return { address: [streetLine(dict, city), ...new Set(details), city].filter(Boolean).join(', '), postalCode: null, source: 'dictionary' };
   }
   return { address: city, postalCode: null, source: 'city_only' };
 }
+
+/** True when the whole part is a city or country name in Latin letters ("Haifa", "Tel Aviv", "Israel"). */
+const isLatinCity = (part: string) => LATIN_CITIES.has(part.toLowerCase().replace(/[^a-z\s]/g, '').replace(/\s+/g, ' ').trim());
 
 const LATIN_CITIES = new Set([...CITIES.flatMap(c => [c.slug.replace(/-/g, ' '), c.slug.replace(/-/g, '')]), 'israel', 'tel aviv', 'telaviv', 'jerusalem', 'haifa', 'beersheba', 'beer sheva', 'netanya', 'ashdod', 'eilat', 'petah tikva', 'rishon lezion', 'holon', 'ramat gan', 'bat yam', 'herzliya', 'kfar saba', 'raanana', 'nahariya', 'acre', 'akko', 'tiberias', 'nazareth', 'afula', 'modiin', 'rehovot', 'ashkelon', 'hadera', 'lod', 'ramla', 'bnei brak', 'givatayim', 'yavne', 'nes ziona', 'kiryat ono', 'hod hasharon', 'rosh haayin', 'beit shemesh', 'kiryat gat', 'dimona', 'sderot', 'ofakim', 'arad', 'kiryat ata', 'kiryat bialik', 'kiryat motzkin', 'kiryat yam', 'nesher', 'tirat carmel', 'karmiel', 'safed', 'tzfat', 'kiryat shmona', 'migdal haemek', 'beit shean', 'yokneam', 'zichron yaakov', 'pardes hanna', 'or akiva', 'binyamina']);
 
