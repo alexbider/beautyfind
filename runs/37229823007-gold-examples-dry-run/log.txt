@@ -1,0 +1,4 @@
+9c7c2244-996d-45b2-88a2-9160cd872e80 ד״ר מנאר קעואר - מומחה בכירורגיה פלסטית ואסתטית: tier=rich words=203 faqs=6 services=23
+80be9c7f-a966-4f2c-9309-97bbbb8fa10b Batya Care & Beauty Institute: tier=normal words=82 faqs=4 services=2
+2ccbad7e-ae74-4814-afcb-89d1d6d34d30 Grace Cosmetology Nahariya: tier=sparse words=51 faqs=4 services=3
+WROTE 3 example(s): reports/gold-examples.json
