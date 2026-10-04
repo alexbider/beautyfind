@@ -1,0 +1,53 @@
+by rule:
+  3542  missing_info
+  3231  record
+  1345  latin
+   370  spelling
+   329  address
+    55  dash
+     2  emoji
+most frequent matches:
+   702  missing_info:במקורות
+   556  missing_info:לא פורסמו
+   477  missing_info:לא פורסם
+   320  missing_info:לא צוינו
+   269  latin:St
+   266  address:St
+   255  record:מציין
+   230  record:מצוין
+   228  missing_info:שסופק
+   220  missing_info:המידע הזמין
+   216  missing_info:אין פירוט
+   201  record:אין פירוט
+   191  record:מופיעים
+   183  spelling:מצויין
+   181  record:מופיע
+   168  record:ברשומות
+   121  record:מציינת
+   113  missing_info:בעמוד העסק
+   108  missing_info:לא נמסר
+   107  missing_info:אין מידע
+   107  spelling:ווטסאפ
+   106  record:הרשומה
+    93  record:נרשמה
+    88  record:המצוינת
+    85  record:מופיעה
+SUMMARY scanned=816 failing=811 text_rules=740 older_prompt=109 rewrite=808 needs_import_record=0 skipped_claimed=0 skipped_approved=0 skipped_reference=3 tiers(rewrite): sparse=247 normal=418 rich=143 csv=reports/description-cleanup.csv
+QUEUED 17 rewrite runs for 808 listings:
+  npm run import:work -- --run 61d6e2c3-4522-455d-91e2-03f70bb6d940
+  npm run import:work -- --run 8b434d59-a788-4518-8841-58697a42fff5
+  npm run import:work -- --run f6a33ba2-172c-43d3-8ac3-e55257acb961
+  npm run import:work -- --run 3e3b4598-a251-4d09-936a-783c9862b238
+  npm run import:work -- --run a75d321d-239d-45cd-a00c-08ba7008fe1d
+  npm run import:work -- --run 3c9bfc59-a76d-476f-822b-ba12d0bafc81
+  npm run import:work -- --run a9efe6ba-57e2-4b2f-bbd3-7a1fe8995e01
+  npm run import:work -- --run 03c75d4c-3767-4e1b-8e57-eacb372c487d
+  npm run import:work -- --run 83d27e7b-52ca-4390-b4c8-26f528fb0f0f
+  npm run import:work -- --run a1df2c9c-24be-4708-9ec1-404612000672
+  npm run import:work -- --run 180f29b9-b23d-48bb-b3f1-da82d37b06fe
+  npm run import:work -- --run dc4e9af4-3dc8-4fca-8d8b-37088746fd98
+  npm run import:work -- --run 92bd2b6b-77c8-4982-b7ac-72b020d0e34c
+  npm run import:work -- --run 9b57f175-a11e-4936-b584-81df700eaff2
+  npm run import:work -- --run 197b8c80-9d17-4a22-8097-b25a3931c6ff
+  npm run import:work -- --run 0fdb94de-ce39-432b-a012-97aef6851735
+  npm run import:work -- --run 25ff9788-094d-4399-9f17-610c0baac369
