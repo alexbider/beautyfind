@@ -1,0 +1,20 @@
+run e511e0db-795a-44e6-9507-51766903e7c6 "ניקוי תיאורים 1/1" status=done started=2026-10-04T07:59:55.281Z finished=2026-10-04T08:12:56.967Z
+counters: {"improved":4,"filled_faqs":4,"editorialCalls":10,"nothing_to_add":6,"youtubeRequests":0,"editorial_written":10,"filled_description":4}
+listings in scope: 10, import records: 10, drafts written in this run: 10
+by model: claude-sonnet-5: 10
+by tier: rich: 4, sparse: 3, normal: 3
+proofread: yes: 6, no: 4
+by error: (none): 10
+words: min 18, median 215, max 393
+cost recorded on the records: 1.059 USD
+  claude-sonnet-5  rich   words= 375 faqs= 7 pr=yes | fbf7b660-ab28-41a7-9061-b21e2685803e Ruchla Cosmetics
+  claude-sonnet-5  rich   words= 393 faqs= 6 pr=yes | 9c7c2244-996d-45b2-88a2-9160cd872e80 ד״ר מנאר קעואר - מומחה בכירורגיה פלסטית 
+  claude-sonnet-5  sparse words=  18 faqs= 3 pr=yes violations=faq_length:היכן נמצא העסק | meta:short:88 | ad544cb8-7e77-4524-9640-0befa25de827 L&Y beauty lab
+  claude-sonnet-5  normal words= 196 faqs= 7 pr=no violations=short:196 | meta:short:122 | 428b9c2b-b87d-4cb3-82d5-83d155ae79c1 ARcosmetolog
+  claude-sonnet-5  normal words= 167 faqs= 5 pr=no violations=short:167 | meta:short:106 | 14e6f29b-d0e6-4733-bca8-8f0541f268fe Barak clinic - קליניקה לאסתטיקה מתקדמת ב
+  claude-sonnet-5  rich   words= 333 faqs= 8 pr=no violations=short:333 | 9f0933ee-94c6-42cd-b69c-d61d71d5bf37 Salon boutique Paradise
+  claude-sonnet-5  normal words= 215 faqs= 6 pr=no violations=short:215 | 80be9c7f-a966-4f2c-9309-97bbbb8fa10b Batya Care & Beauty Institute
+  claude-sonnet-5  rich   words= 362 faqs= 7 pr=yes | b00a083f-d8a8-4b23-84c4-f76e955d1576 ד"ר רוני מוסקונה - מרפאות ניתוחים פלסטיי
+  claude-sonnet-5  sparse words= 164 faqs= 4 pr=yes | 2ccbad7e-ae74-4814-afcb-89d1d6d34d30 Grace Cosmetology Nahariya
+  claude-sonnet-5  sparse words=  45 faqs= 5 pr=yes | b5afada9-287f-47af-9a19-2bbd854a7400 BEAUTY OSK
+CSV: reports/editorial-report.csv
