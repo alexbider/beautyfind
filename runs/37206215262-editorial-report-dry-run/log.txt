@@ -1,0 +1,20 @@
+run 7bbb8458-dbd4-4f56-96b4-14aa5d7c9485 "ניקוי תיאורים 1/1" status=done started=2026-10-04T13:24:52.162Z finished=2026-10-04T13:35:44.883Z
+counters: {"improved":8,"filled_faqs":8,"editorialCalls":10,"nothing_to_add":2,"youtubeRequests":0,"editorial_failed":1,"editorial_written":9,"filled_description":8}
+listings in scope: 10, import records: 10, drafts written in this run: 10
+by model: claude-sonnet-5: 9, template: 1
+by tier: normal: 4, sparse: 3, rich: 3
+proofread: yes: 9, no: 1
+by error: (none): 9, unsupported_claims: ניתוח להחלפת שתלים קיימים בחזה, עבור מי : 1
+words: min 26, median 89, max 215
+cost recorded on the records: 0.938 USD
+  claude-sonnet-5  sparse words=  26 faqs= 3 pr=yes | ad544cb8-7e77-4524-9640-0befa25de827 L&Y beauty lab
+  claude-sonnet-5  sparse words=  62 faqs= 5 pr=yes | 428b9c2b-b87d-4cb3-82d5-83d155ae79c1 ARcosmetolog
+  claude-sonnet-5  normal words=  75 faqs= 5 pr=yes violations=meta:long:158 | 388a5b73-0aed-4fea-9b38-a28b0b4b0aaa Glamur G_B
+  claude-sonnet-5  normal words=  99 faqs= 7 pr=yes | f5f9510a-f30f-4fda-ac5d-ed82c839117e Epilution Haifa | Салон красоты | Beauty
+  template         rich   words= 157 faqs= 5 pr=no error=unsupported_claims: ניתוח להחלפת שתלים קיימים בחזה, עבור מי שעבר כבר ניתוח קודם; ניתוח לתי | 1b021794-8031-4d50-9e8b-9d4d275f483d Clinic Dr. Eran Bar-Meir
+  claude-sonnet-5  normal words=  78 faqs= 5 pr=yes | caa416ae-8f10-4aee-ac00-d5f35227bbd0 Lilac Saturn cosmetics and eyebrow shapi
+  claude-sonnet-5  rich   words= 215 faqs= 7 pr=yes | e7a7ede1-2590-4d64-9f3f-ce0893975d6d פרו אסתטיקס טיפולים אסתטיים מתקדמים צפת
+  claude-sonnet-5  normal words=  89 faqs= 5 pr=yes | 14e6f29b-d0e6-4733-bca8-8f0541f268fe Barak clinic - קליניקה לאסתטיקה מתקדמת ב
+  claude-sonnet-5  rich   words= 193 faqs= 6 pr=yes | 7fe75393-c4ab-4f02-90ce-af04fb37f700 קוסמטיקאית Genin cosmotology
+  claude-sonnet-5  sparse words=  42 faqs= 4 pr=yes violations=meta:long:161 | b5afada9-287f-47af-9a19-2bbd854a7400 BEAUTY OSK
+CSV: reports/editorial-report.csv
