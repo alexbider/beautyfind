@@ -1,0 +1,20 @@
+run ee727c37-60f1-4591-b68e-a4c756a93bc0 "ניקוי תיאורים 1/1" status=done started=2026-10-04T13:11:20.607Z finished=2026-10-04T13:20:54.109Z
+counters: {"improved":10,"filled_faqs":5,"editorialCalls":10,"youtubeRequests":0,"editorial_failed":1,"editorial_written":9,"filled_description":5,"filled_meta_title_cleared":4,"filled_meta_description_cleared":10}
+listings in scope: 10, import records: 10, drafts written in this run: 10
+by model: claude-sonnet-5: 9, template: 1
+by tier: normal: 4, sparse: 3, rich: 3
+proofread: yes: 9, no: 1
+by error: (none): 9, unsupported_claims: המיועד למצבים שבהם יש הבדל בולט בצורה או: 1
+words: min 26, median 87, max 228
+cost recorded on the records: 0.785 USD
+  claude-sonnet-5  sparse words=  26 faqs= 3 pr=yes | ad544cb8-7e77-4524-9640-0befa25de827 L&Y beauty lab
+  claude-sonnet-5  sparse words=  69 faqs= 5 pr=yes | 428b9c2b-b87d-4cb3-82d5-83d155ae79c1 ARcosmetolog
+  claude-sonnet-5  normal words= 113 faqs= 7 pr=yes violations=meta:short:126 | f5f9510a-f30f-4fda-ac5d-ed82c839117e Epilution Haifa | Салон красоты | Beauty
+  template         rich   words= 157 faqs= 5 pr=no error=unsupported_claims: המיועד למצבים שבהם יש הבדל בולט בצורה או בגודל בין שני הצדדים; מתיחת פ | 1b021794-8031-4d50-9e8b-9d4d275f483d Clinic Dr. Eran Bar-Meir
+  claude-sonnet-5  normal words=  84 faqs= 5 pr=yes | 388a5b73-0aed-4fea-9b38-a28b0b4b0aaa Glamur G_B
+  claude-sonnet-5  normal words=  76 faqs= 5 pr=yes | caa416ae-8f10-4aee-ac00-d5f35227bbd0 Lilac Saturn cosmetics and eyebrow shapi
+  claude-sonnet-5  rich   words= 228 faqs= 6 pr=yes violations=repeat:address | e7a7ede1-2590-4d64-9f3f-ce0893975d6d פרו אסתטיקס טיפולים אסתטיים מתקדמים צפת
+  claude-sonnet-5  normal words=  87 faqs= 5 pr=yes | 14e6f29b-d0e6-4733-bca8-8f0541f268fe Barak clinic - קליניקה לאסתטיקה מתקדמת ב
+  claude-sonnet-5  rich   words= 211 faqs= 6 pr=yes violations=repeat:address | 7fe75393-c4ab-4f02-90ce-af04fb37f700 קוסמטיקאית Genin cosmotology
+  claude-sonnet-5  sparse words=  42 faqs= 4 pr=yes violations=meta:long:166 | b5afada9-287f-47af-9a19-2bbd854a7400 BEAUTY OSK
+CSV: reports/editorial-report.csv
