@@ -87,8 +87,8 @@ export function Services({ groups, contact = true, bookHref, medical }: { groups
                 </span>
               </button>
             </h3>
-            {on && (
-              <div id={panelId} className={styles.panel}>
+            {/* The panel is in the server HTML (hidden until opened) so the services and the medical disclaimer read without JavaScript. */}
+            <div id={panelId} className={styles.panel} hidden={!on}>
                 <ul className={styles.rows}>
                   {g.items.map(t => (
                     <li key={t.id} className={styles.row} data-unknown={t.price.kind === 'unknown' || undefined}>
@@ -127,8 +127,7 @@ export function Services({ groups, contact = true, bookHref, medical }: { groups
                     {g.medical ? (contact ? 'פנייה לתיאום ייעוץ רפואי' : 'בקשת ייעוץ') : contact ? 'פנייה לעסק על הטיפול' : 'בירור זמינות'}
                   </ContactTrigger>
                 </div>
-              </div>
-            )}
+            </div>
           </article>
         );
       })}
