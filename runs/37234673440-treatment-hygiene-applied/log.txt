@@ -1,0 +1,9 @@
+Published treatments: 7265. Flagged: 247.
+  product: 102
+  package: 102
+  function_word: 22
+  sentence: 14
+  trailing_comma: 7
+To hide (sentence + article): 14, on unclaimed listings: 14, on claimed listings (kept): 0.
+UNPUBLISHED 14 records on 10 listings. Undo list: reports/treatment-hygiene-unpublished.csv (npm run import:treatment-hygiene -- --republish reports/treatment-hygiene-unpublished.csv).
+CSV: reports/treatment-hygiene.csv (233 rows)
