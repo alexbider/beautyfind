@@ -113,21 +113,21 @@ export default async function ReviewsPage() {
 
         <div className={`${s.card} ${s.google}`}>
           <div className={s.googleMain}>
-            <h2 className={s.h2Tight}>דירוג Google</h2>
-            <p className={s.scale}>מוצג בפרופיל לצד ביקורות BeautyFind ואינו משוקלל איתן. מענה לביקורות Google נעשה ב־Google עצמו.</p>
+            <h2 className={s.h2Tight}>דירוג בגוגל</h2>
+            <p className={s.scale}>מוצג בפרופיל לצד ביקורות BeautyFind ואינו משוקלל איתן. מענה לביקורות Google נעשה בגוגל עצמו.</p>
           </div>
           {g.rating !== null ? (
             <div className={s.googleNums}>
-              <span className={s.googleVal} aria-label={`דירוג Google: ${g.rating.toFixed(1)} מתוך 5`}>
+              <span className={s.googleVal} aria-label={`דירוג בגוגל: ${g.rating.toFixed(1)} מתוך 5`}>
                 <span className="ltr">{g.rating.toFixed(1)}<small> / 5</small></span>
               </span>
               <span className={s.googleMeta}>
-                {g.count !== null && <><span className="ltr tnum">{g.count.toLocaleString('en-US')}</span> ביקורות ב־Google</>}
+                {g.count !== null && <><span className="ltr tnum">{g.count.toLocaleString('en-US')}</span> ביקורות בגוגל</>}
                 {g.synced && <>{g.count !== null && ' · '}סונכרן <span className="ltr">{fmtDate(g.synced)}</span></>}
               </span>
               {g.url && (
                 <a href={g.url} target="_blank" rel="noopener noreferrer" className={s.outlineLink}>
-                  לביקורות ב־Google
+                  לביקורות בגוגל
                   <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M5 3H3v8h8V9M8 2h4v4M12 2 6.5 7.5" />
                   </svg>

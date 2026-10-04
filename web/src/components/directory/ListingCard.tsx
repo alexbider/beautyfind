@@ -93,7 +93,7 @@ export function ListingCard({ c, delayIndex }: { c: DirectoryCard; delayIndex: n
           {c.google && (
             <span className={styles.rating}>
               <span className={styles.source}>Google</span>
-              <span dir="ltr" role="img" aria-label={`דירוג Google ${c.google.rating.toFixed(1)} מתוך 5, ${fmtNum(c.google.count)} ביקורות`} className={styles.stars}>
+              <span dir="ltr" role="img" aria-label={`דירוג בגוגל ${c.google.rating.toFixed(1)} מתוך 5, ${fmtNum(c.google.count)} ביקורות`} className={styles.stars}>
                 <StarRow fill="#DADCE0" />
                 <span className={styles.starsFill} style={{ width: `${Math.round((c.google.rating / 5) * 100)}%` }}>
                   <StarRow fill="#FBBC04" />
@@ -127,14 +127,14 @@ export function ListingCard({ c, delayIndex }: { c: DirectoryCard; delayIndex: n
           {medicalLabel && <span className={`${styles.chip} ${styles.chipMedical}`}>{MEDICAL_LABEL}</span>}
           {c.priceFromShekels != null && (
             <span className={styles.chip}>
-              החל מ־<span className="ltr">₪{fmtNum(c.priceFromShekels)}</span>
+              החל מ־<span className="ltr">{fmtNum(c.priceFromShekels)} ₪</span>
             </span>
           )}
         </div>
 
         {c.priceFromShekels != null && (
           <p className={`${styles.phoneFrom} bf-shell-only`}>
-            החל מ־<span className="ltr">₪{fmtNum(c.priceFromShekels)}</span>, {VAT_LABEL}
+            החל מ־<span className="ltr">{fmtNum(c.priceFromShekels)} ₪</span>, {VAT_LABEL}
           </p>
         )}
         <CardActions branchId={c.id} name={c.name} href={c.href} whatsapp={c.whatsapp} phone={c.phone} className={`${styles.phoneActions} bf-shell-only`} />

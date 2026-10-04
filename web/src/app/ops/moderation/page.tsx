@@ -28,7 +28,7 @@ export default async function ModerationPage({ searchParams }: { searchParams: S
 
   return (
     <AdminShell user={user}>
-      <PageHead eyebrow="תפעול" title="ביקורות" lead="ביקורות מתפרסמות רק אחרי שאדם קרא אותן. דירוג Google ודירוג BeautyFind מוצגים זה לצד זה, לעולם לא מאוחדים." />
+      <PageHead eyebrow="תפעול" title="ביקורות" lead="ביקורות מתפרסמות רק אחרי שאדם קרא אותן. דירוג בגוגל ודירוג BeautyFind מוצגים זה לצד זה, לעולם לא מאוחדים." />
       <Kpis
         items={[
           { label: 'ממתינות לפרסום', value: int(counts.submitted), note: 'לפי סדר הגעה', tone: counts.submitted ? 'warn' : undefined },

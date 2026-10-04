@@ -40,7 +40,7 @@ export const TEMPLATE_FIELDS: Array<{ key: string; label: string; ok: (p: Templa
   { key: 'categories', label: 'תחומים', ok: p => p.categories.length > 0 },
   { key: 'services', label: 'טיפולים', ok: p => Array.isArray(p.treatments) && p.treatments.length > 0 },
   { key: 'prices', label: 'מחירים', ok: p => Array.isArray(p.treatments) && (p.treatments as ImportedTreatment[]).some(t => t.priceNis != null) },
-  { key: 'rating', label: 'דירוג Google', ok: p => p.googleRating != null },
+  { key: 'rating', label: 'דירוג בגוגל', ok: p => p.googleRating != null },
   { key: 'accessible', label: 'נגישות', ok: p => p.accessible != null },
   { key: 'parking', label: 'חניה', ok: p => p.freeParking != null },
   { key: 'faqs', label: 'שאלות נפוצות', ok: p => Array.isArray(p.faqs) && p.faqs.length > 0 },
@@ -63,6 +63,6 @@ export function composeDescription(p: { name: string; cityName: string | null; c
   const parts = [`${p.name} הוא עסק בתחום ${cats.slice(0, 3).join(', ')}${where}.`];
   const names = (Array.isArray(p.treatments) ? (p.treatments as ImportedTreatment[]) : []).map(t => t.name).filter(Boolean);
   if (names.length) parts.push(`בין השירותים: ${names.slice(0, 5).join(', ')}${names.length > 5 ? ' ועוד' : ''}.`);
-  if (p.googleRating != null && (p.googleReviewCount ?? 0) > 0) parts.push(`דירוג ${p.googleRating.toFixed(1)} ב־Google על סמך ${p.googleReviewCount} ביקורות.`);
+  if (p.googleRating != null && (p.googleReviewCount ?? 0) > 0) parts.push(`דירוג ${p.googleRating.toFixed(1)} בגוגל על סמך ${p.googleReviewCount} ביקורות.`);
   return parts.join(' ');
 }

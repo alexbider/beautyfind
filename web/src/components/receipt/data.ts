@@ -61,7 +61,7 @@ const PURPOSE: Record<PaymentPurpose, string> = {
 
 /** ₪1,234.50 from agorot (documents show agorot). */
 export const money = (agorot: number, neg = false) =>
-  (neg ? '−' : '') + '₪' + (Math.abs(agorot) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  (neg ? '−' : '') + (Math.abs(agorot) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₪';
 
 const vatPct = (net: number, vat: number) => (net > 0 ? Math.round((vat / net) * 100) : 18);
 const ddmm = (d: Date) => ilDate(d).slice(0, 5);

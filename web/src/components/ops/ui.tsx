@@ -169,9 +169,9 @@ export function nisAgorot(agorot: number, opts: { cents?: boolean } = {}): strin
   const abs = Math.abs(agorot);
   const cents = opts.cents ?? abs % 100 !== 0;
   const v = (abs / 100).toLocaleString('en-US', { minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: 2 });
-  return `${agorot < 0 ? '−' : ''}₪${v}`;
+  return `${agorot < 0 ? '−' : ''}${v} ₪`;
 }
-export const nisWhole = (nis: number) => `${nis < 0 ? '−' : ''}₪${Math.round(Math.abs(nis)).toLocaleString('en-US')}`;
+export const nisWhole = (nis: number) => `${nis < 0 ? '−' : ''}${Math.round(Math.abs(nis)).toLocaleString('en-US')} ₪`;
 export const pct = (v: number, digits = 1) => `${v.toLocaleString('en-US', { maximumFractionDigits: digits })}%`;
 export const int = (v: number) => v.toLocaleString('he-IL');
 

@@ -74,7 +74,7 @@ export function BizCard({ card, meta, contact, size = 92, index = 0 }: { card: L
 
         {card.google ? (
           <div className={styles.ratingRow}>
-            <PartialStars rating={card.google.rating} label={`דירוג Google ${card.google.rating.toFixed(1)} מתוך 5, ${fmtInt(card.google.count)} ביקורות`} />
+            <PartialStars rating={card.google.rating} label={`דירוג בגוגל ${card.google.rating.toFixed(1)} מתוך 5, ${fmtInt(card.google.count)} ביקורות`} />
             <span className={`${styles.score} ltr tnum`}>{card.google.rating.toFixed(1)}</span>
             <span className={styles.reviews}>
               (<span className="ltr tnum">{fmtInt(card.google.count)}</span>) · Google

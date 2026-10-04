@@ -226,7 +226,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
 
         {bench ? (
           <div className={ui.card}>
-            <h2 className={ui.h2Tight}>אתם מול המחיר האמצעי באזור</h2>
+            <h2 className={ui.h2Tight}>אתם מול המחיר הממוצע באזור</h2>
             <p className={ui.metaGap} style={{ marginBottom: 18 }}>
               <span className="ltr">{nf(bench.peers)}</span> סניפים נוספים בתחום {bench.categoryName} ב{bench.regionName} · {RANGE_TITLE[range]}
             </p>
@@ -234,9 +234,9 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
               {bench.rows.map(b => {
                 const top = Math.max(1, b.you, b.med);
                 const better = b.higherIsBetter ? b.you >= b.med : b.you <= b.med;
-                const verdict = b.you === b.med ? 'בדיוק במחיר האמצעי' : better ? 'מעל המחיר האמצעי באזור' : 'מתחת למחיר האמצעי באזור';
+                const verdict = b.you === b.med ? 'בדיוק במחיר הממוצע' : better ? 'מעל המחיר הממוצע באזור' : 'מתחת למחיר הממוצע באזור';
                 return (
-                  <li key={b.key} className={a.benchRow} aria-label={`${b.name}: אתם ${nf(b.you)}, המחיר האמצעי ${nf(b.med)}. ${verdict}`}>
+                  <li key={b.key} className={a.benchRow} aria-label={`${b.name}: אתם ${nf(b.you)}, המחיר הממוצע ${nf(b.med)}. ${verdict}`}>
                     <span className={a.benchName}>{b.name}</span>
                     <span className={a.benchBars} aria-hidden="true">
                       <span className={a.benchLine}>
@@ -259,7 +259,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
             </ul>
             <div className={a.benchKey} aria-hidden="true">
               <span><i style={{ background: '#0B7A87' }} />אתם</span>
-              <span><i style={{ background: '#D4D4D4' }} />המחיר האמצעי באזור</span>
+              <span><i style={{ background: '#D4D4D4' }} />המחיר הממוצע באזור</span>
             </div>
           </div>
         ) : null}
@@ -296,7 +296,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           </div>
 
           <div className={ui.card}>
-            <h2 className={ui.h2Tight}>דירוג Google</h2>
+            <h2 className={ui.h2Tight}>דירוג בגוגל</h2>
             <p className={ui.metaGap}>מסתנכרן פעם בשבוע ומוצג בנפרד, בלי שקלול עם ביקורות BeautyFind.</p>
             {googleBranches.length ? (
               <ul className={a.google}>
@@ -305,7 +305,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
                     <span className={a.googleName}>
                       {b.name}
                       <span className={a.googleMeta}>
-                        {b.googleReviewCount != null ? <><Count n={b.googleReviewCount} {...REVIEWS} /> ב־Google</> : 'מספר הביקורות לא סונכרן'}
+                        {b.googleReviewCount != null ? <><Count n={b.googleReviewCount} {...REVIEWS} /> בגוגל</> : 'מספר הביקורות לא סונכרן'}
                         {b.googleSyncedAt ? <> · עודכן <span className="ltr">{dateIL(b.googleSyncedAt)}</span></> : null}
                       </span>
                     </span>
@@ -314,7 +314,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
                 ))}
               </ul>
             ) : (
-              <p className={ui.emptyInline}>עדיין לא סונכרן דירוג Google לסניפים שלכם. הוא יופיע כאן אחרי הסנכרון השבועי הראשון.</p>
+              <p className={ui.emptyInline}>עדיין לא סונכרן דירוג בגוגל לסניפים שלכם. הוא יופיע כאן אחרי הסנכרון השבועי הראשון.</p>
             )}
           </div>
         </div>

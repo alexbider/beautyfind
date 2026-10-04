@@ -139,7 +139,7 @@ export function ReceiptView({ data }: { data: ReceiptData }) {
 
 /** Wraps digits, prices, card masks, refs and date runs in LTR spans inside Hebrew text. */
 function Bidi({ text }: { text: string }) {
-  const parts = text.split(/((?:−?₪[\d,.]+)|(?:•••• ?\d{4})|(?:\d[\d/.:,–-]*\d|\d))/g);
+  const parts = text.split(/((?:−?[\d,.]+ ₪)|(?:•••• ?\d{4})|(?:\d[\d/.:,–-]*\d|\d))/g);
   return (
     <>
       {parts.map((p, i) =>

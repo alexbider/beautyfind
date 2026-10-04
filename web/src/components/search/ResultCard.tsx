@@ -102,7 +102,7 @@ export function ResultCard({ card: c, extra, index, delay, query }: { card: List
           {c.google ? (
             <>
               <span className={s.src}>Google</span>
-              <PartialStars rating={c.google.rating} label={`דירוג Google ${c.google.rating.toFixed(1)} מתוך 5, ${c.google.count} ביקורות`} />
+              <PartialStars rating={c.google.rating} label={`דירוג בגוגל ${c.google.rating.toFixed(1)} מתוך 5, ${c.google.count} ביקורות`} />
               <span className={`${s.rating} ltr`}>{c.google.rating.toFixed(1)}</span>
               <span className={`${s.reviews} ltr`}>({c.google.count.toLocaleString('en-US')})</span>
             </>

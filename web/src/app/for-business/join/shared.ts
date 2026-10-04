@@ -74,7 +74,7 @@ export const DEFAULT_HOURS: HoursRow[] = [
 
 const norm = (s: string) => s.replace(/[\s\-–־'"״׳]/g, '');
 
-/** Catalog city for a typed name. Also accepts the short form, e.g. "תל אביב" for "תל אביב–יפו". */
+/** Catalog city for a typed name. Also accepts the short form, e.g. "תל אביב" for "תל אביב-יפו". */
 export function matchCity(typed: string): City | undefined {
   const t = norm(typed);
   if (!t) return undefined;

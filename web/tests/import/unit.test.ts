@@ -527,7 +527,7 @@ describe('template fields', () => {
   });
   it('composes a factual description from the record only', () => {
     const d = composeDescription({ name: 'סלון נועה', cityName: 'חיפה', categories: ['nails', 'brows-lashes'], treatments: [{ name: 'מניקור' }, { name: 'הרמת ריסים' }], googleRating: 4.8, googleReviewCount: 52 });
-    assert.equal(d, 'סלון נועה הוא עסק בתחום ציפורניים, מניקור ופדיקור, גבות וריסים בחיפה. בין השירותים: מניקור, הרמת ריסים. דירוג 4.8 ב־Google על סמך 52 ביקורות.');
+    assert.equal(d, 'סלון נועה הוא עסק בתחום ציפורניים, מניקור ופדיקור, גבות וריסים בחיפה. בין השירותים: מניקור, הרמת ריסים. דירוג 4.8 בגוגל על סמך 52 ביקורות.');
     assert.equal(composeDescription({ name: 'X', cityName: null, categories: [], treatments: [], googleRating: null, googleReviewCount: null }), null);
   });
 });
@@ -598,7 +598,7 @@ describe('listing page title', async () => {
     assert.ok(nameSays('קוסמטיקה רפואית ד"ר לוי', 'קוסמטיקה וטיפולי פנים'));
     const t = listingTitle({ name: 'מספרת חיפה', city: 'חיפה', category: 'מספרות ועיצוב שיער' });
     assert.ok(!/חיפה.*חיפה/.test(t), t);
-    const long = listingTitle({ name: 'המרכז הבינלאומי לרפואה אסתטית ולכירורגיה פלסטית של פרופסור ישראלי', city: 'תל אביב–יפו', category: 'כירורגיה פלסטית' });
+    const long = listingTitle({ name: 'המרכז הבינלאומי לרפואה אסתטית ולכירורגיה פלסטית של פרופסור ישראלי', city: 'תל אביב-יפו', category: 'כירורגיה פלסטית' });
     assert.ok(`${long} | BeautyFind`.length <= 60, long);
     assert.ok(long.startsWith('המרכז הבינלאומי'), long);
     assert.ok(!long.includes('–'), 'titles use a plain hyphen for תל אביב-יפו');

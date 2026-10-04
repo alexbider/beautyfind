@@ -52,7 +52,7 @@ export default async function OverviewPage() {
                 { name: 'מנויים · רישום בסיסי', value: m.basicNis, display: nisWhole(m.basicNis) },
                 { name: 'מנויים · מתקדם + CRM', value: m.advancedNis, display: nisWhole(m.advancedNis) },
                 { name: 'מקומות ממומנים', value: thisMonth.sponsored / 100, display: nisAgorot(thisMonth.sponsored) },
-                { name: 'זיכויים', value: credits / 100, display: credits ? `−${nisAgorot(credits)}` : '₪0', tone: credits ? 'bad' : undefined },
+                { name: 'זיכויים', value: credits / 100, display: credits ? `−${nisAgorot(credits)}` : '0 ₪', tone: credits ? 'bad' : undefined },
               ]}
             />
             <p className={ui.hint} style={{ marginTop: 10 }}>המנויים לפי המחירון והסניפים החיים; ממומנים וזיכויים לפי מה שנגבה והופק החודש.</p>

@@ -48,7 +48,7 @@ export default async function SponsoredPage({ searchParams }: { searchParams: SP
             <Card><Empty title={filter === 'pending' ? 'אין מקומות ממומנים לבדיקה' : 'עוד לא הוזמנו מקומות ממומנים'} text="הזמנה חדשה נכנסת לכאן מהעסק או מהטופס בצד, ונבדקת לפני שהיא עולה." /></Card>
           )}
         </div>
-        <Card title="הזמנה ידנית" sub={`₪${int(s.sponsoredWeeklyNis)} לשבוע`}>
+        <Card title="הזמנה ידנית" sub={`${int(s.sponsoredWeeklyNis)} ₪ לשבוע`}>
           {canEdit ? (
             <OrderForm
               branches={branches.map(b => ({ id: b.id, name: b.name, cityName: b.cityName, regionSlug: b.regionSlug, categories: b.categories.sort((a, z) => Number(z.isPrimary) - Number(a.isPrimary)).map(c => c.categorySlug) }))}

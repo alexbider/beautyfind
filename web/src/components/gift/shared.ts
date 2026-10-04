@@ -20,7 +20,7 @@ export const CHANNELS: Array<{ key: Channel; name: string }> = [
 
 /** ₪1,200 or ₪495.60 from integer agorot. Keeps agorot only when there are any. */
 export const money = (agorot: number) =>
-  '₪' + (agorot / 100).toLocaleString('en-US', { minimumFractionDigits: agorot % 100 ? 2 : 0, maximumFractionDigits: 2 });
+  (agorot / 100).toLocaleString('en-US', { minimumFractionDigits: agorot % 100 ? 2 : 0, maximumFractionDigits: 2 }) + ' ₪';
 
 /** "noa-7k4m 29qx" → "NOA7K4M29QX": case-insensitive, dashes and spaces optional. */
 export const compactCode = (raw: string) => raw.toUpperCase().replace(/[^A-Z0-9]/g, '');

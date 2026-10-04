@@ -118,7 +118,7 @@ export const categoryName = (slug: string | null) => (slug ? categoryBySlug(slug
 
 export const placeName = (s: Pick<SearchState, 'city' | 'region'>) => cityName(s.city) ?? regionName(s.region) ?? 'ישראל';
 
-/** H1 and <title>: "הסרת שיער בחיפה", "בוטוקס בתל אביב–יפו", "מכוני יופי ואסתטיקה בישראל". */
+/** H1 and <title>: "הסרת שיער בחיפה", "בוטוקס בתל אביב-יפו", "מכוני יופי ואסתטיקה בישראל". */
 export function headline(s: SearchState): string {
   const what = s.q || categoryName(s.t);
   return what ? `${what} ב${placeName(s)}` : `מכוני יופי ואסתטיקה ב${placeName(s)}`;
@@ -132,10 +132,10 @@ export function priceTier(from: number | null) {
 export function priceOptionParts(max: number) {
   const tier = PRICE_TIERS.find(t => t.max === max);
   const last = PRICE_TIERS[PRICE_TIERS.length - 1];
-  return { amount: '₪' + max.toLocaleString('en-US'), tier: tier && tier !== last ? tier.name : null };
+  return { amount: max.toLocaleString('en-US') + ' ₪', tier: tier && tier !== last ? tier.name : null };
 }
 
-/** Plain-text price option ("עד ₪300 · חסכוני"), for aria labels. */
+/** Plain-text price option ("עד 300 ₪ · חסכוני"), for aria labels. */
 export function priceOptionName(max: number) {
   const p = priceOptionParts(max);
   return p.tier ? `עד ${p.amount} · ${p.tier}` : `עד ${p.amount}`;

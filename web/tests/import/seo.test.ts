@@ -49,7 +49,7 @@ describe('seo name', () => {
     const long = seoName('המרכז הבינלאומי לרפואה אסתטית ולכירורגיה פלסטית של פרופסור ישראלי');
     assert.ok(long.length <= 35 && long.startsWith('המרכז הבינלאומי'), long);
     assert.equal(capWords('אבג דהו זחט', 7), 'אבג דהו');
-    assert.equal(seoCityName('תל אביב–יפו'), 'תל אביב-יפו');
+    assert.equal(seoCityName('תל אביב-יפו'), 'תל אביב-יפו');
   });
 });
 
@@ -95,7 +95,7 @@ describe('meta description rules', () => {
     assert.ok(codes(`${base} פרטי קשר ומחירים כפי שהעסק פרסם.`).includes('contact'));
     assert.ok(codes(`${base} טלפון בלבד.`).includes('phone_only'));
     assert.ok(codes(`${base} ללא טלפון.`).includes('phone_only'));
-    assert.ok(codes(`${base} דירוג Google וביקורות BeautyFind בנפרד.`).includes('ratings_line'));
+    assert.ok(codes(`${base} דירוג בגוגל וביקורות BeautyFind בנפרד.`).includes('ratings_line'));
     assert.ok(codes('מספרה בחיפה.').includes('short'));
     assert.ok(codes(`${base} ${'א'.repeat(80)}`).includes('long'));
   });

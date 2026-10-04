@@ -481,7 +481,7 @@ function ReviewsSection({ p, v }: { p: PublicProfile; v: View }) {
           {v.googleSync && (
             <span className={rv.sync}>
               <span aria-hidden="true" className={rv.dot} />
-              דירוג Google עודכן {v.googleSync}
+              דירוג בגוגל עודכן {v.googleSync}
             </span>
           )}
           <ReviewsInfo />
@@ -505,7 +505,7 @@ function ReviewsSection({ p, v }: { p: PublicProfile; v: View }) {
                 </div>
                 <span className={rv.chip}>
                   <CheckMark size={13} strokeWidth={1.8} />
-                  מתוך פרופיל Google Business של העסק
+                  מתוך פרופיל העסק בגוגל
                 </span>
                 <a href={v.googleHref} target="_blank" rel="noopener nofollow" className={rv.ext}>
                   {v.google.count > 0 ? `לכל ${reviewsLabel(v.google.count)} בגוגל` : 'לפרופיל בגוגל'}
@@ -746,7 +746,7 @@ function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null
             <ArrowForward size={13} />
           </a>
         </div>
-        <p className={styles.gNote}>הדירוג מגיע מפרופיל Google Business של העסק{v.googleSync ? ` ועודכן ${v.googleSync}` : ''}. BeautyFind אינו עורך או משנה את סדר הביקורות.</p>
+        <p className={styles.gNote}>הדירוג מגיע מפרופיל העסק בגוגל{v.googleSync ? ` ועודכן ${v.googleSync}` : ''}. BeautyFind אינו עורך או משנה את סדר הביקורות.</p>
       </div>
     </div>
   );

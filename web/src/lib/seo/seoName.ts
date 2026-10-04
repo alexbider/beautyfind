@@ -170,7 +170,7 @@ function namesTreatment(text: string): boolean {
   return FIELD_WORDS.has(first) || FIELD_WORDS.has(first.replace(/^[והבל]/u, '')) || !!matchService(first);
 }
 
-/** City names for titles, meta and schema: the display name keeps its en dash (תל אביב–יפו), the SEO form uses a plain hyphen. */
+/** City names for titles, meta and schema: the display name keeps its en dash (תל אביב-יפו), the SEO form uses a plain hyphen. */
 export const seoCityName = (name: string) => name.replace(/–/g, '-');
 
 export { LATIN };

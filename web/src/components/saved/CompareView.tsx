@@ -45,9 +45,9 @@ export function CompareView({ cols }: { cols: CompareColumn[] }) {
       cells: cols.map(c => (c.responsible ? { v: c.responsible.name, sub: `${c.responsible.label} · ${c.responsible.sub}` } : { v: 'לא צוין אחראי מאומת', dim: true })),
     },
     {
-      label: 'דירוג Google',
+      label: 'דירוג בגוגל',
       cells: cols.map(c =>
-        c.google ? { v: <span className="ltr tnum">★ {ratingText(c.google.rating)}</span>, sub: `${reviewsCount(c.google.count)} ב־Google` } : { v: 'אין נתון', dim: true },
+        c.google ? { v: <span className="ltr tnum">★ {ratingText(c.google.rating)}</span>, sub: `${reviewsCount(c.google.count)} בגוגל` } : { v: 'אין נתון', dim: true },
       ),
     },
     {
@@ -133,7 +133,7 @@ export function CompareView({ cols }: { cols: CompareColumn[] }) {
             </table>
           </div>
           <p className={styles.foot2}>
-            הנתונים מגיעים מהקליניקות עצמן. המחירים {VAT_VERB} מע״מ. דירוג Google ודירוג BeautyFind מוצגים בנפרד ואינם מתמזגים. מקום ממומן לא משפיע על ההשוואה. הערך המודגש בשורת המחיר הוא הנמוך ביותר, ואינו המלצה.
+            הנתונים מגיעים מהקליניקות עצמן. המחירים {VAT_VERB} מע״מ. דירוג בגוגל ודירוג BeautyFind מוצגים בנפרד ואינם מתמזגים. מקום ממומן לא משפיע על ההשוואה. הערך המודגש בשורת המחיר הוא הנמוך ביותר, ואינו המלצה.
           </p>
         </div>
       )}

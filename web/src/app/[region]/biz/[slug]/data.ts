@@ -11,6 +11,7 @@ import { normalizeHebrew } from '@/lib/import/textRules';
 import { composeMetaDescription, joinHe, metaDescriptionOk, metaLead } from '@/lib/seo/metaRules';
 import { seoCityName, seoName } from '@/lib/seo/seoName';
 import { streetLine } from '@/lib/import/address';
+import { businessPlural } from '@/lib/seo/businessNoun';
 import { coverAlt, galleryAlts } from '@/lib/seo/imageAlt';
 import { CATEGORY_SHORT } from '@/lib/seo/terms';
 import { isOffer } from '@/lib/seo/treatmentHygiene';
@@ -176,7 +177,7 @@ export function buildView(p: PublicProfile, now = new Date(), vatPct = DEFAULT_V
         from,
         quoteCount: items.filter(t => t.priceAgorot == null || t.priceType === 'on_request').length,
         medical: items.some(t => t.isMedical),
-        compare: cat ? { href: citySlug ? `/${p.regionSlug}/${citySlug}/${cat.slug}` : `/treatments/${cat.slug}`, label: `השוו עסקים ל${cat.name} ב${p.cityName}` } : null,
+        compare: cat ? { href: citySlug ? `/${p.regionSlug}/${citySlug}/${cat.slug}` : `/treatments/${cat.slug}`, label: `השוו ${businessPlural(cat.slug)} ב${p.cityName}` } : null,
         items: items.map(t => ({
           id: t.id,
           name: t.name,

@@ -6,7 +6,7 @@ import { coverAlt, galleryAlts } from '../../src/lib/seo/imageAlt';
 
 describe('image alt text', () => {
   it('uses the stored cover alt, else the SEO name and the city with a plain hyphen', () => {
-    assert.equal(coverAlt({ name: 'מספרת רון | מספרה בחיפה', cityName: 'תל אביב–יפו', coverAlt: null }), 'מספרת רון בתל אביב-יפו');
+    assert.equal(coverAlt({ name: 'מספרת רון | מספרה בחיפה', cityName: 'תל אביב-יפו', coverAlt: null }), 'מספרת רון בתל אביב-יפו');
     assert.equal(coverAlt({ name: 'מספרת רון', cityName: 'חיפה', coverAlt: 'חזית המספרה ברחוב הרצל' }), 'חזית המספרה ברחוב הרצל');
   });
 

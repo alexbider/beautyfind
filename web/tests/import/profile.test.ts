@@ -97,7 +97,7 @@ describe('price states', () => {
     assert.deepEqual(servicePrice({ priceType: 'fixed', priceAgorot: null }), { kind: 'unknown' });
     assert.deepEqual(servicePrice({ priceType: 'free', priceAgorot: 0 }), { kind: 'free' });
     const r = servicePrice({ priceType: 'range', priceAgorot: 40000, priceMaxAgorot: 60000 });
-    assert.equal(r.kind === 'amount' ? r.amount : '', '₪400 עד ₪600');
+    assert.equal(r.kind === 'amount' ? r.amount : '', '400 ₪ עד 600 ₪');
     const pk = servicePrice({ priceType: 'package', priceAgorot: 180000, priceNote: '6 מפגשים' });
     assert.equal(pk.kind === 'amount' ? pk.post : '', ' (6 מפגשים)');
     assert.equal(PRICE_UNKNOWN, 'מחיר לפי פנייה'); // says what to do, not what is missing (text rules)

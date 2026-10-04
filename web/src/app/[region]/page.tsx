@@ -14,14 +14,16 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { BizTabs, type BizTab } from '@/components/treatments/BizTabs';
 import { CATEGORY_CONTENT } from '@/components/treatments/content';
 import { Faq } from '@/components/treatments/Faq';
-import { BIZ, Count, JsonLd, countText, fmtInt, median, pageLd, pctDelta } from '@/components/treatments/format';
+import { BIZ, Count, JsonLd, countText, fmtInt, pageLd, pctDelta } from '@/components/treatments/format';
+import { mean } from '@/lib/stats';
+import { businessCount } from '@/lib/seo/businessNoun';
 import { InfoGlyph } from '@/components/treatments/InfoGlyph';
 import { listingBreakdown, ratingMedians, regionFacts } from '@/components/treatments/queries';
 import shared from '@/components/treatments/shared.module.css';
 import { CATEGORIES, REGIONS, citiesOf, cityPageHref, regionBySlug, type RegionSlug } from '@/lib/catalog';
 import { nis } from '@/lib/format';
 import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
-import { listBranches, listingCounts, medianPrices } from '@/lib/server/public';
+import { listBranches, listingCounts, averagePrices } from '@/lib/server/public';
 import styles from './page.module.css';
 
 // Design: project/BeautyFind Region.dc.html
@@ -42,11 +44,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const counts = await listingCounts();
   const n = counts.region[region.slug] ?? 0;
   const cities = citiesOf(region.slug).length;
-  const lead = n > 0 ? `${countText(n, 'עסק אחד', 'עסקים')} ב־14 תחומים, ${cities} ערים` : `${cities} ערים ו־14 תחומי טיפול`;
+  const lead = n > 0 ? `${businessCount(n)} ב־14 תחומים, ${cities} ערים` : `${cities} ערים ו־14 תחומי טיפול`;
   return applySeo(`/${region.slug}`, publicMetadata({
     path: `/${region.slug}`,
     title: `יופי ואסתטיקה ${rc.inName}: מחירים והשוואה`,
-    description: composeDescription([`עסקי יופי ואסתטיקה ${rc.inName}: ${lead}.`, 'מחירים אמצעיים בשקלים לפי תחום, והעסקים המדורגים ביותר באזור.', 'השוו מחירים וקבעו תור.'], ['דירוג Google וביקורות BeautyFind בנפרד.']),
+    description: composeDescription([`עסקי יופי ואסתטיקה ${rc.inName}: ${lead}.`, 'מחירים ממוצעים בשקלים לפי תחום, והעסקים המדורגים ביותר באזור.', 'השוו מחירים וקבעו תור.'], ['דירוג בגוגל וביקורות BeautyFind בנפרד.']),
     image: `/assets/region-${region.slug}.jpg`,
   }));
 }
@@ -61,8 +63,8 @@ export default async function RegionPage({ params }: Props) {
 
   const [counts, medRegion, medNational, breakdown, ratings, facts] = await Promise.all([
     listingCounts(),
-    medianPrices(r),
-    medianPrices(),
+    averagePrices(r),
+    averagePrices(),
     listingBreakdown(),
     ratingMedians(),
     regionFacts(r),
@@ -78,7 +80,7 @@ export default async function RegionPage({ params }: Props) {
     ...tabCities.map(c => listBranches({ region: r, citySlug: c.slug, take: 4 })),
   ]);
 
-  // Categories: regional counts and medians against the national median.
+  // Categories: regional counts and averages against the national average.
   const catCounts = breakdown.regionCat[r] ?? {};
   const catRows = CATEGORIES.map((c, i) => {
     const m = medRegion[c.slug] ?? null;
@@ -87,17 +89,17 @@ export default async function RegionPage({ params }: Props) {
   }).sort((a, b) => b.count - a.count || a.order - b.order);
   const activeCats = catRows.filter(c => c.count > 0).length;
   const deltas = catRows.map(c => c.delta).filter((d): d is number => d != null);
-  const regionDelta = median(deltas);
+  const regionDelta = mean(deltas);
 
   const stats: Array<{ label: string; value: string; note: string }> = [
     { label: 'עסקים באינדקס', value: fmtInt(regionTotal), note: counts.total > 0 ? `${Math.round((regionTotal / counts.total) * 100)}% מהאינדקס` : 'בכל הארץ' },
     { label: 'ערים', value: fmtInt(cities.length), note: activeCats === CATEGORIES.length ? 'כל 14 התחומים' : activeCats > 0 ? `${countText(activeCats, 'תחום טיפול אחד', 'תחומי טיפול')} באזור` : 'בכל האזור' },
   ];
   const rating = ratings.region[r];
-  if (rating != null) stats.push({ label: 'דירוג אמצעי', value: rating.toFixed(1), note: 'מתוך 5 בגוגל' });
+  if (rating != null) stats.push({ label: 'דירוג ממוצע בגוגל', value: rating.toFixed(1), note: 'מתוך 5' });
   if (regionDelta != null) {
     const d = Math.round(regionDelta);
-    stats.push({ label: 'מול המחיר האמצעי הארצי', value: `${d > 0 ? '+' : ''}${d}%`, note: 'הפער האמצעי בין התחומים' });
+    stats.push({ label: 'מול המחיר הממוצע הארצי', value: `${d > 0 ? '+' : ''}${d}%`, note: 'הפער הממוצע בין התחומים' });
   }
 
   // WhatsApp and phone for the phone card's contact buttons.
@@ -155,7 +157,7 @@ export default async function RegionPage({ params }: Props) {
           <p className={styles.lede}>
             {regionTotal > 0 ? (
               <>
-                <Count n={regionTotal} {...BIZ} /> באינדקס, ב־<span className="ltr tnum">{cities.length}</span> ערים
+                {businessCount(regionTotal)} באינדקס, ב־<span className="ltr tnum">{cities.length}</span> ערים
                 {activeCats === CATEGORIES.length ? (
                   ' ובכל 14 תחומי הטיפול'
                 ) : activeCats > 0 ? (
@@ -207,7 +209,7 @@ export default async function RegionPage({ params }: Props) {
                 <Link href={cityPageHref(c)} className={styles.cityCard}>
                   <span className={styles.cityName}>{c.name}</span>
                   <span className={styles.cityCount}>
-                    <Count n={cityCount(c.slug)} {...BIZ} />
+                    {businessCount(cityCount(c.slug), c.slug)}
                   </span>
                 </Link>
               </li>
@@ -227,7 +229,7 @@ export default async function RegionPage({ params }: Props) {
           </div>
           <div aria-hidden="true" className={styles.catHeader}>
             <span className={styles.cName}>תחום</span>
-            <span className={styles.cMedian}>מחיר אמצעי באזור</span>
+            <span className={styles.cMedian}>מחיר ממוצע באזור</span>
             <span className={styles.cDelta}>מול הארצי</span>
             <span className={styles.cCount}>עסקים</span>
             <span className={styles.cArrow} />
@@ -267,7 +269,7 @@ export default async function RegionPage({ params }: Props) {
             ))}
           </ul>
           <p className={shared.note}>
-            המחיר האמצעי (חציון) מתפריטי המחירים שהעסקים באזור מפרסמים. בשקלים, {VAT_LABEL}. הפער מחושב מול המחיר האמצעי הארצי באותו תחום, ותחום עם פחות משלושה מחירים מוצג בלי מחיר אמצעי.
+            המחיר הממוצע מתפריטי המחירים שהעסקים באזור מפרסמים, אחרי הסרת מחירים חריגים. בשקלים, {VAT_LABEL}. הפער מחושב מול המחיר הממוצע הארצי באותו תחום, ותחום עם פחות משלושה מחירים מוצג בלי מחיר ממוצע.
           </p>
         </section>
 
@@ -341,7 +343,7 @@ export default async function RegionPage({ params }: Props) {
                 <Link href={`/${n}`} className={shared.regionCard}>
                   <span className={shared.regionName}>{regionBySlug(n)!.name}</span>
                   <span className={shared.regionMeta}>
-                    <Count n={counts.region[n] ?? 0} {...BIZ} />
+                    {businessCount(counts.region[n] ?? 0)}
                   </span>
                 </Link>
               </li>
@@ -357,7 +359,7 @@ export default async function RegionPage({ params }: Props) {
             <p>
               {regionTotal > 0 ? (
                 <>
-                  <Count n={regionTotal} {...BIZ} /> באזור כבר באינדקס.{' '}
+                  {businessCount(regionTotal)} באזור כבר באינדקס.{' '}
                 </>
               ) : null}
               רישום כולל תפריט טיפולים עם מחירים, שעות פעילות, WhatsApp וקישור Waze. <span className="ltr tnum">{nis(PLAN_MONTHLY_NIS.basic)}</span> לחודש לסניף, לא כולל מע״מ, ללא התחייבות.

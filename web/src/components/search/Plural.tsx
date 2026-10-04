@@ -16,7 +16,7 @@ export function Plural({ n, one, two, many }: { n: number; one: string; two: str
 export const BizCount = ({ n }: { n: number }) => <Plural n={n} one="עסק אחד" two="שני עסקים" many="עסקים" />;
 export const ResultCount = ({ n }: { n: number }) => <Plural n={n} one="תוצאה אחת" two="שתי תוצאות" many="תוצאות" />;
 
-/** "עד ₪300 · חסכוני" with the amount isolated LTR. */
+/** "עד 300 ₪ · חסכוני" with the amount isolated LTR. */
 export function PriceOption({ max }: { max: number }) {
   const p = priceOptionParts(max);
   return (

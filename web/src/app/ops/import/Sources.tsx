@@ -75,7 +75,7 @@ export function Sources({ settings, flags }: { settings: ImportSettings; flags: 
 
       <Row title="DataForSEO: איתור העסקים ופרטי פרופיל Google" status={<Status ok={known('dataforseo')} />} what="השלב הראשון של כל ייבוא: שם, כתובת, טלפון, שעות, דירוג, תמונות ומאפיינים. בתשלום לפי רשומה." where="GitHub: DATAFORSEO_LOGIN, DATAFORSEO_PASSWORD">
         {flag('dataforseoEnabled', 'פעיל')}
-        {flag('publishProviderRatings', 'פרסום דירוג Google ומספר הביקורות')}
+        {flag('publishProviderRatings', 'פרסום דירוג בגוגל ומספר הביקורות')}
         {flag('useProviderImages', 'לוגו ותמונות מפרופיל Google')}
       </Row>
       <Row title="אתר העסק" status={<span className={`${styles.chip} ${styles.chipOk}`}>תמיד</span>} what="הסורק שלנו (Crawlee) קורא את האתר הרשמי: דוא״ל, שירותים ומחירים, שעות, סניפים, סרטונים, תמונות. אתר שדורש JavaScript נקרא בדפדפן Chromium של העובד עצמו. ללא עלות ספק, מכבד robots.txt ולא עוקף חסימות." where="">

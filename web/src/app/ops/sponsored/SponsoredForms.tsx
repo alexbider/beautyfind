@@ -101,7 +101,7 @@ export function OrderForm({ branches, regions, categories, weeklyNis, lineMax }:
       </div>
       <div className={ui.actions}>
         <button type="submit" className={`${ui.btn} ${ui.primary}`} disabled={pending || !branchId}>יצירת הזמנה לבדיקה</button>
-        <span className={ui.note}>₪{Math.round(total).toLocaleString('en-US')} לפני בדיקה · ללא מע״מ ישראלי</span>
+        <span className={ui.note}>{Math.round(total).toLocaleString('en-US')} ₪ לפני בדיקה · ללא מע״מ ישראלי</span>
         {msg ? <span className={msg.ok ? ui.ok : ui.error}>{msg.text}</span> : null}
       </div>
     </form>

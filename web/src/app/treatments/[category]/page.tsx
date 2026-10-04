@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { applySeo } from '@/lib/server/seo';
 import { composeDescription, fitTitle, publicMetadata } from '@/lib/seo/meta';
 import { SEO_TERM } from '@/lib/seo/terms';
+import { businessCount } from '@/lib/seo/businessNoun';
 import type { ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -22,7 +23,7 @@ import { listingBreakdown, ratingMedians } from '@/components/treatments/queries
 import shared from '@/components/treatments/shared.module.css';
 import { CATEGORIES, CITIES, MENU_REGION_ORDER, categoryBySlug, regionBySlug } from '@/lib/catalog';
 import { nis } from '@/lib/format';
-import { listBranches, listingCounts, medianPrices } from '@/lib/server/public';
+import { listBranches, listingCounts, averagePrices } from '@/lib/server/public';
 import styles from './page.module.css';
 
 // Design: project/BeautyFind Treatment Category.dc.html (prop `category`: one page per catalog category)
@@ -50,8 +51,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     path: `/treatments/${cat.slug}`,
     title: fitTitle([`${SEO_TERM[cat.slug] ?? cat.name} בישראל: מחירים והשוואה`, `${SEO_TERM[cat.slug] ?? cat.name} בישראל: מחירים`, `${SEO_TERM[cat.slug] ?? cat.name} בישראל`]),
     description: composeDescription(
-      [`${cat.name} בישראל: מה כולל התחום, מחירים אמצעיים ומי מורשה לבצע.`, n > 0 ? `${countText(n, 'עסק אחד', 'עסקים')} ב־7 אזורים.` : null, 'העסקים המדורגים ביותר בכל אזור.', 'השוו מחירים וקבעו תור.'],
-      ['דירוג Google וביקורות BeautyFind בנפרד.'],
+      [`${cat.name} בישראל: מה כולל התחום, מחירים ממוצעים ומי מורשה לבצע.`, n > 0 ? `${businessCount(n, cat.slug)} ב־7 אזורים.` : null, 'העסקים המדורגים ביותר בכל אזור.', 'השוו מחירים וקבעו תור.'],
+      ['דירוג בגוגל וביקורות BeautyFind בנפרד.'],
     ),
     image: body?.img ?? null,
   }));
@@ -65,10 +66,10 @@ export default async function TreatmentCategoryPage({ params }: Props) {
 
   const [counts, national, breakdown, ratings, byRegion, top, ...regionTops] = await Promise.all([
     listingCounts(),
-    medianPrices(),
+    averagePrices(),
     listingBreakdown(),
     ratingMedians(),
-    Promise.all(MENU_REGION_ORDER.map(r => medianPrices(r))),
+    Promise.all(MENU_REGION_ORDER.map(r => averagePrices(r))),
     listBranches({ category: cat.slug, take: 4 }),
     ...MENU_REGION_ORDER.map(r => listBranches({ region: r, category: cat.slug, take: 4 })),
   ]);
@@ -81,8 +82,8 @@ export default async function TreatmentCategoryPage({ params }: Props) {
   const aesthetic = !NON_AESTHETIC.has(cat.slug);
 
   const stats: Array<{ label: string; value: ReactNode }> = [{ label: 'עסקים רשומים', value: <span className="ltr tnum">{fmtInt(count)}</span> }];
-  if (rating != null) stats.push({ label: 'דירוג אמצעי בגוגל', value: <span className="ltr tnum">{rating.toFixed(1)}</span> });
-  if (medianNat != null) stats.push({ label: 'מחיר אמצעי', value: <span className="ltr tnum">{nis(medianNat)}</span> });
+  if (rating != null) stats.push({ label: 'דירוג ממוצע בגוגל', value: <span className="ltr tnum">{rating.toFixed(1)}</span> });
+  if (medianNat != null) stats.push({ label: 'מחיר ממוצע', value: <span className="ltr tnum">{nis(medianNat)}</span> });
   stats.push({ label: 'אזורים', value: <span className="ltr tnum">{activeRegions}</span> });
 
   const priceRows = MENU_REGION_ORDER.map((r, i) => ({
@@ -168,10 +169,10 @@ export default async function TreatmentCategoryPage({ params }: Props) {
               {body.answer}{' '}
               {count > 0 ? (
                 <>
-                  באינדקס רשומים <Count n={count} {...BIZ} /> בתחום
+                  באינדקס רשומים {businessCount(count, cat.slug)}
                   {medianNat != null ? (
                     <>
-                      , והמחיר האמצעי הוא <span className="ltr tnum">{nis(medianNat)}</span>, {VAT_LABEL}
+                      , והמחיר הממוצע הוא <span className="ltr tnum">{nis(medianNat)}</span>, {VAT_LABEL}
                     </>
                   ) : null}
                   .
@@ -288,7 +289,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
         <section id="prices" aria-labelledby="h-prices" className={`${styles.prices} ${styles.block}`}>
           <div className={shared.rowHead}>
             <h2 id="h-prices" className={`${shared.h2} ${shared.h2Lg}`}>
-              מחירים אמצעיים<span aria-hidden="true" className={shared.dot}>.</span>
+              מחירים ממוצעים<span aria-hidden="true" className={shared.dot}>.</span>
             </h2>
             <span className={styles.pricesNote}>
               תדירות אופיינית: {body.freq} · בשקלים, {VAT_LABEL}
@@ -296,11 +297,11 @@ export default async function TreatmentCategoryPage({ params }: Props) {
           </div>
           <div className={styles.tableWrap}>
             <table className={styles.table}>
-              <caption className="sr-only">מחיר אמצעי ומספר עסקים לפי אזור, {cat.name}</caption>
+              <caption className="sr-only">מחיר ממוצע ומספר עסקים לפי אזור, {cat.name}</caption>
               <thead>
                 <tr>
                   <th scope="col">אזור</th>
-                  <th scope="col">מחיר אמצעי</th>
+                  <th scope="col">מחיר ממוצע</th>
                   <th scope="col">מול הארצי</th>
                   <th scope="col">עסקים</th>
                 </tr>
@@ -329,7 +330,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
             </table>
           </div>
           <p className={styles.priceFoot}>
-            המחירים נמסרים על ידי העסקים ומשקפים את מה שפורסם בתפריטים שלהם. המחיר האמצעי מוצג רק כשיש לפחות שלושה מחירים, והוא אינו הצעת מחיר ואינו מחייב אף עסק.
+            המחירים נמסרים על ידי העסקים ומשקפים את מה שפורסם בתפריטים שלהם. המחיר הממוצע מחושב אחרי הסרת מחירים חריגים ומוצג רק כשיש לפחות שלושה מחירים, והוא אינו הצעת מחיר ואינו מחייב אף עסק.
             {aesthetic ? ' טיפולים אסתטיים אלקטיביים אינם בסל הבריאות.' : ''}
           </p>
         </section>
@@ -392,7 +393,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
                     <span className={styles.relGroup}>{rc.group}</span>
                     <span className={styles.relName}>{rc.name}</span>
                     <span className={styles.relMeta}>
-                      <Count n={counts.category[rc.slug] ?? 0} {...BIZ} /> בישראל
+                      {businessCount(counts.category[rc.slug] ?? 0, rc.slug)} בישראל
                     </span>
                   </Link>
                 </li>

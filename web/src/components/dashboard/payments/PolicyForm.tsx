@@ -117,7 +117,7 @@ export function PolicyForm({ initial, treatments, payments }: { initial: PolicyD
               <span className={s.rowSub}>סכום קבוע בשקלים, או אחוז מהמחיר כולל מע״מ.</span>
               {exampleDeposit != null && example ? (
                 <p className={s.example}>
-                  לדוגמה: {example.name} · מקדמה <span className="ltr">₪{exampleDeposit.toLocaleString('en-US')}</span>
+                  לדוגמה: {example.name} · מקדמה <span className="ltr">{exampleDeposit.toLocaleString('en-US')} ₪</span>
                 </p>
               ) : null}
             </div>
@@ -152,7 +152,7 @@ export function PolicyForm({ initial, treatments, payments }: { initial: PolicyD
                       {t.name}
                       {multiBranch || t.isMedical ? <span className={s.ovSub}>{[multiBranch ? t.branch : null, t.isMedical ? 'רפואי' : null].filter(Boolean).join(' · ')}</span> : null}
                     </span>
-                    <span className={s.ovPrice}>₪{t.priceShekels.toLocaleString('en-US')}</span>
+                    <span className={s.ovPrice}>{t.priceShekels.toLocaleString('en-US')} ₪</span>
                     <span className={s.unitInput}>
                       <input
                         dir="ltr" inputMode="numeric" value={ov[t.id] ?? ''} onChange={e => { setOv(x => ({ ...x, [t.id]: e.target.value.replace(/\D/g, '').slice(0, 4) })); setDone(false); }}

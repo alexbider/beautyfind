@@ -10,7 +10,7 @@ import { db } from '@/lib/server/db';
 
 const LIVE = Prisma.sql`b.status = 'live' AND bz.status = 'live'`;
 
-/** Minimum number of Google ratings before a median rating is shown. */
+/** Minimum number of Google ratings before an average rating is shown. */
 const MIN_RATINGS = 3;
 
 export interface Breakdown {
@@ -56,7 +56,7 @@ export const ratingMedians = cache(async (): Promise<RatingMedians> => {
   const [byRegion, byCat] = await Promise.all([
     db.$queryRaw<Array<{ region: string | null; median: number | null; n: bigint }>>`
       SELECT b.region_slug::text AS region,
-             percentile_cont(0.5) WITHIN GROUP (ORDER BY b.google_rating) AS median,
+             avg(b.google_rating) AS median,
              count(*) AS n
       FROM branches b
       JOIN businesses bz ON bz.id = b.business_id
@@ -64,7 +64,7 @@ export const ratingMedians = cache(async (): Promise<RatingMedians> => {
       GROUP BY ROLLUP (b.region_slug)`,
     db.$queryRaw<Array<{ cat: string; median: number | null; n: bigint }>>`
       SELECT bc.category_slug AS cat,
-             percentile_cont(0.5) WITHIN GROUP (ORDER BY b.google_rating) AS median,
+             avg(b.google_rating) AS median,
              count(*) AS n
       FROM branch_categories bc
       JOIN branches b ON b.id = bc.branch_id

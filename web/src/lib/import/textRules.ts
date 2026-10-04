@@ -45,6 +45,25 @@ export const RECORD_PATTERNS: RegExp[] = [
  */
 export const LATIN_ADDRESS = /(?<![A-Za-z])(?:St|Rd|Ave|Blvd|Hwy|Street|Road|Avenue|Boulevard|Highway|Derech|Derekh|Rehov|Rechov|Rekhov|Sderot|Shderot|Sd|Kikar|Simtat|Shkhuna|Shikun)\.?(?![A-Za-z])/;
 
+/**
+ * Wording banned sitewide (templates, generated text and stored content alike): the formal fillers במידה ו,
+ * הינו and its forms, אשר (כאשר and באשר are other words) and כמו כן; "אמצעי" in the sense of an average
+ * (the word is ממוצע; "אמצעי יצירת קשר" is a different word); "דירוג Google" and "ב־Google" (בגוגל); the
+ * old city spelling with an en dash; a shekel sign before the number ("180 ₪" is the house style); חציון.
+ */
+export const WORDING_PATTERNS: Array<{ re: RegExp; label: string }> = [
+  { re: /(?<![א-ת])במידה\s+ו/u, label: 'במידה ו' },
+  { re: /(?<![א-ת])(?:ו|ש|כש)?הינ(?:ו|ה|ם|ן)(?![א-ת])/u, label: 'הינו' },
+  { re: /(?<![א-ת])(?:ו|ש)?אשר(?![א-ת])/u, label: 'אשר' },
+  { re: /(?<![א-ת])כמו\s+כן(?![א-ת])/u, label: 'כמו כן' },
+  { re: /(?<![א-ת])(?:ה?מחיר(?:ים)?|ה?דירוג(?:ים)?|ה?פער(?:ים)?|ה?עלות)\s+(?:Google\s+)?ה?אמצעי(?:ים|ת|ות)?(?![א-ת])/u, label: 'אמצעי' },
+  { re: /דירוג\s+Google/u, label: 'דירוג Google' },
+  { re: /ב[־-]Google(?![A-Za-z])/u, label: 'ב־Google' },
+  { re: /תל אביב–יפו/u, label: 'תל אביב–יפו' },
+  { re: /₪\s?\d/u, label: '₪ לפני המספר' },
+  { re: /(?<![א-ת])(?:ו|ש|ה|ב|ל|מ)?חציו(?:ן|נ(?:י|ים|יים|ית|יות))(?![א-ת])/u, label: 'חציון' },
+];
+
 /** House spellings. */
 export const SPELLING_PATTERNS: Array<{ re: RegExp; fix: string }> = [
   { re: /המצויין/gu, fix: 'המצוין' },
@@ -66,6 +85,7 @@ export type TextProblem =
   | { code: 'missing_info'; match: string }
   | { code: 'record'; match: string }
   | { code: 'address'; match: string }
+  | { code: 'wording'; match: string }
   | { code: 'latin'; match: string }
   | { code: 'dash'; match: string }
   | { code: 'emoji'; match: string }
@@ -126,6 +146,11 @@ export function textProblems(text: string, allow: string[] = [], opts: { strict?
     }
     const a = text.match(LATIN_ADDRESS);
     if (a) out.push({ code: 'address', match: a[0] });
+  }
+  // The banned wording applies to interface copy as well as to generated text.
+  for (const w of WORDING_PATTERNS) {
+    const m = text.match(w.re);
+    if (m) out.push({ code: 'wording', match: w.label });
   }
   for (const w of latinInsideHebrew(text, allow)) out.push({ code: 'latin', match: w });
   const d = text.match(DASH);

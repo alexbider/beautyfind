@@ -21,9 +21,9 @@ const BASE: Metadata = {
 export const generateMetadata = () => applySeo('/magazine', BASE);
 
 const NOW = [
-  { href: ROUTES.treatments, title: 'תחומי טיפול', sub: 'מה כולל כל תחום, מחירים חציוניים ועסקים לפי אזור' },
+  { href: ROUTES.treatments, title: 'תחומי טיפול', sub: 'מה כולל כל תחום, מחירים ממוצעים ועסקים לפי אזור' },
   { href: ROUTES.listingStandards, title: 'תקן הרישום', sub: 'מה בודקים לפני שעסק עולה לאתר' },
-  { href: `${ROUTES.methodology}#ranking`, title: 'איך מדרגים', sub: 'סדר ההצגה, ביקורות ודירוג Google' },
+  { href: `${ROUTES.methodology}#ranking`, title: 'איך מדרגים', sub: 'סדר ההצגה, ביקורות ודירוג בגוגל' },
 ];
 
 export default function MagazinePage() {

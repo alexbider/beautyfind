@@ -21,6 +21,7 @@ import { Pager } from './Pager';
 import { composeDescription, fitTitle, publicMetadata } from '@/lib/seo/meta';
 import { META_ACTION, composeMetaDescription, joinHe } from '@/lib/seo/metaRules';
 import { seoCityName } from '@/lib/seo/seoName';
+import { businessCount, businessPlural } from '@/lib/seo/businessNoun';
 import { breadcrumbNode, faqNode, graph, itemListNode, ldJson, listId, webPageNode } from '@/lib/seo/schema';
 import { ResultsShell } from './ResultsShell';
 import { SidebarFaq } from './SidebarFaq';
@@ -55,7 +56,7 @@ async function resolveScope(params: DirParams): Promise<Scope> {
 }
 
 const N = ({ children }: { children: ReactNode }) => <span className="ltr">{children}</span>;
-const nis = (n: number) => `₪${fmtNum(n)}`;
+const nis = (n: number) => `${fmtNum(n)} ₪`;
 
 // ---------- metadata ----------
 
@@ -73,24 +74,24 @@ export async function directoryMetadata(params: DirParams, searchParams: DirSear
     o.verified === 0 ? null : o.total === 1 ? 'העסק מאומת.' : o.verified === o.total ? 'כולם מאומתים.' : o.verified === 1 ? 'אחד מהם מאומת.' : `${fmtNum(o.verified)} מהם מאומתים.`;
   const ownPrice = s.category ? o.prices.find(p => p.slug === s.category!.slug && !p.fromRegion) : null;
   // One pattern (src/lib/seo/metaRules.ts): what the page lists, the common treatments in Hebrew, the
-  // rating, the median price, then the action. Nothing about booking, contact channels or missing data.
+  // rating, the average price, then the action. Nothing about booking, contact channels or missing data.
   const description =
     o.total === 0
       ? composeDescription(
-          [s.category ? `עדיין אין עסקים ל${s.category.name} ${where}.` : `עדיין אין עסקים רשומים ${where}.`, `עסקים בערים סמוכות באזור ${s.region.name}, ורישום עסק חדש ב־BeautyFind.`],
+          [s.category ? `עדיין אין ${businessPlural(s.category.slug)} ${where}.` : `עדיין אין עסקים רשומים ${where}.`, `עסקים בערים סמוכות באזור ${s.region.name}, ורישום עסק חדש ב־BeautyFind.`],
           [META_ACTION],
         )
       : composeMetaDescription({
           // Leads with the treatments the listings publish, not with the title's words.
-          lead: t => (t.length ? `${joinHe(t)} ${where}: ${countText(o.total, BIZ)} ל${nounOf}.` : `${where} ${countText(o.total, BIZ)} ל${nounOf}.`),
+          lead: t => (t.length ? `${joinHe(t)} ${where}: ${businessCount(o.total, s.category?.slug)}.` : `${where} ${businessCount(o.total, s.category?.slug)}.`),
           treatments: o.topTreatments,
-          rating: o.medianGoogle != null ? `דירוג Google אמצעי ${o.medianGoogle.toFixed(1)}.` : null,
+          rating: o.averageGoogle != null ? `דירוג ממוצע בגוגל ${o.averageGoogle.toFixed(1)}.` : null,
           facts: [
-            ownPrice ? `המחיר האמצעי הוא ${nis(ownPrice.price)}.` : '',
+            ownPrice ? `המחיר הממוצע הוא ${nis(ownPrice.price)}.` : '',
             verifiedPart ?? '',
             s.category && o.cityCategories.filter(c => c.slug !== s.category!.slug).length ? `${where} יש גם ${joinHe(o.cityCategories.filter(c => c.slug !== s.category!.slug).slice(0, 3).map(c => SEO_TERM[c.slug] ?? c.name))}.` : '',
-            o.siblings.length ? `יש עוד ${nounOf} ${joinHe(o.siblings.slice(0, 2).map(x => `ב${seoCityName(x.city.name)}`))}.` : '',
-            o.regionTotal > o.total ? `באזור ${s.region.name} יש ${countText(o.regionTotal, BIZ)} ל${nounOf}.` : `העיר שייכת לאזור ${s.region.name}.`,
+            o.siblings.length ? `יש עוד ${businessPlural(s.category?.slug)} ${joinHe(o.siblings.slice(0, 2).map(x => `ב${seoCityName(x.city.name)}`))}.` : '',
+            o.regionTotal > o.total ? `באזור ${s.region.name} יש ${businessCount(o.regionTotal, s.category?.slug)}.` : `העיר שייכת לאזור ${s.region.name}.`,
           ],
         });
   // Filtered or sorted lists are noindex; page 2 and on are indexable with their own canonical.
@@ -231,9 +232,9 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
         </>
       )}
       {s.category && ` ל${s.category.name}`}
-      {o.medianGoogle != null && (
+      {o.averageGoogle != null && (
         <>
-          , עם דירוג Google אמצעי של <N>{o.medianGoogle.toFixed(1)}</N>
+          , עם דירוג ממוצע בגוגל של <N>{o.averageGoogle.toFixed(1)}</N>
         </>
       )}
       .
@@ -246,8 +247,8 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
       {headlinePrice && (
         <>
           {' '}
-          המחיר האמצעי ל{headlinePrice.name} הוא <N>{nis(headlinePrice.price)}</N> {VAT_LABEL_BEFORE}
-          {headlinePrice.fromRegion && ` (לפי המחיר האמצעי באזור ${s.region.name})`}.
+          המחיר הממוצע ל{headlinePrice.name} הוא <N>{nis(headlinePrice.price)}</N> {VAT_LABEL_BEFORE}
+          {headlinePrice.fromRegion && ` (לפי המחיר הממוצע באזור ${s.region.name})`}.
         </>
       )}
     </>
@@ -255,8 +256,8 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
 
   const stats: Array<{ label: string; value: string | null }> = [
     { label: 'עסקים רשומים', value: fmtNum(o.total) },
-    { label: 'דירוג Google אמצעי', value: o.medianGoogle?.toFixed(1) ?? null },
-    s.category ? { label: 'מחיר אמצעי', value: ownPrice ? nis(ownPrice.price) : null } : { label: 'תחומי טיפול', value: fmtNum(o.cityCategories.length) },
+    { label: 'דירוג ממוצע בגוגל', value: o.averageGoogle?.toFixed(1) ?? null },
+    s.category ? { label: 'מחיר ממוצע', value: ownPrice ? nis(ownPrice.price) : null } : { label: 'תחומי טיפול', value: fmtNum(o.cityCategories.length) },
     { label: 'עסקים מאומתים', value: fmtNum(o.verified) },
   ];
 
@@ -291,7 +292,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
               </h1>
               <p className={styles.answer}>{answer}</p>
               <p className={styles.lede}>
-                הרשימה מסודרת לפי אימות הבעלות, דירוג Google ומספר הביקורות, לא לפי תשלום. כל עסק מציג את תפריט הטיפולים עם מחירים ואת דרכי ההתקשרות הישירות אליו, ועסק שמסר רופא אחראי מציג גם את שמו אחרי בדיקת הרישיון.
+                הרשימה מסודרת לפי אימות הבעלות, דירוג בגוגל ומספר הביקורות, לא לפי תשלום. כל עסק מציג את תפריט הטיפולים עם מחירים ואת דרכי ההתקשרות הישירות אליו, ועסק שמסר רופא אחראי מציג גם את שמו אחרי בדיקת הרישיון.
               </p>
 
               <div className={styles.meta}>
@@ -326,7 +327,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
               <section aria-labelledby="h-list">
                 <div className={styles.listHead}>
                   <h2 id="h-list" className={styles.h2}>
-                    {s.category ? `עסקים ל${s.category.name}` : 'העסקים המובילים'}
+                    {s.category ? businessPlural(s.category.slug) : 'העסקים המובילים'}
                     <span aria-hidden="true" className={styles.dot}>.</span>
                   </h2>
                   <span className={styles.resultCount}>{resultCount}</span>
@@ -360,7 +361,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
                   <div className={styles.nearby}>
                     <h3 className={styles.nearbyTitle}>עוד אפשרויות קרוב ל{s.city.name}</h3>
                     <p className={styles.nearbyText}>
-                      {s.category ? `עסקים ל${s.category.name}` : 'עסקים'} בערים סמוכות באזור {s.region.name}:
+                      {s.category ? businessPlural(s.category.slug) : 'עסקים'} בערים סמוכות באזור {s.region.name}:
                     </p>
                     <ul className={styles.pills}>
                       {o.siblings.slice(0, 6).map(sb => (
@@ -539,18 +540,18 @@ function Guide({ s, o }: { s: Scope; o: Overview }) {
           מחירים אופייניים {where}, {heMonth(now)}
         </h3>
         {o.prices.length === 0 ? (
-          <p className={styles.p}>עדיין אין {where} או באזור {s.region.name} מספיק מחירים מפורסמים כדי להציג מחיר חציוני אמין.</p>
+          <p className={styles.p}>עדיין אין {where} או באזור {s.region.name} מספיק מחירים מפורסמים כדי להציג מחיר ממוצע אמין.</p>
         ) : (
           <>
             <div className={styles.tableWrap}>
               <table className={styles.table}>
                 <caption>
-                  {citySample > 0 ? `מחיר אמצעי של הטיפולים שהעסקים ${where} מפרסמים, ${VAT_LABEL_BEFORE}.` : `מחיר אמצעי באזור ${s.region.name}, ${VAT_LABEL_BEFORE}.`}
+                  {citySample > 0 ? `מחיר ממוצע של הטיפולים שהעסקים ${where} מפרסמים, ${VAT_LABEL_BEFORE}.` : `מחיר ממוצע באזור ${s.region.name}, ${VAT_LABEL_BEFORE}.`}
                 </caption>
                 <thead>
                   <tr>
                     <th scope="col">תחום</th>
-                    <th scope="col">מחיר אמצעי</th>
+                    <th scope="col">מחיר ממוצע</th>
                     <th scope="col">עסקים בעיר</th>
                   </tr>
                 </thead>
@@ -561,7 +562,7 @@ function Guide({ s, o }: { s: Scope; o: Overview }) {
                       <td>
                         <span className="ltr">{nis(p.price)}</span>
                         {p.fromRegion && (
-                          <span className={styles.star} aria-label={`לפי המחיר האמצעי באזור ${s.region.name}`}>
+                          <span className={styles.star} aria-label={`לפי המחיר הממוצע באזור ${s.region.name}`}>
                             *
                           </span>
                         )}
@@ -576,13 +577,13 @@ function Guide({ s, o }: { s: Scope; o: Overview }) {
             </div>
             {fallback && (
               <p className={styles.smallPrint}>
-                * אין מספיק מחירים מפורסמים {where} בתחום הזה, ולכן מוצג המחיר האמצעי של אזור {s.region.name}. מחיר אמצעי מוצג רק כשיש לפחות שלושה מחירים.
+                * אין מספיק מחירים מפורסמים {where} בתחום הזה, ולכן מוצג המחיר הממוצע של אזור {s.region.name}. המחיר הממוצע מחושב אחרי הסרת מחירים חריגים ומוצג רק כשיש לפחות שלושה מחירים.
               </p>
             )}
           </>
         )}
         <p className={`${styles.p} ${styles.lastP}`}>
-          ביקורות מועילות במיוחד כשהן מזכירות שם של מטפל ושם של טיפול. ממוצע של חמישה כוכבים על <span className="ltr">400</span> ביקורות בעסק שעושה בעיקר טיפולי פנים לא אומר כמעט כלום על תוצאות הלייזר שלו. לכן אנחנו מציגים את דירוג Google ואת ביקורות BeautyFind המאומתות בנפרד.
+          ביקורות מועילות במיוחד כשהן מזכירות שם של מטפל ושם של טיפול. ממוצע של חמישה כוכבים על <span className="ltr">400</span> ביקורות בעסק שעושה בעיקר טיפולי פנים לא אומר כמעט כלום על תוצאות הלייזר שלו. לכן אנחנו מציגים את דירוג בגוגל ואת ביקורות BeautyFind המאומתות בנפרד.
         </p>
       </GuideExpander>
     </section>

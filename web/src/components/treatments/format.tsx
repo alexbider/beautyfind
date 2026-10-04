@@ -25,7 +25,7 @@ export function countText(n: number, one: string, many: string, zero?: string) {
 
 export const BIZ = { one: 'עסק אחד', many: 'עסקים', zero: 'עדיין אין עסקים' };
 
-/** ₪1,200 inside an LTR span. */
+/** "1,200 ₪" inside an LTR span. */
 export function Price({ shekels, className }: { shekels: number; className?: string }) {
   return <span className={`ltr tnum ${className ?? ''}`}>{nis(shekels)}</span>;
 }
@@ -33,12 +33,6 @@ export function Price({ shekels, className }: { shekels: number; className?: str
 /** Percentage change of `value` against `base`, rounded. */
 export const pctDelta = (value: number, base: number) => Math.round(((value - base) / base) * 100);
 
-export function median(nums: number[]): number | null {
-  if (!nums.length) return null;
-  const s = [...nums].sort((a, b) => a - b);
-  const m = Math.floor(s.length / 2);
-  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
-}
 
 /**
  * The page's structured data as one graph: a WebPage that belongs to the site, its BreadcrumbList (the

@@ -1,9 +1,9 @@
 // Formatting and validation shared by client and server code.
 
-/** ₪1,200 style. Input in whole shekels. */
-export const nis = (shekels: number) => '₪' + Math.round(shekels).toLocaleString('en-US');
+/** "1,200 ₪" style (number, space, symbol). Input in whole shekels. */
+export const nis = (shekels: number) => Math.round(shekels).toLocaleString('en-US') + ' ₪';
 
-/** ₪1,200 style from integer agorot. */
+/** "1,200 ₪" style from integer agorot. */
 export const nisFromAgorot = (agorot: number) => nis(agorot / 100);
 
 /** Israeli local phone as typed (050-123-4567, 03 5551234). Same rule the designs validate with. */

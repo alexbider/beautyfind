@@ -30,7 +30,7 @@ export interface ServiceGroupView {
   items: ServiceItemView[];
 }
 
-/** Price with its Hebrew wording outside and the amount in an LTR span ("החל מ־₪900", "₪1,600 למ״ל"). */
+/** Price with its Hebrew wording outside and the amount in an LTR span ("החל מ־900 ₪", "1,600 ₪ למ״ל"). */
 export function Price({ p }: { p: PriceView }) {
   if (p.kind === 'unknown') return <span className={styles.unknown}>{PRICE_UNKNOWN}</span>;
   if (p.kind === 'free') return <span>ללא עלות לפי פרסום העסק</span>;

@@ -171,7 +171,7 @@ export const READ_TIME = ['6 דקות קריאה', '5 דקות קריאה', '4 �
 export const TRUST = [
   { n: '01', title: 'אימות מסומן, לא מובלע', desc: 'עסק שבעליו אימתו את הבעלות מסומן בתג "מאומת". רישיון רופא או אחות שנבדק מול משרד הבריאות מסומן בפרופיל בתג נפרד.' },
   { n: '02', title: 'אחריות רפואית מסומנת', desc: 'הזרקות הן פעולה רפואית. עסק שמסר רופא אחראי מציג את שמו בפרופיל אחרי בדיקת הרישיון, וכל טיפול רפואי מתחיל בפגישת ייעוץ.' },
-  { n: '03', title: 'ביקורות ממי שהגיעה בפועל', desc: 'אפשר לכתוב ביקורת ב־BeautyFind רק אחרי תור שהתקיים. דירוג Google מוצג לצידה, בנפרד.' },
+  { n: '03', title: 'ביקורות ממי שהגיעה בפועל', desc: 'אפשר לכתוב ביקורת ב־BeautyFind רק אחרי תור שהתקיים. דירוג בגוגל מוצג לצידה, בנפרד.' },
   { n: '04', title: 'תוכן עם תאריך', desc: 'המדריכים נכתבים בידי המערכת לפי מדיניות העריכה, ותאריך העדכון מופיע בכל מדריך.' },
 ];
 
@@ -489,7 +489,7 @@ export function ListingSteps({ variant }: { variant?: 'desk' }) {
             <span className={s.livePill}><span className={s.openDot} />הפרופיל באוויר</span>
             <span className={s.profileName}>סטודיו ליה לטיפוח</span>
             <span className={s.profileMeta}>קוסמטיקה · רמת גן</span>
-            <span className={s.profileMeta}>החל מ־<strong dir="ltr" className={s.iso}>₪280</strong></span>
+            <span className={s.profileMeta}>החל מ־<strong dir="ltr" className={s.iso}>280 ₪</strong></span>
           </span>
         </div>
         <div className={`${s.pane} ${s.paneNotes}`} style={pane(3)}>

@@ -229,22 +229,22 @@ export const listingCounts = cache(async () => {
   };
 });
 
-/** Minimum number of valid prices before a median is shown. */
-export const MEDIAN_MIN_PRICES = 3;
+export { AVERAGE_MIN_PRICES } from '../stats';
 
 /**
- * Median consumer price per category (shekels, rounded to 10) within a scope. Only real, comparable
- * prices count: published, above zero, of type fixed, from or range (no per-unit, per-ml, per-area or
- * package totals, no "on request"). Outliers beyond 1.5 times the interquartile range are trimmed, and a
- * category with fewer than MEDIAN_MIN_PRICES valid prices returns null ("אין מספיק מחירים"), so a single
- * price is never shown as "the" price. Amounts follow the consumer-price rule (src/lib/vat.ts).
+ * Average consumer price per category (shekels, rounded to 10) within a scope: a trimmed mean. Only real,
+ * comparable prices count: published, above zero, of type fixed, from or range (no per-unit, per-ml,
+ * per-area or package totals, no "on request"). Outliers beyond 1.5 times the interquartile range are
+ * removed first, then the rest are averaged, and a category with fewer than AVERAGE_MIN_PRICES prices left
+ * returns null ("אין מספיק מחירים"), so a single price is never shown as "the" price. Amounts follow the
+ * consumer-price rule (src/lib/vat.ts).
  */
-async function medianPricesWhere(scope: Prisma.Sql): Promise<Record<string, number | null>> {
+async function averagePricesWhere(scope: Prisma.Sql): Promise<Record<string, number | null>> {
   const pct = await vatRatePct();
   const gross = PRICES_INCLUDE_VAT
     ? Prisma.sql`CASE WHEN t.tax_included IS TRUE OR (t.tax_included IS NULL AND t.source IS DISTINCT FROM 'owner') THEN t.price_agorot ELSE round(t.price_agorot * (1 + ${pct}::numeric / 100)) END`
     : Prisma.sql`t.price_agorot`;
-  const rows = await db.$queryRaw<Array<{ slug: string; median: number | null; n: bigint }>>`
+  const rows = await db.$queryRaw<Array<{ slug: string; mean: number | null; n: bigint }>>`
     WITH prices AS (
       SELECT t.category_slug AS slug, (${gross})::numeric AS price
       FROM treatments t
@@ -265,16 +265,17 @@ async function medianPricesWhere(scope: Prisma.Sql): Promise<Record<string, numb
       FROM prices p JOIN quartiles q ON q.slug = p.slug
       WHERE p.price BETWEEN q.q1 - 1.5 * (q.q3 - q.q1) AND q.q3 + 1.5 * (q.q3 - q.q1)
     )
-    SELECT slug, percentile_cont(0.5) WITHIN GROUP (ORDER BY price) / 100.0 AS median, count(*) AS n
+    SELECT slug, avg(price) / 100.0 AS mean, count(*) AS n
     FROM kept GROUP BY slug`;
-  return Object.fromEntries(rows.map(r => [r.slug, Number(r.n) >= MEDIAN_MIN_PRICES && r.median != null ? Math.round(Number(r.median) / 10) * 10 : null]));
+  return Object.fromEntries(rows.map(r => [r.slug, Number(r.n) >= AVERAGE_MIN_PRICES_N && r.mean != null ? Math.round(Number(r.mean) / 10) * 10 : null]));
 }
+const AVERAGE_MIN_PRICES_N = 3;
 
-/** Median consumer price per category, nationally or within a region. */
-export const medianPrices = (region?: RegionSlug) => medianPricesWhere(region ? Prisma.sql`AND b.region_slug = ${region}::"RegionSlug"` : Prisma.empty);
+/** Average (trimmed mean) consumer price per category, nationally or within a region. */
+export const averagePrices = (region?: RegionSlug) => averagePricesWhere(region ? Prisma.sql`AND b.region_slug = ${region}::"RegionSlug"` : Prisma.empty);
 
-/** Median consumer price per category within one city. */
-export const medianPricesForCity = (citySlug: string) => medianPricesWhere(Prisma.sql`AND b.city_id IN (SELECT id FROM cities WHERE slug = ${citySlug})`);
+/** Average (trimmed mean) consumer price per category within one city. */
+export const averagePricesForCity = (citySlug: string) => averagePricesWhere(Prisma.sql`AND b.city_id IN (SELECT id FROM cities WHERE slug = ${citySlug})`);
 
 export interface RecentReview {
   id: string;

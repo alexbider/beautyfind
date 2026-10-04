@@ -104,7 +104,7 @@ function show(v: unknown): string {
   if (typeof v === 'object') {
     const o = v as Record<string, unknown>;
     if (Array.isArray(v)) return v.every(x => typeof x === 'string') ? v.join(', ') : `${v.length} ימים`;
-    if (typeof o.name === 'string') return `${o.name}${o.priceNis ? ` · ₪${o.priceNis}` : ''}`;
+    if (typeof o.name === 'string') return `${o.name}${o.priceNis ? ` · ${o.priceNis} ₪` : ''}`;
     if (typeof o.url === 'string') return o.url;
     if (typeof o.e164 === 'string' || typeof o.raw === 'string') return String(o.raw ?? o.e164);
   }
@@ -212,7 +212,7 @@ function GoogleView({ placeId }: { placeId: string }) {
       <p className={styles.note}>תצוגת Google נפרדת. בתשלום לפי קריאה, לא נשמרת ברשומה ולא מתפרסמת.</p>
       <div className={styles.btnRow}>
         <button type="button" className={styles.btn} disabled={pending} onClick={() => go('verify')}>אימות מול Google</button>
-        <button type="button" className={styles.btn} disabled={pending} onClick={() => go('rating')}>דירוג ב־Google</button>
+        <button type="button" className={styles.btn} disabled={pending} onClick={() => go('rating')}>דירוג בגוגל</button>
       </div>
       {res ? (
         res.ok ? (
@@ -405,7 +405,7 @@ function Record({ r, onDone, selected, onSelect, google }: { r: ReviewRow; onDon
                 {r.treatments.map((t, i) => (
                   <li key={i}>
                     <span title={(t as { sourceText?: string }).sourceText}>{t.name}{t.category ? ` · ${catName(t.category)}` : ''}{t.isMedical ? ' · רפואי' : ''}</span>
-                    <span className={styles.ltr}>{t.priceNis != null && t.priceType !== 'free' ? `${t.priceType === 'from' ? 'מ־' : ''}₪${t.priceNis}${t.priceType === 'range' && t.priceMaxNis ? ` עד ₪${t.priceMaxNis}` : ''}${t.priceType === 'package' ? ' (חבילה)' : ''}` : t.priceType === 'free' ? 'ללא עלות (לפי העסק)' : 'המחיר לא פורסם'}</span>
+                    <span className={styles.ltr}>{t.priceNis != null && t.priceType !== 'free' ? `${t.priceType === 'from' ? 'מ־' : ''}${t.priceNis} ₪${t.priceType === 'range' && t.priceMaxNis ? ` עד ${t.priceMaxNis} ₪` : ''}${t.priceType === 'package' ? ' (חבילה)' : ''}` : t.priceType === 'free' ? 'ללא עלות (לפי העסק)' : 'המחיר לא פורסם'}</span>
                     <span>{t.durationMin ? `${t.durationMin} דק׳` : ''}</span>
                   </li>
                 ))}

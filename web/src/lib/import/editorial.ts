@@ -31,7 +31,7 @@ import GOLD_EXAMPLES_JSON from './goldExamples.json';
 import type { DayHours, ImportedTreatment } from './rules';
 import { normalizeHebrew, problemCode, textProblems } from './textRules';
 
-export const PROMPT_VERSION = '2026-10-04.7';
+export const PROMPT_VERSION = '2026-10-04.8';
 /** Word bounds per evidence tier. The tier comes from the packet (lengthTier), never from the writer. */
 export const LENGTH_TIERS = {
   sparse: { min: 40, max: 150, paragraphs: 'one or two' },
@@ -380,6 +380,7 @@ Language:
 - Spelling: וואטסאפ (not ווטסאפ). Hebrew abbreviations take gershayim and geresh: ד״ר, מע״מ, דק׳.
 - No em dash or en dash characters. Use commas, periods or a Hebrew maqaf. No emoji. No empty quotes.
 - No generic praise (מובילים בתחום, חוויה בלתי נשכחת, מקצועיות ללא פשרות, הטכנולוגיה המתקדמת ביותר, ברמה הגבוהה ביותר) and no exclamation marks.
+- Banned words: במידה ו, הינו, הינה, הינם, אשר (use ש־ or כש־), כמו כן, אמצעי in the sense of an average (write ממוצע), דירוג Google (write דירוג בגוגל), ב־Google (write בגוגל), חציון. Prices are written as the number, a space and the sign (180 ₪).
 - No filler. These phrases and their forms are banned: ${FILLER_PHRASES.join(', ')}. A sentence that adds no fact (how convenient the location is, what the rating "shows", who the business "suits", what the visit "combines") is cut, not rephrased.
 - One mention per fact. The address, the opening hours, the rating, the accessibility, the parking, each contact channel and the founding year are each stated once in the description, in the paragraph where they belong; the FAQs may state them again. Never repeat the hours or the street in a closing paragraph.
 - Only the services in the packet exist. The packet lists the listing's published treatments; never name a treatment, device or product that is not in it, and never generalize from a category name to services it does not list.

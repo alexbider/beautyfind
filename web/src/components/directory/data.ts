@@ -4,7 +4,8 @@ import { Prisma } from '@prisma/client';
 import { cache } from 'react';
 import { CATEGORIES, citiesOf, type City, type RegionSlug } from '@/lib/catalog';
 import { db } from '@/lib/server/db';
-import { PUBLIC_WHERE, listBranches, medianPrices, medianPricesForCity, type ListingCard } from '@/lib/server/public';
+import { mean } from '@/lib/stats';
+import { PUBLIC_WHERE, listBranches, averagePrices, averagePricesForCity, type ListingCard } from '@/lib/server/public';
 import { matchService } from '@/lib/import/services';
 import { hebrewTreatmentNames } from '@/lib/seo/treatmentNames';
 import { PAGE, type DirQuery, type FilterKey } from './params';
@@ -33,25 +34,19 @@ const FILTER_WHERE: Record<FilterKey, Prisma.BranchWhereInput> = {
   accessible: { accessible: true },
 };
 
-function median(xs: number[]): number | null {
-  if (xs.length === 0) return null;
-  const s = [...xs].sort((a, b) => a - b);
-  const m = s.length >> 1;
-  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
-}
 
 export interface PriceRow {
   slug: string;
   name: string;
   price: number;
-  fromRegion: boolean; // the city had too few valid prices, the region median is shown
+  fromRegion: boolean; // the city had too few valid prices, the region average is shown
   count: number; // listings in this city offering the category
 }
 
 export interface Overview {
   total: number; // listings in scope, no filters
   verified: number;
-  medianGoogle: number | null;
+  averageGoogle: number | null; // the mean Google rating of the listings in scope
   updatedAt: Date | null;
   filterCounts: Record<FilterKey, number>;
   /** Categories the city's listings offer, with how many offer each (the city + category pages that have content), catalog order. */
@@ -82,8 +77,8 @@ export const getOverview = cache(async (region: RegionSlug, citySlug: string, ca
     }),
     db.branch.groupBy({ by: ['cityId'], where: { AND: [PUBLIC_WHERE, { regionSlug: region }, { cityId: { not: null } }, ...catFilter] }, _count: { _all: true } }),
     db.branch.count({ where: { AND: [PUBLIC_WHERE, { regionSlug: region }, ...catFilter] } }),
-    medianPricesForCity(citySlug),
-    medianPrices(region),
+    averagePricesForCity(citySlug),
+    averagePrices(region),
     db.city.findMany({ where: { regionSlug: region }, select: { id: true, slug: true } }),
     db.treatment.groupBy({
       by: ['name', 'categorySlug'],
@@ -97,7 +92,7 @@ export const getOverview = cache(async (region: RegionSlug, citySlug: string, ca
   const filterCounts = Object.fromEntries(fc) as Record<FilterKey, number>;
   const verified = filterCounts.verified;
   const ratings = rated.map(r => r.googleRating).filter((x): x is number => x != null);
-  const med = median(ratings);
+  const med = mean(ratings);
   const updatedAt = rated.reduce<Date | null>((d, r) => (!d || r.updatedAt > d ? r.updatedAt : d), null);
 
   const catCount = new Map(byCat.map(r => [r.categorySlug, r._count._all]));
@@ -121,7 +116,7 @@ export const getOverview = cache(async (region: RegionSlug, citySlug: string, ca
   return {
     total,
     verified,
-    medianGoogle: med == null ? null : Math.round(med * 10) / 10,
+    averageGoogle: med == null ? null : Math.round(med * 10) / 10,
     updatedAt,
     filterCounts,
     cityCategories,

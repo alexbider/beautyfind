@@ -51,7 +51,7 @@ const FEATURES = [
     num: '4',
     title: 'ביקורות Google וביקורות מאומתות',
     // Google reviews cannot be answered from BeautyFind (decision A4), so only BeautyFind reviews get a reply here.
-    body: 'דירוג Google מסתנכרן מדי שבוע, ולצידו ביקורות BeautyFind שנכתבות רק אחרי ביקור מאומת ביומן. לביקורות BeautyFind מגיבים ישירות מלוח הבקרה.',
+    body: 'דירוג בגוגל מסתנכרן מדי שבוע, ולצידו ביקורות BeautyFind שנכתבות רק אחרי ביקור מאומת ביומן. לביקורות BeautyFind מגיבים ישירות מלוח הבקרה.',
     icon: ['M12 3.6l2.5 5.1 5.6.8-4.1 3.9 1 5.6L12 16.3 6.9 19l1-5.6-4.1-3.9 5.6-.8z'],
   },
   {
@@ -127,11 +127,11 @@ const FAQS = [
   },
   {
     q: 'מה מופיע בפרופיל הציבורי?',
-    a: 'כל מה שתפרסמו: גלריה, תיאור, שירותים עם מחירים, צוות, סרטונים, שעות פעילות, שאלות נפוצות, תמונות לפני ואחרי, מפה ודרכי התקשרות, לצד הדירוג שלכם ב־Google.',
+    a: 'כל מה שתפרסמו: גלריה, תיאור, שירותים עם מחירים, צוות, סרטונים, שעות פעילות, שאלות נפוצות, תמונות לפני ואחרי, מפה ודרכי התקשרות, לצד הדירוג שלכם בגוגל.',
   },
   {
     q: 'איך עובדות הביקורות?',
-    a: 'יש שני סוגי ביקורות, והם מוצגים בנפרד: דירוג Google הציבורי שלכם עם קישור לפרופיל, וביקורות BeautyFind שנכתבות רק על ידי לקוחות שביקרו בפועל. לכל ביקורת BeautyFind אפשר להגיב בפומבי מלוח הבקרה, ולביקורות Google מגיבים ב־Google. אי אפשר למחוק ביקורת שלילית, אבל אפשר לדווח על ביקורת שמפרה את תקן הרישום.',
+    a: 'יש שני סוגי ביקורות, והם מוצגים בנפרד: דירוג בגוגל הציבורי שלכם עם קישור לפרופיל, וביקורות BeautyFind שנכתבות רק על ידי לקוחות שביקרו בפועל. לכל ביקורת BeautyFind אפשר להגיב בפומבי מלוח הבקרה, ולביקורות Google מגיבים בגוגל. אי אפשר למחוק ביקורת שלילית, אבל אפשר לדווח על ביקורת שמפרה את תקן הרישום.',
   },
   {
     q: 'איך עובד החיוב והחשבונית?',
@@ -338,7 +338,7 @@ export default function GetListedPage() {
               <div className={styles.unlisted}>
                 <div className={styles.compareLabel}>לא רשום</div>
                 <div className={styles.unlistedName}>שם העסק שלכם</div>
-                <div className={styles.unlistedMeta}>תל אביב–יפו · בלי תמונות · בלי תפריט טיפולים</div>
+                <div className={styles.unlistedMeta}>תל אביב-יפו · בלי תמונות · בלי תפריט טיפולים</div>
               </div>
               <div aria-hidden="true" className={styles.compareArrow}>
                 <svg width="20" height="20" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -355,7 +355,7 @@ export default function GetListedPage() {
                   <Stars width={80} height={15} />
                   <span className={`${styles.score} ltr`}>4.9</span>
                   <span className={styles.count}>
-                    <span className="ltr">312</span> ביקורות ב־Google
+                    <span className="ltr">312</span> ביקורות בגוגל
                   </span>
                 </div>
                 <div className={styles.listedMeta}>12 תמונות · 24 טיפולים עם מחיר · קביעת תור אונליין</div>

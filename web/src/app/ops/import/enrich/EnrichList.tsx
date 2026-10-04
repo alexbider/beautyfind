@@ -20,7 +20,7 @@ const FILLED: Record<string, string> = {
   google_profile: 'פרופיל Google', rating: 'דירוג', logo: 'לוגו', cover: 'תמונת שער', gallery: 'גלריה', categories: 'תחומים', services: 'טיפולים', prices: 'מחירים', team: 'צוות', videos: 'סרטונים', languages: 'שפות', established: 'שנת הקמה', facebook: 'פייסבוק', tiktok: 'טיקטוק', youtube: 'יוטיוב',
   images_waiting_for_storage: 'תמונות מחכות להעתקה',
 };
-const SOURCE_STATE: Record<string, string> = { found: 'נמצא', not_found: 'לא נמצא ב־Google Maps', match: 'הפרופיל אישר את העסק', no_match: 'הפרופיל לא אישר את העסק (אין קישור לאתר ואין את הטלפון), לא נלקח', unavailable: 'הפרופיל לא זמין', ok: 'האתר נקרא בדפדפן', no_email: 'נקרא בדפדפן, בלי דוא״ל', failed: 'גם הדפדפן לא הצליח', done: 'הסתיים' };
+const SOURCE_STATE: Record<string, string> = { found: 'נמצא', not_found: 'לא נמצא בגוגל Maps', match: 'הפרופיל אישר את העסק', no_match: 'הפרופיל לא אישר את העסק (אין קישור לאתר ואין את הטלפון), לא נלקח', unavailable: 'הפרופיל לא זמין', ok: 'האתר נקרא בדפדפן', no_email: 'נקרא בדפדפן, בלי דוא״ל', failed: 'גם הדפדפן לא הצליח', done: 'הסתיים' };
 const SOURCE_NAME: Record<string, string> = { maps: 'Google Maps', instagram: 'אינסטגרם', facebook: 'פייסבוק', render: 'אתר בדפדפן' };
 const SKIPPED: Record<string, string> = { claimed: 'העסק נתבע על ידי בעליו, לא נוגעים', not_live: 'העסק לא מפורסם', no_actor: 'אין משתמש מפעיל' };
 const EDITORIAL_ERR = (s: string) => (/no_api_key/.test(s) ? 'חסר ANTHROPIC_API_KEY ב־GitHub Actions' : /no_credit/.test(s) ? 'נגמר הקרדיט ב־Anthropic' : /auth/.test(s) ? 'מפתח Anthropic לא תקין' : /model_not_found/.test(s) ? 'המודל לא נמצא' : s);

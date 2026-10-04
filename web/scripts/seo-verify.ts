@@ -64,7 +64,7 @@ interface PageReport {
   ogOk: boolean;
   jsonLd: { blocks: number; parseErrors: number; types: string[]; expectedOk: boolean; duplicateIds: string[] };
   images: { total: number; missingAlt: number; emptyAltNotDecorative: number; missingSize: number };
-  text: { missingInfo: number; latin: string[]; dashes: number; emoji: number; spelling: number; straightQuotes: number };
+  text: { missingInfo: number; latin: string[]; dashes: number; emoji: number; spelling: number; straightQuotes: number; wording: string[] };
   /** Latin street words, Latin city names or other Latin words in the page's <address> elements and the schema's streetAddress. */
   addressProblems: string[];
   internalLinks: string[];
@@ -257,7 +257,7 @@ function analyse(path: string, status: number, redirectTo: string | null, html: 
     ogOk: Object.values(og).every(Boolean),
     jsonLd: { blocks: ldBlocks.length, parseErrors, types, expectedOk, duplicateIds: dupIds },
     images: { total: imgs.length, missingAlt, emptyAltNotDecorative, missingSize },
-    text: { missingInfo: problems.filter(p => p.code === 'missing_info').length, latin, dashes: emDashes, emoji: problems.filter(p => p.code === 'emoji').length, spelling: problems.filter(p => p.code === 'spelling').length, straightQuotes },
+    text: { missingInfo: problems.filter(p => p.code === 'missing_info').length, latin, dashes: emDashes, emoji: problems.filter(p => p.code === 'emoji').length, spelling: problems.filter(p => p.code === 'spelling').length, straightQuotes, wording: [...new Set(problems.filter(p => p.code === 'wording').map(p => p.match))] },
     addressProblems: [...new Set(addresses.flatMap(a => addressProblems(a)))],
     internalLinks,
   };
@@ -334,6 +334,8 @@ async function main() {
     imagesMissingSize: sm.reduce((n, p) => n + p.images.missingSize, 0),
     textMissingInfo: sm.reduce((n, p) => n + p.text.missingInfo, 0),
     textLatin: sm.reduce((n, p) => n + p.text.latin.length, 0),
+    textWordingPages: sm.filter(p => p.text.wording.length > 0).length,
+    textWordingByPhrase: Object.fromEntries([...new Set(sm.flatMap(p => p.text.wording))].map(w => [w, sm.filter(p => p.text.wording.includes(w)).length])),
     addressLatin: sm.filter(p => p.addressProblems.length > 0).length,
     textDashes: sm.reduce((n, p) => n + p.text.dashes, 0),
     textEmoji: sm.reduce((n, p) => n + p.text.emoji, 0),
@@ -364,6 +366,7 @@ async function main() {
     ['Images without width and height', summary.imagesMissingSize],
     ['Text: sentences about missing data', summary.textMissingInfo],
     ['Text: English words inside Hebrew (distinct per page)', summary.textLatin],
+    ['Pages with banned wording (אשר, הינו, כמו כן, במידה ו, אמצעי, דירוג Google, ב־Google, חציון, ₪ before the number, תל אביב–יפו)', summary.textWordingPages],
     ['Addresses with Latin street words, Latin city names or other Latin (pages)', summary.addressLatin],
     ['Text: em dashes', summary.textDashes],
     ['Text: emoji', summary.textEmoji],
@@ -371,7 +374,8 @@ async function main() {
     ['Internal links pointing at redirecting URLs', summary.linksToRedirectingUrls],
     ['Profiles with fewer than 3 inbound links', `${summary.profilesUnder3Inbound}/${summary.profiles}`],
   ];
-  let md = `# SEO verification: ${LABEL}\n\n${BASE} at ${summary.at}, ${summary.pagesCrawled} pages in ${summary.seconds}s\n\n| Check | Value |\n|---|---|\n${rows.map(r => `| ${r[0]} | ${r[1]} |`).join('\n')}\n`;
+  const wordingRows = Object.entries(summary.textWordingByPhrase as Record<string, number>).sort((x, y) => y[1] - x[1]).map(([w, n]) => `| ${w} | ${n} |`).join('\n');
+  let md = `# SEO verification: ${LABEL}\n\n${BASE} at ${summary.at}, ${summary.pagesCrawled} pages in ${summary.seconds}s\n\n| Check | Value |\n|---|---|\n${rows.map(r => `| ${r[0]} | ${r[1]} |`).join('\n')}\n${wordingRows ? `\nBanned wording, pages per phrase:\n\n| Phrase | Pages |\n|---|---|\n${wordingRows}\n` : ''}`;
   if (COMPARE) {
     const before = JSON.parse(readFileSync(COMPARE, 'utf8')) as { summary: typeof summary };
     const b = before.summary;
@@ -390,6 +394,7 @@ async function main() {
       ['Images without size', b.imagesMissingSize, summary.imagesMissingSize],
       ['Text: missing-data sentences', b.textMissingInfo, summary.textMissingInfo],
       ['Text: English inside Hebrew', b.textLatin, summary.textLatin],
+      ['Pages with banned wording', b.textWordingPages ?? 'n/a', summary.textWordingPages],
       ['Addresses with Latin (pages)', b.addressLatin ?? 'n/a', summary.addressLatin],
       ['Text: dashes', b.textDashes, summary.textDashes],
       ['Text: straight-quote abbreviations', b.textStraightQuotes ?? 'n/a', summary.textStraightQuotes],

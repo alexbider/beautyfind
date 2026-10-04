@@ -11,7 +11,7 @@ import styles from './BizTabs.module.css';
 export interface BizTab {
   key: string; // URL param value; '' = the default tab
   name: string;
-  /** "בגוש דן", "בתל אביב–יפו": used in "כל העסקים ב…" and the count line. */
+  /** "בגוש דן", "בתל אביב-יפו": used in "כל העסקים ב…" and the count line. */
   inName: string;
   allHref: string;
   total: number;

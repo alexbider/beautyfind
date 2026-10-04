@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { businessCount, businessPlural } from '@/lib/seo/businessNoun';
 import type { Category, City, Region } from '@/lib/catalog';
 import { ROUTES } from '@/lib/routes';
 import { BIZ, CITIES_N, countText, fmtNum } from './copy';
@@ -31,7 +32,7 @@ export function EmptyCity({ region, city, category, siblings, regionTotal, cityT
     cards.push({ key: 'region', name: `כל אזור ${region.name}`, note: `${countText(siblings.length, CITIES_N)} עם עסקים`, n: regionTotal, href: `/${region.slug}` });
   }
 
-  const what = category ? `עסקים ל${category.name}` : 'עסקים';
+  const what = category ? businessPlural(category.slug) : 'עסקים';
 
   return (
     <section aria-labelledby="h-empty" className={styles.empty}>
@@ -55,7 +56,7 @@ export function EmptyCity({ region, city, category, siblings, regionTotal, cityT
                 <span className={styles.sugName}>{c.name}</span>
                 <span className={styles.sugNote}>{c.note}</span>
               </span>
-              <span className={`${styles.sugN} ltr`} aria-label={countText(c.n, BIZ)}>
+              <span className={`${styles.sugN} ltr`} aria-label={businessCount(c.n, category?.slug)}>
                 {fmtNum(c.n)}
               </span>
             </Link>

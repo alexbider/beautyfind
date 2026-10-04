@@ -49,7 +49,7 @@ export const CITIES: City[] = [
   c('נתניה', 'sharon', 'netanya'), c('רעננה', 'sharon', 'raanana'), c('כפר סבא', 'sharon', 'kfar-saba'),
   c('הרצליה', 'sharon', 'herzliya'), c('הוד השרון', 'sharon', 'hod-hasharon'), c('רמת השרון', 'sharon', 'ramat-hasharon'),
   c('אבן יהודה', 'sharon', 'even-yehuda'), c('כפר יונה', 'sharon', 'kfar-yona'), c('תל מונד', 'sharon', 'tel-mond'),
-  c('תל אביב–יפו', 'dan', 'tel-aviv'), c('רמת גן', 'dan', 'ramat-gan'), c('גבעתיים', 'dan', 'givatayim'),
+  c('תל אביב-יפו', 'dan', 'tel-aviv'), c('רמת גן', 'dan', 'ramat-gan'), c('גבעתיים', 'dan', 'givatayim'),
   c('בני ברק', 'dan', 'bnei-brak'), c('פתח תקווה', 'dan', 'petah-tikva'), c('חולון', 'dan', 'holon'),
   c('בת ים', 'dan', 'bat-yam'), c('ראשון לציון', 'dan', 'rishon-lezion'), c('ראש העין', 'dan', 'rosh-haayin'),
   c('אור יהודה', 'dan', 'or-yehuda'), c('קריית אונו', 'dan', 'kiryat-ono'), c('גבעת שמואל', 'dan', 'givat-shmuel'),

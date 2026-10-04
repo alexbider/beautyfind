@@ -15,7 +15,7 @@ on:
         description: Which cleanup to run
         required: true
         type: choice
-        options: [category-audit, description-cleanup, treatment-hygiene, city-category-report, import-settings, editorial-report, gold-examples, medical-report, hebrew-addresses]
+        options: [category-audit, description-cleanup, treatment-hygiene, city-category-report, import-settings, editorial-report, gold-examples, medical-report, hebrew-addresses, wording-cleanup, seo-verify]
       confirm:
         description: Apply changes (off = dry run, CSV only)
         required: false
@@ -26,7 +26,7 @@ on:
         required: false
         default: ''
       undo_run:
-        description: treatment-hygiene only. Run id of an earlier applied run whose hidden records should be published again (ignores confirm)
+        description: treatment-hygiene and wording-cleanup. Run id of an earlier applied run whose changes should be undone (ignores confirm)
         required: false
         default: ''
       setting:
@@ -74,6 +74,7 @@ jobs:
       RUN_ID: ${{ inputs.run_id }}
       EXTRA: ${{ inputs.extra }}
       FROM_RUN: ${{ inputs.from_run }}
+      SITE_URL: ${{ vars.SITE_URL || 'https://beautyfind.co.il' }}
       # hebrew-addresses: one Place Details call (essentials) per listing with a Google place id. Server-side only; never printed.
       GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
     steps:
@@ -106,6 +107,16 @@ jobs:
             editorial-report) npm run -s import:editorial-report -- --run "$RUN_ID" --out reports/editorial-report.csv 2>&1 | tee reports/log.txt ;;
             gold-examples) npm run -s import:gold-examples -- --out reports/gold-examples.json 2>&1 | tee reports/log.txt ;;
             medical-report) npm run -s import:medical-report -- --out reports/medical-report.csv 2>&1 | tee reports/log.txt ;;
+            wording-cleanup)
+              if [ -n "$UNDO_RUN" ]; then
+                git fetch --quiet origin seo-reports
+                git show "origin/seo-reports:runs/${UNDO_RUN}-wording-cleanup-applied/wording-cleanup-undo.csv" > reports/undo-source.csv
+                npm run -s import:wording-cleanup -- --revert reports/undo-source.csv 2>&1 | tee reports/log.txt
+              else
+                npm run -s import:wording-cleanup -- --out reports/wording-cleanup.csv --undo-out reports/wording-cleanup-undo.csv $flag 2>&1 | tee reports/log.txt
+              fi ;;
+            # Crawls the live site (SITE_URL) and writes the SEO verification report; no database writes.
+            seo-verify) npm run -s seo:verify -- --base "${SITE_URL:-https://beautyfind.co.il}" --label live --out reports --concurrency 4 2>&1 | tee reports/log.txt ;;
             hebrew-addresses)
               if [ -n "$FROM_RUN" ]; then
                 # Apply exactly what an earlier dry run proposed: its CSV lives on the report branch.

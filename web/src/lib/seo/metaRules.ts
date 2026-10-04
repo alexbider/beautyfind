@@ -5,11 +5,11 @@
 // separately" line, 130 to 155 characters. Pure, shared by the page metadata, the writer's checks, the
 // stored-override check and scripts/seo-verify.ts.
 
-import { LATIN_ADDRESS, MISSING_INFO_EXTRA, MISSING_INFO_PATTERNS, RECORD_PATTERNS, latinInsideHebrew } from '../import/textRules';
+import { WORDING_PATTERNS, LATIN_ADDRESS, MISSING_INFO_EXTRA, MISSING_INFO_PATTERNS, RECORD_PATTERNS, latinInsideHebrew } from '../import/textRules';
 import { DESCRIPTION_MAX, DESCRIPTION_MIN, composeDescription } from './meta';
 import { TREATMENT_BRANDS } from './treatmentNames';
 
-export type MetaProblem = 'missing_info' | 'record' | 'address' | 'booking' | 'contact' | 'phone_only' | 'ratings_line' | 'title_repeat' | 'latin' | 'short' | 'long';
+export type MetaProblem = 'missing_info' | 'record' | 'address' | 'wording' | 'booking' | 'contact' | 'phone_only' | 'ratings_line' | 'title_repeat' | 'latin' | 'short' | 'long';
 
 /** Sentences about booking: whether, where or how a visit can be booked. */
 export const BOOKING_PATTERNS: RegExp[] = [
@@ -27,7 +27,7 @@ export const CONTACT_PATTERNS: RegExp[] = [
 export const PHONE_ONLY_PATTERNS: RegExp[] = [/טלפון\s*בלבד/u, /בטלפון\s*בלבד/u, /רק\s*בטלפון/u, /רק\s*טלפונית/u, /ללא\s*טלפון/u, /phone\s*only/i, /by\s*phone\s*only/i];
 
 /** The line that was pasted into every directory description. */
-export const RATINGS_LINE = /דירוג\s*Google\s*וביקורות\s*BeautyFind\s*בנפרד/u;
+export const RATINGS_LINE = /דירוג\s*(?:Google|בגוגל)\s*וביקורות\s*BeautyFind\s*בנפרד/u;
 
 const first = (text: string, patterns: RegExp[]) => patterns.find(re => re.test(text));
 
@@ -44,6 +44,7 @@ export function metaDescriptionProblems(text: string, opts: { min?: number; max?
   add('missing_info', first(t, [...MISSING_INFO_PATTERNS, ...MISSING_INFO_EXTRA]));
   add('record', first(t, RECORD_PATTERNS));
   add('address', LATIN_ADDRESS.test(t) ? LATIN_ADDRESS : undefined);
+  for (const w of WORDING_PATTERNS) if (w.re.test(t)) out.push({ code: 'wording', match: w.label });
   add('phone_only', first(t, PHONE_ONLY_PATTERNS));
   add('booking', first(t, BOOKING_PATTERNS));
   add('contact', first(t, CONTACT_PATTERNS));

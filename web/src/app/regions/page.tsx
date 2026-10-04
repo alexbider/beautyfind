@@ -18,7 +18,7 @@ export const revalidate = 600;
 const BASE: Metadata = publicMetadata({
   path: '/regions',
   title: 'כל האזורים והערים: מכוני יופי ואסתטיקה',
-  description: composeDescription([`מכוני יופי ואסתטיקה בכל ${CITIES.length} הערים שבאינדקס, לפי שבעה אזורים: מהצפון ועד אילת.`, 'בחרו אזור או עיר, השוו מחירים וקבעו תור.'], ['דירוג Google וביקורות BeautyFind בנפרד.']),
+  description: composeDescription([`מכוני יופי ואסתטיקה בכל ${CITIES.length} הערים שבאינדקס, לפי שבעה אזורים: מהצפון ועד אילת.`, 'בחרו אזור או עיר, השוו מחירים וקבעו תור.'], ['דירוג בגוגל וביקורות BeautyFind בנפרד.']),
 });
 export const generateMetadata = () => applySeo('/regions', BASE);
 

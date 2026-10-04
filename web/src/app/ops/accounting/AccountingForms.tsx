@@ -5,7 +5,7 @@ import { useMemo, useState, useTransition } from 'react';
 import { ui } from '@/components/ops/ui';
 import { createExpenseAction, deleteExpenseAction, issueDocumentAction, reconcileBankAction, updateSubscriptionAction, type ReconcileResult } from './actions';
 
-const nis = (agorot: number) => `${agorot < 0 ? '−' : ''}₪${(Math.abs(agorot) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const nis = (agorot: number) => `${agorot < 0 ? '−' : ''}${(Math.abs(agorot) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₪`;
 
 export function ExpenseForm({ categories }: { categories: Array<{ key: string; name: string }> }) {
   const router = useRouter();

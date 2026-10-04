@@ -293,7 +293,7 @@ export async function loadQueue(now = new Date()): Promise<QueueItem[]> {
     const toCheck =
       kind === 'license' ? 'מספר, שם וסטטוס הרישיון'
       : kind === 'cert' ? 'שם, מוסד, חותמת וחתימה'
-      : kind === 'claim' ? 'בעלות רשומה ומי מנהל את הכרטיס ב־Google'
+      : kind === 'claim' ? 'בעלות רשומה ומי מנהל את הכרטיס בגוגל'
       : 'ח.פ. / ע.מ., שם רשום וכתובת';
     const source = {
       name: 'בדיקה ידנית: אין חיבור אוטומטי למאגר',

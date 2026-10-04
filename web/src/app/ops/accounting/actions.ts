@@ -34,7 +34,7 @@ export async function createExpenseAction(form: FormData): Promise<Result> {
     receiptUrl = up.url;
   }
   const e = await db.expense.create({ data: { date, vendor: p.data.vendor, description: p.data.description || null, category: p.data.category, netAgorot: Math.round(p.data.netNis * 100), vatAgorot: Math.round(p.data.vatNis * 100), receiptUrl, createdById: user.id } });
-  await db.auditLog.create({ data: { actorId: user.id, action: 'expense_create', subjectType: 'expense', subjectId: e.id, meta: { label: `${p.data.vendor} · ₪${p.data.netNis}` } } });
+  await db.auditLog.create({ data: { actorId: user.id, action: 'expense_create', subjectType: 'expense', subjectId: e.id, meta: { label: `${p.data.vendor} · ${p.data.netNis} ₪` } } });
   revalidatePath('/ops/accounting');
   revalidatePath('/ops');
   return { ok: true, id: e.id };

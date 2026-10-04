@@ -1,3 +1,4 @@
+import { trimmedMean } from '@/lib/stats';
 import 'server-only';
 import { Prisma, type LeadStage, type ProfileEventType } from '@prisma/client';
 import { db } from '@/lib/server/db';
@@ -243,17 +244,13 @@ async function completionFor(branches: BranchForTasks[]) {
   );
 }
 
-const median = (xs: number[]) => {
-  if (!xs.length) return null;
-  const s = [...xs].sort((a, b) => a - b);
-  const m = Math.floor(s.length / 2);
-  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
-};
+/** The peers' average: outliers beyond 1.5 times the interquartile range out, then the mean (src/lib/stats.ts). */
+const median = (xs: number[]) => trimmedMean(xs, 1);
 
 export type BenchRow = { key: string; name: string; you: number; med: number; higherIsBetter: boolean; unit?: string };
 
 /**
- * The branch against the median of other live branches in the same region and first category.
+ * The branch against the average of other live branches in the same region and first category.
  * Returns null when there are fewer than BENCH_MIN_PEERS comparable branches.
  */
 export async function benchmark(branchId: string, range: RangeKey, from: Date, to: Date) {

@@ -40,7 +40,7 @@ const FROM: Record<'ask' | 'schedule' | 'decline' | 'approve', ConsultStatus[]> 
 
 // ---------- Configuration ----------
 
-/** Business.settings.consult_fee in whole shekels (default ₪200), offset against the treatment. */
+/** Business.settings.consult_fee in whole shekels (default 200 ₪), offset against the treatment. */
 export function consultFee(settings: unknown): number {
   const v = settings && typeof settings === 'object' ? (settings as Record<string, unknown>).consult_fee : undefined;
   const n = typeof v === 'number' ? v : typeof v === 'string' ? Number(v) : NaN;
@@ -398,7 +398,7 @@ export async function approveTreatment(actor: Actor, id: string, note: string): 
   const ok = await db.$transaction(async tx => {
     const moved = await transition(tx, req, FROM.approve, {
       status: 'closed_treatment_booked', decidedById: actor.userId,
-      outcomeText: `${actor.displayName} אישר/ה טיפול${clean ? `: ${clean.replace(/[.!?]$/, '')}.` : '.'}${fee > 0 ? ` דמי הייעוץ, ₪${fee.toLocaleString('en-US')}, מתקזזים מהטיפול.` : ''}`,
+      outcomeText: `${actor.displayName} אישר/ה טיפול${clean ? `: ${clean.replace(/[.!?]$/, '')}.` : '.'}${fee > 0 ? ` דמי הייעוץ, ${fee.toLocaleString('en-US')} ₪, מתקזזים מהטיפול.` : ''}`,
     });
     if (moved) await decide(tx, actor, req, 'approve_treatment', clean || null);
     return moved;

@@ -13,7 +13,8 @@ import { TreatmentsBrowser, type TreatmentRow } from '@/components/treatments/Tr
 import { CATEGORIES, CITIES, GROUP_ORDER, MENU_REGION_ORDER, citiesOf, regionBySlug } from '@/lib/catalog';
 import { nis } from '@/lib/format';
 import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
-import { listingCounts, medianPrices } from '@/lib/server/public';
+import { listingCounts, averagePrices } from '@/lib/server/public';
+import { businessCount } from '@/lib/seo/businessNoun';
 import { composeDescription, publicMetadata } from '@/lib/seo/meta';
 import styles from './page.module.css';
 
@@ -23,16 +24,16 @@ export const revalidate = 600;
 
 export async function generateMetadata(): Promise<Metadata> {
   const counts = await listingCounts();
-  const lead = counts.total > 0 ? `${countText(counts.total, 'עסק אחד', 'עסקים')} ב־7 אזורים` : '7 אזורים';
+  const lead = counts.total > 0 ? `${businessCount(counts.total)} ב־7 אזורים` : '7 אזורים';
   return applySeo('/treatments', publicMetadata({
     path: '/treatments',
     title: '14 תחומי טיפול: מחירים והשוואה',
-    description: composeDescription([`14 תחומי הטיפול באינדקס BeautyFind: ${lead}.`, 'מחירים אמצעיים בשקלים ומי מורשה לבצע כל טיפול בישראל.', 'השוו מחירים וקבעו תור.'], ['מאסתטיקה רפואית ועד מספרות, ציפורניים וספא.']),
+    description: composeDescription([`14 תחומי הטיפול באינדקס BeautyFind: ${lead}.`, 'מחירים ממוצעים בשקלים ומי מורשה לבצע כל טיפול בישראל.', 'השוו מחירים וקבעו תור.'], ['מאסתטיקה רפואית ועד מספרות, ציפורניים וספא.']),
   }));
 }
 
 export default async function TreatmentsPage() {
-  const [counts, medians, ratings] = await Promise.all([listingCounts(), medianPrices(), ratingMedians()]);
+  const [counts, medians, ratings] = await Promise.all([listingCounts(), averagePrices(), ratingMedians()]);
 
   const rows: TreatmentRow[] = CATEGORIES.map(c => {
     const body = CATEGORY_CONTENT[c.slug];
@@ -60,7 +61,7 @@ export default async function TreatmentsPage() {
     { label: 'תחומי טיפול', value: String(CATEGORIES.length) },
     { label: 'עסקים באינדקס', value: fmtInt(counts.total) },
     { label: 'אזורים', value: '7' },
-    ratings.national != null ? { label: 'דירוג אמצעי בגוגל', value: ratings.national.toFixed(1) } : { label: 'ערים', value: `${CITIES.length}` },
+    ratings.national != null ? { label: 'דירוג ממוצע בגוגל', value: ratings.national.toFixed(1) } : { label: 'ערים', value: `${CITIES.length}` },
   ];
 
   return (
@@ -89,10 +90,10 @@ export default async function TreatmentsPage() {
             <p className={styles.lede}>
               {counts.total > 0 ? (
                 <>
-                  <Count n={counts.total} {...BIZ} /> ב־7 אזורים, מחולקים ל־14 תחומים.{' '}
+                  {businessCount(counts.total)} ב־7 אזורים, מחולקים ל־14 תחומים.{' '}
                 </>
               ) : null}
-              לכל תחום מחיר חציוני בשקלים, תדירות טיפול אופיינית, ומי מורשה על פי חוק לבצע אותו, כי בכמה מהתחומים הגבול בין קוסמטיקה לרפואה הוא רגולטורי ולא אסתטי.
+              לכל תחום מחיר ממוצע בשקלים, תדירות טיפול אופיינית, ומי מורשה על פי חוק לבצע אותו, כי בכמה מהתחומים הגבול בין קוסמטיקה לרפואה הוא רגולטורי ולא אסתטי.
             </p>
             <div className={styles.metaRow}>
               <span className={styles.updated}>
@@ -134,10 +135,10 @@ export default async function TreatmentsPage() {
                   <span className={styles.popText}>
                     <span className={styles.popName}>{c.name}</span>
                     <span className={styles.popMeta}>
-                      <Count n={c.count} {...BIZ} />
+                      {businessCount(c.count, c.slug)}
                       {c.median != null && (
                         <>
-                          {' '}· מחיר אמצעי <span className="ltr tnum">{nis(c.median)}</span>
+                          {' '}· מחיר ממוצע <span className="ltr tnum">{nis(c.median)}</span>
                         </>
                       )}
                     </span>
@@ -167,7 +168,7 @@ export default async function TreatmentsPage() {
                 <Link href={`/${slug}`} className={shared.regionCard}>
                   <span className={shared.regionName}>{regionBySlug(slug)!.name}</span>
                   <span className={shared.regionMeta}>
-                    <Count n={counts.region[slug] ?? 0} {...BIZ} /> · <span className="ltr tnum">{citiesOf(slug).length}</span> ערים
+                    {businessCount(counts.region[slug] ?? 0)} · <span className="ltr tnum">{citiesOf(slug).length}</span> ערים
                   </span>
                 </Link>
               </li>

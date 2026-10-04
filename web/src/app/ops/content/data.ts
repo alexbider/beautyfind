@@ -92,6 +92,6 @@ export const JSON_LD_TYPES = [
   { type: 'Organization', where: 'דף הבית, אודות', note: 'שם, לוגו וערוצי קשר של BeautyFind' },
   { type: 'BreadcrumbList', where: 'אזור, עיר, תחום, פרופיל עסק', note: 'פירורי לחם בתוצאות' },
   { type: 'FAQPage', where: 'תחומי טיפול, פרופיל עסק', note: 'שאלות ותשובות מהעמוד בלבד' },
-  { type: 'BeautySalon / MedicalClinic + PostalAddress + OpeningHoursSpecification', where: 'פרופיל עסק', note: 'כתובת, שעות, טלפון; דירוג Google לעולם לא מוצג כדירוג BeautyFind' },
+  { type: 'BeautySalon / MedicalClinic + PostalAddress + OpeningHoursSpecification', where: 'פרופיל עסק', note: 'כתובת, שעות, טלפון; דירוג בגוגל לעולם לא מוצג כדירוג BeautyFind' },
   { type: 'Service', where: 'תחומי טיפול', note: 'תיאור התחום והמחיר החציוני' },
 ];

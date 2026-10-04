@@ -356,7 +356,7 @@ function Estimator({ pricingNote }: { pricingNote: PricingNote }) {
 
 const FILLED: Record<string, string> = {
   phone: 'טלפון', whatsapp: 'וואטסאפ', email: 'דוא״ל', website: 'אתר', instagram: 'אינסטגרם', hours: 'שעות', description: 'תיאור', faqs: 'שאלות נפוצות',
-  accessible: 'נגישות', parking: 'חניה', waze: 'Waze', google_profile: 'פרופיל Google', rating: 'דירוג Google', logo: 'לוגו', cover: 'תמונת שער',
+  accessible: 'נגישות', parking: 'חניה', waze: 'Waze', google_profile: 'פרופיל Google', rating: 'דירוג בגוגל', logo: 'לוגו', cover: 'תמונת שער',
   gallery: 'גלריה', categories: 'תחומים', services: 'טיפולים', prices: 'מחירים', team: 'צוות', videos: 'סרטונים', languages: 'שפות', established: 'שנת הקמה',
   facebook: 'פייסבוק', tiktok: 'טיקטוק', youtube: 'יוטיוב',
 };

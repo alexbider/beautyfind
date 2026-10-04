@@ -110,7 +110,7 @@ function BizCard({ c, last }: { c: PhoneCard; last: boolean }) {
             </span>
           )}
           {g && (
-            <span className={s.rating} role="img" aria-label={`דירוג Google ${g.rating.toFixed(1)} מתוך 5, ${g.count} ביקורות`}>
+            <span className={s.rating} role="img" aria-label={`דירוג בגוגל ${g.rating.toFixed(1)} מתוך 5, ${g.count} ביקורות`}>
               <strong dir="ltr">{g.rating.toFixed(1)}</strong>{!bf && <Stars rating={g.rating} size={14} />}<span dir="ltr" className={s.iso}>({g.count})</span>
               <span className={s.src}>Google</span>
             </span>
