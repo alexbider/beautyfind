@@ -9,6 +9,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { PrismaClient } from '@prisma/client';
 import { matchService } from '../../src/lib/import/services';
+import { statedDoctorName } from '../../src/lib/medical';
 
 const db = new PrismaClient();
 const arg = (name: string) => {
@@ -28,7 +29,7 @@ async function main() {
       id: true, name: true, cityName: true, regionSlug: true, slug: true, isClaimed: true, medicalResponsibleId: true,
       categories: { select: { categorySlug: true, isPrimary: true } },
       treatments: { where: { isPublished: true }, select: { name: true, isMedical: true } },
-      business: { select: { staff: { where: { status: 'active', profession: { in: ['doctor', 'nurse'] } }, select: { displayName: true, profession: true, branchIds: true } } } },
+      business: { select: { staff: { where: { status: 'active' }, select: { displayName: true, profession: true, branchIds: true } } } },
     },
     orderBy: [{ regionSlug: 'asc' }, { cityName: 'asc' }, { name: 'asc' }],
   });
@@ -36,13 +37,17 @@ async function main() {
   const withMedical = branches.map(b => ({ ...b, treatments: b.treatments.filter(t => t.isMedical || matchService(t.name)?.isMedical) })).filter(b => b.treatments.length);
   const rows = withMedical
     .map(b => {
-      const staff = b.business.staff.filter(m => !m.branchIds.length || m.branchIds.includes(b.id));
-      return { ...b, staff, covered: !!b.medicalResponsibleId || staff.length > 0 };
+      const here = b.business.staff.filter(m => !m.branchIds.length || m.branchIds.includes(b.id));
+      const staff = here.filter(m => m.profession === 'doctor' || m.profession === 'nurse');
+      // The disclaimer state the profile shows (src/lib/medical.ts): a doctor title in the listing name or a
+      // staff name moves the listing from "no doctor on file" to "stated doctor, license unchecked".
+      const stated = statedDoctorName([b.name, ...here.map(m => m.displayName)]);
+      return { ...b, staff, covered: !!b.medicalResponsibleId || staff.length > 0, stated, state: stated ? 'stated_doctor' : 'no_doctor' };
     })
     .filter(b => !b.covered);
-  const header = ['branch_id', 'name', 'city', 'region', 'claimed', 'primary_category', 'categories', 'medical_treatments', 'medical_treatment_count', 'admin_url', 'public_url'];
+  const header = ['branch_id', 'name', 'city', 'region', 'claimed', 'disclaimer_state', 'stated_doctor', 'primary_category', 'categories', 'medical_treatments', 'medical_treatment_count', 'admin_url', 'public_url'];
   const lines = rows.map(b => [
-    b.id, b.name, b.cityName, b.regionSlug, b.isClaimed ? 'yes' : 'no',
+    b.id, b.name, b.cityName, b.regionSlug, b.isClaimed ? 'yes' : 'no', b.state, b.stated ?? '',
     b.categories.find(c => c.isPrimary)?.categorySlug ?? '', b.categories.map(c => c.categorySlug).join(' | '),
     b.treatments.map(t => t.name).join(' | '), b.treatments.length,
     `https://beautyfind.co.il/ops/businesses/branch/${b.id}`, `https://beautyfind.co.il/${b.regionSlug}/biz/${b.slug}`,
@@ -51,13 +56,15 @@ async function main() {
   writeFileSync(out, `﻿${[header.join(','), ...lines].join('\n')}\n`);
   const claimed = rows.filter(r => r.isClaimed).length;
   console.log(`live listings with published medical treatments: ${withMedical.length}; without a medical responsible or a doctor or nurse on staff: ${rows.length} (claimed ${claimed}, unclaimed ${rows.length - claimed})`);
+  const statedN = rows.filter(r => r.state === 'stated_doctor').length;
+  console.log(`disclaimer state: stated doctor (a doctor title in the listing name or on staff, license unchecked): ${statedN}; no doctor on file: ${rows.length - statedN}`);
   const byCat = new Map<string, number>();
   for (const r of rows) {
     const k = r.categories.find(c => c.isPrimary)?.categorySlug ?? '(none)';
     byCat.set(k, (byCat.get(k) ?? 0) + 1);
   }
   for (const [k, n] of [...byCat.entries()].sort((a, b) => b[1] - a[1])) console.log(`${String(n).padStart(6)}  ${k}`);
-  console.log(`SUMMARY uncovered=${rows.length} csv=${out}`);
+  console.log(`SUMMARY uncovered=${rows.length} stated_doctor=${statedN} no_doctor=${rows.length - statedN} csv=${out}`);
 }
 
 main()

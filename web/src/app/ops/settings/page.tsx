@@ -53,6 +53,7 @@ export default async function SettingsPage() {
       </Card>
       <Card title="טיפולים רפואיים" flush>
         <MedicalDisclaimerText text={s.medicalDisclaimer} canEdit={canEdit} />
+        <MedicalDisclaimerText text={s.medicalStatedDisclaimer} canEdit={canEdit} kind="stated" />
       </Card>
     </AdminShell>
   );

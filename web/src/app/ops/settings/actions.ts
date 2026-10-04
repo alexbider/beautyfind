@@ -37,12 +37,13 @@ export async function setFlagAction(name: string, value: boolean): Promise<{ ok:
   return { ok: true };
 }
 
-export async function saveMedicalDisclaimerAction(text: string): Promise<{ ok: true } | { ok: false; error: string }> {
+export async function saveMedicalDisclaimerAction(text: string, kind: 'noDoctor' | 'stated' = 'noDoctor'): Promise<{ ok: true } | { ok: false; error: string }> {
   const user = await areaUserOrNull('settings', 'edit');
   if (!user) return { ok: false, error: 'אין הרשאה' };
-  const p = PlatformSettingsSchema.shape.medicalDisclaimer.safeParse(text.trim());
-  if (!p.success) return { ok: false, error: 'בין 20 ל־800 תווים' };
-  await savePlatformSettings(user.id, { medicalDisclaimer: p.data });
+  const key = kind === 'stated' ? 'medicalStatedDisclaimer' : 'medicalDisclaimer';
+  const p = PlatformSettingsSchema.shape[key].safeParse(text.trim());
+  if (!p.success) return { ok: false, error: kind === 'stated' ? 'בין 20 ל־800 תווים, עם {name}' : 'בין 20 ל־800 תווים' };
+  await savePlatformSettings(user.id, { [key]: p.data });
   refresh();
   return { ok: true };
 }

@@ -57,3 +57,20 @@ describe('medical treatment disclaimer', () => {
     assert.equal(nextMedicalInfoOpen('ArrowDown', false), false);
   });
 });
+
+describe('stated doctor (third state)', () => {
+  it('reads a doctor title in the listing name or a staff name, up to three words, and stops at generic words', async () => {
+    const { statedDoctorName } = await import('../../src/lib/medical');
+    assert.equal(statedDoctorName(['ד״ר מנאר קעואר - מומחה בכירורגיה פלסטית ואסתטית']), 'ד״ר מנאר קעואר');
+    assert.equal(statedDoctorName(['ד"ר אמיר מטר,מרפאת שיניים ואסתטיקה']), 'ד״ר אמיר מטר');
+    assert.equal(statedDoctorName(['Dr. Thaer Clinic - Alchemy 22']), 'Dr. Thaer');
+    assert.equal(statedDoctorName(['פרופ׳ דן כהן אסתטיקה']), 'פרופ׳ דן כהן');
+    assert.equal(statedDoctorName(['קליניקה של סדר השעות']), null);
+    assert.equal(statedDoctorName(['Barak clinic', 'דר׳ יעל לוינסון']), 'ד״ר יעל לוינסון');
+  });
+  it('a stated doctor without a verified one gives the stated state; a verified doctor wins', () => {
+    assert.deepEqual(medicalState(null, 'ד״ר מנאר קעואר'), { kind: 'stated', label: MEDICAL_LABEL, name: 'ד״ר מנאר קעואר' });
+    assert.equal(medicalState({ name: 'דנה לוי', profession: 'nurse', licenseVerified: true }, 'ד״ר מנאר קעואר').kind, 'verified');
+    assert.equal(medicalState(null, null).kind, 'warning');
+  });
+});

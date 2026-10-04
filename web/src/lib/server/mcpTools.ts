@@ -209,6 +209,7 @@ export const MCP_TOOLS: McpTool[] = [
     flags: z.object(Object.fromEntries(SETTING_FLAGS.map(k => [k, z.boolean().optional()]))).optional().describe('onlineBooking, giftCards, waitlist, clientAssistant, maintenanceMode'),
     maintenance_message: z.string().max(300).optional(),
     medical_disclaimer: z.string().min(20).max(800).optional().describe('הסבר ״טיפול רפואי״ שמוצג בפרופילים ליד טיפולים רפואיים ללא רופא רשום'),
+    medical_stated_disclaimer: z.string().min(20).max(800).optional().describe('ההסבר כשהעסק מציין רופא בשמו או בצוות והרישיון טרם נבדק; חייב להכיל {name}'),
   }), description: 'עדכון הגדרות הפלטפורמה: מספרים (מחירים, מע״מ, מדיניות חיוב), מתגי תכונות, מצב תחזוקה והודעתו, הסבר הטיפול הרפואי. שדות שלא נשלחו נשארים.', run: async a => {
     const cur = await platformSettings();
     const out: Record<string, unknown> = {};
@@ -223,6 +224,7 @@ export const MCP_TOOLS: McpTool[] = [
     if (flags) for (const [k, v] of Object.entries(flags)) if (typeof v === 'boolean') out[k] = await setFlagAction(k, v);
     if (typeof a.maintenance_message === 'string') out.maintenance_message = await saveMaintenanceMessageAction(a.maintenance_message);
     if (typeof a.medical_disclaimer === 'string') out.medical_disclaimer = await saveMedicalDisclaimerAction(a.medical_disclaimer);
+    if (typeof a.medical_stated_disclaimer === 'string') out.medical_stated_disclaimer = await saveMedicalDisclaimerAction(a.medical_stated_disclaimer, 'stated');
     return { ok: true, saved: out };
   } },
 ];

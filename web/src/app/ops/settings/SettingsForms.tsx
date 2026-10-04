@@ -69,16 +69,17 @@ export function MaintenanceMessage({ message, canEdit }: { message: string; canE
 }
 
 /** The medical treatment disclaimer shown on profiles next to medical treatments without a doctor on file. */
-export function MedicalDisclaimerText({ text: initial, canEdit }: { text: string; canEdit: boolean }) {
+export function MedicalDisclaimerText({ text: initial, canEdit, kind = 'noDoctor' }: { text: string; canEdit: boolean; kind?: 'noDoctor' | 'stated' }) {
   const router = useRouter();
   const [text, setText] = useState(initial);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, start] = useTransition();
+  const id = kind === 'stated' ? 's-medical-stated' : 's-medical';
   return (
-    <form className={ui.stack} style={{ gap: 8, padding: '12px 20px 16px' }} onSubmit={e => { e.preventDefault(); start(async () => { const r = await saveMedicalDisclaimerAction(text); setMsg(r.ok ? { ok: true, text: 'נשמר' } : { ok: false, text: r.error }); if (r.ok) router.refresh(); }); }}>
-      <label className={ui.label} htmlFor="s-medical">הסבר ״טיפול רפואי״ שמוצג ליד טיפולים רפואיים ללא רופא רשום</label>
-      <textarea id="s-medical" className={ui.textarea} value={text} onChange={e => setText(e.target.value)} maxLength={800} disabled={!canEdit} style={{ minHeight: 110 }} />
-      <p className={ui.hint} style={{ margin: 0 }}>מופיע בחלון המידע בפרופיל. שני הקישורים (פנקס הרופאים, הוספת רופא) מתווספים אוטומטית אחרי הטקסט.</p>
+    <form className={ui.stack} style={{ gap: 8, padding: '12px 20px 16px' }} onSubmit={e => { e.preventDefault(); start(async () => { const r = await saveMedicalDisclaimerAction(text, kind); setMsg(r.ok ? { ok: true, text: 'נשמר' } : { ok: false, text: r.error }); if (r.ok) router.refresh(); }); }}>
+      <label className={ui.label} htmlFor={id}>{kind === 'stated' ? 'הסבר כשהעסק מציין רופא בשמו או בצוות, והרישיון טרם נבדק ({name} = שם הרופא)' : 'הסבר ״טיפול רפואי״ שמוצג ליד טיפולים רפואיים ללא רופא רשום'}</label>
+      <textarea id={id} className={ui.textarea} value={text} onChange={e => setText(e.target.value)} maxLength={800} disabled={!canEdit} style={{ minHeight: 110 }} />
+      <p className={ui.hint} style={{ margin: 0 }}>{kind === 'stated' ? 'מופיע בחלון המידע בפרופיל. קישור פנקס הרופאים מתווסף אוטומטית אחרי הטקסט.' : 'מופיע בחלון המידע בפרופיל. שני הקישורים (פנקס הרופאים, הוספת רופא) מתווספים אוטומטית אחרי הטקסט.'}</p>
       {canEdit ? <div className={ui.actions}><button type="submit" className={`${ui.btn} ${ui.small}`} disabled={pending}>שמירת ההסבר</button>{msg ? <span className={msg.ok ? ui.ok : ui.error}>{msg.text}</span> : null}</div> : null}
     </form>
   );

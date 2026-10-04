@@ -10,7 +10,8 @@ import styles from './MedicalInfo.module.css';
 /** What the profile hands every medical treatment row: the state, the setting's text and the claim link. */
 export interface MedicalContext {
   state: MedicalState;
-  text: string;
+  text: string; // the no-doctor disclaimer (setting medicalDisclaimer)
+  statedText: string; // the stated-doctor disclaimer with {name} (setting medicalStatedDisclaimer)
   claimHref: string;
 }
 
@@ -35,7 +36,7 @@ export function MedicalBadge({ badge, licenseTag }: { badge: string; licenseTag:
  * fixed next to the button on wide screens and becomes a bottom sheet below 768px. Enter and Space toggle
  * (native button), Escape closes and returns focus, an outside tap closes. Nothing in the row moves.
  */
-export function MedicalInfo({ text, claimHref, treatment }: { text: string; claimHref: string; treatment: string }) {
+export function MedicalInfo({ text, claimHref, treatment }: { text: string; claimHref: string | null; treatment: string }) {
   const id = `mi-${useId().replace(/[^A-Za-z0-9_-]/g, '')}`;
   const [open, setOpen] = useState(false);
   const wrap = useRef<HTMLSpanElement>(null);
@@ -118,7 +119,7 @@ export function MedicalInfo({ text, claimHref, treatment }: { text: string; clai
         <p className={styles.text}>{text}</p>
         <p className={styles.links}>
           <a href={MOH_REGISTRY_URL} target="_blank" rel="noopener nofollow">{REGISTRY_LINK_LABEL}</a>
-          <Link href={claimHref} rel="nofollow">{CLAIM_LINK_LABEL}</Link>
+          {claimHref && <Link href={claimHref} rel="nofollow">{CLAIM_LINK_LABEL}</Link>}
         </p>
       </div>
     </span>
@@ -127,5 +128,7 @@ export function MedicalInfo({ text, claimHref, treatment }: { text: string; clai
 
 /** The row element for a medical treatment: the badge or the disclaimer trigger, by state. */
 export function MedicalMark({ ctx, treatment }: { ctx: MedicalContext; treatment: string }) {
-  return ctx.state.kind === 'verified' ? <MedicalBadge badge={ctx.state.badge} licenseTag={ctx.state.licenseTag} /> : <MedicalInfo text={ctx.text} claimHref={ctx.claimHref} treatment={treatment} />;
+  if (ctx.state.kind === 'verified') return <MedicalBadge badge={ctx.state.badge} licenseTag={ctx.state.licenseTag} />;
+  if (ctx.state.kind === 'stated') return <MedicalInfo text={ctx.statedText.replace(/\{name\}/g, ctx.state.name)} claimHref={null} treatment={treatment} />;
+  return <MedicalInfo text={ctx.text} claimHref={ctx.claimHref} treatment={treatment} />;
 }

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { Prisma } from '@prisma/client';
 import { AREAS, LEVELS, OPS_ROLES, type PermissionOverrides } from '@/components/ops/roles';
 import { INDEX_SECTION_KEYS } from '@/lib/indexing';
-import { DEFAULT_MEDICAL_DISCLAIMER } from '@/lib/medical';
+import { DEFAULT_MEDICAL_DISCLAIMER, DEFAULT_MEDICAL_STATED_DISCLAIMER } from '@/lib/medical';
 import { PLAN_MONTHLY_NIS, VAT_RATE } from '@/lib/pricing';
 import { db } from './db';
 
@@ -35,6 +35,8 @@ export const PlatformSettingsSchema = z.object({
   maintenanceMessage: z.string().max(300).default('האתר בתחזוקה קצרה. הזמנות קיימות אינן נפגעות; נחזור בעוד זמן קצר.'),
   // The medical treatment disclaimer shown on profiles next to medical treatments without a doctor on file (src/lib/medical.ts).
   medicalDisclaimer: z.string().min(20).max(800).default(DEFAULT_MEDICAL_DISCLAIMER),
+  // The same popover when the business names a doctor whose license is not checked; {name} is the stated doctor.
+  medicalStatedDisclaimer: z.string().min(20).max(800).refine(t => t.includes('{name}'), 'חייב להכיל {name}').default(DEFAULT_MEDICAL_STATED_DISCLAIMER),
   // Indexing (/ops/content, tab אינדוקס): the master switch and the public sections search engines may
   // index. A missing section means on. STAGING=1 on the deployment blocks everything regardless.
   indexSite: z.boolean().default(true),

@@ -17,6 +17,9 @@ export const MEDICAL_LABEL = 'טיפול רפואי';
 export const DEFAULT_MEDICAL_DISCLAIMER =
   'טיפול רפואי. טיפולי הזרקה אסתטיים, כמו בוטוקס וחומרי מילוי, נחשבים בישראל לטיפולים רפואיים ויש לבצע אותם בידי רופא מורשה. העסק לא מסר לנו את פרטי הרופא המבצע. לפני הטיפול כדאי לבקש את שם הרופא ומספר הרישיון שלו ולבדוק אותם בפנקס הרופאים של משרד הבריאות.';
 
+/** The popover text when the business itself names a doctor (a doctor title in the listing name or on staff) whose license we have not checked. {name} is the stated doctor. */
+export const DEFAULT_MEDICAL_STATED_DISCLAIMER = 'לפי פרטי העסק, הטיפול מבוצע בידי {name}. רישיון הרופא טרם נבדק על ידינו. אפשר לבדוק אותו בפנקס הרופאים של משרד הבריאות.';
+
 export const REGISTRY_LINK_LABEL = 'לבדיקה בפנקס הרופאים';
 export const CLAIM_LINK_LABEL = 'בעלי העסק? אפשר להוסיף את פרטי הרופא בדף ניהול העסק';
 export const LICENSE_TAG = 'רישיון נבדק';
@@ -33,7 +36,10 @@ export interface MedicalDoctor {
   licenseVerified: boolean;
 }
 
-export type MedicalState = { kind: 'verified'; badge: string; licenseTag: string | null } | { kind: 'warning'; label: string };
+export type MedicalState =
+  | { kind: 'verified'; badge: string; licenseTag: string | null }
+  | { kind: 'stated'; label: string; name: string } // the business names a doctor; the license is not checked
+  | { kind: 'warning'; label: string };
 
 const isMedicalProfession = (p: string): p is 'doctor' | 'nurse' => p === 'doctor' || p === 'nurse';
 
@@ -51,8 +57,38 @@ export function medicalDoctor(p: { medicalResponsible: MedicalPerson | null; sta
 
 const TITLED = /^(ד["״]ר|דר['׳]|ד״ר|dr\.?|פרופ['׳]?)\s/iu;
 
-/** What the treatment row shows: the "performed by" badge, or the label that opens the disclaimer. */
-export function medicalState(doctor: MedicalDoctor | null): MedicalState {
+const DOCTOR_TITLE = /(?<![א-תA-Za-z])(ד["״]ר|דר['׳]|dr\.?|פרופ['׳]?|prof\.?)\s+([^\-–—|,:()\n/]+)/iu;
+/** Words that end a person's name inside a listing name ("ד״ר מנאר קעואר - מומחה", "Dr. Thaer Clinic"). */
+const NAME_STOP = /^(clinic|clinics|center|centre|medical|med|beauty|cosmetics|aesthetics|קליניקה|קליניקת|מרפאת|מרפאה|מרכז|מומחה|מומחית|רופא|רופאה|רופאת|אסתטיקה|רפואה|רפואית|יופי|בע״מ|בע"מ)$/iu;
+const normalizeTitle = (t: string) => (/^d/i.test(t) ? 'Dr.' : /^p/i.test(t) ? 'Prof.' : /^פרופ/u.test(t) ? 'פרופ׳' : 'ד״ר');
+
+/**
+ * The doctor the business itself names: a doctor title (ד״ר, דר׳, Dr., פרופ׳) in the listing name or in a staff
+ * member's name, with up to three words of the name after it. Null when no text carries one.
+ */
+export function statedDoctorName(texts: Array<string | null | undefined>): string | null {
+  for (const t of texts) {
+    const m = (t ?? '').match(DOCTOR_TITLE);
+    if (!m) continue;
+    const words: string[] = [];
+    for (const w of m[2].trim().split(/\s+/)) {
+      if (!w || NAME_STOP.test(w) || words.length === 3) break;
+      words.push(w);
+    }
+    if (words.length) return `${normalizeTitle(m[1])} ${words.join(' ')}`;
+  }
+  return null;
+}
+
+/** The medical categories where a doctor-titled name is read as the practitioner (the brief's list). */
+export const DOCTOR_CATEGORIES = new Set(['plastic-surgery', 'dental-aesthetics', 'hair-restoration']);
+
+/**
+ * What the treatment row shows: the "performed by" badge (verified doctor), the stated-doctor disclaimer
+ * (the business names a doctor, license unchecked), or the label that opens the no-doctor disclaimer.
+ */
+export function medicalState(doctor: MedicalDoctor | null, stated: string | null = null): MedicalState {
+  if (!doctor && stated) return { kind: 'stated', label: MEDICAL_LABEL, name: stated };
   if (!doctor) return { kind: 'warning', label: MEDICAL_LABEL };
   const name = doctor.profession === 'doctor' && !TITLED.test(doctor.name) ? `ד״ר ${doctor.name}` : doctor.name;
   return { kind: 'verified', badge: `מבוצע בידי ${name}`, licenseTag: doctor.licenseVerified ? LICENSE_TAG : null };
