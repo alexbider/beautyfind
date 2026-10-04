@@ -1,0 +1,21 @@
+live listings: 816; with a Google place id: 816; Google calls: 816 (errors 0, no usable address 33), about 4.08 USD at list price
+Hebrew address from Google: 748
+street from the dictionary: 10
+city only (street unknown): 33
+Hebrew original restyled: 23; unchanged: 2
+city mismatches (Google's locality is another city than the stored one; the line keeps Google's city): 30, with a city page to move to: 16
+skipped (owner-entered address on a claimed listing): 0; skipped (no city): 0
+would change: 814; still with Latin after the pass: 0
+  [google] אומנית היופי החלק - IRIT WAK (בהנהלת אירית וייסמן ) (אשדוד) | before: שי בשקל, Tsahal St 26, קומה 1, Gan Yavne | after: צה״ל 26, קומה 1, גן יבנה | Google city גן יבנה
+  [google] אוראל בטיטו - עיצוב גבות באשדוד (אשדוד) | before: Brenner St, Ashdod | after: ברנר, אשדוד
+  [google] אוראל שאלתיאל מאפרת ומסרקת כלות וערב (אשדוד) | before: Rabi Me'ir Ba'al ha-Nes St 7, Ashdod | after: רבי מאיר בעל הנס 7, אשדוד
+  [google] אושר בן חמו קליניקה לטיפוח (אשדוד) | before: Mevo Yehu HaMelech 3, Ashdod | after: מבוא יהוא המלך 3, אשדוד
+  [google] אלי אלמוזנינו בוטיק שיער - EA Eli Almoznino (אשדוד) | before: HaKlita St 1, Ashdod | after: הקליטה 1, אשדוד
+  [dictionary] iStudio-Ashdod (אשדוד) | before: Ha'Atzma'ut 87, Ashdod | after: העצמאות 87, אשדוד
+  [dictionary] Sarah beauty (אשדוד) | before: 87 haatsmaout, Ashdod, 7777700 | after: העצמאות 87, אשדוד
+  [original] מרטין קליניק (אשדוד) | before: K-Tower שדרות ירושלים 18 אשדוד, ים, 7752311 | after: שדרות ירושלים 18 אשדוד, ים | Google city ים
+  [city_only] מרפאת נרקיסיה (אשדוד) | before: גן העיר, Ha-Gdud ha-Ivri St 5, Ashdod, 7745511 | after: אשדוד
+  [city_only] Студия Красоты Veranda (אשדוד) | before: QJFW+F45, Ashdod, 7748415 | after: אשדוד
+CSV: reports/hebrew-addresses.csv (816 rows); fallbacks for staff: reports/hebrew-addresses-fallbacks.csv (43 rows); city mismatches: reports/hebrew-addresses-city-mismatch.csv (30 rows)
+SUMMARY dry_run google=748 dictionary=10 original=23 city_only=33 unchanged=2 skipped_owner=0 mismatches=30 would_change=814 calls=816
+dry run: nothing changed (add --confirm, or run with --confirm --from <this CSV> to apply without new Google calls)
