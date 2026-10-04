@@ -1,0 +1,2 @@
+APPLIED 816 addresses from reports/from.csv. Undo: npm run import:hebrew-addresses -- --revert reports/hebrew-addresses.csv
+SUMMARY applied=816 csv=reports/hebrew-addresses.csv
