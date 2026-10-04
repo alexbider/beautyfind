@@ -15,7 +15,8 @@
 //            --cancel-queued                with --confirm: cancel the earlier "ניקוי תיאורים" runs still queued
 //                                           or running, so only the new runs are picked up
 //
-// Never changed: claimed listings and listings whose text staff marked approved (editorial.ownerApproved).
+// Never changed: claimed listings, listings whose text staff marked approved (editorial.ownerApproved) and the
+// hand-written reference profiles (src/lib/import/reference.ts).
 // Listings without an import record cannot be rewritten by the worker; the admin "gaps" view creates one
 // (ensureImportRecords). The queued runs are picked up by the worker (npm run import:work -- --run <id>).
 
@@ -23,6 +24,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { PrismaClient, type Prisma } from '@prisma/client';
 import { buildPacket, lengthTier, PROMPT_VERSION, type LengthTier } from '../../src/lib/import/editorial';
+import { isReferenceBranch } from '../../src/lib/import/reference';
 import { problemCode, textProblems, type TextProblem } from '../../src/lib/import/textRules';
 
 const db = new PrismaClient();
@@ -48,7 +50,7 @@ interface Row {
   why: 'text_rules' | 'older_prompt' | 'both';
   draftVersion: string;
   problems: TextProblem[];
-  action: 'rewrite' | 'skipped_claimed' | 'skipped_approved' | 'needs_import_record';
+  action: 'rewrite' | 'skipped_claimed' | 'skipped_approved' | 'skipped_reference' | 'needs_import_record';
 }
 
 async function main() {
@@ -63,7 +65,7 @@ async function main() {
 
   const branches = await db.branch.findMany({
     where: { OR: [{ description: { not: null } }, { faqs: { not: [] } }] },
-    select: { id: true, name: true, cityName: true, status: true, isClaimed: true, websiteUrl: true, description: true, faqs: true, editorial: true, treatments: { select: { name: true } } },
+    select: { id: true, name: true, cityName: true, status: true, isClaimed: true, websiteUrl: true, description: true, faqs: true, editorial: true, treatments: { select: { name: true, isPublished: true } } },
     orderBy: [{ regionSlug: 'asc' }, { name: 'asc' }],
   });
   const places = await db.importPlace.findMany({ where: { branchId: { in: branches.map(b => b.id) }, status: { in: ['approved', 'merged'] } } });
@@ -93,8 +95,8 @@ async function main() {
       perMatch.set(k, (perMatch.get(k) ?? 0) + 1);
     }
     const ownerApproved = (b.editorial as { ownerApproved?: boolean } | null)?.ownerApproved === true;
-    const action: Row['action'] = b.isClaimed ? 'skipped_claimed' : ownerApproved ? 'skipped_approved' : place ? 'rewrite' : 'needs_import_record';
-    const tier: Row['tier'] = place ? lengthTier(buildPacket(place, { claimed: b.isClaimed })) : '';
+    const action: Row['action'] = isReferenceBranch(b.id) ? 'skipped_reference' : b.isClaimed ? 'skipped_claimed' : ownerApproved ? 'skipped_approved' : place ? 'rewrite' : 'needs_import_record';
+    const tier: Row['tier'] = place ? lengthTier(buildPacket(place, { claimed: b.isClaimed, publishedTreatments: b.treatments.filter(t => t.isPublished).map(t => t.name) })) : '';
     rows.push({ branchId: b.id, name: b.name, city: b.cityName, status: b.status, claimed: b.isClaimed, ownerApproved, hasImportRecord: !!place, tier, why: problems.length && older ? 'both' : older ? 'older_prompt' : 'text_rules', draftVersion: draft?.promptVersion ?? '', problems, action });
   }
 
@@ -110,7 +112,7 @@ async function main() {
   const count = (a: Row['action']) => rows.filter(r => r.action === a).length;
   const tiers = (list: Row[]) => (['sparse', 'normal', 'rich'] as const).map(t => `${t}=${list.filter(r => r.tier === t).length}`).join(' ');
   const candidates = rows.filter(r => r.action === 'rewrite');
-  console.log(`SUMMARY scanned=${branches.length} failing=${rows.length} text_rules=${rows.filter(r => r.why !== 'older_prompt').length} older_prompt=${rows.filter(r => r.why !== 'text_rules').length} rewrite=${count('rewrite')} needs_import_record=${count('needs_import_record')} skipped_claimed=${count('skipped_claimed')} skipped_approved=${count('skipped_approved')} tiers(rewrite): ${tiers(candidates)} csv=${out}`);
+  console.log(`SUMMARY scanned=${branches.length} failing=${rows.length} text_rules=${rows.filter(r => r.why !== 'older_prompt').length} older_prompt=${rows.filter(r => r.why !== 'text_rules').length} rewrite=${count('rewrite')} needs_import_record=${count('needs_import_record')} skipped_claimed=${count('skipped_claimed')} skipped_approved=${count('skipped_approved')} skipped_reference=${count('skipped_reference')} tiers(rewrite): ${tiers(candidates)} csv=${out}`);
 
   // The listings to queue: all candidates, or with --limit a spread across the tiers (round robin, so a
   // review batch of ten holds every tier).

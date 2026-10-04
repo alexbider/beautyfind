@@ -226,16 +226,20 @@ describe('editorial checks and the template draft', () => {
     const sentence = 'הקליניקה פתוחה בימים ראשון עד חמישי בין 9:00 ל־20:00 ובשישי עד 14:00.';
     const pad = (n: number) => Array.from({ length: n }, () => sentence).join(' ');
     const w = (n: number) => countWords(pad(n));
-    // 170 words: inside the sparse bounds, under the normal and rich floors.
+    // 170 words: over the sparse ceiling (60 to 150), inside normal (100 to 280), under the rich floor (250).
     const n170 = Math.ceil(170 / countWords(sentence));
     const text170 = pad(n170);
-    assert.ok(w(n170) >= LENGTH_TIERS.sparse.min && w(n170) <= LENGTH_TIERS.sparse.max, `words ${w(n170)}`);
-    assert.ok(!checkOutput({ ...d, description: `${SPARSE.name} ${text170}`, insufficientEvidence: false }, SPARSE).some(v => /^(short|long):/.test(v)));
+    assert.ok(w(n170) >= 166 && w(n170) <= 180, `words ${w(n170)}`);
+    assert.ok(checkOutput({ ...d, description: `${SPARSE.name} ${text170}`, insufficientEvidence: false }, SPARSE).some(v => v.startsWith('long:')));
+    assert.ok(!checkOutput({ ...d, description: `${normal.name} ${text170}` }, normal).some(v => /^(short|long):/.test(v)));
     assert.ok(checkOutput({ ...d, description: `${RICH.name} ${text170}` }, RICH).some(v => v.startsWith('short:')));
-    assert.ok(checkOutput({ ...d, description: `${normal.name} ${text170}` }, normal).some(v => v.startsWith('short:')));
     // 560 words: over every tier's ceiling.
     const n560 = Math.ceil(560 / countWords(sentence));
     assert.ok(checkOutput({ ...d, description: `${RICH.name} ${pad(n560)}` }, RICH).some(v => v.startsWith('long:')));
+    // 90 words: fine for sparse, under the normal floor.
+    const n90 = Math.ceil(90 / countWords(sentence));
+    assert.ok(!checkOutput({ ...d, description: `${SPARSE.name} ${pad(n90)}`, insufficientEvidence: false }, SPARSE).some(v => /^(short|long):/.test(v)));
+    assert.ok(checkOutput({ ...d, description: `${normal.name} ${pad(n90)}` }, normal).some(v => v.startsWith('short:')));
   });
   it('sparse evidence stays short and flagged instead of padded (acceptance 3)', () => {
     const d = templateDraft(SPARSE);
@@ -256,6 +260,21 @@ describe('editorial checks and the template draft', () => {
     assert.ok(v.some(x => x.startsWith('text:dash')) && v.includes('first_person') && v.includes('number:1999') && v.includes('person:משה כהן') && v.some(x => x.startsWith('phrase:')), v.join(','));
     assert.ok(repairable(v).length > 0);
     assert.ok(BANNED_PHRASES.includes('חוויה בלתי נשכחת'));
+  });
+  it('flags filler phrases and a fact stated twice', () => {
+    const d = templateDraft(RICH);
+    const filler = checkOutput({ ...d, description: `${d.description} הקליניקה מציעה מענה כולל תחת קורת גג אחת, במיקום מרכזי ונוח להגעה.` }, RICH);
+    assert.ok(filler.some(v => v === 'filler:מענה כולל') && filler.some(v => v === 'filler:תחת קורת גג אחת') && filler.some(v => v === 'filler:מיקום מרכזי'), filler.join(','));
+    const twice = checkOutput({ ...d, description: `${d.description}\n\nהקליניקה פתוחה בין 9:00 ל־20:00, ברחוב הדוגמה 12, עם דירוג 4.8 בגוגל, והמקום נגיש.` }, RICH);
+    assert.ok(twice.includes('repeat:hours') && twice.includes('repeat:address') && twice.includes('repeat:rating') && twice.includes('repeat:accessibility'), twice.join(','));
+    assert.ok(!checkOutput(d, RICH).some(v => v.startsWith('repeat:')), 'the template states each fact once');
+  });
+  it('the packet carries the display name and only the published treatments', () => {
+    const src = { name: 'ניילס-בניית ציפורניים | מניקור, פדיקור, לק ג\'ל', cityName: 'חיפה', address: 'רחוב 1, חיפה', categories: ['nails'], businessType: null, treatments: [{ name: 'מניקור', priceNis: 120, priceType: 'fixed', category: 'nails', isMedical: false, durationMin: null }, { name: 'לק ג\'ל', priceNis: 150, priceType: 'fixed', category: 'nails', isMedical: false, durationMin: null }, { name: 'מבצע לחודש מאי!', priceNis: null, priceType: 'on_request', category: null, isMedical: false, durationMin: null }], hours: [], phone: '+97235551234', email: null, whatsapp: null, website: null, websiteKind: null, bookingUrl: null, instagram: null, facebook: null, tiktok: null, youtube: null, team: [], languages: [], establishedYear: null, accessible: null, freeParking: null, description: null, faqs: null, googleRating: null, googleReviewCount: null, photoUrls: [], videos: [] };
+    const p = buildPacket(src, { publishedTreatments: ['מניקור', 'לק ג׳ל'] });
+    assert.equal(p.name, 'ניילס');
+    assert.deepEqual(p.services.map(s => s.name), ['מניקור', 'לק ג\'ל'], 'the unpublished record is left out; typography does not separate names');
+    assert.equal(buildPacket(src).services.length, 3, 'without the published list every extracted treatment stays');
   });
   it('refuses a booking claim through the platform when native booking is off', () => {
     const d = templateDraft(RICH);

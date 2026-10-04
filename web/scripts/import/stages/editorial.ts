@@ -10,6 +10,7 @@ import { buildPacket, countWords, lengthTier, packetHash, PROMPT_VERSION, templa
 import { writerUsd } from '../../../src/lib/import/enrichPlan';
 import { pricing, toMicros } from '../../../src/lib/import/pricing';
 import { bump, db, heartbeat, log, pool, setStats, settings } from '../ctx';
+import { isReferenceBranch } from '../../../src/lib/import/reference';
 import { writeEditorial } from '../editorialCall';
 
 export type EditorialOutcome = 'written' | 'cached' | 'skipped' | 'budget' | 'failed' | 'transient';
@@ -23,7 +24,11 @@ const stored = (p: ImportPlace) => (p.editorial ?? null) as (Partial<EditorialRe
 export async function editorialFor(p: ImportPlace, run: ImportRun | null, opts: { force?: boolean; claimed?: boolean; bookingOnline?: boolean; counter?: { calls: number } } = {}): Promise<EditorialOutcome> {
   const s = await settings();
   if (!s.editorialEnabled) return 'skipped';
-  const packet = buildPacket(p, { claimed: opts.claimed, bookingOnline: opts.bookingOnline });
+  // Hand-written reference profiles are never rewritten, whatever the run asks for.
+  if (isReferenceBranch(p.branchId)) return 'skipped';
+  // The writer only sees the listing's published treatments (the hygiene pass hides sentences and products).
+  const published = p.branchId ? (await db.treatment.findMany({ where: { branchId: p.branchId, isPublished: true }, select: { name: true } })).map(t => t.name) : undefined;
+  const packet = buildPacket(p, { claimed: opts.claimed, bookingOnline: opts.bookingOnline, publishedTreatments: published });
   const hash = packetHash(packet);
   const cur = stored(p);
   if (!opts.force && cur?.evidenceHash === hash && cur.promptVersion === PROMPT_VERSION && !cur.skipped) return 'cached';

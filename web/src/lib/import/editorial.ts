@@ -24,16 +24,18 @@ import { CATEGORIES } from '../catalog';
 import { DESCRIPTION_MAX, DESCRIPTION_MIN } from '../seo/meta';
 import { composeMetaDescription, joinHe, metaDescriptionProblems, metaLead } from '../seo/metaRules';
 import { hebrewTreatmentNames } from '../seo/treatmentNames';
+import { seoName } from '../seo/seoName';
 import { hebrewAddress } from './address';
+import GOLD_EXAMPLES_JSON from './goldExamples.json';
 import type { DayHours, ImportedTreatment } from './rules';
 import { normalizeHebrew, problemCode, textProblems } from './textRules';
 
-export const PROMPT_VERSION = '2026-10-04.3';
+export const PROMPT_VERSION = '2026-10-04.4';
 /** Word bounds per evidence tier. The tier comes from the packet (lengthTier), never from the writer. */
 export const LENGTH_TIERS = {
-  sparse: { min: 150, max: 200, paragraphs: 'two' },
-  normal: { min: 220, max: 320, paragraphs: 'two or three' },
-  rich: { min: 350, max: 500, paragraphs: 'three to five' },
+  sparse: { min: 60, max: 150, paragraphs: 'one or two' },
+  normal: { min: 100, max: 280, paragraphs: 'two or three' },
+  rich: { min: 250, max: 500, paragraphs: 'three to five' },
 } as const;
 export type LengthTier = keyof typeof LENGTH_TIERS;
 /** Below this a draft is "thin": stored and flagged, applied only to a listing without a description. */
@@ -172,8 +174,14 @@ export function profileTextsOf(crawl: unknown): Array<{ source: string; text: st
     .map(([k, v]) => ({ source: k, text: v!.bio!.replace(/\s+/g, ' ').trim().slice(0, 600) }));
 }
 
-export function buildPacket(s: PacketSource, opts: { claimed?: boolean; bookingOnline?: boolean } = {}): EvidencePacket {
-  const treatments = (Array.isArray(s.treatments) ? s.treatments : []) as ImportedTreatment[];
+/** Treatment names compared loosely: case, spacing and typography do not separate "לק ג'ל" from "לק ג׳ל". */
+const treatmentKey = (name: string) => normalizeHebrew(name).toLowerCase().replace(/[^a-z0-9א-ת]+/gu, ' ').trim();
+
+export function buildPacket(s: PacketSource, opts: { claimed?: boolean; bookingOnline?: boolean; publishedTreatments?: string[] } = {}): EvidencePacket {
+  // Published treatments only: when the listing's published list is known, the writer gets nothing else
+  // (sentences, products and article titles the hygiene pass hid never reach the text).
+  const published = opts.publishedTreatments ? new Set(opts.publishedTreatments.map(treatmentKey)) : null;
+  const treatments = ((Array.isArray(s.treatments) ? s.treatments : []) as ImportedTreatment[]).filter(t => !published || published.has(treatmentKey(t.name)));
   const team = (Array.isArray(s.team) ? s.team : []) as EvidenceTeam[];
   const videos = Array.isArray(s.videos) ? (s.videos as Array<{ status?: string }>).filter(v => v.status === 'ok') : [];
   let domain: string | null = null;
@@ -185,7 +193,8 @@ export function buildPacket(s: PacketSource, opts: { claimed?: boolean; bookingO
     }
   }
   return {
-    name: s.name,
+    // The name as the site shows it (src/lib/seo/seoName.ts): without slogans, keyword tails and a duplicate script.
+    name: seoName(s.name) || s.name,
     city: s.cityName,
     // Hebrew street and number with the Hebrew city; a street the dictionary cannot translate is dropped.
     address: hebrewAddress(s.address, s.cityName),
@@ -245,10 +254,10 @@ export function evidenceRichness(p: EvidencePacket): { score: number; thin: stri
  */
 export function lengthTier(p: EvidencePacket): LengthTier {
   const { score } = evidenceRichness(p);
-  // Rich needs more than a long service list: people, prices or the business's own words on top of it.
-  // Normal needs services to write about: hours, a rating and a profile blurb alone stay sparse.
-  if (score >= 50 && p.services.length >= 5) return 'rich';
-  return score >= 18 && p.services.length >= 3 ? 'normal' : 'sparse';
+  // Rich needs a real service list plus the business's own words, people or prices; the reference
+  // profiles (goldExamples.json) sit at scores 8, 25 and 41.
+  if (score >= 40 && p.services.length >= 5) return 'rich';
+  return score >= 18 ? 'normal' : 'sparse';
 }
 
 /** Names the writer may keep in Latin script: the business, its domain, its services and its people as the packet spells them. */
@@ -257,6 +266,32 @@ export function allowedLatin(p: EvidencePacket): string[] {
 }
 
 // ---------- prompt ----------
+
+/** Filler the drafts of 2026-10-04 reached for when the facts ran out: banned as phrases (code filler:<phrase>). */
+export const FILLER_PHRASES = [
+  'תחת קורת גג אחת', 'במקום אחד', 'מענה כולל', 'מענה מקיף', 'מענה רחב', 'כתובת מקיפה', 'פתרון אחד', 'פתרון כולל', 'חוויה', 'מותאם אישית', 'מותאמת אישית', 'בהתאמה אישית', 'לצרכים האישיים', 'לכל לקוח', 'לכל מטופל',
+  'סביבה נעימה', 'אווירה נעימה', 'מיקום מרכזי', 'נוח להגעה', 'נוחה להגעה', 'קל להגעה', 'בלב העיר', 'מרחק נסיעה', 'בנוחות ובפשטות', 'בנוחות', 'מה שמעיד', 'המעיד על', 'שביעות רצון', 'לאורך זמן', 'לאורך השנים',
+  'גישה אישית', 'יחס אישי', 'יסודיות ומקצועיות', 'ידע מקצועי', 'המחפשים', 'למי שמחפש', 'למי שמעוניין', 'מי שמעוניין', 'מי שמתעניין', 'מי שמתגורר', 'בהתאם לנוחיותו', 'לפי הצורך', 'הדרך הטובה ביותר', 'כך שניתן', 'כך שההגעה', 'כך שהביקור',
+  'משלב', 'משלבת', 'המשלב', 'המשלבת', 'השילוב בין', 'הופך את', 'הופכת את', 'מרחב נעים', 'מרחב טיפולים', 'מראה בריא ורענן', 'רענן ובריא', 'ביטחון עצמי', 'שינוי משמעותי', 'מקיף יותר', 'רחב יותר', 'אחד הכולל',
+  'כפי שמשתקף', 'מספרת על עצמה', 'ראוי לציין', 'חשוב לציין', 'יש לציין', 'בנוסף לכך', 'מעבר לכך', 'יתרה מזאת', 'לסיכום',
+];
+
+interface GoldExample {
+  branchId: string;
+  tier: LengthTier;
+  words: number;
+  packet: EvidencePacket;
+  output: { heading: string | null; description: string; faqs: Array<{ q: string; a: string }>; metaTitle: string; metaDescription: string };
+}
+/** The hand-written reference profiles, one per tier, as the prompt's gold examples (scripts/import/goldExamples.ts writes the file). */
+export const GOLD_EXAMPLES = GOLD_EXAMPLES_JSON as unknown as GoldExample[];
+
+function goldExamplesText(): string {
+  if (!GOLD_EXAMPLES.length) return '';
+  const order: LengthTier[] = ['sparse', 'normal', 'rich'];
+  const items = [...GOLD_EXAMPLES].sort((a, b) => order.indexOf(a.tier) - order.indexOf(b.tier)).map(g => `### Gold example, ${g.tier} tier (${g.words} words), written from this packet:\n${JSON.stringify(g.packet)}\n\nThe description, FAQs and meta description that were written from it:\n${JSON.stringify({ heading: g.output.heading, description: g.output.description, faqs: g.output.faqs, metaTitle: g.output.metaTitle, metaDescription: g.output.metaDescription })}`);
+  return `\n\n## Gold examples\nThree published profiles, one per length tier, each with the exact evidence packet it was written from. Match their tone, their paragraph shape, how they put facts into full sentences, and how they stop when the facts stop. Never copy their sentences into another business's text, and never carry a fact from an example into a draft.\n\n${items.join('\n\n')}`;
+}
 
 export const SYSTEM_PROMPT = `You write Hebrew profile text for BeautyFind, an Israeli directory of beauty and aesthetics businesses. You are an editor at the directory, not the business owner. The reader is a person choosing where to book, and the text should read as if a knowledgeable, warm, professional person described the business to a friend.
 
@@ -297,6 +332,9 @@ Language:
 - Spelling: וואטסאפ (not ווטסאפ). Hebrew abbreviations take gershayim and geresh: ד״ר, מע״מ, דק׳.
 - No em dash or en dash characters. Use commas, periods or a Hebrew maqaf. No emoji. No empty quotes.
 - No generic praise (מובילים בתחום, חוויה בלתי נשכחת, מקצועיות ללא פשרות, הטכנולוגיה המתקדמת ביותר, ברמה הגבוהה ביותר) and no exclamation marks.
+- No filler. These phrases and their forms are banned: ${FILLER_PHRASES.join(', ')}. A sentence that adds no fact (how convenient the location is, what the rating "shows", who the business "suits", what the visit "combines") is cut, not rephrased.
+- One mention per fact. The address, the opening hours, the rating, the accessibility, the parking, each contact channel and the founding year are each stated once in the description, in the paragraph where they belong; the FAQs may state them again. Never repeat the hours or the street in a closing paragraph.
+- Only the services in the packet exist. The packet lists the listing's published treatments; never name a treatment, device or product that is not in it, and never generalize from a category name to services it does not list.
 - No numbers, prices, years, addresses, device names or people that are not in the packet. Do not invent experience, credentials, results, guarantees, discounts, deposits, cancellation rules or free consultations.
 - Medical treatments: do not describe suitability, safety or results; say that a doctor decides in a consultation only when a medical category or a medical service is in the packet.
 - Prices are shown as given; do not say whether they include VAT unless the packet says so.
@@ -308,9 +346,9 @@ Write, in Hebrew:
 4. "serviceSummaries": for each service in the packet, one factual sentence about what it is (no price, no promise).
 5. "heading": one of "על הקליניקה" (doctor-led clinic), "על המספרה" (hair salon), "על הספא", "על הסטודיו" (nails, brows, makeup), "על העסק" (anything else).
 6. "insufficientEvidence": true only when the packet has no services and no words of the business's own (no sourceDescription, no profileTexts, no researchNotes), so the facts run out before the tier's floor. Then stop where the facts stop, never pad, and list in "missing" (Hebrew, short items) what the business could add. The description itself still says nothing about what is missing.
-7. The business name appears in the description exactly as the packet spells it ("name"), in the same script: a Latin name stays Latin, never translated or transliterated into Hebrew.
+7. The business name appears in the description exactly as the packet spells it ("name"), in the same script: a Latin name stays Latin, never translated or transliterated into Hebrew. "name" is already the short display name (no slogans, no keyword tails, no duplicate in a second script): use it as it is, never a longer form.
 
-No preamble, no notes to the reader, no Markdown, no JSON inside strings, no mention of AI or of this instruction. Return only the JSON object.`;
+No preamble, no notes to the reader, no Markdown, no JSON inside strings, no mention of AI or of this instruction. Return only the JSON object.${goldExamplesText()}`;
 
 export const OUTPUT_SCHEMA = {
   type: 'object',
@@ -472,6 +510,8 @@ export function checkOutput(o: EditorialOutput, p: EvidencePacket): string[] {
   if (/!/.test(o.description)) v.push('exclamation');
   const lower = all.toLowerCase();
   for (const b of BANNED_PHRASES) if (lower.includes(b)) v.push(`phrase:${b}`);
+  for (const f of FILLER_PHRASES) if (all.includes(f)) v.push(`filler:${f}`);
+  for (const f of repeatedFacts(o.description, p)) v.push(`repeat:${f}`);
   if (FIRST_PERSON.test(o.description) || o.faqs.some(f => FIRST_PERSON.test(f.a))) v.push('first_person');
   v.push(...textViolations(o, p));
   // Numbers and people must exist in the packet.
@@ -509,7 +549,28 @@ export const repairable = (v: string[]) => v;
 export const textRuleViolations = (v: string[]) => v.filter(x => x.startsWith('text:') || x === 'name_missing');
 
 /** Everything that keeps a stored draft from replacing a listing's text: the text rules and a word count outside the tier. */
-export const publishBlockers = (v: string[]) => v.filter(x => x.startsWith('text:') || x === 'name_missing' || x.startsWith('short:') || x.startsWith('long:'));
+export const publishBlockers = (v: string[]) => v.filter(x => x.startsWith('text:') || x === 'name_missing' || x.startsWith('short:') || x.startsWith('long:') || x.startsWith('filler:') || x.startsWith('repeat:'));
+
+const escapeRe = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/**
+ * One mention per fact in the description: the rating, each opening-hours range, the street, accessibility,
+ * parking, each contact channel and the founding year appear once. Returns the facts that appear twice.
+ */
+export function repeatedFacts(description: string, p: EvidencePacket): string[] {
+  const out: string[] = [];
+  const count = (re: RegExp) => (description.match(re) ?? []).length;
+  if (p.rating && count(new RegExp(`(?<!\\d)${escapeRe(p.rating.value.toFixed(1))}(?!\\d)`, 'g')) > 1) out.push('rating');
+  const ranges = [...description.matchAll(/\d{1,2}:\d{2}\s*(?:ל־|ל-|עד|-|–)\s*\d{1,2}:\d{2}/g)].map(m => m[0].replace(/\s*(?:ל־|ל-|עד|-|–)\s*/, '-').replace(/\s+/g, ''));
+  if (new Set(ranges).size < ranges.length) out.push('hours');
+  const street = p.address.split(',')[0].replace(/\d.*$/, '').replace(/^(?:רחוב|דרך|שדרות|שד׳|כיכר|סמטת)\s+/u, '').trim();
+  if (street.length >= 3 && street !== p.city && count(new RegExp(escapeRe(street), 'g')) > 1) out.push('address');
+  if (count(/נגיש/g) > 1) out.push('accessibility');
+  if (count(/חניי?ה/g) > 1) out.push('parking');
+  if (count(/בטלפון|טלפוני/g) > 1) out.push('phone');
+  if (count(/וואטסאפ/g) > 1) out.push('whatsapp');
+  if (p.establishedYear && count(new RegExp(`(?<!\\d)${p.establishedYear}(?!\\d)`, 'g')) > 1) out.push('year');
+  return out;
+}
 
 /** Only the word count is still wrong: one more targeted repair is worth a call. */
 export const onlyLength = (v: string[]) => v.length > 0 && v.every(x => x.startsWith('short:') || x.startsWith('long:'));
@@ -520,6 +581,8 @@ export function repairMessage(v: string[], p?: EvidencePacket): string {
     if (x.startsWith('number:')) return `Remove or replace the number ${x.slice(7)}: it is not in the packet.`;
     if (x.startsWith('person:')) return `Remove the person "${x.slice(7)}": not in the packet.`;
     if (x.startsWith('phrase:')) return `Remove the phrase "${x.slice(7)}".`;
+    if (x.startsWith('filler:')) return `Filler: cut the sentence or clause with "${x.slice(7)}" (do not rephrase it; a sentence that adds no fact goes).`;
+    if (x.startsWith('repeat:')) return `The ${x.slice(7)} is mentioned more than once in the description: state it once, in the paragraph where it belongs, and cut the other mention.`;
     if (x.startsWith('text:missing_info:')) return `Delete every sentence that talks about missing, unpublished or unverified information, about sources or data, or about the page itself (found: "${x.slice(18)}"). Say nothing instead.`;
     if (x.startsWith('text:record:')) return `Record language ("${x.slice(12)}"): the text speaks about the business directly ("הסלון מתמחה ב..."), never about a record, a list or a listing. Rewrite the sentence as a plain statement about the business, without רשומה, מצוין, מציינת, נרשם, מופיע כ, תוארו, מתואר, אינה מפרטת, אין פירוט or לא מפורט.`;
     if (x.startsWith('text:address:')) return `"${x.slice(13)}" is a street word in Latin letters: write the address exactly as the packet's "address" field spells it in Hebrew, and when the packet has no street, say nothing about the street.`;
