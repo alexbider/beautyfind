@@ -246,7 +246,9 @@ export function evidenceRichness(p: EvidencePacket): { score: number; thin: stri
 export function lengthTier(p: EvidencePacket): LengthTier {
   const { score } = evidenceRichness(p);
   // Rich needs more than a long service list: people, prices or the business's own words on top of it.
-  return score >= 50 ? 'rich' : score >= 18 ? 'normal' : 'sparse';
+  // Normal needs services to write about: hours, a rating and a profile blurb alone stay sparse.
+  if (score >= 50 && p.services.length >= 5) return 'rich';
+  return score >= 18 && p.services.length >= 3 ? 'normal' : 'sparse';
 }
 
 /** Names the writer may keep in Latin script: the business, its domain, its services and its people as the packet spells them. */
@@ -464,7 +466,8 @@ export function checkOutput(o: EditorialOutput, p: EvidencePacket): string[] {
   const words = countWords(o.description);
   const t = LENGTH_TIERS[lengthTier(p)];
   if (!o.insufficientEvidence && words < t.min) v.push(`short:${words}`);
-  if (words > t.max) v.push(`long:${words}`);
+  // A few words over the ceiling is not padding; a tenth over is.
+  if (words > Math.round(t.max * 1.1)) v.push(`long:${words}`);
   if (/[{}`*#]|\[\d+\]|```/.test(all)) v.push('markup');
   if (/!/.test(o.description)) v.push('exclamation');
   const lower = all.toLowerCase();
