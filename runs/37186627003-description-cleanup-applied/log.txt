@@ -1,0 +1,38 @@
+by rule:
+  3570  missing_info
+  3260  record
+  1350  latin
+   371  spelling
+   331  address
+    56  dash
+     2  emoji
+most frequent matches:
+   709  missing_info:במקורות
+   560  missing_info:לא פורסמו
+   483  missing_info:לא פורסם
+   324  missing_info:לא צוינו
+   270  latin:St
+   267  address:St
+   257  record:מציין
+   232  record:מצוין
+   230  missing_info:שסופק
+   221  missing_info:המידע הזמין
+   218  missing_info:אין פירוט
+   203  record:אין פירוט
+   195  record:מופיעים
+   184  record:מופיע
+   184  spelling:מצויין
+   169  record:ברשומות
+   121  record:מציינת
+   113  missing_info:בעמוד העסק
+   108  missing_info:אין מידע
+   108  missing_info:לא נמסר
+   107  spelling:ווטסאפ
+   106  record:הרשומה
+    94  record:נרשמה
+    88  record:המצוינת
+    85  missing_info:בפרופיל העסק
+SUMMARY scanned=816 failing=811 text_rules=748 older_prompt=102 rewrite=811 needs_import_record=0 skipped_claimed=0 skipped_approved=0 tiers(rewrite): sparse=243 normal=516 rich=52 csv=reports/description-cleanup.csv
+LIMIT 10: queueing 10 of 811 candidates (sparse=3 normal=3 rich=4)
+QUEUED 1 rewrite runs for 10 listings:
+  npm run import:work -- --run eebefd36-435d-448a-bb71-d02435b488d2
