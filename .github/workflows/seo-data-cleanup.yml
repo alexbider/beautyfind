@@ -37,6 +37,10 @@ on:
         description: editorial-report only. Import run id whose drafts to report
         required: false
         default: ''
+      extra:
+        description: description-cleanup only. Extra script arguments (for example "--rewritten-since 2026-10-03 --limit 10 --cancel-queued")
+        required: false
+        default: ''
 
 concurrency:
   group: import-worker
@@ -61,6 +65,7 @@ jobs:
       UNDO_RUN: ${{ inputs.undo_run }}
       SETTING: ${{ inputs.setting }}
       RUN_ID: ${{ inputs.run_id }}
+      EXTRA: ${{ inputs.extra }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -76,7 +81,8 @@ jobs:
           flag=""; [ "$CONFIRM" = "true" ] && flag="--confirm"
           case "$TASK" in
             category-audit) npm run -s import:category-audit -- --out reports/category-audit.csv $flag 2>&1 | tee reports/log.txt ;;
-            description-cleanup) npm run -s import:description-cleanup -- --out reports/description-cleanup.csv $flag ${ACTOR:+--actor "$ACTOR"} 2>&1 | tee reports/log.txt ;;
+            # shellcheck disable=SC2086
+            description-cleanup) npm run -s import:description-cleanup -- --out reports/description-cleanup.csv $flag ${ACTOR:+--actor "$ACTOR"} $EXTRA 2>&1 | tee reports/log.txt ;;
             treatment-hygiene)
               if [ -n "$UNDO_RUN" ]; then
                 # The undo list lives on the report branch, in the folder of the run that hid the records.

@@ -1,11 +1,12 @@
 // Stage 2C: editorial writing. One structured call per changed evidence packet (cached by evidence
-// hash + prompt version), at most one repair call, reserved against the run budget and the run's
-// editorial cap before dispatch. A draft that cannot reach 450 words stays short and flagged
+// hash + prompt version), at most one repair call and one proofreading call, reserved against the run
+// budget and the run's editorial cap before dispatch. The length bounds come from the packet's evidence
+// tier (sparse, normal, rich); a draft that cannot reach its tier's floor stays short and flagged
 // (needsMoreInfo) with the missing evidence listed for the admin; nothing is padded.
 
 import { Prisma, type ImportPlace, type ImportRun } from '@prisma/client';
 import { BudgetExceeded, commit, entryStatus, release, reserve, withCaps } from '../../../src/lib/import/budget';
-import { buildPacket, countWords, packetHash, PROMPT_VERSION, templateDraft, WORDS_MIN, type EditorialRecord } from '../../../src/lib/import/editorial';
+import { buildPacket, countWords, lengthTier, packetHash, PROMPT_VERSION, templateDraft, WORDS_MIN, type EditorialRecord } from '../../../src/lib/import/editorial';
 import { writerUsd } from '../../../src/lib/import/enrichPlan';
 import { pricing, toMicros } from '../../../src/lib/import/pricing';
 import { bump, db, heartbeat, log, pool, setStats, settings } from '../ctx';
@@ -68,7 +69,7 @@ export async function editorialFor(p: ImportPlace, run: ImportRun | null, opts: 
     const draft = templateDraft(packet);
     const words = countWords(draft.description);
     const rec: EditorialRecord & { error: string } = {
-      ...draft, words, evidenceHash: hash, promptVersion: PROMPT_VERSION, model: 'template', generatedAt: new Date().toISOString(),
+      ...draft, words, lengthTier: lengthTier(packet), proofread: false, evidenceHash: hash, promptVersion: PROMPT_VERSION, model: 'template', generatedAt: new Date().toISOString(),
       needsMoreInfo: words < WORDS_MIN || draft.insufficientEvidence, violations: [], repairs: 0, inputTokens: r.inputTokens ?? 0, outputTokens: r.outputTokens ?? 0, costUsd: r.costUsd ?? 0, error: r.error,
     };
     await db.importPlace.update({ where: { id: p.id }, data: { editorial: rec as unknown as Prisma.InputJsonValue, costs: { ...((p.costs as object) ?? {}), editorialUsd: (((p.costs as { editorialUsd?: number }) ?? {}).editorialUsd ?? 0) + (r.costUsd ?? 0) } as Prisma.InputJsonValue } });
@@ -77,7 +78,7 @@ export async function editorialFor(p: ImportPlace, run: ImportRun | null, opts: 
   await commit(db, key, toMicros(r.costUsd), est);
   const words = countWords(r.output.description);
   const rec: EditorialRecord = {
-    ...r.output, words, evidenceHash: hash, promptVersion: PROMPT_VERSION, model: r.model, generatedAt: new Date().toISOString(),
+    ...r.output, words, lengthTier: lengthTier(packet), proofread: r.proofread, evidenceHash: hash, promptVersion: PROMPT_VERSION, model: r.model, generatedAt: new Date().toISOString(),
     needsMoreInfo: words < WORDS_MIN || r.output.insufficientEvidence, violations: r.violations, repairs: r.repairs, inputTokens: r.inputTokens, outputTokens: r.outputTokens, costUsd: r.costUsd,
   };
   const costs = (p.costs as Record<string, number> | null) ?? {};

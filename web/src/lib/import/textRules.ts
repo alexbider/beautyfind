@@ -1,7 +1,8 @@
 // Text rules for published Hebrew copy (descriptions, FAQs, summaries): no sentences about missing or
-// unverified information, no generator language, no references to the page or the data, no Latin words
-// inside Hebrew sentences (business and brand names excepted), no em dashes, no emoji, no empty quotes,
-// and the house spellings. Pure, so the writer's checks, the cleanup script and the tests share it.
+// unverified information, no generator language, no references to the page or the data, no record
+// language (רשומה, מצוין, נרשם, מופיע כ), no street words in Latin script (St, Rd, Derech), no Latin
+// words inside Hebrew sentences (business and brand names excepted), no em dashes, no emoji, no empty
+// quotes, and the house spellings. Pure, so the writer's checks, the cleanup script and the tests share it.
 
 /** Phrases that mean "we did not have this" or that talk about the data instead of the business (the brief's list). */
 export const MISSING_INFO_PATTERNS: RegExp[] = [
@@ -16,6 +17,33 @@ export const MISSING_INFO_EXTRA: RegExp[] = [
   /במידע שהתקבל/u, /בנתונים שהתקבלו/u, /על פי הנתונים/u, /לפי הנתונים/u, /הנתונים הזמינים/u, /המידע הזמין/u,
   /בעמוד זה/u, /בעמוד העסק/u, /בעמוד הזה/u, /בפרופיל זה/u, /בפרופיל העסק/u, /בכרטיס העסק/u, /בתיאור זה/u,
 ];
+
+/**
+ * Record language: words that describe a database row, a listing or a form instead of the business
+ * ("ברשומה מצוין", "נרשמה כ", "מופיעה ב", "תוארו", "אינה מפרטת"). The text speaks about the business
+ * directly ("הסלון מתמחה ב..."), never about a record, list or listing. JavaScript's \b does not bound
+ * Hebrew letters, so each pattern carries its own Hebrew boundaries; common prefixes (ו, ש, ה, ב, כ, ל, מ)
+ * are part of the match.
+ */
+export const RECORD_PATTERNS: RegExp[] = [
+  /(?<![א-ת])(?:[ושבכלמ]?ה?)רשומ(?:ה|ת|ות)(?![א-ת])/u, // רשומה, ברשומה, ברשומת, הרשומות
+  /(?<![א-ת])(?:[וש]|כש|ה)?(?:מצוין|מצוינ(?:ת|ים|ות))(?![א-ת])/u, // מצוין, מצוינת, שמצוין (the praise sense is generic anyway)
+  /(?<![א-ת])(?:[וש]|כש|ה)?(?:מציין|מציינ(?:ת|ים|ות))(?![א-ת])/u, // מציין, מציינת
+  /(?<![א-ת])(?:[וש]|כש)?(?:נרשם|נרשמ(?:ה|ו|ים|ות))(?![א-ת])/u, // נרשם, נרשמה, נרשמו
+  // מופיע כ, מופיעה ב, מופיע תחת: the next word carries a ב or כ prefix (not the plain words כבר, כל, כך, כמה, כמו, כן, בין, בלבד)
+  /(?<![א-ת])(?:[וש]|כש)?מופיע(?:ה|ים|ות)?\s+(?:(?![בכ](?:בר|ל|ך|מה|מו|ן|ין|לבד)(?![א-ת]))[בכ][א-ת]+|תחת)(?![א-ת])/u,
+  /(?<![א-ת])(?:[וש]|כש)?תואר(?:ו|ה)(?![א-ת])/u, // תוארו, תוארה
+  /(?<![א-ת])(?:[וש]|כש|ה)?מתואר(?:ת|ים|ות)?(?![א-ת])/u, // מתואר כ
+  /(?<![א-ת])אינ(?:ה|ו|ם|ן|נה)\s+מפרט(?:ת|ים|ות)?(?![א-ת])/u, // איננה מפרטת, אינה מפרטת, אינו מפרט
+  /(?<![א-ת])(?:ו|ש)?אין\s+פירוט(?![א-ת])/u,
+  /(?<![א-ת])לא\s+מפורט(?:ת|ים|ות)?(?![א-ת])/u,
+];
+
+/**
+ * Street words in Latin script: an address that reached the text untranslated ("Herzl St 5", "Derech
+ * Raziel", "Sderot Rothschild"). Addresses are written in Hebrew (src/lib/import/address.ts).
+ */
+export const LATIN_ADDRESS = /(?<![A-Za-z])(?:St|Rd|Ave|Blvd|Hwy|Street|Road|Avenue|Boulevard|Highway|Derech|Derekh|Rehov|Rechov|Rekhov|Sderot|Shderot|Sd|Kikar|Simtat|Shkhuna|Shikun)\.?(?![A-Za-z])/;
 
 /** House spellings. */
 export const SPELLING_PATTERNS: Array<{ re: RegExp; fix: string }> = [
@@ -35,6 +63,8 @@ export const LATIN_BRANDS = ['beautyfind', 'google', 'waze', 'instagram', 'faceb
 
 export type TextProblem =
   | { code: 'missing_info'; match: string }
+  | { code: 'record'; match: string }
+  | { code: 'address'; match: string }
   | { code: 'latin'; match: string }
   | { code: 'dash'; match: string }
   | { code: 'emoji'; match: string }
@@ -77,12 +107,24 @@ export function latinInsideHebrew(text: string, allow: string[] = []): string[] 
   return [...new Set(out)];
 }
 
-/** Every rule the text breaks. Empty means the text may be published. `strict` adds the writer's wider list. */
+/**
+ * Every rule the text breaks. Empty means the text may be published. `strict: false` (interface copy, which
+ * may name the profile and say "מצוין") keeps only the brief's missing-information list; the default adds
+ * the writer's wider list, the record language and the Latin street words.
+ */
 export function textProblems(text: string, allow: string[] = [], opts: { strict?: boolean } = {}): TextProblem[] {
   const out: TextProblem[] = [];
   for (const re of opts.strict === false ? MISSING_INFO_PATTERNS : [...MISSING_INFO_PATTERNS, ...MISSING_INFO_EXTRA]) {
     const m = text.match(re);
     if (m) out.push({ code: 'missing_info', match: m[0] });
+  }
+  if (opts.strict !== false) {
+    for (const re of RECORD_PATTERNS) {
+      const m = text.match(re);
+      if (m) out.push({ code: 'record', match: m[0].trim() });
+    }
+    const a = text.match(LATIN_ADDRESS);
+    if (a) out.push({ code: 'address', match: a[0] });
   }
   for (const w of latinInsideHebrew(text, allow)) out.push({ code: 'latin', match: w });
   const d = text.match(DASH);

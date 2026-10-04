@@ -1,14 +1,16 @@
 // The editorial API call: one structured request on the evidence packet, at most one repair request, and
 // one fresh attempt when the repaired draft still breaks the text rules (sentences about missing data,
-// English inside Hebrew, dashes, emoji). A draft that still breaks them is rejected: the caller keeps the
-// listing's current text instead of publishing it.
+// record language, English inside Hebrew, Latin street words, dashes, emoji). A draft that still breaks
+// them is rejected: the caller keeps the listing's current text instead of publishing it. A draft that
+// passes gets one proofreading call (spelling and grammar only); a draft the proofreader finds unknown or
+// invented Hebrew words in is rejected too.
 // The writer is ChatGPT (OpenAI Responses API) or Claude, chosen by the llmProvider setting. With
 // IMPORT_EDITORIAL_MOCK=1 (tests, simulation) the deterministic template draft stands in and no
 // request leaves the machine.
 
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
-import { checkOutput, normalizeOutput, OUTPUT_SCHEMA, PROMPT_VERSION, repairable, repairMessage, SYSTEM_PROMPT, templateDraft, textRuleViolations, userMessage, type EditorialOutput, type EvidencePacket } from '../../src/lib/import/editorial';
+import { applyProofread, checkOutput, normalizeOutput, OUTPUT_SCHEMA, PROMPT_VERSION, PROOFREAD_PROMPT, PROOFREAD_SCHEMA, proofreadMessage, repairable, repairMessage, SYSTEM_PROMPT, templateDraft, textRuleViolations, userMessage, type EditorialOutput, type EvidencePacket, type ProofreadOutput } from '../../src/lib/import/editorial';
 import { openaiErrorKind } from '../../src/lib/import/openai';
 import { editorialCostUsd, pricing } from '../../src/lib/import/pricing';
 import { responses } from './providers/openai';
@@ -29,8 +31,18 @@ const Out = z.object({
   missing: z.array(z.string().max(120)).max(20),
 });
 
+const Proof = z.object({
+  description: z.string().min(1).max(12_000),
+  faqs: z.array(z.object({ q: z.string().min(1).max(300), a: z.string().min(1).max(2000) })).max(12),
+  metaTitle: z.string().max(200),
+  metaDescription: z.string().max(400),
+  serviceSummaries: z.array(z.object({ name: z.string().max(160), summary: z.string().max(400) })).max(60),
+  unknownWords: z.array(z.string().max(80)).max(50),
+  changes: z.number().int().min(0),
+});
+
 export type EditorialResult =
-  | { ok: true; output: EditorialOutput; violations: string[]; repairs: number; inputTokens: number; outputTokens: number; costUsd: number; model: string }
+  | { ok: true; output: EditorialOutput; violations: string[]; repairs: number; proofread: boolean; inputTokens: number; outputTokens: number; costUsd: number; model: string }
   | { ok: false; error: string; transient?: boolean; fatal?: boolean; inputTokens?: number; outputTokens?: number; costUsd?: number };
 
 let client: Anthropic | null = null;
@@ -44,15 +56,24 @@ function parseJson(text: string): unknown {
   return JSON.parse(a >= 0 && b > a ? t.slice(a, b + 1) : t);
 }
 
-async function once(messages: Anthropic.MessageParam[]): Promise<{ output: EditorialOutput; inputTokens: number; outputTokens: number; raw: string } | { error: string; transient?: boolean; fatal?: boolean }> {
+type Turn = { role: 'user' | 'assistant'; content: string };
+type Raw = { json: unknown; inputTokens: number; outputTokens: number; raw: string } | { error: string; transient?: boolean; fatal?: boolean };
+/** One structured request: the system prompt, the JSON schema the answer must follow, the turns. */
+interface Request {
+  system: string;
+  schema: Record<string, unknown>;
+  turns: Turn[];
+}
+
+async function rawClaude(req: Request): Promise<Raw> {
   try {
     const res = await api().messages.create({
       model: EDITORIAL_MODEL,
       // Room for the model's own reasoning plus the full JSON: the cap counts both, and 6000 cut drafts off.
       max_tokens: 16000,
-      system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
-      ...(useFormat ? { output_config: { format: { type: 'json_schema' as const, schema: OUTPUT_SCHEMA } } } : {}),
-      messages,
+      system: [{ type: 'text', text: req.system, cache_control: { type: 'ephemeral' } }],
+      ...(useFormat ? { output_config: { format: { type: 'json_schema' as const, schema: req.schema } } } : {}),
+      messages: req.turns.map(t => ({ role: t.role, content: t.content })) as Anthropic.MessageParam[],
     } as Anthropic.MessageCreateParamsNonStreaming);
     if (res.stop_reason === 'refusal') return { error: 'refusal' };
     if (res.stop_reason === 'max_tokens') return { error: 'max_tokens' };
@@ -64,15 +85,13 @@ async function once(messages: Anthropic.MessageParam[]): Promise<{ output: Edito
     } catch {
       return { error: 'bad_json' };
     }
-    const parsed = Out.safeParse(json);
-    if (!parsed.success) return { error: `schema: ${parsed.error.message.slice(0, 200)}` };
-    return { output: parsed.data, inputTokens: res.usage.input_tokens, outputTokens: res.usage.output_tokens, raw: text.text };
+    return { json, inputTokens: res.usage.input_tokens, outputTokens: res.usage.output_tokens, raw: text.text };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     if (e instanceof Anthropic.BadRequestError) {
       if (useFormat && /output_config|format|schema|json_schema/i.test(msg)) {
         useFormat = false;
-        return once(messages);
+        return rawClaude(req);
       }
       if (/credit balance|billing/i.test(msg)) return { error: `no_credit: ${msg.slice(0, 200)}`, fatal: true };
       return { error: `api_400: ${msg.slice(0, 240)}` };
@@ -85,12 +104,9 @@ async function once(messages: Anthropic.MessageParam[]): Promise<{ output: Edito
   }
 }
 
-type Turn = { role: 'user' | 'assistant'; content: string };
-type Once = { output: EditorialOutput; inputTokens: number; outputTokens: number; raw: string } | { error: string; transient?: boolean; fatal?: boolean };
-
 /** The same structured request through the OpenAI Responses API (JSON schema output, no tools). */
-async function onceOpenAI(turns: Turn[]): Promise<Once> {
-  const r = await responses({ model: OPENAI_MODEL, instructions: SYSTEM_PROMPT, input: turns, schema: { name: 'profile_text', schema: OUTPUT_SCHEMA as unknown as Record<string, unknown>, strict: true }, maxOutputTokens: 6000 });
+async function rawOpenAI(req: Request): Promise<Raw> {
+  const r = await responses({ model: OPENAI_MODEL, instructions: req.system, input: req.turns, schema: { name: 'profile_text', schema: req.schema, strict: true }, maxOutputTokens: 6000 });
   if (r.kind === 'not_sent') return { error: 'no_api_key', fatal: true };
   if (r.kind === 'uncertain') return { error: `connection: ${r.message}`, transient: true };
   if (r.kind === 'error') {
@@ -109,12 +125,19 @@ async function onceOpenAI(turns: Turn[]): Promise<Once> {
       return { error: 'bad_json' };
     }
   }
-  const parsed = Out.safeParse(json);
-  if (!parsed.success) return { error: `schema: ${parsed.error.message.slice(0, 200)}` };
-  return { output: parsed.data, inputTokens: r.usage.inputTokens, outputTokens: r.usage.outputTokens, raw: r.text };
+  return { json, inputTokens: r.usage.inputTokens, outputTokens: r.usage.outputTokens, raw: r.text };
 }
 
-const onceClaude = (turns: Turn[]): Promise<Once> => once(turns.map(t => ({ role: t.role, content: t.content })) as Anthropic.MessageParam[]);
+type Once<T> = { output: T; inputTokens: number; outputTokens: number; raw: string } | { error: string; transient?: boolean; fatal?: boolean };
+
+/** One request parsed against its zod shape. */
+async function structured<T>(provider: WriterProvider, req: Request, shape: z.ZodType<T>): Promise<Once<T>> {
+  const r = await (provider === 'openai' ? rawOpenAI : rawClaude)(req);
+  if ('error' in r) return r;
+  const parsed = shape.safeParse(r.json);
+  if (!parsed.success) return { error: `schema: ${parsed.error.message.slice(0, 200)}` };
+  return { output: parsed.data, inputTokens: r.inputTokens, outputTokens: r.outputTokens, raw: r.raw };
+}
 
 /** Hebrew typography fixed in place on every string the writer returns (src/lib/import/editorial.ts normalizeOutput). */
 const tidy = normalizeOutput;
@@ -122,19 +145,21 @@ const tidy = normalizeOutput;
 /**
  * One generation call, then one repair call when the checks find something a rewrite can fix. When the text
  * rules are still broken after that, one fresh generation with the problems spelled out; a draft that still
- * breaks them is rejected (error `text_rules`).
+ * breaks them is rejected (error `text_rules`). A passing draft gets one proofreading call: spelling and
+ * grammar only, merged back only when facts and length are unchanged; unknown or invented Hebrew words
+ * reject the draft (error `invented_words`).
  */
 export async function writeEditorial(packet: EvidencePacket, provider: WriterProvider = 'openai'): Promise<EditorialResult> {
   const key = provider === 'openai' ? process.env.OPENAI_API_KEY : process.env.ANTHROPIC_API_KEY;
   if (mock() || !key) {
     if (!mock()) return { ok: false, error: 'no_api_key', fatal: true };
     const output = templateDraft(packet);
-    return { ok: true, output, violations: checkOutput(output, packet).filter(v => !v.startsWith('short:')), repairs: 0, inputTokens: 0, outputTokens: 0, costUsd: 0, model: 'template' };
+    return { ok: true, output, violations: checkOutput(output, packet).filter(v => !/^(short|long):/.test(v)), repairs: 0, proofread: false, inputTokens: 0, outputTokens: 0, costUsd: 0, model: 'template' };
   }
-  const call = provider === 'openai' ? onceOpenAI : onceClaude;
   const model = provider === 'openai' ? OPENAI_MODEL : EDITORIAL_MODEL;
+  const write = (turns: Turn[]) => structured(provider, { system: SYSTEM_PROMPT, schema: OUTPUT_SCHEMA, turns }, Out);
   const turns: Turn[] = [{ role: 'user', content: userMessage(packet) }];
-  const first = await call(turns);
+  const first = await write(turns);
   if ('error' in first) return { ok: false, ...first };
   let inputTokens = first.inputTokens;
   let outputTokens = first.outputTokens;
@@ -143,7 +168,7 @@ export async function writeEditorial(packet: EvidencePacket, provider: WriterPro
   let repairs = 0;
   if (repairable(violations).length) {
     repairs = 1;
-    const second = await call([...turns, { role: 'assistant', content: first.raw }, { role: 'user', content: repairMessage(repairable(violations)) }]);
+    const second = await write([...turns, { role: 'assistant', content: first.raw }, { role: 'user', content: repairMessage(repairable(violations), packet) }]);
     if (!('error' in second)) {
       inputTokens += second.inputTokens;
       outputTokens += second.outputTokens;
@@ -159,7 +184,7 @@ export async function writeEditorial(packet: EvidencePacket, provider: WriterPro
   if (textRuleViolations(violations).length) {
     // The repair left text-rule breaks in: write the whole thing again with the breaks named up front.
     repairs += 1;
-    const again = await call([{ role: 'user', content: `${userMessage(packet)}\n\nA previous draft was rejected for breaking these rules; do not repeat them:\n- ${textRuleViolations(violations).map(v => v.slice(5)).join('\n- ')}` }]);
+    const again = await write([{ role: 'user', content: `${userMessage(packet)}\n\nA previous draft was rejected for breaking these rules; do not repeat them:\n- ${textRuleViolations(violations).map(v => v.slice(5)).join('\n- ')}` }]);
     if (!('error' in again)) {
       inputTokens += again.inputTokens;
       outputTokens += again.outputTokens;
@@ -171,9 +196,35 @@ export async function writeEditorial(packet: EvidencePacket, provider: WriterPro
       }
     }
   }
-  const costUsd = editorialCostUsd(inputTokens, outputTokens, pricing(), provider);
-  if (textRuleViolations(violations).length) return { ok: false, error: `text_rules: ${textRuleViolations(violations).slice(0, 6).join(', ')}`.slice(0, 240), inputTokens, outputTokens, costUsd };
-  return { ok: true, output, violations, repairs, inputTokens, outputTokens, costUsd, model };
+  const cost = () => editorialCostUsd(inputTokens, outputTokens, pricing(), provider);
+  if (textRuleViolations(violations).length) return { ok: false, error: `text_rules: ${textRuleViolations(violations).slice(0, 6).join(', ')}`.slice(0, 240), inputTokens, outputTokens, costUsd: cost() };
+
+  // Proofreading: spelling and grammar only. A failed or refused proofreading call leaves the draft as it is.
+  let proofread = false;
+  const pr = await structured<ProofreadOutput>(provider, { system: PROOFREAD_PROMPT, schema: PROOFREAD_SCHEMA, turns: [{ role: 'user', content: proofreadMessage(output) }] }, Proof);
+  if (!('error' in pr)) {
+    inputTokens += pr.inputTokens;
+    outputTokens += pr.outputTokens;
+    const unknown = pr.output.unknownWords.map(w => w.trim()).filter(w => /[א-ת]/.test(w) && output.description.includes(w));
+    if (unknown.length) return { ok: false, error: `invented_words: ${unknown.slice(0, 8).join(', ')}`.slice(0, 240), inputTokens, outputTokens, costUsd: cost() };
+    const merged = applyProofread(output, tidyProof(pr.output));
+    if (merged.applied) {
+      // The corrected text must still pass every check; otherwise the original stands.
+      const v4 = checkOutput(merged.output, packet);
+      if (v4.length <= violations.length && !textRuleViolations(v4).length) {
+        output = merged.output;
+        violations = v4;
+        proofread = true;
+      }
+    }
+  }
+  return { ok: true, output, violations, repairs, proofread, inputTokens, outputTokens, costUsd: cost(), model };
+}
+
+/** The proofreader's strings through the same typography fixes as the writer's. */
+function tidyProof(p: ProofreadOutput): ProofreadOutput {
+  const t = normalizeOutput({ heading: 'על העסק', description: p.description, faqs: p.faqs.map(f => ({ ...f, basis: '' })), metaTitle: p.metaTitle, metaDescription: p.metaDescription, serviceSummaries: p.serviceSummaries, insufficientEvidence: false, missing: [] });
+  return { ...p, description: t.description, faqs: t.faqs.map(f => ({ q: f.q, a: f.a })), metaTitle: t.metaTitle, metaDescription: t.metaDescription, serviceSummaries: t.serviceSummaries };
 }
 
 export { PROMPT_VERSION };

@@ -76,11 +76,11 @@ export const DEFAULT_PRICING: Pricing = {
   },
   llm: { perRecordUsd: 0.05, note: 'Rough gross estimate per website read by the optional LLM step; off by default.' },
   editorial: {
-    perProfileUsd: 0.1,
+    perProfileUsd: 0.12,
     inputPer1MUsd: 2,
     outputPer1MUsd: 10,
     model: 'claude-sonnet-5',
-    note: 'Claude Sonnet 5 list prices ($2 in, $10 out per 1M tokens). A profile with one repair call measured about $0.10 on 2026-10-03; the model reasons before writing and those tokens are billed as output. Override with IMPORT_PRICING_JSON and IMPORT_EDITORIAL_MODEL.',
+    note: 'Claude Sonnet 5 list prices ($2 in, $10 out per 1M tokens). A profile with one repair call measured about $0.10 on 2026-10-03; the proofreading call added on 2026-10-04 is a short second call on the draft alone. The model reasons before writing and those tokens are billed as output. Override with IMPORT_PRICING_JSON and IMPORT_EDITORIAL_MODEL.',
   },
   youtube: { quotaPerDay: 10_000, note: 'YouTube Data API v3 default daily quota (units, no charge). oEmbed needs no key and no quota.' },
   mapsEmbed: { perLoadUsd: 0, note: 'Maps Embed API has no usage charge at the time of writing; needs its own browser key restricted to our domains.' },

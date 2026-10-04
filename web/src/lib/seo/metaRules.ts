@@ -5,11 +5,11 @@
 // separately" line, 130 to 155 characters. Pure, shared by the page metadata, the writer's checks, the
 // stored-override check and scripts/seo-verify.ts.
 
-import { MISSING_INFO_EXTRA, MISSING_INFO_PATTERNS, latinInsideHebrew } from '../import/textRules';
+import { LATIN_ADDRESS, MISSING_INFO_EXTRA, MISSING_INFO_PATTERNS, RECORD_PATTERNS, latinInsideHebrew } from '../import/textRules';
 import { DESCRIPTION_MAX, DESCRIPTION_MIN, composeDescription } from './meta';
 import { TREATMENT_BRANDS } from './treatmentNames';
 
-export type MetaProblem = 'missing_info' | 'booking' | 'contact' | 'phone_only' | 'ratings_line' | 'title_repeat' | 'latin' | 'short' | 'long';
+export type MetaProblem = 'missing_info' | 'record' | 'address' | 'booking' | 'contact' | 'phone_only' | 'ratings_line' | 'title_repeat' | 'latin' | 'short' | 'long';
 
 /** Sentences about booking: whether, where or how a visit can be booked. */
 export const BOOKING_PATTERNS: RegExp[] = [
@@ -42,6 +42,8 @@ export function metaDescriptionProblems(text: string, opts: { min?: number; max?
     if (re) out.push({ code, match: t.match(re)?.[0] ?? '' });
   };
   add('missing_info', first(t, [...MISSING_INFO_PATTERNS, ...MISSING_INFO_EXTRA]));
+  add('record', first(t, RECORD_PATTERNS));
+  add('address', LATIN_ADDRESS.test(t) ? LATIN_ADDRESS : undefined);
   add('phone_only', first(t, PHONE_ONLY_PATTERNS));
   add('booking', first(t, BOOKING_PATTERNS));
   add('contact', first(t, CONTACT_PATTERNS));

@@ -10,7 +10,7 @@ import { after, before, describe, it } from 'node:test';
 import { PRICE_UNKNOWN, hoursKnown, openState, parseHours, servicePrice } from '../../src/components/profile/format';
 import { mapQuery, mapsEmbedUrl } from '../../src/lib/mapsEmbed';
 import { coverageOf, MANIFEST, manifestMarkdown, type CoverageInput } from '../../src/lib/import/coverage';
-import { BANNED_PHRASES, buildPacket, checkOutput, countWords, packetHash, repairable, templateDraft, WORDS_MIN, type EvidencePacket } from '../../src/lib/import/editorial';
+import { BANNED_PHRASES, buildPacket, checkOutput, countWords, LENGTH_TIERS, lengthTier, packetHash, repairable, templateDraft, WORDS_MAX, WORDS_MIN, type EvidencePacket } from '../../src/lib/import/editorial';
 import { cleanTeam, establishedFrom, languagesFrom, looksLikeName, teamFrom, videosFrom } from '../../src/lib/import/profileExtract';
 import { extractPage } from '../../src/lib/import/siteExtract';
 import { handleOf, publishableSocials, verifySocials } from '../../src/lib/import/socials';
@@ -209,12 +209,33 @@ describe('editorial checks and the template draft', () => {
   it('rich evidence gives a full draft with several FAQs and no text-rule breaks (acceptance 2)', () => {
     const d = templateDraft(RICH);
     const words = countWords(d.description);
-    assert.ok(words >= WORDS_MIN && words <= 620, `words ${words}`);
+    assert.ok(words >= WORDS_MIN && words <= WORDS_MAX, `words ${words}`);
     assert.ok(d.description.split('\n\n').length >= 3 && d.description.split('\n\n').length <= 5, 'three to five paragraphs');
     assert.ok(d.faqs.length >= 5 && d.faqs.length <= 8);
     assert.equal(d.insufficientEvidence, false);
     assert.equal(d.heading, 'על הקליניקה');
-    assert.deepEqual(checkOutput(d, RICH), []);
+    // The template is a fallback that is never published; only the writer is held to the tier's word bounds.
+    assert.deepEqual(checkOutput(d, RICH).filter(v => !/^(short|long):/.test(v)), []);
+  });
+  it('the length tier follows the evidence, and the checks hold the draft to its bounds', () => {
+    assert.equal(lengthTier(RICH), 'rich');
+    assert.equal(lengthTier(SPARSE), 'sparse');
+    const normal: EvidencePacket = { ...SPARSE, services: RICH.services, hours: RICH.hours };
+    assert.equal(lengthTier(normal), 'normal');
+    const d = templateDraft(RICH);
+    const sentence = 'הקליניקה פתוחה בימים ראשון עד חמישי בין 9:00 ל־20:00 ובשישי עד 14:00.';
+    const pad = (n: number) => Array.from({ length: n }, () => sentence).join(' ');
+    const w = (n: number) => countWords(pad(n));
+    // 170 words: inside the sparse bounds, under the normal and rich floors.
+    const n170 = Math.ceil(170 / countWords(sentence));
+    const text170 = pad(n170);
+    assert.ok(w(n170) >= LENGTH_TIERS.sparse.min && w(n170) <= LENGTH_TIERS.sparse.max, `words ${w(n170)}`);
+    assert.ok(!checkOutput({ ...d, description: `${SPARSE.name} ${text170}`, insufficientEvidence: false }, SPARSE).some(v => /^(short|long):/.test(v)));
+    assert.ok(checkOutput({ ...d, description: `${RICH.name} ${text170}` }, RICH).some(v => v.startsWith('short:')));
+    assert.ok(checkOutput({ ...d, description: `${normal.name} ${text170}` }, normal).some(v => v.startsWith('short:')));
+    // 560 words: over every tier's ceiling.
+    const n560 = Math.ceil(560 / countWords(sentence));
+    assert.ok(checkOutput({ ...d, description: `${RICH.name} ${pad(n560)}` }, RICH).some(v => v.startsWith('long:')));
   });
   it('sparse evidence stays short and flagged instead of padded (acceptance 3)', () => {
     const d = templateDraft(SPARSE);
@@ -255,6 +276,11 @@ describe('editorial checks and the template draft', () => {
     assert.equal(p.phone, true);
     assert.equal(p.website, 'x.co.il');
     assert.equal(p.address, 'רחוב 1, חיפה');
+    // A Latin street reaches the writer in Hebrew, or not at all.
+    const latin = (address: string) => buildPacket({ name: 'X', cityName: 'נתניה', address, categories: [], businessType: null, treatments: [], hours: [], phone: null, email: null, whatsapp: null, website: null, websiteKind: null, bookingUrl: null, instagram: null, facebook: null, tiktok: null, youtube: null, team: [], languages: [], establishedYear: null, accessible: null, freeParking: null, description: null, faqs: null, googleRating: null, googleReviewCount: null, photoUrls: [], videos: [] }).address;
+    assert.equal(latin('Derech Raziel 5, Netanya, Israel'), 'דרך רזיאל 5, נתניה');
+    assert.equal(latin('Herzl St 12, Netanya'), 'רחוב הרצל 12, נתניה');
+    assert.equal(latin('Some Unknown Rd 3, Netanya'), 'נתניה');
     assert.equal(p.hours, null);
     assert.equal(p.rating, null); // zero reviews is no rating
     assert.ok(!JSON.stringify(p).includes('+97235551234') && !JSON.stringify(p).includes('a@b.co.il'));
