@@ -1,0 +1,20 @@
+run 12b6b32f-47ef-4957-8285-4ba1de9645d3 "ניקוי תיאורים 1/1" status=done started=2026-10-04T07:11:43.483Z finished=2026-10-04T07:35:39.992Z
+counters: {"improved":4,"filled_faqs":4,"editorialCalls":10,"nothing_to_add":6,"youtubeRequests":0,"editorial_failed":4,"editorial_written":6,"filled_description":4}
+listings in scope: 10, import records: 10, drafts written in this run: 10
+by model: claude-sonnet-5: 6, template: 4
+by tier: rich: 4, sparse: 3, normal: 3
+proofread: yes: 6, no: 4
+by error: (none): 6, max_tokens: 4
+words: min 40, median 174, max 261
+cost recorded on the records: 0.976 USD
+  claude-sonnet-5  sparse words=  79 faqs= 2 pr=yes | ad544cb8-7e77-4524-9640-0befa25de827 L&Y beauty lab
+  template         normal words= 122 faqs= 6 pr=no error=max_tokens | 428b9c2b-b87d-4cb3-82d5-83d155ae79c1 ARcosmetolog
+  claude-sonnet-5  rich   words= 261 faqs= 6 pr=yes violations=short:261 | e7a7ede1-2590-4d64-9f3f-ce0893975d6d פרו אסתטיקס טיפולים אסתטיים מתקדמים צפת
+  claude-sonnet-5  normal words= 220 faqs= 6 pr=yes | 14e6f29b-d0e6-4733-bca8-8f0541f268fe Barak clinic - קליניקה לאסתטיקה מתקדמת ב
+  claude-sonnet-5  normal words= 174 faqs= 6 pr=yes violations=short:174 | name_missing | 80be9c7f-a966-4f2c-9309-97bbbb8fa10b Batya Care & Beauty Institute
+  claude-sonnet-5  sparse words=  40 faqs= 3 pr=yes | dddabe69-f356-4d08-bcd8-1d39cef0d770 Laurence skin care
+  template         rich   words= 200 faqs= 6 pr=no error=max_tokens | bcb35f73-9991-4cc0-9150-141bc3dc5b47 Carmella Spa | כרמלה ספא בחיפה
+  template         rich   words= 165 faqs= 4 pr=no error=max_tokens | 0dc89d04-4269-4f7c-96ca-df421920dbf1 magical care yaniv azran
+  template         rich   words= 226 faqs= 6 pr=no error=max_tokens | f519049e-b3ab-4dd0-91c4-b4f944cef39c LA CLÍNICA
+  claude-sonnet-5  sparse words= 160 faqs= 5 pr=yes violations=person:השעות הקבוע | b5afada9-287f-47af-9a19-2bbd854a7400 BEAUTY OSK
+CSV: reports/editorial-report.csv
