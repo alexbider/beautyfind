@@ -1,0 +1,60 @@
+run 61d6e2c3-4522-455d-91e2-03f70bb6d940 "ניקוי תיאורים 1/17" status=done started=2026-10-04T19:55:37.007Z finished=2026-10-04T20:29:43.630Z
+counters: {"improved":46,"filled_faqs":22,"editorialCalls":50,"nothing_to_add":4,"youtubeRequests":0,"editorial_failed":17,"editorial_written":33,"filled_description":22,"filled_meta_title_cleared":17,"filled_meta_description_cleared":44}
+listings in scope: 50, import records: 50, drafts written in this run: 50
+by model: claude-sonnet-5: 33, template: 17
+by tier: normal: 27, sparse: 23
+proofread: yes: 31, no: 19
+by error: (none): 33, unsupported_claims: שמטרתן לשפר את מראה העור ואת מרקמו, להבה: 1, unsupported_claims: חבילה שמיועדת במיוחד ליום החתונה; שירותי: 1, unsupported_claims: עיצוב הגבות מתבצע במגוון שיטות: 1, unsupported_claims: שעות הפעילות הארוכות מאפשרות לקבוע תור ג: 1, unsupported_claims: דירות אירוח ללינה באזור, מתאים לשהייה קצ: 1, unsupported_claims: מניקור ופדיקור, שני טיפולים לטיפוח ושיפו: 1, unsupported_claims: טיפול ממוקד שמטרתו להקל על בעיות שגורמות: 1, unsupported_claims: שמתמחה באיפור ועיצוב שיער לכלות ולאירועי: 1, unsupported_claims: שמיועדים לטיפוח כללי של עור הפנים; שמתמק: 1, unsupported_claims: מציע טיפולי אסתטיקה: 1, unsupported_claims: שמיועדת להסרת שיער בגוף ובפנים: 1, unsupported_claims: המניקור כולל טיפוח וציפוי לציפורני הידיי: 1, unsupported_claims: בניהולה של רבקה רחמים; שירותים לחתונות ו: 1, unsupported_claims: לק ג׳ל על ציפורן טבעית, שנותן לציפורן הט: 1, unsupported_claims: קוסמטיקאית פרא רפואית: 1, unsupported_claims: ליאת גז הוא סטודיו לטיפוח גבות וריסים בנ: 1, unsupported_claims: החלקה ועיצוב של הגבה עצמה; לעיצוב ארוך ט: 1
+words: min 14, median 60, max 199
+cost recorded on the records: 2.498 USD
+  claude-sonnet-5  sparse words=  76 faqs= 5 pr=yes | 4833e9c5-cb30-4281-906a-ec2a727fecd2 Opal cosmetic - אופל קוסמטיקה מקצועית
+  claude-sonnet-5  sparse words=  18 faqs= 3 pr=yes | ad544cb8-7e77-4524-9640-0befa25de827 L&Y beauty lab
+  claude-sonnet-5  sparse words=  63 faqs= 5 pr=yes | 428b9c2b-b87d-4cb3-82d5-83d155ae79c1 ARcosmetolog
+  template         normal words=  70 faqs= 3 pr=no error=unsupported_claims: שמטרתן לשפר את מראה העור ואת מרקמו, להבהיר כתמים ולסייע בהחלמת העור מע | 91b91049-672e-40a2-b689-2161570e2b4f ליאל מילר - קוסמטיקאית קלינית פרא רפואית
+  template         normal words= 117 faqs= 3 pr=no error=unsupported_claims: חבילה שמיועדת במיוחד ליום החתונה; שירותי כלה שכוללים את עיצוב השיער וה | 8addcfc7-48ba-4183-b32e-fe487838525b לקראת כלה- בוטיק-איפור-עיצוב שיער , מבית
+  template         normal words=  55 faqs= 3 pr=no error=unsupported_claims: עיצוב הגבות מתבצע במגוון שיטות | caa416ae-8f10-4aee-ac00-d5f35227bbd0 Lilac Saturn cosmetics and eyebrow shapi
+  template         normal words= 124 faqs= 5 pr=no error=unsupported_claims: שעות הפעילות הארוכות מאפשרות לקבוע תור גם בשעות הערב; ובכך לוודא זמינו | 4d026a4e-c492-40cc-a8ca-d4a2d5056ced לירן קוסמטיקס
+  template         sparse words=  34 faqs= 3 pr=no error=unsupported_claims: דירות אירוח ללינה באזור, מתאים לשהייה קצרה או ארוכה | ee4d7d41-ed59-4253-a44f-a35d78f933c7 הפינה של טלי בנהריה-דירות אירוח וספא ברי
+  claude-sonnet-5  sparse words=  32 faqs= 4 pr=yes | c1d074c8-2287-4d62-b421-1ba5f1c08c70 салон красоты " DREAM "
+  claude-sonnet-5  normal words=  60 faqs= 5 pr=no violations=short:60 | meta:short:129 | 31167bd4-b539-47fb-8a00-f9ed653212c2 אורית דיין מעצבת גבות והסרת שיער בלייזר
+  claude-sonnet-5  normal words=  90 faqs= 6 pr=yes | 9df5dfd6-0cbd-410b-8ec1-ffdcb83ec9b4 Osmo Professional רפאל אוסמו
+  template         normal words= 100 faqs= 4 pr=no error=unsupported_claims: מניקור ופדיקור, שני טיפולים לטיפוח ושיפור מראה הציפורניים בידיים וברגל | 8d6eddba-0a9d-466f-84d5-94586d40f31b Meital Ram professional makeup artist an
+  claude-sonnet-5  sparse words=  53 faqs= 4 pr=no | 53e4393c-8b32-4615-b714-bd46cb2541ca ד״ר אמיר מטר,מרפאת שיניים ואסתטיקה
+  claude-sonnet-5  normal words=  81 faqs= 6 pr=yes | 046a4123-029b-4df9-aba7-951606c2b568 Permanent makeup & eyelashes Nahariya
+  claude-sonnet-5  normal words=  99 faqs= 6 pr=yes | ff590aaf-bf24-47fe-94af-30f52187b8c5 הלנה שינדרמן טיפולי פנים בנהריה
+  claude-sonnet-5  normal words=  93 faqs= 5 pr=yes | 64642c0f-f2ea-43cb-b0a3-cbd9b66517e9 בתאל הראל קוסמטיקה מתקדמת
+  claude-sonnet-5  sparse words=  49 faqs= 4 pr=yes | 142d077d-f5ce-4904-aeba-eaa2eb286855 דיאנה שרייפר
+  claude-sonnet-5  sparse words=  44 faqs= 5 pr=yes | 9fb03bc6-cffa-4ac9-aa3b-8cca3c9d9c34 R&R Rina Oren & Roni Shalev
+  claude-sonnet-5  sparse words=  41 faqs= 3 pr=yes violations=meta:title_repeat:מימו בנהריה | meta:short:109 | 23b14542-a951-4680-94fe-77ed146bce0f מימו - מכון היופי הלבנוני
+  template         normal words=  56 faqs= 4 pr=no error=unsupported_claims: טיפול ממוקד שמטרתו להקל על בעיות שגורמות לכאב או לאי נוחות בכפות הרגלי | b5c6b28d-d5ae-4ca1-b53e-25f795617481 לב מדיקל - סניף נהריה
+  claude-sonnet-5  sparse words=  43 faqs= 5 pr=yes | c1ea549c-d06c-4606-8a0b-c00d8b09725f ד"ר יעל הירש אסתטיקה
+  template         normal words= 133 faqs= 4 pr=no error=unsupported_claims: שמתמחה באיפור ועיצוב שיער לכלות ולאירועים; עיצוב שיער, שמכין תסרוקת לא | 8aa9c929-98b3-4ae7-8ef2-c633df3ff7f4 הילה גנון מאפרת ומסרקת מקצועית מנהריה
+  claude-sonnet-5  normal words=  93 faqs= 6 pr=yes violations=meta:long:167 | 14e6f29b-d0e6-4733-bca8-8f0541f268fe Barak clinic - קליניקה לאסתטיקה מתקדמת ב
+  template         normal words=  76 faqs= 5 pr=no error=unsupported_claims: שמיועדים לטיפוח כללי של עור הפנים; שמתמקדים בסימני הגיל; שמשפר את מרקם | 5e7d4d4f-5aa6-41f1-b660-3e4cf7c5525f Victoria Levin Cosmetics
+  claude-sonnet-5  sparse words=  57 faqs= 4 pr=yes | 2a7539f0-8de3-43fc-b286-3eec171e7cb3 ד"ר מינה סקנדריון
+  claude-sonnet-5  normal words=  94 faqs= 5 pr=yes | cc65a219-ea6b-4325-8cea-7807dd28a4fa לירן איפור קבוע ובניית ציפורניים.
+  template         sparse words=  41 faqs= 4 pr=no error=unsupported_claims: מציע טיפולי אסתטיקה | 30491085-9e7e-462d-887e-70b5ac899ef4 ד״ר אביטל אנדלר- אסתטיקה רפואית ודנטלית
+  template         normal words=  62 faqs= 3 pr=no error=unsupported_claims: שמיועדת להסרת שיער בגוף ובפנים | 49c69891-3bae-4cf8-ab22-e473f85244b5 יוניק קליניק - unique clinic
+  claude-sonnet-5  sparse words=  51 faqs= 4 pr=yes | 7ec6706c-f25f-4e12-803e-7f24c0ddd609 Perfection studio
+  template         normal words=  96 faqs= 5 pr=no error=unsupported_claims: המניקור כולל טיפוח וציפוי לציפורני הידיים; הפדיקור מיועד לטיפוח ולציפו | 388a5b73-0aed-4fea-9b38-a28b0b4b0aaa Glamur G_B
+  claude-sonnet-5  normal words=  74 faqs= 5 pr=yes | d44aee6a-cef9-4a1c-8dc0-6d9a18a77742 בי ביוטי בתאל שפר
+  claude-sonnet-5  sparse words=  48 faqs= 4 pr=yes | af4ecf73-badc-4b6c-a7f7-4ec3f15393dc הסטודיו של מורן איפור וציפורניים
+  claude-sonnet-5  sparse words=  49 faqs= 4 pr=yes | bcbde7dc-9a86-447f-940d-a440d716402c M.B- BARBER SHOP
+  template         normal words= 199 faqs= 4 pr=no error=unsupported_claims: בניהולה של רבקה רחמים; שירותים לחתונות וארועים | 0e665d70-a4cd-4499-bf50-514a2bb29577 איפור ועיצוב שיער - רבקה רחמים
+  claude-sonnet-5  sparse words=  48 faqs= 4 pr=yes | 4fa323fe-817a-48f1-b827-79ce7229049b מכון C היופי בנהריה
+  claude-sonnet-5  sparse words=  21 faqs= 3 pr=yes violations=meta:contact:פייסבוק | dddabe69-f356-4d08-bcd8-1d39cef0d770 Laurence skin care
+  claude-sonnet-5  normal words=  86 faqs= 6 pr=yes | 79f45964-d5b5-4ff7-a487-79a424062603 לורנסה בוטיק ספא ראש והילינג
+  claude-sonnet-5  sparse words=  21 faqs= 3 pr=yes | 3b5f58db-d47c-40e8-9816-0c87f5a6b947 יעל ביוטי
+  claude-sonnet-5  normal words=  83 faqs= 6 pr=yes | 75525b40-06e9-498a-a04f-5b0c0a6317ac אורטל הר זהב קוסמטיקאית בנהריה
+  claude-sonnet-5  sparse words=  49 faqs= 5 pr=yes | f276095e-d7ef-4f16-b6ad-bf523bc2e6cc לינוי מיכאלוב קוסמטיקאית מוסמכת
+  claude-sonnet-5  normal words=  89 faqs= 5 pr=yes | fd8ad20d-1caa-4a2e-aa1a-f2a43a6d80db Shiran Ben Yehuda איפור קבוע
+  template         normal words=  49 faqs= 3 pr=no error=unsupported_claims: לק ג׳ל על ציפורן טבעית, שנותן לציפורן הטבעית גימור אחיד ועמיד; עיצוב ג | 0e5b7bdb-b90b-4576-a535-ab77269958df אלה שמואל - טיפוח ויופי
+  claude-sonnet-5  sparse words=  14 faqs= 3 pr=yes violations=meta:contact:טלפון | 06390e24-6f82-4bb1-8bc5-caecf3f12a37 mimi cosmetics
+  claude-sonnet-5  sparse words=  55 faqs= 5 pr=yes | 0dea655d-47cd-46e8-b4b7-47aca4a9b031 לק ג׳ל בנהריה - סנדי טטרו
+  claude-sonnet-5  sparse words=  14 faqs= 2 pr=yes violations=meta:contact:טלפוני | 7ae5151f-120e-47e1-9984-92378daa9cef מגי צרונה קוסמטיקה מתקדמת
+  claude-sonnet-5  normal words=  89 faqs= 5 pr=yes | 7e8c91ea-4b2e-4e75-b211-194e1188fbce Sharona Spa
+  template         normal words=  50 faqs= 4 pr=no error=unsupported_claims: קוסמטיקאית פרא רפואית | e58b2a2e-29a8-4d41-988b-51bab7c40d3b Tamar Cosmetics - קוסמטיקאית פרא רפואית
+  claude-sonnet-5  sparse words=  41 faqs= 4 pr=yes | b5afada9-287f-47af-9a19-2bbd854a7400 BEAUTY OSK
+  template         normal words=  83 faqs= 4 pr=no error=unsupported_claims: ליאת גז הוא סטודיו לטיפוח גבות וריסים בנהריה; הרמת ריסים שמעניקה לריסי | ac0b76e1-fa40-4d39-a307-7d29bff52c2f ליאת גז
+  template         normal words= 132 faqs= 4 pr=no error=unsupported_claims: החלקה ועיצוב של הגבה עצמה; לעיצוב ארוך טווח של הגבות יש גם מיקרובליידי | 76c423b1-7a82-4e86-8b99-cab9c99707af אורלי דהאן ORLY DAHAN
+CSV: reports/editorial-report.csv
