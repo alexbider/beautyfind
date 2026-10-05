@@ -19,6 +19,8 @@
 //            --rejected                     also include listings whose last draft the grounding check rejected
 //                                           (error unsupported_claims) under an older prompt version, so a
 //                                           softer grounding rule gets another go at them
+//            --rejected-only                queue only those rejections (the text-rule failures stay in the
+//                                           CSV and the counts, but are not queued)
 //
 // Never changed: claimed listings, listings whose text staff marked approved (editorial.ownerApproved) and the
 // hand-written reference profiles (src/lib/import/reference.ts).
@@ -61,7 +63,8 @@ interface Row {
 async function main() {
   const confirm = process.argv.includes('--confirm');
   const cancelQueued = process.argv.includes('--cancel-queued');
-  const rejectedToo = process.argv.includes('--rejected');
+  const rejectedOnly = process.argv.includes('--rejected-only');
+  const rejectedToo = rejectedOnly || process.argv.includes('--rejected');
   const out = arg('out') ?? 'reports/description-cleanup.csv';
   const batch = Math.max(1, Math.min(200, Number(arg('batch') ?? 50)));
   const perListingUsd = Math.max(0.01, Number(arg('budget') ?? 0.12));
@@ -126,6 +129,10 @@ async function main() {
   // The listings to queue: all candidates, or with --limit a spread across the tiers (round robin, so a
   // review batch of ten holds every tier).
   let ids = candidates.map(r => r.branchId);
+  if (rejectedOnly) {
+    ids = candidates.filter(r => r.why.includes('rejected')).map(r => r.branchId);
+    console.log(`REJECTED ONLY: queueing ${ids.length} of ${candidates.length} candidates`);
+  }
   if (rerun) {
     ids = ids.filter(id => rerun.has(id));
     console.log(`RERUN: ${ids.length} of the earlier run's ${rerun.size} listings are candidates again`);
