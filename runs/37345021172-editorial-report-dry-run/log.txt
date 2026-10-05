@@ -1,0 +1,56 @@
+run 197b8c80-9d17-4a22-8097-b25a3931c6ff "ניקוי תיאורים 15/17" status=done error=הכתיבה לא רצה: editorial: no_credit: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please  started=2026-10-05T14:23:45.916Z finished=2026-10-05T15:06:21.039Z
+counters: {"improved":50,"postTasks":12,"postPhotos":13,"filled_faqs":21,"editorialCalls":50,"youtubeRequests":0,"editorial_failed":19,"editorial_written":31,"filled_description":21,"filled_meta_title_cleared":22,"filled_meta_description_cleared":50}
+lastEditorialError: editorial: no_credit: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please 
+listings in scope: 50, import records: 50, drafts written in this run: 45
+by model: claude-sonnet-5: 31, template: 14
+by tier: normal: 27, sparse: 13, rich: 5
+proofread: yes: 24, no: 21
+by error: (none): 31, unsupported_claims: בעלת המכון עובדת בתחום למעלה מעשור; כמה : 1, unsupported_claims: לטווח ארוך; שירות השיזוף מתאים למי שרוצה: 1, unsupported_claims: איפור קבוע בשיטת השערה שמדמה שערות גבה ב: 1, unsupported_claims: הוא סטודיו לציפורניים באשדוד; בגוגל הסטו: 1, unsupported_claims: הסטודיו מציע גם מזותרפיה כטיפול נוסף למג: 1, unsupported_claims: יש בעמוד שלו גם שמונה תמונות שמציגות עבו: 1, text_rules: text:record:שמתוארת: 1, unsupported_claims: יש גם איפור קלאסי: 1, unsupported_claims: הבחירה בסוג הטיפול המתאים... נקבעת בשיחת: 1, unsupported_claims: מספרה ומכון איפור ברחובות; יערה מתמחה בא: 1, unsupported_claims: הוא סטודיו לאיפור ועיצוב שיער ברחובות; ה: 1, unsupported_claims: טיפול מיקרונידלינג בגלי רדיו, שמיועד למי: 1, unsupported_claims: הכולל תספורות ועיצוב בהתאם לסוג השיער ול: 1, unsupported_claims: נועה לב היא קליניקה לקוסמטיקה וטיפולי פנ: 1
+words: min 25, median 77, max 304
+cost recorded on the records: 2.825 USD
+  template         normal words= 169 faqs= 5 pr=no error=unsupported_claims: בעלת המכון עובדת בתחום למעלה מעשור; כמה זמן ליאת דנינו עובדת בתחום: למ | 4d562b29-df0b-4422-a0cc-dc59fa59275b ליאת דנינו- מרכז לאסתטיקה|Liat Danino Ae
+  template         normal words=  96 faqs= 5 pr=no error=unsupported_claims: לטווח ארוך; שירות השיזוף מתאים למי שרוצה גוון עור משופר ללא שמש | 7bf793da-b7d9-4de6-911c-7d4d56247c6b V-Clinic
+  template         normal words=  63 faqs= 4 pr=no error=unsupported_claims: איפור קבוע בשיטת השערה שמדמה שערות גבה בודדות לתוצאה שנראית קרובה למצי | 9a6aa3be-ed73-4203-b622-a45fa327d4d5 אתי ניילס - אקדמיה לאיפור קבוע ועיצוב גב
+  claude-sonnet-5  sparse words=  62 faqs= 5 pr=yes | 95164d33-a97a-484f-bee5-9498a71d80b7 ARTUR Hair Design
+  claude-sonnet-5  normal words= 106 faqs= 6 pr=yes | fc6c6564-42c3-43db-90eb-5f423b098060 Rachel
+  claude-sonnet-5  sparse words=  28 faqs= 3 pr=yes | de9ab7fb-2f51-4bbd-b538-242cabe9d69e Two Rbib- aesthetics and Care Clinic
+  claude-sonnet-5  normal words= 101 faqs= 7 pr=yes | 5b57d49d-51e2-45ac-a992-c7dff7c1ca02 Sk cosmetics
+  claude-sonnet-5  sparse words=  41 faqs= 4 pr=yes | e06ab5dc-b5a3-4e3c-b01b-937f55452238 Yelena Cosmetics Ashdod
+  claude-sonnet-5  rich   words= 131 faqs= 6 pr=no violations=short:131 | meta:short:127 | 2a6fe4cb-d410-4847-8e1e-7682d37879e3 Glam42 גלאם42 אשדוד
+  claude-sonnet-5  normal words=  76 faqs= 5 pr=yes | 812c51ee-3044-4fe9-98ce-3b15b403b080 Hair Care Salon by Inna Faler
+  template         normal words=  94 faqs= 5 pr=no error=unsupported_claims: הוא סטודיו לציפורניים באשדוד; בגוגל הסטודיו מדורג 5 על סמך 9 ביקורות | f2e4e0e2-aa75-4c45-981a-ff0070e2b35d Nails Yuli יוליה בניית ציפורניים מקצועית
+  template         normal words=  99 faqs= 3 pr=no error=unsupported_claims: הסטודיו מציע גם מזותרפיה כטיפול נוסף למגוון ההיצע, המיועד לטיפוח העור  | 6c80af72-2af0-44bb-b7c0-52161ac61782 Orit's Beauty Place
+  claude-sonnet-5  normal words=  81 faqs= 5 pr=yes | af3f4457-f5bb-4bbf-a807-70c9a7c3a14d Beauty Room Colibri
+  claude-sonnet-5  normal words=  76 faqs= 5 pr=yes | 7d5bed73-1cde-41d8-9803-c4195fc9a11a Laser_me
+  claude-sonnet-5  rich   words= 157 faqs= 8 pr=no violations=short:157 | 1eed952a-7af9-4875-9dc6-572d9167a83a RN laser cosmetic
+  template         sparse words=  43 faqs= 2 pr=no error=unsupported_claims: יש בעמוד שלו גם שמונה תמונות שמציגות עבודות שבוצעו במקום | 1127f177-b22a-49b9-91fc-12e60fd21a7c Ester the queen
+  claude-sonnet-5  normal words=  81 faqs= 5 pr=yes | 1017cfc5-88bd-4c8d-a363-b20bc967a003 IBrener - קוסמטיקאית פרא רפואית
+  claude-sonnet-5  normal words=  69 faqs= 6 pr=no violations=short:69 | 9d84a1a2-36ea-4c92-b0f3-c75eac76641f AG עיצוב ושיקום שיער
+  claude-sonnet-5  sparse words=  26 faqs= 3 pr=yes | 315b6591-b747-480f-8ca8-e8cb08b10e62 Salon Kosmetik Janna
+  template         rich   words= 261 faqs= 6 pr=no error=text_rules: text:record:שמתוארת | bb3d7841-67cc-47c7-a9ff-86224e1ac302 קוסמטיקאית רחובות טליה בן עטר
+  claude-sonnet-5  normal words=  77 faqs= 5 pr=yes | 35849ef4-d0a0-4381-8641-e5ced99ed3a1 כרמי קוסמטיקה רפואית
+  claude-sonnet-5  sparse words=  55 faqs= 5 pr=yes violations=meta:short:128 | 749c9b92-04c4-4187-9846-724ac681c48f סיל לייזר
+  template         normal words= 218 faqs= 4 pr=no error=unsupported_claims: יש גם איפור קלאסי | de2484af-3b05-444a-8ab2-0bb0c9890d1b איפור קבוע לימור לוין
+  claude-sonnet-5  sparse words=  52 faqs= 4 pr=yes | 23e37315-8ac1-4786-91d4-34b6c6f84a08 Salon fashion
+  template         rich   words= 304 faqs= 6 pr=no error=unsupported_claims: הבחירה בסוג הטיפול המתאים... נקבעת בשיחת ייעוץ עם הרופא המטפל | 74724c13-7499-445a-a81a-59be444dd89f מרפאת ד״ר נייזוב | מרפאת שיניים ברחובות
+  claude-sonnet-5  normal words=  97 faqs= 5 pr=yes | f1182006-bc8b-4245-b3b9-2b870a44cb97 מרכז רפואי מדילי
+  claude-sonnet-5  normal words=  76 faqs= 6 pr=yes | b407da08-c1a5-4c4b-a6a2-23c92815a3e3 חן קוסמטיקס
+  claude-sonnet-5  sparse words=  25 faqs= 4 pr=yes | 0a762856-0b16-4a4d-b391-95cbd08c37f8 מירב וחן הכרמלי טיפולים קוסמטיים
+  claude-sonnet-5  normal words=  65 faqs= 5 pr=no violations=short:65 | 93538dfa-3813-4695-b1b5-141b40af6d54 קוסמטיקה.טיפוח.טבעי & מיקרובליידינג. איפ
+  template         normal words=  94 faqs= 4 pr=no error=unsupported_claims: מספרה ומכון איפור ברחובות; יערה מתמחה באיפור כלות; איפור ערב לאירועים | aba6a12f-eb4a-4582-a934-19bb2ae2ba55 יערה וקיים מאפרת | עיצוב שיער - תסרוקות 
+  claude-sonnet-5  sparse words=  73 faqs= 5 pr=yes | 62d6bd5e-9343-446f-a948-83553b547228 ולריה חייפץ - קוסמטיקאית מוסמכת ומכשור מ
+  claude-sonnet-5  normal words=  84 faqs= 6 pr=yes | 2b6149cd-c0ca-435a-b5c7-2c86088d40bb יואל - אומנות השיער
+  template         normal words=  93 faqs= 4 pr=no error=unsupported_claims: הוא סטודיו לאיפור ועיצוב שיער ברחובות; הסטודיו מתמחה באיפור ובעיצוב שי | a2d77ce0-e0e7-4ee9-9bc7-4f1c6cc51dc6 איילת שבתאי מאפרת ומסרקת כלות וערב
+  claude-sonnet-5  rich   words= 177 faqs= 8 pr=no violations=short:177 | a768b956-706d-47b1-84bc-4b990670a642 קוסמטיקאית ברחובות סיגל שבו מומחית לפתרו
+  template         normal words=  63 faqs= 4 pr=no error=unsupported_claims: טיפול מיקרונידלינג בגלי רדיו, שמיועד למיצוק וחידוש העור; הטיפול מסייע  | 5c7f50ff-1d30-4b74-a620-c065124101b5 B PURE CLINIC
+  claude-sonnet-5  normal words=  98 faqs= 5 pr=yes | 88edd5ff-6483-4257-90d1-84b4bffb7362 Sarah beauty
+  template         normal words=  69 faqs= 5 pr=no error=unsupported_claims: הכולל תספורות ועיצוב בהתאם לסוג השיער ולמבנה הפנים; דירוג גבוה שמתבסס  | e792e14a-0e6e-4ecd-a224-2a5b310d697a עיצוב שיער יניב קלימי
+  template         sparse words=  66 faqs= 3 pr=no error=unsupported_claims: נועה לב היא קליניקה לקוסמטיקה וטיפולי פנים באשדוד; ונועה לב מוסמכת בשי | 5f188255-888f-4258-b380-4ca2bdd98cbb NOA LEV נועה לב
+  claude-sonnet-5  normal words=  69 faqs= 5 pr=no violations=short:69 | 13c2f0ea-45bf-490c-b4ab-fe602c81b248 Mor Amour
+  claude-sonnet-5  sparse words=  30 faqs= 4 pr=yes | a1b13758-e5fd-4f26-8a9e-9d33708644d8 Kati sara makeup artist
+  claude-sonnet-5  sparse words=  53 faqs= 5 pr=yes | 124bb26c-6f71-4f35-8019-91d23cce3a83 Art of look studio
+  claude-sonnet-5  sparse words=  63 faqs= 4 pr=no | ec9b02d2-61e6-4391-940c-331456759e95 מכון יופי - NINA style salon - נינה סטיי
+  claude-sonnet-5  normal words= 104 faqs= 5 pr=yes violations=meta:short:128 | a040df08-a0be-4afe-acb4-5a0d0a3fde7d Or.Fix — Аппаратная косметология & Лифти
+  claude-sonnet-5  normal words=  90 faqs= 6 pr=yes | 6dab8714-8bfd-4ef0-b4dd-cb2f16104c4c טיפול פנים, קוסמטיקה, קוסמטיקאית - מיכל 
+  claude-sonnet-5  normal words= 115 faqs= 6 pr=yes violations=meta:long:158 | d89a4304-f973-40b2-af6f-50205bc1e795 טליה דגן קוסמטיקה roof top (רחובות)
+CSV: reports/editorial-report.csv
