@@ -1,0 +1,60 @@
+run 180f29b9-b23d-48bb-b3f1-da82d37b06fe "ניקוי תיאורים 11/17" status=done started=2026-10-05T10:35:50.385Z finished=2026-10-05T11:37:16.443Z
+counters: {"improved":50,"postTasks":10,"postPhotos":1,"filled_faqs":26,"youtubeQuota":3,"filled_prices":3,"editorialCalls":50,"youtubeRequests":0,"editorial_failed":11,"editorial_written":39,"filled_description":26,"filled_meta_title_cleared":10,"filled_meta_description_cleared":50}
+listings in scope: 50, import records: 50, drafts written in this run: 50
+by model: claude-sonnet-5: 39, template: 11
+by tier: rich: 21, normal: 20, sparse: 9
+proofread: yes: 29, no: 21
+by error: (none): 39, invented_words: ארט דירקטורים, ארט דירקטור: 1, unsupported_claims: עסק בתחום הטיפוח והאסתטיקה: 1, unsupported_claims: הבחירה בסוג הטיפול או הניתוח המתאים נעשי: 1, unsupported_claims: העסק מתמחה בטיפולי פנים וקוסמטיקה לקהל ר: 1, unsupported_claims: חפיפה וטיפול שיזור לשיער: 1, unsupported_claims: הבחירה בסוג הטיפול המתאים נעשית בפגישת י: 1, unsupported_claims: טיפול תרופתי שמטרתו לעצור את תהליך הנשיר: 1, unsupported_claims: שמטרתו להציל שן שנפגעה בה העצב; סתימות ש: 1, unsupported_claims: טיפול PRP/PRF, המבוסס על זריקות מרכיבי ד: 1, invented_words: פלוושיפ: 1, unsupported_claims: רופא שיניים המתמחה באסתטיקה דנטלית; שמיו: 1
+words: min 39, median 105, max 253
+cost recorded on the records: 5.314 USD
+  claude-sonnet-5  normal words=  97 faqs= 5 pr=yes | 1858d488-6e11-4238-acce-2bb62e302490 הזרקות וחומצה בתל אביב | קליניקה לרפואה 
+  claude-sonnet-5  rich   words=  95 faqs= 6 pr=no violations=short:95 | 459b4ea6-3f45-44f9-940a-ba6cef88b204 ד"ר יאיר יוסף
+  claude-sonnet-5  rich   words= 187 faqs= 7 pr=yes violations=filler:מי שמעוניין | meta:short:126 | 92c6dd2a-714d-4328-8de6-46744895b9b9 ד"ר זיידמן אלון יישור שיניים נסתר
+  claude-sonnet-5  sparse words=  59 faqs= 5 pr=yes | 6c599493-1abb-4bb8-bb35-4738572296ca ד"ר אבנר בן שושן
+  claude-sonnet-5  normal words=  71 faqs= 6 pr=yes | 7cdcfeb1-e294-4fd3-8c35-6af5e10b5669 ד"ר אורי שבשין- מנתח פלסטי
+  claude-sonnet-5  rich   words= 130 faqs= 6 pr=no violations=short:130 | 23ca4a86-1c20-4b51-a8b6-30a5c76f4a95 ד"ר אכי פרידמן
+  claude-sonnet-5  normal words= 133 faqs= 6 pr=yes | cfd78421-587a-4765-9296-85be71ff69d3 ד״ר איתם וייס - מומחה לכירורגיה פלסטית ו
+  claude-sonnet-5  normal words= 105 faqs= 6 pr=yes | 1bb5315d-d896-4421-a096-0271d97f0ba0 יגאל ויצמן - החלקה אורגנית | תוספות שיער
+  template         normal words=  56 faqs= 3 pr=no error=invented_words: ארט דירקטורים, ארט דירקטור | e7d42b0b-f6c3-4a29-a665-1be7b87c0432 דיוויס ואודי סלון ובית ספר לספרות
+  claude-sonnet-5  normal words= 106 faqs= 7 pr=yes | 2b8e6318-5a0d-4b4d-aaf3-b52b5d94ccab הקומה של אהובה
+  claude-sonnet-5  sparse words=  51 faqs= 4 pr=yes | 4a91d675-61e9-48c8-94c9-f663c0ad9ff8 יוסי ממן
+  claude-sonnet-5  rich   words= 175 faqs= 7 pr=no violations=short:175 | meta:long:162 | 84b983eb-e26b-4cee-ac49-3db5cf30cf13 ד"ר רון יהב - מרפאת אמייזינג סמייל, מרפא
+  template         sparse words=  39 faqs= 2 pr=no error=unsupported_claims: עסק בתחום הטיפוח והאסתטיקה | ce18701c-19d9-4b43-a72c-ec1d5a9b3002 ד"ר תומר פרלוק
+  claude-sonnet-5  normal words=  75 faqs= 5 pr=yes | aa34b022-a476-4b3c-a121-43d9a8a0ab3c ד״ר דיאא זייד - Dr Diaa zaid
+  template         rich   words= 168 faqs= 5 pr=no error=unsupported_claims: הבחירה בסוג הטיפול או הניתוח המתאים נעשית בפגישת ייעוץ אישית עם ד״ר חד | 9de5fe8a-48df-47f1-9013-3c5653e3b84a ד"ר ערן חדד - מנתח פלסטי, מומחה לכירורגי
+  claude-sonnet-5  sparse words=  39 faqs= 4 pr=yes | e31afad1-b3c7-48b0-9817-b761d6e811ce חיים קפלן
+  claude-sonnet-5  sparse words=  53 faqs= 5 pr=yes violations=meta:short:92 | d5826893-7736-4096-84fc-89db7b52ff74 המספרה של אורלי חן עיצוב שיער
+  template         normal words=  55 faqs= 3 pr=no error=unsupported_claims: העסק מתמחה בטיפולי פנים וקוסמטיקה לקהל רחב של מטופלים באזור תל אביב | 26523da2-0961-4a0e-99f4-fc9a05babf96 ד"ר יונתן ווגמן
+  claude-sonnet-5  normal words= 105 faqs= 6 pr=yes | 4428b1e8-f24f-4c2c-8c14-29955de3046c גלית איטליה מותג פאות ובית ספר
+  claude-sonnet-5  rich   words= 192 faqs= 7 pr=yes | 1a02e569-909f-430f-82f6-3a144f206baa ד"ר דורון אבניאלי, השתלות שיניים, טיפולי
+  claude-sonnet-5  normal words=  78 faqs= 5 pr=yes | 7ef56877-6de8-4ee3-85d3-84f2c43fac74 חנה מושייב
+  template         normal words= 113 faqs= 4 pr=no error=unsupported_claims: חפיפה וטיפול שיזור לשיער | d28ebe09-451a-4ae9-ad6c-da08984ceae1 חד וחלק Pini Eliya
+  claude-sonnet-5  rich   words= 211 faqs= 6 pr=no | 2df2cf51-e69b-482e-9c6c-c609803964af דר' שיין - מומחה בכירורגיה פלסטית
+  claude-sonnet-5  sparse words=  74 faqs= 5 pr=yes | 92d8659d-5d9f-459d-8221-c67756d5e310 ורה קליניק
+  claude-sonnet-5  normal words=  94 faqs= 6 pr=yes violations=medical:ד״ר | 8848c4aa-e0c4-43eb-b18a-ae99c2a356c4 ד"ר עומר וולף - המרפאה הפרטית בע״מ
+  claude-sonnet-5  normal words=  95 faqs= 5 pr=yes violations=meta:long:158 | 84289740-1be4-4358-96e3-df00978b0e80 ד״ר יוני דללי - רפואה אסתטית
+  claude-sonnet-5  rich   words= 204 faqs= 7 pr=yes | 4125d5eb-f414-4c25-b3dd-0e8069a75afa הסרת נגעי עור | הסרת נקודות חן | הסרת קו
+  claude-sonnet-5  rich   words= 200 faqs= 7 pr=yes violations=repeat:address | 53c9fbe6-c038-45f0-a742-9c4aa40f82f6 ד"ר אור פרידמן מומחה לכירורגיה פלסטית מש
+  claude-sonnet-5  normal words=  84 faqs= 6 pr=yes | b0c1e25d-797e-4146-b2c2-175f5d144556 דיתי מסר | מאפרת
+  claude-sonnet-5  normal words= 110 faqs= 5 pr=no | cb305c0b-e3b0-4d57-84c6-557f5f3efce0 דוקטור אברי רווה - מנתח פלסטי בכיר I כיר
+  template         rich   words= 232 faqs= 5 pr=no error=unsupported_claims: הבחירה בסוג הטיפול המתאים נעשית בפגישת ייעוץ אישית עם ד״ר חי | 1e8c108d-20ea-4043-bd39-5461c64f0c86 ד"ר נועם חי | מנתח פלסטי בכיר בתל אביב
+  claude-sonnet-5  sparse words=  44 faqs= 4 pr=yes violations=meta:short:126 | 45e6545d-12da-4e23-a764-0ea9214e6744 ד"ר אהרן עמיר -מומחה בינלאומי לכירורגיה 
+  template         rich   words= 154 faqs= 5 pr=no error=unsupported_claims: טיפול תרופתי שמטרתו לעצור את תהליך הנשירה | 1078a5f6-3eea-4596-9f92-529340285f7f ד"ר צחי שלקוביץ' רופא עור
+  claude-sonnet-5  sparse words=  48 faqs= 4 pr=yes violations=meta:short:120 | fbd81ef3-7e3f-4513-ab19-a496a68e22fe ד"ר נמרוד פרידמן- ניתוחים פלסטיים וטיפול
+  template         rich   words= 253 faqs= 5 pr=no error=unsupported_claims: שמטרתו להציל שן שנפגעה בה העצב; סתימות שיניים לטיפול בנזקים בשן; השתלו | 73dcc4d5-53ab-492c-847c-0c9ebe462c3d ד"ר דרור בן-שלמה רופא שיניים וטיפולים אס
+  claude-sonnet-5  normal words=  64 faqs= 5 pr=no violations=short:64 | a6205955-18a0-4099-8f66-79ef26092e33 ד"ר אלון לירן - מנתח פלסטי בכיר | מומחה 
+  claude-sonnet-5  sparse words=  55 faqs= 5 pr=yes | aded8126-8d8c-49e7-a035-0dc0f889ccba הסרת שיער בלייזר , לק ג'ל מניקור פדיקור 
+  template         rich   words= 160 faqs= 5 pr=no error=unsupported_claims: טיפול PRP/PRF, המבוסס על זריקות מרכיבי דם; מערכת לאבחון נשירת שיער שמס | b88742b2-8f26-47aa-8d62-b36a6d1967e5 ד"ר כריס השתלת שיער CHOIEXPERT
+  claude-sonnet-5  normal words= 101 faqs= 6 pr=yes | 98bf9648-5e49-4df3-81b3-f68142edcdfd ד״ר ערן צנציפר- מומחה לשיקום הפה
+  claude-sonnet-5  rich   words= 179 faqs= 7 pr=no violations=short:179 | 396b0f47-4c94-4e45-be30-8b32c5299ccb ד"ר ללוש - מדע מוכח ליופי שלך
+  template         rich   words= 243 faqs= 5 pr=no error=invented_words: פלוושיפ | 758de1cc-ed61-4ff7-97b1-0720b36184a0 ד״ר אודי ארד, מומחה בניתוחים פלסטיים וטי
+  claude-sonnet-5  normal words=  47 faqs= 5 pr=no violations=short:47 | meta:short:102 | b542c385-aad1-4b5d-94af-e485109d570f דוקטור אילקר - מומחה עולמי להשתלות שיער
+  claude-sonnet-5  normal words=  93 faqs= 5 pr=yes | af501a92-5f78-47d4-ac11-d5d30dc6a60c ד״ר אורן גולדשטיין
+  claude-sonnet-5  rich   words= 219 faqs= 7 pr=yes violations=meta:short:125 | 5c9a3fb2-101d-46fd-8f24-a1271f32a8b8 דר אלה אגוזי ריינמן- רופאה מומחית ברפואת
+  template         rich   words= 166 faqs= 5 pr=no error=unsupported_claims: רופא שיניים המתמחה באסתטיקה דנטלית; שמיועדים למקרים שבהם אין מספיק עצם | 89213fc9-41cb-45ef-8025-37c7f5d2506a ד"ר אידלמן יצחק רופא שיניים
+  claude-sonnet-5  normal words= 101 faqs= 6 pr=yes | 733686c9-c4e1-4e6c-84a5-0ad0c95652f7 ד"ר דנה בוכבוט - רפואת שיער ורפואה אסתטי
+  claude-sonnet-5  rich   words= 183 faqs= 8 pr=yes | cfedd499-1a35-4c61-a48a-61925886df64 דיאנה - בית הספר לעיצוב שיער ומקצועות הי
+  claude-sonnet-5  rich   words= 201 faqs= 7 pr=no | 1752138a-ea22-40b5-a591-5e170fe17b37 דר' שי יצחק דובדבני - אף אוזן גרון ניתוח
+  claude-sonnet-5  rich   words= 235 faqs= 8 pr=yes | 5583a955-dc96-4c3b-9d44-3a7500bf06ba ד"ר אלי כלב - רפואה אסתטית ללא ניתוח
+  claude-sonnet-5  rich   words= 168 faqs= 7 pr=no violations=short:168 | 48804575-e784-45c7-a79d-6c087329fe49 גיל דורמן - המרכז לטיפולי פיגמנטציה
+CSV: reports/editorial-report.csv
