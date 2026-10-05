@@ -1,0 +1,61 @@
+run a1df2c9c-24be-4708-9ec1-404612000672 "ניקוי תיאורים 10/17" status=done started=2026-10-05T09:31:01.646Z finished=2026-10-05T10:35:49.967Z
+counters: {"failed":1,"improved":49,"postTasks":11,"postPhotos":14,"filled_faqs":31,"filled_prices":3,"editorialCalls":50,"youtubeRequests":0,"editorial_failed":14,"editorial_written":36,"filled_categories":1,"filled_description":31,"filled_meta_title_cleared":11,"filled_meta_description_cleared":49}
+failures:  Invalid `tx.treatment.create()` invocation in /home/runner/work/beautyfind/beautyfind/web/src/lib/server/importEnhance.ts:140:64 137 await db.$transaction(asyn
+listings in scope: 50, import records: 50, drafts written in this run: 50
+by model: claude-sonnet-5: 36, template: 14
+by tier: normal: 22, rich: 21, sparse: 7
+proofread: yes: 35, no: 15
+by error: (none): 36, unsupported_claims: הסרת שיער בשיטת ברזילאית לאזור הביקיני: 1, unsupported_claims: בגוגל המכון מדורג 4.7 על סמך 227 ביקורות: 1, unsupported_claims: שמיועדים לחיזוק מרקם העור וצמצום קמטים; : 1, unsupported_claims: שמתמחה בצבע שיער ובעיצוב שיער לנשים; תיק: 1, invented_words: אוקסילנס: 1, unsupported_claims: Nailtov הוא סטודיון בתל אביב יפו; דירוג : 1, unsupported_claims: Shooshka הוא סטודיו ברחוב אחד העם 79 בתל: 1, unsupported_claims: שמיועדת לצמצום כתמי עור וגוון בלתי אחיד;: 1, unsupported_claims: טיפול פנים קלאסי לניקוי ורענון העור; טיפ: 1, unsupported_claims: חלק גדול מהעבודה בקליניקה הוא ניתוחי פני: 1, unsupported_claims: תסרוקות ערב: 1, unsupported_claims: Shosh Medical Pedicure הוא סטודיו לטיפוח: 1, unsupported_claims: קליניקה להשתלות שיער; וכן גרסאות נוספות : 1, unsupported_claims: במקום פועלים הן שירותי מספרה לציבור הרחב: 1
+words: min 42, median 123, max 329
+cost recorded on the records: 5.922 USD
+  claude-sonnet-5  rich   words= 128 faqs= 6 pr=no violations=short:128 | f4498f47-9e11-4acc-8c1e-ec0263c29d39 Queens Clinic
+  claude-sonnet-5  rich   words= 189 faqs= 8 pr=yes | 1983207e-fcbc-44a1-88d5-ed9821777dfa Sharoomba Cosmetics שרומבה קוסמטיקה
+  claude-sonnet-5  normal words= 106 faqs= 6 pr=yes | 23aa6881-bebf-4804-982d-727428129ef1 TALETSKY ROOM TLV
+  template         rich   words= 251 faqs= 5 pr=no error=unsupported_claims: הסרת שיער בשיטת ברזילאית לאזור הביקיני | 64b5961c-3884-407b-8737-9b72f855f632 The Beauty Lounge
+  template         rich   words= 329 faqs= 5 pr=no error=unsupported_claims: בגוגל המכון מדורג 4.7 על סמך 227 ביקורות; המכון | 38f43de7-2cc4-47ed-8683-9f8031c3eb42 yullia Yirmeyahu
+  claude-sonnet-5  rich   words= 180 faqs= 6 pr=yes | 2bfb8414-092f-460d-86f5-6e60f0a007ba ZOI Med Aesthetics - מרפאת זוי
+  claude-sonnet-5  sparse words=  44 faqs= 5 pr=yes | 315529a9-a10b-410b-8791-83c50658470f ViVi TELAViVi NAiLS ויוי תלאביבי ניילס
+  claude-sonnet-5  rich   words= 208 faqs= 8 pr=yes | 428f7a54-124c-4b2c-917a-1c0772906303 PRPclinic - טיפולי PRP, IPRF ו-CGF לנשיר
+  claude-sonnet-5  rich   words= 213 faqs= 7 pr=yes | dacc8de0-1f8e-4477-87a2-0a4963319ac2 Yullia
+  claude-sonnet-5  sparse words=  47 faqs= 5 pr=yes | 16058a68-8bd4-4746-b087-cfacffe73519 Studio by Michael - Hair Salon רמת גן
+  claude-sonnet-5  sparse words=  42 faqs= 4 pr=yes | 86dcf669-765a-4931-8ad5-ae4a67f86c38 ביוטי פייס מכון הסרת שיער
+  claude-sonnet-5  normal words=  77 faqs= 7 pr=yes | 1ba63936-05d0-4eb6-922e-17a870f09728 New York Barbershop TlV
+  claude-sonnet-5  rich   words= 186 faqs= 8 pr=yes violations=meta:short:124 | fa33a3ec-6f06-4db0-928b-f4923a5fd985 Nelly Davidov
+  claude-sonnet-5  normal words=  76 faqs= 5 pr=yes | 5d770ba5-8f8f-4690-8c95-766b092f9cd8 One by Pini Cohen
+  claude-sonnet-5  normal words=  97 faqs= 6 pr=yes | 10e7985d-1462-400f-bff7-4503254b418e אנדר פלאנט Another planet
+  claude-sonnet-5  normal words=  81 faqs= 5 pr=yes | c3968672-6116-457f-b3da-24f7aacf2dbb ĀTO
+  template         normal words=  47 faqs= 3 pr=no error=unsupported_claims: שמיועדים לחיזוק מרקם העור וצמצום קמטים; שמטרתם להבהיר כתמים ולאחד את ג | 0a3536e4-1b46-4988-82cb-e3eb38374c53 Renée Cosmetics
+  claude-sonnet-5  normal words=  83 faqs= 7 pr=yes | 9d70917d-d54a-45f9-b71f-1531509ecf2b emi lee beauty salon – Nail & Beauty Tel
+  claude-sonnet-5  normal words=  80 faqs= 6 pr=yes | e717d807-4295-49ae-a8db-b8d67868360e OZ LEVI החלקות שיער
+  claude-sonnet-5  sparse words=  52 faqs= 5 pr=yes | ecaaa21f-6402-480b-94a6-f54aeb71b095 אי-קו סלון - Ei-Co Salon
+  claude-sonnet-5  normal words=  79 faqs= 7 pr=yes | 142e0ef4-d3fe-47ab-803c-a44e2e6e6825 Éclat beauty space
+  claude-sonnet-5  rich   words= 198 faqs= 7 pr=yes | 976d943f-892f-4dc3-a180-0a45663580f5 yullia King George
+  template         rich   words= 135 faqs= 4 pr=no error=unsupported_claims: שמתמחה בצבע שיער ובעיצוב שיער לנשים; תיקוני צבע, שמטפלים במעבר בין גוו | 8dff0752-72ef-4f8e-8b12-13fd11e2d96e Love is in the Hair By Ram Solan
+  template         rich   words= 231 faqs= 5 pr=no error=invented_words: אוקסילנס | b31e7964-7cb9-420e-86ad-9b8a746d6975 myclinic Lillienblum
+  claude-sonnet-5  sparse words=  44 faqs= 5 pr=yes | 33ac1e19-50b8-4836-8854-7c6ea5f0a763 Luck Nail Boutique
+  template         rich   words= 117 faqs= 5 pr=no error=unsupported_claims: Nailtov הוא סטודיון בתל אביב יפו; דירוג שמשקף היקף פעילות ענף ומבוסס ע | 05b89bca-a6d1-406e-946b-44228d4e71dd Nailtov
+  claude-sonnet-5  normal words=  79 faqs= 5 pr=yes violations=meta:title_repeat:Por La Vida ברמת גן | b84a5e6c-be4a-46da-a0a7-a7d6b20fe87b Por La Vida
+  template         normal words= 190 faqs= 4 pr=no error=unsupported_claims: Shooshka הוא סטודיו ברחוב אחד העם 79 בתל אביב יפו | 596ba9f5-fd64-4973-a164-a5c73ca72f1c Shooshka
+  claude-sonnet-5  normal words=  78 faqs= 6 pr=yes | b14d94eb-53eb-43ce-ae27-0e3b7c7ecdb4 Lilly Kai רמת אביב
+  claude-sonnet-5  normal words= 130 faqs= 6 pr=yes | a57a1329-5ad6-4d1f-9e1e-9b61c67e490b ביוטי שופ
+  template         rich   words= 257 faqs= 3 pr=no error=unsupported_claims: שמיועדת לצמצום כתמי עור וגוון בלתי אחיד; טיפול בצלוליט, שמטרתו שיפור מ | e0e7c443-ee21-4be5-8bb3-2568adf37232 אתר דוקטור חן
+  claude-sonnet-5  normal words= 123 faqs= 5 pr=yes | 86ec4f42-11cd-4b56-832c-00f97f05ebf0 בני ואתי אמינוב
+  template         rich   words= 164 faqs= 5 pr=no error=unsupported_claims: טיפול פנים קלאסי לניקוי ורענון העור; טיפולי פנים מולטי ויטמינים, שמבוס | 4d1dad4a-6df4-4298-848f-1f166188681f בוטיק הקוסמטיקה של מרינה
+  claude-sonnet-5  rich   words= 197 faqs= 6 pr=yes violations=repeat:address | 4c6fbe8b-f945-4e62-8586-8c94d711366f אנזו מד Anzo Med
+  claude-sonnet-5  normal words= 125 faqs= 7 pr=yes violations=meta:short:127 | 38ba7202-3c4f-4444-a4ee-48c19deb0937 Lily & Nina skin care and nail beauty sa
+  claude-sonnet-5  rich   words= 191 faqs= 6 pr=yes | c97ce44a-ce4d-412a-adeb-44258f3ca251 Or medical cosmetic treatments
+  claude-sonnet-5  normal words=  75 faqs= 5 pr=yes violations=repeat:address | 4a5ed346-8780-4f33-8320-e256deefa1bd Shlomi Shem Tov Hairdresser
+  claude-sonnet-5  rich   words= 190 faqs= 8 pr=yes | ab1d8481-8948-4cac-8955-7bd1c4e630f1 yullia Tzahala - מומחים בהסרת שיער בלייז
+  template         rich   words= 319 faqs= 5 pr=no error=unsupported_claims: חלק גדול מהעבודה בקליניקה הוא ניתוחי פנים וגוף | b471583e-01ec-4a83-82f2-82912addd521 Winkler Clinic - Prof. Eyal Winkler
+  claude-sonnet-5  normal words= 118 faqs= 7 pr=yes | b8d35e6b-4975-4351-8cdc-efb35b189595 אמריקן לייזר- תל אביב
+  template         normal words= 152 faqs= 4 pr=no error=unsupported_claims: תסרוקות ערב | fbb4d1ed-8c4f-4d5e-a866-a86104204fa4 couture hair barbershop NYC New York
+  claude-sonnet-5  normal words= 113 faqs= 6 pr=yes | 2d77cda8-c9e8-4e41-b039-51c7d0edc141 אריאל מספרה נווה אביבים רמת אביב
+  template         normal words=  82 faqs= 4 pr=no error=unsupported_claims: Shosh Medical Pedicure הוא סטודיו לטיפוח ציפורניים; שמתמחה בעיקר בפדיק | 9c5b8ef0-27c9-4930-a164-4f47352d6053 Shosh Medical Pedicure
+  claude-sonnet-5  sparse words=  58 faqs= 5 pr=yes | e82c7cf7-1eca-4b89-ac42-4846b53f53c8 be studio תל-אביב - בי סטודיו
+  claude-sonnet-5  normal words=  83 faqs= 5 pr=yes | 22769a43-e52e-43a2-b880-a4953adfa60c STIKA Beauty TLV
+  claude-sonnet-5  sparse words=  60 faqs= 5 pr=yes | feac125f-51d1-472c-b7d2-89a6d79eefb1 Nails by the Sea TLV
+  template         rich   words= 310 faqs= 5 pr=no error=unsupported_claims: קליניקה להשתלות שיער; וכן גרסאות נוספות של אותה שיטה המותאמות למספר יח | 39725c0f-27d3-43e2-b215-b440c24530bc איילת גייר השתלות שיער בישראל וטיפולים מ
+  claude-sonnet-5  normal words=  84 faqs= 5 pr=yes | 7a042352-928d-45bb-83d9-6d4421779406 אירית גולן קוסמטיקאית -טיפולי פנים והסרת
+  claude-sonnet-5  rich   words= 208 faqs= 7 pr=yes | 9bc84eac-f163-4082-93f7-e8e35dd67a5c אריאלה ביוטי
+  template         rich   words= 269 faqs= 6 pr=no error=unsupported_claims: במקום פועלים הן שירותי מספרה לציבור הרחב והן קורסים מקצועיים בתחום עיצ | aaed9ee8-abef-4d3e-a74e-ce9c8611e658 בית ספר לעיצוב שיער - מוטיה רובין - MOTI
+CSV: reports/editorial-report.csv

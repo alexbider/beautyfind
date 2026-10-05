@@ -1,0 +1,51 @@
+﻿branch_id,name,draft_from_this_run,model,tier,words,faqs,proofread,prompt_version,error,violations,repairs,needs_more_info,cost_usd,input_tokens,output_tokens,generated_at
+f4498f47-9e11-4acc-8c1e-ec0263c29d39,Queens Clinic,yes,claude-sonnet-5,rich,128,6,no,2026-10-04.8,,short:128,2,false,0.10848,20120,6824,2026-10-05T10:25:52.739Z
+1983207e-fcbc-44a1-88d5-ed9821777dfa,Sharoomba Cosmetics שרומבה קוסמטיקה,yes,claude-sonnet-5,rich,189,8,yes,2026-10-04.8,,,0,false,0.119038,13694,9165,2026-10-05T09:42:51.846Z
+23aa6881-bebf-4804-982d-727428129ef1,TALETSKY ROOM TLV,yes,claude-sonnet-5,normal,106,6,yes,2026-10-04.8,,,1,false,0.08242,9395,6363,2026-10-05T10:17:16.004Z
+64b5961c-3884-407b-8737-9b72f855f632,The Beauty Lounge,yes,template,rich,251,5,no,2026-10-04.8,unsupported_claims: הסרת שיער בשיטת ברזילאית לאזור הביקיני,,0,false,0.251538,34604,18233,2026-10-05T10:14:30.589Z
+38f43de7-2cc4-47ed-8683-9f8031c3eb42,yullia Yirmeyahu,yes,template,rich,329,5,no,2026-10-04.8,unsupported_claims: בגוגל המכון מדורג 4.7 על סמך 227 ביקורות; המכון,,0,false,0.196962,31141,13468,2026-10-05T10:34:28.860Z
+2bfb8414-092f-460d-86f5-6e60f0a007ba,ZOI Med Aesthetics - מרפאת זוי,yes,claude-sonnet-5,rich,180,6,yes,2026-10-04.8,,,2,false,0.147192,18426,11034,2026-10-05T10:19:55.552Z
+315529a9-a10b-410b-8791-83c50658470f,ViVi TELAViVi NAiLS ויוי תלאביבי ניילס,yes,claude-sonnet-5,sparse,44,5,yes,2026-10-04.8,,,1,false,0.035306,3578,2815,2026-10-05T09:47:06.036Z
+428f7a54-124c-4b2c-917a-1c0772906303,"PRPclinic - טיפולי PRP, IPRF ו-CGF לנשירת שיער ואסתטיקה רפואית",yes,claude-sonnet-5,rich,208,8,yes,2026-10-04.8,,,1,false,0.213032,28331,15637,2026-10-05T10:24:48.204Z
+dacc8de0-1f8e-4477-87a2-0a4963319ac2,Yullia,yes,claude-sonnet-5,rich,213,7,yes,2026-10-04.8,,,0,false,0.12289,17030,8883,2026-10-05T10:32:40.413Z
+16058a68-8bd4-4746-b087-cfacffe73519,Studio by Michael - Hair Salon רמת גן,yes,claude-sonnet-5,sparse,47,5,yes,2026-10-04.8,,,0,false,0.024612,2531,1955,2026-10-05T09:45:35.882Z
+86dcf669-765a-4931-8ad5-ae4a67f86c38,ביוטי פייס מכון הסרת שיער,yes,claude-sonnet-5,sparse,42,4,yes,2026-10-04.8,,,0,false,0.025946,2808,2033,2026-10-05T10:34:53.666Z
+1ba63936-05d0-4eb6-922e-17a870f09728,New York Barbershop TlV,yes,claude-sonnet-5,normal,77,7,yes,2026-10-04.8,,,0,false,0.040078,3759,3256,2026-10-05T09:36:04.557Z
+fa33a3ec-6f06-4db0-928b-f4923a5fd985,Nelly Davidov,yes,claude-sonnet-5,rich,186,8,yes,2026-10-04.8,,meta:short:124,1,false,0.176418,24284,12785,2026-10-05T10:02:17.612Z
+5d770ba5-8f8f-4690-8c95-766b092f9cd8,One by Pini Cohen,yes,claude-sonnet-5,normal,76,5,yes,2026-10-04.8,,,2,false,0.0995,12530,7444,2026-10-05T09:39:56.898Z
+10e7985d-1462-400f-bff7-4503254b418e,אנדר פלאנט Another planet,yes,claude-sonnet-5,normal,97,6,yes,2026-10-04.8,,,0,false,0.054282,5211,4386,2026-10-05T09:45:12.054Z
+c3968672-6116-457f-b3da-24f7aacf2dbb,ĀTO,yes,claude-sonnet-5,normal,81,5,yes,2026-10-04.8,,,3,false,0.081508,8904,6370,2026-10-05T10:18:21.639Z
+0a3536e4-1b46-4988-82cb-e3eb38374c53,Renée Cosmetics,yes,template,normal,47,3,no,2026-10-04.8,unsupported_claims: שמיועדים לחיזוק מרקם העור וצמצום קמטים; שמטרתם להבהיר כתמים ולאחד את גוון העור; שנועדו להעניק לעור מראה רענן ומוארר,,0,false,0.072354,6957,5844,2026-10-05T09:46:34.122Z
+9d70917d-d54a-45f9-b71f-1531509ecf2b,emi lee beauty salon – Nail & Beauty Tel Aviv,yes,claude-sonnet-5,normal,83,7,yes,2026-10-04.8,,,2,false,0.099924,14362,7120,2026-10-05T09:48:44.749Z
+e717d807-4295-49ae-a8db-b8d67868360e,OZ LEVI החלקות שיער,yes,claude-sonnet-5,normal,80,6,yes,2026-10-04.8,,,0,false,0.039094,4427,3024,2026-10-05T09:49:16.427Z
+ecaaa21f-6402-480b-94a6-f54aeb71b095,אי-קו סלון - Ei-Co Salon,yes,claude-sonnet-5,sparse,52,5,yes,2026-10-04.8,,,0,false,0.02483,2515,1980,2026-10-05T09:52:58.884Z
+142e0ef4-d3fe-47ab-803c-a44e2e6e6825,Éclat beauty space,yes,claude-sonnet-5,normal,79,7,yes,2026-10-04.8,,,2,false,0.110222,13301,8362,2026-10-05T09:52:02.481Z
+976d943f-892f-4dc3-a180-0a45663580f5,yullia King George,yes,claude-sonnet-5,rich,198,7,yes,2026-10-04.8,,,1,false,0.231178,34164,16285,2026-10-05T09:55:08.088Z
+8dff0752-72ef-4f8e-8b12-13fd11e2d96e,Love is in the Hair By Ram Solan,yes,template,rich,135,4,no,2026-10-04.8,"unsupported_claims: שמתמחה בצבע שיער ובעיצוב שיער לנשים; תיקוני צבע, שמטפלים במעבר בין גוונים או בתוצאה לא מדויקת; תוספות שיער, שמוסיפות נפח או אורך לשיער הטבעי; פתיחת תלתלים למי שרוצה להבליט את הגלים או התלתלים; החלקה משקמת, שמשלבת גם טיפו",,0,false,0.173434,25452,12253,2026-10-05T09:38:47.279Z
+b31e7964-7cb9-420e-86ad-9b8a746d6975,myclinic Lillienblum,yes,template,rich,231,5,no,2026-10-04.8,invented_words: אוקסילנס,,0,false,0.288968,39339,21029,2026-10-05T09:59:49.983Z
+33ac1e19-50b8-4836-8854-7c6ea5f0a763,Luck Nail Boutique,yes,claude-sonnet-5,sparse,44,5,yes,2026-10-04.8,,,1,true,0.046112,4431,3725,2026-10-05T09:47:44.167Z
+05b89bca-a6d1-406e-946b-44228d4e71dd,Nailtov,yes,template,rich,117,5,no,2026-10-04.8,unsupported_claims: Nailtov הוא סטודיון בתל אביב יפו; דירוג שמשקף היקף פעילות ענף ומבוסס על מספר רחב של לקוחות,,0,false,0.131968,13459,10505,2026-10-05T09:44:27.963Z
+b84a5e6c-be4a-46da-a0a7-a7d6b20fe87b,Por La Vida,yes,claude-sonnet-5,normal,79,5,yes,2026-10-04.8,,meta:title_repeat:Por La Vida ברמת גן,1,false,0.05172,5865,3999,2026-10-05T10:00:31.763Z
+596ba9f5-fd64-4973-a164-a5c73ca72f1c,Shooshka,yes,template,normal,190,4,no,2026-10-04.8,unsupported_claims: Shooshka הוא סטודיו ברחוב אחד העם 79 בתל אביב יפו,,0,false,0.096306,13133,7004,2026-10-05T09:41:01.720Z
+b14d94eb-53eb-43ce-ae27-0e3b7c7ecdb4,Lilly Kai רמת אביב,yes,claude-sonnet-5,normal,78,6,yes,2026-10-04.8,,,1,false,0.0484,4870,3866,2026-10-05T10:04:50.708Z
+a57a1329-5ad6-4d1f-9e1e-9b61c67e490b,ביוטי שופ,yes,claude-sonnet-5,normal,130,6,yes,2026-10-04.8,,,0,false,0.091358,8744,7387,2026-10-05T10:03:27.369Z
+e0e7c443-ee21-4be5-8bb3-2568adf37232,אתר דוקטור חן,yes,template,rich,257,3,no,2026-10-04.8,"unsupported_claims: שמיועדת לצמצום כתמי עור וגוון בלתי אחיד; טיפול בצלוליט, שמטרתו שיפור מרקם העור; הצרת היקפים, המיועדת לעיצוב קווי הגוף; שמטרתם לרענן את מראה העור או לטפל במפרקים; המיועדים למי שבוחר לעבור ניתוח פלסטי מחוץ לישראל",,0,false,0.25683,38110,18061,2026-10-05T10:07:07.331Z
+86ec4f42-11cd-4b56-832c-00f97f05ebf0,בני ואתי אמינוב,yes,claude-sonnet-5,normal,123,5,yes,2026-10-04.8,,,2,false,0.150574,20407,10976,2026-10-05T10:08:42.501Z
+4d1dad4a-6df4-4298-848f-1f166188681f,בוטיק הקוסמטיקה של מרינה,yes,template,rich,164,5,no,2026-10-04.8,"unsupported_claims: טיפול פנים קלאסי לניקוי ורענון העור; טיפולי פנים מולטי ויטמינים, שמבוססים על ויטמינים לטיפוח העור; שמתמקדים בבעיות עור וראש ספציפיות; מניקור ופדיקור רגילים; איפור קבוע לפנים או לגבות; עיסוי שוודי להרפיית הגוף; דירוג שנשע",,0,false,0.134988,17704,9958,2026-10-05T10:12:01.029Z
+4c6fbe8b-f945-4e62-8586-8c94d711366f,אנזו מד Anzo Med,yes,claude-sonnet-5,rich,197,6,yes,2026-10-04.8,,repeat:address,2,false,0.169458,20029,12940,2026-10-05T10:10:33.237Z
+38ba7202-3c4f-4444-a4ee-48c19deb0937,Lily & Nina skin care and nail beauty salon,yes,claude-sonnet-5,normal,125,7,yes,2026-10-04.8,,meta:short:127,2,false,0.16636,19325,12771,2026-10-05T10:16:19.062Z
+c97ce44a-ce4d-412a-adeb-44258f3ca251,Or medical cosmetic treatments,yes,claude-sonnet-5,rich,191,6,yes,2026-10-04.8,,,0,false,0.126356,13728,9890,2026-10-05T10:22:41.505Z
+4a5ed346-8780-4f33-8320-e256deefa1bd,Shlomi Shem Tov Hairdresser,yes,claude-sonnet-5,normal,75,5,yes,2026-10-04.8,,repeat:address,3,false,0.098192,14586,6902,2026-10-05T10:26:57.899Z
+ab1d8481-8948-4cac-8955-7bd1c4e630f1,yullia Tzahala - מומחים בהסרת שיער בלייזר | הזרקות | טיפול פנים | מניקור | פדיקור רפואי,yes,claude-sonnet-5,rich,190,8,yes,2026-10-04.8,,,3,false,0.317368,52724,21192,2026-10-05T10:29:41.546Z
+b471583e-01ec-4a83-82f2-82912addd521,Winkler Clinic - Prof. Eyal Winkler,yes,template,rich,319,5,no,2026-10-04.8,unsupported_claims: חלק גדול מהעבודה בקליניקה הוא ניתוחי פנים וגוף,,0,false,0.17793,28985,11996,2026-10-05T10:31:23.616Z
+b8d35e6b-4975-4351-8cdc-efb35b189595,אמריקן לייזר- תל אביב,yes,claude-sonnet-5,normal,118,7,yes,2026-10-04.8,,,1,false,0.066456,8218,5002,2026-10-05T10:35:42.797Z
+fbb4d1ed-8c4f-4d5e-a866-a86104204fa4,couture hair barbershop NYC New York,yes,template,normal,152,4,no,2026-10-04.8,unsupported_claims: תסרוקות ערב,,0,false,0.128062,16531,9500,2026-10-05T09:33:18.489Z
+2d77cda8-c9e8-4e41-b039-51c7d0edc141,אריאל מספרה נווה אביבים רמת אביב,yes,claude-sonnet-5,normal,113,6,yes,2026-10-04.8,,,1,false,0.071202,7071,5706,2026-10-05T09:37:00.201Z
+9c5b8ef0-27c9-4930-a164-4f47352d6053,Shosh Medical Pedicure,yes,template,normal,82,4,no,2026-10-04.8,unsupported_claims: Shosh Medical Pedicure הוא סטודיו לטיפוח ציפורניים; שמתמחה בעיקר בפדיקור ומניקור,,0,false,0.041472,4926,3162,2026-10-05T09:41:35.020Z
+e82c7cf7-1eca-4b89-ac42-4846b53f53c8,be studio תל-אביב - בי סטודיו,yes,claude-sonnet-5,sparse,58,5,yes,2026-10-04.8,,,1,false,0.045764,5027,3571,2026-10-05T09:50:45.022Z
+22769a43-e52e-43a2-b880-a4953adfa60c,STIKA Beauty TLV,yes,claude-sonnet-5,normal,83,5,yes,2026-10-04.8,,,1,false,0.071166,8733,5370,2026-10-05T09:50:09.432Z
+feac125f-51d1-472c-b7d2-89a6d79eefb1,Nails by the Sea TLV,yes,claude-sonnet-5,sparse,60,5,yes,2026-10-04.8,,,1,false,0.037032,3661,2971,2026-10-05T09:52:36.523Z
+39725c0f-27d3-43e2-b215-b440c24530bc,איילת גייר השתלות שיער בישראל וטיפולים מתקדמים,yes,template,rich,310,5,no,2026-10-04.8,unsupported_claims: קליניקה להשתלות שיער; וכן גרסאות נוספות של אותה שיטה המותאמות למספר יחידות שיער שונה; שמראה מראש כיצד ייראה הראש אחרי ההשתלה,,0,false,0.176704,28747,11921,2026-10-05T09:56:56.367Z
+7a042352-928d-45bb-83d9-6d4421779406,אירית גולן קוסמטיקאית -טיפולי פנים והסרת שיער בלייזר,yes,claude-sonnet-5,normal,84,5,yes,2026-10-04.8,,,1,false,0.066166,8453,4926,2026-10-05T10:04:13.514Z
+9bc84eac-f163-4082-93f7-e8e35dd67a5c,אריאלה ביוטי,yes,claude-sonnet-5,rich,208,7,yes,2026-10-04.8,,,0,false,0.110944,11792,8736,2026-10-05T10:21:13.059Z
+aaed9ee8-abef-4d3e-a74e-ce9c8611e658,בית ספר לעיצוב שיער - מוטיה רובין - MOTIE RUBIN,yes,template,rich,269,6,no,2026-10-04.8,unsupported_claims: במקום פועלים הן שירותי מספרה לציבור הרחב והן קורסים מקצועיים בתחום עיצוב השיער והאיפור,,0,false,0.223988,35464,15306,2026-10-05T09:35:31.576Z
