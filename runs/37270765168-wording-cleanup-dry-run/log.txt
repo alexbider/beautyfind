@@ -1,0 +1,10 @@
+live listings scanned: 816; listings with a change: 117; field changes: 168; skipped claimed: 0; skipped owner-approved or reference: 0
+replacements per phrase:
+   168  תל אביב–יפו
+    29  ₪ לפני המספר
+     1  ב-Google
+     1  ב־Google
+by field: faqs=20 metaTitle=110 metaDescription=16 description=22
+CSV: reports/wording-cleanup.csv (168 rows)
+SUMMARY dry_run listings=117 changes=168 skipped_claimed=0 skipped_approved=0
+dry run: nothing changed (add --confirm to apply, with the undo CSV)
