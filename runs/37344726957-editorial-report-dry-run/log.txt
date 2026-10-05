@@ -1,0 +1,60 @@
+run dc4e9af4-3dc8-4fca-8d8b-37088746fd98 "ניקוי תיאורים 12/17" status=done started=2026-10-05T11:37:16.871Z finished=2026-10-05T12:33:54.257Z
+counters: {"improved":50,"postTasks":12,"postPhotos":18,"filled_faqs":26,"youtubeQuota":3,"filled_prices":3,"editorialCalls":50,"youtubeRequests":0,"editorial_failed":12,"editorial_written":38,"filled_description":26,"filled_meta_title_cleared":12,"filled_meta_description_cleared":50}
+listings in scope: 50, import records: 50, drafts written in this run: 50
+by model: claude-sonnet-5: 38, template: 12
+by tier: normal: 21, rich: 18, sparse: 11
+proofread: yes: 31, no: 19
+by error: (none): 38, invented_words: סרחי: 1, unsupported_claims: מסודרות הוא מכון טיפוח בתל אביב יפו: 1, unsupported_claims: אפשרות לניתוחים משולבים שמשלבים כמה הליכ: 1, unsupported_claims: ולעיצוב קווי הפנים: 1, unsupported_claims: את התור אפשר לתאם בטלפון מראש: 1, unsupported_claims: רעות ששון מפעילה סטודיו לאיפור קבוע ועיצ: 1, unsupported_claims: עסק לרפואה אסתטית; טיפולי אסתטיקה, ובהם : 1, invented_words: אייג׳ינג: 1, unsupported_claims: הסטודיו: 1, unsupported_claims: מיניפייס ליפט קוסמטי הוא טיפול לעיצוב ומ: 1, unsupported_claims: הפרטים של כל הליך נקבעים בפגישת ייעוץ אי: 1, unsupported_claims: הציפויים והציפויי חרסינה משמשים לשיפור מ: 1
+words: min 50, median 115, max 424
+cost recorded on the records: 4.531 USD
+  claude-sonnet-5  rich   words= 180 faqs= 7 pr=yes | b9090e87-3422-4ae0-8847-4dec673e85a0 נטלי קוסמטיקס
+  claude-sonnet-5  rich   words= 184 faqs= 7 pr=yes | 5fbda2de-a49c-4278-bf0f-6164e39d950a מספרת אבן ספיר - מספרה בחולון | ספר גברי
+  template         rich   words= 210 faqs= 3 pr=no error=invented_words: סרחי | 46e3c405-f43f-4c54-8e69-3405d446ad25 קרנית מלמד - המרכז לטיפולי קוסמטיקה רפוא
+  claude-sonnet-5  sparse words=  61 faqs= 5 pr=yes | 52e347fa-011f-4997-af07-3930f950d548 שירלי פור החלקה יפנית
+  claude-sonnet-5  sparse words=  73 faqs= 6 pr=yes | 2f140fed-2a29-4fef-9405-a485baee45cf יעל שלמה - קוסמטיקאית הוליסטית
+  claude-sonnet-5  rich   words= 192 faqs= 8 pr=no | 8a0ee01f-dcd5-4570-9f80-6b4389ea28db מרפאת שיניים ד"ר נעים דנט | מרפאת שיניים
+  claude-sonnet-5  sparse words=  51 faqs= 5 pr=yes | 77692c6f-a6bd-4c13-b92b-c41dea986f6d ירון אזולאי - עיצוב שיער
+  claude-sonnet-5  normal words= 120 faqs= 6 pr=yes | c1c0daee-b723-45ba-bacd-0b8e8c27c687 שלומי עיצוב שיער גבעתיים
+  claude-sonnet-5  normal words=  72 faqs= 5 pr=yes violations=filler:לאורך השנים | meta:short:106 | 2b6edc19-53a1-4177-af5f-f621c4fd05a3 רופא שיניים בתל אביב - מרפאת לובנדנט בע"
+  claude-sonnet-5  sparse words=  59 faqs= 5 pr=yes | 00a5110e-7d98-4f1a-84d8-3f964983ec71 עידית עמר - קוסמטיקאית פרא רפואית מומחית
+  claude-sonnet-5  normal words= 109 faqs= 6 pr=yes | e29365c5-d113-429a-9a6f-a7469293eb5d מספרה Barak Shoshan Hair Design-Keratin,
+  template         rich   words= 235 faqs= 5 pr=no error=unsupported_claims: מסודרות הוא מכון טיפוח בתל אביב יפו | 8af31e3c-a298-4d41-933f-50031782d817 מסודרות
+  template         rich   words= 424 faqs= 5 pr=no error=unsupported_claims: אפשרות לניתוחים משולבים שמשלבים כמה הליכים במפגש אחד | e2015e53-cb22-4eba-b819-7efea95d1963 מרכז כירורגי שוורץ - ארד
+  template         rich   words= 169 faqs= 5 pr=no error=unsupported_claims: ולעיצוב קווי הפנים | e54fa942-5742-4408-8cad-cc2019be3403 מרפאת השיניים והאסטתיקה של ד"ר צבי אבירם
+  template         normal words= 139 faqs= 4 pr=no error=unsupported_claims: את התור אפשר לתאם בטלפון מראש | 4d762de1-9a81-4671-bffb-f9b1967c5ca4 ALMA Wellness & Beauty || עלמה טיפוח ויו
+  claude-sonnet-5  normal words= 115 faqs= 7 pr=yes | 15759f8a-3002-4f1d-9b88-e918ff89eb3f סנס Sense
+  claude-sonnet-5  rich   words= 127 faqs= 6 pr=no violations=short:127 | meta:short:127 | 0937894d-8c96-4c8a-9578-98a967e39211 לירז קוסמטיקה | הסרת שיער בלייזר וטיפולי
+  claude-sonnet-5  normal words= 105 faqs= 6 pr=yes | 53993e63-6887-4035-bc14-644c2b674fb9 פן על הדרך
+  template         rich   words= 204 faqs= 4 pr=no error=unsupported_claims: רעות ששון מפעילה סטודיו לאיפור קבוע ועיצוב גבות; שתי שיטות שמעצבות את  | 31cd10f7-8728-4caf-b8d5-a52fafdfb6bf רעות ששון – עיצוב גבות ואיפור קבוע בצפון
+  claude-sonnet-5  sparse words=  79 faqs= 5 pr=yes violations=meta:long:162 | f891816e-6a01-419a-8508-f6bfad688354 קרולין אופק
+  claude-sonnet-5  normal words=  93 faqs= 5 pr=yes | c7097206-e55b-4364-b5ae-94687e3a321f ליטל פוניס - המרכז הישראלי לטיפולי אנטי 
+  claude-sonnet-5  normal words=  84 faqs= 5 pr=yes violations=meta:title_repeat:קליניקת ויקה בתל אביב | a359b297-0204-413e-b25a-ead4cef6829f קליניקת ויקה קוסמטיקה מתקדמת | קוסמטיקאי
+  claude-sonnet-5  sparse words=  52 faqs= 5 pr=yes violations=meta:short:118 | 8dd3429c-8ecf-491f-8e95-bef7acc8992d עיצוב שיער
+  claude-sonnet-5  normal words=  78 faqs= 5 pr=yes | b960fbdc-47ad-42d2-9a1e-e681eaecc782 צמידי שיער Salon Alexander החלקה | תוספו
+  claude-sonnet-5  sparse words=  57 faqs= 4 pr=yes | 3523186e-4a4a-4061-b4a4-9037c32a929e פאות קאסטם - אתי שוקרון פאות יוקרה
+  claude-sonnet-5  sparse words=  72 faqs= 5 pr=yes | 08e9db34-039c-4a8b-b288-e390cbb38da2 מרפאת ד"ר ליבי כרמי, תל אביב
+  claude-sonnet-5  rich   words= 152 faqs= 6 pr=no violations=short:152 | 6276b316-e855-4071-bc62-76b30546fcbc מושלמת האוס אוף ביוטי
+  claude-sonnet-5  rich   words= 149 faqs= 7 pr=no violations=short:149 | 22574d12-60c6-4a7d-8a02-e1f7da2b9c36 קליניקה כרמל - טיפול בפטרת ציפורניים בתל
+  claude-sonnet-5  sparse words=  58 faqs= 4 pr=yes | 3e581e2f-55ba-47f6-bbf3-9ab2cc8a9014 יורי סטייל
+  claude-sonnet-5  normal words=  88 faqs= 7 pr=yes | 75fb76c5-de75-45f0-af66-85d6fb7a8834 לימור שמואל קוסמטיקאית,פדיקור,מניקור ג׳ל
+  claude-sonnet-5  sparse words=  56 faqs= 4 pr=yes | 4fa1f819-6541-45c9-b1d4-0ae3aa4104bd סלון יפו jaffa salon
+  claude-sonnet-5  sparse words=  71 faqs= 5 pr=yes | 70143afd-d45c-4eea-90f4-a53804b07168 מספרת שי גדון עיצוב שיער נשים
+  claude-sonnet-5  normal words= 123 faqs= 5 pr=yes | 462b5fe2-7d50-4c6a-82a9-530f1d0257ae פרופורציה
+  claude-sonnet-5  normal words=  72 faqs= 6 pr=yes | e5a3fd06-b7f5-4cd8-ad98-c396ff280755 לינה סנטר - מרכז טיפולים לפנים ולגוף
+  template         normal words=  50 faqs= 3 pr=no error=unsupported_claims: עסק לרפואה אסתטית; טיפולי אסתטיקה, ובהם גם הליכים כירורגיים | c2b50e3b-4b6e-4596-891f-0a0128237b55 כללית אסתטיקה - רמת אביב - תל אביב
+  claude-sonnet-5  rich   words= 131 faqs= 7 pr=no violations=short:131 | 2ea2ab17-1678-4a57-b255-4c4fb620740c מאי לי ביוטי - הדגשת תווי פנים: מיקרובלי
+  claude-sonnet-5  rich   words= 220 faqs= 8 pr=yes | c32691a2-ca0a-4d69-ac16-370d93db0799 מוסקונה - מרפאות לניתוחים פלסטיים הזרקות
+  claude-sonnet-5  normal words=  70 faqs= 5 pr=yes | e4bb2fd2-4791-4d00-b881-b972d91ae9a8 מרפאת שיניים ד"ר אבייב - יישור שיניים שק
+  claude-sonnet-5  normal words=  75 faqs= 5 pr=yes | 2e9b1d49-a617-44d9-a0a1-cb4c51dd3a4f רונית רפאל מדע היופי - תל אביב
+  claude-sonnet-5  rich   words= 211 faqs= 6 pr=yes violations=filler:כך שההגעה | 83773757-43ad-4a1a-8a32-4838b8ffe3be מרפאת שיניים אורן באר שבע
+  claude-sonnet-5  rich   words= 201 faqs= 6 pr=yes | 151893ab-a3c3-4c07-a749-7f79b3988516 צביה וקוסמטיקה - קוסמטיקאית ברמת גן
+  template         normal words= 112 faqs= 3 pr=no error=invented_words: אייג׳ינג | 30c39ad7-486e-4c94-9df4-c7c02f154bc9 מכבי אסתטיקה - סניף תל אביב
+  template         normal words= 157 faqs= 4 pr=no error=unsupported_claims: הסטודיו | 32848e81-f29f-44fa-be10-d330b2cdbda1 ליהיא וקנין - מומחית בעיצוב גבות ושיטת ס
+  claude-sonnet-5  normal words=  70 faqs= 6 pr=yes | f0c9803e-0050-45be-8060-19eb1ed9f379 מכון שיזוף בהתזה ׳ספריי׳ - spray tanning
+  claude-sonnet-5  rich   words= 144 faqs= 7 pr=no violations=short:144 | repeat:hours | meta:short:128 | 2061ad51-e86d-40ca-b4ee-a0e8557cf719 רבקה זיידה - המרכז לטיפול באקנה ופוסט אק
+  claude-sonnet-5  normal words= 132 faqs= 7 pr=yes | d752b52e-4786-4ee7-9399-4ca9cf95dbce יפה מקסימוב מרכזי אסתטיקה
+  claude-sonnet-5  rich   words= 178 faqs= 7 pr=no violations=short:178 | 782d97ce-4746-42bd-bb43-19dab6e989aa יופי קורן
+  template         normal words= 135 faqs= 5 pr=no error=unsupported_claims: מיניפייס ליפט קוסמטי הוא טיפול לעיצוב ומיצוק קווי הפנים | a8b1cf9c-72c8-42a2-bdbf-3a8d979b5cc8 שרי ארז - מרכז לאסתטיקה טכנולוגית וקוסמט
+  template         rich   words= 239 faqs= 5 pr=no error=unsupported_claims: הפרטים של כל הליך נקבעים בפגישת ייעוץ אישית; ההחלטה על סוג הטיפול המתא | b34e54bc-33f3-4d27-8ae0-3ab122dc7895 כירורגיה פלסטית ואסתטית | ד"ר אייל שפירא
+  template         normal words=  80 faqs= 3 pr=no error=unsupported_claims: הציפויים והציפויי חרסינה משמשים לשיפור מראה השיניים הקדמיות; העסק פתוח | 7ebda09d-9c17-40d7-8f6e-aa8337cc0d6a קראוס קליניק - Krauss Clinic - ד״ר עומרי
+CSV: reports/editorial-report.csv
