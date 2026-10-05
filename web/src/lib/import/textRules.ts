@@ -60,7 +60,9 @@ export const WORDING_PATTERNS: Array<{ re: RegExp; label: string }> = [
   { re: /דירוג\s+Google/u, label: 'דירוג Google' },
   { re: /ב[־-]Google(?![A-Za-z])/u, label: 'ב־Google' },
   { re: /תל אביב–יפו/u, label: 'תל אביב–יפו' },
-  { re: /₪\s?\d/u, label: '₪ לפני המספר' },
+  // The sign before the number; a sign that closes one price right before the next price ("180 ₪ 200 ₪",
+  // two table cells in a row) is not one.
+  { re: /(?<!\d\s?)₪\s?\d/u, label: '₪ לפני המספר' },
   { re: /(?<![א-ת])(?:ו|ש|ה|ב|ל|מ)?חציו(?:ן|נ(?:י|ים|יים|ית|יות))(?![א-ת])/u, label: 'חציון' },
 ];
 

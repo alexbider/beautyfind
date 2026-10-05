@@ -17,6 +17,8 @@ describe('sitewide wording', () => {
     assert.deepEqual(wording('מחירים ממוצעים ודירוג ממוצע בגוגל'), []);
     assert.deepEqual(wording('אמצעי יצירת קשר: טלפון'), []); // "means", not "average"
     assert.deepEqual(wording('312 ביקורות ב־Google, תל אביב–יפו, ₪180, החציון'), ['ב־Google', 'תל אביב–יפו', '₪ לפני המספר', 'חציון']);
+    assert.deepEqual(wording('החל מ־₪ 180'), ['₪ לפני המספר']);
+    assert.deepEqual(wording('ניקוי פנים 180 ₪ 200 ₪ 260 ₪'), []); // adjacent prices, as table cells read in a row
   });
 
   it('counts businesses in natural Hebrew per category', () => {
