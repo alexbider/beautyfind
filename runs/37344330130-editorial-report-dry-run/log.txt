@@ -1,0 +1,60 @@
+run a9efe6ba-57e2-4b2f-bbd3-7a1fe8995e01 "ניקוי תיאורים 7/17" status=done started=2026-10-05T07:12:46.500Z finished=2026-10-05T07:56:24.676Z
+counters: {"improved":50,"postTasks":3,"postPhotos":1,"filled_faqs":27,"youtubeQuota":4,"filled_prices":1,"editorialCalls":50,"youtubeRequests":2,"editorial_failed":16,"editorial_written":34,"filled_description":27,"filled_meta_title_cleared":25,"filled_meta_description_cleared":50}
+listings in scope: 50, import records: 50, drafts written in this run: 50
+by model: claude-sonnet-5: 34, template: 16
+by tier: sparse: 22, normal: 19, rich: 9
+proofread: yes: 31, no: 19
+by error: (none): 34, unsupported_claims: דיקור קוסמטי אנטי אייג׳ינג שמיועד לעור ה: 1, unsupported_claims: בסטודיו: 1, unsupported_claims: עסק לטיפוח וטיפולי יופי בנתניה; שמיועדת : 1, unsupported_claims: טיפול הפנים המוצע מיועד לחידוש וטיפוח הע: 1, unsupported_claims: טופז ניילס הוא סטודיון לציפורניים; תמונו: 1, unsupported_claims: שתי שיטות שמבוססות על אנרגיית לייזר להחל: 1, unsupported_claims: הצללת שפתיים: 1, unsupported_claims: שחזור חזה: 1, unsupported_claims: המניקור והפדיקור מיועדים לטיפוח יומיומי : 1, text_rules: text:latin:Salon: 1, unsupported_claims: טיפולי אנטי אייג׳ינג שמיועדים להאטת סימנ: 1, unsupported_claims: שמיועד לשיפור המראה האסתטי של השיניים הק: 1, unsupported_claims: Sagochka beauty הוא סטודיו לטיפוח גבות ו: 1, unsupported_claims: אלינה אלבוים היא קוסמטיקאית בנתניה; שמתמ: 1, invented_words: סרחי: 1, unsupported_claims: טיפולים לא כירורגיים לפנים ולצוואר, שמיו: 1
+words: min 16, median 72, max 240
+cost recorded on the records: 3.511 USD
+  claude-sonnet-5  sparse words=  19 faqs= 3 pr=yes violations=meta:title_repeat:אסנקה איפור בנתניה | 76f28672-2592-480c-8496-60b0ab6f64c1 אסנקה איפור מקצועי
+  template         normal words=  90 faqs= 4 pr=no error=unsupported_claims: דיקור קוסמטי אנטי אייג׳ינג שמיועד לעור הפנים; כל הטיפולים מתבססים על ד | 708b1ada-047b-475a-a7d9-9d1f7e33681e אלינור בכר | קוסמטיקה ורפואה סינית אסתטי
+  template         normal words= 130 faqs= 4 pr=no error=unsupported_claims: בסטודיו | d20d8b8e-a2c3-4cdf-9d64-f33e6bf54c24 איפור קבוע בנתניה פאולה לוי
+  claude-sonnet-5  normal words=  77 faqs= 6 pr=yes | 5f2f81a4-0f17-4aad-b614-af060b99b052 PrettyRiss Academy קורס הלחמת ריסים | קו
+  claude-sonnet-5  sparse words=  60 faqs= 5 pr=yes | a8579c03-d6a8-4836-8b85-4270bf7db8f7 דנה חן- קליניקה לקוסמטיקה מתקדמת
+  claude-sonnet-5  normal words= 122 faqs= 6 pr=yes | e9b7bc3e-4bcf-4b38-9290-8def7a841cff Shiran Aziz Clinic
+  claude-sonnet-5  sparse words=  46 faqs= 5 pr=yes | 9a8e47a3-17e2-4e05-8743-5f003d934940 אלונה נובה - קוסמטיקאית רפואית | בנתניה
+  template         rich   words= 155 faqs= 5 pr=no error=unsupported_claims: עסק לטיפוח וטיפולי יופי בנתניה; שמיועדת להסרה ארוכת טווח של שיער בגוף  | 76aa7c44-b8de-468c-858e-fc6394f367be בר ויכמן נתניה - הסרת שיער בלייזר, פיסול
+  template         normal words=  94 faqs= 4 pr=no error=unsupported_claims: טיפול הפנים המוצע מיועד לחידוש וטיפוח העור; בהתאם לגישה האנטי אייג׳ינג | 59800221-11af-4cf9-95b5-048f9c838c50 אנג'לה קוסמטיקס - Anjela Cosmetics
+  claude-sonnet-5  sparse words=  18 faqs= 3 pr=yes | 27c0722b-6bf5-44f2-82ee-ee2bbd00c6cc Виорика
+  claude-sonnet-5  sparse words=  54 faqs= 4 pr=yes | e92ddcb2-75b0-4269-9d96-ce33fca8ab47 beauty station
+  template         normal words=  58 faqs= 4 pr=no error=unsupported_claims: טופז ניילס הוא סטודיון לציפורניים; תמונות מהעבודות מתפרסמות בעמוד האינ | a74cc21d-86bc-4d3d-a64a-0fc5409c2da3 בניית ציפורניים לק ג'ל פדיקור מניקור נתנ
+  claude-sonnet-5  rich   words= 181 faqs= 6 pr=yes | 03bdb684-9953-4d1a-bccc-14d01c9dc326 ד"ר אנה גודוביץ׳ - טיפולי אסתטיקה רפואית
+  template         rich   words= 135 faqs= 5 pr=no error=unsupported_claims: שתי שיטות שמבוססות על אנרגיית לייזר להחלקת מרקם העור ושיפור גוונו; הסר | 1944347e-8b37-42a0-84b6-27814bcbc370 אורלי ברטלר - קליניקה לקוסמטיקה ואסתטיקה
+  template         normal words= 138 faqs= 4 pr=no error=unsupported_claims: הצללת שפתיים | 1371043b-9796-4bfc-b344-c855d20a8fb2 Sarit Cosmetics - עיצוב גבות ואיפור קבוע
+  template         normal words= 114 faqs= 5 pr=no error=unsupported_claims: שחזור חזה | 45141270-2e22-4554-b8b6-4a20e2dc0120 ג'ואן אטלי Cosmetics Solutions איפור קבו
+  template         normal words=  90 faqs= 5 pr=no error=unsupported_claims: המניקור והפדיקור מיועדים לטיפוח יומיומי של הציפורניים; ולק הג׳ל נותן ג | e098b7aa-cbf4-45d7-8c41-0deeb8b95fa3 אורטל ציפורניים לק ג'ל מיקרובליידינג שיט
+  template         sparse words=  40 faqs= 2 pr=no error=text_rules: text:latin:Salon | 9656e1e1-7e7c-4ef1-8902-69d4b3629196 Салон красоты Luxor
+  claude-sonnet-5  normal words=  71 faqs= 5 pr=yes | 9feafe57-9c78-486d-abb4-090082598306 אודליה - הסוד ליופי שלך
+  claude-sonnet-5  normal words=  90 faqs= 5 pr=yes | 30870fbf-6792-4565-b30d-f9934b59e013 ds cosmetics
+  claude-sonnet-5  sparse words=  69 faqs= 5 pr=yes | 0c072adb-f280-402f-8367-bfc844b9cc16 Vita Derm מכון קוסמטיקה בנתניה
+  template         rich   words= 141 faqs= 6 pr=no error=unsupported_claims: טיפולי אנטי אייג׳ינג שמיועדים להאטת סימני ההזדקנות של העור; עיסוי פיסו | f75a7f80-31e0-4bce-aadd-96948bbce4b3 VIRGINIE institut de beauté וירג'יני קוס
+  claude-sonnet-5  normal words=  76 faqs= 5 pr=no | 7e5decc5-64a4-44b3-8f84-6c0495dff36c דוקטור זייגר טטיאנה מילוי והעלמת קמטים ב
+  template         rich   words= 230 faqs= 5 pr=no error=unsupported_claims: שמיועד לשיפור המראה האסתטי של השיניים הקדמיות ולתיקון פגמים במרקם או ב | 2c7d157c-1a5f-4d87-ba96-4ee8685246f1 Royal Dent
+  claude-sonnet-5  sparse words=  52 faqs= 5 pr=yes violations=meta:title_repeat:דורין לק ג׳ל בנתניה | meta:short:122 | 55456895-7559-4302-a331-78290bc7c3ee דורין לק ג׳ל
+  claude-sonnet-5  sparse words=  61 faqs= 5 pr=yes | a5419a7c-45bc-47fc-b8f2-a20215b2dd5f אירינה קוסמטיקס-Irina Cosmetics
+  claude-sonnet-5  sparse words=  53 faqs= 6 pr=yes | 9548e51a-4e8d-4d27-9631-863d185a4bd7 laser removal
+  claude-sonnet-5  rich   words= 178 faqs= 7 pr=no violations=short:178 | 3352bfe1-cc77-40c3-a152-2dde697658be ג'וליה - לק ג'ל בניית ציפורניים - מניקור
+  template         normal words=  65 faqs= 4 pr=no error=unsupported_claims: Sagochka beauty הוא סטודיו לטיפוח גבות ואיפור בנתניה; הכולל עיצוב וטיפ | 3ffbc266-46ed-404a-bd65-d35c90b31892 Sagochka beauty
+  claude-sonnet-5  normal words=  67 faqs= 5 pr=no violations=short:67 | meta:short:99 | 07365447-eb03-4c33-8c8a-6c4b60eb2c96 איפור ביוטי-כלה וערב
+  claude-sonnet-5  sparse words=  55 faqs= 4 pr=yes violations=meta:short:124 | 17c2bae4-88ac-4721-a86c-5cccf5bebee1 אומנות הלק ג’ל ובניית הציפורניים Nail Ar
+  claude-sonnet-5  sparse words=  50 faqs= 3 pr=yes violations=repeat:address | meta:short:118 | b185d281-4d2d-44ed-b766-5fd00e7619e9 WinteRoseCo Beauty
+  template         normal words= 106 faqs= 4 pr=no error=unsupported_claims: אלינה אלבוים היא קוסמטיקאית בנתניה; שמתמחה בטיפולי פנים ובטיפוח ציפורנ | 0bac5bf3-1f9e-4f04-ad84-a2e2446cf22a אלינה אלבוים - קוסמטיקה מתקדמת
+  claude-sonnet-5  normal words=  89 faqs= 5 pr=yes violations=meta:title_repeat:גלית כשריאן בנתניה | meta:short:121 | 4fafb4c6-081c-4afe-8f63-1aadbf36442f גלית כשריאן
+  claude-sonnet-5  sparse words=  48 faqs= 5 pr=yes violations=meta:short:116 | 55223ba6-c200-434d-a13e-6db7caa4816a איזבלה קוסמטיקאית P.M.E - אגמים נתניה
+  claude-sonnet-5  normal words= 113 faqs= 6 pr=yes | d5f1ad77-8e11-4ec1-8459-6e7bf54beaf9 אירנה- אקדמיה למקצועות היופי גם באינטרנט
+  claude-sonnet-5  sparse words=  41 faqs= 5 pr=yes | 160998f3-bb7e-401d-b624-6b809d124b38 The Beauty Queen
+  claude-sonnet-5  sparse words=  43 faqs= 4 pr=yes | 14eee6cb-70aa-46ec-8049-c56f5d7bbf9a דאלי אסתטיק סנטר - דליה ליברמן
+  template         sparse words=  60 faqs= 3 pr=no error=invented_words: סרחי | 567dda71-16e6-4711-9b29-f98144c83fef גלית פורת
+  claude-sonnet-5  normal words=  89 faqs= 7 pr=yes | a541c3bd-eea0-4585-907b-05f9e42a0c92 דלית אור היופי
+  claude-sonnet-5  normal words=  82 faqs= 5 pr=yes | d2a0d925-385f-4f30-af03-a66402d8d474 אנה קוסמטיקר - ANAcosmeticare
+  claude-sonnet-5  rich   words= 240 faqs= 8 pr=yes | e9800d5f-d2d9-4ed6-84a0-7709a73e8123 ביוטי קליניק נתניה
+  claude-sonnet-5  sparse words=  33 faqs= 4 pr=yes | a833a17a-1858-4350-8af8-14f7b3c1fc41 Salomé Beauty Institut
+  claude-sonnet-5  sparse words=  16 faqs= 3 pr=yes violations=meta:short:129 | 9b7e0080-ecfd-4c43-b902-68de109f985c shop whitesmile
+  claude-sonnet-5  rich   words= 180 faqs= 8 pr=yes | 231149f6-0672-4876-a110-78b9b6e006e8 בוסטון קליניק
+  template         rich   words=  99 faqs= 4 pr=no error=unsupported_claims: טיפולים לא כירורגיים לפנים ולצוואר, שמיועדים לחיטוב ולמתיחה של אזור הפ | 7050e53c-e4fb-4ce6-b0cf-07fac3a5738d ד"ר אלי שולמן - רפואה אסטתית
+  claude-sonnet-5  sparse words=  72 faqs= 5 pr=yes | 76398c26-72db-4546-9456-43c7b4be45c9 The body Institute
+  claude-sonnet-5  sparse words=  57 faqs= 5 pr=yes | e5503311-6f94-4e8e-9123-9e6b30e84739 Yuval Weiss Cosmetics
+  claude-sonnet-5  sparse words=  40 faqs= 4 pr=yes | 6baca901-98d2-45fe-820b-3fc19f564d0b Sapir einy
+  claude-sonnet-5  sparse words=  53 faqs= 5 pr=yes violations=meta:short:120 | 9120b682-67d7-4437-8871-442338e02ec0 אילנה ביתן קוסמטיקאית מוסמכת
+CSV: reports/editorial-report.csv
