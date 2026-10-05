@@ -92,7 +92,8 @@
 .cImg { flex: none; width: 56px; }
 .cName { flex: 1; min-width: 190px; display: flex; flex-direction: column; gap: 3px; }
 .cResp { flex: none; width: 118px; }
-.cMedian { flex: none; width: 96px; text-align: right; }
+.cMedian { flex: none; width: 150px; text-align: right; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.rangeLabel { font-size: 12px; color: var(--subtle); }
 .cFreq { flex: none; width: 124px; }
 .cCount { flex: none; width: 64px; text-align: right; }
 .cArrow { flex: none; width: 16px; }
@@ -111,7 +112,6 @@
 .name { font-family: var(--font-display); font-size: 19.5px; line-height: 1.25; color: var(--navy); text-wrap: balance; }
 .blurb { font-size: 13.5px; line-height: 1.55; color: var(--muted); text-wrap: pretty; }
 .median { font-size: 15.5px; font-weight: 700; color: var(--navy); }
-.na { font-size: 12.5px; color: var(--subtle); }
 .freq { font-size: 13.5px; color: var(--text); }
 .count { font-size: 14px; color: var(--muted); }
 .arrow { display: flex; align-items: center; justify-content: center; color: var(--subtle); }

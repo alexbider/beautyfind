@@ -3,8 +3,6 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowForward } from '@/components/icons';
-import { VAT_LABEL } from '@/lib/features';
-import { nis } from '@/lib/format';
 import { fmtInt } from './format';
 import shared from './shared.module.css';
 import styles from './TreatmentsBrowser.module.css';
@@ -18,7 +16,8 @@ export interface TreatmentRow {
   tags: string[];
   img: string;
   freq: string;
-  median: number | null;
+  /** The market range of the category's most common treatment (src/lib/marketPrices.ts), or null. */
+  range: { label: string; text: string } | null;
   count: number;
 }
 
@@ -222,7 +221,7 @@ export function TreatmentsBrowser({ rows, groupOrder }: { rows: TreatmentRow[]; 
               <span className={styles.cImg} />
               <span className={styles.cName}>תחום</span>
               <span className={styles.cResp}>אחריות</span>
-              <span className={styles.cMedian}>מחיר ממוצע</span>
+              <span className={styles.cMedian}>טווח מחיר בשוק</span>
               <span className={styles.cFreq}>תדירות</span>
               <span className={styles.cCount}>עסקים</span>
               <span className={styles.cArrow} />
@@ -247,10 +246,11 @@ export function TreatmentsBrowser({ rows, groupOrder }: { rows: TreatmentRow[]; 
                         </span>
                       </span>
                       <span className={styles.cMedian}>
-                        {c.median != null ? (
-                          <span className={`${styles.median} ltr tnum`}>{nis(c.median)}</span>
-                        ) : (
-                          <span className={styles.na}>אין מספיק מחירים</span>
+                        {c.range && (
+                          <>
+                            <bdi dir="ltr" className={`${styles.median} tnum`}>{c.range.text}</bdi>
+                            <span className={styles.rangeLabel}>{c.range.label}</span>
+                          </>
                         )}
                       </span>
                       <span className={`${styles.cFreq} ${styles.freq}`}>{c.freq}</span>
@@ -280,7 +280,7 @@ export function TreatmentsBrowser({ rows, groupOrder }: { rows: TreatmentRow[]; 
         )}
 
         <p className={styles.footnote}>
-          המחירים הם המחיר הממוצע בשקלים, {VAT_LABEL}, מתוך התפריטים שהעסקים מפרסמים, אחרי הסרת מחירים חריגים, ומוצגים רק כשיש לפחות שלושה מחירים בתחום. הם אינם הצעת מחיר ואינם מחייבים אף עסק. טיפולים אסתטיים אלקטיביים אינם בסל הבריאות.
+          טווח המחיר בשוק של הטיפול הנפוץ בכל תחום, בשקלים כולל מע״מ, מתוך מחירונים ציבוריים, כתבות צרכנות וסקרי מחירים בישראל. הטווח המלא לכל תחום נמצא בדף התחום; הטווחים אינם הצעת מחיר ואינם מחייבים אף עסק. טיפולים אסתטיים אלקטיביים אינם בסל הבריאות.
         </p>
       </div>
     </div>

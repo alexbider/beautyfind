@@ -4,6 +4,7 @@ import type { Prisma } from '@prisma/client';
 import { AREAS, LEVELS, OPS_ROLES, type PermissionOverrides } from '@/components/ops/roles';
 import { INDEX_SECTION_KEYS } from '@/lib/indexing';
 import { DEFAULT_MEDICAL_DISCLAIMER, DEFAULT_MEDICAL_STATED_DISCLAIMER } from '@/lib/medical';
+import { MarketPricesSchema } from '@/lib/marketPrices';
 import { PLAN_MONTHLY_NIS, VAT_RATE } from '@/lib/pricing';
 import { db } from './db';
 
@@ -46,6 +47,9 @@ export const PlatformSettingsSchema = z.object({
   rolePermissions: z.partialRecord(z.enum(OPS_ROLES as [string, ...string[]]), z.partialRecord(z.enum(AREAS as [string, ...string[]]), Level)).default({}),
   // Messages: draft copy per template id, for the WhatsApp/Meta submission.
   templateDrafts: z.record(z.string(), z.string().max(2000)).default({}),
+  // Market price ranges per treatment category (src/lib/marketPrices.ts). Absent means the seed file; staff
+  // edits on /ops/settings store the whole document here, with the staff-only fields.
+  marketPrices: MarketPricesSchema.optional(),
 });
 
 export type PlatformSettings = z.infer<typeof PlatformSettingsSchema>;

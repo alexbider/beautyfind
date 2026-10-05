@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { areaUserOrNull } from '@/components/ops/access';
+import { MARKET_PRICES_SEED, MarketPriceItemSchema, currentMonth, marketPriceUnits, type MarketPriceItem } from '@/lib/marketPrices';
+import { marketPrices } from '@/lib/server/marketPrices';
 import { PlatformSettingsSchema, savePlatformSettings, type PlatformSettings } from '@/lib/server/platformSettings';
 
 // Platform settings. Numbers are saved as one patch from the form; feature switches save one at a
@@ -46,6 +48,36 @@ export async function saveMedicalDisclaimerAction(text: string, kind: 'noDoctor'
   await savePlatformSettings(user.id, { [key]: p.data });
   refresh();
   return { ok: true };
+}
+
+/**
+ * Market price ranges of one category (the "טווחי מחירים בשוק" card). The rows arrive in display order; min is
+ * required, max is at least min or empty, the unit is one already in the data. Saving stamps meta.updated with
+ * the current month and refreshes every public page that shows a range.
+ */
+export async function saveMarketPricesAction(category: string, rows: unknown): Promise<{ ok: true; updated: string } | { ok: false; error: string }> {
+  const user = await areaUserOrNull('settings', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const cur = await marketPrices();
+  if (!(category in MARKET_PRICES_SEED.categories) && !(category in cur.categories)) return { ok: false, error: 'תחום לא מוכר' };
+  const units = new Set(marketPriceUnits(cur));
+  const p = z.array(MarketPriceItemSchema).max(40).safeParse(rows);
+  if (!p.success) return { ok: false, error: p.error.issues.map(i => `שורה ${Number(i.path[0]) + 1}, ${String(i.path[1] ?? '')}: ${i.message}`).join('; ') };
+  const badUnit = p.data.find(r => !units.has(r.unit));
+  if (badUnit) return { ok: false, error: `יחידה לא מוכרת: ${badUnit.unit}` };
+  const labels = new Set<string>();
+  for (const r of p.data) {
+    if (labels.has(r.label)) return { ok: false, error: `שם טיפול כפול: ${r.label}` };
+    labels.add(r.label);
+  }
+  const items: MarketPriceItem[] = p.data.map(r => ({ ...r, note: r.note || undefined }));
+  const updated = currentMonth();
+  const next = { ...cur, meta: { ...cur.meta, updated }, categories: { ...cur.categories, [category]: items } };
+  await savePlatformSettings(user.id, { marketPrices: next });
+  // Category pages, the index, the regions and every city page carry a range.
+  revalidatePath('/', 'layout');
+  revalidatePath('/ops/settings');
+  return { ok: true, updated };
 }
 
 export async function saveMaintenanceMessageAction(message: string): Promise<{ ok: true } | { ok: false; error: string }> {

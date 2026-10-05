@@ -4,7 +4,11 @@ import { areaLevel, requireArea } from '@/components/ops/guard';
 import { atLeast } from '@/components/ops/roles';
 import { Card, Chip, PageHead, dateTimeIL, ui } from '@/components/ops/ui';
 import { db } from '@/lib/server/db';
+import { CATEGORIES } from '@/lib/catalog';
+import { marketPriceUnits } from '@/lib/marketPrices';
+import { marketPrices } from '@/lib/server/marketPrices';
 import { platformSettings } from '@/lib/server/platformSettings';
+import { MarketPricesForm } from './MarketPricesForm';
 import { FlagToggle, MaintenanceMessage, MedicalDisclaimerText, NumbersForm, type NumberGroup } from './SettingsForms';
 
 export const metadata: Metadata = { title: 'הגדרות פלטפורמה · ניהול', robots: { index: false, follow: false } };
@@ -32,7 +36,7 @@ const GROUPS: NumberGroup[] = [
 
 export default async function SettingsPage() {
   const user = await requireArea('settings', 'view', '/ops/settings');
-  const [level, s, row] = await Promise.all([areaLevel(user, 'settings'), platformSettings(), db.platformSettings.findUnique({ where: { id: 1 }, select: { updatedAt: true, updatedById: true } })]);
+  const [level, s, row, market] = await Promise.all([areaLevel(user, 'settings'), platformSettings(), db.platformSettings.findUnique({ where: { id: 1 }, select: { updatedAt: true, updatedById: true } }), marketPrices()]);
   const canEdit = atLeast(level, 'edit');
   const editor = row?.updatedById ? await db.user.findUnique({ where: { id: row.updatedById }, select: { fullName: true, email: true } }) : null;
   const values = { basicMonthlyNis: s.basicMonthlyNis, advancedMonthlyNis: s.advancedMonthlyNis, sponsoredWeeklyNis: s.sponsoredWeeklyNis, sponsoredMaxPerList: s.sponsoredMaxPerList, vatRatePct: s.vatRatePct, retryFirstDays: s.retryFirstDays, retrySecondDays: s.retrySecondDays, hideInDebtDays: s.hideInDebtDays, giftCardMinYears: s.giftCardMinYears };
@@ -54,6 +58,9 @@ export default async function SettingsPage() {
       <Card title="טיפולים רפואיים" flush>
         <MedicalDisclaimerText text={s.medicalDisclaimer} canEdit={canEdit} />
         <MedicalDisclaimerText text={s.medicalStatedDisclaimer} canEdit={canEdit} kind="stated" />
+      </Card>
+      <Card title="טווחי מחירים בשוק" sub="הטבלה בדפי התחומים, ובקיצור בדפי האזורים והערים. שורות מודגשות: ביטחון נמוך או מקור לפני 2024, לבדיקה חוזרת." flush>
+        <MarketPricesForm data={market} categories={CATEGORIES.map(c => ({ slug: c.slug, name: c.name }))} units={marketPriceUnits(market)} canEdit={canEdit} />
       </Card>
     </AdminShell>
   );

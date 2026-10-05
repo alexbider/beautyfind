@@ -1,0 +1,97 @@
+/* Market price ranges on the treatment category page. Tokens from globals.css; a price guide, not a spreadsheet:
+   hairline dividers, no zebra, a quiet hover tint, tabular numbers, decorative range bars. */
+
+.section {
+  scroll-margin-top: 92px; padding: clamp(22px, 2.6vw, 34px); background: var(--bg-soft); border: 1px solid var(--line); border-radius: 20px;
+}
+.head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.intro { margin: 0; font-size: 15.5px; line-height: 1.6; color: var(--text); text-wrap: pretty; max-width: 72ch; }
+.chips { list-style: none; margin: 2px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px; border: 1px solid var(--line); border-radius: 7px;
+  background: #ffffff; font-size: 13px; font-weight: 500; color: var(--text);
+}
+
+.table { width: 100%; border-collapse: collapse; background: #ffffff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.table thead th {
+  text-align: right; padding: 12px 16px; border-bottom: 1px solid var(--line-strong); font-size: 12.5px; font-weight: 700; color: var(--muted);
+}
+.row > th, .row > td { padding: 14px 16px; min-height: 56px; border-bottom: 1px solid var(--divider); text-align: right; vertical-align: middle; }
+.table tbody tr:last-child > th, .table tbody tr:last-child > td { border-bottom: 0; }
+@media (hover: hover) and (pointer: fine) {
+  .row:hover > th, .row:hover > td { background: var(--tint); }
+}
+.thLabel { width: 44%; }
+.thPrice { width: 17%; }
+.thUnit { width: 15%; }
+.thBar { width: 24%; }
+
+.tdLabel { font-weight: 500; color: var(--navy); }
+.labelRow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.label { font-size: 15.5px; font-weight: 500; line-height: 1.4; }
+.note { display: block; margin-top: 4px; font-size: 13px; font-weight: 400; line-height: 1.5; color: var(--subtle); text-wrap: pretty; }
+
+.tdPrice { white-space: nowrap; }
+.price { font-size: 15.5px; font-weight: 700; color: var(--navy); font-variant-numeric: tabular-nums; unicode-bidi: isolate; }
+
+.unit {
+  display: inline-flex; align-items: center; min-height: 24px; padding: 0 8px; border-radius: 6px; background: var(--bg-page);
+  font-size: 12.5px; font-weight: 500; color: var(--muted); white-space: nowrap;
+}
+
+/* Badges: "טיפול רפואי" matches the medical chip on the listing cards; "טווח רחב" is a button with a tooltip. */
+.badge {
+  display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border: 1px solid var(--line); border-radius: 7px;
+  background: var(--bg-soft); font: inherit; font-size: 12px; font-weight: 700; line-height: 1; color: var(--text); white-space: nowrap;
+}
+.badgeMedical { border-color: var(--warn-line); background: var(--warn-bg); color: var(--warn-text); }
+.badgeWide { cursor: pointer; border-color: var(--teal-border); background: var(--tint); color: var(--teal-deep); }
+@media (hover: hover) and (pointer: fine) {
+  .badgeWide:hover { border-color: var(--teal); }
+}
+.tipWrap { position: relative; display: inline-flex; }
+.tip {
+  position: absolute; z-index: 5; top: calc(100% + 8px); inset-inline-start: 0; width: max-content; max-width: 240px; padding: 8px 10px;
+  border-radius: 8px; background: var(--navy); color: #ffffff; font-size: 13px; font-weight: 400; line-height: 1.45; text-align: start;
+  box-shadow: var(--shadow-drop); opacity: 0; visibility: hidden; transform: translateY(-4px); transition: opacity .15s, transform .15s, visibility .15s;
+  pointer-events: none;
+}
+.tip::before { content: ''; position: absolute; top: -5px; inset-inline-start: 12px; width: 10px; height: 10px; background: var(--navy); transform: rotate(45deg); }
+.tipWrap[data-open] .tip, .tipWrap:focus-within .tip { opacity: 1; visibility: visible; transform: none; pointer-events: auto; }
+@media (hover: hover) and (pointer: fine) {
+  .tipWrap:hover .tip { opacity: 1; visibility: visible; transform: none; pointer-events: auto; }
+}
+
+/* The range bar: a thin track for the whole category, the row's segment in the brand accent. */
+.tdBar { min-width: 120px; }
+.track { position: relative; display: block; height: 6px; border-radius: 999px; background: var(--line); overflow: visible; }
+.fill { position: absolute; top: 0; height: 6px; border-radius: 999px; background: var(--teal); }
+.fillOpen { background: linear-gradient(to right, var(--teal) 0%, var(--teal) 35%, rgba(20, 179, 198, 0) 100%); border-radius: 999px 0 0 999px; }
+.dot { position: absolute; top: -2px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 0 2px #ffffff; }
+
+.foot { display: flex; flex-direction: column; gap: 4px; margin-top: 14px; }
+.foot > p { margin: 0; color: var(--muted); }
+.empty { margin: 0; padding: 18px; background: #ffffff; border: 1px solid var(--line); border-radius: 14px; font-size: 14.5px; color: var(--muted); }
+
+/* Phones: each row becomes a stacked card (label and badges, then the price with its unit, then the bar, then
+   the note). The table semantics stay in the DOM; only the layout changes. */
+@media (max-width: 639px) {
+  .section { padding: 18px 14px; border-radius: 16px; }
+  .table, .table tbody { display: block; border: 0; background: transparent; }
+  .table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .row {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'label label' 'price unit' 'bar bar' 'note note';
+    align-items: center; gap: 6px 10px; padding: 14px 14px 16px; margin-bottom: 10px; background: #ffffff; border: 1px solid var(--line); border-radius: 14px;
+  }
+  .row > th, .row > td { display: block; padding: 0; border: 0; min-height: 0; background: transparent; }
+  .tdLabel { grid-area: label; display: contents; }
+  .tdLabel .labelRow { grid-area: label; }
+  .tdLabel .note { grid-area: note; margin-top: 2px; }
+  .tdPrice { grid-area: price; justify-self: start; }
+  .price { font-size: 22px; line-height: 1.1; }
+  .tdUnit { grid-area: unit; justify-self: end; }
+  .tdBar { grid-area: bar; min-width: 0; padding-top: 4px; }
+  .table tbody tr:last-child { margin-bottom: 0; }
+  .tip { inset-inline-start: auto; inset-inline-end: 0; max-width: min(240px, 80vw); }
+  .tip::before { inset-inline-start: auto; inset-inline-end: 12px; }
+}

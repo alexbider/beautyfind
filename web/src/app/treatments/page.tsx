@@ -12,8 +12,10 @@ import shared from '@/components/treatments/shared.module.css';
 import { TreatmentsBrowser, type TreatmentRow } from '@/components/treatments/TreatmentsBrowser';
 import { CATEGORIES, CITIES, GROUP_ORDER, MENU_REGION_ORDER, citiesOf, regionBySlug } from '@/lib/catalog';
 import { nis } from '@/lib/format';
+import { headlineRange } from '@/lib/marketPrices';
 import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
-import { listingCounts, averagePrices } from '@/lib/server/public';
+import { marketPrices } from '@/lib/server/marketPrices';
+import { listingCounts } from '@/lib/server/public';
 import { businessCount } from '@/lib/seo/businessNoun';
 import { composeDescription, publicMetadata } from '@/lib/seo/meta';
 import styles from './page.module.css';
@@ -28,12 +30,12 @@ export async function generateMetadata(): Promise<Metadata> {
   return applySeo('/treatments', publicMetadata({
     path: '/treatments',
     title: '14 תחומי טיפול: מחירים והשוואה',
-    description: composeDescription([`14 תחומי הטיפול באינדקס BeautyFind: ${lead}.`, 'מחירים ממוצעים בשקלים ומי מורשה לבצע כל טיפול בישראל.', 'השוו מחירים וקבעו תור.'], ['מאסתטיקה רפואית ועד מספרות, ציפורניים וספא.']),
+    description: composeDescription([`14 תחומי הטיפול באינדקס BeautyFind: ${lead}.`, 'טווחי מחירים בשוק בשקלים ומי מורשה לבצע כל טיפול בישראל.', 'השוו מחירים וקבעו תור.'], ['מאסתטיקה רפואית ועד מספרות, ציפורניים וספא.']),
   }));
 }
 
 export default async function TreatmentsPage() {
-  const [counts, medians, ratings] = await Promise.all([listingCounts(), averagePrices(), ratingMedians()]);
+  const [counts, market, ratings] = await Promise.all([listingCounts(), marketPrices(), ratingMedians()]);
 
   const rows: TreatmentRow[] = CATEGORIES.map(c => {
     const body = CATEGORY_CONTENT[c.slug];
@@ -46,7 +48,7 @@ export default async function TreatmentsPage() {
       tags: body?.tags ?? [],
       img: body?.img ?? '/assets/biz-facial.jpg',
       freq: body?.freq ?? '',
-      median: medians[c.slug] ?? null,
+      range: headlineRange(market, c.slug),
       count: counts.category[c.slug] ?? 0,
     };
   });
@@ -93,7 +95,7 @@ export default async function TreatmentsPage() {
                   {businessCount(counts.total)} ב־7 אזורים, מחולקים ל־14 תחומים.{' '}
                 </>
               ) : null}
-              לכל תחום מחיר ממוצע בשקלים, תדירות טיפול אופיינית, ומי מורשה על פי חוק לבצע אותו, כי בכמה מהתחומים הגבול בין קוסמטיקה לרפואה הוא רגולטורי ולא אסתטי.
+              לכל תחום טווחי מחירים מקובלים בשוק, תדירות טיפול אופיינית, ומי מורשה על פי חוק לבצע אותו, כי בכמה מהתחומים הגבול בין קוסמטיקה לרפואה הוא רגולטורי ולא אסתטי.
             </p>
             <div className={styles.metaRow}>
               <span className={styles.updated}>
@@ -136,9 +138,9 @@ export default async function TreatmentsPage() {
                     <span className={styles.popName}>{c.name}</span>
                     <span className={styles.popMeta}>
                       {businessCount(c.count, c.slug)}
-                      {c.median != null && (
+                      {c.range && (
                         <>
-                          {' '}· מחיר ממוצע <span className="ltr tnum">{nis(c.median)}</span>
+                          {' '}· {c.range.label} <bdi dir="ltr" className="tnum">{c.range.text}</bdi>
                         </>
                       )}
                     </span>

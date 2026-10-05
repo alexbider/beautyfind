@@ -61,7 +61,7 @@ export function CardActions({
           </svg>
         </a>
       )}
-      <Link href={href} className={s.primary} aria-label={`לפרופיל של ${name}`}>
+      <Link href={href} className={s.primary} aria-label={`לפרופיל העסק ${name}`}>
         לפרופיל העסק
       </Link>
     </div>

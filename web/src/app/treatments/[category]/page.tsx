@@ -1,4 +1,3 @@
-import { VAT_LABEL } from '@/lib/features';
 import type { Metadata } from 'next';
 import { applySeo } from '@/lib/server/seo';
 import { composeDescription, fitTitle, publicMetadata } from '@/lib/seo/meta';
@@ -17,13 +16,14 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { BizTabs, type BizTab } from '@/components/treatments/BizTabs';
 import { CATEGORY_CONTENT, CONTENT_UPDATED, priceFaq } from '@/components/treatments/content';
 import { Faq } from '@/components/treatments/Faq';
-import { BIZ, Count, JsonLd, countText, fmtInt, pageLd, pctDelta } from '@/components/treatments/format';
+import { JsonLd, fmtInt, pageLd } from '@/components/treatments/format';
 import { InfoGlyph } from '@/components/treatments/InfoGlyph';
+import { MarketPrices } from '@/components/treatments/MarketPrices';
 import { listingBreakdown, ratingMedians } from '@/components/treatments/queries';
 import shared from '@/components/treatments/shared.module.css';
 import { CATEGORIES, CITIES, MENU_REGION_ORDER, categoryBySlug, regionBySlug } from '@/lib/catalog';
-import { nis } from '@/lib/format';
-import { listBranches, listingCounts, averagePrices } from '@/lib/server/public';
+import { marketPricesFor } from '@/lib/server/marketPrices';
+import { listBranches, listingCounts } from '@/lib/server/public';
 import styles from './page.module.css';
 
 // Design: project/BeautyFind Treatment Category.dc.html (prop `category`: one page per catalog category)
@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     path: `/treatments/${cat.slug}`,
     title: fitTitle([`${SEO_TERM[cat.slug] ?? cat.name} בישראל: מחירים והשוואה`, `${SEO_TERM[cat.slug] ?? cat.name} בישראל: מחירים`, `${SEO_TERM[cat.slug] ?? cat.name} בישראל`]),
     description: composeDescription(
-      [`${cat.name} בישראל: מה כולל התחום, מחירים ממוצעים ומי מורשה לבצע.`, n > 0 ? `${businessCount(n, cat.slug)} ב־7 אזורים.` : null, 'העסקים המדורגים ביותר בכל אזור.', 'השוו מחירים וקבעו תור.'],
+      [`${cat.name} בישראל: מה כולל התחום, טווחי מחירים בשוק ומי מורשה לבצע.`, n > 0 ? `${businessCount(n, cat.slug)} ב־7 אזורים.` : null, 'העסקים המדורגים ביותר בכל אזור.', 'השוו מחירים וקבעו תור.'],
       ['דירוג בגוגל וביקורות BeautyFind בנפרד.'],
     ),
     image: body?.img ?? null,
@@ -64,18 +64,16 @@ export default async function TreatmentCategoryPage({ params }: Props) {
   const body = cat && CATEGORY_CONTENT[cat.slug];
   if (!cat || !body) notFound();
 
-  const [counts, national, breakdown, ratings, byRegion, top, ...regionTops] = await Promise.all([
+  const [counts, breakdown, ratings, market, top, ...regionTops] = await Promise.all([
     listingCounts(),
-    averagePrices(),
     listingBreakdown(),
     ratingMedians(),
-    Promise.all(MENU_REGION_ORDER.map(r => averagePrices(r))),
+    marketPricesFor(cat.slug),
     listBranches({ category: cat.slug, take: 4 }),
     ...MENU_REGION_ORDER.map(r => listBranches({ region: r, category: cat.slug, take: 4 })),
   ]);
 
   const count = counts.category[cat.slug] ?? 0;
-  const medianNat = national[cat.slug] ?? null;
   const rating = ratings.category[cat.slug] ?? null;
   const regionCount = (r: string) => breakdown.regionCat[r]?.[cat.slug] ?? 0;
   const activeRegions = MENU_REGION_ORDER.filter(r => regionCount(r) > 0).length;
@@ -83,15 +81,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
 
   const stats: Array<{ label: string; value: ReactNode }> = [{ label: 'עסקים רשומים', value: <span className="ltr tnum">{fmtInt(count)}</span> }];
   if (rating != null) stats.push({ label: 'דירוג ממוצע בגוגל', value: <span className="ltr tnum">{rating.toFixed(1)}</span> });
-  if (medianNat != null) stats.push({ label: 'מחיר ממוצע', value: <span className="ltr tnum">{nis(medianNat)}</span> });
   stats.push({ label: 'אזורים', value: <span className="ltr tnum">{activeRegions}</span> });
-
-  const priceRows = MENU_REGION_ORDER.map((r, i) => ({
-    slug: r,
-    name: regionBySlug(r)!.name,
-    median: byRegion[i][cat.slug] ?? null,
-    count: regionCount(r),
-  }));
 
   // WhatsApp and phone for the phone card's contact buttons.
   const contacts = await cardExtras([...top.items, ...regionTops.flatMap(r => r.items)].map(c => c.id));
@@ -167,19 +157,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
             </h1>
             <p className={styles.answer}>
               {body.answer}{' '}
-              {count > 0 ? (
-                <>
-                  באינדקס רשומים {businessCount(count, cat.slug)}
-                  {medianNat != null ? (
-                    <>
-                      , והמחיר הממוצע הוא <span className="ltr tnum">{nis(medianNat)}</span>, {VAT_LABEL}
-                    </>
-                  ) : null}
-                  .
-                </>
-              ) : (
-                'עדיין אין עסקים רשומים בתחום.'
-              )}
+              {count > 0 ? <>באינדקס רשומים {businessCount(count, cat.slug)}, וטווחי המחירים המקובלים בשוק מופיעים למטה.</> : 'עדיין אין עסקים רשומים בתחום.'}
             </p>
 
             <div className={styles.metaRow}>
@@ -286,54 +264,20 @@ export default async function TreatmentCategoryPage({ params }: Props) {
           </div>
         </section>
 
-        <section id="prices" aria-labelledby="h-prices" className={`${styles.prices} ${styles.block}`}>
-          <div className={shared.rowHead}>
-            <h2 id="h-prices" className={`${shared.h2} ${shared.h2Lg}`}>
-              מחירים ממוצעים<span aria-hidden="true" className={shared.dot}>.</span>
-            </h2>
-            <span className={styles.pricesNote}>
-              תדירות אופיינית: {body.freq} · בשקלים, {VAT_LABEL}
-            </span>
-          </div>
-          <div className={styles.tableWrap}>
-            <table className={styles.table}>
-              <caption className="sr-only">מחיר ממוצע ומספר עסקים לפי אזור, {cat.name}</caption>
-              <thead>
-                <tr>
-                  <th scope="col">אזור</th>
-                  <th scope="col">מחיר ממוצע</th>
-                  <th scope="col">מול הארצי</th>
-                  <th scope="col">עסקים</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className={styles.totalRow}>
-                  <th scope="row">כל הארץ</th>
-                  <td className={styles.tdMedian}>{medianNat != null ? <span className="ltr tnum">{nis(medianNat)}</span> : <span className={styles.na}>אין מספיק מחירים</span>}</td>
-                  <td className={styles.tdMuted} />
-                  <td className={styles.tdMuted}><span className="ltr tnum">{fmtInt(count)}</span></td>
-                </tr>
-                {priceRows.map(row => {
-                  const d = row.median != null && medianNat != null ? pctDelta(row.median, medianNat) : null;
-                  return (
-                    <tr key={row.slug}>
-                      <th scope="row">
-                        <Link href={`/search?region=${row.slug}&t=${cat.slug}`}>{row.name}</Link>
-                      </th>
-                      <td className={styles.tdMedian}>{row.median != null ? <span className="ltr tnum">{nis(row.median)}</span> : <span className={styles.na}>אין מספיק מחירים</span>}</td>
-                      <td className={styles.tdMuted}>{d != null && <span className="ltr tnum">{`${d > 0 ? '+' : ''}${d}%`}</span>}</td>
-                      <td className={styles.tdMuted}><span className="ltr tnum">{fmtInt(row.count)}</span></td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          <p className={styles.priceFoot}>
-            המחירים נמסרים על ידי העסקים ומשקפים את מה שפורסם בתפריטים שלהם. המחיר הממוצע מחושב אחרי הסרת מחירים חריגים ומוצג רק כשיש לפחות שלושה מחירים, והוא אינו הצעת מחיר ואינו מחייב אף עסק.
-            {aesthetic ? ' טיפולים אסתטיים אלקטיביים אינם בסל הבריאות.' : ''}
-          </p>
-        </section>
+        <div className={styles.block}>
+          <MarketPrices
+            meta={market.meta}
+            items={market.items}
+            categoryName={cat.name}
+            freq={body.freq}
+            aesthetic={aesthetic}
+            heading={
+              <h2 id="h-prices" className={`${shared.h2} ${shared.h2Lg}`}>
+                {market.meta.title}<span aria-hidden="true" className={shared.dot}>.</span>
+              </h2>
+            }
+          />
+        </div>
 
         <div className={styles.block}>
           <BizTabs

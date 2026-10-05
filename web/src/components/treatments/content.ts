@@ -1,5 +1,4 @@
 // Editorial content for the 14 treatment categories, keyed by catalog slug.
-import { VAT_VERB } from '@/lib/features';
 // Copy from the Treatments and Treatment Category designs where it exists; the rest is
 // written to the same tone: factual, general, no outcome promises, no medical advice.
 // Numbers (counts, medians, ratings) never live here: they come from the database.
@@ -39,12 +38,12 @@ export interface CategoryContent {
 
 const NOT_IN_SAL = 'טיפולים אסתטיים אלקטיביים אינם בסל הבריאות ובדרך כלל אינם מכוסים בביטוח משלים.';
 
-/** Price FAQ shared by every category; aesthetic ones also say the treatment is not in the סל. */
+/** Price FAQ shared by every category: the market ranges and how to read them; aesthetic ones add the סל line. */
 export function priceFaq(aesthetic: boolean): { q: string; a: string } {
   return {
     q: 'איך לקרוא את המחירים בתחום?',
     a:
-      `המחיר הממוצע מחושב מתפריטי המחירים שהעסקים עצמם מפרסמים ב־BeautyFind, אחרי הסרת מחירים חריגים, ומוצג רק כשיש לפחות שלושה מחירים. כל המחירים בשקלים ו${VAT_VERB} מע״מ. זה עוגן להשוואה, לא הצעת מחיר, וכל עסק מנפיק חשבונית מס בעצמו.` +
+      'הטווחים מבוססים על מחירונים ציבוריים, כתבות צרכנות וסקרי מחירים בישראל, והם כוללים מע״מ. הם מראים את הטווח המקובל בשוק ולא מחיר של עסק מסוים. המחיר בפועל תלוי בעסק, באזור ובהיקף הטיפול, ולכן כדאי לבקש מהעסק מחיר מלא לפני שקובעים תור.' +
       (aesthetic ? ' ' + NOT_IN_SAL : ''),
   };
 }
@@ -623,7 +622,7 @@ export const TREATMENTS_FAQS: Array<{ q: string; a: string }> = [
   },
   {
     q: 'האם המחירים באינדקס הם הצעת מחיר?',
-    a: `לא. המחיר הממוצע מחושב מהתפריטים שהעסקים עצמם מפרסמים אצלנו, אחרי הסרת מחירים חריגים, ומוצג רק כשיש לפחות שלושה מחירים בתחום. הוא נועד לתת לכם עוגן לפני שאתם פונים לעסק, לא לחייב אף עסק. כל המחירים בשקלים ו${VAT_VERB} מע״מ, וכל עסק מנפיק חשבונית מס בעצמו.`,
+    a: 'לא. טווחי המחירים בדפי התחומים מבוססים על מחירונים ציבוריים, כתבות צרכנות וסקרי מחירים בישראל, והם כוללים מע״מ. הם מראים את הטווח המקובל בשוק ולא מחיר של עסק מסוים, ונועדו לתת לכם עוגן לפני שאתם פונים לעסק. המחירים בפרופיל של כל עסק הם המחירים שהעסק עצמו פרסם, וכל עסק מנפיק חשבונית מס בעצמו.',
   },
   {
     q: 'הטיפולים האלה מכוסים בסל הבריאות?',
