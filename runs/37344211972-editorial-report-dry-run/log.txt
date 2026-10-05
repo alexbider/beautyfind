@@ -1,0 +1,60 @@
+run 3c9bfc59-a76d-476f-822b-ba12d0bafc81 "ניקוי תיאורים 6/17" status=done started=2026-10-05T06:23:55.865Z finished=2026-10-05T07:12:46.051Z
+counters: {"improved":50,"postTasks":8,"postPhotos":1,"filled_faqs":29,"editorialCalls":50,"youtubeRequests":0,"editorial_failed":11,"editorial_written":39,"filled_description":29,"filled_meta_title_cleared":16,"filled_meta_description_cleared":50}
+listings in scope: 50, import records: 50, drafts written in this run: 50
+by model: claude-sonnet-5: 39, template: 11
+by tier: normal: 27, sparse: 16, rich: 7
+proofread: yes: 34, no: 16
+by error: (none): 39, unsupported_claims: מוצעים גם טיפולים לעיצוב הגוף במכשור ייע: 1, unsupported_claims: שמיועדים לשיפור מרקם העור ולטיפול בכתמי : 1, unsupported_claims: הטיפול מיועד להסרת שיער בשיטה שאינה זמני: 1, unsupported_claims: איפור יומיומי שמתאים לצילום ולסלפי; שיעו: 1, invented_words: סירחי: 1, unsupported_claims: סלון יופי בנתניה; עדכונים ותמונות מתפרסמ: 1, unsupported_claims: M.L Beautique הוא סטודיו יופי בנתניה; כל: 1, invented_words: בקיני: 1, unsupported_claims: הקוסמטיקאית: 1, unsupported_claims: מרבית הטיפולים בקליניקה מתמקדים בעור הפנ: 1, invented_words: אפרטית: 1
+words: min 29, median 81, max 318
+cost recorded on the records: 3.999 USD
+  claude-sonnet-5  normal words=  83 faqs= 6 pr=yes | 8a9c4cf4-e594-4f77-9b92-aff2eb1ae229 Clalit Estetika
+  claude-sonnet-5  sparse words=  44 faqs= 4 pr=yes | 71d1919b-712c-447d-80ac-860f63139d12 Black Up Israel
+  template         normal words=  62 faqs= 4 pr=no error=unsupported_claims: מוצעים גם טיפולים לעיצוב הגוף במכשור ייעודי; העיסויים הלימפטיים נועדו  | 97fef43e-e7d2-4a1d-b181-5c5d9a456c3c EstheticBar
+  template         normal words= 112 faqs= 3 pr=no error=unsupported_claims: שמיועדים לשיפור מרקם העור ולטיפול בכתמי גוון | b4d20139-068b-430d-a18c-e425af019fbd Esthetic lab
+  claude-sonnet-5  normal words=  73 faqs= 6 pr=yes | 6e1e4e46-2a43-47ba-8a83-2c94e6ef36dc Alisha brows&lashes - Алишка брови и рес
+  claude-sonnet-5  normal words=  90 faqs= 5 pr=yes violations=repeat:address | 4314dabf-e928-4fd4-9074-82f5b74d407c ALINA ZIABINA
+  template         normal words=  68 faqs= 5 pr=no error=unsupported_claims: הטיפול מיועד להסרת שיער בשיטה שאינה זמנית כמו גילוח או שעווה | c5417d93-b81b-4036-a212-d620668739c4 IDEAL beauty clinic
+  template         normal words= 103 faqs= 5 pr=no error=unsupported_claims: איפור יומיומי שמתאים לצילום ולסלפי; שיעורי איפור שבהם לומדים טכניקות י | 1a6f9f24-0b60-4ea7-8b9a-49a42c76023c MAC Cosmetics Ir Yamim
+  claude-sonnet-5  sparse words=  63 faqs= 5 pr=yes violations=meta:short:126 | aafc5de3-9a85-44b4-b5a3-9056b4989394 תמי גרז
+  claude-sonnet-5  sparse words=  56 faqs= 5 pr=yes | 8d3ea3e7-0759-4768-800c-18d410c5a10f Nicole advanced skin care | קוסמטיקאית ב
+  claude-sonnet-5  sparse words=  41 faqs= 4 pr=yes | 1d308c62-8e02-48da-8c84-131b48f18900 שני ניילס-בניית ציפורניים לק ג'ל ושיקום 
+  claude-sonnet-5  sparse words=  37 faqs= 4 pr=yes | c71c7544-c226-489a-bb1b-0e9c7e591985 Ellie clinic קליניקה לפתרון מגוון בעיות 
+  template         rich   words= 318 faqs= 6 pr=no error=invented_words: סירחי | ec8ef87a-aa69-4978-958b-0f1ccdae96e4 Lisa Beauty Boutique
+  claude-sonnet-5  sparse words=  47 faqs= 4 pr=yes | ee59f874-b737-4756-8ef9-8b630572d62e רונית רפאל מדע היופי - חיפה
+  template         normal words= 115 faqs= 5 pr=no error=unsupported_claims: סלון יופי בנתניה; עדכונים ותמונות מתפרסמים בעמוד הפייסבוק של הסלון | 1cf814be-5ad7-40f4-aa2d-d0f93760b503 Beauty Salon Esthetics/Салон Красоты Эст
+  claude-sonnet-5  normal words=  97 faqs= 5 pr=yes | 24440a02-21c4-40e3-89e3-8e1cf5fa2983 Eleanor Clinic of your beautician
+  claude-sonnet-5  normal words=  99 faqs= 5 pr=yes | 281a5c15-fb90-4d75-b3a2-df0133abcf65 Dr.Sergey Goykhman Dentist רופא שיניים С
+  claude-sonnet-5  sparse words=  72 faqs= 6 pr=yes | 7e482149-f6c3-4957-a0f0-3f6193cc0dbd I.k.Aesthetics
+  claude-sonnet-5  normal words=  92 faqs= 6 pr=yes | 50ffcda7-9f9b-4d06-94b1-1ff207b4a7c3 Medical Beauty Clinic - מדיקל ביוטי קלינ
+  claude-sonnet-5  sparse words=  44 faqs= 4 pr=yes violations=meta:short:122 | a14d6fba-a076-4348-881b-6cdf06b7966e שרה מוקי שיזוף בהתזה
+  claude-sonnet-5  sparse words=  63 faqs= 5 pr=yes | b66d2eff-7f50-4675-a49e-656287ed53d5 Adva Shoham Pro Makeup & Hair Styling אד
+  claude-sonnet-5  normal words= 125 faqs= 6 pr=yes | f7b321ea-05f4-484f-b3c8-a546484e8ebe Dr. Tatiana Ishai / ד"ר טטיאנה ישי / רפו
+  claude-sonnet-5  sparse words=  72 faqs= 6 pr=yes | 2d3e4463-d4a6-4f88-8cf9-a6bb6616a10d "יפה בלבן - סטודיו לשמלות כלה" // Yafa B
+  claude-sonnet-5  normal words=  76 faqs= 6 pr=yes | f70728fb-8afe-4821-b68e-75621aa741be HS COSMETICS- הילה שמעון קוסמטיקאית
+  template         rich   words= 252 faqs= 5 pr=no error=unsupported_claims: M.L Beautique הוא סטודיו יופי בנתניה; כל מטופל מקבל את ההתייחסות המתאי | a62f3349-82fc-4766-ad60-d87a3d863b50 M.L Beautique
+  claude-sonnet-5  normal words=  72 faqs= 5 pr=yes | 29e5782f-f7b0-43a5-ba2c-fc76f8c32f15 Hi Laser הסרת שיער בלייזר וטיפולי אנטי א
+  claude-sonnet-5  normal words=  72 faqs= 5 pr=yes violations=meta:short:129 | 86955caf-a40f-4e97-8391-c53ee18343c7 Dr Meir Pomeranz
+  template         rich   words= 151 faqs= 6 pr=no error=invented_words: בקיני | d5ec765e-7cf3-4162-b9b7-9aeb68bbc38b ELITE
+  claude-sonnet-5  normal words=  81 faqs= 5 pr=yes violations=meta:short:129 | 414b7465-3a64-44f3-9453-b2e5e9e71b9b Bright Smile
+  claude-sonnet-5  normal words=  80 faqs= 6 pr=yes violations=meta:short:128 | 967b8586-24d7-4a46-b2da-1056eb29d79a ODYNOKA dental clinic
+  claude-sonnet-5  normal words=  77 faqs= 5 pr=yes | 3780a669-3317-42da-bb11-d799ddcc1989 Ortal pahima - skin clinic
+  claude-sonnet-5  normal words=  88 faqs= 5 pr=yes | 6baaa354-09dd-4a30-9cdd-254aa7dbe477 AN.GEL BEAUTY BOUTIQUE
+  claude-sonnet-5  normal words=  99 faqs= 6 pr=yes | 1c70768a-7366-4ff9-9b4e-1d3666179db3 Belau Beauty
+  claude-sonnet-5  sparse words=  45 faqs= 4 pr=no | 63a4aa2f-f181-4453-8851-098fe3fc2707 Dr. Sharon Porat Dental Clinic מרפאת שינ
+  claude-sonnet-5  rich   words= 157 faqs= 7 pr=no violations=short:157 | meta:short:121 | 48b8b155-73e3-4503-b2b9-48ca60b44a07 D-Shiny - אסתטיקה מתקדמת - סניף נתניה
+  claude-sonnet-5  normal words=  99 faqs= 7 pr=yes | 077566ec-8a29-4d64-a8f2-44697bf86151 Helen Make up artist‏
+  claude-sonnet-5  rich   words= 150 faqs= 6 pr=no violations=short:150 | repeat:address | b17bcb62-1be7-4739-816d-f5516cc66a8b Nava Esthetic | Institut de beauté |
+  claude-sonnet-5  sparse words=  67 faqs= 5 pr=yes | d92408a6-38d6-484e-9716-e8bb41613e76 Netanya - institut beauté esthétic ELODE
+  template         sparse words=  54 faqs= 3 pr=no error=unsupported_claims: הקוסמטיקאית | 19542817-715f-4c6a-a5e4-54fb8550750d Olga Finkell
+  claude-sonnet-5  normal words=  97 faqs= 5 pr=yes violations=meta:short:121 | 6d3973d3-acbc-4d2f-812f-7f03c5ea1fb1 רופא שיניים בחיפה - ד״ר יואש פרמוט
+  claude-sonnet-5  sparse words=  40 faqs= 4 pr=yes | ab08e541-6728-4a61-913f-28591b36c478 Lilia Stern - Beauty & Youth - ליליה שטר
+  template         rich   words= 164 faqs= 5 pr=no error=unsupported_claims: מרבית הטיפולים בקליניקה מתמקדים בעור הפנים | 836eb136-9d0c-47c2-af20-450f77ce79fa Oron Avidan medical esthetician
+  template         normal words=  70 faqs= 4 pr=no error=invented_words: אפרטית | e30d1d91-4b3c-4e68-9fae-d6cc4ab0c3ff HSecret Beauty
+  claude-sonnet-5  rich   words= 146 faqs= 7 pr=no violations=short:146 | 89c7fa70-af17-4802-aa84-776b8131e70a שרית אטיאס -מומחית לקוסמטיקה קלינית ואסת
+  claude-sonnet-5  normal words=  83 faqs= 6 pr=yes violations=repeat:hours | 4ce7564b-7c3c-4c2c-b98a-4286a0bbce5a Natalia Shatilo skin expert
+  claude-sonnet-5  normal words=  82 faqs= 6 pr=yes | 6e532511-a030-4789-9f2c-7f5752e5c679 רינת עוגור- מאפרת מקצועית בחיפה והסביבה 
+  claude-sonnet-5  sparse words=  29 faqs= 3 pr=no violations=short:29 | meta:short:99 | 09a35f87-4db7-49cc-a21d-f11872fb2e2c Ekaterina Goldin- Beauty Salon
+  claude-sonnet-5  sparse words=  48 faqs= 4 pr=yes | 437e8748-4e4a-43ef-b7a3-d9df57f13276 Larimar Clinic - נתניה
+  claude-sonnet-5  normal words= 104 faqs= 5 pr=yes | d2a7ede3-6c74-4058-bf46-0c97454381dc Jessica Beauty Experiences
+  claude-sonnet-5  normal words= 115 faqs= 6 pr=yes | 2205e359-d2e7-410a-b77e-d01ac6aeb05b M.Beauty
+CSV: reports/editorial-report.csv

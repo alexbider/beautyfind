@@ -1,0 +1,51 @@
+﻿branch_id,name,draft_from_this_run,model,tier,words,faqs,proofread,prompt_version,error,violations,repairs,needs_more_info,cost_usd,input_tokens,output_tokens,generated_at
+8a9c4cf4-e594-4f77-9b92-aff2eb1ae229,Clalit Estetika,yes,claude-sonnet-5,normal,83,6,yes,2026-10-04.8,,,2,false,0.058578,6019,4654,2026-10-05T06:43:39.359Z
+71d1919b-712c-447d-80ac-860f63139d12,Black Up Israel,yes,claude-sonnet-5,sparse,44,4,yes,2026-10-04.8,,,1,true,0.028222,2966,2229,2026-10-05T06:59:14.085Z
+97fef43e-e7d2-4a1d-b181-5c5d9a456c3c,EstheticBar,yes,template,normal,62,4,no,2026-10-04.8,unsupported_claims: מוצעים גם טיפולים לעיצוב הגוף במכשור ייעודי; העיסויים הלימפטיים נועדו לסייע לניקוז נוזלים ולהקלה על תחושת כבדות ברגליים ובגוף,,0,false,0.081044,7967,6511,2026-10-05T07:00:27.521Z
+b4d20139-068b-430d-a18c-e425af019fbd,Esthetic lab,yes,template,normal,112,3,no,2026-10-04.8,unsupported_claims: שמיועדים לשיפור מרקם העור ולטיפול בכתמי גוון,,0,false,0.10579,12470,8085,2026-10-05T07:04:35.709Z
+6e1e4e46-2a43-47ba-8a83-2c94e6ef36dc,Alisha brows&lashes - Алишка брови и ресницы,yes,claude-sonnet-5,normal,73,6,yes,2026-10-04.8,,,2,false,0.08146,9985,6149,2026-10-05T07:05:35.977Z
+4314dabf-e928-4fd4-9074-82f5b74d407c,ALINA ZIABINA,yes,claude-sonnet-5,normal,90,5,yes,2026-10-04.8,,repeat:address,3,false,0.103406,10973,8146,2026-10-05T07:07:14.412Z
+c5417d93-b81b-4036-a212-d620668739c4,IDEAL beauty clinic,yes,template,normal,68,5,no,2026-10-04.8,unsupported_claims: הטיפול מיועד להסרת שיער בשיטה שאינה זמנית כמו גילוח או שעווה,,0,false,0.052548,6359,3983,2026-10-05T07:09:19.525Z
+1a6f9f24-0b60-4ea7-8b9a-49a42c76023c,MAC Cosmetics Ir Yamim,yes,template,normal,103,5,no,2026-10-04.8,"unsupported_claims: איפור יומיומי שמתאים לצילום ולסלפי; שיעורי איפור שבהם לומדים טכניקות יישום ושימוש במוצרים; אילו שירותים מוצעים במקום? איפור לאירועים, איפור לסלפי ולצילום, ושיעורי איפור",,0,false,0.080848,9599,6165,2026-10-05T07:10:20.352Z
+aafc5de3-9a85-44b4-b5a3-9056b4989394,תמי גרז,yes,claude-sonnet-5,sparse,63,5,yes,2026-10-04.8,,meta:short:126,2,false,0.07414,6950,6024,2026-10-05T06:29:43.329Z
+8d3ea3e7-0759-4768-800c-18d410c5a10f,Nicole advanced skin care | קוסמטיקאית בנתניה,yes,claude-sonnet-5,sparse,56,5,yes,2026-10-04.8,,,0,false,0.026234,2477,2128,2026-10-05T06:57:15.635Z
+1d308c62-8e02-48da-8c84-131b48f18900,שני ניילס-בניית ציפורניים לק ג'ל ושיקום הציפורן הטבעית,yes,claude-sonnet-5,sparse,41,4,yes,2026-10-04.8,,,2,false,0.045354,5307,3474,2026-10-05T06:27:53.450Z
+c71c7544-c226-489a-bb1b-0e9c7e591985,Ellie clinic קליניקה לפתרון מגוון בעיות עור,yes,claude-sonnet-5,sparse,37,4,yes,2026-10-04.8,,,1,true,0.030786,2963,2486,2026-10-05T07:07:41.570Z
+ec8ef87a-aa69-4978-958b-0f1ccdae96e4,Lisa Beauty Boutique,yes,template,rich,318,6,no,2026-10-04.8,invented_words: סירחי,,0,false,0.263282,34641,19400,2026-10-05T06:33:49.285Z
+ee59f874-b737-4756-8ef9-8b630572d62e,רונית רפאל מדע היופי - חיפה,yes,claude-sonnet-5,sparse,47,4,yes,2026-10-04.8,,,1,true,0.031378,3154,2507,2026-10-05T06:30:47.313Z
+1cf814be-5ad7-40f4-aa2d-d0f93760b503,Beauty Salon Esthetics/Салон Красоты Эстетик,yes,template,normal,115,5,no,2026-10-04.8,unsupported_claims: סלון יופי בנתניה; עדכונים ותמונות מתפרסמים בעמוד הפייסבוק של הסלון,,0,false,0.058824,8607,4161,2026-10-05T06:58:49.150Z
+24440a02-21c4-40e3-89e3-8e1cf5fa2983,Eleanor Clinic of your beautician,yes,claude-sonnet-5,normal,97,5,yes,2026-10-04.8,,,1,false,0.053574,5317,4294,2026-10-05T06:48:10.923Z
+281a5c15-fb90-4d75-b3a2-df0133abcf65,Dr.Sergey Goykhman Dentist רופא שיניים Стоматолог,yes,claude-sonnet-5,normal,99,5,yes,2026-10-04.8,,,1,false,0.057874,5157,4756,2026-10-05T06:58:05.802Z
+7e482149-f6c3-4957-a0f0-3f6193cc0dbd,I.k.Aesthetics,yes,claude-sonnet-5,sparse,72,6,yes,2026-10-04.8,,,0,false,0.030898,2914,2507,2026-10-05T06:49:59.163Z
+50ffcda7-9f9b-4d06-94b1-1ff207b4a7c3,Medical Beauty Clinic - מדיקל ביוטי קליניק,yes,claude-sonnet-5,normal,92,6,yes,2026-10-04.8,,,2,false,0.137126,17548,10203,2026-10-05T06:35:15.787Z
+a14d6fba-a076-4348-881b-6cdf06b7966e,שרה מוקי שיזוף בהתזה,yes,claude-sonnet-5,sparse,44,4,yes,2026-10-04.8,,meta:short:122,2,false,0.045252,5126,3500,2026-10-05T06:30:20.409Z
+b66d2eff-7f50-4675-a49e-656287ed53d5,Adva Shoham Pro Makeup & Hair Styling אדוה שוהם איפור ושיער לכלות,yes,claude-sonnet-5,sparse,63,5,yes,2026-10-04.8,,,0,false,0.024772,2351,2007,2026-10-05T06:52:14.106Z
+f7b321ea-05f4-484f-b3c8-a546484e8ebe,"Dr. Tatiana Ishai / ד""ר טטיאנה ישי / רפואה אסתטית / קוסמטיקאית נתניה",yes,claude-sonnet-5,normal,125,6,yes,2026-10-04.8,,,0,false,0.097636,10713,7621,2026-10-05T06:36:22.096Z
+2d3e4463-d4a6-4f88-8cf9-a6bb6616a10d,"""יפה בלבן - סטודיו לשמלות כלה"" // Yafa Belavan",yes,claude-sonnet-5,sparse,72,6,yes,2026-10-04.8,,,0,false,0.036276,3343,2959,2026-10-05T06:37:41.701Z
+f70728fb-8afe-4821-b68e-75621aa741be,HS COSMETICS- הילה שמעון קוסמטיקאית,yes,claude-sonnet-5,normal,76,6,yes,2026-10-04.8,,,0,false,0.047846,4778,3829,2026-10-05T06:38:20.997Z
+a62f3349-82fc-4766-ad60-d87a3d863b50,M.L Beautique,yes,template,rich,252,5,no,2026-10-04.8,unsupported_claims: M.L Beautique הוא סטודיו יופי בנתניה; כל מטופל מקבל את ההתייחסות המתאימה לסוג השיער שלו; איפור רגיל לאירועים ולהזדמנויות שונות; שבו מוצג המחירון המלא של כל הטיפולים המוצעים,,0,false,0.193048,34729,12359,2026-10-05T06:51:51.682Z
+29e5782f-f7b0-43a5-ba2c-fc76f8c32f15,Hi Laser הסרת שיער בלייזר וטיפולי אנטי אייג׳ינג,yes,claude-sonnet-5,normal,72,5,yes,2026-10-04.8,,,3,false,0.0961,12890,7032,2026-10-05T06:39:28.345Z
+86955caf-a40f-4e97-8391-c53ee18343c7,Dr Meir Pomeranz,yes,claude-sonnet-5,normal,72,5,yes,2026-10-04.8,,meta:short:129,1,false,0.064288,7129,5003,2026-10-05T06:49:00.297Z
+d5ec765e-7cf3-4162-b9b7-9aeb68bbc38b,ELITE,yes,template,rich,151,6,no,2026-10-04.8,invented_words: בקיני,,0,false,0.23449,28255,17798,2026-10-05T06:41:48.056Z
+414b7465-3a64-44f3-9453-b2e5e9e71b9b,Bright Smile,yes,claude-sonnet-5,normal,81,5,yes,2026-10-04.8,,meta:short:129,1,false,0.079448,11694,5606,2026-10-05T06:37:12.867Z
+967b8586-24d7-4a46-b2da-1056eb29d79a,ODYNOKA dental clinic,yes,claude-sonnet-5,normal,80,6,yes,2026-10-04.8,,meta:short:128,2,false,0.073056,7958,5714,2026-10-05T06:45:32.323Z
+3780a669-3317-42da-bb11-d799ddcc1989,Ortal pahima - skin clinic,yes,claude-sonnet-5,normal,77,5,yes,2026-10-04.8,,,3,false,0.103638,14009,7562,2026-10-05T07:12:43.293Z
+6baaa354-09dd-4a30-9cdd-254aa7dbe477,AN.GEL BEAUTY BOUTIQUE,yes,claude-sonnet-5,normal,88,5,yes,2026-10-04.8,,,1,false,0.090068,11339,6739,2026-10-05T07:03:20.140Z
+1c70768a-7366-4ff9-9b4e-1d3666179db3,Belau Beauty,yes,claude-sonnet-5,normal,99,6,yes,2026-10-04.8,,,1,false,0.066658,5469,5572,2026-10-05T07:02:18.992Z
+63a4aa2f-f181-4453-8851-098fe3fc2707,Dr. Sharon Porat Dental Clinic מרפאת שיניים דר' שרון פורת,yes,claude-sonnet-5,sparse,45,4,no,2026-10-04.8,,,3,false,0.059726,6513,4670,2026-10-05T06:44:32.341Z
+48b8b155-73e3-4503-b2b9-48ca60b44a07,D-Shiny - אסתטיקה מתקדמת - סניף נתניה,yes,claude-sonnet-5,rich,157,7,no,2026-10-04.8,,short:157 | meta:short:121,1,false,0.072872,9586,5370,2026-10-05T06:53:45.596Z
+077566ec-8a29-4d64-a8f2-44697bf86151,Helen Make up artist‏,yes,claude-sonnet-5,normal,99,7,yes,2026-10-04.8,,,1,false,0.08709,10025,6704,2026-10-05T06:42:53.662Z
+b17bcb62-1be7-4739-816d-f5516cc66a8b,Nava Esthetic | Institut de beauté |,yes,claude-sonnet-5,rich,150,6,no,2026-10-04.8,,short:150 | repeat:address,2,false,0.079012,9756,5950,2026-10-05T07:01:26.070Z
+d92408a6-38d6-484e-9716-e8bb41613e76,Netanya - institut beauté esthétic ELODERMO,yes,claude-sonnet-5,sparse,67,5,yes,2026-10-04.8,,,0,false,0.03947,3020,3343,2026-10-05T06:52:48.362Z
+19542817-715f-4c6a-a5e4-54fb8550750d,Olga Finkell,yes,template,sparse,54,3,no,2026-10-04.8,unsupported_claims: הקוסמטיקאית,,0,false,0.069046,6173,5670,2026-10-05T07:11:16.955Z
+6d3973d3-acbc-4d2f-812f-7f03c5ea1fb1,רופא שיניים בחיפה - ד״ר יואש פרמוט,yes,claude-sonnet-5,normal,97,5,yes,2026-10-04.8,,meta:short:121,2,false,0.113992,15946,8210,2026-10-05T06:25:57.145Z
+ab08e541-6728-4a61-913f-28591b36c478,Lilia Stern - Beauty & Youth - ליליה שטרן,yes,claude-sonnet-5,sparse,40,4,yes,2026-10-04.8,,,1,true,0.027338,2904,2153,2026-10-05T07:06:01.611Z
+836eb136-9d0c-47c2-af20-450f77ce79fa,Oron Avidan medical esthetician,yes,template,rich,164,5,no,2026-10-04.8,unsupported_claims: מרבית הטיפולים בקליניקה מתמקדים בעור הפנים,,0,false,0.197682,33001,13168,2026-10-05T06:47:26.575Z
+e30d1d91-4b3c-4e68-9fae-d6cc4ab0c3ff,HSecret Beauty,yes,template,normal,70,4,no,2026-10-04.8,invented_words: אפרטית,,0,false,0.032612,3336,2594,2026-10-05T06:49:28.872Z
+89c7fa70-af17-4802-aa84-776b8131e70a,שרית אטיאס -מומחית לקוסמטיקה קלינית ואסתטיקה מתקדמת,yes,claude-sonnet-5,rich,146,7,no,2026-10-04.8,,short:146,2,false,0.08481,10165,6448,2026-10-05T06:27:04.485Z
+4ce7564b-7c3c-4c2c-b98a-4286a0bbce5a,Natalia Shatilo skin expert,yes,claude-sonnet-5,normal,83,6,yes,2026-10-04.8,,repeat:hours,2,false,0.0778,8745,6031,2026-10-05T07:08:39.408Z
+6e532511-a030-4789-9f2c-7f5752e5c679,רינת עוגור- מאפרת מקצועית בחיפה והסביבה : איפור כלות | איפור ערב | איפור לעור בוגר,yes,claude-sonnet-5,normal,82,6,yes,2026-10-04.8,,,2,false,0.074656,9068,5652,2026-10-05T06:28:47.504Z
+09a35f87-4db7-49cc-a21d-f11872fb2e2c,Ekaterina Goldin- Beauty Salon,yes,claude-sonnet-5,sparse,29,3,no,2026-10-04.8,,short:29 | meta:short:99,1,true,0.015468,2069,1133,2026-10-05T07:11:36.661Z
+437e8748-4e4a-43ef-b7a3-d9df57f13276,Larimar Clinic - נתניה,yes,claude-sonnet-5,sparse,48,4,yes,2026-10-04.8,,,1,false,0.029596,3118,2336,2026-10-05T06:31:11.572Z
+d2a7ede3-6c74-4058-bf46-0c97454381dc,Jessica Beauty Experiences,yes,claude-sonnet-5,normal,104,5,yes,2026-10-04.8,,,2,false,0.152202,19581,11304,2026-10-05T06:56:51.211Z
+2205e359-d2e7-410a-b77e-d01ac6aeb05b,M.Beauty,yes,claude-sonnet-5,normal,115,6,yes,2026-10-04.8,,,1,false,0.131998,15734,10053,2026-10-05T06:55:15.080Z
