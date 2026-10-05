@@ -6,10 +6,11 @@
 // --revert puts the "before" text back. Read-only unless --confirm.
 //
 // A second pass aligns the stored city spelling with the catalog: the city name on every branch and import
-// record, the catalog city rows, and the cover and gallery alt texts that were built from the old spelling
-// (fields cityName, coverAlt, city.name, importPlace.cityName, media.alt). Those values are the catalog's,
-// not the owner's text, so this pass covers claimed listings too; its rows sit in the same CSVs, and the
-// record id column holds the id of the record the field belongs to.
+// record, the catalog city rows, the display address (never an owner-entered one) and the cover and gallery
+// alt texts that were built from the old spelling (fields cityName, coverAlt, address, gallery, city.name,
+// importPlace.cityName, media.alt). Those values are the catalog's, not the owner's text, so this pass
+// covers claimed listings too; its rows sit in the same CSVs, and the record id column holds the id of the
+// record the field belongs to.
 //
 //   npm run import:wording-cleanup                      dry run: counts per phrase, CSV of the listings
 //   npm run import:wording-cleanup -- --confirm         apply, with the undo CSV
@@ -118,8 +119,9 @@ export const altSpelling = (text: string) => text.split('תל אביב–יפו'
 const CITY_LABEL = 'תל אביב–יפו';
 
 type Field = 'description' | 'faqs' | 'metaTitle' | 'metaDescription';
-type SpellingField = 'cityName' | 'coverAlt' | 'city.name' | 'importPlace.cityName' | 'media.alt';
-const BRANCH_FIELDS = new Set<string>(['description', 'faqs', 'metaTitle', 'metaDescription', 'cityName', 'coverAlt']);
+type SpellingField = 'cityName' | 'coverAlt' | 'address' | 'gallery' | 'city.name' | 'importPlace.cityName' | 'media.alt';
+const BRANCH_FIELDS = new Set<string>(['description', 'faqs', 'metaTitle', 'metaDescription', 'cityName', 'coverAlt', 'address', 'gallery']);
+const JSON_FIELDS = new Set<string>(['faqs', 'gallery']);
 interface Change {
   recordId: string; // branch id, or the id of the city, import record or media file for the spelling pass
   name: string;
@@ -136,13 +138,18 @@ async function citySpellingChanges(): Promise<Change[]> {
     if (before !== after) out.push({ recordId, name, field, before, after, hits: { [CITY_LABEL]: before.split('–').length - 1 } });
   };
   for (const c of await db.city.findMany({ where: { name: { contains: '–' } }, select: { id: true, name: true } })) row(c.id, c.name, 'city.name', c.name, cityNameSpelling(c.name));
+  // The display address and the gallery alt texts were composed from the old city name; an address the
+  // owner typed is never rewritten.
   const branches = await db.branch.findMany({
-    where: { OR: [{ cityName: { contains: '–' } }, { coverAlt: { contains: CITY_LABEL } }] },
-    select: { id: true, name: true, cityName: true, coverAlt: true },
+    where: { OR: [{ cityName: { contains: '–' } }, { coverAlt: { contains: CITY_LABEL } }, { address: { contains: CITY_LABEL } }] },
+    select: { id: true, name: true, cityName: true, coverAlt: true, address: true, addressSource: true, gallery: true },
   });
   for (const b of branches) {
     row(b.id, b.name, 'cityName', b.cityName, cityNameSpelling(b.cityName));
     if (b.coverAlt) row(b.id, b.name, 'coverAlt', b.coverAlt, altSpelling(b.coverAlt));
+    if (b.addressSource !== 'owner') row(b.id, b.name, 'address', b.address, altSpelling(b.address));
+    const gallery = JSON.stringify(b.gallery ?? []);
+    row(b.id, b.name, 'gallery', gallery, altSpelling(gallery));
   }
   for (const p of await db.importPlace.findMany({ where: { cityName: { contains: '–' } }, select: { id: true, name: true, cityName: true } })) row(p.id, p.name, 'importPlace.cityName', p.cityName ?? '', cityNameSpelling(p.cityName ?? ''));
   for (const m of await db.mediaFile.findMany({ where: { alt: { contains: CITY_LABEL } }, select: { id: true, key: true, alt: true } })) row(m.id, m.key, 'media.alt', m.alt ?? '', altSpelling(m.alt ?? ''));
@@ -152,7 +159,7 @@ async function citySpellingChanges(): Promise<Change[]> {
 /** Writes one field of one record; the caller decides the direction (apply or revert). */
 async function writeField(tx: Prisma.TransactionClient, recordId: string, field: Field | SpellingField, value: string, action: 'wording_cleanup' | 'wording_revert', meta: Prisma.InputJsonObject) {
   if (BRANCH_FIELDS.has(field)) {
-    const data: Prisma.BranchUpdateInput = field === 'faqs' ? { faqs: JSON.parse(value) as Prisma.InputJsonValue } : field === 'cityName' ? { cityName: value } : { [field]: value || null };
+    const data: Prisma.BranchUpdateInput = JSON_FIELDS.has(field) ? { [field]: JSON.parse(value) as Prisma.InputJsonValue } : field === 'cityName' || field === 'address' ? { [field]: value } : { [field]: value || null };
     await tx.branch.update({ where: { id: recordId }, data });
     await tx.auditLog.create({ data: { actorId: null, action, subjectType: 'branch', subjectId: recordId, meta: { field, script: SOURCE, ...meta } } });
     return;
@@ -166,10 +173,10 @@ async function writeField(tx: Prisma.TransactionClient, recordId: string, field:
 /** The current value of a field, in the CSV's representation, or null when the record is gone. */
 async function currentValue(recordId: string, field: Field | SpellingField): Promise<string | null> {
   if (BRANCH_FIELDS.has(field)) {
-    const b = await db.branch.findUnique({ where: { id: recordId }, select: { description: true, faqs: true, metaTitle: true, metaDescription: true, cityName: true, coverAlt: true } });
+    const b = await db.branch.findUnique({ where: { id: recordId }, select: { description: true, faqs: true, metaTitle: true, metaDescription: true, cityName: true, coverAlt: true, address: true, gallery: true } });
     if (!b) return null;
-    if (field === 'faqs') return JSON.stringify(b.faqs);
-    return b[field as Exclude<Field | 'cityName' | 'coverAlt', 'faqs'>] ?? '';
+    if (field === 'faqs' || field === 'gallery') return JSON.stringify(b[field]);
+    return b[field as Exclude<Field | 'cityName' | 'coverAlt' | 'address', 'faqs'>] ?? '';
   }
   if (field === 'city.name') return (await db.city.findUnique({ where: { id: recordId }, select: { name: true } }))?.name ?? null;
   if (field === 'importPlace.cityName') {
