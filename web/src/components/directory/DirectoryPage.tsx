@@ -9,9 +9,11 @@ import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { CITIES, categoryBySlug, regionBySlug, type Category, type City, type Region } from '@/lib/catalog';
 import { ROUTES } from '@/lib/routes';
-import { BIZ, CITIES_N, FIELDS_N, SEO_TERM, TRUST, countText, directoryFaqs, fmtNum, heDate, heMonth, isoDate } from './copy';
+import { BIZ, CITIES_N, FIELDS_N, SEO_TERM, TRUST, directoryFaqs, fmtNum, heDate, isoDate } from './copy';
 import { Count } from './Count';
-import { getListings, getOverview, type DirectoryCard, type Overview } from './data';
+import { getListings, getOverview, type DirectoryCard } from './data';
+import { headlineRange, priceText } from '@/lib/marketPrices';
+import { marketPrices, marketPricesFor } from '@/lib/server/marketPrices';
 import { EmptyCity } from './EmptyCity';
 import { applySeo } from '@/lib/server/seo';
 import { GuideExpander } from './GuideExpander';
@@ -72,9 +74,10 @@ export async function directoryMetadata(params: DirParams, searchParams: DirSear
   const title = fitTitle([`${noun} ${where}: מחירים והשוואה${pageTag}`, `${noun} ${where}: מחירים${pageTag}`, `${noun} ${where}${pageTag}`]);
   const verifiedPart =
     o.verified === 0 ? null : o.total === 1 ? 'העסק מאומת.' : o.verified === o.total ? 'כולם מאומתים.' : o.verified === 1 ? 'אחד מהם מאומת.' : `${fmtNum(o.verified)} מהם מאומתים.`;
-  const ownPrice = s.category ? o.prices.find(p => p.slug === s.category!.slug && !p.fromRegion) : null;
+  // The market range of the category's most common treatment (never an average computed from our listings).
+  const range = s.category ? headlineRange(await marketPrices(), s.category.slug) : null;
   // One pattern (src/lib/seo/metaRules.ts): what the page lists, the common treatments in Hebrew, the
-  // rating, the average price, then the action. Nothing about booking, contact channels or missing data.
+  // rating, the market range, then the action. Nothing about booking, contact channels or missing data.
   const description =
     o.total === 0
       ? composeDescription(
@@ -87,7 +90,7 @@ export async function directoryMetadata(params: DirParams, searchParams: DirSear
           treatments: o.topTreatments,
           rating: o.averageGoogle != null ? `דירוג ממוצע בגוגל ${o.averageGoogle.toFixed(1)}.` : null,
           facts: [
-            ownPrice ? `המחיר הממוצע הוא ${nis(ownPrice.price)}.` : '',
+            range ? `${range.label} בשוק: ${range.plain}.` : '',
             verifiedPart ?? '',
             s.category && o.cityCategories.filter(c => c.slug !== s.category!.slug).length ? `${where} יש גם ${joinHe(o.cityCategories.filter(c => c.slug !== s.category!.slug).slice(0, 3).map(c => SEO_TERM[c.slug] ?? c.name))}.` : '',
             o.siblings.length ? `יש עוד ${businessPlural(s.category?.slug)} ${joinHe(o.siblings.slice(0, 2).map(x => `ב${seoCityName(x.city.name)}`))}.` : '',
@@ -218,8 +221,8 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
   const pages = pageCount(matched);
   if (q.page > pages) notFound();
   const topCat = [...o.cityCategories].sort((a, b) => b.count - a.count)[0];
-  const ownPrice = s.category ? o.prices.find(p => p.slug === s.category!.slug) : undefined;
-  const headlinePrice = s.category ? ownPrice : (o.prices.find(p => p.slug === topCat?.slug) ?? o.prices[0]);
+  const market = s.category ? await marketPricesFor(s.category.slug) : null;
+  const range = market?.items[0] ?? null;
 
   const answer = (
     <>
@@ -244,11 +247,10 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
           התחום הנפוץ ביותר בעיר הוא {topCat.name}, עם <Count n={topCat.count} f={BIZ} />.
         </>
       )}
-      {headlinePrice && (
+      {range && (
         <>
           {' '}
-          המחיר הממוצע ל{headlinePrice.name} הוא <N>{nis(headlinePrice.price)}</N> {VAT_LABEL_BEFORE}
-          {headlinePrice.fromRegion && ` (לפי המחיר הממוצע באזור ${s.region.name})`}.
+          הטווח המקובל בשוק ל{range.label} הוא <bdi dir="ltr" className="tnum">{priceText(range)}</bdi> {range.unit}, כולל מע״מ.
         </>
       )}
     </>
@@ -257,7 +259,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
   const stats: Array<{ label: string; value: string | null }> = [
     { label: 'עסקים רשומים', value: fmtNum(o.total) },
     { label: 'דירוג ממוצע בגוגל', value: o.averageGoogle?.toFixed(1) ?? null },
-    s.category ? { label: 'מחיר ממוצע', value: ownPrice ? nis(ownPrice.price) : null } : { label: 'תחומי טיפול', value: fmtNum(o.cityCategories.length) },
+    s.category ? { label: 'טווח בשוק', value: range ? priceText(range) : null } : { label: 'תחומי טיפול', value: fmtNum(o.cityCategories.length) },
     { label: 'עסקים מאומתים', value: fmtNum(o.verified) },
   ];
 
@@ -376,7 +378,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
                 )}
               </section>
 
-              <Guide s={s} o={o} />
+              <Guide s={s} market={market} />
 
               <section aria-labelledby="h-related" className={styles.related}>
                 <h2 id="h-related" className={styles.relatedH2}>
@@ -509,11 +511,8 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
 
 // ---------- local guide ----------
 
-function Guide({ s, o }: { s: Scope; o: Overview }) {
+function Guide({ s, market }: { s: Scope; market: Awaited<ReturnType<typeof marketPricesFor>> | null }) {
   const where = `ב${s.city.name}`;
-  const now = new Date();
-  const fallback = o.prices.some(p => p.fromRegion);
-  const citySample = o.prices.filter(p => !p.fromRegion).length;
   return (
     <section aria-labelledby="h-guide" className={styles.guide}>
       <span className={styles.eyebrow}>מדריך מקומי</span>
@@ -536,50 +535,35 @@ function Guide({ s, o }: { s: Scope; o: Overview }) {
           <li>מי הרופא או הרופאה האחראים, והאם הם נמצאים בקליניקה בשעות הטיפול?</li>
         </ul>
 
-        <h3 className={styles.h3}>
-          מחירים אופייניים {where}, {heMonth(now)}
-        </h3>
-        {o.prices.length === 0 ? (
-          <p className={styles.p}>עדיין אין {where} או באזור {s.region.name} מספיק מחירים מפורסמים כדי להציג מחיר ממוצע אמין.</p>
-        ) : (
+        {s.category && market && market.items.length > 0 && (
           <>
+            <h3 className={styles.h3}>טווחי מחירים בשוק ל{s.category.name}</h3>
             <div className={styles.tableWrap}>
               <table className={styles.table}>
-                <caption>
-                  {citySample > 0 ? `מחיר ממוצע של הטיפולים שהעסקים ${where} מפרסמים, ${VAT_LABEL_BEFORE}.` : `מחיר ממוצע באזור ${s.region.name}, ${VAT_LABEL_BEFORE}.`}
-                </caption>
+                <caption>{market.meta.intro}</caption>
                 <thead>
                   <tr>
-                    <th scope="col">תחום</th>
-                    <th scope="col">מחיר ממוצע</th>
-                    <th scope="col">עסקים בעיר</th>
+                    <th scope="col">טיפול</th>
+                    <th scope="col">טווח מחיר</th>
+                    <th scope="col">יחידה</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {o.prices.map(p => (
-                    <tr key={p.slug} data-current={p.slug === s.category?.slug || undefined}>
-                      <th scope="row">{p.name}</th>
+                  {market.items.map(p => (
+                    <tr key={p.label}>
+                      <th scope="row">{p.label}</th>
                       <td>
-                        <span className="ltr">{nis(p.price)}</span>
-                        {p.fromRegion && (
-                          <span className={styles.star} aria-label={`לפי המחיר הממוצע באזור ${s.region.name}`}>
-                            *
-                          </span>
-                        )}
+                        <bdi dir="ltr" className="tnum">{priceText(p)}</bdi>
                       </td>
-                      <td>
-                        <span className="ltr">{fmtNum(p.count)}</span>
-                      </td>
+                      <td>{p.unit}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            {fallback && (
-              <p className={styles.smallPrint}>
-                * אין מספיק מחירים מפורסמים {where} בתחום הזה, ולכן מוצג המחיר הממוצע של אזור {s.region.name}. המחיר הממוצע מחושב אחרי הסרת מחירים חריגים ומוצג רק כשיש לפחות שלושה מחירים.
-              </p>
-            )}
+            <p className={styles.smallPrint}>
+              {market.meta.footnote} <Link href={`/treatments/${s.category.slug}#prices`}>הטווח המלא בדף התחום</Link>.
+            </p>
           </>
         )}
         <p className={`${styles.p} ${styles.lastP}`}>

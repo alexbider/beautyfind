@@ -72,19 +72,13 @@ ol.crumbs { font-size: 13px; }
   .catRow:hover { border-color: var(--teal); background: var(--bg-soft); box-shadow: 0 14px 34px rgba(12, 36, 62, .08); color: var(--navy); }
 }
 .cName { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 2px; }
-.cMedian { flex: none; width: 110px; text-align: right; }
-.cDelta { flex: none; width: 118px; }
+.cRange { flex: none; width: 190px; text-align: right; display: flex; flex-direction: column; gap: 2px; }
+.rangeLabel { font-size: 12.5px; color: var(--subtle); }
 .cCount { flex: none; width: 76px; text-align: right; }
 .cArrow { flex: none; width: 16px; }
 .catName { font-family: var(--font-display); font-size: 19px; line-height: 1.25; color: var(--navy); }
 .catTop { font-size: 13px; color: var(--muted); }
 .median { font-size: 15.5px; font-weight: 700; color: var(--navy); }
-.na { font-size: 12.5px; color: var(--subtle); }
-.delta {
-  display: inline-flex; align-items: center; height: 26px; padding: 0 9px; border-radius: 7px;
-  background: var(--tint); font-size: 12.5px; font-weight: 700; color: var(--teal-deep); white-space: nowrap;
-}
-.delta[data-up] { background: #FFF4F2; color: #A8432C; }
 .count { font-size: 14px; color: var(--muted); }
 .arrow { display: flex; align-items: center; justify-content: center; color: var(--subtle); }
 
@@ -137,7 +131,7 @@ p.faqLede { max-width: 42ch; }
   .cityCard { min-height: 64px; }
   .catRow { gap: 4px 12px; }
   .cName { flex-basis: 100%; min-width: 0; }
-  .cMedian, .cDelta, .cCount { width: auto; text-align: right; }
+  .cRange, .cCount { width: auto; text-align: right; }
   .cArrow { display: none; }
   .para { font-size: 16.5px; }
 }

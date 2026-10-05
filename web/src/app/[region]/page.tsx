@@ -1,4 +1,4 @@
-import { BOOKING_LIVE, VAT_LABEL } from '@/lib/features';
+import { BOOKING_LIVE } from '@/lib/features';
 import type { Metadata } from 'next';
 import { applySeo } from '@/lib/server/seo';
 import { composeDescription, publicMetadata } from '@/lib/seo/meta';
@@ -14,8 +14,9 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { BizTabs, type BizTab } from '@/components/treatments/BizTabs';
 import { CATEGORY_CONTENT } from '@/components/treatments/content';
 import { Faq } from '@/components/treatments/Faq';
-import { BIZ, Count, JsonLd, countText, fmtInt, pageLd, pctDelta } from '@/components/treatments/format';
-import { mean } from '@/lib/stats';
+import { BIZ, Count, JsonLd, countText, fmtInt, pageLd } from '@/components/treatments/format';
+import { headlineRange } from '@/lib/marketPrices';
+import { marketPrices } from '@/lib/server/marketPrices';
 import { businessCount } from '@/lib/seo/businessNoun';
 import { InfoGlyph } from '@/components/treatments/InfoGlyph';
 import { listingBreakdown, ratingMedians, regionFacts } from '@/components/treatments/queries';
@@ -23,7 +24,7 @@ import shared from '@/components/treatments/shared.module.css';
 import { CATEGORIES, REGIONS, citiesOf, cityPageHref, regionBySlug, type RegionSlug } from '@/lib/catalog';
 import { nis } from '@/lib/format';
 import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
-import { listBranches, listingCounts, averagePrices } from '@/lib/server/public';
+import { listBranches, listingCounts } from '@/lib/server/public';
 import styles from './page.module.css';
 
 // Design: project/BeautyFind Region.dc.html
@@ -61,10 +62,9 @@ export default async function RegionPage({ params }: Props) {
   const rc = REGION_CONTENT[r];
   const cities = citiesOf(r);
 
-  const [counts, medRegion, medNational, breakdown, ratings, facts] = await Promise.all([
+  const [counts, market, breakdown, ratings, facts] = await Promise.all([
     listingCounts(),
-    averagePrices(r),
-    averagePrices(),
+    marketPrices(),
     listingBreakdown(),
     ratingMedians(),
     regionFacts(r),
@@ -80,16 +80,10 @@ export default async function RegionPage({ params }: Props) {
     ...tabCities.map(c => listBranches({ region: r, citySlug: c.slug, take: 4 })),
   ]);
 
-  // Categories: regional counts and averages against the national average.
+  // Categories: regional counts, with the market range of each category's most common treatment.
   const catCounts = breakdown.regionCat[r] ?? {};
-  const catRows = CATEGORIES.map((c, i) => {
-    const m = medRegion[c.slug] ?? null;
-    const nat = medNational[c.slug] ?? null;
-    return { ...c, order: i, count: catCounts[c.slug] ?? 0, median: m, national: nat, delta: m != null && nat != null ? pctDelta(m, nat) : null };
-  }).sort((a, b) => b.count - a.count || a.order - b.order);
+  const catRows = CATEGORIES.map((c, i) => ({ ...c, order: i, count: catCounts[c.slug] ?? 0, range: headlineRange(market, c.slug) })).sort((a, b) => b.count - a.count || a.order - b.order);
   const activeCats = catRows.filter(c => c.count > 0).length;
-  const deltas = catRows.map(c => c.delta).filter((d): d is number => d != null);
-  const regionDelta = mean(deltas);
 
   const stats: Array<{ label: string; value: string; note: string }> = [
     { label: 'עסקים באינדקס', value: fmtInt(regionTotal), note: counts.total > 0 ? `${Math.round((regionTotal / counts.total) * 100)}% מהאינדקס` : 'בכל הארץ' },
@@ -97,10 +91,6 @@ export default async function RegionPage({ params }: Props) {
   ];
   const rating = ratings.region[r];
   if (rating != null) stats.push({ label: 'דירוג ממוצע בגוגל', value: rating.toFixed(1), note: 'מתוך 5' });
-  if (regionDelta != null) {
-    const d = Math.round(regionDelta);
-    stats.push({ label: 'מול המחיר הממוצע הארצי', value: `${d > 0 ? '+' : ''}${d}%`, note: 'הפער הממוצע בין התחומים' });
-  }
 
   // WhatsApp and phone for the phone card's contact buttons.
   const contacts = await cardExtras([...regionTop.items, ...cityTops.flatMap(c => c.items)].map(c => c.id));
@@ -229,8 +219,7 @@ export default async function RegionPage({ params }: Props) {
           </div>
           <div aria-hidden="true" className={styles.catHeader}>
             <span className={styles.cName}>תחום</span>
-            <span className={styles.cMedian}>מחיר ממוצע באזור</span>
-            <span className={styles.cDelta}>מול הארצי</span>
+            <span className={styles.cRange}>טווח מחיר בשוק</span>
             <span className={styles.cCount}>עסקים</span>
             <span className={styles.cArrow} />
           </div>
@@ -242,19 +231,12 @@ export default async function RegionPage({ params }: Props) {
                     <span className={styles.catName}>{c.name}</span>
                     <span className={styles.catTop}>{CATEGORY_CONTENT[c.slug]?.examples}</span>
                   </span>
-                  <span className={styles.cMedian}>
-                    {c.median != null ? (
-                      <span className={`${styles.median} ltr tnum`}>{nis(c.median)}</span>
-                    ) : (
-                      <span className={styles.na}>אין מספיק מחירים</span>
-                    )}
-                  </span>
-                  <span className={styles.cDelta}>
-                    {c.delta != null && c.national != null && (
-                      <span className={`${styles.delta} ltr tnum`} data-up={c.delta >= 0 || undefined}>
-                        {c.delta > 0 ? '+' : ''}
-                        {c.delta}% מול {nis(c.national)}
-                      </span>
+                  <span className={styles.cRange}>
+                    {c.range && (
+                      <>
+                        <bdi dir="ltr" className={`${styles.median} tnum`}>{c.range.text}</bdi>
+                        <span className={styles.rangeLabel}>{c.range.label}</span>
+                      </>
                     )}
                   </span>
                   <span className={`${styles.cCount} ${styles.count}`}>
@@ -269,7 +251,7 @@ export default async function RegionPage({ params }: Props) {
             ))}
           </ul>
           <p className={shared.note}>
-            המחיר הממוצע מתפריטי המחירים שהעסקים באזור מפרסמים, אחרי הסרת מחירים חריגים. בשקלים, {VAT_LABEL}. הפער מחושב מול המחיר הממוצע הארצי באותו תחום, ותחום עם פחות משלושה מחירים מוצג בלי מחיר ממוצע.
+            טווח המחיר בשוק של הטיפול הנפוץ בכל תחום, בשקלים כולל מע״מ, מתוך מחירונים ציבוריים, כתבות צרכנות וסקרי מחירים בישראל. הטווח המלא לכל תחום נמצא בדף התחום. המחירים בפרופיל של כל עסק הם המחירים שהעסק פרסם.
           </p>
         </section>
 

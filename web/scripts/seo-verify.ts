@@ -64,7 +64,7 @@ interface PageReport {
   ogOk: boolean;
   jsonLd: { blocks: number; parseErrors: number; types: string[]; expectedOk: boolean; duplicateIds: string[] };
   images: { total: number; missingAlt: number; emptyAltNotDecorative: number; missingSize: number };
-  text: { missingInfo: number; latin: string[]; dashes: number; emoji: number; spelling: number; straightQuotes: number; wording: string[] };
+  text: { missingInfo: number; latin: string[]; dashes: number; emoji: number; spelling: number; straightQuotes: number; wording: string[]; leftovers: string[] };
   /** Latin street words, Latin city names or other Latin words in the page's <address> elements and the schema's streetAddress. */
   addressProblems: string[];
   internalLinks: string[];
@@ -82,6 +82,15 @@ const TEMPLATE_TYPES: Record<string, string[]> = {
   content: ['BreadcrumbList'],
   other: [],
 };
+/** Phrases of the retired listing-average price sections, and staff-only fields of the market price data, that no public page may carry. */
+const LEFTOVER_PATTERNS: Array<{ re: RegExp; label: string }> = [
+  { re: /מול הארצי/u, label: 'מול הארצי' },
+  { re: /מחיר ממוצע באזור/u, label: 'מחיר ממוצע באזור' },
+  { re: /אין מספיק מחירים/u, label: 'אין מספיק מחירים' },
+  { re: /\bconfidence\b/, label: 'confidence' },
+  { re: /\bsourceYear\b/, label: 'sourceYear' },
+  { re: /\b(?:midrag|bizportal|kamaze|ice|walla|kipa|hon|b144|ynet|d)\.co\.il\b/i, label: 'source domain' },
+];
 const BUSINESS_TYPES = new Set(['HairSalon', 'NailSalon', 'BeautySalon', 'DaySpa', 'Dentist', 'MedicalClinic', 'HealthAndBeautyBusiness', 'LocalBusiness', 'MedicalBusiness']);
 const REGIONS = ['north', 'haifa', 'sharon', 'dan', 'jerusalem', 'shfela', 'south'];
 const CATEGORIES = ['facials', 'medical-aesthetics', 'plastic-surgery', 'dental-aesthetics', 'hair-restoration', 'hair-salons', 'hair-removal', 'brows-lashes', 'makeup', 'permanent-makeup', 'nails', 'spa-massage', 'body-contouring', 'tanning'];
@@ -257,7 +266,17 @@ function analyse(path: string, status: number, redirectTo: string | null, html: 
     ogOk: Object.values(og).every(Boolean),
     jsonLd: { blocks: ldBlocks.length, parseErrors, types, expectedOk, duplicateIds: dupIds },
     images: { total: imgs.length, missingAlt, emptyAltNotDecorative, missingSize },
-    text: { missingInfo: problems.filter(p => p.code === 'missing_info').length, latin, dashes: emDashes, emoji: problems.filter(p => p.code === 'emoji').length, spelling: problems.filter(p => p.code === 'spelling').length, straightQuotes, wording: [...new Set(problems.filter(p => p.code === 'wording').map(p => p.match))] },
+    text: {
+      missingInfo: problems.filter(p => p.code === 'missing_info').length,
+      latin,
+      dashes: emDashes,
+      emoji: problems.filter(p => p.code === 'emoji').length,
+      spelling: problems.filter(p => p.code === 'spelling').length,
+      straightQuotes,
+      wording: [...new Set(problems.filter(p => p.code === 'wording').map(p => p.match))],
+      // The whole HTML, not only the visible text: a staff field or a source domain in page data or schema counts too.
+      leftovers: LEFTOVER_PATTERNS.filter(p => p.re.test(html)).map(p => p.label),
+    },
     addressProblems: [...new Set(addresses.flatMap(a => addressProblems(a)))],
     internalLinks,
   };
@@ -336,6 +355,8 @@ async function main() {
     textLatin: sm.reduce((n, p) => n + p.text.latin.length, 0),
     textWordingPages: sm.filter(p => p.text.wording.length > 0).length,
     textWordingByPhrase: Object.fromEntries([...new Set(sm.flatMap(p => p.text.wording))].map(w => [w, sm.filter(p => p.text.wording.includes(w)).length])),
+    textLeftoverPages: sm.filter(p => p.text.leftovers.length > 0).length,
+    textLeftoversByPhrase: Object.fromEntries([...new Set(sm.flatMap(p => p.text.leftovers))].map(w => [w, sm.filter(p => p.text.leftovers.includes(w)).length])),
     addressLatin: sm.filter(p => p.addressProblems.length > 0).length,
     textDashes: sm.reduce((n, p) => n + p.text.dashes, 0),
     textEmoji: sm.reduce((n, p) => n + p.text.emoji, 0),
@@ -367,6 +388,7 @@ async function main() {
     ['Text: sentences about missing data', summary.textMissingInfo],
     ['Text: English words inside Hebrew (distinct per page)', summary.textLatin],
     ['Pages with banned wording (אשר, הינו, כמו כן, במידה ו, אמצעי, דירוג Google, ב־Google, חציון, ₪ before the number, תל אביב–יפו)', summary.textWordingPages],
+    ['Pages with leftovers of the old price section or staff-only price fields (מול הארצי, מחיר ממוצע באזור, אין מספיק מחירים, confidence, source domains)', summary.textLeftoverPages],
     ['Addresses with Latin street words, Latin city names or other Latin (pages)', summary.addressLatin],
     ['Text: em dashes', summary.textDashes],
     ['Text: emoji', summary.textEmoji],
@@ -375,7 +397,8 @@ async function main() {
     ['Profiles with fewer than 3 inbound links', `${summary.profilesUnder3Inbound}/${summary.profiles}`],
   ];
   const wordingRows = Object.entries(summary.textWordingByPhrase as Record<string, number>).sort((x, y) => y[1] - x[1]).map(([w, n]) => `| ${w} | ${n} |`).join('\n');
-  let md = `# SEO verification: ${LABEL}\n\n${BASE} at ${summary.at}, ${summary.pagesCrawled} pages in ${summary.seconds}s\n\n| Check | Value |\n|---|---|\n${rows.map(r => `| ${r[0]} | ${r[1]} |`).join('\n')}\n${wordingRows ? `\nBanned wording, pages per phrase:\n\n| Phrase | Pages |\n|---|---|\n${wordingRows}\n` : ''}`;
+  const leftoverRows = Object.entries(summary.textLeftoversByPhrase as Record<string, number>).sort((x, y) => y[1] - x[1]).map(([w, n]) => `| ${w} | ${n} | ${sm.filter(p => p.text.leftovers.includes(w)).slice(0, 5).map(p => p.path).join(' ')} |`).join('\n');
+  let md = `# SEO verification: ${LABEL}\n\n${BASE} at ${summary.at}, ${summary.pagesCrawled} pages in ${summary.seconds}s\n\n| Check | Value |\n|---|---|\n${rows.map(r => `| ${r[0]} | ${r[1]} |`).join('\n')}\n${wordingRows ? `\nBanned wording, pages per phrase:\n\n| Phrase | Pages |\n|---|---|\n${wordingRows}\n` : ''}${leftoverRows ? `\nLeftovers of the old price section, pages per phrase:\n\n| Phrase | Pages | First pages |\n|---|---|---|\n${leftoverRows}\n` : ''}`;
   if (COMPARE) {
     const before = JSON.parse(readFileSync(COMPARE, 'utf8')) as { summary: typeof summary };
     const b = before.summary;

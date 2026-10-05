@@ -53,7 +53,7 @@ export interface SitePage {
 export function sitePages(): SitePage[] {
   const out: SitePage[] = [
     { path: '/', name: 'דף הבית', kind: 'page', defaultTitle: 'BeautyFind · מכוני יופי וקליניקות אסתטיקה בישראל', defaultDescription: 'מצאו מכוני יופי, קליניקות לאסתטיקה רפואית, מספרות וספא בכל רחבי ישראל.', keywordHint: 'קליניקות אסתטיקה' },
-    { path: '/treatments', name: 'טיפולים', kind: 'page', defaultTitle: '14 תחומי טיפול', defaultDescription: '14 תחומי הטיפול באינדקס BeautyFind, מחירים ממוצעים ומי מורשה לבצע כל טיפול.', keywordHint: 'טיפולים אסתטיים' },
+    { path: '/treatments', name: 'טיפולים', kind: 'page', defaultTitle: '14 תחומי טיפול', defaultDescription: '14 תחומי הטיפול באינדקס BeautyFind, טווחי מחירים בשוק ומי מורשה לבצע כל טיפול.', keywordHint: 'טיפולים אסתטיים' },
     { path: '/regions', name: 'אזורים', kind: 'page', defaultTitle: 'אזורים', defaultDescription: null, keywordHint: 'יופי לפי אזור' },
     { path: '/search', name: 'חיפוש', kind: 'page', defaultTitle: 'חיפוש', defaultDescription: null, keywordHint: '' },
     { path: '/about', name: 'אודות', kind: 'page', defaultTitle: 'אודות BeautyFind', defaultDescription: null, keywordHint: '' },
@@ -68,8 +68,8 @@ export function sitePages(): SitePage[] {
     { path: '/accessibility', name: 'הצהרת נגישות', kind: 'legal', defaultTitle: 'הצהרת נגישות', defaultDescription: null, keywordHint: '' },
     { path: '/terms', name: 'תקנון', kind: 'legal', defaultTitle: 'תקנון', defaultDescription: null, keywordHint: '' },
     { path: '/privacy', name: 'מדיניות פרטיות', kind: 'legal', defaultTitle: 'מדיניות פרטיות', defaultDescription: null, keywordHint: '' },
-    ...REGIONS.map(r => ({ path: `/${r.slug}`, name: r.name, kind: 'region' as const, defaultTitle: `יופי ואסתטיקה ב${r.name}`, defaultDescription: `עסקי יופי ואסתטיקה ב${r.name}: עסקים, מחירים ממוצעים והעסקים המדורגים ביותר באזור.`, keywordHint: `קליניקות ב${r.name}` })),
-    ...CATEGORIES.map(c => ({ path: `/treatments/${c.slug}`, name: c.name, kind: (/רפואי|הזרקות|לייזר/u.test(c.group) || /רפואי|הזרקות|לייזר/u.test(c.name) ? 'medical' : 'category') as SitePage['kind'], defaultTitle: `${c.name} בישראל`, defaultDescription: `${c.name} בישראל: מה כולל התחום, מחירים ממוצעים, מי מורשה לבצע, והעסקים המדורגים ביותר בכל אזור.`, keywordHint: c.name })),
+    ...REGIONS.map(r => ({ path: `/${r.slug}`, name: r.name, kind: 'region' as const, defaultTitle: `יופי ואסתטיקה ב${r.name}`, defaultDescription: `עסקי יופי ואסתטיקה ב${r.name}: עסקים, טווחי מחירים בשוק והעסקים המדורגים ביותר באזור.`, keywordHint: `קליניקות ב${r.name}` })),
+    ...CATEGORIES.map(c => ({ path: `/treatments/${c.slug}`, name: c.name, kind: (/רפואי|הזרקות|לייזר/u.test(c.group) || /רפואי|הזרקות|לייזר/u.test(c.name) ? 'medical' : 'category') as SitePage['kind'], defaultTitle: `${c.name} בישראל`, defaultDescription: `${c.name} בישראל: מה כולל התחום, טווחי מחירים בשוק, מי מורשה לבצע, והעסקים המדורגים ביותר בכל אזור.`, keywordHint: c.name })),
   ];
   return out;
 }

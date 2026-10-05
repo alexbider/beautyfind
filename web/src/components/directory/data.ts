@@ -5,7 +5,7 @@ import { cache } from 'react';
 import { CATEGORIES, citiesOf, type City, type RegionSlug } from '@/lib/catalog';
 import { db } from '@/lib/server/db';
 import { mean } from '@/lib/stats';
-import { PUBLIC_WHERE, listBranches, averagePrices, averagePricesForCity, type ListingCard } from '@/lib/server/public';
+import { PUBLIC_WHERE, listBranches, type ListingCard } from '@/lib/server/public';
 import { matchService } from '@/lib/import/services';
 import { hebrewTreatmentNames } from '@/lib/seo/treatmentNames';
 import { PAGE, type DirQuery, type FilterKey } from './params';
@@ -35,13 +35,6 @@ const FILTER_WHERE: Record<FilterKey, Prisma.BranchWhereInput> = {
 };
 
 
-export interface PriceRow {
-  slug: string;
-  name: string;
-  price: number;
-  fromRegion: boolean; // the city had too few valid prices, the region average is shown
-  count: number; // listings in this city offering the category
-}
 
 export interface Overview {
   total: number; // listings in scope, no filters
@@ -54,7 +47,6 @@ export interface Overview {
   /** Other cities of the region with listings in scope, most listings first. */
   siblings: Array<{ city: City; count: number }>;
   regionTotal: number;
-  prices: PriceRow[];
   /** The treatments most of the listings in scope publish, in Hebrew, for the meta description (up to three). */
   topTreatments: string[];
 }
@@ -66,7 +58,7 @@ export const getOverview = cache(async (region: RegionSlug, citySlug: string, ca
   const s: DirScope = { region, city, category };
   const catFilter: Prisma.BranchWhereInput[] = category ? [offers(category)] : [];
 
-  const [total, rated, fc, byCat, bySibling, regionTotal, cityMed, regionMed, cityRows, byTreatment] = await Promise.all([
+  const [total, rated, fc, byCat, bySibling, regionTotal, cityRows, byTreatment] = await Promise.all([
     db.branch.count({ where: scopeWhere(s) }),
     db.branch.findMany({ where: scopeWhere(s), select: { googleRating: true, updatedAt: true } }),
     Promise.all((Object.keys(FILTER_WHERE) as FilterKey[]).map(async k => [k, await db.branch.count({ where: scopeWhere(s, [FILTER_WHERE[k]]) })] as const)),
@@ -77,8 +69,6 @@ export const getOverview = cache(async (region: RegionSlug, citySlug: string, ca
     }),
     db.branch.groupBy({ by: ['cityId'], where: { AND: [PUBLIC_WHERE, { regionSlug: region }, { cityId: { not: null } }, ...catFilter] }, _count: { _all: true } }),
     db.branch.count({ where: { AND: [PUBLIC_WHERE, { regionSlug: region }, ...catFilter] } }),
-    averagePricesForCity(citySlug),
-    averagePrices(region),
     db.city.findMany({ where: { regionSlug: region }, select: { id: true, slug: true } }),
     db.treatment.groupBy({
       by: ['name', 'categorySlug'],
@@ -105,13 +95,6 @@ export const getOverview = cache(async (region: RegionSlug, citySlug: string, ca
     .map(c => ({ city: c, count: countBySlug.get(c.slug)! }))
     .sort((a, b) => b.count - a.count);
 
-  const prices: PriceRow[] = [];
-  for (const c of cityCategories) {
-    const own = cityMed[c.slug] ?? null;
-    const reg = regionMed[c.slug] ?? null;
-    if (own != null) prices.push({ slug: c.slug, name: c.name, price: own, fromRegion: false, count: c.count });
-    else if (reg != null) prices.push({ slug: c.slug, name: c.name, price: reg, fromRegion: true, count: c.count });
-  }
 
   return {
     total,
@@ -122,7 +105,6 @@ export const getOverview = cache(async (region: RegionSlug, citySlug: string, ca
     cityCategories,
     siblings,
     regionTotal,
-    prices,
     // A city + category lead names only treatments of that category's vocabulary (src/lib/import/services.ts):
     // a treatment the vocabulary places elsewhere is left out, one it does not know counts only when the record
     // itself carries the category.

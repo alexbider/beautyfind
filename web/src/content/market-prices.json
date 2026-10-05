@@ -1,0 +1,916 @@
+{
+  "meta": {
+    "version": 2,
+    "updated": "2026-10",
+    "currency": "ILS",
+    "includesVat": true,
+    "title": "טווחי מחירים בשוק",
+    "intro": "טווחים מקובלים בישראל לטיפולים הנפוצים בתחום, בשקלים וכוללים מע״מ. הנתונים נאספו ממחירונים ציבוריים, כתבות צרכנות וסקרי מחירים.",
+    "footnote": "המחיר בפועל תלוי בעסק, באזור, בניסיון המטפל ובהיקף הטיפול. הטווחים אינם הצעת מחיר, וכדאי לבקש מהעסק מחיר מלא לפני הטיפול.",
+    "wideRangeLabel": "טווח רחב",
+    "wideRangeTooltip": "המחיר משתנה מאוד בין מטפלים ולפי היקף הטיפול.",
+    "medicalLabel": "טיפול רפואי"
+  },
+  "categories": {
+    "facials": [
+      {
+        "label": "טיפול פנים קלאסי",
+        "min": 330,
+        "max": 500,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "טיפול באקנה",
+        "min": 300,
+        "max": 350,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium",
+        "note": "בדרך כלל נדרשים 2 עד 3 טיפולים"
+      },
+      {
+        "label": "פילינג",
+        "min": 250,
+        "max": 350,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      },
+      {
+        "label": "מזותרפיה לפנים, ללא הזרקות",
+        "min": 200,
+        "max": 1000,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium",
+        "note": "רוב המחירים בשוק נעים בין 450 ל־550 ₪"
+      },
+      {
+        "label": "טיפול בגלי רדיו (RF) לפנים",
+        "min": 700,
+        "max": 1200,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il",
+          "bizportal.co.il"
+        ],
+        "sourceYear": 2026,
+        "confidence": "high"
+      }
+    ],
+    "medical-aesthetics": [
+      {
+        "label": "בוטוקס",
+        "min": 600,
+        "max": 1200,
+        "unit": "לאזור",
+        "medical": true,
+        "sources": [
+          "kamaze.co.il",
+          "ice.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      },
+      {
+        "label": "חומצה היאלורונית",
+        "min": 1500,
+        "max": 3800,
+        "unit": "למזרק",
+        "medical": true,
+        "sources": [
+          "bizportal.co.il",
+          "ice.co.il"
+        ],
+        "sourceYear": 2026,
+        "confidence": "high"
+      },
+      {
+        "label": "סקין בוסטר",
+        "min": 1400,
+        "max": 1500,
+        "unit": "למזרק",
+        "medical": true,
+        "sources": [
+          "kamaze.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium",
+        "note": "בדרך כלל בסדרה של 3 טיפולים"
+      }
+    ],
+    "plastic-surgery": [
+      {
+        "label": "ניתוח אף אסתטי",
+        "min": 15000,
+        "max": 45000,
+        "unit": "לניתוח",
+        "medical": true,
+        "sources": [
+          "bizportal.co.il",
+          "walla.co.il"
+        ],
+        "sourceYear": 2026,
+        "confidence": "low",
+        "note": "המחירונים בשוק סותרים זה את זה, והמחיר תלוי מאוד במנתח ובמורכבות"
+      },
+      {
+        "label": "הגדלת חזה",
+        "min": 10000,
+        "max": 30000,
+        "unit": "לניתוח",
+        "medical": true,
+        "sources": [
+          "ice.co.il"
+        ],
+        "sourceYear": 2024,
+        "confidence": "medium"
+      },
+      {
+        "label": "הרמת חזה",
+        "min": 26000,
+        "max": 35000,
+        "unit": "לניתוח",
+        "medical": true,
+        "sources": [
+          "walla.co.il"
+        ],
+        "sourceYear": 2021,
+        "confidence": "low"
+      },
+      {
+        "label": "שאיבת שומן",
+        "min": 15000,
+        "max": 32000,
+        "unit": "לאזור",
+        "medical": true,
+        "sources": [
+          "bizportal.co.il"
+        ],
+        "sourceYear": 2026,
+        "confidence": "high",
+        "note": "כל אזור מתומחר בנפרד"
+      },
+      {
+        "label": "מתיחת בטן",
+        "min": 30000,
+        "max": 50000,
+        "unit": "לניתוח",
+        "medical": true,
+        "sources": [
+          "ice.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      },
+      {
+        "label": "מתיחת פנים",
+        "min": 25000,
+        "max": 40000,
+        "unit": "לניתוח",
+        "medical": true,
+        "sources": [
+          "ice.co.il",
+          "walla.co.il"
+        ],
+        "sourceYear": 2024,
+        "confidence": "medium"
+      }
+    ],
+    "dental-aesthetics": [
+      {
+        "label": "הלבנת שיניים במרפאה",
+        "min": 1500,
+        "max": 3500,
+        "unit": "לטיפול",
+        "medical": true,
+        "sources": [
+          "midrag.co.il",
+          "d.co.il",
+          "kamaze.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "ציפוי חרסינה (למינייט)",
+        "min": 2000,
+        "max": 5000,
+        "unit": "לשן",
+        "medical": true,
+        "sources": [
+          "midrag.co.il",
+          "d.co.il",
+          "kamaze.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "ציפוי קומפוזיט",
+        "min": 400,
+        "max": 850,
+        "unit": "לשן",
+        "medical": true,
+        "sources": [
+          "kamaze.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      },
+      {
+        "label": "כתר חרסינה",
+        "min": 1600,
+        "max": 3300,
+        "unit": "לשן",
+        "medical": true,
+        "sources": [
+          "d.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      },
+      {
+        "label": "יישור שיניים שקוף (קשתיות)",
+        "min": 15000,
+        "max": 25000,
+        "unit": "לטיפול מלא",
+        "medical": true,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      }
+    ],
+    "hair-restoration": [
+      {
+        "label": "השתלת שיער",
+        "min": 10,
+        "max": 15,
+        "unit": "לזקיק",
+        "medical": true,
+        "sources": [
+          "bizportal.co.il"
+        ],
+        "sourceYear": 2026,
+        "confidence": "high",
+        "note": "השתלה טיפוסית כוללת אלפי זקיקים"
+      },
+      {
+        "label": "השתלת שיער באזור המפרצים",
+        "min": 10000,
+        "max": 10000,
+        "unit": "לטיפול",
+        "medical": true,
+        "sources": [
+          "kamaze.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      },
+      {
+        "label": "טיפול PRP לשיער",
+        "min": 1200,
+        "max": 1600,
+        "unit": "לטיפול",
+        "medical": true,
+        "sources": [
+          "kipa.co.il"
+        ],
+        "sourceYear": 2024,
+        "confidence": "medium",
+        "note": "בסדרה המחיר לטיפול יורד"
+      },
+      {
+        "label": "עלויות נלוות להשתלה",
+        "min": 500,
+        "max": 5500,
+        "unit": "סה״כ",
+        "medical": true,
+        "sources": [
+          "bizportal.co.il"
+        ],
+        "sourceYear": 2026,
+        "confidence": "high",
+        "note": "ייעוץ, תרופות, טיפולי מעקב ו־PRP"
+      }
+    ],
+    "hair-salons": [
+      {
+        "label": "תספורת אישה",
+        "min": 80,
+        "max": 300,
+        "unit": "לביקור",
+        "medical": false,
+        "sources": [
+          "hon.co.il",
+          "b144.co.il"
+        ],
+        "sourceYear": 2023,
+        "confidence": "medium"
+      },
+      {
+        "label": "תספורת גבר",
+        "min": 50,
+        "max": 190,
+        "unit": "לביקור",
+        "medical": false,
+        "sources": [
+          "d.co.il",
+          "hon.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      },
+      {
+        "label": "צבע לשיער קצר",
+        "min": 110,
+        "max": 270,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "d.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      },
+      {
+        "label": "צבע לשיער ארוך",
+        "min": 220,
+        "max": 490,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "d.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      },
+      {
+        "label": "החלקה אורגנית",
+        "min": 600,
+        "max": 2300,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "d.co.il",
+          "hon.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      },
+      {
+        "label": "פן",
+        "min": 40,
+        "max": 150,
+        "unit": "לביקור",
+        "medical": false,
+        "sources": [
+          "d.co.il",
+          "hon.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      }
+    ],
+    "hair-removal": [
+      {
+        "label": "לייזר באזור קטן",
+        "min": 80,
+        "max": 200,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high",
+        "note": "שפם, בית שחי, מפשעות"
+      },
+      {
+        "label": "לייזר באזור גדול",
+        "min": 250,
+        "max": 500,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il",
+          "kamaze.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high",
+        "note": "רגליים, גב, ידיים"
+      },
+      {
+        "label": "IPL",
+        "min": 100,
+        "max": 400,
+        "unit": "לאזור לטיפול",
+        "medical": false,
+        "sources": [
+          "b144.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      },
+      {
+        "label": "סדרת לייזר לכמה אזורים",
+        "min": 6500,
+        "max": 8000,
+        "unit": "לסדרה",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      }
+    ],
+    "brows-lashes": [
+      {
+        "label": "עיצוב גבות בשעווה",
+        "min": 50,
+        "max": 100,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "הרמת גבות",
+        "min": 200,
+        "max": 300,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "הרמת ריסים",
+        "min": 250,
+        "max": 350,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "הלחמת ריסים",
+        "min": 300,
+        "max": 500,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "מילוי הלחמת ריסים",
+        "min": 180,
+        "max": 250,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      }
+    ],
+    "makeup": [
+      {
+        "label": "איפור ערב",
+        "min": 200,
+        "max": 800,
+        "unit": "לאירוע",
+        "medical": false,
+        "sources": [
+          "midrag.co.il",
+          "d.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "איפור לבת מצווה",
+        "min": 150,
+        "max": 350,
+        "unit": "לאירוע",
+        "medical": false,
+        "sources": [
+          "midrag.co.il",
+          "d.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "איפור כלה",
+        "min": 1000,
+        "max": 3500,
+        "unit": "לאירוע",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "ליווי כלה לאירוע",
+        "min": 900,
+        "max": 1800,
+        "unit": "לאירוע",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      }
+    ],
+    "permanent-makeup": [
+      {
+        "label": "גבות בשיטת פודרה",
+        "min": 900,
+        "max": 1400,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "גבות בשיטת השערה או מיקרובליידינג",
+        "min": 1000,
+        "max": 2000,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "פיגמנט שפתיים, קונטור",
+        "min": 800,
+        "max": 1200,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "פיגמנט שפתיים, כולל מילוי צבע",
+        "min": 1000,
+        "max": 2000,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "אייליינר קבוע",
+        "min": 1700,
+        "max": 2300,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      },
+      {
+        "label": "הסרת קעקוע גבות",
+        "min": 300,
+        "max": 400,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high",
+        "note": "בדרך כלל נדרשים 3 עד 8 טיפולים"
+      }
+    ],
+    "nails": [
+      {
+        "label": "מניקור קלאסי",
+        "min": 80,
+        "max": 170,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "d.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      },
+      {
+        "label": "לק ג׳ל",
+        "min": 120,
+        "max": 250,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "הסרת לק ג׳ל",
+        "min": 50,
+        "max": 80,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "בניית ציפורניים בג׳ל",
+        "min": 130,
+        "max": 300,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "d.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      },
+      {
+        "label": "מילוי ציפורניים בג׳ל",
+        "min": 75,
+        "max": 160,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "d.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      },
+      {
+        "label": "מניקור ופדיקור",
+        "min": 150,
+        "max": 250,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "d.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      },
+      {
+        "label": "פדיקור רפואי",
+        "min": 200,
+        "max": 270,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      }
+    ],
+    "spa-massage": [
+      {
+        "label": "עיסוי שוודי, 60 דקות",
+        "min": 240,
+        "max": 400,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il",
+          "d.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "עיסוי רקמות עמוק, 60 דקות",
+        "min": 200,
+        "max": 350,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il",
+          "d.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "עיסוי רפואי, 60 דקות",
+        "min": 250,
+        "max": 390,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il",
+          "d.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "עיסוי באבנים חמות",
+        "min": 300,
+        "max": 450,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      },
+      {
+        "label": "שיאצו",
+        "min": 250,
+        "max": 450,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "midrag.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      },
+      {
+        "label": "חבילת ספא זוגית",
+        "min": 400,
+        "max": 700,
+        "unit": "לזוג",
+        "medical": false,
+        "sources": [
+          "d.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium",
+        "note": "עיסוי זוגי, ארוחת בוקר ושימוש במתקנים"
+      }
+    ],
+    "body-contouring": [
+      {
+        "label": "סדרת טיפולי מכשור להצרת היקפים",
+        "min": 5500,
+        "max": 5500,
+        "unit": "לסדרה של 12 עד 15 טיפולים",
+        "medical": false,
+        "sources": [
+          "ynet.co.il"
+        ],
+        "sourceYear": 2019,
+        "confidence": "low"
+      },
+      {
+        "label": "המסת שומן בגלי רדיו",
+        "min": 20000,
+        "max": null,
+        "unit": "לטיפול",
+        "medical": true,
+        "sources": [
+          "walla.co.il"
+        ],
+        "sourceYear": 2022,
+        "confidence": "low"
+      },
+      {
+        "label": "שאיבת שומן",
+        "min": 15000,
+        "max": 32000,
+        "unit": "לאזור",
+        "medical": true,
+        "sources": [
+          "bizportal.co.il"
+        ],
+        "sourceYear": 2026,
+        "confidence": "high",
+        "note": "כל אזור מתומחר בנפרד"
+      },
+      {
+        "label": "מתיחת בטן",
+        "min": 30000,
+        "max": 50000,
+        "unit": "לניתוח",
+        "medical": true,
+        "sources": [
+          "ice.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      }
+    ],
+    "tanning": [
+      {
+        "label": "שיזוף בהתזה",
+        "min": 90,
+        "max": 190,
+        "unit": "לטיפול",
+        "medical": false,
+        "sources": [
+          "d.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "שיזוף בהתזה, כרטיסייה של 5",
+        "min": 260,
+        "max": 500,
+        "unit": "לכרטיסייה",
+        "medical": false,
+        "sources": [
+          "d.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "שיזוף בהתזה, כרטיסייה של 10",
+        "min": 520,
+        "max": 850,
+        "unit": "לכרטיסייה",
+        "medical": false,
+        "sources": [
+          "d.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "מיטת שיזוף",
+        "min": 30,
+        "max": 70,
+        "unit": "לכניסה",
+        "medical": false,
+        "sources": [
+          "d.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "high"
+      },
+      {
+        "label": "מנוי חודשי למיטת שיזוף",
+        "min": 300,
+        "max": 700,
+        "unit": "לחודש",
+        "medical": false,
+        "sources": [
+          "d.co.il"
+        ],
+        "sourceYear": 2025,
+        "confidence": "medium"
+      }
+    ]
+  }
+}
