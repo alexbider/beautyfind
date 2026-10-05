@@ -1,0 +1,60 @@
+run 92bd2b6b-77c8-4982-b7ac-72b020d0e34c "ניקוי תיאורים 13/17" status=done started=2026-10-05T12:33:54.867Z finished=2026-10-05T13:24:23.431Z
+counters: {"improved":50,"postTasks":16,"postPhotos":15,"filled_faqs":30,"filled_prices":2,"editorialCalls":50,"youtubeRequests":0,"editorial_failed":7,"editorial_written":43,"filled_description":30,"filled_meta_title_cleared":17,"filled_meta_description_cleared":50}
+listings in scope: 50, import records: 50, drafts written in this run: 50
+by model: claude-sonnet-5: 43, template: 7
+by tier: normal: 34, sparse: 11, rich: 5
+proofread: yes: 40, no: 10
+by error: (none): 43, unsupported_claims: הסטודיו; או בוואטסאפ; איך קובעים תור: בט: 1, unsupported_claims: חבילות ספא שמשלבות כמה טיפולים יחד; מה ש: 1, unsupported_claims: הלחמת ריסים להארכה ולעיבוי המראה; דירוג : 1, unsupported_claims: היישור מוצע גם בשיטה הקלאסית וגם באמצעות: 1, unsupported_claims: צבע לשיער ב־250 ₪ לצביעה מלאה של השיער; : 1, unsupported_claims: אתי פרץ הסרת שיער בלייזר/ טיפול הוא מכון: 1, unsupported_claims: איפור, המיועד לאירועים ולהזדמנויות שונות: 1
+words: min 30, median 85, max 197
+cost recorded on the records: 3.579 USD
+  claude-sonnet-5  normal words=  95 faqs= 6 pr=yes | 1d2361c5-6847-4599-a033-d6691d323199 אמירה צדקיהו - קוסמטיקה פרא רפואית מתקדמ
+  claude-sonnet-5  normal words= 103 faqs= 6 pr=yes violations=repeat:address | meta:short:128 | 16989dc3-e8e7-4d1c-a47a-915334f9d54f ד"ר צחי שטרק - מרפאת שיניים בירושלים
+  claude-sonnet-5  normal words=  72 faqs= 5 pr=yes | 0b1b6859-eacd-4f5b-9266-48c86d9eb1ba אתי קוסמטיקה
+  claude-sonnet-5  normal words=  92 faqs= 5 pr=yes | 6013bc78-dee6-489a-ba18-3cb97249d91d אניגמה- מרכז לאסתטיקה מתקדמת
+  claude-sonnet-5  normal words=  80 faqs= 6 pr=yes | 18fa65ac-50af-45a2-92e3-60d29b5c630c Merizian's Nailux
+  claude-sonnet-5  normal words=  70 faqs= 6 pr=yes | bf12f724-845c-4018-a0ac-ca5567cdf258 EL Studio
+  claude-sonnet-5  normal words= 122 faqs= 6 pr=yes | cd94a57a-e52c-421a-aa8d-d87b799f597b Lumiere לומייר
+  claude-sonnet-5  sparse words=  68 faqs= 5 pr=yes | 48ea8ca7-33c4-4e4a-b2de-4724df1c273d Natalie landes מרכז הדרכה לקוסמטיקאיות |
+  template         normal words= 103 faqs= 5 pr=no error=unsupported_claims: הסטודיו; או בוואטסאפ; איך קובעים תור: בטלפון, בדוא״ל או בוואטסאפ | f730b96e-178c-4549-86e7-206a0998dc12 Revistyle
+  claude-sonnet-5  normal words=  89 faqs= 7 pr=yes | de64b0a4-2b73-44bf-88f8-335e5b51a6e3 Shlomi Sun
+  claude-sonnet-5  normal words=  73 faqs= 6 pr=yes | e2750265-3eab-4213-9caa-c75c2c1d8354 אפילוג'יק בע"מ - המרכז לרפואת עור אסתטית
+  claude-sonnet-5  rich   words= 130 faqs= 7 pr=no violations=short:130 | filler:מענה | meta:long:171 | f33c1153-74cc-4454-aea5-8555e3d80b24 Kurer Jackson Dental Office, Jerusalem
+  claude-sonnet-5  normal words=  82 faqs= 5 pr=yes violations=meta:short:127 | 0007b251-d4dd-4679-b335-9e1527bbaead Laka
+  claude-sonnet-5  normal words=  75 faqs= 5 pr=yes | 479cd88f-6d43-4a3c-9bd2-bfd7f1f4e80b Ilana - Nail, Cosmetic & Lounge
+  claude-sonnet-5  normal words=  85 faqs= 6 pr=yes | f85fee0c-5b45-4ce2-9fcb-af6900c28068 אור-אלי מאפרת Aurelie make up artist
+  template         normal words= 109 faqs= 4 pr=no error=unsupported_claims: חבילות ספא שמשלבות כמה טיפולים יחד; מה שמשקף היכרות רחבה עם המקום מצד  | e8e9fa1b-b279-4e8d-b990-f14eb6e652fd Spa Barak
+  claude-sonnet-5  sparse words=  39 faqs= 4 pr=yes | 0081ebe3-6c63-42d6-9bb1-44546565dbd7 Dr. Allan Schuman - ד״ר אלן שומן
+  claude-sonnet-5  normal words= 104 faqs= 5 pr=yes violations=repeat:address | c577dbf3-a093-442b-9acd-f76012d1353f Rami Hair
+  claude-sonnet-5  normal words=  77 faqs= 5 pr=yes violations=meta:long:157 | 33be95d4-1a3e-4570-9ac1-4ae1268e8977 Frida Brow Bar
+  claude-sonnet-5  normal words= 111 faqs= 5 pr=yes | 20a24fa8-bedc-40af-a6f3-a3e0e700c69d Dr. Ari Greenspan- דר ארי גרינספן
+  claude-sonnet-5  normal words= 102 faqs= 6 pr=yes violations=filler:כך שההגעה | repeat:address | meta:title_repeat:Sreter Clinic בירושלים | 25f4f69f-6b66-4a0e-afdf-0e1d32c29658 Sreter Clinic | מרפאת שיניים בירושלים | 
+  claude-sonnet-5  normal words=  76 faqs= 5 pr=yes | c3761f3a-db93-4819-8806-4a1429ea64d1 אבישג מכון יופי
+  claude-sonnet-5  normal words=  87 faqs= 5 pr=yes violations=repeat:address | 2628b9a6-1493-4982-a96b-f4d70d449fcd אורן הספר
+  claude-sonnet-5  normal words=  70 faqs= 6 pr=yes violations=meta:short:114 | 5aaafe51-913b-4963-a061-42df41c49af0 Nail Queen Express Salon נייל קווין אקספ
+  claude-sonnet-5  normal words=  74 faqs= 5 pr=yes | a28725fe-48c2-4c14-8b98-8d6960437d96 ד"ר אסף סדובסקי מרפאת שיניים בירושלים Dr
+  claude-sonnet-5  normal words=  99 faqs= 5 pr=yes | 49a3dbf3-cbb3-4725-9237-dd2a17675200 בוטיק לטיפולי פנים איפור קבוע
+  claude-sonnet-5  normal words=  92 faqs= 5 pr=yes violations=meta:long:157 | 1dea3ca4-8bac-433e-9dca-160c879cb2c1 ד”ר דבורה ושלום חסן – מרפאה לאסתטיקה דנט
+  claude-sonnet-5  normal words=  87 faqs= 5 pr=yes | 596e300c-d01d-4ec8-891d-0e6ee56e46eb Dr Haim Aseriel Dentist
+  claude-sonnet-5  rich   words= 192 faqs= 8 pr=yes | a1e2d744-aa4c-4d17-ab6a-0de5ac867049 BeautyMark Boutique Salon
+  claude-sonnet-5  sparse words=  36 faqs= 4 pr=yes violations=repeat:address | 99be92e1-f902-41cd-b4d3-95c3d2ce7898 Ka
+  claude-sonnet-5  normal words= 110 faqs= 7 pr=yes | 5a91e694-2b67-4bf9-87f1-e28e5d1f2e22 Jerusalem Dentist Dr. Ari Abramson / Ame
+  claude-sonnet-5  normal words=  97 faqs= 5 pr=yes | 9e8f000a-4c66-48ef-983c-a9075d2704ce Mona Medical Jerusalem - מונה מדיקל ירוש
+  template         normal words=  63 faqs= 4 pr=no error=unsupported_claims: הלחמת ריסים להארכה ולעיבוי המראה; דירוג שמבוסס על מספר ניכר של לקוחות; | 00e475b3-1256-4719-9452-609212b20416 Sharon Cosmetics
+  claude-sonnet-5  sparse words=  67 faqs= 4 pr=yes | b0263255-6264-4159-bd26-0756ec6aeffe Sagit's Place
+  claude-sonnet-5  sparse words=  30 faqs= 4 pr=yes | 92d830a4-48d1-46da-bce9-d5f4fe286362 Topnail
+  claude-sonnet-5  normal words=  78 faqs= 5 pr=yes violations=repeat:address | fcbfeb13-07c9-4caa-9632-ea516328bb2a Glamour Nails
+  claude-sonnet-5  sparse words=  46 faqs= 5 pr=yes violations=meta:short:128 | 35b028c4-9a5e-4c4e-a7f6-b257273c9526 דנט פרימיום - מרפאת שיניים ירושלים
+  template         rich   words= 113 faqs= 6 pr=no error=unsupported_claims: היישור מוצע גם בשיטה הקלאסית וגם באמצעות קשתיות שקופות, שניתן להסיר ול | 15de9f04-c4c7-4a48-ad01-541a7f5dd105 Jerusalem Dental - Dr. Simone Landau
+  template         rich   words= 139 faqs= 6 pr=no error=unsupported_claims: צבע לשיער ב־250 ₪ לצביעה מלאה של השיער; לשיער מתולתל יש טיפול ייעודי ב | 072f388b-5963-475d-81a8-84a16af93b09 Koby atar
+  claude-sonnet-5  sparse words=  56 faqs= 5 pr=yes | cb43953b-db3d-4622-a7cf-e64347a953ed אלישבע חי לוי - מאפרת ומסרקת בירושלים
+  claude-sonnet-5  normal words=  96 faqs= 6 pr=yes | e5734a5b-55e5-4654-9374-9c533731d265 Orit Levy Cosmetics
+  claude-sonnet-5  sparse words=  52 faqs= 4 pr=yes violations=meta:short:127 | 61b553fb-ce13-4cda-a0b0-1dc33da08d55 LaVita Cosmetics
+  claude-sonnet-5  sparse words=  55 faqs= 4 pr=yes | 374b234e-15a2-4367-89a2-9f65b54d796b Dr Debora Cohen ד"ר דבורה כהן
+  claude-sonnet-5  rich   words= 197 faqs= 6 pr=yes violations=repeat:address | fa3023d8-4356-4fbe-af48-e30868fd1ce9 בר מדיקל קליניקה לייזר
+  claude-sonnet-5  normal words=  66 faqs= 7 pr=no violations=short:66 | 842b18c3-aa66-49ab-b837-06be169ee6a2 ד"ר הלל ברוך - רופא שיניים בירושלים | מו
+  claude-sonnet-5  sparse words=  70 faqs= 5 pr=yes | d455e899-bef9-4c84-ac48-e8036ecbecd0 Jamil Samara
+  template         normal words= 138 faqs= 4 pr=no error=unsupported_claims: אתי פרץ הסרת שיער בלייזר/ טיפול הוא מכון בירושלים; שמתמחה בהסרת שיער ב | fe77c04e-6394-4827-888f-b6aeeb0e84bf אתי פרץ הסרת שיער בלייזר/ טיפול בפטרת צי
+  claude-sonnet-5  sparse words=  63 faqs= 5 pr=yes | affa852f-897f-4aff-91e0-54db4aa95930 Aesthetic-beauty complex
+  template         normal words=  88 faqs= 5 pr=no error=unsupported_claims: איפור, המיועד לאירועים ולהזדמנויות שונות; הסרת שיער בשעווה, שמסירה שיע | 02d62cb7-94dd-4d51-96fa-b10683da910d Dalia Institute of Cosmetic
+  claude-sonnet-5  normal words=  67 faqs= 5 pr=no violations=short:67 | fcb84cf4-de63-4581-9fe5-0e85b1587100 MAC Cosmetics Mamila
+CSV: reports/editorial-report.csv

@@ -1,0 +1,51 @@
+﻿branch_id,name,draft_from_this_run,model,tier,words,faqs,proofread,prompt_version,error,violations,repairs,needs_more_info,cost_usd,input_tokens,output_tokens,generated_at
+1d2361c5-6847-4599-a033-d6691d323199,אמירה צדקיהו - קוסמטיקה פרא רפואית מתקדמת,yes,claude-sonnet-5,normal,95,6,yes,2026-10-04.8,,,2,false,0.163528,24914,11370,2026-10-05T13:02:35.185Z
+16989dc3-e8e7-4d1c-a47a-915334f9d54f,"ד""ר צחי שטרק - מרפאת שיניים בירושלים",yes,claude-sonnet-5,normal,103,6,yes,2026-10-04.8,,repeat:address | meta:short:128,1,false,0.089166,11423,6632,2026-10-05T13:05:28.875Z
+0b1b6859-eacd-4f5b-9266-48c86d9eb1ba,אתי קוסמטיקה,yes,claude-sonnet-5,normal,72,5,yes,2026-10-04.8,,,1,false,0.045016,5528,3396,2026-10-05T13:06:06.242Z
+6013bc78-dee6-489a-ba18-3cb97249d91d,אניגמה- מרכז לאסתטיקה מתקדמת,yes,claude-sonnet-5,normal,92,5,yes,2026-10-04.8,,,0,false,0.048034,4572,3889,2026-10-05T13:06:45.706Z
+18fa65ac-50af-45a2-92e3-60d29b5c630c,Merizian's Nailux,yes,claude-sonnet-5,normal,80,6,yes,2026-10-04.8,,,2,false,0.13522,16480,10226,2026-10-05T13:13:17.612Z
+bf12f724-845c-4018-a0ac-ca5567cdf258,EL Studio,yes,claude-sonnet-5,normal,70,6,yes,2026-10-04.8,,,2,false,0.071862,8016,5583,2026-10-05T13:18:17.244Z
+cd94a57a-e52c-421a-aa8d-d87b799f597b,Lumiere לומייר,yes,claude-sonnet-5,normal,122,6,yes,2026-10-04.8,,,0,false,0.067614,6632,5435,2026-10-05T13:20:50.916Z
+48ea8ca7-33c4-4e4a-b2de-4724df1c273d,Natalie landes מרכז הדרכה לקוסמטיקאיות | רופאי עור | קליניקה לשיקום והצערת העור,yes,claude-sonnet-5,sparse,68,5,yes,2026-10-04.8,,,1,false,0.044434,4787,3486,2026-10-05T13:21:30.911Z
+f730b96e-178c-4549-86e7-206a0998dc12,Revistyle,yes,template,normal,103,5,no,2026-10-04.8,"unsupported_claims: הסטודיו; או בוואטסאפ; איך קובעים תור: בטלפון, בדוא״ל או בוואטסאפ",,0,false,0.075492,8446,5860,2026-10-05T13:11:41.139Z
+de64b0a4-2b73-44bf-88f8-335e5b51a6e3,Shlomi Sun,yes,claude-sonnet-5,normal,89,7,yes,2026-10-04.8,,,0,false,0.046984,5937,3511,2026-10-05T12:43:21.234Z
+e2750265-3eab-4213-9caa-c75c2c1d8354,"אפילוג'יק בע""מ - המרכז לרפואת עור אסתטית",yes,claude-sonnet-5,normal,73,6,yes,2026-10-04.8,,,3,false,0.10555,12210,8113,2026-10-05T12:39:55.223Z
+f33c1153-74cc-4454-aea5-8555e3d80b24,"Kurer Jackson Dental Office, Jerusalem",yes,claude-sonnet-5,rich,130,7,no,2026-10-04.8,,short:130 | filler:מענה | meta:long:171,1,false,0.067708,8479,5075,2026-10-05T12:38:37.620Z
+0007b251-d4dd-4679-b335-9e1527bbaead,Laka,yes,claude-sonnet-5,normal,82,5,yes,2026-10-04.8,,meta:short:127,2,false,0.059236,6498,4624,2026-10-05T12:49:28.597Z
+479cd88f-6d43-4a3c-9bd2-bfd7f1f4e80b,"Ilana - Nail, Cosmetic & Lounge",yes,claude-sonnet-5,normal,75,5,yes,2026-10-04.8,,,0,false,0.041396,4648,3210,2026-10-05T13:03:11.534Z
+f85fee0c-5b45-4ce2-9fcb-af6900c28068,אור-אלי מאפרת Aurelie make up artist,yes,claude-sonnet-5,normal,85,6,yes,2026-10-04.8,,,2,false,0.09474,12065,7061,2026-10-05T13:04:19.345Z
+e8e9fa1b-b279-4e8d-b990-f14eb6e652fd,Spa Barak,yes,template,normal,109,4,no,2026-10-04.8,unsupported_claims: חבילות ספא שמשלבות כמה טיפולים יחד; מה שמשקף היכרות רחבה עם המקום מצד לקוחות רבים לאורך הזמן שבו פעל,,0,false,0.046942,5486,3597,2026-10-05T12:40:37.510Z
+0081ebe3-6c63-42d6-9bb1-44546565dbd7,Dr. Allan Schuman - ד״ר אלן שומן,yes,claude-sonnet-5,sparse,39,4,yes,2026-10-04.8,,,1,true,0.027972,2956,2206,2026-10-05T13:10:11.912Z
+c577dbf3-a093-442b-9acd-f76012d1353f,Rami Hair,yes,claude-sonnet-5,normal,104,5,yes,2026-10-04.8,,repeat:address,3,false,0.216834,31867,15310,2026-10-05T12:42:43.109Z
+33be95d4-1a3e-4570-9ac1-4ae1268e8977,Frida Brow Bar,yes,claude-sonnet-5,normal,77,5,yes,2026-10-04.8,,meta:long:157,1,false,0.042892,4266,3436,2026-10-05T12:43:59.012Z
+20a24fa8-bedc-40af-a6f3-a3e0e700c69d,Dr. Ari Greenspan- דר ארי גרינספן,yes,claude-sonnet-5,normal,111,5,yes,2026-10-04.8,,,1,false,0.076554,8732,5909,2026-10-05T12:44:58.258Z
+25f4f69f-6b66-4a0e-afdf-0e1d32c29658,Sreter Clinic | מרפאת שיניים בירושלים | מומחה לשיקום הפה והשתלות שיניים,yes,claude-sonnet-5,normal,102,6,yes,2026-10-04.8,,filler:כך שההגעה | repeat:address | meta:title_repeat:Sreter Clinic בירושלים,1,false,0.053002,5286,4243,2026-10-05T12:45:44.188Z
+c3761f3a-db93-4819-8806-4a1429ea64d1,אבישג מכון יופי,yes,claude-sonnet-5,normal,76,5,yes,2026-10-04.8,,,1,false,0.045822,4206,3741,2026-10-05T13:15:31.892Z
+2628b9a6-1493-4982-a96b-f4d70d449fcd,אורן הספר,yes,claude-sonnet-5,normal,87,5,yes,2026-10-04.8,,repeat:address,3,false,0.130684,16287,9811,2026-10-05T12:59:20.212Z
+5aaafe51-913b-4963-a061-42df41c49af0,Nail Queen Express Salon נייל קווין אקספרס,yes,claude-sonnet-5,normal,70,6,yes,2026-10-04.8,,meta:short:114,2,false,0.066218,9159,4790,2026-10-05T12:47:14.246Z
+a28725fe-48c2-4c14-8b98-8d6960437d96,"ד""ר אסף סדובסקי מרפאת שיניים בירושלים Dr.Sadovsky Jerusalem Dentist",yes,claude-sonnet-5,normal,74,5,yes,2026-10-04.8,,,1,false,0.054538,5804,4293,2026-10-05T12:48:40.905Z
+49a3dbf3-cbb3-4725-9237-dd2a17675200,בוטיק לטיפולי פנים איפור קבוע,yes,claude-sonnet-5,normal,99,5,yes,2026-10-04.8,,,1,false,0.0482,5380,3744,2026-10-05T12:47:53.552Z
+1dea3ca4-8bac-433e-9dca-160c879cb2c1,ד”ר דבורה ושלום חסן – מרפאה לאסתטיקה דנטלית והשתלות שיניים בירושלים,yes,claude-sonnet-5,normal,92,5,yes,2026-10-04.8,,meta:long:157,2,false,0.081254,9192,6287,2026-10-05T12:54:20.984Z
+596e300c-d01d-4ec8-891d-0e6ee56e46eb,Dr Haim Aseriel Dentist,yes,claude-sonnet-5,normal,87,5,yes,2026-10-04.8,,,1,false,0.062534,5792,5095,2026-10-05T12:50:18.259Z
+a1e2d744-aa4c-4d17-ab6a-0de5ac867049,BeautyMark Boutique Salon,yes,claude-sonnet-5,rich,192,8,yes,2026-10-04.8,,,3,false,0.218462,24696,16907,2026-10-05T13:09:38.194Z
+99be92e1-f902-41cd-b4d3-95c3d2ce7898,Ka,yes,claude-sonnet-5,sparse,36,4,yes,2026-10-04.8,,repeat:address,2,true,0.036744,3997,2875,2026-10-05T13:14:49.618Z
+5a91e694-2b67-4bf9-87f1-e28e5d1f2e22,Jerusalem Dentist Dr. Ari Abramson / American Dentist in Jerusalem,yes,claude-sonnet-5,normal,110,7,yes,2026-10-04.8,,,1,false,0.070464,8017,5443,2026-10-05T13:22:26.276Z
+9e8f000a-4c66-48ef-983c-a9075d2704ce,Mona Medical Jerusalem - מונה מדיקל ירושלים,yes,claude-sonnet-5,normal,97,5,yes,2026-10-04.8,,,0,false,0.058832,6471,4589,2026-10-05T12:51:04.783Z
+00e475b3-1256-4719-9452-609212b20416,Sharon Cosmetics,yes,template,normal,63,4,no,2026-10-04.8,unsupported_claims: הלחמת ריסים להארכה ולעיבוי המראה; דירוג שמבוסס על מספר ניכר של לקוחות; עדכונים ותמונות מתפרסמים בעמוד האינסטגרם של הסטודיו; כך שאפשר להתרשם מהעבודות לפני הביקור; הסטודיו,,0,false,0.065648,6144,5336,2026-10-05T13:14:10.767Z
+b0263255-6264-4159-bd26-0756ec6aeffe,Sagit's Place,yes,claude-sonnet-5,sparse,67,4,yes,2026-10-04.8,,,1,true,0.037118,3439,3024,2026-10-05T13:17:22.310Z
+92d830a4-48d1-46da-bce9-d5f4fe286362,Topnail,yes,claude-sonnet-5,sparse,30,4,yes,2026-10-04.8,,,1,true,0.02881,2370,2407,2026-10-05T13:10:40.692Z
+fcbfeb13-07c9-4caa-9632-ea516328bb2a,Glamour Nails,yes,claude-sonnet-5,normal,78,5,yes,2026-10-04.8,,repeat:address,2,false,0.059956,7603,4475,2026-10-05T12:51:50.575Z
+35b028c4-9a5e-4c4e-a7f6-b257273c9526,דנט פרימיום - מרפאת שיניים ירושלים,yes,claude-sonnet-5,sparse,46,5,yes,2026-10-04.8,,meta:short:128,1,false,0.036682,3931,2882,2026-10-05T13:23:00.720Z
+15de9f04-c4c7-4a48-ad01-541a7f5dd105,Jerusalem Dental - Dr. Simone Landau,yes,template,rich,113,6,no,2026-10-04.8,"unsupported_claims: היישור מוצע גם בשיטה הקלאסית וגם באמצעות קשתיות שקופות, שניתן להסיר ולהרכיב בעצמאות; סוג הטיפול המתאים נקבע בבדיקה ובפגישת ייעוץ במרפאה; מה שמשקף נפח פעילות משמעותי באזור",,0,false,0.109574,13147,8328,2026-10-05T12:53:15.641Z
+072f388b-5963-475d-81a8-84a16af93b09,Koby atar,yes,template,rich,139,6,no,2026-10-04.8,"unsupported_claims: צבע לשיער ב־250 ₪ לצביעה מלאה של השיער; לשיער מתולתל יש טיפול ייעודי ב־260 ₪, המותאם למרקם התלתלים; שמתאים כהשלמה לטיפול עיקרי או כטיפוח עצמאי להזנת השיער ולשיפור מרקמו; לק ג׳ל ב־120 ₪, ציפוי עמיד יותר",,0,false,0.146288,15929,11443,2026-10-05T12:56:05.687Z
+cb43953b-db3d-4622-a7cf-e64347a953ed,אלישבע חי לוי - מאפרת ומסרקת בירושלים,yes,claude-sonnet-5,sparse,56,5,yes,2026-10-04.8,,,1,false,0.03739,4380,2863,2026-10-05T13:07:19.529Z
+e5734a5b-55e5-4654-9374-9c533731d265,Orit Levy Cosmetics,yes,claude-sonnet-5,normal,96,6,yes,2026-10-04.8,,,1,false,0.095516,11818,7188,2026-10-05T12:57:12.463Z
+61b553fb-ce13-4cda-a0b0-1dc33da08d55,LaVita Cosmetics,yes,claude-sonnet-5,sparse,52,4,yes,2026-10-04.8,,meta:short:127,2,false,0.050994,5437,4012,2026-10-05T13:16:14.193Z
+374b234e-15a2-4367-89a2-9f65b54d796b,"Dr Debora Cohen ד""ר דבורה כהן",yes,claude-sonnet-5,sparse,55,4,yes,2026-10-04.8,,,1,false,0.034804,3237,2833,2026-10-05T13:16:49.304Z
+fa3023d8-4356-4fbe-af48-e30868fd1ce9,בר מדיקל קליניקה לייזר,yes,claude-sonnet-5,rich,197,6,yes,2026-10-04.8,,repeat:address,2,false,0.12695,13875,9920,2026-10-05T13:19:53.421Z
+842b18c3-aa66-49ab-b837-06be169ee6a2,"ד""ר הלל ברוך - רופא שיניים בירושלים | מומחה בשיקום הפה | השתלות שיניים | ציפוי שיניים",yes,claude-sonnet-5,normal,66,7,no,2026-10-04.8,,short:66,2,false,0.03961,3750,3211,2026-10-05T13:23:41.927Z
+d455e899-bef9-4c84-ac48-e8036ecbecd0,Jamil Samara,yes,claude-sonnet-5,sparse,70,5,yes,2026-10-04.8,,,0,false,0.038226,2913,3240,2026-10-05T12:46:23.677Z
+fe77c04e-6394-4827-888f-b6aeeb0e84bf,אתי פרץ הסרת שיער בלייזר/ טיפול בפטרת ציפורניים / מחלות עור,yes,template,normal,138,4,no,2026-10-04.8,unsupported_claims: אתי פרץ הסרת שיער בלייזר/ טיפול הוא מכון בירושלים; שמתמחה בהסרת שיער בלייזר ובטיפולי כף הרגל והציפורניים,,0,false,0.045936,5923,3409,2026-10-05T12:57:49.993Z
+affa852f-897f-4aff-91e0-54db4aa95930,Aesthetic-beauty complex,yes,claude-sonnet-5,sparse,63,5,yes,2026-10-04.8,,,1,false,0.036722,3796,2913,2026-10-05T13:00:36.771Z
+02d62cb7-94dd-4d51-96fa-b10683da910d,Dalia Institute of Cosmetic,yes,template,normal,88,5,no,2026-10-04.8,"unsupported_claims: איפור, המיועד לאירועים ולהזדמנויות שונות; הסרת שיער בשעווה, שמסירה שיער מהגוף ומהפנים לתקופה ממושכת",,0,false,0.05341,6835,3974,2026-10-05T13:00:03.955Z
+fcb84cf4-de63-4581-9fe5-0e85b1587100,MAC Cosmetics Mamila,yes,claude-sonnet-5,normal,67,5,no,2026-10-04.8,,short:67,2,false,0.04149,4775,3194,2026-10-05T13:24:19.830Z
