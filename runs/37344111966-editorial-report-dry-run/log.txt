@@ -1,0 +1,60 @@
+run a75d321d-239d-45cd-a00c-08ba7008fe1d "ניקוי תיאורים 5/17" status=done started=2026-10-04T22:41:21.643Z finished=2026-10-05T06:23:55.438Z
+counters: {"improved":45,"postTasks":4,"postPhotos":15,"filled_faqs":27,"youtubeQuota":4,"editorialCalls":50,"nothing_to_add":5,"youtubeRequests":1,"editorial_failed":9,"editorial_written":41,"filled_description":27,"filled_meta_title_cleared":19,"filled_meta_description_cleared":44}
+listings in scope: 50, import records: 50, drafts written in this run: 50
+by model: claude-sonnet-5: 41, template: 9
+by tier: normal: 27, sparse: 18, rich: 5
+proofread: yes: 38, no: 12
+by error: (none): 41, unsupported_claims: הדמיית שיער בגבות, טכניקה שמדמה שערות טב: 1, unsupported_claims: הצמות מתאימות למי שרוצה תסרוקת אסוף עם מ: 1, unsupported_claims: שמעניקה למבט פתיחות בלי איפור: 1, invented_words: בוקאלי, בוקאל: 1, unsupported_claims: עדכונים ותמונות מתפרסמים בעמוד הפייסבוק : 1, unsupported_claims: העסק מתמחה בהסרת שיער בלייזר: 1, unsupported_claims: שם אפשר לראות דוגמאות לפני תיאום תור; אי: 1, unsupported_claims: היא קליניקה לקוסמטיקה בחיפה: 1, unsupported_claims: עסק לטיפולי יופי ואסתטיקה בחיפה: 1
+words: min 28, median 75, max 223
+cost recorded on the records: 3.486 USD
+  claude-sonnet-5  normal words=  93 faqs= 5 pr=yes violations=repeat:address | meta:short:124 | 477fabbc-5ea5-4a6f-8055-8c6ed7dbc925 המספריים של אנג'י
+  template         normal words=  97 faqs= 3 pr=no error=unsupported_claims: הדמיית שיער בגבות, טכניקה שמדמה שערות טבעיות באמצעות החדרת פיגמנט | 52bda819-5706-4dcb-b46a-0f844c079068 לירון רום - קליניקה לעיצוב גבות
+  claude-sonnet-5  sparse words=  32 faqs= 4 pr=yes | b873866f-d3c9-4d93-a5fa-5f888e5d7501 מכון רותם אפילציה קוסמטיקה ואיפור קבוע
+  template         normal words=  64 faqs= 5 pr=no error=unsupported_claims: הצמות מתאימות למי שרוצה תסרוקת אסוף עם מראה מסודר ועמיד | 7c1cde7b-d76c-4fe8-b8c4-2ae653d18c5c סלון לעיצוב שיער- מחוץ לסטודיו
+  claude-sonnet-5  rich   words= 223 faqs= 7 pr=yes | 5a0248fb-8abb-4cd6-9c86-c0658445b9e3 פלמינגו ספא בחיפה ️ | חבילות ספא בחיפה ו
+  template         normal words=  58 faqs= 5 pr=no error=unsupported_claims: שמעניקה למבט פתיחות בלי איפור | d7744b88-2c1a-4b54-bfaa-29c598488716 קוסמטיקאית, אלקטרולוג, עיסוי פנים Космет
+  claude-sonnet-5  sparse words=  76 faqs= 6 pr=yes | c33e709c-763e-4801-ac3e-d545302ae8ef סלון עבוד - Salon Abboud
+  claude-sonnet-5  normal words=  77 faqs= 5 pr=yes | 4b673068-c3a7-4e6e-aeb2-b6e7f2fdb870 מעוז היופי - קוסמטיקה ורפואה משלימה
+  claude-sonnet-5  sparse words=  33 faqs= 4 pr=yes | 15c1f271-98f8-4171-9ffd-965e28a802c4 קרן ומורן גלריה ליופי
+  claude-sonnet-5  sparse words=  28 faqs= 3 pr=yes violations=meta:title_repeat:מרכז מרוות גנטוס ליופי וספא בחיפה | a3676fa7-5923-429c-9481-a6ab3b0a1503 מרכז מרוות גנטוס ליופי וספא
+  claude-sonnet-5  rich   words= 137 faqs= 7 pr=no violations=short:137 | be45a69e-2984-49e5-9fd3-56d5795dc77c נטוראלייזר
+  claude-sonnet-5  rich   words= 172 faqs= 6 pr=no violations=short:172 | aab223b1-d1c3-4a0d-ba25-8fec61522274 מרפאת שיניים נווה שאנן
+  claude-sonnet-5  normal words=  80 faqs= 6 pr=yes | 42f38c9a-14fa-4e34-84aa-6afb931a8061 פרסטיז'
+  claude-sonnet-5  normal words=  75 faqs= 5 pr=yes | eb66533c-7ed2-4c1f-ab00-25a582468a57 לייזר פלייס LASER PLACE
+  claude-sonnet-5  sparse words=  57 faqs= 5 pr=yes | b9c45697-c674-402e-8bbf-9f0b0fc0f863 מספרת גברים קלאסית של רינגו Ringo's clas
+  claude-sonnet-5  normal words=  75 faqs= 5 pr=yes | c9f4ae2a-778e-4a53-88c5-2fffaca11e04 מלכת השפתיים ד"ר מריה זלטקובסקי MEDICAL 
+  claude-sonnet-5  normal words=  76 faqs= 6 pr=yes | baf0e413-9901-4e4f-95ea-75d6c3a8b374 לייזר מקס בע"מ
+  claude-sonnet-5  normal words=  59 faqs= 4 pr=no violations=short:59 | meta:short:115 | 257b1b1b-43a7-4835-b55c-636b2a47c5fb כללית אסתטיקה חיפה
+  template         rich   words= 144 faqs= 5 pr=no error=invented_words: בוקאלי, בוקאל | 22c54aee-6234-47ca-a75d-9dbc3f43ff9b קארן לוי אוסקר טיפולי גוף ויופי
+  template         normal words= 186 faqs= 4 pr=no error=unsupported_claims: עדכונים ותמונות מתפרסמים בעמוד הפייסבוק של העסק | c5b1f5c6-a832-44d0-95bb-6b71b6efdef8 נטלי לצ'ינסקי - סטודיו ניצוץ . איפור , ת
+  claude-sonnet-5  sparse words=  64 faqs= 5 pr=yes | f076378f-fc41-4a00-baa4-176a40df2a60 נטליה מילנר
+  claude-sonnet-5  rich   words= 209 faqs= 7 pr=yes violations=repeat:address | 0be91073-5b5b-4a84-868b-472c142d59e2 פיור סקין – טיפולי קוסמטיקה מתקדמים
+  claude-sonnet-5  sparse words=  52 faqs= 5 pr=yes | 964ade56-b9e0-4e7b-8a7a-78440e32516a יאנה קוסמטיקאית - טיפולי פנים, טיפולי אנ
+  claude-sonnet-5  normal words=  99 faqs= 7 pr=yes | 47ee6e34-d69b-4782-a2f4-e5216a740734 ציפורניים ויופי Rinka Nails & Beauty
+  claude-sonnet-5  normal words=  71 faqs= 5 pr=yes | 83fe8f59-f76d-48a6-a82f-56737d484074 מספרת על
+  claude-sonnet-5  sparse words=  74 faqs= 5 pr=yes | 81658d34-643a-4776-aa29-ab03b0ba80f6 קליניקה כוחו של הטבע
+  claude-sonnet-5  normal words=  71 faqs= 5 pr=yes | 56c4afb1-7236-476f-bf38-506edc4e0425 סמא - הסרת שיער בלייזר לגבר
+  claude-sonnet-5  normal words=  89 faqs= 6 pr=yes | a9019875-9dcd-4a06-8c84-1a2367d44d5c מנתח פלסטי בכיר - דר יצחק רמון
+  claude-sonnet-5  normal words=  75 faqs= 5 pr=yes | 4099cefb-a624-4684-8335-a68b3768d99b המרכז לרפואה אסתטית של אניה בלוך- Ania I
+  claude-sonnet-5  sparse words=  41 faqs= 4 pr=yes | 4cd07264-453c-423f-858f-199214db7927 ליאת דניאלי קוסמטיקה מתקדמת
+  claude-sonnet-5  sparse words=  56 faqs= 5 pr=yes | f9e168f3-87ba-4a9e-b289-af46df13ffda המכללה והמרכז לטיפוח יופי ואסתטיקה - U M
+  claude-sonnet-5  sparse words=  58 faqs= 5 pr=yes | eada6a14-ec4d-43e1-beed-3e82db621c64 נטלי
+  claude-sonnet-5  normal words=  72 faqs= 7 pr=yes | 00424f73-7eb4-48f7-9a2a-04065f4843cd נורה קוסמטיק ליין
+  claude-sonnet-5  normal words=  89 faqs= 6 pr=yes | b53c6ed4-c2d9-4b13-a9d6-7678ac700e2b סי אמסלם
+  claude-sonnet-5  normal words=  82 faqs= 5 pr=yes violations=repeat:address | 9437d332-c5e4-48ae-81b9-8581f516cbb2 מרפאת שיניים חיפה פבזנר 23 NewAge Dental
+  template         normal words= 119 faqs= 4 pr=no error=unsupported_claims: העסק מתמחה בהסרת שיער בלייזר | 9d52f7bd-e06a-4ae2-8fce-c2eb9cbd9cde לייזר פיטס Laser Fits נשר
+  template         normal words=  85 faqs= 4 pr=no error=unsupported_claims: שם אפשר לראות דוגמאות לפני תיאום תור; איך קובעים תור? בטלפון | 49dc6681-ab09-43bc-8968-a5b6a09647b0 סיון ביוטי - sivan beauty
+  claude-sonnet-5  normal words=  83 faqs= 5 pr=yes | d0f7a9df-de20-44ff-ab1a-2ea4eafceb61 מרפאת ד״ר עמי ברק - מומחה בכירורגיה פלסט
+  template         sparse words=  42 faqs= 3 pr=no error=unsupported_claims: היא קליניקה לקוסמטיקה בחיפה | 64629ed3-8873-4d44-ba49-a034d742c9ad נחמי המבורגר קוסמטיקאית טיפולי אפילציה ו
+  claude-sonnet-5  sparse words=  80 faqs= 5 pr=yes | bc0861cb-0fed-474b-9ebf-4b1514579a4d המקום של נתלי
+  claude-sonnet-5  sparse words=  40 faqs= 4 pr=yes | 53f044ae-03f0-40da-abbd-7cbcf0bb8c7a ליאן גלסריה קוסמטיקה & ביוטי
+  claude-sonnet-5  sparse words=  41 faqs= 4 pr=yes | 87f2aa96-ced5-4769-aab8-3d7ae13856e6 מרפאה
+  template         normal words= 101 faqs= 5 pr=no error=unsupported_claims: עסק לטיפולי יופי ואסתטיקה בחיפה | 294d5c1c-1610-421e-8cc0-5f9ce65b6e88 פרופורציה חיפה - הסרת שיער בלייזר, טיפול
+  claude-sonnet-5  sparse words=  47 faqs= 4 pr=yes violations=meta:short:126 | 03bc6c74-8adc-4df3-b03b-04d0b537d9d3 הפנינה
+  claude-sonnet-5  normal words=  96 faqs= 5 pr=yes | 1d90c2d1-124e-4e2c-bf8b-80d957af2d9d קרן יצחק מאסטרית גבות | מומחית למיקרובלי
+  claude-sonnet-5  sparse words=  55 faqs= 6 pr=yes violations=meta:short:119 | ff1f29bf-f25e-4009-a562-b75025238f74 קרולינה מכון יופי וקוסמטיקה -חיפה
+  claude-sonnet-5  normal words=  98 faqs= 5 pr=yes | 07fdddec-60fb-4ef4-8900-f28c20a801b7 סטודיו מלי
+  claude-sonnet-5  sparse words=  71 faqs= 5 pr=yes | fbb6bdc2-9d7c-4611-b92e-e6aa15e0915e יובל בן אהרון - קוסמטיקאית
+  claude-sonnet-5  normal words=  82 faqs= 6 pr=yes violations=meta:short:127 | b1e95095-1205-4ec4-b2d0-b0547fe5d678 יהודית גולד מכון לטיפולי אסטתיקה
+  claude-sonnet-5  normal words=  74 faqs= 6 pr=yes | 175068a0-ffc2-4129-9b8e-5d511dca75bb מכון יופי של ראניה (Rania beauty boutiqu
+CSV: reports/editorial-report.csv
