@@ -1,0 +1,60 @@
+run 3e3b4598-a251-4d09-936a-783c9862b238 "ניקוי תיאורים 4/17" status=done started=2026-10-04T21:56:33.070Z finished=2026-10-04T22:41:21.278Z
+counters: {"improved":50,"postTasks":6,"postPhotos":5,"filled_faqs":24,"filled_prices":1,"editorialCalls":50,"youtubeRequests":0,"editorial_failed":13,"editorial_written":37,"filled_description":24,"filled_meta_title_cleared":22,"filled_meta_description_cleared":50}
+listings in scope: 50, import records: 50, drafts written in this run: 50
+by model: claude-sonnet-5: 37, template: 13
+by tier: normal: 26, sparse: 16, rich: 8
+proofread: yes: 29, no: 21
+by error: (none): 37, unsupported_claims: הליכים שמטרתם לשנות את נפח החזה ואת מיקו: 1, unsupported_claims: ללא צורך באיפור יומיומי: 1, unsupported_claims: ValentinaCosmetic הוא סטודיו לקוסמטיקה ו: 1, unsupported_claims: מגוון רחב של טיפולים וניתוחים אסתטיים: 1, unsupported_claims: העסק מתמקד בטיפוח הפנים והגוף: 1, invented_words: פרסותרפיה: 1, unsupported_claims: ימים ושעות שמאפשרים גמישות בתיאום ביקור: 1, invented_words: מקריו: 1, unsupported_claims: הארכת ריסים בהדבקה למי שמעוניינת במראה ד: 1, unsupported_claims: קליניקת שיניים בחיפה; הקליניקה מציעה טיפ: 1, unsupported_claims: אסתי הוא סטודיון טיפוח בחיפה; לק גל לציפ: 1, unsupported_claims: ביו סקלפצ׳ר ישראל הוא בית ספר להוראת טיפ: 1, unsupported_claims: Yana Naumov Lash & Brow Studio הוא סטודי: 1
+words: min 20, median 81, max 240
+cost recorded on the records: 3.671 USD
+  claude-sonnet-5  rich   words= 178 faqs= 7 pr=no violations=short:178 | cfbed9e7-b435-4986-bbee-1f7a0b991dba אברמסקי - המרכז לבריאות השיער בחיפה
+  claude-sonnet-5  normal words=  87 faqs= 6 pr=yes | b96bf50f-33ad-4b56-9572-f26696b96130 ד"ר אור שבתאי | מילוי שפתיים טבעי | בוטו
+  claude-sonnet-5  normal words=  89 faqs= 5 pr=yes | 380cff8d-a5ba-4601-9ea9-1952b6a935f4 דבורה פריווה סלון היופי שלך בחיפה
+  claude-sonnet-5  normal words=  81 faqs= 5 pr=yes | bb64f25c-75d8-4003-8c60-820007427dcb דניאל איפור קבוע והלחמת ריסים
+  template         rich   words= 124 faqs= 5 pr=no error=unsupported_claims: הליכים שמטרתם לשנות את נפח החזה ואת מיקומו; ניתוחים שמסירים עודפי עור  | 9652a052-c1e2-4ad8-8251-75eee658e7ef ד"ר תמיר גיל - מומחה בכירורגיה פלסטית בח
+  claude-sonnet-5  normal words=  53 faqs= 5 pr=no violations=short:53 | meta:short:117 | 106954bc-aa30-425f-8614-81c9106473fa ד״ר גוברין - מומחה בכירורגיה פלסטית
+  claude-sonnet-5  normal words= 121 faqs= 6 pr=no violations=repeat:address | b32e1d35-cd2b-4934-bf95-628243ad36f1 דר מואיד אבו בכר - גשר שקוף בחיפה
+  template         sparse words=  52 faqs= 3 pr=no error=unsupported_claims: ללא צורך באיפור יומיומי | 01445687-24a4-43b5-a2b1-27cc0c52045c הלנייז - Helenayz בוטיק יופי
+  template         rich   words= 165 faqs= 5 pr=no error=unsupported_claims: ValentinaCosmetic הוא סטודיו לקוסמטיקה ואיפור קבוע בחיפה; ומציעה טיפוח | f01c0d3e-f6ae-46b3-820b-fc1ecc424158 ValentinaCosmetic
+  claude-sonnet-5  normal words=  81 faqs= 5 pr=no | 1ff8a60d-8ab5-4879-9dbf-6d2862b30cc5 דר' מריה שרפוב - קליניקה לרפואה אסתטית
+  template         normal words=  99 faqs= 5 pr=no error=unsupported_claims: מגוון רחב של טיפולים וניתוחים אסתטיים | d6b51cd7-10a9-4c1c-90eb-8a6c926e61b1 ד"ר אריאל ניימן מומחה לכירורגיה פלסטית
+  template         normal words=  47 faqs= 3 pr=no error=unsupported_claims: העסק מתמקד בטיפוח הפנים והגוף | 87dd20b1-0840-4624-9bf7-4eca3eb11208 Tanya Gur
+  claude-sonnet-5  rich   words= 105 faqs= 8 pr=no violations=short:105 | repeat:address | 7f01f930-97a5-4bc9-a4ec-bac6e01cb8f0 Premium Beauty
+  template         normal words=  97 faqs= 5 pr=no error=invented_words: פרסותרפיה | b62b3b28-e109-48f6-ae9b-57b9c437d7d1 Premium Beauty Center
+  claude-sonnet-5  rich   words= 168 faqs= 8 pr=no violations=short:168 | repeat:hours | meta:short:129 | fbf7b660-ab28-41a7-9061-b21e2685803e Ruchla Cosmetics
+  claude-sonnet-5  normal words=  71 faqs= 5 pr=no | 19ac94fc-69f9-46cf-9223-4e6dba69a5c7 דר בייטיש - הסרת שיער בלייזר בחיפה
+  claude-sonnet-5  normal words= 105 faqs= 6 pr=yes | 88e75f55-627d-4d56-8562-d31e9dab09a3 Studio French (nail and cosmetic) סטודיו
+  claude-sonnet-5  sparse words=  42 faqs= 4 pr=yes | d7600688-f6b5-450a-9a96-febf72ebb9f4 אליס
+  claude-sonnet-5  sparse words=  20 faqs= 4 pr=yes violations=meta:short:103 | eb9c31cc-753f-4299-8d3f-2e0ab9efdf83 Sacara
+  claude-sonnet-5  sparse words=  42 faqs= 4 pr=yes | 8d1b6326-7b24-482e-84fa-b4964b1e82f2 ד"ר ברגר - ניתוחים פלסטיים בצפון
+  template         normal words=  40 faqs= 4 pr=no error=unsupported_claims: ימים ושעות שמאפשרים גמישות בתיאום ביקור | c72c94d8-42c2-474a-88bc-5bec1b42fa32 Косметолог Марина Зверева
+  claude-sonnet-5  sparse words=  46 faqs= 5 pr=yes | 3dfea4d9-6047-4504-a026-04bb18543d87 אורלי בנדל מכון קוסמטיקה
+  claude-sonnet-5  normal words=  86 faqs= 5 pr=yes | 4f5ef12c-b42c-4fd8-9e0a-90910d247056 ד"ר צבי גוטמכר - מומחה לשיקום הפה
+  claude-sonnet-5  normal words=  78 faqs= 7 pr=yes | a3b60d0b-6475-4d44-961a-199372f76f46 SARA קוסמטיקה ואפילציה
+  claude-sonnet-5  sparse words=  60 faqs= 5 pr=yes violations=meta:short:122 | 6b8a7c5a-a3e8-40a8-88c1-b5311fe0e086 Sarit - Hair Design
+  template         rich   words= 152 faqs= 5 pr=no error=invented_words: מקריו | 19983aee-b4dd-4e71-b29f-a26bab9a53df Sol Clinics
+  claude-sonnet-5  sparse words=  26 faqs= 4 pr=yes | fcdb8efd-b282-4555-9855-09e348073c1a ד"ר אליאס מטאנס - מנתח פלסטי
+  claude-sonnet-5  normal words=  76 faqs= 6 pr=yes | cd046027-bf61-4a7a-b45d-d0026202b552 rastafari style
+  claude-sonnet-5  sparse words=  64 faqs= 6 pr=yes | a2c95959-b2a3-4257-a2c2-68473bf39586 ד"ר אסתר קורן-מדע וחן
+  claude-sonnet-5  sparse words=  50 faqs= 5 pr=yes | e1ca59e4-7cff-4e40-9349-1bb2114cce9b Студия наращивания ресниц «B.LASHLI»
+  claude-sonnet-5  sparse words=  67 faqs= 4 pr=yes violations=meta:short:125 | 4335e5f5-aba2-40b7-ad64-cc79b0f40d79 דביר אפרים
+  claude-sonnet-5  rich   words= 240 faqs= 7 pr=yes | b00a083f-d8a8-4b23-84c4-f76e955d1576 ד"ר רוני מוסקונה - מרפאות ניתוחים פלסטיי
+  template         rich   words= 165 faqs= 6 pr=no error=unsupported_claims: הארכת ריסים בהדבקה למי שמעוניינת במראה דרמטי יותר; עיצוב הגבות מתבצע ב | 9f0933ee-94c6-42cd-b69c-d61d71d5bf37 Salon boutique Paradise
+  template         normal words=  50 faqs= 4 pr=no error=unsupported_claims: קליניקת שיניים בחיפה; הקליניקה מציעה טיפולי שתלים לשיקום שיניים חסרות; | fa9c02ad-1af6-4006-8234-25597523509a Стоматологическая клиника "Style Dent" Х
+  claude-sonnet-5  normal words=  62 faqs= 5 pr=no violations=short:62 | meta:short:112 | cfdca373-6516-4296-a3b4-ee5b1621bac4 SO Clinic
+  claude-sonnet-5  normal words=  99 faqs= 5 pr=yes | 61f3792a-323e-4309-b1f5-f1584b494fa7 אבי אשורי עיצוב שיער Barbershop
+  claude-sonnet-5  sparse words=  83 faqs= 5 pr=yes | 58c99f0c-3e41-4f51-b4f4-9431e869d1c0 אלון פיקלר מטפל הוליסטי מעסה/ספורטתרפיסט
+  claude-sonnet-5  normal words=  93 faqs= 6 pr=yes | 218ae7bb-ed17-4a58-b7cf-ecfdcbbf0536 ד״ר חסן חטיב - קליניקה לרפואה אסתטית
+  claude-sonnet-5  normal words=  79 faqs= 6 pr=yes | 030a9fa3-ab1b-40ed-aa5f-2a9d9e8bc9b8 איפור קבוע - אווה נתיב
+  claude-sonnet-5  sparse words=  44 faqs= 4 pr=yes | aeaba3d2-9483-4973-a2c6-8e638839cb48 Salon MARGO Haifa
+  claude-sonnet-5  sparse words=  42 faqs= 5 pr=yes | 07d2fb79-74ec-4669-a629-9a7a8e46423f Tal Sharir
+  claude-sonnet-5  normal words=  86 faqs= 5 pr=yes | 6d6bed8b-c75f-430e-ac7c-0c5ec58fe4d3 גבות חדשות | שרה
+  claude-sonnet-5  normal words=  70 faqs= 6 pr=yes | a89a6dcd-cf86-44ed-a708-509a4c6145aa escosmetician - קוסמטיקה מקצועית
+  claude-sonnet-5  sparse words=  26 faqs= 3 pr=yes | 02263231-4b7b-4b95-920a-228edffaf3e4 איילת קוסמטיקה במגע טבעי
+  template         normal words= 110 faqs= 3 pr=no error=unsupported_claims: אסתי הוא סטודיון טיפוח בחיפה; לק גל לציפורניים עמידות; שמיועדים לשיפור | 9cb3af26-74dc-4270-bf98-73acd6081711 אסתי-סלון יופי. קוסמטיקאית מוסמכת בחיפה
+  claude-sonnet-5  sparse words=  62 faqs= 5 pr=yes | 63e0a281-ccfd-4616-a8db-1157d1a75ccb Relax - Manual Therapy Clinic
+  claude-sonnet-5  normal words= 103 faqs= 6 pr=yes violations=filler:מי שמעוניין | meta:short:129 | 8ef4648e-8cdf-490b-b36d-d41ed0d1a0b3 ד"ר אוהד בן-נון
+  claude-sonnet-5  sparse words=  48 faqs= 5 pr=yes violations=meta:short:114 | d8e8ddd8-d12c-415b-9b14-5aee6cc05577 הודיה מורג קוסמטיקאית
+  template         normal words=  85 faqs= 5 pr=no error=unsupported_claims: ביו סקלפצ׳ר ישראל הוא בית ספר להוראת טיפוח ציפורניים ולימודי גבות | 57f16419-fdda-4608-8e6e-24bef1580b21 ביו סקלפצ'ר ישראל BIO SCULPTURE IL
+  template         normal words=  82 faqs= 3 pr=no error=unsupported_claims: Yana Naumov Lash & Brow Studio הוא סטודיו לגבות וריסים בחיפה | 3116d5c1-3b70-4309-9c55-abd9158a0e21 Yana Naumov Lash & Brow Studio
+CSV: reports/editorial-report.csv
