@@ -19,7 +19,7 @@ export function CompactRating({ google, beautyfind, className }: { google: Ratin
   const bf = !g && beautyfind && beautyfind.count > 0 ? beautyfind : null;
   const r = g ?? bf;
   if (!r) return <span className={`${s.rating} ${s.none} ${className ?? ''}`}>חדש</span>;
-  const src = g ? 'Google' : 'BeautyFind';
+  const src = g ? 'בגוגל' : 'BeautyFind';
   return (
     <span className={`${s.rating} ${className ?? ''}`} role="img" aria-label={`דירוג ${src} ${r.rating.toFixed(1)} מתוך 5, ${r.count} ביקורות`}>
       <svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true" className={s.star} data-src={g ? 'g' : 'bf'}>

@@ -4,7 +4,7 @@ import { textProblems } from '../../src/lib/import/textRules';
 import { businessCount, businessPlural } from '../../src/lib/seo/businessNoun';
 import { mean, trimOutliers, trimmedMean } from '../../src/lib/stats';
 import { nis } from '../../src/lib/format';
-import { applyWording } from '../../scripts/import/wordingCleanup';
+import { altSpelling, applyWording, cityNameSpelling } from '../../scripts/import/wordingCleanup';
 
 const wording = (t: string) => textProblems(t, [], { strict: false }).filter(p => p.code === 'wording').map(p => p.match);
 
@@ -50,5 +50,12 @@ describe('sitewide wording', () => {
     assert.equal(r.out, 'המחיר הממוצע הוא 1,200 ₪ ודירוג בגוגל 4.5 מתוך 5 (312 ביקורות בגוגל). אמצעי יצירת קשר: טלפון. תל אביב-יפו.');
     assert.deepEqual(r.hits, { 'המחיר האמצעי': 1, 'דירוג Google': 1, 'ב־Google': 1, 'תל אביב–יפו': 1, '₪ לפני המספר': 1 });
     assert.equal(applyWording('טיפול פנים 250 ₪').out, 'טיפול פנים 250 ₪');
+  });
+
+  it('the spelling pass aligns stored city names and alt texts with the catalog', () => {
+    assert.equal(cityNameSpelling('תל אביב–יפו'), 'תל אביב-יפו');
+    assert.equal(cityNameSpelling('רמת גן'), 'רמת גן');
+    assert.equal(altSpelling('מספרת רון בתל אביב–יפו, תמונה 2'), 'מספרת רון בתל אביב-יפו, תמונה 2');
+    assert.equal(altSpelling('שעות 9:00–18:00'), 'שעות 9:00–18:00');
   });
 });

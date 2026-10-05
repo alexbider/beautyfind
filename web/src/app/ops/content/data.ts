@@ -93,5 +93,5 @@ export const JSON_LD_TYPES = [
   { type: 'BreadcrumbList', where: 'אזור, עיר, תחום, פרופיל עסק', note: 'פירורי לחם בתוצאות' },
   { type: 'FAQPage', where: 'תחומי טיפול, פרופיל עסק', note: 'שאלות ותשובות מהעמוד בלבד' },
   { type: 'BeautySalon / MedicalClinic + PostalAddress + OpeningHoursSpecification', where: 'פרופיל עסק', note: 'כתובת, שעות, טלפון; דירוג בגוגל לעולם לא מוצג כדירוג BeautyFind' },
-  { type: 'Service', where: 'תחומי טיפול', note: 'תיאור התחום והמחיר החציוני' },
+  { type: 'Service', where: 'תחומי טיפול', note: 'תיאור התחום והמחיר הממוצע' },
 ];
