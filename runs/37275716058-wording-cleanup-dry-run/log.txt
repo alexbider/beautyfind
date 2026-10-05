@@ -1,0 +1,7 @@
+live listings scanned: 816; listings with a change: 0; field changes: 0; skipped claimed: 0; skipped owner-approved or reference: 0
+replacements per phrase:
+by field: 
+city spelling (תל אביב–יפו to תל אביב-יפו, every record): 157 rows: address=134 gallery=23
+CSV: reports/wording-cleanup.csv (157 rows)
+SUMMARY dry_run listings=0 changes=0 spelling=157 skipped_claimed=0 skipped_approved=0
+dry run: nothing changed (add --confirm to apply, with the undo CSV)
