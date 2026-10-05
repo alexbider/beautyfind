@@ -1,0 +1,60 @@
+run 9b57f175-a11e-4936-b584-81df700eaff2 "ניקוי תיאורים 14/17" status=done started=2026-10-05T13:24:24.070Z finished=2026-10-05T14:23:45.312Z
+counters: {"improved":50,"postTasks":13,"postPhotos":35,"filled_faqs":28,"filled_prices":1,"editorialCalls":50,"youtubeRequests":0,"editorial_failed":12,"editorial_written":38,"filled_description":28,"filled_meta_title_cleared":23,"filled_meta_description_cleared":49}
+listings in scope: 50, import records: 50, drafts written in this run: 50
+by model: claude-sonnet-5: 38, template: 12
+by tier: normal: 27, rich: 13, sparse: 10
+proofread: yes: 34, no: 16
+by error: (none): 38, unsupported_claims: הסטודיו עובד בכמה תחומים: 1, unsupported_claims: שיוצרים מעבר צבע הדרגתי בשיער; דירוג שנש: 1, unsupported_claims: עיצוב שיער, שכולל תספורות ועיצוב השיער ל: 1, unsupported_claims: מנוהל בידי ריבקי בלאו; המיועדת להסרה ארו: 1, unsupported_claims: לקראת מצבים שבהם חשוב להיראות טוב במצלמה: 1, invented_words: סרחי: 1, invented_words: פוליניוקלאוטידים: 1, unsupported_claims: טיפולי לייזר להסרה ארוכת טווח; שעווה קלא: 1, unsupported_claims: קלינית הוא מכון טיפולי קוסמטיקה בירושלים: 1, unsupported_claims: ואת התור קובעים בטלפון; איך קובעים תור? : 1, unsupported_claims: לימוד המקצוע לנשים שרוצות להתמקצע בתחום;: 1, unsupported_claims: Svetlana Iskhakov היא קליניקה לקוסמטיקה : 1
+words: min 40, median 89, max 267
+cost recorded on the records: 4.268 USD
+  claude-sonnet-5  normal words=  95 faqs= 6 pr=yes | 2bd73be2-df4d-4e03-95bf-02a585ae7ca4 מרפאות שיניים ד"ר אברהם ד"ר יצחק מושיחוב
+  claude-sonnet-5  sparse words=  40 faqs= 4 pr=yes | e1a9d50c-dcc5-4fbe-9a1d-daa8a1b6dff1 Liel Itzhaki • Face & Skin Care
+  template         rich   words= 215 faqs= 5 pr=no error=unsupported_claims: הסטודיו עובד בכמה תחומים | 1fb9c05f-5135-47f9-99d7-f7be941bdb74 Stella Beauty
+  claude-sonnet-5  normal words=  99 faqs= 7 pr=yes | da72002e-ef40-436b-a5de-d5a803176f1d נטלי טיפולי אסתטיקה מתקדמים
+  template         rich   words= 165 faqs= 5 pr=no error=unsupported_claims: שיוצרים מעבר צבע הדרגתי בשיער; דירוג שנשמר לאורך הפעילות הממושכת של המ | 7a8f02e4-85f2-4b41-88a9-f460590fa13e מוטי מספרה
+  claude-sonnet-5  normal words=  98 faqs= 8 pr=yes violations=repeat:address | c68541b2-741c-41d7-b6df-8930807aeded נייל בר מכון יופי • קניון הראל מבשרת ציו
+  template         normal words=  62 faqs= 4 pr=no error=unsupported_claims: עיצוב שיער, שכולל תספורות ועיצוב השיער לפי המראה הרצוי | 7230e850-bb77-4681-8db3-ffd47d85a398 יואל צרפתי סניף מבשרת ציון
+  claude-sonnet-5  rich   words= 184 faqs= 6 pr=yes violations=repeat:hours | 8e6eff31-276a-4d9a-942b-f3b7479562d2 מרפאת שיניים בירושלים ד''ר סטלה הייזלר -
+  claude-sonnet-5  normal words=  85 faqs= 6 pr=yes violations=meta:short:128 | 214c470e-9174-4e51-86d8-a9ecc5b3061c ולריה יחזקאלי קוסמטיקאית
+  claude-sonnet-5  normal words=  89 faqs= 6 pr=yes | 28587492-543a-45a9-bca3-440c068d896e מרים ללוש ירושלים
+  claude-sonnet-5  normal words=  95 faqs= 6 pr=yes | d6a7e954-e2af-4296-b003-2b2bb848795d חן פחימה קוסמטיקאית מומחית בטיפולי אקנה-
+  claude-sonnet-5  sparse words=  49 faqs= 5 pr=yes | 93d21a92-49c4-43b6-bb70-afca304f5a68 ספארקל
+  claude-sonnet-5  normal words=  77 faqs= 6 pr=yes | 0dc1fd40-ab55-4528-866c-3e876e5e9427 מכון יופי | Hei5 Beauty Salon
+  claude-sonnet-5  normal words=  92 faqs= 5 pr=yes | 50c90361-319d-4fed-8478-c71d541d62a7 יעלת חן מכון יופי וקוסמטיקה רפואית - מבי
+  claude-sonnet-5  sparse words=  63 faqs= 5 pr=yes | b4d58d2b-ce08-4bf2-8047-a4fcfa856522 ליאת לב אסתטיקה
+  claude-sonnet-5  normal words=  70 faqs= 5 pr=yes | 6228dece-b922-4389-beea-2d8dcab90fe0 נחום צבי מספרה
+  claude-sonnet-5  sparse words=  48 faqs= 5 pr=yes | 62003c87-a1df-4e38-b917-7b5ca6c8c797 רחלי זלץ טיפולי פנים מתקדמים
+  template         rich   words= 193 faqs= 6 pr=no error=unsupported_claims: מנוהל בידי ריבקי בלאו; המיועדת להסרה ארוכת טווח של שיער בגוף ובפנים במ | 30b9e9c0-c0c5-4a53-b2a6-a31bf6309dcf רבקי בלאו קוסמטיקה Rivky Blau
+  claude-sonnet-5  normal words=  85 faqs= 7 pr=yes | 19096f4f-5b3a-44b3-8e83-ab0bc6d15122 מספרת לידיה
+  template         normal words=  69 faqs= 4 pr=no error=unsupported_claims: לקראת מצבים שבהם חשוב להיראות טוב במצלמה; שעות שמאפשרות להגיע גם בסופי | 93990464-2803-4326-a2bb-0d46526ccfda מאק מלחה ירושלים
+  claude-sonnet-5  normal words=  92 faqs= 5 pr=yes | c491e952-e97a-4f4e-9cf6-d02a340749ca Hadar nails | | הסרת שיער | לק ג'ל | פדי
+  claude-sonnet-5  normal words=  86 faqs= 6 pr=yes | 94e895c7-7082-4699-ab4a-bbe8c646ab31 Tom Goldin MEN Salon@Beauty -טום גולדין
+  claude-sonnet-5  normal words=  79 faqs= 6 pr=yes violations=repeat:hours | meta:short:125 | 44571512-39d9-432f-b704-052de5f583ad Ilana Nails - ציפורניים לק ג׳ל
+  template         normal words= 118 faqs= 5 pr=no error=invented_words: סרחי | 3e75a41a-03f3-4d98-8a56-21a89a4c7225 Liv Beauty Academy
+  claude-sonnet-5  rich   words= 132 faqs= 7 pr=no violations=short:132 | meta:long:165 | 2800d02f-40a7-47ab-8cfa-486fbe2e5775 sk קוסמטיקה מתקדמת ופדיקור רפואי
+  template         rich   words= 102 faqs= 5 pr=no error=invented_words: פוליניוקלאוטידים | 79a3e972-7790-409b-b609-74c024ac2458 L.A Aesthetics - קליניקה מתקדמת לרפואה א
+  claude-sonnet-5  normal words=  88 faqs= 5 pr=yes | 3c186741-2dd0-4bd5-bb4a-7299a94b27d3 שרה בנטולילה הרבה מעבר ליופי
+  claude-sonnet-5  sparse words=  41 faqs= 3 pr=yes | 1cfc12aa-e4b5-461a-a497-41038c87ffed נינה מאר - קוסמטיקה טבעית מתקדמת
+  claude-sonnet-5  normal words=  97 faqs= 6 pr=yes violations=repeat:hours | meta:short:120 | bc94376e-35f3-4623-b660-b8e79b57d33a מספרה, עיצוב שיער ומכון יופי "גזום" "Hai
+  claude-sonnet-5  normal words=  82 faqs= 5 pr=yes | f7c9300a-6cfe-4ef3-9f92-c345ce456556 תמר חן - קוסמטיקאית רפואית
+  claude-sonnet-5  normal words=  88 faqs= 5 pr=yes violations=meta:short:129 | e81102a8-cd8f-42b8-a845-2ead01fa18c4 מרפאת שיניים בירושלים - ד"ר איתן אוראל -
+  template         rich   words= 267 faqs= 6 pr=no error=unsupported_claims: טיפולי לייזר להסרה ארוכת טווח; שעווה קלאסית; טיפול אנטי אייג׳ינג שמיוע | 0cf10daa-6231-4464-af2f-0c9dad0bdec7 Limor Cosmetics
+  claude-sonnet-5  normal words=  83 faqs= 6 pr=yes | 8a11633e-439d-4131-8978-9909f8f2969f ערן לוי ספר
+  template         rich   words= 265 faqs= 6 pr=no error=unsupported_claims: קלינית הוא מכון טיפולי קוסמטיקה בירושלים; בניהולה של אליס ברקוביץ; הסר | 7898a0cc-0647-42f0-a31f-337f1c2d57cc קוסמטיקאית קלינית בירושלים | אליס המרכז 
+  claude-sonnet-5  rich   words= 165 faqs= 8 pr=no violations=short:165 | 085b6a39-9a43-414f-ba1c-aaa22eb6e63c פרסי קוסמטיקה - ירושלים
+  claude-sonnet-5  sparse words=  45 faqs= 4 pr=yes violations=meta:title_repeat:טיפולי פנים ועיסויים בירושלים | 29eb68dd-175a-4bd6-b5e8-1d415c5d32d1 טיפולי פנים ועיסויים בירושלים - ספא תמר
+  claude-sonnet-5  normal words=  75 faqs= 6 pr=yes | 91a1118d-d90b-40a9-94fc-7b0c3c36fe11 סגול - מרפאת שיניים לילדים ומבוגרים, טיפ
+  template         normal words= 156 faqs= 5 pr=no error=unsupported_claims: ואת התור קובעים בטלפון; איך קובעים תור? בטלפון | 8afa9d11-2f8d-47a5-884d-839edb6be5bc Hamam Spa Raphael
+  claude-sonnet-5  normal words=  63 faqs= 6 pr=no violations=short:63 | meta:short:124 | e06daae3-5c72-427a-9d21-b9917f05b480 מספרה - אנה עיצוב שיער | парикмахерский 
+  claude-sonnet-5  normal words=  96 faqs= 7 pr=yes | 9814d9be-8073-4222-a5c2-2482f08a1d3a NK Beauty Lounge
+  claude-sonnet-5  sparse words=  43 faqs= 4 pr=yes | c1e13fb3-6bfc-4674-8a89-c872fa44d0f5 מינה קוסמטיקה
+  claude-sonnet-5  normal words=  87 faqs= 5 pr=yes | dbc5b2ce-0d31-4cdb-914a-2bc2b4b7c862 ליאת ועקנין | Liat Vaknin | Advanced Ski
+  template         rich   words= 122 faqs= 5 pr=no error=unsupported_claims: לימוד המקצוע לנשים שרוצות להתמקצע בתחום; שיטת שיקום וטיפוח גבות; להתחל | e3743894-d945-47aa-8be5-e1b6794064b7 abiglam
+  template         rich   words= 156 faqs= 6 pr=no error=unsupported_claims: Svetlana Iskhakov היא קליניקה לקוסמטיקה וטיפולי פנים; טיפולי עור כלליי | d95544c9-60e5-45b2-bdac-06abd65ffea8 Svetlana Iskhakov - סלון יופי, קוסמטיקה 
+  claude-sonnet-5  sparse words=  46 faqs= 5 pr=yes | 78bbf114-2d47-46a7-9bba-4252fbb2fb86 הילה חדאד - מאפרת כלות וערב | Hila Hadad
+  claude-sonnet-5  rich   words= 138 faqs= 8 pr=no violations=short:138 | meta:long:163 | 967798ad-a15f-4fa3-903a-791e623c5993 Smile Center Dental Clinic Dr. David Att
+  claude-sonnet-5  sparse words=  67 faqs= 5 pr=yes | 736ea499-991d-470b-af2e-bd051277db68 Perfection - Tanning and Beauty Boutique
+  claude-sonnet-5  normal words= 106 faqs= 6 pr=yes | f3c5dd83-360f-458e-b302-3f43c8ac252e Duet Family
+  claude-sonnet-5  sparse words=  63 faqs= 5 pr=yes | 62d946fd-3bbc-4bfc-a895-3dced0660ce2 Efrat Cosmetics
+  claude-sonnet-5  rich   words= 184 faqs= 6 pr=yes violations=meta:title_repeat:ולרי סיקרט ברחובות | 05e5d539-54eb-41e2-a3a5-0357b91cfa8c "Valery Secret" ולרי סיקרט - קליניקה ואק
+CSV: reports/editorial-report.csv
