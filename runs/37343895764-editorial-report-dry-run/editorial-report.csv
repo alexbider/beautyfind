@@ -1,0 +1,51 @@
+﻿branch_id,name,draft_from_this_run,model,tier,words,faqs,proofread,prompt_version,error,violations,repairs,needs_more_info,cost_usd,input_tokens,output_tokens,generated_at
+1e4a9162-fb70-4285-95e1-1b230b1f94d5,GPoint,yes,template,normal,73,4,no,2026-10-04.7,unsupported_claims: עיצוב השיער כולל תספורות ועיצוב; תוספות השיער מיועדות למי שרוצה להוסיף נפח או אורך,,0,false,0.05903,8120,4279,2026-10-04T21:16:38.121Z
+71ec6c62-0e51-4344-b8bd-cfb947b777bc,Irina Nikolenko,yes,template,normal,71,4,no,2026-10-04.7,unsupported_claims: Irina Nikolenko היא מספרה בחיפה,,0,false,0.098554,11992,7457,2026-10-04T21:20:48.456Z
+2f33a115-db5f-4848-9b0c-2c2508110d13,PYON BEAUTY ZONE,yes,claude-sonnet-5,normal,105,6,yes,2026-10-04.7,,,1,false,0.11567,15480,8471,2026-10-04T21:29:17.843Z
+72aa9b91-1800-45d4-aee7-90fdd3f55411,"ILANIT - סטיילינג, איפור ואפילציה בחיפה",yes,template,normal,88,4,no,2026-10-04.7,unsupported_claims: שמתמחה באיפור וטיפוח גבות וריסים; איפור ערב,,0,false,0.059122,8876,4137,2026-10-04T21:26:50.159Z
+5aa93c11-a952-4603-be9d-24f17d8ddeec,Moria beauty/ מוריה ביוטי,yes,template,normal,70,4,no,2026-10-04.7,unsupported_claims: מוריה ביוטי הוא סטודיו לציפורניים בחיפה; שמעבד את העור סביב הציפורן ומעצב אותה; שמותאם לצורת הציפורן הטבעית,,0,false,0.069406,10978,4745,2026-10-04T21:34:57.416Z
+d3afdfe1-693f-47b0-8a7a-a60879dd4ee6,Gili Shani professional make-up,yes,claude-sonnet-5,sparse,24,4,yes,2026-10-04.7,,,1,true,0.022564,2282,1800,2026-10-04T21:29:40.506Z
+b50c8fbe-1668-49b7-b3f4-bc1ab7b9c20e,Health & Beauty Clinic - Dr. Eyal Ness,yes,claude-sonnet-5,sparse,49,4,yes,2026-10-04.7,,,1,false,0.037356,4463,2843,2026-10-04T21:09:21.896Z
+637f9a97-399f-48ce-9dc7-e6c2faf2672f,"Dr. Altman Dental Clinic Haifa מרפאת שיניים ד""ר אלטמן בחיפה Стоматология Доктора Альтмана Хайфа",yes,claude-sonnet-5,normal,80,6,yes,2026-10-04.7,,,2,false,0.093492,8721,7605,2026-10-04T21:08:49.880Z
+c8355290-2cb6-419c-87ac-2a57570a2d58,Dr. Thaer Clinic - Alchemy 22,yes,claude-sonnet-5,normal,73,5,yes,2026-10-04.7,,,2,false,0.084856,9658,6554,2026-10-04T21:36:00.707Z
+2d008e64-fb14-44e5-bd2c-ad4939f19c7a,Kareen Skin Care,yes,claude-sonnet-5,sparse,48,5,yes,2026-10-04.7,,meta:short:119,1,false,0.03273,3425,2588,2026-10-04T21:33:25.702Z
+c8501197-c2bd-48d1-86c3-4d3263977865,LS__LashStudio_,yes,claude-sonnet-5,normal,70,6,yes,2026-10-04.7,,,2,false,0.052392,5496,4140,2026-10-04T21:31:59.148Z
+486cc530-40df-4493-8f64-76f0ab942df7,Hagar shitrit holistic cosmetics,yes,claude-sonnet-5,normal,81,5,yes,2026-10-04.7,,,1,false,0.069106,8793,5152,2026-10-04T20:58:11.709Z
+e5ce2df7-326a-46af-a152-f5ed9085aedc,Maria Permanent Make-Up,yes,claude-sonnet-5,sparse,41,4,yes,2026-10-04.7,,,2,false,0.041954,5072,3181,2026-10-04T21:27:22.213Z
+147663ca-f2e6-4d2f-b731-34ab4ecdaec1,Mika's nails מיקה ציפורניים,yes,claude-sonnet-5,sparse,59,5,yes,2026-10-04.7,,,0,false,0.03051,2500,2551,2026-10-04T21:02:54.663Z
+ceff57e5-7bf9-4e4c-a1d2-762c2dc686f8,Eden Cosmetics,yes,claude-sonnet-5,sparse,78,5,yes,2026-10-04.7,,,1,false,0.053298,5514,4227,2026-10-04T21:30:19.837Z
+247ecf73-334d-4f3b-b705-2ebe6202db68,Dolev Beauty Clinic And Academy,yes,template,normal,99,4,no,2026-10-04.7,invented_words: סושיאל,,0,false,0.085648,11454,6274,2026-10-04T20:59:08.251Z
+1681b742-e40f-425c-93b5-335fc70d782a,MAC Cosmetics Haifa,yes,template,normal,96,4,no,2026-10-04.7,unsupported_claims: MAC Cosmetics הוא סטודיו לאיפור בחיפה; שמתאים לתמונות וסלפי; איפור מוקפד ומתוקתק לאירועים ולחגיגות; שיעורי איפור שמלמדים טכניקה לעבודה עצמאית בבית; כך שיש גמישות גבוהה בתיאום הביקור; דירוג שמשקף התייחסות רחבה מצד לקוחות ,,0,false,0.069594,8332,5293,2026-10-04T21:00:00.637Z
+06feb076-1b98-4074-bd46-726ae3f79684,Persona - עיצוב שיער,yes,claude-sonnet-5,sparse,44,4,yes,2026-10-04.7,,,2,false,0.044686,5138,3441,2026-10-04T21:07:08.235Z
+89576520-5f79-4723-b1a2-636045227830,Dr.raanan segev. ד״ר רענן שגב,yes,template,normal,103,4,no,2026-10-04.7,unsupported_claims: מי שמחפש טיפול שאינו הזרקה יכול לבחור במיקרונידלינג,,0,false,0.075602,9581,5644,2026-10-04T20:57:25.031Z
+4aed5b3e-e72f-47ba-9349-106380956ea5,Dream Laser Haifa - Medical Aesthetic Clinic,yes,claude-sonnet-5,sparse,59,5,yes,2026-10-04.7,,,0,false,0.03267,2720,2723,2026-10-04T21:23:17.002Z
+0dbd3063-57dd-4ab1-9594-151e7a9e00ac,Face Art | רפואה אסתטית בחיפה,yes,claude-sonnet-5,sparse,48,4,yes,2026-10-04.7,,,1,true,0.03092,3075,2477,2026-10-04T21:26:11.214Z
+fd7b2449-decb-48c1-b178-97956c809984,Dr.Matani Aesthetic,yes,claude-sonnet-5,sparse,61,5,yes,2026-10-04.7,,,1,false,0.039062,3921,3122,2026-10-04T21:30:50.844Z
+4f317565-8ae0-41af-833f-9fd5e87a67c0,"Oly Cosmetics - מרכז לטיפולי פנים וגוף, מוצרי קוסמטיקה",yes,claude-sonnet-5,rich,237,8,yes,2026-10-04.7,,,1,false,0.192704,21052,15060,2026-10-04T21:06:30.649Z
+eec6e8c2-c64c-4f62-972a-b62bbdcd2d18,Julia Elkin FaceMassage,yes,claude-sonnet-5,normal,81,5,yes,2026-10-04.7,,,2,false,0.078562,9071,6042,2026-10-04T21:14:14.901Z
+39565533-b923-4b79-aab0-09004cef625b,Innesa_beauty_lab,yes,template,normal,88,5,no,2026-10-04.7,unsupported_claims: סטודיו בחיפה; טיפולי איפור קבוע לגבות ולשפתיים; שחוסכים את האיפור היומיומי,,0,false,0.083044,10187,6267,2026-10-04T21:32:57.721Z
+3c4c15b5-9cbf-465e-a31e-85411f29ee17,Lumi Spa & Beauty,yes,claude-sonnet-5,normal,94,5,yes,2026-10-04.7,,,2,false,0.086756,8178,7040,2026-10-04T21:19:16.397Z
+3ce9f88a-23ff-4896-8ea1-3f72d951bdb0,Goddess of grace,yes,claude-sonnet-5,sparse,57,5,yes,2026-10-04.7,,,0,false,0.026064,2717,2063,2026-10-04T21:19:38.588Z
+0e024116-fe75-449e-ba10-63b38958aa95,Pelle Medical Cosmetics,yes,claude-sonnet-5,sparse,41,4,yes,2026-10-04.7,,,3,false,0.061216,6718,4778,2026-10-04T21:22:48.577Z
+5a8cbecc-145c-4f42-8f11-891f3d6c107a,Eden Clinic,yes,claude-sonnet-5,sparse,46,5,yes,2026-10-04.7,,,0,false,0.028448,2379,2369,2026-10-04T21:25:12.958Z
+4124e0af-651e-4e9e-8638-9535ace3bcd3,DK The Hair Lounge,yes,template,normal,76,5,no,2026-10-04.7,unsupported_claims: שתי טכניקות שמיועדות ליצירת מעברי צבע טבעיים ורב גוניים בשיער; עדכונים ותמונות מהעבודות שבוצעו במספרה מתפרסמים באופן שוטף בעמוד הפייסבוק שלה,,0,false,0.085744,11737,6227,2026-10-04T21:01:01.985Z
+d467daa3-d104-4ca1-8362-8f29ca77cb7f,"MeDay המרכז לאסתטיקה , טיפוח ויופי",yes,claude-sonnet-5,rich,168,6,no,2026-10-04.7,,short:168,2,false,0.075516,9778,5596,2026-10-04T21:01:55.792Z
+3ce86f6b-3656-4c56-b22c-2f56f53ade4f,Maia Beauty - קוסמטיקה מתקדמת,yes,claude-sonnet-5,sparse,57,5,yes,2026-10-04.7,,,1,false,0.038328,4239,2985,2026-10-04T21:03:25.654Z
+647d7b59-2f56-47ac-828a-3f730c64237b,Clinic specialists gums and implants teachers,yes,claude-sonnet-5,normal,73,5,yes,2026-10-04.7,,,0,false,0.036386,2708,3097,2026-10-04T21:07:41.066Z
+053bef04-b379-4002-8859-f1dad479aae3,Olfat Clinic,yes,claude-sonnet-5,sparse,64,5,yes,2026-10-04.7,,,0,false,0.027152,2421,2231,2026-10-04T21:11:46.128Z
+ad0f8d77-3da3-4c9d-b9be-8d9960b44b28,Paroa' Hair Salon Haifa פרוע,yes,claude-sonnet-5,normal,70,5,yes,2026-10-04.7,,,1,false,0.036568,4004,2856,2026-10-04T21:12:17.469Z
+752f7ed8-64d5-4ddc-969b-63849c18b5d6,Liya Hanukaev - ליה חנוכייב קוסמטיקאית בכירה,yes,claude-sonnet-5,normal,76,6,yes,2026-10-04.7,,,0,false,0.036766,3368,3003,2026-10-04T21:18:12.541Z
+50ac6dab-ec35-4b33-bd75-46d81256cd5b,Kavva Beauty Boutique,yes,claude-sonnet-5,normal,118,7,yes,2026-10-04.7,,,1,false,0.07899,6850,6529,2026-10-04T21:17:38.853Z
+72e5db6d-cb5a-4726-80bc-cad512c4361d,Cosmetology One,yes,template,normal,114,4,no,2026-10-04.7,unsupported_claims: טיפול שמיועד להסרה ארוכת טווח של שיער בגוף ובפנים,,0,false,0.04234,5165,3201,2026-10-04T21:22:00.645Z
+2f2a838c-8789-49d4-a47a-726340cf66cc,O’brows- עיצוב גבות בנשר,yes,template,rich,117,4,no,2026-10-04.7,"unsupported_claims: O’brows הוא סטודיו לגבות וריסים ואיפור קבוע בנשר; בשיטת הסרת שיער המקובלת לעיצוב קו עדין ומדויק; המחליפות את הצורך למלא את הגבות יום יום; טיפוח גבות, שמסדרים את שיער הגבה למראה מלא ואחיד; מגוון הטיפולים מאפשר לשלב בין עי",,0,false,0.12997,14885,10020,2026-10-04T21:24:48.285Z
+4843f1d3-9c41-49fc-99de-20fe8c48b8b3,Glow Med Aesthetic - גלואו מד אסתטיקס,yes,claude-sonnet-5,sparse,55,5,yes,2026-10-04.7,,meta:long:158,1,false,0.041214,4022,3317,2026-10-04T21:25:45.105Z
+5bf84054-38dc-4b7e-b73c-14cd92ba85c5,Nails Salon A.N,yes,claude-sonnet-5,normal,71,5,yes,2026-10-04.7,,meta:short:117,2,false,0.058532,8036,4246,2026-10-04T21:28:04.085Z
+25537abc-719e-44de-ac04-877397d0e51e,Dr. Ronen Porat,yes,claude-sonnet-5,sparse,49,5,yes,2026-10-04.7,,,1,false,0.032528,3164,2620,2026-10-04T21:31:18.354Z
+a7572d75-33ed-415d-b81f-2eedfff8d458,Miss G,yes,claude-sonnet-5,sparse,94,5,yes,2026-10-04.7,,,0,false,0.052314,3892,4453,2026-10-04T21:34:10.378Z
+e1127edf-795b-48b0-8153-4e4c865346d9,NEWNESS Cosmetology Haifa,yes,claude-sonnet-5,normal,78,6,yes,2026-10-04.7,,,0,false,0.047794,3552,4069,2026-10-04T21:21:26.865Z
+3d7e9e5f-1473-435a-915e-83f83dd6c14c,My Beauty clinic,yes,template,normal,114,3,no,2026-10-04.7,invented_words: פרסותרפיה,,0,false,0.083486,7768,6795,2026-10-04T21:13:19.211Z
+1d18490e-4666-4f18-be9f-0c21ca22977c,Ehud Elbaz Beauty Salon מספרה בחיפה אהוד אלבז,yes,claude-sonnet-5,normal,117,5,yes,2026-10-04.7,,,1,false,0.064948,6669,5161,2026-10-04T20:56:32.619Z
+83a4f1c8-32af-46b2-88e0-8ce64c1f3f6b,Hanna Vi Nails,yes,template,normal,76,4,no,2026-10-04.7,unsupported_claims: Hanna Vi Nails הוא סטודיו לציפורניים בחיפה; שמתמחה במניקור ופדיקור,,0,false,0.046108,6634,3284,2026-10-04T21:02:28.030Z
+422ac2ff-fd4d-4881-9098-79ca96b4cabb,Nael’s Barbershop,yes,claude-sonnet-5,normal,89,5,yes,2026-10-04.7,,repeat:address,3,false,0.096518,10729,7506,2026-10-04T21:04:31.417Z
+f5f9510a-f30f-4fda-ac5d-ed82c839117e,Epilution Haifa | Салон красоты | Beauty Salon,yes,template,rich,126,5,no,2026-10-04.7,unsupported_claims: Epilution הוא עסק טיפוח בחיפה; שיטה שמיועדת להחלקה ממושכת יותר מאשר שעווה או סוכר,,0,false,0.203904,26897,15011,2026-10-04T21:11:21.611Z
+062e0522-e937-4e53-81b5-b1a5a2558af8,My Beauty מכון יופי בת גלים,yes,template,rich,158,5,no,2026-10-04.7,unsupported_claims: שעוות הפנים מתאימה להסרת שיער עדין מאזורים כמו השפה העליונה או הלחיים; שעוות הגוף מיועדת לאזורים גדולים יותר,,0,false,0.154822,19601,11562,2026-10-04T21:15:55.470Z

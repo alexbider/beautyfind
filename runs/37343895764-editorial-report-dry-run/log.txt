@@ -1,0 +1,60 @@
+run f6a33ba2-172c-43d3-8ac3-e55257acb961 "ניקוי תיאורים 3/17" status=done started=2026-10-04T20:55:02.709Z finished=2026-10-04T21:36:03.142Z
+counters: {"improved":49,"postTasks":1,"filled_faqs":31,"editorialCalls":50,"nothing_to_add":1,"youtubeRequests":0,"editorial_failed":15,"editorial_written":35,"filled_description":31,"filled_meta_title_cleared":14,"filled_meta_description_cleared":49}
+listings in scope: 50, import records: 50, drafts written in this run: 50
+by model: claude-sonnet-5: 35, template: 15
+by tier: normal: 27, sparse: 18, rich: 5
+proofread: yes: 34, no: 16
+by error: (none): 35, unsupported_claims: עיצוב השיער כולל תספורות ועיצוב; תוספות : 1, unsupported_claims: Irina Nikolenko היא מספרה בחיפה: 1, unsupported_claims: שמתמחה באיפור וטיפוח גבות וריסים; איפור : 1, unsupported_claims: מוריה ביוטי הוא סטודיו לציפורניים בחיפה;: 1, invented_words: סושיאל: 1, unsupported_claims: MAC Cosmetics הוא סטודיו לאיפור בחיפה; ש: 1, unsupported_claims: מי שמחפש טיפול שאינו הזרקה יכול לבחור במ: 1, unsupported_claims: סטודיו בחיפה; טיפולי איפור קבוע לגבות ול: 1, unsupported_claims: שתי טכניקות שמיועדות ליצירת מעברי צבע טב: 1, unsupported_claims: טיפול שמיועד להסרה ארוכת טווח של שיער בג: 1, unsupported_claims: O’brows הוא סטודיו לגבות וריסים ואיפור ק: 1, invented_words: פרסותרפיה: 1, unsupported_claims: Hanna Vi Nails הוא סטודיו לציפורניים בחי: 1, unsupported_claims: Epilution הוא עסק טיפוח בחיפה; שיטה שמיו: 1, unsupported_claims: שעוות הפנים מתאימה להסרת שיער עדין מאזור: 1
+words: min 24, median 76, max 237
+cost recorded on the records: 3.325 USD
+  template         normal words=  73 faqs= 4 pr=no error=unsupported_claims: עיצוב השיער כולל תספורות ועיצוב; תוספות השיער מיועדות למי שרוצה להוסיף | 1e4a9162-fb70-4285-95e1-1b230b1f94d5 GPoint
+  template         normal words=  71 faqs= 4 pr=no error=unsupported_claims: Irina Nikolenko היא מספרה בחיפה | 71ec6c62-0e51-4344-b8bd-cfb947b777bc Irina Nikolenko
+  claude-sonnet-5  normal words= 105 faqs= 6 pr=yes | 2f33a115-db5f-4848-9b0c-2c2508110d13 PYON BEAUTY ZONE
+  template         normal words=  88 faqs= 4 pr=no error=unsupported_claims: שמתמחה באיפור וטיפוח גבות וריסים; איפור ערב | 72aa9b91-1800-45d4-aee7-90fdd3f55411 ILANIT - סטיילינג, איפור ואפילציה בחיפה
+  template         normal words=  70 faqs= 4 pr=no error=unsupported_claims: מוריה ביוטי הוא סטודיו לציפורניים בחיפה; שמעבד את העור סביב הציפורן ומ | 5aa93c11-a952-4603-be9d-24f17d8ddeec Moria beauty/ מוריה ביוטי
+  claude-sonnet-5  sparse words=  24 faqs= 4 pr=yes | d3afdfe1-693f-47b0-8a7a-a60879dd4ee6 Gili Shani professional make-up
+  claude-sonnet-5  sparse words=  49 faqs= 4 pr=yes | b50c8fbe-1668-49b7-b3f4-bc1ab7b9c20e Health & Beauty Clinic - Dr. Eyal Ness
+  claude-sonnet-5  normal words=  80 faqs= 6 pr=yes | 637f9a97-399f-48ce-9dc7-e6c2faf2672f Dr. Altman Dental Clinic Haifa מרפאת שינ
+  claude-sonnet-5  normal words=  73 faqs= 5 pr=yes | c8355290-2cb6-419c-87ac-2a57570a2d58 Dr. Thaer Clinic - Alchemy 22
+  claude-sonnet-5  sparse words=  48 faqs= 5 pr=yes violations=meta:short:119 | 2d008e64-fb14-44e5-bd2c-ad4939f19c7a Kareen Skin Care
+  claude-sonnet-5  normal words=  70 faqs= 6 pr=yes | c8501197-c2bd-48d1-86c3-4d3263977865 LS__LashStudio_
+  claude-sonnet-5  normal words=  81 faqs= 5 pr=yes | 486cc530-40df-4493-8f64-76f0ab942df7 Hagar shitrit holistic cosmetics
+  claude-sonnet-5  sparse words=  41 faqs= 4 pr=yes | e5ce2df7-326a-46af-a152-f5ed9085aedc Maria Permanent Make-Up
+  claude-sonnet-5  sparse words=  59 faqs= 5 pr=yes | 147663ca-f2e6-4d2f-b731-34ab4ecdaec1 Mika's nails מיקה ציפורניים
+  claude-sonnet-5  sparse words=  78 faqs= 5 pr=yes | ceff57e5-7bf9-4e4c-a1d2-762c2dc686f8 Eden Cosmetics
+  template         normal words=  99 faqs= 4 pr=no error=invented_words: סושיאל | 247ecf73-334d-4f3b-b705-2ebe6202db68 Dolev Beauty Clinic And Academy
+  template         normal words=  96 faqs= 4 pr=no error=unsupported_claims: MAC Cosmetics הוא סטודיו לאיפור בחיפה; שמתאים לתמונות וסלפי; איפור מוק | 1681b742-e40f-425c-93b5-335fc70d782a MAC Cosmetics Haifa
+  claude-sonnet-5  sparse words=  44 faqs= 4 pr=yes | 06feb076-1b98-4074-bd46-726ae3f79684 Persona - עיצוב שיער
+  template         normal words= 103 faqs= 4 pr=no error=unsupported_claims: מי שמחפש טיפול שאינו הזרקה יכול לבחור במיקרונידלינג | 89576520-5f79-4723-b1a2-636045227830 Dr.raanan segev. ד״ר רענן שגב
+  claude-sonnet-5  sparse words=  59 faqs= 5 pr=yes | 4aed5b3e-e72f-47ba-9349-106380956ea5 Dream Laser Haifa - Medical Aesthetic Cl
+  claude-sonnet-5  sparse words=  48 faqs= 4 pr=yes | 0dbd3063-57dd-4ab1-9594-151e7a9e00ac Face Art | רפואה אסתטית בחיפה
+  claude-sonnet-5  sparse words=  61 faqs= 5 pr=yes | fd7b2449-decb-48c1-b178-97956c809984 Dr.Matani Aesthetic
+  claude-sonnet-5  rich   words= 237 faqs= 8 pr=yes | 4f317565-8ae0-41af-833f-9fd5e87a67c0 Oly Cosmetics - מרכז לטיפולי פנים וגוף, 
+  claude-sonnet-5  normal words=  81 faqs= 5 pr=yes | eec6e8c2-c64c-4f62-972a-b62bbdcd2d18 Julia Elkin FaceMassage
+  template         normal words=  88 faqs= 5 pr=no error=unsupported_claims: סטודיו בחיפה; טיפולי איפור קבוע לגבות ולשפתיים; שחוסכים את האיפור היומ | 39565533-b923-4b79-aab0-09004cef625b Innesa_beauty_lab
+  claude-sonnet-5  normal words=  94 faqs= 5 pr=yes | 3c4c15b5-9cbf-465e-a31e-85411f29ee17 Lumi Spa & Beauty
+  claude-sonnet-5  sparse words=  57 faqs= 5 pr=yes | 3ce9f88a-23ff-4896-8ea1-3f72d951bdb0 Goddess of grace
+  claude-sonnet-5  sparse words=  41 faqs= 4 pr=yes | 0e024116-fe75-449e-ba10-63b38958aa95 Pelle Medical Cosmetics
+  claude-sonnet-5  sparse words=  46 faqs= 5 pr=yes | 5a8cbecc-145c-4f42-8f11-891f3d6c107a Eden Clinic
+  template         normal words=  76 faqs= 5 pr=no error=unsupported_claims: שתי טכניקות שמיועדות ליצירת מעברי צבע טבעיים ורב גוניים בשיער; עדכונים | 4124e0af-651e-4e9e-8638-9535ace3bcd3 DK The Hair Lounge
+  claude-sonnet-5  rich   words= 168 faqs= 6 pr=no violations=short:168 | d467daa3-d104-4ca1-8362-8f29ca77cb7f MeDay המרכז לאסתטיקה , טיפוח ויופי
+  claude-sonnet-5  sparse words=  57 faqs= 5 pr=yes | 3ce86f6b-3656-4c56-b22c-2f56f53ade4f Maia Beauty - קוסמטיקה מתקדמת
+  claude-sonnet-5  normal words=  73 faqs= 5 pr=yes | 647d7b59-2f56-47ac-828a-3f730c64237b Clinic specialists gums and implants tea
+  claude-sonnet-5  sparse words=  64 faqs= 5 pr=yes | 053bef04-b379-4002-8859-f1dad479aae3 Olfat Clinic
+  claude-sonnet-5  normal words=  70 faqs= 5 pr=yes | ad0f8d77-3da3-4c9d-b9be-8d9960b44b28 Paroa' Hair Salon Haifa פרוע
+  claude-sonnet-5  normal words=  76 faqs= 6 pr=yes | 752f7ed8-64d5-4ddc-969b-63849c18b5d6 Liya Hanukaev - ליה חנוכייב קוסמטיקאית ב
+  claude-sonnet-5  normal words= 118 faqs= 7 pr=yes | 50ac6dab-ec35-4b33-bd75-46d81256cd5b Kavva Beauty Boutique
+  template         normal words= 114 faqs= 4 pr=no error=unsupported_claims: טיפול שמיועד להסרה ארוכת טווח של שיער בגוף ובפנים | 72e5db6d-cb5a-4726-80bc-cad512c4361d Cosmetology One
+  template         rich   words= 117 faqs= 4 pr=no error=unsupported_claims: O’brows הוא סטודיו לגבות וריסים ואיפור קבוע בנשר; בשיטת הסרת שיער המקו | 2f2a838c-8789-49d4-a47a-726340cf66cc O’brows- עיצוב גבות בנשר
+  claude-sonnet-5  sparse words=  55 faqs= 5 pr=yes violations=meta:long:158 | 4843f1d3-9c41-49fc-99de-20fe8c48b8b3 Glow Med Aesthetic - גלואו מד אסתטיקס
+  claude-sonnet-5  normal words=  71 faqs= 5 pr=yes violations=meta:short:117 | 5bf84054-38dc-4b7e-b73c-14cd92ba85c5 Nails Salon A.N
+  claude-sonnet-5  sparse words=  49 faqs= 5 pr=yes | 25537abc-719e-44de-ac04-877397d0e51e Dr. Ronen Porat
+  claude-sonnet-5  sparse words=  94 faqs= 5 pr=yes | a7572d75-33ed-415d-b81f-2eedfff8d458 Miss G
+  claude-sonnet-5  normal words=  78 faqs= 6 pr=yes | e1127edf-795b-48b0-8153-4e4c865346d9 NEWNESS Cosmetology Haifa
+  template         normal words= 114 faqs= 3 pr=no error=invented_words: פרסותרפיה | 3d7e9e5f-1473-435a-915e-83f83dd6c14c My Beauty clinic
+  claude-sonnet-5  normal words= 117 faqs= 5 pr=yes | 1d18490e-4666-4f18-be9f-0c21ca22977c Ehud Elbaz Beauty Salon מספרה בחיפה אהוד
+  template         normal words=  76 faqs= 4 pr=no error=unsupported_claims: Hanna Vi Nails הוא סטודיו לציפורניים בחיפה; שמתמחה במניקור ופדיקור | 83a4f1c8-32af-46b2-88e0-8ce64c1f3f6b Hanna Vi Nails
+  claude-sonnet-5  normal words=  89 faqs= 5 pr=yes violations=repeat:address | 422ac2ff-fd4d-4881-9098-79ca96b4cabb Nael’s Barbershop
+  template         rich   words= 126 faqs= 5 pr=no error=unsupported_claims: Epilution הוא עסק טיפוח בחיפה; שיטה שמיועדת להחלקה ממושכת יותר מאשר שע | f5f9510a-f30f-4fda-ac5d-ed82c839117e Epilution Haifa | Салон красоты | Beauty
+  template         rich   words= 158 faqs= 5 pr=no error=unsupported_claims: שעוות הפנים מתאימה להסרת שיער עדין מאזורים כמו השפה העליונה או הלחיים; | 062e0522-e937-4e53-81b5-b1a5a2558af8 My Beauty מכון יופי בת גלים
+CSV: reports/editorial-report.csv
