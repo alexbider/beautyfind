@@ -1,0 +1,7 @@
+live listings scanned: 816; listings with a change: 0; field changes: 0; skipped claimed: 0; skipped owner-approved or reference: 0
+replacements per phrase:
+by field: 
+city spelling (תל אביב–יפו to תל אביב-יפו, every record): 691 rows: city.name=1 cityName=135 coverAlt=23 importPlace.cityName=145 media.alt=387
+CSV: reports/wording-cleanup.csv (691 rows)
+APPLIED 691 field changes (0 content, 691 city spelling) on 668 records. Undo list: reports/wording-cleanup-undo.csv (npm run import:wording-cleanup -- --revert reports/wording-cleanup-undo.csv).
+SUMMARY applied=691 listings=0 spelling=691 csv=reports/wording-cleanup.csv
