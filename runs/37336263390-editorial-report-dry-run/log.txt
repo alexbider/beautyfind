@@ -1,0 +1,60 @@
+run 03c75d4c-3767-4e1b-8e57-eacb372c487d "ניקוי תיאורים 8/17" status=done started=2026-10-05T07:56:25.110Z finished=2026-10-05T08:39:55.829Z
+counters: {"improved":50,"postTasks":6,"postPhotos":9,"filled_faqs":29,"filled_prices":2,"editorialCalls":50,"youtubeRequests":0,"editorial_failed":10,"editorial_written":40,"filled_description":29,"filled_meta_title_cleared":22,"filled_meta_description_cleared":50}
+listings in scope: 50, import records: 50, drafts written in this run: 50
+by model: claude-sonnet-5: 40, template: 10
+by tier: normal: 22, sparse: 22, rich: 6
+proofread: yes: 36, no: 14
+by error: (none): 40, unsupported_claims: הדבקת ריסים הוא סטודיו לטיפוח גבות וריסי: 1, unsupported_claims: חדווה בכר HBeauty הוא סטודיו לטיפולי יופ: 1, unsupported_claims: שמיועד למי שרוצה להתאים את מבנה השיניים : 1, invented_words: סרחי, פלולות: 1, unsupported_claims: בגוגל העסק מדורג 5 מתוך 5, על סמך 44 ביק: 1, unsupported_claims: עיצוב השיער כולל תספורות ועיצוב תסרוקת ל: 1, unsupported_claims: סטודיון לטיפוח ציפורניים; עיצוב גבות: 1, unsupported_claims: מניקור ופדיקור קלאסיים; ציפורניים אקרילי: 1, unsupported_claims: הסטודיו: 1, invented_words: אקססוריז: 1
+words: min 35, median 70, max 209
+cost recorded on the records: 3.435 USD
+  claude-sonnet-5  normal words= 122 faqs= 5 pr=yes | dc3ca778-df30-4a41-99bc-fbe9f45225a6 קוסמטיקה מתקדמת - NÖNY aesthetics
+  claude-sonnet-5  normal words= 100 faqs= 5 pr=yes | b919ede6-afee-4713-b833-8833f5629014 חלי קרני קוסמטיקאית מוסמכת | Heli Karni 
+  claude-sonnet-5  sparse words=  54 faqs= 5 pr=yes | d7044174-e1ea-44f8-9bab-ba8a980e6800 טל עדי הלחמת ריסים איפור שבוע ושיזוף
+  claude-sonnet-5  sparse words=  47 faqs= 5 pr=yes | e6dd2f6a-4d1e-47b7-aefd-233c449d67e9 נטלי סטודיו - ספא בנתניה
+  claude-sonnet-5  sparse words=  42 faqs= 4 pr=yes | 2cac38e0-91ac-428e-9eeb-a531c73dfe2f קוסמטיקאית בנתניה אירית רגב קוסמטיקאית
+  claude-sonnet-5  sparse words=  41 faqs= 4 pr=yes | 82277c2f-90b9-42cc-81df-a0e2422c5b3e ציפי- הרמת ריסים בנתניה
+  claude-sonnet-5  normal words=  61 faqs= 6 pr=no violations=short:61 | meta:short:123 | bca818e1-7d9b-4691-8725-218370aef332 יערית החלקות שיער בנתניה / החלקה אורגנית
+  claude-sonnet-5  sparse words=  35 faqs= 3 pr=yes | 9428cd50-595f-430c-a840-f861cb202923 נטלי קוסמטיקה
+  claude-sonnet-5  sparse words=  40 faqs= 4 pr=yes | c9f380db-8fab-4bb6-90ba-fe437462006e הודיה מאגרו ציפורניים
+  claude-sonnet-5  sparse words=  59 faqs= 5 pr=yes | ce5d1522-2bd4-4b38-b83e-6b6e1453474b ירדן שלומי - קליניקה לטיפולי עור מתקדמים
+  claude-sonnet-5  normal words=  91 faqs= 6 pr=yes violations=meta:short:129 | 3cd147c7-473e-44e3-8b8c-cca5ccca2cfc טניה בקאי קוסמטיקאית מוסמכת נתניה-אגמים
+  claude-sonnet-5  normal words=  85 faqs= 6 pr=yes | c795a6f4-f3dd-4546-944f-98d9652f861e קוסמטיקאית פרא רפואית בנתניה - אילנה שוו
+  claude-sonnet-5  sparse words=  56 faqs= 5 pr=yes | 8eae887a-c463-47c6-b7e1-45664e5995e8 הילה איילין - איפור קבוע, קורסים לאיפור 
+  claude-sonnet-5  sparse words=  46 faqs= 4 pr=yes | 24b9a48d-f7a8-45c1-be0b-0abf3336f8e8 ליטל נקב- איפור כלות ואירועים קוסמטיקאית
+  template         normal words=  87 faqs= 5 pr=no error=unsupported_claims: הדבקת ריסים הוא סטודיו לטיפוח גבות וריסים בנתניה | f9ef6efa-155d-4d68-907e-8eee85bdff59 הדבקת ריסים
+  template         rich   words= 209 faqs= 6 pr=no error=unsupported_claims: חדווה בכר HBeauty הוא סטודיו לטיפולי יופי בנתניה; המיועדת למי שרוצה גב | 8eb1b361-f1a2-4c26-b2fe-e0711d18ee3b חדווה בכר HBeauty - קוסמטיקה וטיפולי יופ
+  claude-sonnet-5  normal words= 109 faqs= 7 pr=yes | 6bbc94c6-6975-4221-905e-912677e4b6f0 כירורג פלסטי בנתניה - ד"ר טנצר
+  template         rich   words=  81 faqs= 5 pr=no error=unsupported_claims: שמיועד למי שרוצה להתאים את מבנה השיניים מבלי להשתמש בפלטות מתכת גלויות | c5c75f84-9b81-4d07-9ce9-3add023f37a1 מרפאת שיניים בנתניה Les Experts
+  claude-sonnet-5  sparse words=  55 faqs= 5 pr=yes | d6cf79b9-e0d5-4fb8-be87-6abe7cfa6098 מגע של קסם - מכון לקוסמטיקה מתקדמת
+  template         normal words= 160 faqs= 5 pr=no error=invented_words: סרחי, פלולות | a3d15045-f65e-4e60-ab93-fc03135d67d8 לייזר פרו
+  claude-sonnet-5  rich   words= 177 faqs= 7 pr=no violations=short:177 | person:אירינה ז | person:אבריקוסוב ולדימיר | meta:long:164 | 2fa68a6a-e859-4918-8160-b752bfd4e86b מרכז לרפואת שיניים אובול
+  claude-sonnet-5  sparse words=  42 faqs= 4 pr=yes | 989d3548-16d9-40aa-9448-2403daa71539 סמדר קוסמטיק
+  claude-sonnet-5  normal words= 149 faqs= 6 pr=yes violations=meta:short:116 | 11e3f9e5-5236-473c-981c-dccab368098d מעיין שחם רביב
+  claude-sonnet-5  sparse words=  46 faqs= 4 pr=yes violations=meta:short:110 | 471d36d8-75c2-4e1a-9083-429f8930bde5 נועה קוסמטיקה
+  claude-sonnet-5  sparse words=  38 faqs= 4 pr=yes violations=meta:long:160 | 9899d99c-7136-4185-b2cb-11a6f561d64c פיט פלוס - Feet Plus
+  claude-sonnet-5  sparse words=  55 faqs= 5 pr=yes | a0819a39-fa1e-4ed6-b538-07e686f61493 חן אליאסי - Chen Eliassi Skincare
+  template         rich   words= 107 faqs= 4 pr=no error=unsupported_claims: בגוגל העסק מדורג 5 מתוך 5, על סמך 44 ביקורות שנכתבו על הטיפולים ועל הנ | 292e812b-f807-4590-ab52-c44b97e6f327 ד״ר שי לי אלמוג - מרפאה אסתטית
+  claude-sonnet-5  sparse words=  62 faqs= 5 pr=yes violations=meta:short:121 | 029ceb78-43db-4cbd-8036-84657caa5ed3 ד״ר מיכל גלבוע
+  template         normal words=  93 faqs= 3 pr=no error=unsupported_claims: עיצוב השיער כולל תספורות ועיצוב תסרוקת לנשים ולגברים | 607eba4e-0098-46eb-a61a-638863abb41e קטי מולגן - מעצבת שיער Ketty Molgan- Hai
+  claude-sonnet-5  sparse words=  40 faqs= 4 pr=yes | 967c88c0-ad33-4379-be46-717ba3a29d2f דפנה קוסמטיקס קוסמטיקאית בנתניה
+  template         normal words=  59 faqs= 4 pr=no error=unsupported_claims: סטודיון לטיפוח ציפורניים; עיצוב גבות | febe2422-969f-415b-a570-b808208e89c6 ירין פכטר קוסמטיקס
+  claude-sonnet-5  normal words=  85 faqs= 5 pr=yes | 72546b1d-cb4c-4833-8733-a5534d6452bb קליניקה בוטיק - POPULAR
+  claude-sonnet-5  sparse words=  45 faqs= 4 pr=yes | ee07a520-e599-42d2-8c54-98b53bdae031 סוזן אומנית איפור עיצוב שיער וציפורניים
+  claude-sonnet-5  normal words=  88 faqs= 5 pr=yes violations=repeat:hours | dec88199-1530-484f-91aa-9e4dd0b6920a ליאורה גבורי קוסמטיקאית
+  claude-sonnet-5  normal words=  66 faqs= 5 pr=no violations=short:66 | meta:short:113 | db80de8e-2033-4a02-a976-015e5de74379 ליאל לוי | מכון קוסמטיקה ויופי
+  claude-sonnet-5  sparse words=  43 faqs= 5 pr=yes | 4c390bea-424c-47d8-b496-1fa861bd367b חן קוסמטיקס
+  claude-sonnet-5  normal words=  94 faqs= 7 pr=yes | e435b476-b079-44e1-a3ce-a06c30887bd2 מאפרת מקצועית | איפור כלות | איפור ערב |
+  claude-sonnet-5  sparse words=  43 faqs= 4 pr=yes | fa378bdd-c0bc-4eb9-abe5-8a0226cd7710 נאיה ביוטי קליניק - Naya beauty clinic
+  template         normal words=  95 faqs= 3 pr=no error=unsupported_claims: מניקור ופדיקור קלאסיים; ציפורניים אקריליות להארכה וחיזוק; הסרת שיער בל | 98067c79-de1f-49ca-99b4-975c49a6b33f מירב ישראל
+  claude-sonnet-5  sparse words=  50 faqs= 5 pr=yes | 5002c48e-440d-4cd4-838e-78b84ce80faa מיכל נחאיסי קוסמטיקה
+  claude-sonnet-5  normal words=  76 faqs= 5 pr=yes | 1913d0f4-a159-4324-98a6-7625a0feb019 סיגלית קוסמטיקה מתקדמת
+  claude-sonnet-5  normal words=  70 faqs= 5 pr=yes violations=repeat:address | 0c8a0575-161c-463d-95b1-c30a84b1049f ספא ניצה
+  template         normal words= 122 faqs= 4 pr=no error=unsupported_claims: הסטודיו | 84fcf018-961b-4dac-be3c-b1a5887614df עדי ואת בדרך ליופי
+  claude-sonnet-5  normal words=  77 faqs= 7 pr=yes violations=meta:short:127 | cdb6b14b-405f-4151-a6bf-2a74598a49b7 עיצוב גבות | מיקרובליידינג|קורסים אישיים
+  claude-sonnet-5  normal words=  97 faqs= 5 pr=yes | 0ae49eb8-fcf3-40ae-8842-91269cafbfc1 עמי פחימה בוטיק להחלקות ותוספות שיער AP
+  claude-sonnet-5  sparse words=  59 faqs= 5 pr=no | 575c76f1-9817-46c8-9183-ed6a2bed5368 קוסמטיקאית רפואית דר' יוליה כץ
+  claude-sonnet-5  rich   words= 188 faqs= 8 pr=yes | 35f921c0-fa05-431e-a420-9ff627f16f2c קליניקה הילסקין
+  template         rich   words= 162 faqs= 6 pr=no error=invented_words: אקססוריז | d9468ad1-4226-4c95-b480-fdc6f8548f9f סטודיו גבות הילה שרון
+  claude-sonnet-5  normal words=  72 faqs= 4 pr=yes violations=meta:short:115 | d53bed8e-1542-4c4b-b75f-53612b5902f8 סיסטרס ביוטי - קליניקת בוטיק בנתניה
+  claude-sonnet-5  sparse words=  36 faqs= 3 pr=yes | 3fea4a27-41a5-4498-9e8f-a02d5366f936 הקליניקה לרפואה אסתטית ד״ר אובול - מגוון
+CSV: reports/editorial-report.csv
