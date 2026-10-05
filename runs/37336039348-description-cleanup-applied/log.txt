@@ -1,0 +1,41 @@
+by rule:
+  1737  missing_info
+  1568  record
+   653  latin
+   176  spelling
+   157  address
+   108  wording
+    22  dash
+     1  emoji
+most frequent matches:
+   348  missing_info:במקורות
+   277  missing_info:לא פורסמו
+   241  missing_info:לא פורסם
+   149  missing_info:לא צוינו
+   126  latin:St
+   124  address:St
+   118  record:מציין
+   113  record:מצוין
+   108  missing_info:המידע הזמין
+   106  missing_info:שסופק
+   104  record:מופיעים
+   103  missing_info:אין פירוט
+    97  record:אין פירוט
+    93  record:מופיע
+    90  spelling:מצויין
+    88  wording:כמו כן
+    78  record:ברשומות
+    65  record:מציינת
+    61  missing_info:אין מידע
+    58  record:הרשומה
+    56  missing_info:בעמוד העסק
+    56  missing_info:לא נמסר
+    48  spelling:ווטסאפ
+    45  record:המצוינת
+    44  record:שנרשמו
+SUMMARY scanned=816 failing=406 text_rules=385 older_prompt=0 rejected=55 rewrite=406 needs_import_record=0 skipped_claimed=0 skipped_approved=0 skipped_reference=0 tiers(rewrite): sparse=99 normal=198 rich=109 csv=reports/description-cleanup.csv
+REJECTED ONLY: queueing 55 of 406 candidates
+CANCELED 9 earlier rewrite run(s): ניקוי תיאורים 1/9 (queued), ניקוי תיאורים 2/9 (queued), ניקוי תיאורים 3/9 (queued), ניקוי תיאורים 4/9 (queued), ניקוי תיאורים 5/9 (queued), ניקוי תיאורים 6/9 (queued), ניקוי תיאורים 7/9 (queued), ניקוי תיאורים 8/9 (queued), ניקוי תיאורים 9/9 (queued)
+QUEUED 2 rewrite runs for 55 listings:
+  npm run import:work -- --run df5c18e1-59c4-4720-8e16-1f9af164d008
+  npm run import:work -- --run 17829c4a-7409-4d68-b2a2-3dbe71878138
