@@ -1,0 +1,46 @@
+by rule:
+  1737  missing_info
+  1568  record
+   653  latin
+   176  spelling
+   157  address
+   108  wording
+    22  dash
+     1  emoji
+most frequent matches:
+   348  missing_info:במקורות
+   277  missing_info:לא פורסמו
+   241  missing_info:לא פורסם
+   149  missing_info:לא צוינו
+   126  latin:St
+   124  address:St
+   118  record:מציין
+   113  record:מצוין
+   108  missing_info:המידע הזמין
+   106  missing_info:שסופק
+   104  record:מופיעים
+   103  missing_info:אין פירוט
+    97  record:אין פירוט
+    93  record:מופיע
+    90  spelling:מצויין
+    88  wording:כמו כן
+    78  record:ברשומות
+    65  record:מציינת
+    61  missing_info:אין מידע
+    58  record:הרשומה
+    56  missing_info:בעמוד העסק
+    56  missing_info:לא נמסר
+    48  spelling:ווטסאפ
+    45  record:המצוינת
+    44  record:שנרשמו
+SUMMARY scanned=816 failing=406 text_rules=385 older_prompt=0 rejected=55 rewrite=406 needs_import_record=0 skipped_claimed=0 skipped_approved=0 skipped_reference=0 tiers(rewrite): sparse=99 normal=198 rich=109 csv=reports/description-cleanup.csv
+QUEUED 9 rewrite runs for 406 listings:
+  npm run import:work -- --run b85f3fd9-9379-47c5-a74b-afef18a1bd70
+  npm run import:work -- --run 1fc074f2-0ad8-4373-9a9c-fbb0f96973ad
+  npm run import:work -- --run 76d2bcf2-f4b5-4d81-bec1-dbcfb4886920
+  npm run import:work -- --run d37521a7-30eb-45c1-a878-df7eb5dd255e
+  npm run import:work -- --run a559e3f9-7c8c-42f9-bb60-990b096d4c01
+  npm run import:work -- --run 86541030-aec9-4013-9e5f-f8cea3703ec1
+  npm run import:work -- --run 998f68e6-2a1b-4a43-a044-cb769c5ed105
+  npm run import:work -- --run 74770f6d-ce6b-408e-8ba0-d0f8a32078f2
+  npm run import:work -- --run 3edd56e6-a583-45a8-9042-6647b40c0ac8
