@@ -1,0 +1,60 @@
+run 83d27e7b-52ca-4390-b4c8-26f528fb0f0f "ניקוי תיאורים 9/17" status=done started=2026-10-05T08:39:56.271Z finished=2026-10-05T09:31:01.217Z
+counters: {"improved":50,"postTasks":14,"postPhotos":16,"filled_faqs":29,"filled_prices":3,"editorialCalls":50,"youtubeRequests":0,"editorial_failed":15,"editorial_written":35,"filled_description":29,"filled_meta_title_cleared":14,"filled_meta_description_cleared":50}
+listings in scope: 50, import records: 50, drafts written in this run: 50
+by model: claude-sonnet-5: 35, template: 15
+by tier: normal: 31, sparse: 10, rich: 9
+proofread: yes: 32, no: 18
+by error: (none): 35, unsupported_claims: שמיועד לחיזוק מרקם העור ולשיפור מראהו: 1, unsupported_claims: מתמחה בהסרת שיער ובעיצוב גבות; כולל הסרת: 1, unsupported_claims: Happy Hour TLV הוא סטודיון לטיפוח וקוסמט: 1, unsupported_claims: ד״ר מאיר כהן מנתח פלסטי (שם/תואר מנתח פל: 1, unsupported_claims: חבילות טיפוח שמשלבות כמה שירותים יחד; אפ: 1, unsupported_claims: טיפולי הכימיה מיועדים לשינוי מבנה השיער;: 1, unsupported_claims: מכון טיפוח ברמת גן; המכון פונה גם לגברים: 1, unsupported_claims: בלי צורך בהליך פולשני; הזרקה בשם מזורדיא: 1, unsupported_claims: בסטודיו: 1, unsupported_claims: שמטפל בהיבטים הכירורגיים הקשורים ליישור : 1, unsupported_claims: או דרך האתר של העסק: 1, unsupported_claims: המיועד לתמוך בתהליך ההחלמה וההתאוששות לא: 1, unsupported_claims: איפה הסטודיו נמצא?: 1, unsupported_claims: טיפולי העור בספא מיועדים לטיפוח ולריענון: 1, unsupported_claims: בבעלותו ובניהולו של ג׳יי גולדן; ההגעה אל: 1
+words: min 31, median 85, max 254
+cost recorded on the records: 4.306 USD
+  template         rich   words= 218 faqs= 4 pr=no error=unsupported_claims: שמיועד לחיזוק מרקם העור ולשיפור מראהו | 61a6b949-be55-4270-9e99-09995c9c57fc BeautIX - Beauty Salon
+  claude-sonnet-5  normal words= 124 faqs= 6 pr=yes violations=meta:short:124 | 54ee89bb-3240-4ccd-bf88-bdcdb2dd189e Doctor Ram Silfen - Tel Aviv Plastic
+  claude-sonnet-5  sparse words=  44 faqs= 5 pr=yes | 4b1705e7-ff33-4296-956b-54c432b27e26 שיראל סעידיאן קוסמטיקס
+  claude-sonnet-5  normal words=  84 faqs= 6 pr=yes | c8a9f2d2-4371-4f93-9067-5c2e4e2db64f שירה זאבי
+  claude-sonnet-5  rich   words= 186 faqs= 7 pr=yes | a2e99842-8291-4be3-b41c-b65feb91c9e4 Leading aesthetic clinic - Dr. Shapiro
+  claude-sonnet-5  sparse words=  56 faqs= 5 pr=yes | f68f9d5e-288b-44bb-bd7f-df197f1e15bb שחר מלסה | לק ג׳ל בנתניה | בניית ציפורני
+  claude-sonnet-5  normal words=  68 faqs= 5 pr=no violations=short:68 | 69b8b74c-a513-4c4b-9f00-0cb42eddf4e8 רפאל אסטתיקס - השתלות שיער איכותיות וטיפ
+  claude-sonnet-5  sparse words=  68 faqs= 4 pr=yes | a61198cc-8ca9-4af5-9d37-ab3aade47f69 שירי ריפוי היופי
+  claude-sonnet-5  normal words=  94 faqs= 5 pr=yes | 3bf354d9-8e47-4f09-80d5-f126438185ff שני טוב - קוסמטיקאית מומחית
+  claude-sonnet-5  normal words= 107 faqs= 4 pr=yes violations=filler:מי שמעוניין | repeat:accessibility | meta:short:117 | a0f49337-6233-424f-a268-5c0450c7f411 Dr. Tali Friedman - International Center
+  template         normal words=  80 faqs= 4 pr=no error=unsupported_claims: מתמחה בהסרת שיער ובעיצוב גבות; כולל הסרת שיער באזור הביקיני בשיטה הברז | 90c397d2-b22b-47e1-81db-bc814a5ec773 Ida eyebrows and Hair Removal
+  claude-sonnet-5  normal words=  91 faqs= 6 pr=yes | 3e087faf-1fd9-4dd0-8f61-cb4031836849 Cosmetics Institute of Ronit Segev
+  claude-sonnet-5  rich   words= 171 faqs= 6 pr=no violations=short:171 | 6ce6a534-9359-40f3-bfb6-8d631d3724ea Absolute Esthetics by Andrea
+  template         normal words=  92 faqs= 4 pr=no error=unsupported_claims: Happy Hour TLV הוא סטודיון לטיפוח וקוסמטיקה; הסטודיו עובד בכמה תחומים: | 800087b3-e648-4bb1-9f81-439a1022feda Happy Hour TLV
+  claude-sonnet-5  rich   words= 254 faqs= 7 pr=yes violations=repeat:address | meta:short:129 | 7cbf57bc-682f-4799-adb8-f07fcd7faf8c Lavic Beauty & Advanced Cosmetology
+  claude-sonnet-5  normal words=  85 faqs= 6 pr=yes violations=faq_length:האם יש בעסק איפור קב | bac3185f-909b-482e-8fd5-1484b426acd0 BUBA beauty space
+  template         sparse words=  36 faqs= 3 pr=no error=unsupported_claims: ד״ר מאיר כהן מנתח פלסטי (שם/תואר מנתח פלסטי) | a47c066a-3ce3-414b-af68-7b6df17c2218 Dr Meir Cohen, ד"ר מאיר כהן מנתח פלסטי
+  claude-sonnet-5  normal words=  76 faqs= 5 pr=yes | e41cb1e0-4dba-4c0a-9ae9-62d4b07e7cfd Gorgeous
+  claude-sonnet-5  sparse words=  65 faqs= 6 pr=yes | e19d4bf2-66b8-478a-a7db-3aa629f30272 Beauty Style
+  template         normal words= 177 faqs= 4 pr=no error=unsupported_claims: חבילות טיפוח שמשלבות כמה שירותים יחד; אפשר לשלב ביקור אחד שכולל גם תספ | 9016d4c1-c7f3-4da5-89b5-62689cc58321 CUT THE BULLSHIT BarberShop
+  claude-sonnet-5  normal words=  76 faqs= 6 pr=yes | 04dec9ce-d39f-4baa-835c-d130a34ace71 DANDA דנדה
+  claude-sonnet-5  normal words= 125 faqs= 7 pr=yes | 960f825a-daf1-4751-833f-e798cc293459 Horizon Spa
+  claude-sonnet-5  sparse words=  47 faqs= 4 pr=yes | f66a90af-7cf5-431e-a203-f1f15c943755 רונית רפאל - מדע היופי, סניף נתניה
+  template         normal words=  62 faqs= 4 pr=no error=unsupported_claims: טיפולי הכימיה מיועדים לשינוי מבנה השיער; החלקת מגסטיק מיועדת להחליק ול | 86a6edee-8303-44c1-9680-ca0f11a51237 שלומי עיצוב שיער
+  claude-sonnet-5  sparse words=  54 faqs= 5 pr=yes | 8c680f40-2fd5-44ee-bf44-960330c4577e שירן כברה עיצוב שיער
+  claude-sonnet-5  normal words=  96 faqs= 6 pr=yes | 41b33d29-6986-4758-b382-2bde08d435be 4Man - מכון יופי וטיפוח לגבר בתל אביב
+  claude-sonnet-5  normal words=  76 faqs= 5 pr=yes | d5053444-6048-4dec-aa56-9a87c52467ac Aesthetic Dentistry - ד''ר אילן הכט
+  template         rich   words= 243 faqs= 6 pr=no error=unsupported_claims: מכון טיפוח ברמת גן; המכון פונה גם לגברים, עם טיפול פנים ייעודי להם, ול | 55c8d098-e68e-4f3a-92c2-42e98dd81d91 Deborah Cosmetics
+  claude-sonnet-5  normal words=  72 faqs= 5 pr=yes | 6611c0e4-07de-4fd4-9942-698577a5bcc5 Dr. Yosef Ben Yosef
+  claude-sonnet-5  normal words=  98 faqs= 6 pr=yes violations=meta:short:128 | 0ed0f64c-1a86-4ff1-9a9e-a8d1b429970d ראל ביוטי
+  template         rich   words= 113 faqs= 5 pr=no error=unsupported_claims: בלי צורך בהליך פולשני; הזרקה בשם מזורדיאנס שמיועדת לעידוד ייצור קולגן; | f6ada3ef-6eb6-49d7-bd74-b8892cb59a33 BorimskyCosmetic Boutique
+  claude-sonnet-5  normal words=  91 faqs= 6 pr=yes | 7e9708d2-4d30-49f7-9ecc-739a226463be Eran Yaniv Katsav
+  claude-sonnet-5  normal words=  88 faqs= 5 pr=yes | f70ad100-5e81-4531-8b98-3fde4a60573d Beautique by Poly
+  claude-sonnet-5  sparse words=  31 faqs= 4 pr=yes | 3b91356d-a46d-40e8-9715-0956cb7884e9 רות קוסמטיקה - RUTH cosmetics
+  template         normal words= 106 faqs= 4 pr=no error=unsupported_claims: בסטודיו | 6484b048-98bd-400f-9fda-046026e0ac0b רחלי גל - אמנית יופי
+  template         rich   words= 246 faqs= 6 pr=no error=unsupported_claims: שמטפל בהיבטים הכירורגיים הקשורים ליישור השיניים ולמבנה הלסת; ולכן אופן | 2b9aa1e9-5f31-49dc-9ad3-28a450c51ebf Dr. Eini - Ramat Gan Clinic
+  claude-sonnet-5  sparse words=  74 faqs= 6 pr=yes | b0c8e60d-ac45-44f5-97f2-714f687fc6ae שלי קוסמטיקס
+  template         normal words=  59 faqs= 5 pr=no error=unsupported_claims: או דרך האתר של העסק | e7f4f6f5-896d-43dc-8ec8-6f800b29887c Cosmetology Tel-Aviv קוסמטיקאית תל אביב
+  template         rich   words= 102 faqs= 5 pr=no error=unsupported_claims: המיועד לתמוך בתהליך ההחלמה וההתאוששות לאחר ההשתלה | b4da1f26-c7b3-444b-a71c-ee0f6f082877 H.Clinic | לייזר ואסתטיקה
+  claude-sonnet-5  normal words=  70 faqs= 4 pr=yes | 73b348b3-79f0-49e4-9a0f-69019ab3b7f2 Dr. Mor-expert Aesthetic Plastic Lcirogi
+  claude-sonnet-5  normal words=  79 faqs= 6 pr=yes | 125f87c2-198c-4366-8112-ec766e68b10a 808 Haircut & Grooming 808TLV Tel Aviv Б
+  template         normal words=  64 faqs= 4 pr=no error=unsupported_claims: איפה הסטודיו נמצא? | e4e613ba-3131-4b3c-b1df-7dcbdd6465c9 Happy hour דיזנגוף
+  claude-sonnet-5  sparse words=  42 faqs= 4 pr=yes | 0ebe5101-7451-4419-a0d6-41cb7b7dae84 L'Occitane ל'אוקסיטן ספא עזריאלי שרונה
+  template         normal words=  75 faqs= 4 pr=no error=unsupported_claims: טיפולי העור בספא מיועדים לטיפוח ולריענון הפנים | e6d2762c-590a-4790-a561-f10f3a3fce4f KEDEM SPA HOUSE קדם ספא וחמאם ביפו Spa i
+  claude-sonnet-5  normal words= 101 faqs= 7 pr=yes | 2ed585c3-f1d9-4baf-bedf-32d8d75aec6f Adis place- עדי בוטיק קוסמטיקאית והסרת ש
+  claude-sonnet-5  normal words=  89 faqs= 5 pr=yes | 3a64ca0d-70ab-47a7-861b-a36f920413c2 Beauty Time Salon
+  claude-sonnet-5  normal words=  70 faqs= 6 pr=no violations=meta:short:117 | 325eefa4-9a5e-4b94-ac44-43a7ef3ab21e Express Spray Tan in Tel Aviv and Lash E
+  template         rich   words= 127 faqs= 6 pr=no error=unsupported_claims: בבעלותו ובניהולו של ג׳יי גולדן; ההגעה אליה היא דרך הרחובות הסמוכים לשו | 409bfe62-4056-4144-804a-aa1821b63992 Dreamboat
+  claude-sonnet-5  normal words=  93 faqs= 7 pr=yes | 2a8ef746-7ca8-4823-a72f-f9341fa5a7cd Jordan beauty
+  claude-sonnet-5  normal words=  84 faqs= 6 pr=yes | f072d910-7afa-4941-bb7b-b1ef51d0fc55 LONGEVI- by Liana Nahmias-skincare
+CSV: reports/editorial-report.csv
