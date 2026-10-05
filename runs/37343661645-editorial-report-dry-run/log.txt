@@ -1,0 +1,10 @@
+run 0fdb94de-ce39-432b-a012-97aef6851735 "ניקוי תיאורים 16/17" status=done error=הכתיבה לא רצה: editorial: no_credit: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please  started=2026-10-05T15:06:21.656Z finished=2026-10-05T15:14:09.054Z
+counters: {"improved":50,"postTasks":3,"postPhotos":1,"youtubeQuota":1,"filled_prices":1,"editorialCalls":50,"youtubeRequests":1,"editorial_failed":50,"filled_meta_title_cleared":25,"filled_meta_description_cleared":50}
+lastEditorialError: editorial: no_credit: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please 
+listings in scope: 50, import records: 50, drafts written in this run: 0
+by model: 
+by tier: 
+proofread: 
+by error: 
+cost recorded on the records: 0.000 USD
+CSV: reports/editorial-report.csv
