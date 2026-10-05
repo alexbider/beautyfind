@@ -1,0 +1,60 @@
+run 8b434d59-a788-4518-8841-58697a42fff5 "ניקוי תיאורים 2/17" status=done started=2026-10-04T20:32:01.085Z finished=2026-10-04T21:56:32.716Z
+counters: {"improved":46,"filled_faqs":25,"editorialCalls":50,"nothing_to_add":4,"youtubeRequests":0,"editorial_failed":18,"editorial_written":32,"filled_description":25,"filled_meta_title_cleared":19,"filled_meta_description_cleared":44}
+listings in scope: 50, import records: 50, drafts written in this run: 50
+by model: claude-sonnet-5: 32, template: 18
+by tier: normal: 26, sparse: 21, rich: 3
+proofread: yes: 32, no: 18
+by error: (none): 32, unsupported_claims: הקליניקה: 1, unsupported_claims: סטודיו לציפורניים וטיפוח; שמעניקה לציפור: 1, unsupported_claims: הרמת חזה, שמיועדת לשפר את מיקומו וקו המת: 1, unsupported_claims: החלקת עור לשיפור המרקם הכללי: 1, unsupported_claims: קוסמטיקאית קלינית: 1, unsupported_claims: העיצוב מיועד למי שרוצה גבות וריסים מסודר: 1, invented_words: שיוגרינג, לנינציה: 1, unsupported_claims: רופא שיניים מומחה באסתטיקה והשתלות (impl: 1, unsupported_claims: סטודיו לאיפור קבוע וטיפוח גבות בנהריה; ה: 1, unsupported_claims: עיצוב גבות לפי מבנה הפנים; איפור קבוע לק: 1, unsupported_claims: המספרה פתוחה בימים ראשון עד שישי; בימי ש: 1, invented_words: פרסטראפי: 1, invented_words: סמכים: 1, invented_words: ההשיערה: 1, invented_words: מיקרוזרמים: 1, invented_words: אוקסילנס: 1, unsupported_claims: סטודיו לאיפור קבוע ואיפור מקצועי; תמונות: 1, unsupported_claims: לצד האיפור הקבוע יש בסטודיו גם איפור מקצ: 1
+words: min 21, median 74, max 206
+cost recorded on the records: 3.364 USD
+  template         sparse words=  34 faqs= 3 pr=no error=unsupported_claims: הקליניקה | 64ad1de8-7c3d-419c-a982-3b625c10df3d קוסמטיקאית בכירה נהריה | ענת | Anat & Co
+  template         normal words=  92 faqs= 3 pr=no error=unsupported_claims: סטודיו לציפורניים וטיפוח; שמעניקה לציפורניים מבנה חזק ואחיד; מי שמפעיל | 6c8c5be7-3aed-4af7-b030-cb1c36ba0a81 תפארת היופי בניית ציפורניים וקוסמטיקאית
+  template         rich   words= 155 faqs= 5 pr=no error=unsupported_claims: הרמת חזה, שמיועדת לשפר את מיקומו וקו המתאר של החזה; הקטנת חזה, המקטינה | 1b021794-8031-4d50-9e8b-9d4d275f483d Clinic Dr. Eran Bar-Meir
+  template         rich   words= 206 faqs= 4 pr=no error=unsupported_claims: החלקת עור לשיפור המרקם הכללי | e7a7ede1-2590-4d64-9f3f-ce0893975d6d פרו אסתטיקס טיפולים אסתטיים מתקדמים צפת
+  claude-sonnet-5  sparse words=  67 faqs= 5 pr=yes violations=meta:short:126 | 688ebfab-8838-4359-a4ac-4f0fe116e2ee Ayelet Beauty Art - איילת ביוטי ארט
+  claude-sonnet-5  sparse words=  65 faqs= 5 pr=yes | 0f2bbfad-d971-4805-ae80-9c45c2c33219 Beauty Shik - סלון יופי בחיפה
+  claude-sonnet-5  sparse words=  22 faqs= 3 pr=yes | 9fe17e24-8415-4f30-94bd-3bb6dd1547df BodyFaceControl
+  claude-sonnet-5  sparse words=  51 faqs= 4 pr=yes | 11b6e64d-e966-4fc5-a956-061ea0137b48 Be beauty nivin
+  template         normal words= 102 faqs= 4 pr=no error=unsupported_claims: קוסמטיקאית קלינית | eae39576-cd1d-4f39-b4e5-151e80a1cb2f רויטל שטאשוילי קוסמטיקאית קלינית בנהריה
+  template         normal words=  67 faqs= 4 pr=no error=unsupported_claims: העיצוב מיועד למי שרוצה גבות וריסים מסודרים ומותאמים למראה הפנים; השיקו | a105ab64-72a6-4355-b264-edc1de33b98b Brows By Alla עיצוב גבות וריסים
+  template         normal words=  69 faqs= 5 pr=no error=invented_words: שיוגרינג, לנינציה | 84125f36-07a8-486b-9786-b21b46ee0adc Beauty Lab - студия премиум-класса в Хай
+  template         sparse words=  34 faqs= 3 pr=no error=unsupported_claims: רופא שיניים מומחה באסתטיקה והשתלות (implied doctor credential); מרפאת  | 54447982-0aae-431b-b030-50aef823883f מרפאת שיניים וולפסון - Wolfson Dental Cl
+  template         normal words=  97 faqs= 3 pr=no error=unsupported_claims: סטודיו לאיפור קבוע וטיפוח גבות בנהריה; החזרת הגבה לצורה מסודרת | 13dc3d4c-75ae-438d-be70-083a921f4999 שרית אטיאס-עיצוב גבות
+  claude-sonnet-5  sparse words=  47 faqs= 5 pr=yes | 1c887cc4-ea4d-4fce-a224-1e1bdf31433e Beauty Line Cosmetology Clinic
+  claude-sonnet-5  normal words= 104 faqs= 5 pr=yes | e90c9695-f978-4c7e-ad67-770fc64aa4d7 Beauty Salon by Svetlana Isakov SVIS
+  template         normal words=  98 faqs= 4 pr=no error=unsupported_claims: עיצוב גבות לפי מבנה הפנים; איפור קבוע לקווי עיניים, שפתיים או גבות; הס | b60cbd40-99eb-4dd3-ba0e-8eb1f4f99288 שרה סטודיו לציפורניים
+  claude-sonnet-5  normal words=  73 faqs= 5 pr=yes | 1d917ad2-fc73-4683-9e56-011fa5add090 CJ DADON COSMETICS
+  template         normal words=  97 faqs= 4 pr=no error=unsupported_claims: המספרה פתוחה בימים ראשון עד שישי; בימי שני עד חמישי השעות הן 10:00 עד  | f50febde-d165-41a3-8ef3-c18ad6c44533 AdiandLucia Salon
+  claude-sonnet-5  normal words=  83 faqs= 6 pr=yes | c67574e1-fbd6-4972-9757-8490e1cd0064 Adir Levi - Hair Boutique
+  claude-sonnet-5  sparse words=  61 faqs= 5 pr=yes | 75cfe0f5-8a5b-431b-8536-e11cb4935651 Beauty boutique by Ortal
+  claude-sonnet-5  sparse words=  56 faqs= 4 pr=yes violations=meta:short:111 | 8349e161-0863-45f1-93ba-d204342de001 מרינה איפור גבות ושפתיים
+  template         normal words= 180 faqs= 3 pr=no error=invented_words: פרסטראפי | c879aafa-4713-409f-bba6-b630b511b6f4 מרינה קוסמטיקס
+  template         normal words= 103 faqs= 4 pr=no error=invented_words: סמכים | 6f680011-0c01-48a3-b887-91466fef37df מרפאת שיניים ד''ר חנקין ילנה
+  claude-sonnet-5  sparse words=  37 faqs= 4 pr=yes | 84c8be45-95df-43e6-89e5-6eecf8f19770 BeautyIdol
+  claude-sonnet-5  normal words=  78 faqs= 5 pr=yes | 1dcb7347-5f79-442f-9f58-e5335cc022be ניצן קמחי | מומחית לבניית ציפורניים בנהר
+  claude-sonnet-5  normal words=  89 faqs= 5 pr=yes violations=repeat:address | f94de83c-bdb9-41e6-ac81-4ec43b50d66a ספיר חתואל מעצבת גבות
+  claude-sonnet-5  normal words=  80 faqs= 7 pr=yes | 8cb30000-0612-4ed8-985b-94ea34a56ab1 עיצוב גבות וריסים - Hana Permbeauty
+  claude-sonnet-5  normal words=  91 faqs= 6 pr=yes | abe563aa-f7e1-47e5-9b1c-e898c17ec053 קוסמטיקאי מומחה - Sahar Cosmetics
+  claude-sonnet-5  sparse words=  71 faqs= 5 pr=yes | 69c1d782-193f-4881-b66a-e2ea4b50052a קוסמטיקאית שני גת לייזר Shani cosmetics
+  claude-sonnet-5  normal words= 104 faqs= 6 pr=yes | 77c3fddc-e5fc-4bdd-b9d6-153eb4a0b4c0 CULT | סטודיו ליופי והכשרה | מניקור • פד
+  claude-sonnet-5  sparse words=  21 faqs= 3 pr=yes | c01a4806-3312-4deb-898d-bfd9b421da94 קוסמטיקאית בתיה גדז
+  claude-sonnet-5  sparse words=  46 faqs= 4 pr=yes | b120e474-5446-4845-877f-60eae03cef50 סופי קוסמטיק
+  template         normal words= 108 faqs= 3 pr=no error=invented_words: ההשיערה | 6521a145-3c74-470d-9b89-6a1151f1b19c Aviva Diamond
+  claude-sonnet-5  sparse words=  32 faqs= 3 pr=yes | b68720d8-e83d-4ffb-95a0-e1c66caf21d4 קרין אטיאס - קליניקה לטיפולי אסתטיקה מתק
+  claude-sonnet-5  normal words=  81 faqs= 6 pr=yes | 38a765c6-dac9-4985-a6e0-4d4ffc6fa6bc רינת עיצוב גבות
+  template         normal words=  49 faqs= 3 pr=no error=invented_words: מיקרוזרמים | 09da612a-7fd6-46f5-8b7a-269d8ea15cf0 Beauty salon Grubnik.Beauty.Bar
+  claude-sonnet-5  sparse words=  52 faqs= 4 pr=yes violations=meta:title_repeat:מספרת מרואן בנהריה | 829e09a9-4def-4022-847f-19abd9f53e21 מספרת מרואן
+  claude-sonnet-5  normal words=  79 faqs= 5 pr=yes | 087d37ad-856f-47d9-95f9-f85340853aee סימונה גולדמן - מרכז אסתטיקה ויופי
+  claude-sonnet-5  normal words=  74 faqs= 5 pr=yes | 673a7dd4-66ca-46e0-bb54-e327c3587207 רחלי קוסמטיקס נהריה
+  claude-sonnet-5  sparse words=  42 faqs= 3 pr=yes violations=meta:short:124 | 22e6331c-fa28-4e5b-8afd-4561aa1d9f0e רינת קוסמטיקה ויופי
+  claude-sonnet-5  sparse words=  31 faqs= 4 pr=yes violations=meta:short:118 | 0ac85d39-f36c-4b8a-89cc-ddab374ab304 מכון יופי לנה
+  claude-sonnet-5  sparse words=  46 faqs= 5 pr=yes | ca83b4e8-cddf-439a-8dd5-20dd9ed83780 ציפורניים בנהריה
+  template         rich   words= 118 faqs= 5 pr=no error=invented_words: אוקסילנס | 7fe75393-c4ab-4f02-90ce-af04fb37f700 קוסמטיקאית Genin cosmotology
+  claude-sonnet-5  normal words=  83 faqs= 5 pr=yes | e3b8f590-db0a-4263-ae6b-206613f31dff סלון יופי נהריה
+  claude-sonnet-5  sparse words=  52 faqs= 5 pr=yes | 81e5ecb1-8d1d-4a7d-a2b0-6dbc9c796fe9 מרסל לחמיש פתרונות אסתטיקה
+  claude-sonnet-5  sparse words=  51 faqs= 4 pr=yes violations=meta:short:128 | 120739f2-2f1e-4268-9afb-861a91ab878b פן אקספרס ,פן מעכשיו לעכשיו - אודליה
+  claude-sonnet-5  normal words=  76 faqs= 5 pr=yes | 02e46019-4948-46bb-ab2a-0ad8100d7d4b מספרה לתוספות שיער בנהריה
+  claude-sonnet-5  sparse words=  48 faqs= 4 pr=yes | 42d5a6d0-f36b-4a1a-ae7e-a1011c3b6dfa מלי לב פדיקור רפואי
+  template         normal words= 106 faqs= 5 pr=no error=unsupported_claims: סטודיו לאיפור קבוע ואיפור מקצועי; תמונות מהעבודות מתפרסמות בעמוד הפייס | 8f3a53d6-b747-44e5-941f-6cce923aa6a5 פאינה אמילוב - קליניקה לאיפור קבוע שמדגי
+  template         normal words= 149 faqs= 3 pr=no error=unsupported_claims: לצד האיפור הקבוע יש בסטודיו גם איפור מקצועי לאירועים | 5e21a8cc-b7e1-49f4-85d0-6054d015837f Bridal makeup and hairstyles makeup - br
+CSV: reports/editorial-report.csv

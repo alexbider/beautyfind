@@ -1,0 +1,51 @@
+﻿branch_id,name,draft_from_this_run,model,tier,words,faqs,proofread,prompt_version,error,violations,repairs,needs_more_info,cost_usd,input_tokens,output_tokens,generated_at
+64ad1de8-7c3d-419c-a982-3b625c10df3d,קוסמטיקאית בכירה נהריה | ענת | Anat & Co ',yes,template,sparse,34,3,no,2026-10-04.7,unsupported_claims: הקליניקה,,0,true,0.04002,5025,2997,2026-10-04T21:49:52.734Z
+6c8c5be7-3aed-4af7-b030-cb1c36ba0a81,תפארת היופי בניית ציפורניים וקוסמטיקאית,yes,template,normal,92,3,no,2026-10-04.7,unsupported_claims: סטודיו לציפורניים וטיפוח; שמעניקה לציפורניים מבנה חזק ואחיד; מי שמפעילה את הסטודיו סיימה דיפלומה בבית הספר איציק צורי בעכו,,0,false,0.060546,8963,4262,2026-10-04T21:50:35.633Z
+1b021794-8031-4d50-9e8b-9d4d275f483d,Clinic Dr. Eran Bar-Meir,yes,template,rich,155,5,no,2026-10-04.6,"unsupported_claims: הרמת חזה, שמיועדת לשפר את מיקומו וקו המתאר של החזה; הקטנת חזה, המקטינה את נפח רקמת החזה; מתיחת פנים, שמטרתה להחליק ולמתוח את עור הפנים; הרמת עפעפיים והרמת עפעפיים עליונות, שמרימות את העור הרפוי מעל העיניים; שאיבת שומן, ל",,0,false,0.138336,18423,10149,2026-10-04T20:38:52.880Z
+e7a7ede1-2590-4d64-9f3f-ce0893975d6d,פרו אסתטיקס טיפולים אסתטיים מתקדמים צפת,yes,template,rich,206,4,no,2026-10-04.7,unsupported_claims: החלקת עור לשיפור המרקם הכללי,,0,false,0.175634,24477,12668,2026-10-04T21:55:59.966Z
+688ebfab-8838-4359-a4ac-4f0fe116e2ee,Ayelet Beauty Art - איילת ביוטי ארט,yes,claude-sonnet-5,sparse,67,5,yes,2026-10-04.6,,meta:short:126,1,false,0.06192,6305,4931,2026-10-04T20:45:58.985Z
+0f2bbfad-d971-4805-ae80-9c45c2c33219,Beauty Shik - סלון יופי בחיפה,yes,claude-sonnet-5,sparse,65,5,yes,2026-10-04.6,,,0,false,0.03675,3115,3052,2026-10-04T20:41:15.391Z
+9fe17e24-8415-4f30-94bd-3bb6dd1547df,BodyFaceControl,yes,claude-sonnet-5,sparse,22,3,yes,2026-10-04.6,,,1,true,0.021928,2129,1767,2026-10-04T20:44:25.282Z
+11b6e64d-e966-4fc5-a956-061ea0137b48,Be beauty nivin,yes,claude-sonnet-5,sparse,51,4,yes,2026-10-04.6,,,0,false,0.02994,3040,2386,2026-10-04T20:45:12.650Z
+eae39576-cd1d-4f39-b4e5-151e80a1cb2f,רויטל שטאשוילי קוסמטיקאית קלינית בנהריה,yes,template,normal,102,4,no,2026-10-04.6,unsupported_claims: קוסמטיקאית קלינית,,0,false,0.059562,6276,4701,2026-10-04T20:49:14.955Z
+a105ab64-72a6-4355-b264-edc1de33b98b,Brows By Alla עיצוב גבות וריסים,yes,template,normal,67,4,no,2026-10-04.6,unsupported_claims: העיצוב מיועד למי שרוצה גבות וריסים מסודרים ומותאמים למראה הפנים; השיקום נועד לטפל בגבות וריסים שנפגעו או דלילים ולהחזיר להם מראה מלא; דירוג שמעיד על כמות גדולה של לקוחות מרוצים,,0,false,0.046274,4852,3657,2026-10-04T20:34:21.023Z
+84125f36-07a8-486b-9786-b21b46ee0adc,Beauty Lab - студия премиум-класса в Хайфе. Все виды эпиляции и аппаратной косметологии.,yes,template,normal,69,5,no,2026-10-04.6,"invented_words: שיוגרינג, לנינציה",,0,false,0.076736,7018,6270,2026-10-04T20:44:04.146Z
+54447982-0aae-431b-b030-50aef823883f,מרפאת שיניים וולפסון - Wolfson Dental Clinic,yes,template,sparse,34,3,no,2026-10-04.7,unsupported_claims: רופא שיניים מומחה באסתטיקה והשתלות (implied doctor credential); מרפאת שיניים (קביעת סוג העסק כמרפאה),,0,true,0.056312,6561,4319,2026-10-04T21:36:51.027Z
+13dc3d4c-75ae-438d-be70-083a921f4999,שרית אטיאס-עיצוב גבות,yes,template,normal,97,3,no,2026-10-04.7,unsupported_claims: סטודיו לאיפור קבוע וטיפוח גבות בנהריה; החזרת הגבה לצורה מסודרת,,0,false,0.052576,6338,3990,2026-10-04T21:42:13.225Z
+1c887cc4-ea4d-4fce-a224-1e1bdf31433e,Beauty Line Cosmetology Clinic,yes,claude-sonnet-5,sparse,47,5,yes,2026-10-04.6,,,0,false,0.026306,2658,2099,2026-10-04T20:44:47.880Z
+e90c9695-f978-4c7e-ad67-770fc64aa4d7,Beauty Salon by Svetlana Isakov SVIS,yes,claude-sonnet-5,normal,104,5,yes,2026-10-04.6,,,1,false,0.072924,6322,6028,2026-10-04T20:40:45.845Z
+b60cbd40-99eb-4dd3-ba0e-8eb1f4f99288,שרה סטודיו לציפורניים,yes,template,normal,98,4,no,2026-10-04.7,"unsupported_claims: עיצוב גבות לפי מבנה הפנים; איפור קבוע לקווי עיניים, שפתיים או גבות; הסרת שיער בשעווה לגוף",,0,false,0.08602,9870,6628,2026-10-04T21:47:32.276Z
+1d917ad2-fc73-4683-9e56-011fa5add090,CJ DADON COSMETICS,yes,claude-sonnet-5,normal,73,5,yes,2026-10-04.6,,,2,false,0.06985,8975,5190,2026-10-04T20:37:27.283Z
+f50febde-d165-41a3-8ef3-c18ad6c44533,AdiandLucia Salon,yes,template,normal,97,4,no,2026-10-04.6,unsupported_claims: המספרה פתוחה בימים ראשון עד שישי; בימי שני עד חמישי השעות הן 10:00 עד 18:00; ביום ראשון וביום שישי היא פתוחה בין 10:00 ל־16:00; ביום שבת המספרה סגורה,,0,false,0.05379,5370,4305,2026-10-04T20:32:53.716Z
+c67574e1-fbd6-4972-9757-8490e1cd0064,Adir Levi - Hair Boutique,yes,claude-sonnet-5,normal,83,6,yes,2026-10-04.6,,,1,false,0.071102,8816,5347,2026-10-04T20:33:45.134Z
+75cfe0f5-8a5b-431b-8536-e11cb4935651,Beauty boutique by Ortal,yes,claude-sonnet-5,sparse,61,5,yes,2026-10-04.6,,,1,false,0.048856,4628,3960,2026-10-04T20:39:31.035Z
+8349e161-0863-45f1-93ba-d204342de001,מרינה איפור גבות ושפתיים,yes,claude-sonnet-5,sparse,56,4,yes,2026-10-04.7,,meta:short:111,2,false,0.054634,6012,4261,2026-10-04T21:45:44.321Z
+c879aafa-4713-409f-bba6-b630b511b6f4,מרינה קוסמטיקס,yes,template,normal,180,3,no,2026-10-04.6,invented_words: פרסטראפי,,0,false,0.104052,12151,7975,2026-10-04T20:50:22.728Z
+6f680011-0c01-48a3-b887-91466fef37df,מרפאת שיניים ד''ר חנקין ילנה,yes,template,normal,103,4,no,2026-10-04.6,invented_words: סמכים,,0,false,0.178176,23038,13210,2026-10-04T20:48:26.926Z
+84c8be45-95df-43e6-89e5-6eecf8f19770,BeautyIdol,yes,claude-sonnet-5,sparse,37,4,yes,2026-10-04.6,,,1,true,0.026766,2913,2094,2026-10-04T20:39:54.575Z
+1dcb7347-5f79-442f-9f58-e5335cc022be,ניצן קמחי | מומחית לבניית ציפורניים בנהריה,yes,claude-sonnet-5,normal,78,5,yes,2026-10-04.7,,,3,false,0.082014,10512,6099,2026-10-04T21:43:32.322Z
+f94de83c-bdb9-41e6-ac81-4ec43b50d66a,ספיר חתואל מעצבת גבות,yes,claude-sonnet-5,normal,89,5,yes,2026-10-04.7,,repeat:address,3,false,0.109424,12352,8472,2026-10-04T21:41:09.499Z
+8cb30000-0612-4ed8-985b-94ea34a56ab1,עיצוב גבות וריסים - Hana Permbeauty,yes,claude-sonnet-5,normal,80,7,yes,2026-10-04.7,,,2,false,0.114734,14962,8481,2026-10-04T21:39:48.570Z
+abe563aa-f7e1-47e5-9b1c-e898c17ec053,קוסמטיקאי מומחה - Sahar Cosmetics,yes,claude-sonnet-5,normal,91,6,yes,2026-10-04.6,,,0,false,0.035678,3014,2965,2026-10-04T20:51:50.287Z
+69c1d782-193f-4881-b66a-e2ea4b50052a,קוסמטיקאית שני גת לייזר Shani cosmetics,yes,claude-sonnet-5,sparse,71,5,yes,2026-10-04.6,,,1,false,0.041756,4523,3271,2026-10-04T20:51:20.615Z
+77c3fddc-e5fc-4bdd-b9d6-153eb4a0b4c0,CULT | סטודיו ליופי והכשרה | מניקור • פדיקור • ריסים • גבות • הסרת שיער | חיפה,yes,claude-sonnet-5,normal,104,6,yes,2026-10-04.6,,,2,false,0.18138,23815,13375,2026-10-04T20:43:02.975Z
+c01a4806-3312-4deb-898d-bfd9b421da94,קוסמטיקאית בתיה גדז,yes,claude-sonnet-5,sparse,21,3,yes,2026-10-04.7,,,1,true,0.021274,1967,1734,2026-10-04T21:42:34.465Z
+b120e474-5446-4845-877f-60eae03cef50,סופי קוסמטיק,yes,claude-sonnet-5,sparse,46,4,yes,2026-10-04.7,,,1,true,0.02905,3135,2278,2026-10-04T21:41:33.286Z
+6521a145-3c74-470d-9b89-6a1151f1b19c,Aviva Diamond,yes,template,normal,108,3,no,2026-10-04.6,invented_words: ההשיערה,,0,false,0.11694,10340,9626,2026-10-04T20:35:42.730Z
+b68720d8-e83d-4ffb-95a0-e1c66caf21d4,קרין אטיאס - קליניקה לטיפולי אסתטיקה מתקדמים,yes,claude-sonnet-5,sparse,32,3,yes,2026-10-04.7,,,1,true,0.026444,2722,2100,2026-10-04T21:46:33.092Z
+38a765c6-dac9-4985-a6e0-4d4ffc6fa6bc,רינת עיצוב גבות,yes,claude-sonnet-5,normal,81,6,yes,2026-10-04.7,,,2,false,0.077124,9497,5813,2026-10-04T21:37:42.174Z
+09da612a-7fd6-46f5-8b7a-269d8ea15cf0,Beauty salon Grubnik.Beauty.Bar,yes,template,normal,49,3,no,2026-10-04.6,invented_words: מיקרוזרמים,,0,false,0.05367,3970,4573,2026-10-04T20:46:40.711Z
+829e09a9-4def-4022-847f-19abd9f53e21,מספרת מרואן,yes,claude-sonnet-5,sparse,52,4,yes,2026-10-04.6,,meta:title_repeat:מספרת מרואן בנהריה,1,false,0.030898,3269,2436,2026-10-04T20:50:48.626Z
+087d37ad-856f-47d9-95f9-f85340853aee,סימונה גולדמן - מרכז אסתטיקה ויופי,yes,claude-sonnet-5,normal,79,5,yes,2026-10-04.7,,,1,false,0.072346,9363,5362,2026-10-04T21:38:31.350Z
+673a7dd4-66ca-46e0-bb54-e327c3587207,רחלי קוסמטיקס נהריה,yes,claude-sonnet-5,normal,74,5,yes,2026-10-04.7,,,2,false,0.096282,12581,7112,2026-10-04T21:44:36.871Z
+22e6331c-fa28-4e5b-8afd-4561aa1d9f0e,רינת קוסמטיקה ויופי,yes,claude-sonnet-5,sparse,42,3,yes,2026-10-04.7,,meta:short:124,2,false,0.046274,7667,3094,2026-10-04T21:49:20.450Z
+0ac85d39-f36c-4b8a-89cc-ddab374ab304,מכון יופי לנה,yes,claude-sonnet-5,sparse,31,4,yes,2026-10-04.7,,meta:short:118,1,true,0.026536,2768,2100,2026-10-04T21:50:59.831Z
+ca83b4e8-cddf-439a-8dd5-20dd9ed83780,ציפורניים בנהריה,yes,claude-sonnet-5,sparse,46,5,yes,2026-10-04.7,,,1,false,0.057996,6478,4504,2026-10-04T21:51:43.477Z
+7fe75393-c4ab-4f02-90ce-af04fb37f700,קוסמטיקאית Genin cosmotology,yes,template,rich,118,5,no,2026-10-04.7,invented_words: אוקסילנס,,0,false,0.189748,20304,14914,2026-10-04T21:54:12.343Z
+e3b8f590-db0a-4263-ae6b-206613f31dff,סלון יופי נהריה,yes,claude-sonnet-5,normal,83,5,yes,2026-10-04.7,,,0,false,0.036668,2824,3102,2026-10-04T21:56:30.409Z
+81e5ecb1-8d1d-4a7d-a2b0-6dbc9c796fe9,מרסל לחמיש פתרונות אסתטיקה,yes,claude-sonnet-5,sparse,52,5,yes,2026-10-04.7,,,1,false,0.0331,4020,2506,2026-10-04T21:45:03.148Z
+120739f2-2f1e-4268-9afb-861a91ab878b,"פן אקספרס ,פן מעכשיו לעכשיו - אודליה",yes,claude-sonnet-5,sparse,51,4,yes,2026-10-04.7,,meta:short:128,1,false,0.029878,3559,2276,2026-10-04T21:46:08.476Z
+02e46019-4948-46bb-ab2a-0ad8100d7d4b,מספרה לתוספות שיער בנהריה,yes,claude-sonnet-5,normal,76,5,yes,2026-10-04.7,,,0,false,0.029562,3031,2350,2026-10-04T21:47:59.262Z
+42d5a6d0-f36b-4a1a-ae7e-a1011c3b6dfa,מלי לב פדיקור רפואי,yes,claude-sonnet-5,sparse,48,4,yes,2026-10-04.7,,,0,false,0.022798,2204,1839,2026-10-04T21:52:04.915Z
+8f3a53d6-b747-44e5-941f-6cce923aa6a5,פאינה אמילוב - קליניקה לאיפור קבוע שמדגיש את יופיך.,yes,template,normal,106,5,no,2026-10-04.7,unsupported_claims: סטודיו לאיפור קבוע ואיפור מקצועי; תמונות מהעבודות מתפרסמות בעמוד הפייסבוק של הסטודיו,,0,false,0.06429,8920,4645,2026-10-04T21:48:44.321Z
+5e21a8cc-b7e1-49f4-85d0-6054d015837f,Bridal makeup and hairstyles makeup - brides Marine herein Studio,yes,template,normal,149,3,no,2026-10-04.6,unsupported_claims: לצד האיפור הקבוע יש בסטודיו גם איפור מקצועי לאירועים,,0,false,0.088828,12099,6463,2026-10-04T20:36:40.419Z
