@@ -427,7 +427,9 @@ export async function validateArticle(id: string, patch?: unknown) {
       ...cur,
       ...(p.data.slug !== undefined ? { slug: p.data.slug } : {}), ...(p.data.title !== undefined ? { title: p.data.title } : {}), ...(s ? { bodyHtml: s.html } : {}),
       ...(p.data.excerpt !== undefined ? { excerpt: p.data.excerpt } : {}), ...(p.data.metaDescription !== undefined ? { metaDescription: p.data.metaDescription } : {}),
-      ...(p.data.authorId !== undefined ? { authorId: p.data.authorId } : {}), ...(p.data.featuredImageId !== undefined ? { featuredImageId: p.data.featuredImageId } : {}),
+      ...(p.data.authorId !== undefined ? { authorId: p.data.authorId } : {}),
+      // A patched featured image is loaded too, so the alt check reads the new image, not the stored one.
+      ...(p.data.featuredImageId !== undefined ? { featuredImageId: p.data.featuredImageId, featuredImage: p.data.featuredImageId ? await db.mediaFile.findUnique({ where: { id: p.data.featuredImageId } }) : null } : {}),
       ...(p.data.faq !== undefined ? { faq: p.data.faq as Prisma.JsonValue } : {}),
     };
   }

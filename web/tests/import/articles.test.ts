@@ -140,7 +140,8 @@ describe('articles: service and tools', { skip }, () => {
   });
 
   const track = <T extends { ok: boolean }>(r: T, bucket: keyof typeof made, pick: (r: T) => string | undefined) => { const id = r.ok ? pick(r) : undefined; if (id) made[bucket].push(id); return r; };
-  const stamp = () => Date.now().toString(36);
+  // Digits only: Hebrew slugs keep digits and drop Latin letters, so a base-36 stamp would collide.
+  const stamp = () => `${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
   it('authors, categories, tags and an uploaded image', async () => {
     const author = track(await svc.upsertAuthor(user, { name: `נועה לוי ${stamp()}`, title: 'עורכת תוכן' }), 'authors', r => (r as { author: { id: string } }).author.id);
@@ -208,6 +209,10 @@ describe('articles: service and tools', { skip }, () => {
 
     const v = await svc.validateArticle(a.id);
     assert.ok(v.ok && v.publishable, JSON.stringify(v));
+    const dry = await svc.validateArticle(a.id, { featuredImageId: null });
+    assert.ok(dry.ok && dry.issues.some(i => i.code === 'missing_featured_image'), 'a dry run without the image warns');
+    const dryBack = await svc.validateArticle(a.id, { featuredImageId: image.id });
+    assert.ok(dryBack.ok && !dryBack.issues.some(i => i.code === 'featured_image_alt' || i.code === 'missing_featured_image'), `a dry run with an image that has alt is clean: ${JSON.stringify(dryBack)}`);
     assert.ok(v.ok && !JSON.stringify(v.issues).includes('medical'), 'nothing about medical review');
     const ignored = await svc.updateArticle(user, a.id, { medicalReview: { required: true, reviewerId: author.id } } as never);
     assert.ok(ignored.ok && !('medicalReview' in ignored.article), 'medicalReview is ignored: not a known field any more');
