@@ -131,6 +131,7 @@ export async function typedSignaturePng(name: string): Promise<Blob | null> {
   if (!ctx) return null;
   const family = getComputedStyle(document.documentElement).getPropertyValue('--font-frank').trim() || "'Frank Ruhl Libre'";
   ctx.font = `500 72px ${family}, serif`;
+  await document.fonts?.load(ctx.font, name).catch(() => undefined); // the font is not preloaded on every page
   ctx.direction = 'rtl';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';

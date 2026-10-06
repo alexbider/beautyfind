@@ -21,7 +21,7 @@
   --wa-bg: #EAF7EF; --wa-line: #BFE6CC; --wa-text: #0E6B3A; --wa-glyph: #1DA851;
   --disabled: #AFC4C8;
 
-  --font-display: var(--font-frank), 'Frank Ruhl Libre', serif;
+  --font-display: var(--font-open-sans), 'Open Sans', system-ui, sans-serif;
   --font-ui: var(--font-assistant), 'Assistant', system-ui, sans-serif;
   --font-wordmark: var(--font-jost), 'Jost', sans-serif;
 

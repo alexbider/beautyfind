@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from 'next';
-import { Assistant, Frank_Ruhl_Libre, Jost } from 'next/font/google';
+import { Assistant, Frank_Ruhl_Libre, Jost, Open_Sans } from 'next/font/google';
 import { CookieConsent } from '@/components/cookie-consent/CookieConsent';
 import { AppShell } from '@/components/shell/AppShell';
 import './globals.css';
 
-const frank = Frank_Ruhl_Libre({ subsets: ['hebrew', 'latin'], weight: ['400', '500', '700'], variable: '--font-frank', display: 'swap' });
+// Titles use Open Sans (variable weight). Frank Ruhl Libre stays only for the drawn signature in SignaturePad, so it is not preloaded.
+const openSans = Open_Sans({ subsets: ['hebrew', 'latin'], variable: '--font-open-sans', display: 'swap' });
+const frank = Frank_Ruhl_Libre({ subsets: ['hebrew', 'latin'], weight: ['500'], variable: '--font-frank', display: 'swap', preload: false });
 const assistant = Assistant({ subsets: ['hebrew', 'latin'], weight: ['400', '500', '600', '700', '800'], variable: '--font-assistant', display: 'swap' });
 const jost = Jost({ subsets: ['latin'], weight: ['300', '400'], variable: '--font-jost', display: 'swap' });
 
@@ -29,7 +31,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="he" dir="rtl" className={`${frank.variable} ${assistant.variable} ${jost.variable}`}>
+    <html lang="he" dir="rtl" className={`${openSans.variable} ${frank.variable} ${assistant.variable} ${jost.variable}`}>
       <body>
         {process.env.STAGING === '1' && (
           <div role="note" style={{ padding: '6px 16px', background: 'var(--navy)', color: '#fff', fontSize: 13, fontWeight: 700, textAlign: 'center' }}>
