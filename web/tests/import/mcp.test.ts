@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { after, before, describe, it } from 'node:test';
 import type { PrismaClient } from '@prisma/client';
-import { authorizationServerMetadata, bearerChallenge, clientCredentials, parseAuthorizeQuery, pkceChallenge, pkceMatches, protectedResourceMetadata, redirectWith, validRedirectUri } from '../../src/lib/mcp';
+import { authorizationServerMetadata, bearerChallenge, clientCredentials, parseAuthorizeQuery, pkceChallenge, pkceMatches, protectedResourceMetadata, redirectWith, tokenScopeFor, validRedirectUri } from '../../src/lib/mcp';
 
 const URL_OK = /@(localhost|127\.0\.0\.1)(:\d+)?\//.test(process.env.DATABASE_URL ?? '');
 const skip = URL_OK ? false : 'needs a local DATABASE_URL';
@@ -62,6 +62,11 @@ describe('mcp: redirect URIs and PKCE', () => {
     assert.ok(!plain.ok, 'plain PKCE is refused');
     const badScope = parseAuthorizeQuery({ response_type: 'code', client_id: 'c', redirect_uri: 'https://claude.ai/cb', code_challenge: pkceChallenge('a'.repeat(50)), scope: 'admin' });
     assert.ok(!badScope.ok && badScope.error === 'invalid_scope');
+    const magazine = parseAuthorizeQuery({ response_type: 'code', client_id: 'c', redirect_uri: 'https://claude.ai/cb', code_challenge: pkceChallenge('a'.repeat(50)), scope: 'mcp:magazine' });
+    assert.ok(magazine.ok, 'the magazine scope is accepted');
+    assert.equal(tokenScopeFor('mcp:magazine'), 'magazine');
+    assert.equal(tokenScopeFor('mcp mcp:magazine'), null, 'asking for the full scope too keeps the full scope');
+    assert.equal(tokenScopeFor(undefined), null);
   });
 
   it('reads client credentials from Basic auth or the form', () => {
@@ -175,8 +180,8 @@ describe('mcp: the tool registry', () => {
       if (t.schema) { const js = z.toJSONSchema(t.schema); assert.equal(js.type, 'object', `${t.name}: schema is an object`); }
     }
     const areas = toolsByArea().map(g => g.area);
-    for (const a of ['overview', 'businesses', 'content', 'moderation', 'disputes', 'sponsored', 'clients', 'ai', 'settings', 'accounting', 'audit']) assert.ok(areas.includes(a as never), `area ${a} has tools`);
-    for (const n of ['get_branch', 'update_branch_details', 'set_branch_treatments', 'update_page_seo', 'set_indexing', 'set_business_status', 'moderate_review', 'update_platform_settings']) assert.ok(names.includes(n), n);
+    for (const a of ['overview', 'businesses', 'content', 'magazine', 'moderation', 'disputes', 'sponsored', 'clients', 'ai', 'settings', 'accounting', 'audit']) assert.ok(areas.includes(a as never), `area ${a} has tools`);
+    for (const n of ['get_branch', 'update_branch_details', 'set_branch_treatments', 'update_page_seo', 'set_indexing', 'set_business_status', 'moderate_review', 'update_platform_settings', 'create_article', 'publish_article', 'upload_media', 'get_sitemap_urls']) assert.ok(names.includes(n), n);
   });
 });
 

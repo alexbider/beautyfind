@@ -60,14 +60,14 @@ export async function decideAiActionAction(input: z.input<typeof Decide>): Promi
 
 
 /** A personal bearer token for the signed-in staff member. Returned once; only its hash is kept. */
-export async function createMcpTokenAction(name: string): Promise<{ ok: true; token: string } | { ok: false; error: string }> {
+export async function createMcpTokenAction(name: string, scope: 'magazine' | null = null): Promise<{ ok: true; token: string } | { ok: false; error: string }> {
   const user = await areaUserOrNull('ai', 'view');
   if (!user) return { ok: false, error: 'אין הרשאה' };
   const label = String(name ?? '').trim();
   if (label.length < 2 || label.length > 60) return { ok: false, error: 'שם בין 2 ל־60 תווים' };
   const open = await db.mcpToken.count({ where: { userId: user.id, kind: 'personal', revokedAt: null } });
   if (open >= 10) return { ok: false, error: 'עד עשרה אסימונים פעילים לאדם; בטלו אחד קודם' };
-  const r = await createPersonalToken(user, label);
+  const r = await createPersonalToken(user, label, scope === 'magazine' ? 'magazine' : null);
   revalidatePath('/ops/ai');
   return { ok: true, token: r.token };
 }

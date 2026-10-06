@@ -23,7 +23,7 @@ export const INDEX_SECTIONS: IndexSection[] = [
   { key: 'categories', name: 'תחומי טיפול', desc: 'עמוד הטיפולים ו־14 עמודי התחומים', example: '/treatments/facials' },
   { key: 'cityCategories', name: 'עיר + תחום', desc: 'עמוד לכל צירוף של עיר ותחום שיש בו עסקים חיים', example: '/dan/ramat-gan/facials' },
   { key: 'profiles', name: 'פרופילי עסקים', desc: 'עמוד הפרופיל של כל עסק חי; עסק בודד אפשר להסתיר בעורך הסניף', example: '/dan/facials/studio-lin' },
-  { key: 'content', name: 'עמודי תוכן', desc: 'אודות, מתודולוגיה, עריכה, סטנדרטים, הצטרפות לעסקים, מגזין, עזרה, יצירת קשר', example: '/about' },
+  { key: 'content', name: 'עמודי תוכן', desc: 'אודות, מתודולוגיה, עריכה, סטנדרטים, הצטרפות לעסקים, המגזין ומאמריו, עזרה, יצירת קשר', example: '/about' },
   { key: 'legal', name: 'עמודים משפטיים', desc: 'תקנון, מדיניות פרטיות, הצהרת נגישות', example: '/privacy' },
 ];
 
@@ -68,6 +68,7 @@ export function sectionOfPath(rawPath: string): IndexSectionKey | null {
   if (path === '/regions') return 'regions';
   if (path === '/treatments' || path.startsWith('/treatments/')) return 'categories';
   if (CONTENT_PATHS.has(path)) return 'content';
+  if (path.startsWith('/magazine/') && path.split('/').length === 3) return 'content'; // articles follow the content switch
   if (LEGAL_PATHS.has(path)) return 'legal';
   const seg = path.slice(1).split('/');
   if (!REGION_SLUGS.has(seg[0])) return null;

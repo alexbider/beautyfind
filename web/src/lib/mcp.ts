@@ -11,6 +11,20 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 
 export const MCP_PATH = '/api/mcp';
 export const MCP_SCOPE = 'mcp';
+/**
+ * The narrow scope for article writers: the magazine tools plus a few shared reads (list_pages, list_branches,
+ * search_businesses, revalidate_pages). No business, billing or client data. A token with this scope is
+ * still filtered by its owner's role.
+ */
+export const MCP_MAGAZINE_SCOPE = 'mcp:magazine';
+export const MCP_SCOPES = [MCP_SCOPE, MCP_MAGAZINE_SCOPE] as const;
+export type TokenScope = 'magazine' | null;
+
+/** The stored token scope for a requested OAuth scope string: "magazine" when only the magazine scope was asked for. */
+export function tokenScopeFor(scope: string | null | undefined): TokenScope {
+  const parts = (scope ?? '').split(/\s+/).filter(Boolean);
+  return parts.length > 0 && parts.every(p => p === MCP_MAGAZINE_SCOPE) ? 'magazine' : null;
+}
 export const PERSONAL_TOKEN_PREFIX = 'bfmcp_';
 export const ACCESS_TOKEN_DAYS = 7;
 export const REFRESH_TOKEN_DAYS = 180;
@@ -31,7 +45,7 @@ export function authorizationServerMetadata(site: string) {
     grant_types_supported: ['authorization_code', 'refresh_token'],
     code_challenge_methods_supported: ['S256'],
     token_endpoint_auth_methods_supported: ['none', 'client_secret_post', 'client_secret_basic'],
-    scopes_supported: [MCP_SCOPE],
+    scopes_supported: [...MCP_SCOPES],
     service_documentation: `${s}/ops/ai?tab=mcp`,
   };
 }
@@ -39,7 +53,7 @@ export function authorizationServerMetadata(site: string) {
 /** RFC 9728 protected resource metadata, served at /.well-known/oauth-protected-resource(/api/mcp). */
 export function protectedResourceMetadata(site: string) {
   const s = site.replace(/\/$/, '');
-  return { resource: mcpUrl(s), authorization_servers: [s], bearer_methods_supported: ['header'], scopes_supported: [MCP_SCOPE], resource_name: 'BeautyFind ניהול' };
+  return { resource: mcpUrl(s), authorization_servers: [s], bearer_methods_supported: ['header'], scopes_supported: [...MCP_SCOPES], resource_name: 'BeautyFind ניהול' };
 }
 
 /** The 401 challenge that points a client at the metadata (MCP authorization spec). */
@@ -87,7 +101,7 @@ export function parseAuthorizeQuery(q: Record<string, string | undefined>): { ok
   if (!q.redirect_uri || !validRedirectUri(q.redirect_uri)) return { ok: false, error: 'invalid_request', description: 'redirect_uri is missing or not allowed' };
   if (!q.code_challenge || (q.code_challenge_method ?? 'S256') !== 'S256') return { ok: false, error: 'invalid_request', description: 'PKCE with S256 is required' };
   if (!/^[A-Za-z0-9\-_]{43}$/.test(q.code_challenge)) return { ok: false, error: 'invalid_request', description: 'code_challenge is not a valid S256 value' };
-  if (q.scope && q.scope.split(/\s+/).some(sc => sc && sc !== MCP_SCOPE)) return { ok: false, error: 'invalid_scope', description: `only the ${MCP_SCOPE} scope exists` };
+  if (q.scope && q.scope.split(/\s+/).some(sc => sc && !(MCP_SCOPES as readonly string[]).includes(sc))) return { ok: false, error: 'invalid_scope', description: `only the ${MCP_SCOPES.join(' and ')} scopes exist` };
   return { ok: true, params: { clientId: q.client_id, redirectUri: q.redirect_uri, codeChallenge: q.code_challenge, state: q.state, scope: q.scope, resource: q.resource } };
 }
 

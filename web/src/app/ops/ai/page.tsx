@@ -135,9 +135,9 @@ async function McpTab({ user }: { user: User }) {
       <Card title="אסימונים אישיים" sub="לחיבורים בלי OAuth (Claude Code, סקריפטים). האסימון נושא את ההרשאות שלכם ומוצג פעם אחת" flush>
         <div className={ui.cardPad}><TokenCreator canEdit /></div>
         {m.personal.length ? (
-          <Table head={['שם', 'נוצר', 'שימוש אחרון', '']}>
+          <Table head={['שם', 'היקף', 'נוצר', 'שימוש אחרון', '']}>
             {m.personal.map(t => (
-              <tr key={t.id}><td className={ui.strong}>{t.name}</td><td className={ui.num}>{dateTimeIL(t.createdAt)}</td><td className={ui.num}>{t.lastUsedAt ? relIL(t.lastUsedAt) : 'עוד לא'}</td><td><RevokeButton kind="token" id={t.id} label={t.name} /></td></tr>
+              <tr key={t.id}><td className={ui.strong}>{t.name}</td><td>{t.scope === 'magazine' ? <Chip tone="info">מגזין בלבד</Chip> : <Chip tone="neutral">לפי ההרשאות</Chip>}</td><td className={ui.num}>{dateTimeIL(t.createdAt)}</td><td className={ui.num}>{t.lastUsedAt ? relIL(t.lastUsedAt) : 'עוד לא'}</td><td><RevokeButton kind="token" id={t.id} label={t.name} /></td></tr>
             ))}
           </Table>
         ) : <Empty title="אין אסימונים אישיים" text="ל־claude.ai ול־Claude Desktop לא צריך אסימון: החיבור עובר דרך OAuth." />}

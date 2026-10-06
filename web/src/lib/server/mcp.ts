@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { permissionOverrides } from './platformSettings';
 import { AREAS, atLeast, levelOf, type Area, type Level } from '@/components/ops/roles';
 import {
-  ACCESS_TOKEN_DAYS, AUTH_CODE_MINUTES, MCP_SCOPE, PERSONAL_TOKEN_PREFIX, REFRESH_TOKEN_DAYS, type AuthorizeParams, clientCredentials, pkceMatches, redirectAllowed, validRedirectUri,
+  ACCESS_TOKEN_DAYS, AUTH_CODE_MINUTES, MCP_MAGAZINE_SCOPE, MCP_SCOPE, PERSONAL_TOKEN_PREFIX, REFRESH_TOKEN_DAYS, type AuthorizeParams, type TokenScope, clientCredentials, pkceMatches, redirectAllowed, tokenScopeFor, validRedirectUri,
 } from '@/lib/mcp';
 import { withActor } from './actorContext';
 import type { Proposal } from './assistant';
@@ -26,7 +26,9 @@ const minutes = (n: number) => new Date(Date.now() + n * 60_000);
 
 // ---------- bearer tokens ----------
 
-export interface McpCaller { user: User; tokenId: string; clientId: string | null; kind: McpTokenKind }
+export interface McpCaller { user: User; tokenId: string; clientId: string | null; kind: McpTokenKind; scope: TokenScope }
+
+const asScope = (s: string | null | undefined): TokenScope => (s === 'magazine' ? 'magazine' : null);
 
 /** The staff member behind a bearer token, or null. Personal and access tokens only, live and unexpired. */
 export async function authenticateBearer(req: Request): Promise<McpCaller | null> {
@@ -35,14 +37,14 @@ export async function authenticateBearer(req: Request): Promise<McpCaller | null
   const t = await db.mcpToken.findUnique({ where: { tokenHash: sha256(raw) }, include: { user: true } });
   if (!t || t.revokedAt || t.kind === 'refresh' || (t.expiresAt && t.expiresAt < new Date()) || !t.user.opsRole) return null;
   db.mcpToken.update({ where: { id: t.id }, data: { lastUsedAt: new Date() } }).catch(() => undefined);
-  return { user: t.user, tokenId: t.id, clientId: t.clientId, kind: t.kind };
+  return { user: t.user, tokenId: t.id, clientId: t.clientId, kind: t.kind, scope: asScope(t.scope) };
 }
 
-/** A personal token for a staff member, shown once. Stored as a hash, never expires until revoked. */
-export async function createPersonalToken(user: Pick<User, 'id'>, name: string): Promise<{ id: string; token: string }> {
+/** A personal token for a staff member, shown once. Stored as a hash, never expires until revoked. `scope` "magazine" narrows it to the article tools. */
+export async function createPersonalToken(user: Pick<User, 'id'>, name: string, scope: TokenScope = null): Promise<{ id: string; token: string }> {
   const token = PERSONAL_TOKEN_PREFIX + randomToken(32);
-  const row = await db.mcpToken.create({ data: { userId: user.id, kind: 'personal', name: name.trim().slice(0, 60) || 'אסימון אישי', tokenHash: sha256(token) }, select: { id: true } });
-  await db.auditLog.create({ data: { actorId: user.id, action: 'mcp_token_created', subjectType: 'mcp_token', subjectId: row.id, meta: { ref: name } } });
+  const row = await db.mcpToken.create({ data: { userId: user.id, kind: 'personal', name: name.trim().slice(0, 60) || 'אסימון אישי', tokenHash: sha256(token), scope }, select: { id: true } });
+  await db.auditLog.create({ data: { actorId: user.id, action: 'mcp_token_created', subjectType: 'mcp_token', subjectId: row.id, meta: { ref: name, ...(scope ? { scope } : {}) } } });
   return { id: row.id, token };
 }
 
@@ -59,14 +61,14 @@ export async function revokeClientForUser(user: Pick<User, 'id'>, clientId: stri
   return r.count;
 }
 
-async function issueTokens(userId: string, clientId: string) {
+async function issueTokens(userId: string, clientId: string, scope: TokenScope) {
   const access = randomToken(32);
   const refresh = randomToken(32);
   await db.mcpToken.createMany({ data: [
-    { userId, clientId, kind: 'access', tokenHash: sha256(access), expiresAt: days(ACCESS_TOKEN_DAYS) },
-    { userId, clientId, kind: 'refresh', tokenHash: sha256(refresh), expiresAt: days(REFRESH_TOKEN_DAYS) },
+    { userId, clientId, kind: 'access', tokenHash: sha256(access), expiresAt: days(ACCESS_TOKEN_DAYS), scope },
+    { userId, clientId, kind: 'refresh', tokenHash: sha256(refresh), expiresAt: days(REFRESH_TOKEN_DAYS), scope },
   ] });
-  return { access_token: access, token_type: 'Bearer', expires_in: ACCESS_TOKEN_DAYS * 86_400, refresh_token: refresh, scope: MCP_SCOPE };
+  return { access_token: access, token_type: 'Bearer', expires_in: ACCESS_TOKEN_DAYS * 86_400, refresh_token: refresh, scope: scope === 'magazine' ? MCP_MAGAZINE_SCOPE : MCP_SCOPE };
 }
 
 // ---------- OAuth: clients, codes, token endpoint ----------
@@ -104,8 +106,9 @@ export const getClient = (id: string) => (/^[0-9a-f-]{36}$/i.test(id) ? db.mcpCl
 /** After the staff member approved on /ops/mcp/authorize: a one-time code bound to the client, the redirect and the PKCE challenge. */
 export async function createAuthCode(user: Pick<User, 'id'>, client: McpClient, params: AuthorizeParams): Promise<string> {
   const code = randomToken(32);
-  await db.mcpAuthCode.create({ data: { codeHash: sha256(code), clientId: client.id, userId: user.id, redirectUri: params.redirectUri, codeChallenge: params.codeChallenge, expiresAt: minutes(AUTH_CODE_MINUTES) } });
-  await db.auditLog.create({ data: { actorId: user.id, action: 'mcp_authorized', subjectType: 'mcp_client', subjectId: client.id, meta: { ref: client.name } } });
+  const scope = tokenScopeFor(params.scope);
+  await db.mcpAuthCode.create({ data: { codeHash: sha256(code), clientId: client.id, userId: user.id, redirectUri: params.redirectUri, codeChallenge: params.codeChallenge, scope, expiresAt: minutes(AUTH_CODE_MINUTES) } });
+  await db.auditLog.create({ data: { actorId: user.id, action: 'mcp_authorized', subjectType: 'mcp_client', subjectId: client.id, meta: { ref: client.name, ...(scope ? { scope } : {}) } } });
   return code;
 }
 
@@ -133,7 +136,7 @@ export async function tokenEndpoint(authorization: string | null, form: URLSearc
     if (!row.user.opsRole) return { status: 400, body: { error: 'invalid_grant', error_description: 'the account is no longer staff' } };
     const used = await db.mcpAuthCode.updateMany({ where: { id: row.id, usedAt: null }, data: { usedAt: new Date() } });
     if (!used.count) return { status: 400, body: { error: 'invalid_grant', error_description: 'code already used' } };
-    return { status: 200, body: await issueTokens(row.userId, client.id) };
+    return { status: 200, body: await issueTokens(row.userId, client.id, asScope(row.scope)) };
   }
   if (grant === 'refresh_token') {
     const raw = form.get('refresh_token') ?? '';
@@ -142,14 +145,14 @@ export async function tokenEndpoint(authorization: string | null, form: URLSearc
     if (!row.user.opsRole) return { status: 400, body: { error: 'invalid_grant', error_description: 'the account is no longer staff' } };
     const rotated = await db.mcpToken.updateMany({ where: { id: row.id, revokedAt: null }, data: { revokedAt: new Date() } });
     if (!rotated.count) return { status: 400, body: { error: 'invalid_grant', error_description: 'refresh token already used' } };
-    return { status: 200, body: await issueTokens(row.userId, client.id) };
+    return { status: 200, body: await issueTokens(row.userId, client.id, asScope(row.scope)) };
   }
   return { status: 400, body: { error: 'unsupported_grant_type', error_description: 'use authorization_code or refresh_token' } };
 }
 
 // ---------- the MCP server ----------
 
-const INSTRUCTIONS = `שרת הניהול של BeautyFind (מדריך יופי ואסתטיקה ישראלי). הכלים הם מסכי הניהול עצמם: עסקים ופרופילים (פרטים, תוכן, מדיה, עובדות, טיפולים), עמודים ו־SEO, אינדוקס, ביקורות ודיווחים, מחלוקות, מקומות ממומנים, לקוחות ופרטיות, תור אישורי ה־AI והגדרות הפלטפורמה. כל קריאה וכל כתיבה נרשמות ביומן הפעולות על שם איש הצוות שהתחבר, וכתיבה עוברת את אותם אימותים כמו במסך. אין גישה לפרטי בריאות של לקוחות. הכלים הזמינים תלויים בהרשאות של איש הצוות. לפני שינוי, קראו את הרשומה (get_branch, get_business, list_pages) ושלחו רק את השדות שמשתנים.`;
+const INSTRUCTIONS = `שרת הניהול של BeautyFind (מדריך יופי ואסתטיקה ישראלי). הכלים הם מסכי הניהול עצמם: עסקים ופרופילים (פרטים, תוכן, מדיה, עובדות, טיפולים), עמודים ו־SEO, אינדוקס, המגזין (כותבים, קטגוריות, תמונות, מאמרים ב־/magazine/{slug}), ביקורות ודיווחים, מחלוקות, מקומות ממומנים, לקוחות ופרטיות, תור אישורי ה־AI והגדרות הפלטפורמה. כל קריאה וכל כתיבה נרשמות ביומן הפעולות על שם איש הצוות שהתחבר, וכתיבה עוברת את אותם אימותים כמו במסך. אין גישה לפרטי בריאות של לקוחות. הכלים הזמינים תלויים בהרשאות של איש הצוות ובהיקף האסימון. לפני שינוי, קראו את הרשומה (get_branch, get_business, list_pages, get_article) ושלחו רק את השדות שמשתנים.`;
 
 /** The caller's level in every area, after the overrides saved on /ops/team. */
 export async function callerLevels(user: Pick<User, 'opsRole'>): Promise<Record<Area, Level>> {
@@ -159,28 +162,53 @@ export async function callerLevels(user: Pick<User, 'opsRole'>): Promise<Record<
 
 export const toolAllowed = (levels: Record<Area, Level>, t: { area: Area; level: Level }) => atLeast(levels[t.area], t.level);
 
+/** Tools outside the magazine area that a magazine-scoped token may still use: page lists and listing lookups for internal links, and cache refreshes. */
+export const MAGAZINE_SHARED_TOOLS = new Set(['list_pages', 'revalidate_pages', 'list_branches', 'search_businesses', 'get_indexing']);
+export const scopeAllows = (scope: TokenScope, t: { area: Area; name: string }) => scope !== 'magazine' || t.area === 'magazine' || MAGAZINE_SHARED_TOOLS.has(t.name);
+
+// Per-token rate limits, in memory per server instance (Vercel functions share nothing, so these are
+// per-instance floors, not a global cap). A writing run of 20 articles with validation, uploads and
+// publishing fits comfortably; a runaway loop does not.
+export const RATE_LIMIT = { windowMs: 60_000, calls: 240, writes: 90 };
+const buckets = new Map<string, { start: number; calls: number; writes: number }>();
+export function rateCheck(key: string, write: boolean, now = Date.now()): { ok: true } | { ok: false; retryAfterSec: number } {
+  let b = buckets.get(key);
+  if (!b || now - b.start >= RATE_LIMIT.windowMs) { b = { start: now, calls: 0, writes: 0 }; buckets.set(key, b); }
+  if (buckets.size > 5000) for (const [k, v] of buckets) if (now - v.start >= RATE_LIMIT.windowMs) buckets.delete(k);
+  b.calls += 1;
+  if (write) b.writes += 1;
+  if (b.calls > RATE_LIMIT.calls || (write && b.writes > RATE_LIMIT.writes)) return { ok: false, retryAfterSec: Math.max(1, Math.ceil((b.start + RATE_LIMIT.windowMs - now) / 1000)) };
+  return { ok: true };
+}
+
 /** Serves one MCP request for an authenticated staff member. */
 export async function handleMcpRequest(req: Request, caller: McpCaller): Promise<Response> {
   const levels = await callerLevels(caller.user);
-  const server = new McpServer({ name: 'beautyfind-ops', version: '2.0.0' }, { instructions: INSTRUCTIONS });
+  const server = new McpServer({ name: 'beautyfind-ops', version: '2.1.0' }, { instructions: INSTRUCTIONS });
   const actor = { id: caller.user.id, opsRole: caller.user.opsRole ?? null };
   const run = async (name: string, input: Record<string, unknown>) => {
     const tool = MCP_TOOLS.find(t => t.name === name)!;
     const proposals: Proposal[] = [];
     let out: unknown;
     let error: string | null = null;
-    try {
-      out = await withActor(caller.user, () => tool.run(input, { proposals, source: SOURCE, actor }));
-      if (out && typeof out === 'object' && ('error' in out) && (out as { ok?: boolean }).ok !== true) error = String((out as { error: unknown }).error);
-    } catch (e) {
-      error = e instanceof Error ? e.message : String(e);
-      out = { error };
+    const rate = rateCheck(caller.tokenId, tool.write);
+    if (!rate.ok) {
+      error = `rate_limited: at most ${RATE_LIMIT.calls} calls and ${RATE_LIMIT.writes} writes a minute per token; retry in ${rate.retryAfterSec}s`;
+      out = { ok: false, error, code: 'rate_limited', retryAfterSec: rate.retryAfterSec };
+    } else {
+      try {
+        out = await withActor(caller.user, () => tool.run(input, { proposals, source: SOURCE, actor }));
+        if (out && typeof out === 'object' && ('error' in out) && (out as { ok?: boolean }).ok !== true) error = String((out as { error: unknown }).error);
+      } catch (e) {
+        error = e instanceof Error ? e.message : String(e);
+        out = { error };
+      }
     }
-    await db.auditLog.create({ data: { actorId: caller.user.id, action: 'mcp_call', subjectType: 'mcp', subjectId: caller.user.id, meta: { ref: name, tool: name, write: tool.write, clientId: caller.clientId, tokenKind: caller.kind, ...(proposals.length ? { proposals: proposals.map(p => p.ref) } : {}), ...(error ? { error } : {}) } } }).catch(() => undefined);
+    await db.auditLog.create({ data: { actorId: caller.user.id, action: 'mcp_call', subjectType: 'mcp', subjectId: caller.user.id, meta: { ref: name, tool: name, write: tool.write, clientId: caller.clientId, tokenKind: caller.kind, ...(caller.scope ? { scope: caller.scope } : {}), ...(proposals.length ? { proposals: proposals.map(p => p.ref) } : {}), ...(error ? { error } : {}) } } }).catch(() => undefined);
     return { content: [{ type: 'text' as const, text: JSON.stringify(out, null, 1).slice(0, 80_000) }], isError: !!error };
   };
   for (const t of MCP_TOOLS) {
-    if (!toolAllowed(levels, t)) continue;
+    if (!toolAllowed(levels, t) || !scopeAllows(caller.scope, t)) continue;
     const annotations = { readOnlyHint: !t.write, destructiveHint: false, idempotentHint: !t.write, openWorldHint: false };
     if (t.schema) server.registerTool(t.name, { description: t.description, inputSchema: t.schema.shape, annotations }, async args => run(t.name, args as Record<string, unknown>));
     else server.registerTool(t.name, { description: t.description, annotations }, async () => run(t.name, {}));
@@ -205,7 +233,7 @@ export async function mcpOverview(user: User) {
   const actorIds = [...new Set(recent.map(r => r.actorId).filter((x): x is string => !!x))];
   const actors = actorIds.length ? await db.user.findMany({ where: { id: { in: actorIds } }, select: { id: true, fullName: true, email: true } }) : [];
   const who = new Map(actors.map(a => [a.id, a.fullName || a.email || 'צוות']));
-  const personal = tokens.filter(t => t.kind === 'personal').map(t => ({ id: t.id, name: t.name ?? '', createdAt: t.createdAt, lastUsedAt: t.lastUsedAt }));
+  const personal = tokens.filter(t => t.kind === 'personal').map(t => ({ id: t.id, name: t.name ?? '', scope: asScope(t.scope), createdAt: t.createdAt, lastUsedAt: t.lastUsedAt }));
   const apps = new Map<string, { id: string; name: string; host: string; since: Date; lastUsedAt: Date | null; tokens: number }>();
   for (const t of tokens) {
     if (!t.client) continue;
