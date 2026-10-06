@@ -89,7 +89,8 @@ const LEFTOVER_PATTERNS: Array<{ re: RegExp; label: string }> = [
   { re: /אין מספיק מחירים/u, label: 'אין מספיק מחירים' },
   { re: /\bconfidence\b/, label: 'confidence' },
   { re: /\bsourceYear\b/, label: 'sourceYear' },
-  { re: /\b(?:midrag|bizportal|kamaze|ice|walla|kipa|hon|b144|ynet|d)\.co\.il\b/i, label: 'source domain' },
+  // A business's own email at walla.co.il (or a site under one of these names) is not a source citation.
+  { re: /(?<![@\w.-])(?:midrag|bizportal|kamaze|ice|walla|kipa|hon|b144|ynet|d)\.co\.il\b/i, label: 'source domain' },
 ];
 const BUSINESS_TYPES = new Set(['HairSalon', 'NailSalon', 'BeautySalon', 'DaySpa', 'Dentist', 'MedicalClinic', 'HealthAndBeautyBusiness', 'LocalBusiness', 'MedicalBusiness']);
 const REGIONS = ['north', 'haifa', 'sharon', 'dan', 'jerusalem', 'shfela', 'south'];
