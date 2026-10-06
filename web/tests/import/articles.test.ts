@@ -230,6 +230,7 @@ describe('articles: service and tools', { skip }, () => {
     const row = await db.article.findUnique({ where: { id: a.id } });
     assert.equal(row!.status, 'published');
     assert.ok(row!.publishedAt);
+    assert.ok(published.ok && published.revalidated.includes('/') && published.revalidated.includes('/home/phone'), 'the homepage guides block is refreshed');
     assert.ok(published.ok && published.revalidated.includes('/treatments/nails') && published.revalidated.includes(`/magazine/category/${category.slug}`), 'the parent page and the category page are refreshed');
     assert.ok(await db.auditLog.findFirst({ where: { actorId: user.id, action: 'article_publish', subjectId: a.id } }));
     const again = await svc.publishArticle(user, a.id);
@@ -278,8 +279,10 @@ describe('articles: service and tools', { skip }, () => {
 
     const down = await svc.unpublishArticle(user, b.id, 'בדיקה');
     assert.ok(down.ok && down.article.status === 'unpublished');
+    const before = (await svc.getAuthor(author.id))!.articles!;
     const del = await svc.deleteArticle(user, b.id);
-    assert.ok(del.ok);
+    assert.ok(del.ok && del.revalidated.includes('/') && del.revalidated.some(p => p.startsWith('/magazine/category/')) === Boolean(b.category), JSON.stringify(del.ok && del.revalidated));
+    assert.equal((await svc.getAuthor(author.id))!.articles, before - 1, 'a deleted article no longer counts for its author');
     assert.equal(await svc.findArticle(b.id), null);
     assert.ok(await svc.findArticle(b.id, { includeDeleted: true }));
     const listed = await svc.listArticles({ status: 'all' });
