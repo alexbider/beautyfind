@@ -42,7 +42,7 @@ function PersonIcon() {
 function Person({ a, avatar }: { a: Author; avatar: MediaFile | null }) {
   return (
     <span className={styles.person}>
-      {avatar ? <img className={styles.avatar} src={mediaUrl(avatar)} alt="" width={40} height={40} loading="lazy" decoding="async" /> : <span className={styles.avatarFallback} aria-hidden="true"><PersonIcon /></span>}
+      {avatar ? <img className={styles.avatar} src={mediaUrl(avatar)} alt="" width={48} height={48} decoding="async" /> : <span className={styles.avatarFallback} aria-hidden="true"><PersonIcon /></span>}
       <span>
         <span className={styles.personName}>{a.name}</span>
         {a.title ? <span className={styles.personRole}>{a.title}</span> : null}
