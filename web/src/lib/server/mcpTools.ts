@@ -22,6 +22,17 @@ import { createCampaignAction, reviewCampaignAction } from '@/app/ops/sponsored/
 import { listClients, privacyRequests } from '@/app/ops/clients/data';
 import { blockClientAction, completePrivacyRequestAction } from '@/app/ops/clients/actions';
 import { saveMaintenanceMessageAction, saveMedicalDisclaimerAction, saveNumbersAction, setFlagAction } from '@/app/ops/settings/actions';
+import {
+  articleLinksAction, createArticleAction, createTagAction, deleteArticleAction, getArticleAction, getAuthorAction, listArticlesAction, listAuthorsAction, listCategoriesAction, listMediaAction, listTagsAction,
+  publishArticleAction, replaceInArticleAction, scheduleArticleAction, unpublishArticleAction, updateArticleAction, updateMediaAction, uploadMediaAction, upsertAuthorAction, upsertCategoryAction, validateArticleAction,
+} from '@/app/ops/magazine/actions';
+import { ArticleCreateSchema, ArticlePatchSchema, AuthorInputSchema, CategoryInputSchema } from './articles';
+import { MediaMetaSchema, UploadSchema } from './articleMedia';
+import { ARTICLE_PATH_PREFIX } from '@/lib/articleHtml';
+import { DEFAULT_OG_IMAGE, SITE_NAME } from '@/lib/seo/meta';
+import { LOGO_SIZE, LOGO_URL, ORG_ID, absoluteUrl } from '@/lib/seo/schema';
+import { siteUrl } from './site';
+import { sitemapEntries } from './sitemapEntries';
 
 // Everything the MCP server offers Claude: the whole admin, as tools. Reads return the same data the
 // admin screens show; writes call the same server actions the screens call, so validation, audit rows,
@@ -160,7 +171,10 @@ export const MCP_TOOLS: McpTool[] = [
   } },
 
   // ---------- pages, SEO and indexing ----------
-  { name: 'list_pages', area: 'content', level: 'view', write: false, schema: null, description: 'העמודים הציבוריים הקבועים (בית, אזורים, תחומים, תוכן, משפטי) עם הכותרת, התיאור, מילת המפתח, מצב האינדקס וציון ה־SEO של כל אחד.', run: () => pageRows() },
+  { name: 'list_pages', area: 'content', level: 'view', write: false, schema: null, description: 'העמודים הציבוריים הקבועים (בית, אזורים, תחומים, תוכן, משפטי) עם הכותרת, התיאור, מילת המפתח, מצב האינדקס וציון ה־SEO של כל אחד, וכן אינדקס המגזין (/magazine) ותבנית כתובת המאמרים (/magazine/{slug}).', run: async () => {
+    const rows = await pageRows();
+    return { pages: rows, magazine: { index: '/magazine', articleUrlPattern: `${ARTICLE_PATH_PREFIX}{slug}`, note: 'מאמרים נוצרים ב־create_article; ה־SEO שלהם נערך בשדות המאמר, לא ב־update_page_seo' } };
+  } },
   { name: 'update_page_seo', area: 'content', level: 'edit', write: true, schema: z.object({ path: z.string().max(120).describe('הנתיב מתוך list_pages, למשל /treatments/facials'), title: z.string().max(120).optional().describe('ריק = ברירת המחדל של הקוד'), description: z.string().max(320).optional(), keyword: z.string().max(60).optional(), noindex: z.boolean().optional() }), description: 'עדכון ה־SEO של עמוד קבוע: כותרת, תיאור, מילת מפתח ו־noindex. שדות שלא נשלחו נשארים; מחרוזת ריקה מחזירה לברירת המחדל.', run: async a => {
     const path = String(a.path);
     if (!sitePages().some(p => p.path === path)) return { error: 'unknown page; use list_pages' };
@@ -172,6 +186,45 @@ export const MCP_TOOLS: McpTool[] = [
   { name: 'revalidate_pages', area: 'content', level: 'edit', write: true, schema: z.object({ paths: z.array(z.string().max(200).regex(/^\//)).min(1).max(50).describe('נתיבים ציבוריים, למשל /dan או /treatments/facials; / מרענן הכול') }), description: 'ריענון המטמון של עמודים ציבוריים אחרי שינוי, בלי לחכות למחזור הרגיל.', run: async a => {
     for (const p of a.paths as string[]) { if (p === '/') revalidatePath('/', 'layout'); else revalidatePath(p); }
     return { ok: true, revalidated: a.paths };
+  } },
+
+  // ---------- magazine: authors, taxonomy, media, articles, site data ----------
+  { name: 'list_authors', area: 'magazine', level: 'view', write: false, schema: z.object({ include_inactive: z.boolean().optional(), reviewers_only: z.boolean().optional().describe('רק סוקרים רפואיים') }), description: 'כותבי המגזין והסוקרים הרפואיים: מזהה, slug, שם, תפקיד, ביו, תמונה, האם סוקר רפואי, סוג ומספר רישיון, מספר המאמרים.', run: a => listAuthorsAction({ includeInactive: Boolean(a.include_inactive), reviewersOnly: Boolean(a.reviewers_only) }) },
+  { name: 'get_author', area: 'magazine', level: 'view', write: false, schema: z.object({ author: z.string().max(80).describe('מזהה או slug') }), description: 'כרטיס כותב או סוקר אחד.', run: a => getAuthorAction(String(a.author)) },
+  { name: 'list_medical_reviewers', area: 'magazine', level: 'view', write: false, schema: null, description: 'הסוקרים הרפואיים הפעילים (רופא, רופא שיניים או אחות עם רישיון רשום). מאמר עם medicalReview.required חייב סוקר מהרשימה ותאריך סקירה לפני פרסום.', run: () => listAuthorsAction({ reviewersOnly: true }) },
+  { name: 'upsert_author', area: 'magazine', level: 'edit', write: true, schema: AuthorInputSchema.describe('עם id מעדכן, בלי id יוצר. סוקר רפואי חייב licenseKind'), description: 'יצירה או עדכון של כותב או סוקר רפואי (שם, תפקיד, ביו, תמונה מ־upload_media, סימון סוקר, רישיון, קישורי sameAs, פעיל).', run: a => upsertAuthorAction(a) },
+  { name: 'list_categories', area: 'magazine', level: 'view', write: false, schema: null, description: 'קטגוריות המגזין: מזהה, slug, שם, תיאור, מספר מאמרים מפורסמים וכתובת הסינון.', run: () => listCategoriesAction() },
+  { name: 'upsert_category', area: 'magazine', level: 'edit', write: true, schema: CategoryInputSchema, description: 'יצירה או עדכון של קטגוריה במגזין (slug, שם, תיאור). בלי id ועם slug קיים מעדכן את הקיימת.', run: a => upsertCategoryAction(a) },
+  { name: 'list_tags', area: 'magazine', level: 'view', write: false, schema: null, description: 'תגיות המגזין עם מספר המאמרים המפורסמים בכל אחת.', run: () => listTagsAction() },
+  { name: 'create_tag', area: 'magazine', level: 'edit', write: true, schema: z.object({ name: z.string().min(2).max(60), slug: z.string().max(60).optional() }), description: 'יצירת תגית (slug נגזר מהשם כשלא נשלח). תגית קיימת מוחזרת כפי שהיא.', run: a => createTagAction({ name: String(a.name), slug: a.slug as string | undefined }) },
+  { name: 'upload_media', area: 'magazine', level: 'edit', write: true, schema: UploadSchema, description: 'העלאת תמונה למגזין מכתובת ציבורית או מ־base64: נבדקת (JPEG/PNG/WebP, עד 8MB, לפחות 200px), מומרת ל־WebP עד 1600px ונשמרת. חובה alt בעברית; אפשר title, caption ושם קובץ (אותיות לטיניות קטנות ומקפים). מחזיר מזהה, כתובת, רוחב וגובה.', run: a => uploadMediaAction(a) },
+  { name: 'update_media', area: 'magazine', level: 'edit', write: true, schema: z.object({ media_id: uuid, patch: MediaMetaSchema.partial() }), description: 'עדכון alt, title, caption או שם הקובץ של תמונה שהועלתה.', run: a => updateMediaAction(String(a.media_id), a.patch) },
+  { name: 'list_media', area: 'magazine', level: 'view', write: false, schema: z.object({ q: z.string().max(120).optional().describe('חיפוש ב־alt, בכותרת ובשם הקובץ'), kind: z.string().max(20).nullable().optional().describe('ברירת מחדל article; null לכל התמונות הציבוריות'), page: z.number().int().min(1).optional(), page_size: z.number().int().min(1).max(100).optional() }), description: 'תמונות המגזין שהועלו, עם כתובת, alt, מידות ומשקל.', run: a => listMediaAction({ q: a.q as string | undefined, kind: a.kind as string | null | undefined, page: a.page as number | undefined, pageSize: a.page_size as number | undefined }) },
+  { name: 'list_articles', area: 'magazine', level: 'view', write: false, schema: z.object({ status: z.enum(['draft', 'scheduled', 'published', 'unpublished', 'all']).optional(), category: z.string().max(80).optional().describe('מזהה או slug'), author: z.string().max(80).optional().describe('מזהה או slug'), search: z.string().max(120).optional(), from: z.string().max(40).optional().describe('ISO; לפי updatedAt'), to: z.string().max(40).optional(), include_deleted: z.boolean().optional(), page: z.number().int().min(1).optional(), page_size: z.number().int().min(1).max(100).optional() }), description: 'רשימת המאמרים עם סינון לפי מצב, קטגוריה, כותב, טקסט וטווח תאריכים, בעימוד. כל שורה: מזהה, כותרת, slug, כתובת קנונית, מצב, תאריכים, מספר מילים, עמוד אב ומילת מפתח.', run: a => listArticlesAction({ status: a.status as 'all' | undefined, category: a.category as string | undefined, author: a.author as string | undefined, search: a.search as string | undefined, from: a.from as string | undefined, to: a.to as string | undefined, includeDeleted: Boolean(a.include_deleted), page: a.page as number | undefined, pageSize: a.page_size as number | undefined }) },
+  { name: 'get_article', area: 'magazine', level: 'view', write: false, schema: z.object({ article: z.string().max(140).describe('מזהה או slug') }), description: 'המאמר המלא: כל השדות, ה־HTML המסונן, המחבר והסוקר, הקטגוריה והתגיות, התמונה הראשית, שדות ה־SEO, JSON-LD נוסף ו־updatedAt לעדכון בטוח.', run: a => getArticleAction(String(a.article)) },
+  { name: 'create_article', area: 'magazine', level: 'edit', write: true, schema: ArticleCreateSchema, description: 'יצירת מאמר (טיוטה). חובה title; slug נגזר מהכותרת כשלא נשלח (עברית או לטינית קטנה עם מקפים); slug תפוס מחזיר conflict. bodyHtml מסונן לתגיות המותרות (h2,h3,p,ul,ol,li,table,thead,tbody,tr,th,td,strong,em,a,figure,img,figcaption,blockquote,br,hr); סקריפטי JSON-LD נשמרים בנפרד. מחזיר את המאמר והכתובת הקנונית.', run: a => createArticleAction(a) },
+  { name: 'update_article', area: 'magazine', level: 'edit', write: true, schema: z.object({ article_id: uuid, patch: ArticlePatchSchema, expected_updated_at: z.string().max(40).optional().describe('updatedAt מ־get_article; ערך ישן מחזיר stale') }), description: 'עדכון חלקי של מאמר: רק השדות שנשלחו משתנים. expected_updated_at מגן מפני דריסה. מאמר מפורסם מתרענן באתר. מחזיר את המאמר והכתובת הקנונית.', run: a => updateArticleAction(String(a.article_id), a.patch, a.expected_updated_at as string | undefined) },
+  { name: 'publish_article', area: 'magazine', level: 'edit', write: true, schema: z.object({ article_id: uuid, note: z.string().max(300).optional() }), description: 'פרסום מאמר: נבדק קודם (כותרת, גוף, מחבר, alt לתמונות, קישורים פנימיים, סקירה רפואית כשנדרשת) ונדחה עם שגיאה ברורה כשלא עובר. כשההגדרה ״פרסום דרך תור האישורים״ דלוקה, נפתחת בקשה בתור במקום פרסום. העמוד, /magazine, מפת האתר ועמוד האב מתרעננים. מחזיר את הכתובת הקנונית.', run: (a, c) => publishArticleAction(String(a.article_id), { note: a.note as string | undefined, source: c.source }) },
+  { name: 'unpublish_article', area: 'magazine', level: 'edit', write: true, schema: z.object({ article_id: uuid, reason: z.string().max(300).optional() }), description: 'הורדת מאמר מהאתר (unpublished): העמוד מחזיר 404 ויוצא ממפת האתר; התוכן נשמר.', run: a => unpublishArticleAction(String(a.article_id), a.reason as string | undefined) },
+  { name: 'schedule_article', area: 'magazine', level: 'edit', write: true, schema: z.object({ article_id: uuid, scheduled_for: z.string().max(40).describe('YYYY-MM-DDTHH:mm בשעון ישראל (Asia/Jerusalem), או ISO עם אזור זמן') }), description: 'תזמון פרסום לזמן עתידי בשעון ישראל. המאמר נבדק כמו בפרסום; בהגיע הזמן הוא מתפרסם ברינדור הבא של המגזין או מפת האתר.', run: a => scheduleArticleAction(String(a.article_id), String(a.scheduled_for)) },
+  { name: 'delete_article', area: 'magazine', level: 'edit', write: true, schema: z.object({ article_id: uuid, reason: z.string().max(300).optional() }), description: 'מחיקה רכה: המאמר יורד מהאתר ונעלם מהרשימות (include_deleted מראה אותו), השורה נשמרת.', run: a => deleteArticleAction(String(a.article_id), a.reason as string | undefined) },
+  { name: 'replace_in_article', area: 'magazine', level: 'edit', write: true, schema: z.object({ article_id: uuid, find: z.string().min(1).max(5000).describe('טקסט או HTML מדויק מתוך bodyHtml'), replace: z.string().max(20000), all: z.boolean().optional().describe('להחליף כל מופע; בלי זה טקסט שמופיע יותר מפעם אחת נדחה'), expected_updated_at: z.string().max(40).optional() }), description: 'החלפה ממוקדת בגוף המאמר (למשל הוספת קישור פנימי לפסקה קיימת). התוצאה מסוננת מחדש ונשמרת; המאמר מתרענן.', run: a => replaceInArticleAction(String(a.article_id), String(a.find), String(a.replace ?? ''), { all: Boolean(a.all), expectedUpdatedAt: a.expected_updated_at as string | undefined }) },
+  { name: 'get_article_links', area: 'magazine', level: 'view', write: false, schema: z.object({ article_id: uuid }), description: 'הקישורים של מאמר: יוצאים פנימיים (עם בדיקה שהנתיב קיים) וחיצוניים, ונכנסים ממאמרים אחרים (כולל ״קריאה נוספת״).', run: a => articleLinksAction(String(a.article_id)) },
+  { name: 'validate_article', area: 'magazine', level: 'view', write: false, schema: z.object({ article_id: uuid, patch: ArticlePatchSchema.optional().describe('לבדוק שינוי לפני שמירה') }), description: 'בדיקה יבשה בלי שמירה: alt חסר, H1 בגוף, קישורים פנימיים שבורים, נתיבים שלא קיימים, מחבר או תמונה ראשית חסרים, מטא ריק או ארוך, תגיות לא סגורות, סקירה רפואית. מחזיר publishable ורשימת ממצאים לפי חומרה.', run: a => validateArticleAction(String(a.article_id), a.patch) },
+  { name: 'get_sitemap_urls', area: 'magazine', level: 'view', write: false, schema: z.object({ type: z.enum(['home', 'treatments', 'regions', 'category', 'region', 'city', 'cityCategory', 'profile', 'content', 'legal', 'magazine', 'article']).optional(), limit: z.number().int().min(1).max(5000).optional() }), description: 'כל הכתובות החיות במפת האתר (אותו מקור כמו /sitemap.xml) עם סוג, כותרת ו־lastmod; לסינון לפי סוג.', run: async a => {
+    const all = await sitemapEntries();
+    const rows = (a.type ? all.filter(e => e.type === a.type) : all).slice(0, Number(a.limit ?? 5000));
+    return { total: all.length, returned: rows.length, urls: rows.map(e => ({ url: e.url, path: e.path, type: e.type, title: e.title, lastmod: e.lastModified })) };
+  } },
+  { name: 'get_site_settings', area: 'magazine', level: 'view', write: false, schema: null, description: 'נתוני האתר לכותבים: שם האתר, כתובת, תמונת שיתוף ברירת מחדל, @id של הארגון ב־JSON-LD, שם ולוגו המפרסם, שפה (he-IL), אזור זמן, תבנית כתובת המאמרים ומצב מתג האישורים.', run: async () => {
+    const s = await platformSettings();
+    return {
+      siteName: SITE_NAME, siteUrl: siteUrl(), locale: 'he-IL', timezone: 'Asia/Jerusalem', dir: 'rtl',
+      defaultOgImage: absoluteUrl(DEFAULT_OG_IMAGE), organizationId: ORG_ID, publisher: { name: SITE_NAME, logo: LOGO_URL, logoWidth: LOGO_SIZE.width, logoHeight: LOGO_SIZE.height },
+      magazineIndex: '/magazine', articleUrlPattern: `${ARTICLE_PATH_PREFIX}{slug}`, publishRequiresApproval: s.magazinePublishApproval,
+      allowedBodyTags: ['h2', 'h3', 'p', 'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'strong', 'em', 'a', 'figure', 'img', 'figcaption', 'blockquote', 'br', 'hr', 'script[type=application/ld+json]'],
+      externalLinkRel: 'nofollow noopener noreferrer',
+    };
   } },
 
   // ---------- trust: reviews, reports, disputes, sponsored ----------

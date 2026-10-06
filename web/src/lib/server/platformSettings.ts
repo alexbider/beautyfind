@@ -50,6 +50,9 @@ export const PlatformSettingsSchema = z.object({
   // Market price ranges per treatment category (src/lib/marketPrices.ts). Absent means the seed file; staff
   // edits on /ops/settings store the whole document here, with the staff-only fields.
   marketPrices: MarketPricesSchema.optional(),
+  // Magazine: when on, publish_article (MCP and admin) files a proposal in the approvals queue instead of
+  // publishing; a person approves on /ops/ai and the approval publishes.
+  magazinePublishApproval: z.boolean().default(false),
 });
 
 export type PlatformSettings = z.infer<typeof PlatformSettingsSchema>;

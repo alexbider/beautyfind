@@ -28,16 +28,16 @@ export const OPS_ROLES: OpsRoleKey[] = ['ops', 'verifier', 'moderator', 'support
 
 export type Area =
   | 'overview' | 'businesses' | 'clients' | 'bookings' | 'disputes' | 'sponsored' | 'moderation' | 'verification' | 'import'
-  | 'accounting' | 'content' | 'messages' | 'ai' | 'integrations' | 'team' | 'audit' | 'settings' | 'health';
+  | 'accounting' | 'content' | 'magazine' | 'messages' | 'ai' | 'integrations' | 'team' | 'audit' | 'settings' | 'health';
 
 export const AREAS: Area[] = [
   'overview', 'businesses', 'clients', 'bookings', 'disputes', 'sponsored', 'moderation', 'verification', 'import',
-  'accounting', 'content', 'messages', 'ai', 'integrations', 'team', 'audit', 'settings', 'health',
+  'accounting', 'content', 'magazine', 'messages', 'ai', 'integrations', 'team', 'audit', 'settings', 'health',
 ];
 
 export const AREA_NAMES: Record<Area, string> = {
   overview: 'סקירה כללית', businesses: 'עסקים', clients: 'לקוחות ופרטיות', bookings: 'הזמנות', disputes: 'מחלוקות', sponsored: 'מקומות ממומנים',
-  moderation: 'ביקורות', verification: 'אימות רישיונות', import: 'ייבוא עסקים', accounting: 'הנהלת חשבונות', content: 'תוכן ו־SEO',
+  moderation: 'ביקורות', verification: 'אימות רישיונות', import: 'ייבוא עסקים', accounting: 'הנהלת חשבונות', content: 'תוכן ו־SEO', magazine: 'מגזין',
   messages: 'הודעות ותבניות', ai: 'AI ו־MCP', integrations: 'אינטגרציות ומקורות', team: 'צוות והרשאות', audit: 'יומן פעולות',
   settings: 'הגדרות פלטפורמה', health: 'בריאות מערכת',
 };
@@ -47,7 +47,7 @@ export const MATRIX_GROUPS: Array<{ name: string; areas: Area[] }> = [
   { name: 'עסקים', areas: ['businesses', 'clients', 'bookings', 'import'] },
   { name: 'אמון', areas: ['verification', 'moderation', 'disputes', 'sponsored'] },
   { name: 'כספים', areas: ['accounting'] },
-  { name: 'תוכן', areas: ['content', 'messages'] },
+  { name: 'תוכן', areas: ['content', 'magazine', 'messages'] },
   { name: 'AI ו־MCP', areas: ['ai', 'integrations'] },
   { name: 'הגדרות', areas: ['settings', 'team', 'health'] },
   { name: 'יומן', areas: ['audit'] },
@@ -92,6 +92,6 @@ export function firstArea(role: string | null | undefined, overrides?: Permissio
 export const AREA_HREF: Record<Area, string> = {
   overview: '/ops', businesses: '/ops/businesses', clients: '/ops/clients', bookings: '/ops/bookings', disputes: '/ops/disputes',
   sponsored: '/ops/sponsored', moderation: '/ops/moderation', verification: '/ops/verification', import: '/ops/import',
-  accounting: '/ops/accounting', content: '/ops/content', messages: '/ops/messages', ai: '/ops/ai', integrations: '/ops/integrations',
+  accounting: '/ops/accounting', content: '/ops/content', magazine: '/ops/magazine', messages: '/ops/messages', ai: '/ops/ai', integrations: '/ops/integrations',
   team: '/ops/team', audit: '/ops/audit', settings: '/ops/settings', health: '/ops/health',
 };

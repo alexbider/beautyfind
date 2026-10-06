@@ -16,7 +16,7 @@ const GROUPS: Array<{ name: string; areas: Area[] }> = [
   { name: 'ראשי', areas: ['overview'] },
   { name: 'תפעול', areas: ['businesses', 'clients', 'bookings', 'disputes', 'sponsored', 'moderation', 'verification', 'import'] },
   { name: 'כספים', areas: ['accounting'] },
-  { name: 'צמיחה', areas: ['content', 'messages'] },
+  { name: 'צמיחה', areas: ['content', 'magazine', 'messages'] },
   { name: 'AI ונתונים', areas: ['ai', 'integrations'] },
   { name: 'מערכת', areas: ['team', 'audit', 'settings', 'health'] },
 ];

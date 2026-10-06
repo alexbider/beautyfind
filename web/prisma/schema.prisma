@@ -729,8 +729,125 @@ model MediaFile {
   // private files (license scans) are never served publicly
   isPrivate  Boolean  @default(false) @map("is_private")
   createdAt  DateTime @default(now()) @map("created_at")
+  // Magazine images (upload_media): pixel size, a title and caption for the figure, a unique lowercase
+  // hyphenated file name for the URL (/media/<id>/<filename>), and the purpose ("article").
+  width      Int?
+  height     Int?
+  title      String?
+  caption    String?
+  filename   String?  @unique
+  kind       String?
+
+  avatarOf   Author[]
+  featuredIn Article[] @relation("ArticleFeaturedImage")
 
   @@map("media_files")
+}
+
+// ---------- Magazine: authors, categories, tags and articles (/magazine/<slug>) ----------
+
+enum ArticleStatus {
+  draft
+  scheduled
+  published
+  unpublished
+}
+
+// A byline: a writer, or a clinician who reviews medical articles (isMedicalReviewer). Not a login.
+model Author {
+  id                String      @id @default(uuid()) @db.Uuid
+  slug              String      @unique
+  name              String
+  title             String? // the role line under the name
+  bio               String?
+  avatarId          String?     @map("avatar_id") @db.Uuid
+  avatar            MediaFile?  @relation(fields: [avatarId], references: [id])
+  isMedicalReviewer Boolean     @default(false) @map("is_medical_reviewer")
+  licenseKind       String?     @map("license_kind") // doctor | dentist | nurse
+  licenseNumber     String?     @map("license_number")
+  sameAs            String[]    @default([]) @map("same_as")
+  userId            String?     @map("user_id") @db.Uuid // the staff account, when there is one
+  active            Boolean     @default(true)
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+
+  articles Article[] @relation("ArticleAuthor")
+  reviewed Article[] @relation("ArticleReviewer")
+
+  @@map("authors")
+}
+
+model ArticleCategory {
+  id          String    @id @default(uuid()) @db.Uuid
+  slug        String    @unique
+  name        String
+  description String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  articles Article[]
+
+  @@map("article_categories")
+}
+
+model ArticleTag {
+  id        String    @id @default(uuid()) @db.Uuid
+  slug      String    @unique
+  name      String
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  articles Article[]
+
+  @@map("article_tags")
+}
+
+model Article {
+  id                 String          @id @default(uuid()) @db.Uuid
+  slug               String          @unique
+  title              String // the only H1
+  status             ArticleStatus   @default(draft)
+  publishedAt        DateTime?       @map("published_at")
+  scheduledFor       DateTime?       @map("scheduled_for")
+  bodyHtml           String          @default("") @map("body_html") // sanitized (src/lib/articleHtml.ts)
+  excerpt            String?
+  summary            String[]        @default([]) // the "בקצרה" list above the body
+  faq                Json            @default("[]") // [{q,a}] shown under the body; FAQPage only when present
+  authorId           String?         @map("author_id") @db.Uuid
+  author             Author?         @relation("ArticleAuthor", fields: [authorId], references: [id])
+  reviewRequired     Boolean         @default(false) @map("review_required")
+  reviewerId         String?         @map("reviewer_id") @db.Uuid
+  reviewer           Author?         @relation("ArticleReviewer", fields: [reviewerId], references: [id])
+  reviewedAt         DateTime?       @map("reviewed_at")
+  reviewStatus       String?         @map("review_status") // pending | approved | changes_requested
+  categoryId         String?         @map("category_id") @db.Uuid
+  category           ArticleCategory? @relation(fields: [categoryId], references: [id])
+  tags               ArticleTag[]
+  featuredImageId    String?         @map("featured_image_id") @db.Uuid
+  featuredImage      MediaFile?      @relation("ArticleFeaturedImage", fields: [featuredImageId], references: [id])
+  parentPagePath     String?         @map("parent_page_path") // the public page the article belongs under, for the breadcrumb and revalidation
+  relatedArticleIds  String[]        @default([]) @map("related_article_ids") @db.Uuid
+  readingTimeMinutes Int             @default(0) @map("reading_time_minutes")
+  wordCount          Int             @default(0) @map("word_count")
+  internalNotes      String?         @map("internal_notes") // staff only, never rendered
+  // SEO
+  seoTitle           String?         @map("seo_title")
+  metaDescription    String?         @map("meta_description")
+  focusKeyword       String?         @map("focus_keyword")
+  canonicalUrl       String?         @map("canonical_url") // null = the permalink
+  robots             String          @default("index,follow")
+  ogTitle            String?         @map("og_title")
+  ogDescription      String?         @map("og_description")
+  ogImageId          String?         @map("og_image_id") @db.Uuid
+  twitterTitle       String?         @map("twitter_title")
+  twitterDescription String?         @map("twitter_description")
+  jsonLdExtra        Json            @default("[]") @map("json_ld_extra") // extra nodes for the page graph
+  createdById        String?         @map("created_by_id") @db.Uuid
+  updatedById        String?         @map("updated_by_id") @db.Uuid
+  deletedAt          DateTime?       @map("deleted_at") // soft delete
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+
+  @@index([status, publishedAt])
+  @@map("articles")
 }
 
 // ---------- Contact ----------
@@ -1728,6 +1845,8 @@ model McpToken {
   client     McpClient?   @relation(fields: [clientId], references: [id], onDelete: Cascade)
   kind       McpTokenKind
   name       String? // personal tokens: the label the staff member gave
+  // null = everything the owner's role allows; "magazine" = the article tools and a few shared reads only.
+  scope      String?
   tokenHash  String       @unique @map("token_hash")
   expiresAt  DateTime?    @map("expires_at")
   lastUsedAt DateTime?    @map("last_used_at")
@@ -1748,6 +1867,7 @@ model McpAuthCode {
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   redirectUri   String    @map("redirect_uri")
   codeChallenge String    @map("code_challenge")
+  scope         String? // carried to the tokens the code is exchanged for
   expiresAt     DateTime  @map("expires_at")
   usedAt        DateTime? @map("used_at")
   createdAt     DateTime  @default(now()) @map("created_at")

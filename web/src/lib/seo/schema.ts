@@ -81,6 +81,9 @@ export interface WebPageInput {
   /** The breadcrumb node is on the page: reference it. */
   breadcrumb?: boolean;
   type?: 'WebPage' | 'CollectionPage' | 'ItemPage' | 'AboutPage' | 'ContactPage' | 'FAQPage' | 'SearchResultsPage';
+  /** Dates for pages whose content has a life of its own (articles). */
+  datePublished?: string;
+  dateModified?: string;
 }
 
 export const pageId = (path: string) => `${absoluteUrl(path)}#webpage`;
@@ -103,6 +106,63 @@ export function webPageNode(p: WebPageInput) {
     ...(p.image ? { primaryImageOfPage: { '@type': 'ImageObject', url: absoluteUrl(p.image) } } : {}),
     ...(p.breadcrumb ? { breadcrumb: { '@id': breadcrumbId(p.path) } } : {}),
     ...(p.mainEntityId ? { mainEntity: { '@id': p.mainEntityId } } : {}),
+    ...(p.datePublished ? { datePublished: p.datePublished } : {}),
+    ...(p.dateModified ? { dateModified: p.dateModified } : {}),
+  };
+}
+
+export const articleId = (path: string) => `${absoluteUrl(path)}#article`;
+
+export interface ArticlePerson { name: string; url?: string | null; jobTitle?: string | null; sameAs?: string[]; image?: string | null }
+
+export interface ArticleInput {
+  path: string;
+  type: 'Article' | 'BlogPosting';
+  headline: string;
+  description?: string | null;
+  image?: { url: string; width?: number | null; height?: number | null; caption?: string | null } | null;
+  datePublished: string;
+  dateModified: string;
+  author?: ArticlePerson | null;
+  reviewedBy?: ArticlePerson | null;
+  wordCount?: number;
+  keywords?: string[];
+  section?: string | null;
+}
+
+const person = (p: ArticlePerson) => ({
+  '@type': 'Person',
+  name: p.name,
+  ...(p.url ? { url: absoluteUrl(p.url) } : {}),
+  ...(p.jobTitle ? { jobTitle: p.jobTitle } : {}),
+  ...(p.image ? { image: absoluteUrl(p.image) } : {}),
+  ...(p.sameAs?.length ? { sameAs: p.sameAs } : {}),
+});
+
+/**
+ * The Article (or BlogPosting) of a magazine page: the page's main entity, published by the Organization
+ * by reference (never a second Organization node), with the real permalink and featured image.
+ */
+export function articleNode(a: ArticleInput) {
+  const url = absoluteUrl(a.path);
+  return {
+    '@type': a.type,
+    '@id': articleId(a.path),
+    headline: a.headline,
+    ...(a.description ? { description: a.description } : {}),
+    url,
+    mainEntityOfPage: { '@id': pageId(a.path) },
+    isPartOf: { '@id': pageId(a.path) },
+    inLanguage: 'he-IL',
+    datePublished: a.datePublished,
+    dateModified: a.dateModified,
+    publisher: { '@id': ORG_ID },
+    ...(a.image ? { image: { '@type': 'ImageObject', url: absoluteUrl(a.image.url), contentUrl: absoluteUrl(a.image.url), ...(a.image.width ? { width: a.image.width } : {}), ...(a.image.height ? { height: a.image.height } : {}), ...(a.image.caption ? { caption: a.image.caption } : {}) } } : {}),
+    ...(a.author ? { author: person(a.author) } : {}),
+    ...(a.reviewedBy ? { reviewedBy: person(a.reviewedBy) } : {}),
+    ...(a.wordCount ? { wordCount: a.wordCount } : {}),
+    ...(a.keywords?.length ? { keywords: a.keywords.join(', ') } : {}),
+    ...(a.section ? { articleSection: a.section } : {}),
   };
 }
 

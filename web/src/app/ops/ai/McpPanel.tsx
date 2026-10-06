@@ -10,6 +10,7 @@ import { createMcpTokenAction, revokeMcpClientAction, revokeMcpTokenAction } fro
 export function TokenCreator({ canEdit }: { canEdit: boolean }) {
   const router = useRouter();
   const [name, setName] = useState('');
+  const [magazineOnly, setMagazineOnly] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -22,13 +23,16 @@ export function TokenCreator({ canEdit }: { canEdit: boolean }) {
         onSubmit={e => {
           e.preventDefault();
           start(async () => {
-            const r = await createMcpTokenAction(name);
+            const r = await createMcpTokenAction(name, magazineOnly ? 'magazine' : null);
             if (!r.ok) { setErr(r.error); return; }
             setErr(null); setToken(r.token); setName(''); setCopied(false); router.refresh();
           });
         }}
       >
         <input className={ui.input} value={name} onChange={e => setName(e.target.value)} maxLength={60} placeholder="שם לאסימון, למשל: Claude Code במחשב של נועה" aria-label="שם האסימון" />
+        <label className={ui.note} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+          <input type="checkbox" checked={magazineOnly} onChange={e => setMagazineOnly(e.target.checked)} /> מגזין בלבד
+        </label>
         <button type="submit" className={`${ui.btn} ${ui.small} ${ui.primary}`} disabled={pending || !name.trim()}>יצירת אסימון</button>
         {err ? <span className={ui.error}>{err}</span> : null}
       </form>
