@@ -256,7 +256,8 @@ function toData(p: ArticlePatch, actorId: string, mode: 'create' | 'update' = 'u
 const slugTaken = async (slug: string, exceptId?: string) => !!(await db.article.findFirst({ where: { slug, ...(exceptId ? { id: { not: exceptId } } : {}) }, select: { id: true } }));
 
 function refresh(r: { slug: string; parentPagePath: string | null; category?: { slug: string } | null }, extra: string[] = []) {
-  const paths = [articlePath(r.slug), '/magazine', '/sitemap.xml', '/ops/magazine', ...(r.parentPagePath ? [r.parentPagePath] : []), ...(r.category ? [categoryUrl(r.category.slug)] : []), ...extra];
+  // The homepage (desktop at /, phones at /home/phone) shows the newest articles in its guides block and footer.
+  const paths = [articlePath(r.slug), '/magazine', '/sitemap.xml', '/ops/magazine', '/', '/home/phone', ...(r.parentPagePath ? [r.parentPagePath] : []), ...(r.category ? [categoryUrl(r.category.slug)] : []), ...extra];
   for (const p of new Set(paths)) { try { revalidatePath(p); } catch { /* outside a request */ } }
   return [...new Set(paths)];
 }
@@ -367,7 +368,7 @@ export async function scheduleArticle(actor: Actor, id: string, when: string): P
  * renders (so a scheduled piece appears on the next render after its time) and by list_articles.
  */
 export async function publishDueArticles(): Promise<number> {
-  const due = await db.article.findMany({ where: { status: 'scheduled', deletedAt: null, scheduledFor: { lte: new Date() } }, select: { id: true, slug: true, scheduledFor: true, parentPagePath: true } });
+  const due = await db.article.findMany({ where: { status: 'scheduled', deletedAt: null, scheduledFor: { lte: new Date() } }, select: { id: true, slug: true, scheduledFor: true, parentPagePath: true, category: { select: { slug: true } } } });
   for (const a of due) {
     await db.article.update({ where: { id: a.id }, data: { status: 'published', publishedAt: a.scheduledFor ?? new Date(), scheduledFor: null } });
     await audit(null, 'article_publish', 'article', a.id, { ref: a.slug, scheduled: true });
@@ -379,7 +380,7 @@ export async function publishDueArticles(): Promise<number> {
 export async function deleteArticle(actor: Actor, id: string, reason?: string): Promise<{ ok: true; id: string; revalidated: string[] } | Fail> {
   const cur = await findArticle(id);
   if (!cur) return { ok: false, error: 'article not found' };
-  const row = await db.article.update({ where: { id: cur.id }, data: { deletedAt: new Date(), status: 'unpublished', scheduledFor: null, updatedById: actor.id } });
+  const row = await db.article.update({ where: { id: cur.id }, data: { deletedAt: new Date(), status: 'unpublished', scheduledFor: null, updatedById: actor.id }, include: { category: true } });
   await audit(actor.id, 'article_delete', 'article', row.id, { ref: row.slug, from: cur.status, soft: true, ...(reason ? { reason } : {}) });
   return { ok: true, id: row.id, revalidated: refresh(row) };
 }
@@ -458,12 +459,12 @@ export const authorView = (a: Author & { avatar?: MediaFile | null; _count?: { a
 });
 
 export async function listAuthors(opts: { includeInactive?: boolean } = {}) {
-  const rows = await db.author.findMany({ where: opts.includeInactive ? {} : { active: true }, include: { avatar: true, _count: { select: { articles: true } } }, orderBy: { name: 'asc' } });
+  const rows = await db.author.findMany({ where: opts.includeInactive ? {} : { active: true }, include: { avatar: true, _count: { select: { articles: { where: { deletedAt: null } } } } }, orderBy: { name: 'asc' } });
   return rows.map(authorView);
 }
 
 export async function getAuthor(idOrSlug: string) {
-  const row = await db.author.findFirst({ where: uuid.safeParse(idOrSlug).success ? { id: idOrSlug } : { slug: idOrSlug }, include: { avatar: true, _count: { select: { articles: true } } } });
+  const row = await db.author.findFirst({ where: uuid.safeParse(idOrSlug).success ? { id: idOrSlug } : { slug: idOrSlug }, include: { avatar: true, _count: { select: { articles: { where: { deletedAt: null } } } } } });
   return row ? authorView(row) : null;
 }
 

@@ -150,9 +150,14 @@ const CATS = [
   { label: 'מספרות', slug: 'hair-salons', img: '/assets/biz-hair.jpg' },
   { label: 'ספא ועיסויים', slug: 'spa-massage', img: '/assets/biz-spa.jpg' },
 ];
+// With the five tiles above, these name all 14 treatment categories (the same set as /treatments).
 const MORE_CATS = [
   { label: 'ציפורניים', href: '/treatments/nails' },
   { label: 'גבות וריסים', href: '/treatments/brows-lashes' },
+  { label: 'כירורגיה פלסטית', href: '/treatments/plastic-surgery' },
+  { label: 'השתלות שיער', href: '/treatments/hair-restoration' },
+  { label: 'אסתטיקה דנטלית', href: '/treatments/dental-aesthetics' },
+  { label: 'איפור מקצועי', href: '/treatments/makeup' },
   { label: 'איפור קבוע', href: '/treatments/permanent-makeup' },
   { label: 'עיצוב הגוף', href: '/treatments/body-contouring' },
   { label: 'שיזוף', href: '/treatments/tanning' },
