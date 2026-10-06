@@ -40,7 +40,7 @@ export async function articleLinksAction(id: string) {
   return articleLinks(id);
 }
 
-export async function listAuthorsAction(opts: { includeInactive?: boolean; reviewersOnly?: boolean } = {}) {
+export async function listAuthorsAction(opts: { includeInactive?: boolean } = {}) {
   if (!(await staff('view'))) return DENIED;
   return { ok: true as const, authors: await listAuthors(opts) };
 }

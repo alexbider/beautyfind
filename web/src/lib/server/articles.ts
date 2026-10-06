@@ -23,12 +23,9 @@ const nullableUuid = uuid.nullable();
 const path = z.string().trim().regex(/^\/[^\s]*$/u, 'a site path starting with /').max(200);
 
 export const FaqSchema = z.array(z.object({ q: z.string().trim().min(3).max(300), a: z.string().trim().min(3).max(2000) })).max(20);
-export const MedicalReviewSchema = z.object({
-  required: z.boolean().optional(),
-  reviewerId: nullableUuid.optional(),
-  reviewedAt: z.string().trim().nullable().optional().describe('ISO date or date-time'),
-  status: z.enum(['pending', 'approved', 'changes_requested']).nullable().optional(),
-});
+// The medical review columns (reviewRequired, reviewerId, reviewedAt, reviewStatus) stay in the database but
+// are no longer read, written or checked: the magazine has no reviewer gate. The disclaimer on every article
+// page is the general-information notice.
 const ROBOTS = /^(index|noindex),\s?(follow|nofollow)$/;
 
 /** Every field a create or a patch may carry. Create requires a title; everything else has a default. */
@@ -46,7 +43,6 @@ export const ArticleFieldsSchema = z.object({
   parentPagePath: path.nullable(),
   relatedArticleIds: z.array(uuid).max(10),
   internalNotes: z.string().max(5000).nullable(),
-  medicalReview: MedicalReviewSchema,
   seoTitle: z.string().trim().max(120).nullable(),
   metaDescription: z.string().trim().max(320).nullable(),
   focusKeyword: z.string().trim().max(80).nullable(),
@@ -63,14 +59,14 @@ export const ArticlePatchSchema = ArticleFieldsSchema.partial();
 export const ArticleCreateSchema = ArticleFieldsSchema.partial().extend({ title: ArticleFieldsSchema.shape.title });
 export type ArticlePatch = z.infer<typeof ArticlePatchSchema>;
 
-type Row = Article & { author: Author | null; reviewer: Author | null; category: ArticleCategory | null; tags: ArticleTag[]; featuredImage: MediaFile | null };
-const INCLUDE = { author: true, reviewer: true, category: true, tags: true, featuredImage: true } as const;
+type Row = Article & { author: Author | null; category: ArticleCategory | null; tags: ArticleTag[]; featuredImage: MediaFile | null };
+const INCLUDE = { author: true, category: true, tags: true, featuredImage: true } as const;
 
 const fieldErrors = (e: z.ZodError): Record<string, string> => Object.fromEntries(e.issues.map(i => [i.path.join('.') || '_', i.message]));
 const audit = (actorId: string | null, action: string, subjectType: string, subjectId: string, meta: object) =>
   db.auditLog.create({ data: { actorId, action, subjectType, subjectId, meta: meta as Prisma.InputJsonValue } });
 
-export const personView = (a: Author | null) => (a ? { id: a.id, slug: a.slug, name: a.name, title: a.title, isMedicalReviewer: a.isMedicalReviewer } : null);
+export const personView = (a: Author | null) => (a ? { id: a.id, slug: a.slug, name: a.name, title: a.title } : null);
 export const imageView = (m: MediaFile | null) => (m ? { id: m.id, url: mediaUrl(m), alt: m.alt, title: m.title, caption: m.caption, width: m.width, height: m.height } : null);
 
 /** The article as the tools and the admin see it. internalNotes is included: callers are staff. */
@@ -79,10 +75,9 @@ export function articleView(r: Row) {
     id: r.id, slug: r.slug, path: articlePath(r.slug), canonicalUrl: r.canonicalUrl ?? articleCanonical(r.slug), permalink: articleCanonical(r.slug),
     title: r.title, status: r.status, publishedAt: r.publishedAt, updatedAt: r.updatedAt, scheduledFor: r.scheduledFor, createdAt: r.createdAt, deletedAt: r.deletedAt,
     excerpt: r.excerpt, summary: r.summary, faq: r.faq as Array<{ q: string; a: string }>, bodyHtml: r.bodyHtml,
-    author: personView(r.author), category: r.category ? { id: r.category.id, slug: r.category.slug, name: r.category.name } : null, tags: r.tags.map(t => ({ id: t.id, slug: t.slug, name: t.name })),
+    author: personView(r.author), category: r.category ? { id: r.category.id, slug: r.category.slug, name: r.category.name, url: categoryUrl(r.category.slug), parentPagePath: r.category.parentPagePath } : null, tags: r.tags.map(t => ({ id: t.id, slug: t.slug, name: t.name })),
     featuredImage: imageView(r.featuredImage), parentPagePath: r.parentPagePath, relatedArticleIds: r.relatedArticleIds,
     readingTimeMinutes: r.readingTimeMinutes, wordCount: r.wordCount, internalNotes: r.internalNotes,
-    medicalReview: { required: r.reviewRequired, reviewerId: r.reviewerId, reviewer: personView(r.reviewer), reviewedAt: r.reviewedAt, status: r.reviewStatus },
     seo: { seoTitle: r.seoTitle, metaDescription: r.metaDescription, focusKeyword: r.focusKeyword, canonicalUrl: r.canonicalUrl, robots: r.robots, ogTitle: r.ogTitle, ogDescription: r.ogDescription, ogImageId: r.ogImageId, twitterTitle: r.twitterTitle, twitterDescription: r.twitterDescription },
     jsonLd: r.jsonLdExtra as unknown[],
   };
@@ -139,9 +134,8 @@ export async function publishedArticles(opts: { category?: string; take?: number
 
 async function checkReferences(p: ArticlePatch, selfId: string | null): Promise<Record<string, string>> {
   const errors: Record<string, string> = {};
-  const [author, reviewer, category, tags, image, og, related] = await Promise.all([
+  const [author, category, tags, image, og, related] = await Promise.all([
     p.authorId ? db.author.findUnique({ where: { id: p.authorId }, select: { id: true } }) : null,
-    p.medicalReview?.reviewerId ? db.author.findUnique({ where: { id: p.medicalReview.reviewerId }, select: { id: true, isMedicalReviewer: true } }) : null,
     p.categoryId ? db.articleCategory.findUnique({ where: { id: p.categoryId }, select: { id: true } }) : null,
     p.tagIds?.length ? db.articleTag.findMany({ where: { id: { in: p.tagIds } }, select: { id: true } }) : [],
     p.featuredImageId ? db.mediaFile.findUnique({ where: { id: p.featuredImageId }, select: { id: true, isPrivate: true, alt: true } }) : null,
@@ -149,8 +143,6 @@ async function checkReferences(p: ArticlePatch, selfId: string | null): Promise<
     p.relatedArticleIds?.length ? db.article.findMany({ where: { id: { in: p.relatedArticleIds }, deletedAt: null }, select: { id: true } }) : [],
   ]);
   if (p.authorId && !author) errors.authorId = 'author not found';
-  if (p.medicalReview?.reviewerId && !reviewer) errors['medicalReview.reviewerId'] = 'reviewer not found';
-  if (reviewer && !reviewer.isMedicalReviewer) errors['medicalReview.reviewerId'] = 'this author is not a medical reviewer';
   if (p.categoryId && !category) errors.categoryId = 'category not found';
   if (p.tagIds?.length && tags.length !== new Set(p.tagIds).size) errors.tagIds = 'unknown tag id';
   if (p.featuredImageId && (!image || image.isPrivate)) errors.featuredImageId = 'image not found';
@@ -159,7 +151,6 @@ async function checkReferences(p: ArticlePatch, selfId: string | null): Promise<
     if (related.length !== new Set(p.relatedArticleIds).size) errors.relatedArticleIds = 'unknown article id';
     if (selfId && p.relatedArticleIds.includes(selfId)) errors.relatedArticleIds = 'an article cannot relate to itself';
   }
-  if (p.medicalReview?.reviewedAt && Number.isNaN(new Date(p.medicalReview.reviewedAt).getTime())) errors['medicalReview.reviewedAt'] = 'not a date';
   return errors;
 }
 
@@ -206,8 +197,6 @@ export async function validateArticleRow(r: Row, opts: { checkLinks?: boolean } 
   if (!r.metaDescription?.trim()) warn('empty_meta_description', 'no meta description; the excerpt is used');
   else if (r.metaDescription.length < 70 || r.metaDescription.length > 160) warn('meta_description_length', `${r.metaDescription.length} characters; 70 to 160 is the aim`);
   if (!r.excerpt?.trim() && !r.metaDescription?.trim()) warn('empty_excerpt', 'no excerpt');
-  if (r.reviewRequired && (!r.reviewerId || !r.reviewedAt)) err('medical_review_missing', 'medical review is required: set medicalReview.reviewerId and medicalReview.reviewedAt');
-  if (r.reviewRequired && r.reviewStatus && r.reviewStatus !== 'approved') err('medical_review_not_approved', `medical review status is ${r.reviewStatus}`);
   const faq = (r.faq as Array<{ q: string; a: string }>) ?? [];
   if (faq.some(f => !f.q?.trim() || !f.a?.trim())) err('faq_incomplete', 'a FAQ item is missing its question or answer');
   if (opts.checkLinks !== false) {
@@ -256,13 +245,6 @@ function toData(p: ArticlePatch, actorId: string, mode: 'create' | 'update' = 'u
   if (p.parentPagePath !== undefined) data.parentPagePath = p.parentPagePath || null;
   if (p.relatedArticleIds !== undefined) data.relatedArticleIds = [...new Set(p.relatedArticleIds)];
   if (p.internalNotes !== undefined) data.internalNotes = p.internalNotes || null;
-  if (p.medicalReview) {
-    const m = p.medicalReview;
-    if (m.required !== undefined) data.reviewRequired = m.required;
-    if (m.reviewerId !== undefined) data.reviewer = m.reviewerId ? { connect: { id: m.reviewerId } } : { disconnect: true };
-    if (m.reviewedAt !== undefined) data.reviewedAt = m.reviewedAt ? new Date(m.reviewedAt) : null;
-    if (m.status !== undefined) data.reviewStatus = m.status;
-  }
   for (const k of ['seoTitle', 'metaDescription', 'focusKeyword', 'canonicalUrl', 'ogTitle', 'ogDescription', 'twitterTitle', 'twitterDescription'] as const) if (p[k] !== undefined) data[k] = p[k] || null;
   if (p.robots !== undefined) data.robots = p.robots.replace(/\s/g, '');
   if (p.ogImageId !== undefined) data.ogImageId = p.ogImageId;
@@ -273,8 +255,8 @@ function toData(p: ArticlePatch, actorId: string, mode: 'create' | 'update' = 'u
 
 const slugTaken = async (slug: string, exceptId?: string) => !!(await db.article.findFirst({ where: { slug, ...(exceptId ? { id: { not: exceptId } } : {}) }, select: { id: true } }));
 
-function refresh(r: { slug: string; parentPagePath: string | null }, extra: string[] = []) {
-  const paths = [articlePath(r.slug), '/magazine', '/sitemap.xml', '/ops/magazine', ...(r.parentPagePath ? [r.parentPagePath] : []), ...extra];
+function refresh(r: { slug: string; parentPagePath: string | null; category?: { slug: string } | null }, extra: string[] = []) {
+  const paths = [articlePath(r.slug), '/magazine', '/sitemap.xml', '/ops/magazine', ...(r.parentPagePath ? [r.parentPagePath] : []), ...(r.category ? [categoryUrl(r.category.slug)] : []), ...extra];
   for (const p of new Set(paths)) { try { revalidatePath(p); } catch { /* outside a request */ } }
   return [...new Set(paths)];
 }
@@ -289,7 +271,8 @@ export async function createArticle(actor: Actor, input: unknown): Promise<Saved
   if (await slugTaken(slug)) return { ok: false, error: 'conflict: an article with this slug exists', code: 'conflict', fields: { slug } };
   const refs = await checkReferences(p.data, null);
   if (Object.keys(refs).length) return { ok: false, error: 'unknown reference', fields: refs };
-  const { data, sanitizeErrors } = toData({ ...p.data, slug, bodyHtml: p.data.bodyHtml ?? '' }, actor.id, 'create');
+  const parentFromCategory = p.data.parentPagePath === undefined && p.data.categoryId ? (await db.articleCategory.findUnique({ where: { id: p.data.categoryId }, select: { parentPagePath: true } }))?.parentPagePath ?? null : undefined;
+  const { data, sanitizeErrors } = toData({ ...p.data, slug, bodyHtml: p.data.bodyHtml ?? '', ...(parentFromCategory ? { parentPagePath: parentFromCategory } : {}) }, actor.id, 'create');
   const row = await db.article.create({ data: { ...(data as Prisma.ArticleCreateInput), slug, title: p.data.title, createdById: actor.id }, include: INCLUDE });
   await audit(actor.id, 'article_create', 'article', row.id, { ref: row.slug, title: row.title, source: 'service' });
   return { ok: true, article: articleView(row), canonicalUrl: articleCanonical(row.slug), warnings: sanitizeErrors, revalidated: refresh(row) };
@@ -446,10 +429,6 @@ export async function validateArticle(id: string, patch?: unknown) {
       ...(p.data.excerpt !== undefined ? { excerpt: p.data.excerpt } : {}), ...(p.data.metaDescription !== undefined ? { metaDescription: p.data.metaDescription } : {}),
       ...(p.data.authorId !== undefined ? { authorId: p.data.authorId } : {}), ...(p.data.featuredImageId !== undefined ? { featuredImageId: p.data.featuredImageId } : {}),
       ...(p.data.faq !== undefined ? { faq: p.data.faq as Prisma.JsonValue } : {}),
-      ...(p.data.medicalReview?.required !== undefined ? { reviewRequired: p.data.medicalReview.required } : {}),
-      ...(p.data.medicalReview?.reviewerId !== undefined ? { reviewerId: p.data.medicalReview.reviewerId } : {}),
-      ...(p.data.medicalReview?.reviewedAt !== undefined ? { reviewedAt: p.data.medicalReview.reviewedAt ? new Date(p.data.medicalReview.reviewedAt) : null } : {}),
-      ...(p.data.medicalReview?.status !== undefined ? { reviewStatus: p.data.medicalReview.status } : {}),
     };
   }
   const issues = await validateArticleRow(row);
@@ -466,26 +445,23 @@ export const AuthorInputSchema = z.object({
   title: z.string().trim().max(160).nullable().optional(),
   bio: z.string().trim().max(2000).nullable().optional(),
   avatarId: nullableUuid.optional(),
-  isMedicalReviewer: z.boolean().optional(),
-  licenseKind: z.enum(['doctor', 'dentist', 'nurse']).nullable().optional(),
-  licenseNumber: z.string().trim().max(40).nullable().optional(),
   sameAs: z.array(z.string().url().max(300)).max(10).optional(),
   userId: nullableUuid.optional(),
   active: z.boolean().optional(),
 });
 
-export const authorView = (a: Author & { avatar?: MediaFile | null; _count?: { articles: number; reviewed: number } }) => ({
-  id: a.id, slug: a.slug, name: a.name, title: a.title, bio: a.bio, avatar: imageView(a.avatar ?? null), isMedicalReviewer: a.isMedicalReviewer, licenseKind: a.licenseKind, licenseNumber: a.licenseNumber, sameAs: a.sameAs, active: a.active, userId: a.userId,
-  articles: a._count?.articles ?? null, reviewed: a._count?.reviewed ?? null, createdAt: a.createdAt, updatedAt: a.updatedAt,
+export const authorView = (a: Author & { avatar?: MediaFile | null; _count?: { articles: number } }) => ({
+  id: a.id, slug: a.slug, name: a.name, title: a.title, bio: a.bio, avatar: imageView(a.avatar ?? null), sameAs: a.sameAs, active: a.active, userId: a.userId,
+  articles: a._count?.articles ?? null, createdAt: a.createdAt, updatedAt: a.updatedAt,
 });
 
-export async function listAuthors(opts: { includeInactive?: boolean; reviewersOnly?: boolean } = {}) {
-  const rows = await db.author.findMany({ where: { ...(opts.includeInactive ? {} : { active: true }), ...(opts.reviewersOnly ? { isMedicalReviewer: true } : {}) }, include: { avatar: true, _count: { select: { articles: true, reviewed: true } } }, orderBy: { name: 'asc' } });
+export async function listAuthors(opts: { includeInactive?: boolean } = {}) {
+  const rows = await db.author.findMany({ where: opts.includeInactive ? {} : { active: true }, include: { avatar: true, _count: { select: { articles: true } } }, orderBy: { name: 'asc' } });
   return rows.map(authorView);
 }
 
 export async function getAuthor(idOrSlug: string) {
-  const row = await db.author.findFirst({ where: uuid.safeParse(idOrSlug).success ? { id: idOrSlug } : { slug: idOrSlug }, include: { avatar: true, _count: { select: { articles: true, reviewed: true } } } });
+  const row = await db.author.findFirst({ where: uuid.safeParse(idOrSlug).success ? { id: idOrSlug } : { slug: idOrSlug }, include: { avatar: true, _count: { select: { articles: true } } } });
   return row ? authorView(row) : null;
 }
 
@@ -493,7 +469,6 @@ export async function upsertAuthor(actor: Actor, input: unknown) {
   const p = AuthorInputSchema.safeParse(input);
   if (!p.success) return { ok: false as const, error: 'invalid input', fields: fieldErrors(p.error) };
   const d = p.data;
-  if (d.isMedicalReviewer && !d.licenseKind) return { ok: false as const, error: 'a medical reviewer needs licenseKind (doctor, dentist or nurse)', fields: { licenseKind: 'required for reviewers' } };
   if (d.avatarId) {
     const img = await db.mediaFile.findUnique({ where: { id: d.avatarId }, select: { isPrivate: true } });
     if (!img || img.isPrivate) return { ok: false as const, error: 'avatar image not found', fields: { avatarId: d.avatarId } };
@@ -504,11 +479,11 @@ export async function upsertAuthor(actor: Actor, input: unknown) {
   if (d.id && !existing) return { ok: false as const, error: 'author not found' };
   const clash = await db.author.findFirst({ where: { slug, ...(existing ? { id: { not: existing.id } } : {}) }, select: { id: true } });
   if (clash) return { ok: false as const, error: 'conflict: an author with this slug exists', code: 'conflict', fields: { slug } };
-  const data = { slug, name: d.name, ...(d.title !== undefined ? { title: d.title } : {}), ...(d.bio !== undefined ? { bio: d.bio } : {}), ...(d.avatarId !== undefined ? { avatarId: d.avatarId } : {}), ...(d.isMedicalReviewer !== undefined ? { isMedicalReviewer: d.isMedicalReviewer } : {}), ...(d.licenseKind !== undefined ? { licenseKind: d.licenseKind } : {}), ...(d.licenseNumber !== undefined ? { licenseNumber: d.licenseNumber } : {}), ...(d.sameAs !== undefined ? { sameAs: d.sameAs } : {}), ...(d.userId !== undefined ? { userId: d.userId } : {}), ...(d.active !== undefined ? { active: d.active } : {}) };
+  const data = { slug, name: d.name, ...(d.title !== undefined ? { title: d.title } : {}), ...(d.bio !== undefined ? { bio: d.bio } : {}), ...(d.avatarId !== undefined ? { avatarId: d.avatarId } : {}), ...(d.sameAs !== undefined ? { sameAs: d.sameAs } : {}), ...(d.userId !== undefined ? { userId: d.userId } : {}), ...(d.active !== undefined ? { active: d.active } : {}) };
   const row = existing ? await db.author.update({ where: { id: existing.id }, data, include: { avatar: true } }) : await db.author.create({ data, include: { avatar: true } });
-  await audit(actor.id, existing ? 'author_update' : 'author_create', 'author', row.id, { ref: row.slug, name: row.name, reviewer: row.isMedicalReviewer });
+  await audit(actor.id, existing ? 'author_update' : 'author_create', 'author', row.id, { ref: row.slug, name: row.name });
   if (existing) {
-    const touched = await db.article.findMany({ where: { deletedAt: null, status: 'published', OR: [{ authorId: row.id }, { reviewerId: row.id }] }, select: { slug: true, parentPagePath: true } });
+    const touched = await db.article.findMany({ where: { deletedAt: null, status: 'published', authorId: row.id }, select: { slug: true, parentPagePath: true } });
     for (const t of touched) refresh(t);
   }
   return { ok: true as const, author: authorView(row), created: !existing };
@@ -516,14 +491,16 @@ export async function upsertAuthor(actor: Actor, input: unknown) {
 
 // ---------- categories and tags ----------
 
-const categoryUrl = (slug: string) => `/magazine?category=${encodeURIComponent(slug)}`;
+export const categoryUrl = (slug: string) => `/magazine/category/${slug}`;
+export const categoryPath = categoryUrl;
+export const categoryView = (c: ArticleCategory & { _count?: { articles: number } }) => ({ id: c.id, slug: c.slug, name: c.name, description: c.description, parentPagePath: c.parentPagePath, count: c._count?.articles ?? null, url: categoryUrl(c.slug) });
 
 export async function listCategories() {
   const rows = await db.articleCategory.findMany({ include: { _count: { select: { articles: { where: { deletedAt: null, status: 'published' } } } } }, orderBy: { name: 'asc' } });
-  return rows.map(c => ({ id: c.id, slug: c.slug, name: c.name, description: c.description, count: c._count.articles, url: categoryUrl(c.slug) }));
+  return rows.map(categoryView);
 }
 
-export const CategoryInputSchema = z.object({ id: uuid.optional(), slug: z.string().trim().min(1).max(80).optional(), name: z.string().trim().min(2).max(80), description: z.string().trim().max(500).nullable().optional() });
+export const CategoryInputSchema = z.object({ id: uuid.optional(), slug: z.string().trim().min(1).max(80).optional(), name: z.string().trim().min(2).max(80), description: z.string().trim().max(500).nullable().optional(), parentPagePath: path.nullable().optional().describe('the treatment page articles of this category belong under, e.g. /treatments/nails; new articles default to it') });
 
 export async function upsertCategory(actor: Actor, input: unknown) {
   const p = CategoryInputSchema.safeParse(input);
@@ -534,11 +511,12 @@ export async function upsertCategory(actor: Actor, input: unknown) {
   if (p.data.id && !existing) return { ok: false as const, error: 'category not found' };
   const clash = await db.articleCategory.findFirst({ where: { slug, ...(existing ? { id: { not: existing.id } } : {}) }, select: { id: true } });
   if (clash) return { ok: false as const, error: 'conflict: a category with this slug exists', code: 'conflict', fields: { slug } };
-  const data = { slug, name: p.data.name, ...(p.data.description !== undefined ? { description: p.data.description } : {}) };
+  if (p.data.parentPagePath && !STATIC_PATHS.has(p.data.parentPagePath.replace(/\/+$/, ''))) return { ok: false as const, error: 'parentPagePath must be an existing fixed page, e.g. /treatments/nails', fields: { parentPagePath: p.data.parentPagePath } };
+  const data = { slug, name: p.data.name, ...(p.data.description !== undefined ? { description: p.data.description } : {}), ...(p.data.parentPagePath !== undefined ? { parentPagePath: p.data.parentPagePath } : {}) };
   const row = existing ? await db.articleCategory.update({ where: { id: existing.id }, data }) : await db.articleCategory.create({ data });
   await audit(actor.id, existing ? 'article_category_update' : 'article_category_create', 'article_category', row.id, { ref: row.slug, name: row.name });
-  try { revalidatePath('/magazine'); } catch { /* outside a request */ }
-  return { ok: true as const, category: { id: row.id, slug: row.slug, name: row.name, description: row.description, url: categoryUrl(row.slug) }, created: !existing };
+  for (const r of ['/magazine', categoryUrl(row.slug), ...(existing && existing.slug !== row.slug ? [categoryUrl(existing.slug)] : [])]) { try { revalidatePath(r); } catch { /* outside a request */ } }
+  return { ok: true as const, category: categoryView(row), created: !existing };
 }
 
 export async function listTags() {
@@ -559,5 +537,17 @@ export async function createTag(actor: Actor, input: { name: string; slug?: stri
 }
 
 // ---------- helpers for the public pages ----------
+
+/** The three newest published articles as homepage guide cards, or null while the magazine is empty (the placeholders stay). */
+export async function homeGuides() {
+  const { CATEGORY_IMAGE } = await import('@/components/home/content');
+  const rows = await db.article.findMany({ where: { deletedAt: null, status: 'published' }, orderBy: { publishedAt: 'desc' }, take: 3, include: { category: true, featuredImage: true } });
+  if (!rows.length) return null;
+  return rows.map(a => ({
+    kind: a.category?.name ?? 'מדריך', title: a.title, desc: a.excerpt ?? '', href: articlePath(a.slug),
+    img: a.featuredImage ? mediaUrl(a.featuredImage) : CATEGORY_IMAGE[a.category?.slug ?? ''] ?? '/assets/art-choose.jpg',
+    readTime: `${a.readingTimeMinutes} דקות קריאה`,
+  }));
+}
 
 export const articleDescription = (r: Pick<Article, 'metaDescription' | 'excerpt' | 'bodyHtml'>) => r.metaDescription?.trim() || r.excerpt?.trim() || htmlToText(r.bodyHtml).slice(0, 155);

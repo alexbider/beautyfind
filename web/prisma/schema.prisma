@@ -778,11 +778,13 @@ model Author {
 }
 
 model ArticleCategory {
-  id          String    @id @default(uuid()) @db.Uuid
-  slug        String    @unique
-  name        String
-  description String?
-  createdAt   DateTime  @default(now()) @map("created_at")
+  id             String    @id @default(uuid()) @db.Uuid
+  slug           String    @unique
+  name           String
+  description    String?
+  // The treatment page the category's articles belong under (/treatments/<slug>); new articles default to it.
+  parentPagePath String?   @map("parent_page_path")
+  createdAt      DateTime  @default(now()) @map("created_at")
 
   articles Article[]
 

@@ -68,7 +68,7 @@ export function sectionOfPath(rawPath: string): IndexSectionKey | null {
   if (path === '/regions') return 'regions';
   if (path === '/treatments' || path.startsWith('/treatments/')) return 'categories';
   if (CONTENT_PATHS.has(path)) return 'content';
-  if (path.startsWith('/magazine/') && path.split('/').length === 3) return 'content'; // articles follow the content switch
+  if (/^\/magazine\/[^/]+$/.test(path) || /^\/magazine\/category\/[^/]+$/.test(path)) return 'content'; // articles and category pages follow the content switch
   if (LEGAL_PATHS.has(path)) return 'legal';
   const seg = path.slice(1).split('/');
   if (!REGION_SLUGS.has(seg[0])) return null;

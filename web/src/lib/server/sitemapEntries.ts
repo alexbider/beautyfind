@@ -15,7 +15,7 @@ import { siteUrl } from './site';
 // pages are listed only where at least one live listing offers the category, so the sitemap never points
 // crawlers at an empty page. Articles follow the content section switch and carry their updatedAt.
 
-export type SitemapType = 'home' | 'treatments' | 'regions' | 'category' | 'region' | 'city' | 'cityCategory' | 'profile' | 'content' | 'legal' | 'magazine' | 'article';
+export type SitemapType = 'home' | 'treatments' | 'regions' | 'category' | 'region' | 'city' | 'cityCategory' | 'profile' | 'content' | 'legal' | 'magazine' | 'magazineCategory' | 'article';
 export type ChangeFrequency = 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
 
 export interface SitemapEntry {
@@ -40,8 +40,11 @@ export async function sitemapEntries(): Promise<SitemapEntry[]> {
     db.branch.findMany({ where: { ...PUBLIC_WHERE, noindex: false }, select: { name: true, slug: true, regionSlug: true, updatedAt: true, categories: { select: { categorySlug: true, isPrimary: true } } } }),
     db.branchCategory.findMany({ where: { branch: { ...PUBLIC_WHERE, cityId: { not: null } } }, select: { categorySlug: true, branch: { select: { city: { select: { slug: true } } } } } }),
     db.pageSeo.findMany({ where: { noindex: true }, select: { path: true } }).catch(() => [] as Array<{ path: string }>),
-    db.article.findMany({ where: { deletedAt: null, status: 'published', robots: { startsWith: 'index' } }, select: { slug: true, title: true, updatedAt: true, publishedAt: true }, orderBy: { publishedAt: 'desc' } }).catch(() => []),
+    db.article.findMany({ where: { deletedAt: null, status: 'published', robots: { startsWith: 'index' } }, select: { slug: true, title: true, updatedAt: true, publishedAt: true, category: { select: { slug: true, name: true } } }, orderBy: { publishedAt: 'desc' } }).catch(() => []),
   ]);
+  // Magazine category pages are listed once they have a published article; lastmod is the newest article in them.
+  const magCats = new Map<string, { name: string; lastModified: Date }>();
+  for (const a of articles) if (a.category && !magCats.has(a.category.slug)) magCats.set(a.category.slug, { name: a.category.name, lastModified: a.updatedAt });
   const cityCats = new Set(pairs.map(p => `${p.branch.city!.slug}|${p.categorySlug}`));
   const citiesWithListings = new Set(pairs.map(p => p.branch.city!.slug));
   const noindex = new Set(hidden.map(h => h.path));
@@ -71,6 +74,7 @@ export async function sitemapEntries(): Promise<SitemapEntry[]> {
     fixed('/accessibility', 0.2, 'yearly'),
     // The magazine index is listed once it has something to list; its lastmod is the newest article.
     ...(articles.length ? [u('/magazine', 'magazine', 'המגזין', 0.6, 'weekly', latestArticle)] : []),
+    ...[...magCats.entries()].map(([slug, c]) => u(`/magazine/category/${slug}`, 'magazineCategory', `${c.name} | המגזין`, 0.5, 'weekly', c.lastModified)),
     ...articles.map(a => u(articlePath(a.slug), 'article', a.title, 0.6, 'monthly', a.updatedAt)),
   ];
   return entries.filter(e => pathIndexable(policy, e.path) && !noindex.has(e.path));

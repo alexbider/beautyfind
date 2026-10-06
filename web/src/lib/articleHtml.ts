@@ -33,7 +33,7 @@ export const isValidSlug = (s: string) => s.length >= 1 && s.length <= 120 && SL
 
 /** A slug from a title: Hebrew titles keep their letters, Latin titles are lower-cased; everything else becomes a hyphen. */
 export function slugify(text: string): string {
-  const t = text.normalize('NFKC').replace(/[֑-ׇ]/g, '').trim(); // drop Hebrew points
+  const t = text.normalize('NFKC').replace(/[֑-ׇ]/g, '').replace(/['’׳"״]/g, '').trim(); // drop Hebrew points; apostrophes and geresh join the word (צ'קליסט becomes צקליסט)
   const hebrew = /[א-ת]/.test(t);
   const kept = hebrew ? t.replace(/[^א-ת0-9]+/gu, '-') : t.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   return kept.replace(/^-+|-+$/g, '').replace(/-{2,}/g, '-').slice(0, 120).replace(/-+$/, '');

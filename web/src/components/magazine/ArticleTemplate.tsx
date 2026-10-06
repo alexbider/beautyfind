@@ -6,18 +6,29 @@ import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import shared from '@/components/treatments/shared.module.css';
 import { analyzeArticleHtml, articlePath, dateHe } from '@/lib/articleHtml';
+import { CATEGORIES } from '@/lib/catalog';
 import { mediaUrl } from '@/lib/server/articleMedia';
+import { categoryPath } from '@/lib/server/articles';
 import styles from './article.module.css';
 
-// The magazine article page: breadcrumb, header with byline (author, medical reviewer, dates, reading
-// time), featured image, the "בקצרה" summary list, a table of contents from the h2s, the sanitized body,
-// the visible FAQ and related reading. The body HTML was sanitized when saved (src/lib/articleHtml.ts);
-// here tables only get a scrolling wrapper so wide tables stay readable on phones.
+// The magazine article page: breadcrumb, header with byline (author name, role only when filled in,
+// published and updated dates, reading time), category link to its filter page, link to the parent
+// treatment page, featured image, the "בקצרה" summary list, a table of contents from the h2s, the
+// sanitized body, the visible FAQ and related reading. The body HTML was sanitized when saved
+// (src/lib/articleHtml.ts); here tables only get a scrolling wrapper so wide tables stay readable on phones.
 
-export type ArticleRow = Article & { author: Author | null; reviewer: Author | null; category: ArticleCategory | null; featuredImage: MediaFile | null };
+export type ArticleRow = Article & { author: Author | null; category: ArticleCategory | null; featuredImage: MediaFile | null };
 export type RelatedRow = Pick<Article, 'id' | 'slug' | 'title' | 'excerpt'> & { category: ArticleCategory | null };
 
 const wrapTables = (html: string) => html.replace(/<table\b/g, `<div class="${styles.tableScroll}" role="region" aria-label="טבלה" tabindex="0"><table`).replace(/<\/table>/g, '</table></div>');
+
+/** The name of the parent page for the "more on" link: the treatment category when the path is one, else a generic label. */
+export function parentPageLabel(path: string): string {
+  const cat = CATEGORIES.find(c => `/treatments/${c.slug}` === path);
+  if (cat) return cat.name;
+  if (path === '/treatments') return 'כל תחומי הטיפול';
+  return 'העמוד הראשי של הנושא';
+}
 
 function PersonIcon() {
   return (
@@ -28,26 +39,28 @@ function PersonIcon() {
   );
 }
 
-function Person({ a, avatar, label }: { a: Author; avatar: MediaFile | null; label?: string }) {
+function Person({ a, avatar }: { a: Author; avatar: MediaFile | null }) {
   return (
     <span className={styles.person}>
       {avatar ? <img className={styles.avatar} src={mediaUrl(avatar)} alt="" width={40} height={40} loading="lazy" decoding="async" /> : <span className={styles.avatarFallback} aria-hidden="true"><PersonIcon /></span>}
       <span>
-        <span className={styles.personName}>{label ? `${label} ` : ''}{a.name}</span>
+        <span className={styles.personName}>{a.name}</span>
         {a.title ? <span className={styles.personRole}>{a.title}</span> : null}
       </span>
     </span>
   );
 }
 
-export function ArticleTemplate({ article: r, related, jsonLd, authorAvatar, reviewerAvatar }: { article: ArticleRow; related: RelatedRow[]; jsonLd: object; authorAvatar: MediaFile | null; reviewerAvatar: MediaFile | null }) {
+export function ArticleTemplate({ article: r, related, jsonLd, authorAvatar }: { article: ArticleRow; related: RelatedRow[]; jsonLd: object; authorAvatar: MediaFile | null }) {
   const path = articlePath(r.slug);
   const headings = analyzeArticleHtml(r.bodyHtml).headings.filter(h => h.level === 2 && h.id);
   const faq = (r.faq as Array<{ q: string; a: string }>) ?? [];
   const published = r.publishedAt ?? r.createdAt;
   const updated = r.updatedAt.getTime() - published.getTime() > 86_400_000 ? r.updatedAt : null;
-  const crumbs = [{ name: 'בית', href: '/' }, { name: 'מגזין', href: '/magazine' }, ...(r.category ? [{ name: r.category.name, href: `/magazine?category=${encodeURIComponent(r.category.slug)}` }] : []), { name: r.title }];
+  const catHref = r.category ? categoryPath(r.category.slug) : null;
+  const crumbs = [{ name: 'בית', href: '/' }, { name: 'מגזין', href: '/magazine' }, ...(r.category && catHref ? [{ name: r.category.name, href: catHref }] : []), { name: r.title }];
   const toc = headings.length >= 3 ? headings : [];
+  const parent = r.parentPagePath;
 
   return (
     <div className={`${shared.root} ${styles.wrap}`}>
@@ -73,7 +86,7 @@ export function ArticleTemplate({ article: r, related, jsonLd, authorAvatar, rev
           <header className={styles.head}>
             <span className={styles.kicker}>
               <span aria-hidden="true" className={styles.kickerLine} />
-              {r.category ? <Link href={`/magazine?category=${encodeURIComponent(r.category.slug)}`}>{r.category.name}</Link> : 'מגזין'}
+              {r.category && catHref ? <Link href={catHref}>{r.category.name}</Link> : 'מגזין'}
               <span aria-hidden="true">·</span>
               <span><span className="ltr tnum">{r.readingTimeMinutes}</span> דק׳ קריאה</span>
             </span>
@@ -81,11 +94,11 @@ export function ArticleTemplate({ article: r, related, jsonLd, authorAvatar, rev
             {r.excerpt ? <p className={styles.dek}>{r.excerpt}</p> : null}
             <div className={styles.byline}>
               {r.author ? <Person a={r.author} avatar={authorAvatar} /> : null}
-              {r.reviewer ? <span className={styles.reviewed}><Person a={r.reviewer} avatar={reviewerAvatar} label="נבדק רפואית:" /></span> : null}
               <span className={styles.dates}>
                 <span>פורסם <time dateTime={published.toISOString()}>{dateHe(published)}</time></span>
                 {updated ? <span>עודכן <time dateTime={updated.toISOString()}>{dateHe(updated)}</time></span> : null}
               </span>
+              {parent ? <Link href={parent} className={styles.parentLink}>עוד על {parentPageLabel(parent)}</Link> : null}
             </div>
           </header>
 
@@ -136,6 +149,13 @@ export function ArticleTemplate({ article: r, related, jsonLd, authorAvatar, rev
                   <h2 id="h-faq" className={styles.h2}>שאלות ותשובות</h2>
                   <ContentFaq faqs={faq} />
                 </section>
+              ) : null}
+
+              {parent || catHref ? (
+                <nav className={styles.moreNav} aria-label="המשך קריאה">
+                  {parent ? <Link href={parent} className={styles.moreLink}>לעמוד {parentPageLabel(parent)}</Link> : null}
+                  {r.category && catHref ? <Link href={catHref} className={styles.moreLink}>כל המאמרים בקטגוריה {r.category.name}</Link> : null}
+                </nav>
               ) : null}
 
               {related.length ? (

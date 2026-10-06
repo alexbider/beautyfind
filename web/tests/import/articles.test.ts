@@ -145,17 +145,17 @@ describe('articles: service and tools', { skip }, () => {
   it('authors, categories, tags and an uploaded image', async () => {
     const author = track(await svc.upsertAuthor(user, { name: `נועה לוי ${stamp()}`, title: 'עורכת תוכן' }), 'authors', r => (r as { author: { id: string } }).author.id);
     assert.ok(author.ok, JSON.stringify(author));
-    const noLicense = await svc.upsertAuthor(user, { name: 'ד״ר בלי רישיון', isMedicalReviewer: true });
-    assert.ok(!noLicense.ok && /licenseKind/.test(noLicense.error));
-    const reviewer = track(await svc.upsertAuthor(user, { name: `ד״ר דנה כהן ${stamp()}`, title: 'רופאת עור', isMedicalReviewer: true, licenseKind: 'doctor', licenseNumber: '12345' }), 'authors', r => (r as { author: { id: string } }).author.id);
-    assert.ok(reviewer.ok);
-    const reviewers = await svc.listAuthors({ reviewersOnly: true });
-    assert.ok(reviewers.some(r => r.id === (reviewer as { author: { id: string } }).author.id));
+    const bare = track(await svc.upsertAuthor(user, { name: `קורל קרדי ${stamp()}` }), 'authors', r => (r as { author: { id: string } }).author.id);
+    assert.ok(bare.ok && (bare as { author: { title: string | null; bio: string | null } }).author.title === null && (bare as { author: { bio: string | null } }).author.bio === null, 'role and bio stay empty when not given');
+    assert.ok(!('isMedicalReviewer' in (bare as { author: object }).author), 'no reviewer fields on the author view');
     const dup = await svc.upsertAuthor(user, { name: (author as { author: { name: string } }).author.name });
     assert.ok(!dup.ok && dup.code === 'conflict', 'the same slug twice is a conflict');
 
-    const cat = track(await svc.upsertCategory(user, { name: `מדריכים ${stamp()}` }), 'categories', r => (r as { category: { id: string } }).category.id);
-    assert.ok(cat.ok && (cat as { category: { url: string } }).category.url.startsWith('/magazine?category='));
+    const cat = track(await svc.upsertCategory(user, { name: `מדריכים ${stamp()}`, parentPagePath: '/treatments/nails' }), 'categories', r => (r as { category: { id: string } }).category.id);
+    assert.ok(cat.ok && (cat as { category: { url: string } }).category.url.startsWith('/magazine/category/'), JSON.stringify(cat));
+    assert.equal((cat as { category: { parentPagePath: string } }).category.parentPagePath, '/treatments/nails');
+    const badParent = await svc.upsertCategory(user, { name: `שגוי ${stamp()}`, parentPagePath: '/treatments/nope' });
+    assert.ok(!badParent.ok && (badParent.fields as Record<string, string> | undefined)?.parentPagePath, 'a parent page must exist');
     const tag = track(await svc.createTag(user, { name: `בוטוקס ${stamp()}` }), 'tags', r => (r as { tag: { id: string } }).tag.id);
     assert.ok(tag.ok && tag.created);
     const again = await svc.createTag(user, { name: (tag as { tag: { name: string } }).tag.name });
@@ -181,17 +181,19 @@ describe('articles: service and tools', { skip }, () => {
     assert.ok(upd.ok && upd.media.alt === 'חדר טיפולים מעודכן');
   });
 
-  it('create, conflict, sanitizer, validation, the medical review gate, publish and the audit trail', async () => {
-    const author = (await svc.listAuthors()).find(a => made.authors.includes(a.id) && !a.isMedicalReviewer)!;
-    const reviewer = (await svc.listAuthors({ reviewersOnly: true })).find(a => made.authors.includes(a.id))!;
+  it('create, conflict, sanitizer, validation, publish and the audit trail; no reviewer gate', async () => {
+    const author = (await svc.listAuthors()).find(a => made.authors.includes(a.id))!;
+    const category = (await svc.listCategories()).find(c => made.categories.includes(c.id) && c.parentPagePath)!;
     const image = (await media.listMedia()).items.find(x => made.media.includes(x.id))!;
     const title = `איך לבחור קליניקה לבוטוקס ${stamp()}`;
     const body = `${LONG}<h2>טבלת מחירים</h2><table><thead><tr><th>טיפול</th><th>טווח</th></tr></thead><tbody><tr><td>בוטוקס</td><td dir="ltr">900–1,800 ₪</td></tr></tbody></table><p>עוד על <a href="/treatments/medical-aesthetics">אסתטיקה רפואית</a> ועל <a href="https://www.health.gov.il/">משרד הבריאות</a>.</p><img src="${image.url}" alt="חדר טיפולים"><script type="application/ld+json">{"@type":"Thing","name":"x"}</script>`;
-    const created = track(await svc.createArticle(user, { title, bodyHtml: body, excerpt: 'מה לבדוק לפני שבוחרים.', summary: ['בודקים רישיון', 'משווים מחירים'], faq: [{ q: 'כמה עולה בוטוקס?', a: 'בין 900 ל־1,800 שקלים לאזור.' }], authorId: author.id, featuredImageId: image.id, parentPagePath: '/treatments/medical-aesthetics', focusKeyword: 'בוטוקס' }), 'articles', r => (r as { article: { id: string } }).article.id);
+    const created = track(await svc.createArticle(user, { title, bodyHtml: body, excerpt: 'מה לבדוק לפני שבוחרים.', summary: ['בודקים רישיון', 'משווים מחירים'], faq: [{ q: 'כמה עולה בוטוקס?', a: 'בין 900 ל־1,800 שקלים לאזור.' }], authorId: author.id, categoryId: category.id, featuredImageId: image.id, focusKeyword: 'בוטוקס' }), 'articles', r => (r as { article: { id: string } }).article.id);
     assert.ok(created.ok, JSON.stringify(created));
     const a = (created as { article: typeof created extends { article: infer A } ? A : never; canonicalUrl: string }).article as ReturnType<typeof svc.articleView>;
     assert.equal(a.slug, slugify(title));
     assert.equal(a.status, 'draft');
+    assert.equal(a.parentPagePath, '/treatments/nails', 'the parent page defaults from the category');
+    assert.ok(!('medicalReview' in a), 'no medical review block on the article view');
     assert.equal((created as { canonicalUrl: string }).canonicalUrl, articleCanonical(a.slug));
     assert.match(a.bodyHtml, /rel="nofollow noopener noreferrer" target="_blank">משרד הבריאות/);
     assert.ok(!a.bodyHtml.includes('<script'));
@@ -206,27 +208,24 @@ describe('articles: service and tools', { skip }, () => {
 
     const v = await svc.validateArticle(a.id);
     assert.ok(v.ok && v.publishable, JSON.stringify(v));
+    assert.ok(v.ok && !JSON.stringify(v.issues).includes('medical'), 'nothing about medical review');
+    const ignored = await svc.updateArticle(user, a.id, { medicalReview: { required: true, reviewerId: author.id } } as never);
+    assert.ok(ignored.ok && !('medicalReview' in ignored.article), 'medicalReview is ignored: not a known field any more');
+    assert.equal((await db.article.findUnique({ where: { id: a.id } }))!.reviewRequired, false, 'the unused column is not written');
     const broken = await svc.validateArticle(a.id, { bodyHtml: `${LONG}<p><a href="/magazine/does-not-exist">x</a> <img src="/media/x"></p>` });
     assert.ok(broken.ok && !broken.publishable);
     assert.deepEqual(broken.ok ? broken.issues.filter(i => i.severity === 'error').map(i => i.code).sort() : [], ['broken_internal_link', 'missing_alt']);
 
     const stale = await svc.updateArticle(user, a.id, { excerpt: 'x' }, new Date(0).toISOString());
     assert.ok(!stale.ok && stale.code === 'stale');
-    const needsReview = await svc.updateArticle(user, a.id, { medicalReview: { required: true } }, a.updatedAt.toISOString());
-    assert.ok(needsReview.ok);
-    const refused = await svc.publishArticle(user, a.id);
-    assert.ok(!refused.ok && refused.code === 'not_publishable' && /medical review/.test(refused.error), JSON.stringify(refused));
-    assert.equal((await db.article.findUnique({ where: { id: a.id } }))!.status, 'draft');
-    const notReviewer = await svc.updateArticle(user, a.id, { medicalReview: { reviewerId: author.id } });
-    assert.ok(!notReviewer.ok && notReviewer.fields?.['medicalReview.reviewerId']);
-    const reviewed = await svc.updateArticle(user, a.id, { medicalReview: { reviewerId: reviewer.id, reviewedAt: '2026-10-05', status: 'approved' } });
-    assert.ok(reviewed.ok);
+    // A stale reviewRequired flag in the database (from before the gate was removed) changes nothing.
+    await db.article.update({ where: { id: a.id }, data: { reviewRequired: true } });
     const published = await svc.publishArticle(user, a.id);
     assert.ok(published.ok && !('queued' in published), JSON.stringify(published));
     const row = await db.article.findUnique({ where: { id: a.id } });
     assert.equal(row!.status, 'published');
     assert.ok(row!.publishedAt);
-    assert.ok(published.ok && published.revalidated.includes('/treatments/medical-aesthetics'), 'the parent page is refreshed');
+    assert.ok(published.ok && published.revalidated.includes('/treatments/nails') && published.revalidated.includes(`/magazine/category/${category.slug}`), 'the parent page and the category page are refreshed');
     assert.ok(await db.auditLog.findFirst({ where: { actorId: user.id, action: 'article_publish', subjectId: a.id } }));
     const again = await svc.publishArticle(user, a.id);
     assert.ok(again.ok && 'warnings' in again && again.warnings.includes('already published'));
@@ -326,8 +325,10 @@ describe('articles: service and tools', { skip }, () => {
     assert.deepEqual([site.locale, site.timezone, site.organizationId], ['he-IL', 'Asia/Jerusalem', 'https://beautyfind.co.il/#organization']);
 
     const magazine = tools.MCP_TOOLS.filter(t => t.area === 'magazine');
-    assert.ok(magazine.length >= 24, `expected the article tool set, got ${magazine.length}`);
-    for (const n of ['list_authors', 'get_author', 'list_medical_reviewers', 'upsert_author', 'list_categories', 'upsert_category', 'list_tags', 'create_tag', 'upload_media', 'update_media', 'list_media', 'list_articles', 'get_article', 'create_article', 'update_article', 'publish_article', 'unpublish_article', 'schedule_article', 'delete_article', 'replace_in_article', 'get_article_links', 'validate_article', 'get_sitemap_urls', 'get_site_settings']) assert.ok(magazine.some(t => t.name === n), n);
+    assert.ok(magazine.length >= 23, `expected the article tool set, got ${magazine.length}`);
+    assert.ok(!tools.MCP_TOOLS.some(t => t.name === 'list_medical_reviewers'), 'the reviewer tool is gone');
+    assert.ok(!JSON.stringify(tools.MCP_TOOLS.map(t => t.description)).includes('סקירה רפואית'), 'no tool description mentions medical review');
+    for (const n of ['list_authors', 'get_author', 'upsert_author', 'list_categories', 'upsert_category', 'list_tags', 'create_tag', 'upload_media', 'update_media', 'list_media', 'list_articles', 'get_article', 'create_article', 'update_article', 'publish_article', 'unpublish_article', 'schedule_article', 'delete_article', 'replace_in_article', 'get_article_links', 'validate_article', 'get_sitemap_urls', 'get_site_settings']) assert.ok(magazine.some(t => t.name === n), n);
     const byName = (n: string) => tools.MCP_TOOLS.find(t => t.name === n)!;
     assert.ok(mcp.scopeAllows('magazine', byName('publish_article')) && mcp.scopeAllows('magazine', byName('list_branches')) && mcp.scopeAllows('magazine', byName('search_businesses')) && mcp.scopeAllows('magazine', byName('revalidate_pages')));
     assert.ok(!mcp.scopeAllows('magazine', byName('get_business')) && !mcp.scopeAllows('magazine', byName('billing_overview')) && !mcp.scopeAllows('magazine', byName('list_clients')));
