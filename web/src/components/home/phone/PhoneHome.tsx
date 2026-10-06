@@ -11,7 +11,7 @@ import { nis } from '@/lib/format';
 import { ROUTES, relFor } from '@/lib/routes';
 import { SaveHeart, useSavedIds } from '../../save-heart/SaveHeart';
 import { haptic } from '../../shell/haptics';
-import { ARTICLES, IMAGE_ALT, LANDMARK_ALT } from '../content';
+import { IMAGE_ALT, LANDMARK_ALT, type HomeGuide } from '../content';
 import { setRegion as storeRegion, useRegion } from '../regionStore';
 import s from './PhoneHome.module.css';
 
@@ -54,6 +54,7 @@ export interface PhoneHomeProps {
   reviews: PhoneReview[];
   regionCities: Record<RegionSlug, Array<{ name: string; href: string }>>;
   catCount: number;
+  guides: HomeGuide[];
 }
 
 // The design opens on גוש דן; a region picked anywhere on the site (header, map) wins.
@@ -507,7 +508,7 @@ export function ListingSteps({ variant }: { variant?: 'desk' }) {
 
 /* ---------------------------------------------------------------- Page */
 
-export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeProps) {
+export function PhoneHome({ lists, reviews, regionCities, catCount, guides }: PhoneHomeProps) {
   const router = useRouter();
   const [stored, setStored] = useRegion();
   const region: RegionSlug = stored === 'all' ? FALLBACK_REGION : stored;
@@ -730,26 +731,26 @@ export function PhoneHome({ lists, reviews, regionCities, catCount }: PhoneHomeP
           </section>
         )}
 
-        {/* ---------- Guides (TODO(cms): /magazine until articles exist) ---------- */}
+        {/* ---------- Guides: the newest articles, or the placeholders until the first one is published ---------- */}
         <section className={s.pad40} aria-labelledby="h-guides-m">
           <Kicker>מדריכים</Kicker>
           <h2 id="h-guides-m" className={`${s.h2} ${s.mt8} ${s.mb18}`}>קצת ידע לפני שמחליטים<Dot /></h2>
-          <Link href={ARTICLES[0].href} className={s.leadGuide}>
+          <Link href={guides[0].href} className={s.leadGuide}>
             <figure className={s.leadFig}>
-              <span className={s.leadImg}><Image src={ARTICLES[0].img} alt={IMAGE_ALT[ARTICLES[0].img] ?? ''} fill sizes="(max-width: 1023px) 400px, 1px" className={s.cover} /></span>
+              <span className={s.leadImg}><Image src={guides[0].img} alt={IMAGE_ALT[guides[0].img] ?? ''} fill sizes="(max-width: 1023px) 400px, 1px" className={s.cover} /></span>
             </figure>
-            <div className={s.guideKind}>{ARTICLES[0].kind} · {READ_TIME[0]}</div>
-            <div className={s.leadTitle}>{ARTICLES[0].title}</div>
-            <div className={s.leadDesc}>{ARTICLES[0].desc}</div>
+            <div className={s.guideKind}>{guides[0].kind} · {guides[0].readTime}</div>
+            <div className={s.leadTitle}>{guides[0].title}</div>
+            <div className={s.leadDesc}>{guides[0].desc}</div>
           </Link>
           <div className={s.guideList}>
-            {ARTICLES.slice(1).map((a, i) => (
+            {guides.slice(1).map(a => (
               <Link key={a.title} href={a.href} className={s.guideRow}>
                 <span className={s.guideThumb}><Image src={a.img} alt="" fill sizes="84px" className={s.cover} /></span>
                 <span className={s.guideText}>
                   <span className={s.guideKind}>{a.kind}</span>
                   <span className={s.guideTitle}>{a.title}</span>
-                  <span className={s.guideMeta}>{READ_TIME[i + 1]}</span>
+                  <span className={s.guideMeta}>{a.readTime}</span>
                 </span>
               </Link>
             ))}

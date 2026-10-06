@@ -10,9 +10,9 @@ import { VAT_LABEL } from '@/lib/features';
 import { nis } from '@/lib/format';
 import { ROUTES } from '@/lib/routes';
 import { SaveHeart } from '../../save-heart/SaveHeart';
-import { ARTICLES, IMAGE_ALT, LANDMARK_ALT } from '../content';
+import { IMAGE_ALT, LANDMARK_ALT, type HomeGuide } from '../content';
 import {
-  Arrow, FALLBACK_REGION, FAQS, Glass, ListingSteps, Pin, QUICK, READ_TIME, REGION_ORDER, Rings, STAR_PATH, TRUST,
+  Arrow, FALLBACK_REGION, FAQS, Glass, ListingSteps, Pin, QUICK, REGION_ORDER, Rings, STAR_PATH, TRUST,
   TRUST_STRIP, WhatsApp, nearestRegion, rName, type PhoneCard, type PhoneReview,
 } from '../phone/PhoneHome';
 import { setRegion as storeRegion, useRegion } from '../regionStore';
@@ -30,6 +30,7 @@ export interface DeskHomeProps {
   regionCounts: Record<RegionSlug, number>;
   reviews: PhoneReview[];
   regionCities: Record<RegionSlug, Array<{ name: string; href: string }>>;
+  guides: HomeGuide[];
 }
 
 const CATS = [
@@ -48,6 +49,7 @@ const MORE_CATS = [
   { label: 'איפור מקצועי', slug: 'makeup', img: '/assets/cat-makeup.jpg' },
   { label: 'איפור קבוע', slug: 'permanent-makeup', img: '/assets/cat-pmu.jpg' },
   { label: 'עיצוב וחיטוב הגוף', slug: 'body-contouring', img: '/assets/cat-body.jpg' },
+  { label: 'שיזוף', slug: 'tanning', img: '/assets/cat-tan.jpg' },
 ];
 const TRUST_SUB = ['בעלות מאומתת ורישיון שנבדק מסומנים בפרופיל', 'Google ו־BeautyFind בנפרד, בלי ממוצע', 'תשלום לא משפיע על הדירוג'];
 const REGION_CARDS: RegionSlug[] = ['dan', 'north', 'haifa', 'sharon', 'jerusalem', 'shfela', 'south'];
@@ -245,7 +247,7 @@ function Carousel({ cards, region }: { cards: PhoneCard[]; region: RegionSlug })
   );
 }
 
-export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHomeProps) {
+export function DeskHome({ lists, regionCounts, reviews, regionCities, guides }: DeskHomeProps) {
   const router = useRouter();
   const [stored, setStored] = useRegion();
   const region: RegionSlug = stored === 'all' ? FALLBACK_REGION : stored;
@@ -286,7 +288,7 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
   };
 
   const cards = lists[region] ?? [];
-  const lead = ARTICLES[0];
+  const lead = guides[0];
 
   return (
     <div className={s.root}>
@@ -460,25 +462,25 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities }: DeskHom
         </section>
       )}
 
-      {/* ---------- Guides (TODO(cms): /magazine until articles exist) ---------- */}
+      {/* ---------- Guides: the newest articles, or the placeholders until the first one is published ---------- */}
       <section aria-labelledby="h-guides" className={`${s.wrap} ${s.pt88}`}>
         <Kicker>מדריכים</Kicker>
         <h2 id="h-guides" className={`${s.h2} ${s.mt10}`}>קצת ידע לפני שמחליטים<Dot /></h2>
         <div className={s.guides}>
           <Link href={lead.href} className={s.leadGuide}>
             <figure className={s.leadFig}><span className={s.leadImg}><Image src={lead.img} alt={IMAGE_ALT[lead.img] ?? ''} fill sizes="(min-width: 1280px) 680px, 55vw" className={s.cover} /></span></figure>
-            <div className={s.guideKind}>{lead.kind} · {READ_TIME[0]}</div>
+            <div className={s.guideKind}>{lead.kind} · {lead.readTime}</div>
             <div className={s.leadTitle}>{lead.title}</div>
             <div className={s.leadDesc}>{lead.desc}</div>
           </Link>
           <div className={s.guideList}>
-            {ARTICLES.slice(1).map((a, i) => (
+            {guides.slice(1).map(a => (
               <Link key={a.title} href={a.href} className={s.guideRow}>
                 <span className={s.guideThumb}><Image src={a.img} alt={IMAGE_ALT[a.img] ?? ''} fill sizes="132px" className={s.cover} /></span>
                 <span className={s.guideText}>
                   <span className={s.guideKind}>{a.kind}</span>
                   <span className={s.guideTitle}>{a.title}</span>
-                  <span className={s.guideMeta}>{READ_TIME[i + 1]}</span>
+                  <span className={s.guideMeta}>{a.readTime}</span>
                 </span>
               </Link>
             ))}

@@ -12,7 +12,7 @@ import { platformSettings } from '@/lib/server/platformSettings';
 import { siteUrl } from '@/lib/server/site';
 import { ApprovalToggle, ArticleActions } from './MagazineControls';
 
-// /ops/magazine: every article with its state, the authors and reviewers, the categories, the approvals
+// /ops/magazine: every article with its state, the authors, the categories, the approvals
 // switch and the MCP tools that write here. Articles are written through the MCP tools (or any client of
 // the same server actions); this screen is where a person sees, publishes, takes down and deletes.
 
@@ -47,7 +47,7 @@ export default async function MagazineAdminPage({ searchParams }: { searchParams
         { label: 'מאמרים', value: int(articles.length), note: `${int(by('published'))} מפורסמים` },
         { label: 'טיוטות', value: int(by('draft')), note: 'ממתינות לפרסום' },
         { label: 'מתוזמנים', value: int(by('scheduled')), note: 'יתפרסמו בזמנם', tone: by('scheduled') ? 'ok' : undefined },
-        { label: 'כותבים וסוקרים', value: int(authors.length), note: `${int(authors.filter(a => a.isMedicalReviewer).length)} סוקרים רפואיים` },
+        { label: 'כותבים', value: int(authors.length), note: `${int(authors.filter(a => a.active).length)} פעילים` },
       ]} />
       <div className={ui.toolbar}>
         <Pills current={filter} items={[
@@ -66,7 +66,6 @@ export default async function MagazineAdminPage({ searchParams }: { searchParams
                 <td>
                   {a.status === 'published' ? <a href={`${siteUrl()}${articlePath(a.slug)}`} className={ui.rowLink} target="_blank" rel="noreferrer">{a.title}</a> : <span className={ui.strong}>{a.title}</span>}
                   <span className={ui.sub} dir="ltr">{articlePath(a.slug)}</span>
-                  {a.reviewRequired ? <span className={ui.sub}>{a.reviewerId && a.reviewedAt ? 'סקירה רפואית: נעשתה' : 'סקירה רפואית: חסרה'}</span> : null}
                 </td>
                 <td><Chip tone={STATUS[a.status]?.tone ?? 'neutral'}>{STATUS[a.status]?.name ?? a.status}</Chip>{a.status === 'scheduled' && a.scheduledFor ? <span className={ui.sub}>{dateTimeIL(a.scheduledFor)}</span> : null}</td>
                 <td>{a.author?.name ?? <span className={ui.sub}>אין</span>}</td>
@@ -80,19 +79,19 @@ export default async function MagazineAdminPage({ searchParams }: { searchParams
         ) : <Empty title="אין מאמרים" text="מאמרים נוצרים דרך create_article בשרת ה־MCP (לשונית ״שרת MCP״ ב־AI ו־MCP)." />}
       </Card>
       <div className={ui.grid2}>
-        <Card title="כותבים וסוקרים רפואיים" sub="upsert_author יוצר ומעדכן; סוקר רפואי צריך סוג רישיון" flush>
+        <Card title="כותבים" sub="upsert_author יוצר ומעדכן; תפקיד וביו מוצגים בעמוד רק כשמולאו" flush>
           {authors.length ? (
-            <Table head={['שם', 'תפקיד', 'סוקר רפואי', 'מאמרים', 'פעיל']}>
+            <Table head={['שם', 'תפקיד', 'מאמרים', 'פעיל']}>
               {authors.map(a => (
-                <tr key={a.id}><td className={ui.strong}>{a.name}<span className={ui.sub} dir="ltr">{a.slug}</span></td><td>{a.title ?? ''}</td><td>{a.isMedicalReviewer ? <Chip tone="ok">{a.licenseKind === 'doctor' ? 'רופא/ה' : a.licenseKind === 'dentist' ? 'רופא/ת שיניים' : a.licenseKind === 'nurse' ? 'אח/ות' : 'כן'}</Chip> : <span className={ui.sub}>לא</span>}</td><td className={ui.num}>{int((a.articles ?? 0) + (a.reviewed ?? 0))}</td><td>{a.active ? <Chip tone="ok">כן</Chip> : <Chip tone="neutral">לא</Chip>}</td></tr>
+                <tr key={a.id}><td className={ui.strong}>{a.name}<span className={ui.sub} dir="ltr">{a.slug}</span></td><td>{a.title ?? <span className={ui.sub}>לא מולא</span>}</td><td className={ui.num}>{int(a.articles ?? 0)}</td><td>{a.active ? <Chip tone="ok">כן</Chip> : <Chip tone="neutral">לא</Chip>}</td></tr>
               ))}
             </Table>
           ) : <Empty title="אין כותבים" text="כל מאמר צריך כותב לפני פרסום." />}
         </Card>
-        <Card title="קטגוריות" sub="upsert_category; הסינון ב־/magazine?category=slug" flush>
+        <Card title="קטגוריות" sub="upsert_category; עמוד הקטגוריה ב־/magazine/category/{slug}" flush>
           {categories.length ? (
-            <Table head={['שם', 'slug', 'מאמרים מפורסמים']}>
-              {categories.map(c => <tr key={c.id}><td className={ui.strong}>{c.name}</td><td className={ui.mono} dir="ltr">{c.slug}</td><td className={ui.num}>{int(c.count)}</td></tr>)}
+            <Table head={['שם', 'slug', 'עמוד אב', 'מאמרים מפורסמים']}>
+              {categories.map(c => <tr key={c.id}><td className={ui.strong}><a href={`${siteUrl()}${c.url}`} className={ui.rowLink} target="_blank" rel="noreferrer">{c.name}</a></td><td className={ui.mono} dir="ltr">{c.slug}</td><td className={ui.mono} dir="ltr">{c.parentPagePath ?? ''}</td><td className={ui.num}>{int(c.count ?? 0)}</td></tr>)}
             </Table>
           ) : <Empty title="אין קטגוריות" />}
         </Card>

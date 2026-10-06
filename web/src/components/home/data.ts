@@ -1,10 +1,11 @@
 import 'server-only';
 import type { Metadata } from 'next';
 import { cardExtras } from '@/app/search/extras';
-import { CATEGORY_IMAGE } from '@/components/home/content';
+import { CATEGORY_IMAGE, PLACEHOLDER_GUIDES, type HomeGuide } from '@/components/home/content';
 import type { HeaderRegion } from '@/components/home/HomeHeader';
 import type { PhoneCard, PhoneReview } from '@/components/home/phone/PhoneHome';
 import { REGIONS, citiesOf, cityPageHref, type RegionSlug } from '@/lib/catalog';
+import { homeGuides } from '@/lib/server/articles';
 import { listBranches, listingCounts, recentReviews, type ListingCard } from '@/lib/server/public';
 import { applySeo } from '@/lib/server/seo';
 import { publicMetadata } from '@/lib/seo/meta';
@@ -37,13 +38,16 @@ export interface HomeData {
   cardReviews: PhoneReview[];
   headerRegions: HeaderRegion[];
   total: number;
+  /** The three newest published articles, or the "coming soon" placeholders until there is one. */
+  guides: HomeGuide[];
 }
 
 /** Live listings per region, the newest reviews and the region menu, from the public reads only. */
 export async function loadHome(): Promise<HomeData> {
-  const [counts, reviews, ...perRegion] = await Promise.all([
+  const [counts, reviews, guides, ...perRegion] = await Promise.all([
     listingCounts(),
     recentReviews(6),
+    homeGuides().catch(() => null),
     ...REGIONS.map(r => listBranches({ region: r.slug, take: CARDS_PER_TAB })),
   ]);
 
@@ -99,5 +103,5 @@ export async function loadHome(): Promise<HomeData> {
     cities: topCities(r.slug, 5).map(c => ({ name: c.name, href: cityPageHref(c) })),
   }));
 
-  return { cardLists, regionCounts, regionCities, cardReviews, headerRegions, total: counts.total };
+  return { cardLists, regionCounts, regionCities, cardReviews, headerRegions, total: counts.total, guides: guides ?? PLACEHOLDER_GUIDES };
 }

@@ -27,13 +27,17 @@ export const CATEGORY_IMAGE: Record<string, string> = {
   'body-contouring': '/assets/cat-body.jpg', tanning: '/assets/cat-tan.jpg',
 };
 
-// TODO(cms): no magazine yet. Titles and images from the design; every card links to /magazine
-// until articles exist at /magazine/:slug.
+/** A guide card on the homepage: a published article, or one of the placeholders below until the first article is live. */
+export interface HomeGuide { kind: string; title: string; desc: string; img: string; href: string; readTime: string }
+
+// The "coming soon" placeholders: titles and images from the design, every card linking to /magazine. The
+// homepage and its footer show them only while the magazine has no published article (lib/server/articles.ts).
 export const ARTICLES = [
   { kind: 'מדריך', title: 'איך לבחור מכון יופי או קליניקה', desc: 'על מה להסתכל בצוות, בתפריט הטיפולים ובתהליך הייעוץ.', img: '/assets/art-choose.jpg', href: '/magazine' },
   { kind: 'הסבר', title: 'איך להבין מחירי טיפולים בישראל', desc: 'למה הצעות מחיר משתנות לפי יחידה, אזור ומספר מפגשים, ואיך להשוות נכון.', img: '/assets/art-prices.jpg', href: '/magazine' },
   { kind: 'צ׳קליסט', title: 'שאלות לשאול לפני פגישת הייעוץ', desc: 'רשימה קצרה לקחת איתכם: על איש המקצוע, על התוכנית ועל הטיפול שאחרי.', img: '/assets/art-questions.jpg', href: '/magazine' },
 ];
+export const PLACEHOLDER_GUIDES: HomeGuide[] = ARTICLES.map((a, i) => ({ ...a, readTime: ['6 דקות קריאה', '5 דקות קריאה', '4 דקות קריאה'][i] }));
 
 /** Alt text for the site's own photos, keyed by path. Listing photos from businesses are not here. */
 export const IMAGE_ALT: Record<string, string> = {

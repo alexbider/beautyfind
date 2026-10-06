@@ -37,6 +37,9 @@ describe('indexing: public sections', () => {
     assert.equal(sectionOfPath('/treatments/facials'), 'categories');
     for (const p of ['/about', '/about/methodology', '/about/editorial', '/listing-standards', '/listing-standards/sponsorship', '/for-business', '/magazine', '/help', '/contact']) assert.equal(sectionOfPath(p), 'content', p);
     for (const p of ['/privacy', '/terms', '/accessibility']) assert.equal(sectionOfPath(p), 'legal', p);
+    assert.equal(sectionOfPath('/magazine/botox'), 'content');
+    assert.equal(sectionOfPath('/magazine/category/prices-and-costs'), 'content');
+    assert.equal(sectionOfPath('/magazine/category/x/y'), null);
     assert.equal(sectionOfPath('/nowhere'), null);
     assert.equal(sectionOfPath('/dan/a/b/c'), null);
   });

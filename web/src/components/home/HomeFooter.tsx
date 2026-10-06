@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { CATEGORIES, REGIONS } from '@/lib/catalog';
 import { ROUTES } from '@/lib/routes';
 import { Wordmark } from '../Wordmark';
-import { ARTICLES } from './content';
+import type { HomeGuide } from './content';
 import { BackToSearchButton } from './HomeActions';
 import styles from './HomeFooter.module.css';
 
@@ -10,7 +10,7 @@ import styles from './HomeFooter.module.css';
 // full disclaimer and legal row), so it is built here from BeautyFind Homepage.dc.html.
 // In the app shell only the disclaimer and copyright show; the links are on the "עוד" tab.
 
-const GROUPS = [
+const groups = (guides: HomeGuide[]) => [
   { name: 'אזורים', links: REGIONS.map(r => ({ name: r.name, href: `/${r.slug}` })) },
   {
     name: 'תחומי טיפול',
@@ -19,8 +19,8 @@ const GROUPS = [
       { name: 'כל תחומי הטיפול', href: '/treatments' },
     ],
   },
-  // TODO(cms): guide links point at /magazine until articles exist.
-  { name: 'מדריכים', links: [...ARTICLES.map(a => ({ name: a.title, href: a.href })), { name: 'כל המדריכים', href: '/magazine' }] },
+  // The newest articles, or the placeholders (which point at /magazine) until the first one is published.
+  { name: 'מדריכים', links: [...guides.map(a => ({ name: a.title, href: a.href })), { name: 'כל המדריכים', href: '/magazine' }] },
   {
     name: 'החברה',
     links: [
@@ -34,7 +34,8 @@ const GROUPS = [
   },
 ];
 
-export function HomeFooter() {
+export function HomeFooter({ guides }: { guides: HomeGuide[] }) {
+  const GROUPS = groups(guides);
   return (
     <footer className={styles.footer}>
       <div className={styles.inner}>

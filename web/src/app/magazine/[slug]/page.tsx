@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { ArticleTemplate, type RelatedRow } from '@/components/magazine/ArticleTemplate';
 import { articleCanonical, articlePath } from '@/lib/articleHtml';
 import { mediaUrl } from '@/lib/server/articleMedia';
-import { articleDescription, publishDueArticles } from '@/lib/server/articles';
+import { articleDescription, categoryPath, publishDueArticles } from '@/lib/server/articles';
 import { db } from '@/lib/server/db';
 import { applySeo } from '@/lib/server/seo';
 import { DEFAULT_OG_IMAGE, SITE_NAME } from '@/lib/seo/meta';
@@ -19,7 +19,7 @@ import { absoluteUrl, articleId, articleNode, breadcrumbNode, faqNode, graph, we
 export const revalidate = 300;
 
 type Params = Promise<{ slug: string }>;
-const INCLUDE = { author: { include: { avatar: true } }, reviewer: { include: { avatar: true } }, category: true, featuredImage: true } as const;
+const INCLUDE = { author: { include: { avatar: true } }, category: true, featuredImage: true } as const;
 
 async function load(rawSlug: string) {
   let slug: string;
@@ -70,14 +70,13 @@ export default async function ArticlePage({ params }: { params: Params }) {
   if (!related.length) related = await db.article.findMany({ where: { id: { not: a.id }, status: 'published', deletedAt: null, ...(a.categoryId ? { categoryId: a.categoryId } : {}) }, orderBy: { publishedAt: 'desc' }, take: 2, select: { id: true, slug: true, title: true, excerpt: true, category: true } });
 
   const image = a.featuredImage ? { url: mediaUrl(a.featuredImage), width: a.featuredImage.width, height: a.featuredImage.height, caption: a.featuredImage.caption ?? a.featuredImage.alt } : null;
-  const crumbs = [{ name: 'בית', path: '/' }, { name: 'מגזין', path: '/magazine' }, ...(a.category ? [{ name: a.category.name, path: `/magazine?category=${encodeURIComponent(a.category.slug)}` }] : []), { name: a.title, path }];
-  const person = (p: NonNullable<typeof a.author>) => ({ name: p.name, jobTitle: p.title, sameAs: p.sameAs, image: p.avatar ? mediaUrl(p.avatar) : null });
+  const crumbs = [{ name: 'בית', path: '/' }, { name: 'מגזין', path: '/magazine' }, ...(a.category ? [{ name: a.category.name, path: categoryPath(a.category.slug) }] : []), { name: a.title, path }];
   const jsonLd = graph([
     webPageNode({ path, name: a.seoTitle?.trim() || a.title, description, image: image?.url, mainEntityId: articleId(path), breadcrumb: true, datePublished: (a.publishedAt ?? a.createdAt).toISOString(), dateModified: a.updatedAt.toISOString() }),
     articleNode({
-      path, type: a.category || a.reviewer ? 'Article' : 'BlogPosting', headline: a.title, description, image,
+      path, type: a.category ? 'Article' : 'BlogPosting', headline: a.title, description, image,
       datePublished: (a.publishedAt ?? a.createdAt).toISOString(), dateModified: a.updatedAt.toISOString(),
-      author: a.author ? person(a.author) : null, reviewedBy: a.reviewer ? person(a.reviewer) : null,
+      author: a.author ? { name: a.author.name, jobTitle: a.author.title, sameAs: a.author.sameAs, image: a.author.avatar ? mediaUrl(a.author.avatar) : null } : null,
       wordCount: a.wordCount, keywords: a.focusKeyword ? [a.focusKeyword] : [], section: a.category?.name ?? null,
     }),
     breadcrumbNode(path, crumbs),
@@ -85,5 +84,5 @@ export default async function ArticlePage({ params }: { params: Params }) {
     ...((Array.isArray(a.jsonLdExtra) ? a.jsonLdExtra : []) as object[]),
   ]);
 
-  return <ArticleTemplate article={a} related={related} jsonLd={jsonLd} authorAvatar={a.author?.avatar ?? null} reviewerAvatar={a.reviewer?.avatar ?? null} />;
+  return <ArticleTemplate article={a} related={related} jsonLd={jsonLd} authorAvatar={a.author?.avatar ?? null} />;
 }

@@ -19,7 +19,7 @@ export default async function PhoneHomePage() {
     <div className={styles.root}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(HOME_JSON_LD) }} />
       <MaintenanceNotice />
-      <PhoneHome lists={home.cardLists} reviews={home.cardReviews} regionCities={home.regionCities} catCount={CATEGORIES.length} />
+      <PhoneHome lists={home.cardLists} reviews={home.cardReviews} regionCities={home.regionCities} catCount={CATEGORIES.length} guides={home.guides} />
     </div>
   );
 }
