@@ -8,7 +8,7 @@ import { seoName } from '../seo/seoName';
 import { consumerAgorot } from '../vat';
 import { db } from './db';
 import { vatRatePct } from './vat';
-import { queryTokens } from '@/lib/search/understand';
+import { closestName, queryTokens } from '@/lib/search/understand';
 
 // Read-only queries for public pages. Only live branches of live businesses are ever returned.
 // Ratings: Google and BeautyFind are separate fields and are never averaged together (decision A4).
@@ -202,6 +202,12 @@ export async function listBranches(f: ListingFilter = {}): Promise<{ total: numb
 }
 
 /** Cards for the given ids, in that order (ids that are not public are dropped). */
+/** For a search with no results: the business name closest in sound to the query, within the same filters. */
+export async function closestBusinessName(q: string, f: ListingFilter): Promise<string | null> {
+  const rows = await db.branch.findMany({ where: where({ ...f, q: undefined }), select: { name: true }, take: 3000 });
+  return closestName(q, rows.map(r => r.name));
+}
+
 export async function cardsByIds(ids: string[]): Promise<ListingCard[]> {
   if (!ids.length) return [];
   const [rows, vatPct] = await Promise.all([db.branch.findMany({ where: { AND: [PUBLIC_WHERE, { id: { in: ids } }] }, include: CARD_INCLUDE }), vatRatePct()]);

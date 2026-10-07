@@ -449,22 +449,22 @@ function Identity({ p, v }: { p: PublicProfile; v: View }) {
       )}
 
       {v.facts.length > 0 && (
-      <dl className={styles.facts} style={{ '--n': v.facts.length } as React.CSSProperties}>
+      <ul className={styles.facts} style={{ '--n': v.facts.length } as React.CSSProperties}>
         {v.facts.map((f, i) => (
-          <div key={`${f.key}-${i}`} className={styles.fact}>
+          <li key={`${f.key}-${i}`} className={styles.fact}>
             <span aria-hidden="true" className={styles.factIcon}>
               <svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="#0B7A87" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 {(FACT_ICONS[f.key] ?? FACT_ICONS.unknown).map(d => <path key={d} d={d} />)}
               </svg>
             </span>
             <span className={styles.factBody}>
-              <dt>{f.label}</dt>
-              <dd>{f.href ? <Link href={f.href}>{f.value}</Link> : f.ltr ? <span dir="ltr" className={`ltr ${styles.range}`}>{f.value}</span> : f.value}</dd>
+              <span className={styles.factLabel}>{f.label}</span>
+              <span className={styles.factValue}>{f.href ? <Link href={f.href}>{f.value}</Link> : f.ltr ? <span dir="ltr" className={`ltr ${styles.range}`}>{f.value}</span> : f.value}</span>
               {f.note && <span className={styles.factNote}>{f.note}</span>}
             </span>
-          </div>
+          </li>
         ))}
-      </dl>
+      </ul>
       )}
     </section>
   );

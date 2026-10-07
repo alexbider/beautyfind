@@ -117,7 +117,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
               בחרו את סוג הפנייה כדי שהיא תגיע ישר לאדם הנכון. אנחנו עונים על כל פנייה: גם על תלונות, גם על תיקונים, וגם כשהתשובה היא לא.
             </p>
           </div>
-          <dl className={styles.stats}>
+          <dl className={styles.stats} tabIndex={0} aria-label="נתונים">
             {STATS.map(s => (
               <div key={s.label}>
                 <dt>{s.label}</dt>

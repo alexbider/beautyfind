@@ -78,7 +78,7 @@ a.rating { color: inherit; }
 .chip svg { flex: none; }
 
 .facts {
-  margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; background: #ffffff;
+  margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: minmax(0, 1fr); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; background: #ffffff;
 }
 @media (min-width: 768px) {
   .facts { grid-template-columns: repeat(var(--n), minmax(0, 1fr)); }
@@ -86,9 +86,9 @@ a.rating { color: inherit; }
 .fact { display: flex; align-items: flex-start; gap: 13px; padding: 20px; background: #ffffff; box-shadow: -1px 0 0 var(--line), 0 1px 0 var(--line); }
 .factIcon { flex: none; width: 38px; height: 38px; border-radius: 11px; background: var(--tint); display: flex; align-items: center; justify-content: center; }
 .factBody { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.factBody dt { font-size: 12.5px; font-weight: 700; color: var(--subtle); }
-.factBody dd { margin: 0; font-size: 15.5px; font-weight: 700; line-height: 1.4; color: var(--navy); text-wrap: pretty; }
-.factBody dd a { color: var(--navy); border-bottom: 1px solid var(--line-strong); }
+.factBody .factLabel { font-size: 12.5px; font-weight: 700; color: var(--subtle); }
+.factBody .factValue { margin: 0; font-size: 15.5px; font-weight: 700; line-height: 1.4; color: var(--navy); text-wrap: pretty; }
+.factBody .factValue a { color: var(--navy); border-bottom: 1px solid var(--line-strong); }
 @media (hover: hover) and (pointer: fine) { .factBody dd a:hover { color: var(--teal-deep); border-color: var(--teal); } }
 .factNote { font-size: 13px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
 
@@ -217,6 +217,9 @@ a.rating { color: inherit; }
   .crumbs ol { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; padding: 11px 20px; scrollbar-width: none; }
   .crumbs ol::-webkit-scrollbar { height: 0; }
   .crumbs li { flex: none; }
+  /* Taller tap area for the breadcrumb links without changing the bar height. */
+  .crumbs ol { padding-block: 0; }
+  .crumbs a { display: inline-block; padding-block: 13px; }
 
   /* §3 Gallery: full bleed. */
   .gallery { padding: 0; max-width: none; animation: none; }

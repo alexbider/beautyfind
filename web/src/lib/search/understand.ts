@@ -198,3 +198,40 @@ const FIELD_TERMS: Record<string, string[]> = {
 export function fieldTerms(slug: string | null | undefined): string[] {
   return slug ? FIELD_TERMS[slug] ?? [] : [];
 }
+
+const HEB_LAT: Record<string, string> = {
+  א: 'a', ב: 'b', ג: 'g', ד: 'd', ה: 'h', ו: 'o', ז: 'z', ח: 'h', ט: 't', י: 'i', כ: 'k', ך: 'k', ל: 'l', מ: 'm', ם: 'm',
+  נ: 'n', ן: 'n', ס: 's', ע: 'a', פ: 'p', ף: 'p', צ: 'tz', ץ: 'tz', ק: 'k', ר: 'r', ש: 'sh', ת: 't',
+};
+
+/**
+ * A sound-alike key for business names across Hebrew and Latin spelling: transliterate, drop vowels and
+ * spaces, fold letters that Hebrew writes the same way. "נייל טוב" and "Nailtov" share the key "nltb".
+ */
+export function nameSkeleton(s: string): string {
+  const lat = normalizeQuery(s).replace(/./g, ch => HEB_LAT[ch] ?? ch);
+  return lat
+    .replace(/[^a-z]/g, '')
+    .replace(/ph/g, 'p').replace(/f/g, 'p').replace(/w/g, '').replace(/v/g, 'b').replace(/c(?=[eiy])/g, 's').replace(/ck/g, 'k').replace(/[cq]/g, 'k').replace(/z/g, 's')
+    .replace(/[aeiouyh]/g, '')
+    .replace(/(.)\1+/g, '$1');
+}
+
+/** The words of a business name most like the query, by sound-alike key; null when nothing is close. */
+export function closestName(q: string, names: string[]): string | null {
+  const key = nameSkeleton(q);
+  if (key.length < 3) return null;
+  const max = key.length >= 6 ? 1 : 0;
+  let best: { text: string; d: number } | null = null;
+  for (const name of names) {
+    const words = name.split(/\s+/).filter(Boolean);
+    for (let i = 0; i < words.length; i++) {
+      for (let len = 1; len <= 3 && i + len <= words.length; len++) {
+        const text = words.slice(i, i + len).join(' ');
+        const d = distance(key, nameSkeleton(text), max);
+        if (d <= max && (!best || d < best.d || (d === best.d && text.length < best.text.length))) best = { text, d };
+      }
+    }
+  }
+  return best ? best.text.replace(/[,.;:()]+$/g, '') : null;
+}
