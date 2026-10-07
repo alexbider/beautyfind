@@ -52,13 +52,15 @@ export function LoadMore({ shown, total, perLoad }: { shown: number; total: numb
             {pending ? 'טוענים…' : label}
           </button>
         )}
-        <div role="presentation" className={s.progress}>
-          <span style={{ width: `${pct}%` }} />
-        </div>
+        {!(rest > 0 && capped) && (
+          <div role="presentation" className={s.progress}>
+            <span style={{ width: `${pct}%` }} />
+          </div>
+        )}
         <span className={s.shownLine}>
-          <span className="ltr tnum">{shown}</span> מתוך <span className="ltr tnum">{total}</span>
+          {rest > 0 && capped ? 'מוצגים ' : ''}<span className="ltr tnum">{shown}</span>{rest > 0 && capped ? ' העסקים הראשונים' : ''} מתוך <span className="ltr tnum">{total}</span>
         </span>
-        {rest > 0 && capped && <p className={s.cappedNote}>כדי לראות עוד עסקים, צמצמו את החיפוש לאזור, לעיר או לתחום טיפול.</p>}
+        {rest > 0 && capped && <p className={s.cappedNote}>כדי לראות את כל העסקים שמתאימים לכם, בחרו אזור, עיר או תחום טיפול בסינון.</p>}
       </div>
     </>
   );

@@ -694,16 +694,16 @@ function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null
             ) : <span className={styles.dlMissing}>ללא טלפון</span>}
           </dd>
         </div>
-        <div>
-          <dt>דוא״ל</dt>
-          <dd>
-            {p.email ? (
+        {p.email && (
+          <div>
+            <dt>דוא״ל</dt>
+            <dd>
               <TrackedLink branchId={p.id} type="contact_click" href={`mailto:${p.email}`} dir="ltr">
                 {p.email}
               </TrackedLink>
-            ) : <span className={styles.dlMissing}>ללא דוא״ל</span>}
-          </dd>
-        </div>
+            </dd>
+          </div>
+        )}
         {p.websiteUrl && (
           <div>
             <dt>אתר</dt>
@@ -762,5 +762,7 @@ type Cta = { kind: 'book' | 'ask'; href: string; label: string };
 function primaryCta(p: PublicProfile, v: View): Cta | null {
   const medicalOnly = p.treatments.length > 0 ? p.treatments.every(t => t.isMedical) : v.cats.length > 0 && v.cats.every(c => c.isMedical);
   if (v.bookingOnline) return medicalOnly ? { kind: 'book', href: `/consult/${p.slug}`, label: 'קביעת ייעוץ' } : { kind: 'book', href: `/book/${p.slug}`, label: 'קביעת תור' };
+  // An unclaimed listing has no enquiry form: the contact sheet only offers the phone and website, so say so.
+  if (!p.isClaimed) return { kind: 'ask', href: '#bf-contact', label: 'יצירת קשר' };
   return { kind: 'ask', href: '#bf-contact', label: medicalOnly ? 'בקשת ייעוץ' : 'בירור זמינות' };
 }

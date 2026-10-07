@@ -380,7 +380,7 @@
 .stdLede { margin: 12px 0 0; font-size: 16px; line-height: 1.65; color: var(--text); text-wrap: pretty; }
 .stdList { display: grid; margin-top: 8px; }
 .stdRow { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 12px; padding: 18px 0; border-bottom: 1px solid var(--line); }
-.stdNum { font-family: var(--font-display); font-size: 24px; line-height: 1; color: var(--teal); text-align: right; }
+.stdNum { font-family: var(--font-display); font-size: 24px; line-height: 1; color: var(--teal-deep); text-align: right; }
 .stdTitle { margin: 0; font-size: 17px; font-weight: 700; line-height: 1.4; }
 .stdDesc { margin-top: 3px; font-size: 15px; line-height: 1.55; color: var(--text); }
 .stdLinks { display: flex; flex-wrap: wrap; gap: 0 16px; margin-top: 12px; font-size: 14px; font-weight: 700; }
