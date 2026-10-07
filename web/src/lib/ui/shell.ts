@@ -68,6 +68,17 @@ const FOCUSED: RegExp[] = [
   /^\/w\//,
 ];
 
+/**
+ * Business profiles (/<region>/<category>/<slug>) hide the tab bar: the profile has its own bottom action bar
+ * (call, contact, booking), and two stacked bars left too little of the screen for the profile itself.
+ * City listings (/<region>/<city>/<category>) keep it, since their middle segment is a city, not a category.
+ */
+const PROFILE_PATH = /^\/(north|haifa|sharon|dan|jerusalem|shfela|south)\/(facials|medical-aesthetics|plastic-surgery|dental-aesthetics|hair-restoration|hair-salons|hair-removal|brows-lashes|makeup|permanent-makeup|nails|spa-massage|body-contouring|tanning|biz)\/[^/]+\/?$/;
+
+export function hidesTabBar(path: string) {
+  return PROFILE_PATH.test(path);
+}
+
 export function isFocused(path: string) {
   if (path === '/gift/check') return false;
   return FOCUSED.some(r => r.test(path));

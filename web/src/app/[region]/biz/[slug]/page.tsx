@@ -704,7 +704,7 @@ function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null
             </dd>
           </div>
         )}
-        {p.websiteUrl && (
+        {p.websiteUrl && !isMapsUrl(p.websiteUrl) && (
           <div>
             <dt>אתר</dt>
             <dd>
@@ -750,6 +750,11 @@ function BookingCard({ p, v, cta }: { p: PublicProfile; v: View; cta: Cta | null
       </div>
     </div>
   );
+}
+
+/** Some imported listings carry their Google Maps link in the website field; that is not a website. */
+function isMapsUrl(url: string) {
+  return /(^https?:\/\/)?((www\.)?google\.[a-z.]+\/maps|maps\.google\.|goo\.gl\/maps|maps\.app\.goo\.gl)/i.test(url);
 }
 
 type Cta = { kind: 'book' | 'ask'; href: string; label: string };

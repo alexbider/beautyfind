@@ -187,7 +187,7 @@ function ContactDialog({ branch, treatments, preset, serviceId, onClose }: { bra
         {branch.whatsapp && <WhatsAppButton branchId={branch.id} e164={branch.whatsapp} businessName={branch.name} about={preset || undefined} />}
         {branch.phone && <CallButton branchId={branch.id} e164={branch.phone} showNumber />}
         {branch.email && <a href={`mailto:${branch.email}${preset ? `?subject=${encodeURIComponent(`פנייה דרך BeautyFind: ${preset}`)}` : ''}`} className={styles.directLink} dir="ltr">{branch.email}</a>}
-        {branch.website && <a href={branch.website} target="_blank" rel="noopener nofollow" className={styles.directLink}>לאתר העסק</a>}
+        {branch.website && !/(google\.[a-z.]+\/maps|maps\.google\.|goo\.gl\/maps|maps\.app\.goo\.gl)/i.test(branch.website) && <a href={branch.website} target="_blank" rel="noopener nofollow" className={styles.directLink}>לאתר העסק</a>}
         {!branch.whatsapp && !branch.phone && !branch.email && !branch.website && <p className={styles.fine}>לעסק הזה אין עדיין פרטי קשר באתר.</p>}
       </div>
       <p className={styles.fine}>
