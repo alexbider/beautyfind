@@ -1,0 +1,471 @@
+{
+ "/dan/tel-aviv": {
+  "src": "/assets/cities/dan-tel-aviv.webp",
+  "fallback": "/assets/cities/dan-tel-aviv.jpg",
+  "alt": "טיילת החוף של תל אביב ומלונות קו החוף בשקיעה",
+  "width": 1200,
+  "height": 900
+ },
+ "/dan/bat-yam": {
+  "src": "/assets/cities/dan-bat-yam.webp",
+  "fallback": "/assets/cities/dan-bat-yam.jpg",
+  "alt": "טיילת החוף של בת ים ומגדלי המגורים מול הים",
+  "width": 1200,
+  "height": 900
+ },
+ "/dan/bnei-brak": {
+  "src": "/assets/cities/dan-bnei-brak.webp",
+  "fallback": "/assets/cities/dan-bnei-brak.jpg",
+  "alt": "מגדלי המשרדים לאורך דרך ז'בוטינסקי בבני ברק בערב",
+  "width": 1200,
+  "height": 900
+ },
+ "/dan/givat-shmuel": {
+  "src": "/assets/cities/dan-givat-shmuel.webp",
+  "fallback": "/assets/cities/dan-givat-shmuel.jpg",
+  "alt": "מגדלי מגורים ופארק עירוני ירוק בגבעת שמואל",
+  "width": 1200,
+  "height": 900
+ },
+ "/dan/givatayim": {
+  "src": "/assets/cities/dan-givatayim.webp",
+  "fallback": "/assets/cities/dan-givatayim.jpg",
+  "alt": "מצפה הכוכבים בגבעת קוזלובסקי בגבעתיים מול קו הרקיע של תל אביב",
+  "width": 1200,
+  "height": 900
+ },
+ "/dan/holon": {
+  "src": "/assets/cities/dan-holon.webp",
+  "fallback": "/assets/cities/dan-holon.jpg",
+  "alt": "מוזיאון העיצוב חולון ורצועות הפלדה האדומות שתכנן רון ארד",
+  "width": 1200,
+  "height": 900
+ },
+ "/dan/kiryat-ono": {
+  "src": "/assets/cities/dan-kiryat-ono.webp",
+  "fallback": "/assets/cities/dan-kiryat-ono.jpg",
+  "alt": "פארק עירוני עם אגם ושבילי הליכה בקריית אונו",
+  "width": 1200,
+  "height": 900
+ },
+ "/dan/or-yehuda": {
+  "src": "/assets/cities/dan-or-yehuda.webp",
+  "fallback": "/assets/cities/dan-or-yehuda.jpg",
+  "alt": "מרכז מורשת יהדות בבל באור יהודה",
+  "width": 1200,
+  "height": 900
+ },
+ "/dan/petah-tikva": {
+  "src": "/assets/cities/dan-petah-tikva.webp",
+  "fallback": "/assets/cities/dan-petah-tikva.jpg",
+  "alt": "אגם ומדשאות פארק הירקון בפתח תקווה ומגדלי העיר ברקע",
+  "width": 1200,
+  "height": 900
+ },
+ "/dan/ramat-gan": {
+  "src": "/assets/cities/dan-ramat-gan.webp",
+  "fallback": "/assets/cities/dan-ramat-gan.jpg",
+  "alt": "מגדל משה אביב ומתחם הבורסה במבט מאגם הפארק הלאומי ברמת גן",
+  "width": 1200,
+  "height": 900
+ },
+ "/dan/rishon-lezion": {
+  "src": "/assets/cities/dan-rishon-lezion.webp",
+  "fallback": "/assets/cities/dan-rishon-lezion.jpg",
+  "alt": "מגדל המים ובית הכנסת הגדול במרכז ההיסטורי של ראשון לציון",
+  "width": 1200,
+  "height": 900
+ },
+ "/dan/rosh-haayin": {
+  "src": "/assets/cities/dan-rosh-haayin.webp",
+  "fallback": "/assets/cities/dan-rosh-haayin.jpg",
+  "alt": "מבצר מגדל אפק בגן לאומי ירקון תל אפק ליד ראש העין",
+  "width": 1200,
+  "height": 900
+ },
+ "/haifa/binyamina": {
+  "src": "/assets/cities/haifa-binyamina.webp",
+  "fallback": "/assets/cities/haifa-binyamina.jpg",
+  "alt": "כרמים ליד בנימינה ורכס הכרמל ברקע",
+  "width": 1200,
+  "height": 900
+ },
+ "/haifa/hadera": {
+  "src": "/assets/cities/haifa-hadera.webp",
+  "fallback": "/assets/cities/haifa-hadera.jpg",
+  "alt": "החאן ההיסטורי של חדרה בין עצי האקליפטוס",
+  "width": 1200,
+  "height": 900
+ },
+ "/haifa/kiryat-ata": {
+  "src": "/assets/cities/haifa-kiryat-ata.webp",
+  "fallback": "/assets/cities/haifa-kiryat-ata.jpg",
+  "alt": "שכונות קריית אתא ומפרץ חיפה במבט מהגבעות",
+  "width": 1200,
+  "height": 900
+ },
+ "/haifa/kiryat-bialik": {
+  "src": "/assets/cities/haifa-kiryat-bialik.webp",
+  "fallback": "/assets/cities/haifa-kiryat-bialik.jpg",
+  "alt": "שמורת עין אפק וטחנת הקמח ליד קריית ביאליק",
+  "width": 1200,
+  "height": 900
+ },
+ "/haifa/kiryat-motzkin": {
+  "src": "/assets/cities/haifa-kiryat-motzkin.webp",
+  "fallback": "/assets/cities/haifa-kiryat-motzkin.jpg",
+  "alt": "שדרה ירוקה בקריית מוצקין והכרמל באופק",
+  "width": 1200,
+  "height": 900
+ },
+ "/haifa/kiryat-yam": {
+  "src": "/assets/cities/haifa-kiryat-yam.webp",
+  "fallback": "/assets/cities/haifa-kiryat-yam.jpg",
+  "alt": "טיילת החוף של קריית ים מול מפרץ חיפה והכרמל",
+  "width": 1200,
+  "height": 900
+ },
+ "/haifa/nesher": {
+  "src": "/assets/cities/haifa-nesher.webp",
+  "fallback": "/assets/cities/haifa-nesher.jpg",
+  "alt": "הגשרים התלויים בפארק נשר מעל ואדי מיוער בכרמל",
+  "width": 1200,
+  "height": 900
+ },
+ "/haifa/pardes-hanna": {
+  "src": "/assets/cities/haifa-pardes-hanna.webp",
+  "fallback": "/assets/cities/haifa-pardes-hanna.jpg",
+  "alt": "דרך עפר בין אקליפטוסים ופרדסים בפרדס חנה־כרכור",
+  "width": 1200,
+  "height": 900
+ },
+ "/haifa/tirat-carmel": {
+  "src": "/assets/cities/haifa-tirat-carmel.webp",
+  "fallback": "/assets/cities/haifa-tirat-carmel.jpg",
+  "alt": "טירת כרמל למרגלות הכרמל וחוף הים התיכון",
+  "width": 1200,
+  "height": 900
+ },
+ "/haifa/zichron-yaakov": {
+  "src": "/assets/cities/haifa-zichron-yaakov.webp",
+  "fallback": "/assets/cities/haifa-zichron-yaakov.jpg",
+  "alt": "רחוב המייסדים בזכרון יעקב עם בתי אבן ובוגונוויליה",
+  "width": 1200,
+  "height": 900
+ },
+ "/jerusalem/beit-shemesh": {
+  "src": "/assets/cities/jerusalem-beit-shemesh.webp",
+  "fallback": "/assets/cities/jerusalem-beit-shemesh.jpg",
+  "alt": "הרי יהודה ונחל שורק סביב בית שמש",
+  "width": 1200,
+  "height": 900
+ },
+ "/jerusalem/beitar-illit": {
+  "src": "/assets/cities/jerusalem-beitar-illit.webp",
+  "fallback": "/assets/cities/jerusalem-beitar-illit.jpg",
+  "alt": "ביתר עילית על פסגת הר בהרי יהודה",
+  "width": 1200,
+  "height": 900
+ },
+ "/jerusalem/givat-zeev": {
+  "src": "/assets/cities/jerusalem-givat-zeev.webp",
+  "fallback": "/assets/cities/jerusalem-givat-zeev.jpg",
+  "alt": "שרידי האבן בגן לאומי נבי סמואל ליד גבעת זאב",
+  "width": 1200,
+  "height": 900
+ },
+ "/jerusalem/maale-adumim": {
+  "src": "/assets/cities/jerusalem-maale-adumim.webp",
+  "fallback": "/assets/cities/jerusalem-maale-adumim.jpg",
+  "alt": "נוף מדבר יהודה ממעלה אדומים בשקיעה",
+  "width": 1200,
+  "height": 900
+ },
+ "/jerusalem/mevaseret-zion": {
+  "src": "/assets/cities/jerusalem-mevaseret-zion.webp",
+  "fallback": "/assets/cities/jerusalem-mevaseret-zion.jpg",
+  "alt": "מבצר הקסטל בגן הלאומי מעל מבשרת ציון",
+  "width": 1200,
+  "height": 900
+ },
+ "/north/afula": {
+  "src": "/assets/cities/north-afula.webp",
+  "fallback": "/assets/cities/north-afula.jpg",
+  "alt": "שדות עמק יזרעאל ליד עפולה והר תבור באופק",
+  "width": 1200,
+  "height": 900
+ },
+ "/north/akko": {
+  "src": "/assets/cities/north-akko.webp",
+  "fallback": "/assets/cities/north-akko.jpg",
+  "alt": "חומות הים, המגדלור ומסגד אל ג'זאר בעיר העתיקה של עכו",
+  "width": 1200,
+  "height": 900
+ },
+ "/north/beit-shean": {
+  "src": "/assets/cities/north-beit-shean.webp",
+  "fallback": "/assets/cities/north-beit-shean.jpg",
+  "alt": "התיאטרון הרומי ורחוב הקרדו בגן לאומי בית שאן",
+  "width": 1200,
+  "height": 900
+ },
+ "/north/karmiel": {
+  "src": "/assets/cities/north-karmiel.webp",
+  "fallback": "/assets/cities/north-karmiel.jpg",
+  "alt": "כרמיאל וגבעות הגליל הירוקות עם עצי זית",
+  "width": 1200,
+  "height": 900
+ },
+ "/north/kiryat-shmona": {
+  "src": "/assets/cities/north-kiryat-shmona.webp",
+  "fallback": "/assets/cities/north-kiryat-shmona.jpg",
+  "alt": "פסל האריה השואג בתל חי ליד קריית שמונה ועמק החולה",
+  "width": 1200,
+  "height": 900
+ },
+ "/north/migdal-haemek": {
+  "src": "/assets/cities/north-migdal-haemek.webp",
+  "fallback": "/assets/cities/north-migdal-haemek.jpg",
+  "alt": "נוף עמק יזרעאל מרכס מגדל העמק",
+  "width": 1200,
+  "height": 900
+ },
+ "/north/nahariya": {
+  "src": "/assets/cities/north-nahariya.webp",
+  "fallback": "/assets/cities/north-nahariya.jpg",
+  "alt": "טיילת החוף של נהריה ושדרת הגעתון לכיוון הים",
+  "width": 1200,
+  "height": 900
+ },
+ "/north/nazareth": {
+  "src": "/assets/cities/north-nazareth.webp",
+  "fallback": "/assets/cities/north-nazareth.jpg",
+  "alt": "כנסיית הבשורה וכיפתה החרוטית מעל העיר העתיקה בנצרת",
+  "width": 1200,
+  "height": 900
+ },
+ "/north/tiberias": {
+  "src": "/assets/cities/north-tiberias.webp",
+  "fallback": "/assets/cities/north-tiberias.jpg",
+  "alt": "טיילת טבריה וחומות הבזלת לחוף הכנרת",
+  "width": 1200,
+  "height": 900
+ },
+ "/north/tzfat": {
+  "src": "/assets/cities/north-tzfat.webp",
+  "fallback": "/assets/cities/north-tzfat.jpg",
+  "alt": "סמטת אבן ודלתות כחולות ברובע האמנים בצפת",
+  "width": 1200,
+  "height": 900
+ },
+ "/north/yokneam": {
+  "src": "/assets/cities/north-yokneam.webp",
+  "fallback": "/assets/cities/north-yokneam.jpg",
+  "alt": "יקנעם למרגלות הכרמל מעל עמק יזרעאל",
+  "width": 1200,
+  "height": 900
+ },
+ "/sharon/even-yehuda": {
+  "src": "/assets/cities/sharon-even-yehuda.webp",
+  "fallback": "/assets/cities/sharon-even-yehuda.jpg",
+  "alt": "פרדסים ושדות חקלאיים סביב אבן יהודה",
+  "width": 1200,
+  "height": 900
+ },
+ "/sharon/herzliya": {
+  "src": "/assets/cities/sharon-herzliya.webp",
+  "fallback": "/assets/cities/sharon-herzliya.jpg",
+  "alt": "מרינה הרצליה עם יאכטות והטיילת בשקיעה",
+  "width": 1200,
+  "height": 900
+ },
+ "/sharon/hod-hasharon": {
+  "src": "/assets/cities/sharon-hod-hasharon.webp",
+  "fallback": "/assets/cities/sharon-hod-hasharon.jpg",
+  "alt": "פארק עירוני עם אגם ומדשאות בהוד השרון",
+  "width": 1200,
+  "height": 900
+ },
+ "/sharon/kfar-saba": {
+  "src": "/assets/cities/sharon-kfar-saba.webp",
+  "fallback": "/assets/cities/sharon-kfar-saba.jpg",
+  "alt": "האגם ושבילי ההליכה בפארק העירוני של כפר סבא",
+  "width": 1200,
+  "height": 900
+ },
+ "/sharon/kfar-yona": {
+  "src": "/assets/cities/sharon-kfar-yona.webp",
+  "fallback": "/assets/cities/sharon-kfar-yona.jpg",
+  "alt": "נחל אלכסנדר ליד כפר יונה בין קני סוף ואקליפטוסים",
+  "width": 1200,
+  "height": 900
+ },
+ "/sharon/netanya": {
+  "src": "/assets/cities/sharon-netanya.webp",
+  "fallback": "/assets/cities/sharon-netanya.jpg",
+  "alt": "מצוקי נתניה, המעלית לחוף והים התיכון",
+  "width": 1200,
+  "height": 900
+ },
+ "/sharon/raanana": {
+  "src": "/assets/cities/sharon-raanana.webp",
+  "fallback": "/assets/cities/sharon-raanana.jpg",
+  "alt": "האגם והמזרקה בפארק רעננה",
+  "width": 1200,
+  "height": 900
+ },
+ "/sharon/ramat-hasharon": {
+  "src": "/assets/cities/sharon-ramat-hasharon.webp",
+  "fallback": "/assets/cities/sharon-ramat-hasharon.jpg",
+  "alt": "רחוב מגורים ירוק עם עצי פיקוס ברמת השרון",
+  "width": 1200,
+  "height": 900
+ },
+ "/sharon/tel-mond": {
+  "src": "/assets/cities/sharon-tel-mond.webp",
+  "fallback": "/assets/cities/sharon-tel-mond.jpg",
+  "alt": "פרדסי הדרים ודרכים כפריות סביב תל מונד",
+  "width": 1200,
+  "height": 900
+ },
+ "/shfela/gedera": {
+  "src": "/assets/cities/shfela-gedera.webp",
+  "fallback": "/assets/cities/shfela-gedera.jpg",
+  "alt": "בתי הביל\"ויים ההיסטוריים בגדרה ועצי דקל",
+  "width": 1200,
+  "height": 900
+ },
+ "/shfela/lod": {
+  "src": "/assets/cities/shfela-lod.webp",
+  "fallback": "/assets/cities/shfela-lod.jpg",
+  "alt": "כנסיית גאורגיוס הקדוש והמסגד הגדול בעיר העתיקה של לוד",
+  "width": 1200,
+  "height": 900
+ },
+ "/shfela/modiin": {
+  "src": "/assets/cities/shfela-modiin.webp",
+  "fallback": "/assets/cities/shfela-modiin.jpg",
+  "alt": "פארק גבעת טיטורה ונוף העיר מודיעין",
+  "width": 1200,
+  "height": 900
+ },
+ "/shfela/ness-ziona": {
+  "src": "/assets/cities/shfela-ness-ziona.webp",
+  "fallback": "/assets/cities/shfela-ness-ziona.jpg",
+  "alt": "רחוב שקט עם בתי אבן היסטוריים בנס ציונה",
+  "width": 1200,
+  "height": 900
+ },
+ "/shfela/ramla": {
+  "src": "/assets/cities/shfela-ramla.webp",
+  "fallback": "/assets/cities/shfela-ramla.jpg",
+  "alt": "המגדל הלבן ושרידי המסגד הלבן ברמלה",
+  "width": 1200,
+  "height": 900
+ },
+ "/shfela/rehovot": {
+  "src": "/assets/cities/shfela-rehovot.webp",
+  "fallback": "/assets/cities/shfela-rehovot.jpg",
+  "alt": "קמפוס מכון ויצמן למדע ברחובות",
+  "width": 1200,
+  "height": 900
+ },
+ "/shfela/shoham": {
+  "src": "/assets/cities/shfela-shoham.webp",
+  "fallback": "/assets/cities/shfela-shoham.jpg",
+  "alt": "פארקים ירוקים ושכונת וילות בשוהם",
+  "width": 1200,
+  "height": 900
+ },
+ "/shfela/yavne": {
+  "src": "/assets/cities/shfela-yavne.webp",
+  "fallback": "/assets/cities/shfela-yavne.jpg",
+  "alt": "תל יבנה והמבנה בעל הכיפה על ראש התל",
+  "width": 1200,
+  "height": 900
+ },
+ "/south/arad": {
+  "src": "/assets/cities/south-arad.webp",
+  "fallback": "/assets/cities/south-arad.jpg",
+  "alt": "מצודת תל ערד בנגב בשקיעה",
+  "width": 1200,
+  "height": 900
+ },
+ "/south/ashdod": {
+  "src": "/assets/cities/south-ashdod.webp",
+  "fallback": "/assets/cities/south-ashdod.jpg",
+  "alt": "טיילת החוף ומרינה אשדוד עם יאכטות",
+  "width": 1200,
+  "height": 900
+ },
+ "/south/ashkelon": {
+  "src": "/assets/cities/south-ashkelon.webp",
+  "fallback": "/assets/cities/south-ashkelon.jpg",
+  "alt": "עמודים עתיקים בגן לאומי אשקלון מעל הים",
+  "width": 1200,
+  "height": 900
+ },
+ "/south/beer-sheva": {
+  "src": "/assets/cities/south-beer-sheva.webp",
+  "fallback": "/assets/cities/south-beer-sheva.jpg",
+  "alt": "תחנת הרכבת הטורקית והקטר ההיסטורי בעיר העתיקה של באר שבע",
+  "width": 1200,
+  "height": 900
+ },
+ "/south/dimona": {
+  "src": "/assets/cities/south-dimona.webp",
+  "fallback": "/assets/cities/south-dimona.jpg",
+  "alt": "גבעות המדבר סביב דימונה בשקיעה",
+  "width": 1200,
+  "height": 900
+ },
+ "/south/eilat": {
+  "src": "/assets/cities/south-eilat.webp",
+  "fallback": "/assets/cities/south-eilat.jpg",
+  "alt": "חוף האלמוגים באילת ומי ים סוף הצלולים",
+  "width": 1200,
+  "height": 900
+ },
+ "/south/kiryat-gat": {
+  "src": "/assets/cities/south-kiryat-gat.webp",
+  "fallback": "/assets/cities/south-kiryat-gat.jpg",
+  "alt": "שדות חקלאיים בחבל לכיש ליד קריית גת",
+  "width": 1200,
+  "height": 900
+ },
+ "/south/lehavim": {
+  "src": "/assets/cities/south-lehavim.webp",
+  "fallback": "/assets/cities/south-lehavim.jpg",
+  "alt": "יער להב וגבעות צפון הנגב ליד להבים",
+  "width": 1200,
+  "height": 900
+ },
+ "/south/mitzpe-ramon": {
+  "src": "/assets/cities/south-mitzpe-ramon.webp",
+  "fallback": "/assets/cities/south-mitzpe-ramon.jpg",
+  "alt": "יעל נובי על שפת המצוק במצפה רמון מעל מכתש רמון",
+  "width": 1200,
+  "height": 900
+ },
+ "/south/netivot": {
+  "src": "/assets/cities/south-netivot.webp",
+  "fallback": "/assets/cities/south-netivot.jpg",
+  "alt": "מרבד כלניות אדומות בשדות ליד נתיבות, דרום אדום",
+  "width": 1200,
+  "height": 900
+ },
+ "/south/ofakim": {
+  "src": "/assets/cities/south-ofakim.webp",
+  "fallback": "/assets/cities/south-ofakim.jpg",
+  "alt": "פארק נחל הבשור ליד אופקים ועצי אקליפטוס",
+  "width": 1200,
+  "height": 900
+ },
+ "/south/sderot": {
+  "src": "/assets/cities/south-sderot.webp",
+  "fallback": "/assets/cities/south-sderot.jpg",
+  "alt": "חורשות אקליפטוס ושדות ירוקים סביב שדרות",
+  "width": 1200,
+  "height": 900
+ }
+}

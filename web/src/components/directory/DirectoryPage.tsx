@@ -23,6 +23,7 @@ import { Pager } from './Pager';
 import { composeDescription, fitTitle, publicMetadata } from '@/lib/seo/meta';
 import { META_ACTION, composeMetaDescription, joinHe } from '@/lib/seo/metaRules';
 import { seoCityName } from '@/lib/seo/seoName';
+import { cityHero, regionHero } from '@/lib/siteImages';
 import { businessCount, businessPlural } from '@/lib/seo/businessNoun';
 import { breadcrumbNode, faqNode, graph, itemListNode, ldJson, listId, webPageNode } from '@/lib/seo/schema';
 import { ResultsShell } from './ResultsShell';
@@ -98,7 +99,15 @@ export async function directoryMetadata(params: DirParams, searchParams: DirSear
           ],
         });
   // Filtered or sorted lists are noindex; page 2 and on are indexable with their own canonical.
-  return applySeo(s.path, publicMetadata({ path: canonicalHref(s.path, q), title, description, image: `/assets/region-${s.region.slug}.jpg`, noindex: o.total === 0 || hasParams(q) }));
+  return applySeo(s.path, publicMetadata({ path: canonicalHref(s.path, q), title, description, image: heroOf(s).share, noindex: o.total === 0 || hasParams(q) }));
+}
+
+/** The page hero: the city's landmark photo when it has one, otherwise the region photo as before. */
+function heroOf(s: Scope): { src: string; share: string; alt: string } {
+  const city = cityHero(s.path);
+  if (city) return { src: city.src, share: city.fallback, alt: city.alt };
+  const region = regionHero(s.region.slug);
+  return { src: region.src, share: region.src, alt: region.alt ?? `נוף באזור ${s.region.name}` };
 }
 
 // ---------- JSON-LD ----------
@@ -120,7 +129,7 @@ function crumbsOf(s: Scope) {
 /** One graph: the CollectionPage, its breadcrumb, the ItemList of the businesses on it and the FAQ. */
 function pageGraph(s: Scope, title: string, items: DirectoryCard[], faqs: Array<{ q: string; a: string }>) {
   return graph([
-    webPageNode({ path: s.path, type: 'CollectionPage', name: title, image: `/assets/region-${s.region.slug}.jpg`, breadcrumb: true, ...(items.length ? { mainEntityId: listId(s.path) } : {}) }),
+    webPageNode({ path: s.path, type: 'CollectionPage', name: title, image: heroOf(s).share, breadcrumb: true, ...(items.length ? { mainEntityId: listId(s.path) } : {}) }),
     breadcrumbNode(s.path, crumbsOf(s)),
     ...(items.length ? [itemListNode(s.path, title, items.map(c => ({ path: c.href, name: c.name })))] : []),
     ...(faqs.length ? [faqNode(s.path, faqs)] : []),
@@ -168,7 +177,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
 
   const hero = (
     <figure className={styles.hero}>
-      <Image src={`/assets/region-${s.region.slug}.jpg`} alt={`נוף באזור ${s.region.name}`} fill priority sizes="(min-width:1080px) 36vw, (min-width:768px) 100vw, 360px" />
+      <Image src={heroOf(s).src} alt={heroOf(s).alt} fill priority sizes="(min-width:1080px) 36vw, (min-width:768px) 100vw, 360px" />
       <span aria-hidden="true" className={styles.ping} />
     </figure>
   );

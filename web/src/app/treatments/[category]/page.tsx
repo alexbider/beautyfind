@@ -24,6 +24,7 @@ import shared from '@/components/treatments/shared.module.css';
 import { CATEGORIES, CITIES, MENU_REGION_ORDER, categoryBySlug, regionBySlug } from '@/lib/catalog';
 import { marketPricesFor } from '@/lib/server/marketPrices';
 import { listBranches, listingCounts } from '@/lib/server/public';
+import { STATIC_IMAGE_ALT } from '@/lib/siteImages';
 import styles from './page.module.css';
 
 // Design: project/BeautyFind Treatment Category.dc.html (prop `category`: one page per catalog category)
@@ -192,7 +193,7 @@ export default async function TreatmentCategoryPage({ params }: Props) {
           </div>
 
           <figure className={styles.heroFig}>
-            <Image src={body.img} alt={cat.name} fill priority sizes="(min-width:1100px) 36vw, 100vw" style={{ objectFit: 'cover' }} />
+            <Image src={body.img} alt={STATIC_IMAGE_ALT[body.img] ?? cat.name} fill priority sizes="(min-width:1100px) 36vw, 100vw" style={{ objectFit: 'cover' }} />
             <span aria-hidden="true" className={styles.ping} />
           </figure>
         </div>
