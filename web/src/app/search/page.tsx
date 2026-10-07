@@ -25,9 +25,9 @@ import { SearchProvider } from '@/components/search/SearchProvider';
 import s from '@/components/search/search.module.css';
 import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { CATEGORIES, MENU_REGION_ORDER, regionBySlug } from '@/lib/catalog';
-import { listBranches, listingCounts, type ListingFilter } from '@/lib/server/public';
+import { closestBusinessName, listBranches, listingCounts, type ListingFilter } from '@/lib/server/public';
 import { publicMetadata } from '@/lib/seo/meta';
-import { fieldTerms, understand } from '@/lib/search/understand';
+import { fieldTerms, normalizeQuery, understand } from '@/lib/search/understand';
 import { redirect } from 'next/navigation';
 import { cardExtras } from './extras';
 import p from './page.module.css';
@@ -103,6 +103,11 @@ export default async function SearchPage({ searchParams }: Props) {
   }
   const filter: ListingFilter = { ...toFilter(st), categoryTerms: fieldTerms(st.t) };
   const [{ total, items }, counts] = await Promise.all([fetchUpTo(filter, st.page * PER_LOAD), listingCounts()]);
+  // Nothing found: try the business name that sounds most like the query ("נייל טוב" → Nailtov).
+  if (total === 0 && st.q && st.page === 1) {
+    const alt = await closestBusinessName(st.q, filter);
+    if (alt && normalizeQuery(alt) !== normalizeQuery(st.q)) redirect(searchHref({ ...st, q: alt }));
+  }
   const [extras, rescues] = await Promise.all([cardExtras(items.map(i => i.id)), total === 0 ? rescueOptions(st) : Promise.resolve([])]);
 
   const region = regionName(st.region);

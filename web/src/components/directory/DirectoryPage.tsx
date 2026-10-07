@@ -321,7 +321,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
                 </a>
               </div>
 
-              <dl className={styles.stats}>
+              <dl className={styles.stats} tabIndex={0} aria-label="נתוני העמוד">
                 {stats.map(st => (
                   <div key={st.label} className={styles.stat}>
                     <dt>{st.label}</dt>

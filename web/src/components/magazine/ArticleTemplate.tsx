@@ -20,7 +20,10 @@ import styles from './article.module.css';
 export type ArticleRow = Article & { author: Author | null; category: ArticleCategory | null; featuredImage: MediaFile | null };
 export type RelatedRow = Pick<Article, 'id' | 'slug' | 'title' | 'excerpt'> & { category: ArticleCategory | null };
 
-const wrapTables = (html: string) => html.replace(/<table\b/g, `<div class="${styles.tableScroll}" role="region" aria-label="טבלה" tabindex="0"><table`).replace(/<\/table>/g, '</table></div>');
+const wrapTables = (html: string) => {
+  let n = 0;
+  return html.replace(/<table\b/g, () => `<div class="${styles.tableScroll}" role="region" aria-label="טבלה ${++n}" tabindex="0"><table`).replace(/<\/table>/g, '</table></div>');
+};
 
 /** The name of the parent page for the "more on" link: the treatment category when the path is one, else a generic label. */
 export function parentPageLabel(path: string): string {
