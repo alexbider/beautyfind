@@ -25,6 +25,7 @@ import { CATEGORIES, REGIONS, citiesOf, cityPageHref, regionBySlug, type RegionS
 import { nis } from '@/lib/format';
 import { PLAN_MONTHLY_NIS } from '@/lib/pricing';
 import { listBranches, listingCounts } from '@/lib/server/public';
+import { regionHero } from '@/lib/siteImages';
 import styles from './page.module.css';
 
 // Design: project/BeautyFind Region.dc.html
@@ -169,7 +170,7 @@ export default async function RegionPage({ params }: Props) {
           </div>
         </div>
         <figure className={styles.heroFig}>
-          <Image src={`/assets/region-${r}.jpg`} alt={rc.imgAlt} fill priority sizes="(min-width:1180px) 42vw, (min-width:768px) 100vw, 360px" style={{ objectFit: 'cover' }} />
+          <Image src={`/assets/region-${r}.jpg`} alt={regionHero(r).alt ?? `נוף באזור ${region.name}`} fill priority sizes="(min-width:1180px) 42vw, (min-width:768px) 100vw, 360px" style={{ objectFit: 'cover' }} />
         </figure>
       </div>
 

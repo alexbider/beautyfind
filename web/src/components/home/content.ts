@@ -1,5 +1,7 @@
 // Static homepage copy shared by the desktop and phone homepages.
 // Counts, ratings and prices never live here: they come from the database (lib/server/public.ts).
+import STATIC_IMAGE_ALT from '@/data/static-image-alts.json';
+
 /** Per-category teaser line and 24px line icon (bento cards). Keyed by category slug. */
 export const CATEGORY_TEASER: Record<string, { short: string; icon: string[] }> = {
   'medical-aesthetics': { short: 'בוטוקס, חומרי מילוי וטיפולי מחט בליווי רפואי.', icon: ['M13.8 3.6l6.6 6.6', 'M11.7 5.7l6.6 6.6', 'M16.4 8.1l-8.6 8.6L3.6 20.4l3.7-4.2 8.6-8.6', 'M9.2 11.3l3.5 3.5'] },
@@ -39,19 +41,19 @@ export const ARTICLES = [
 ];
 export const PLACEHOLDER_GUIDES: HomeGuide[] = ARTICLES.map((a, i) => ({ ...a, readTime: ['6 דקות קריאה', '5 דקות קריאה', '4 דקות קריאה'][i] }));
 
-/** Alt text for the site's own photos, keyed by path. Listing photos from businesses are not here. */
+/** Alt text for the site's own photos, keyed by path. Listing photos from businesses are not here. The region and
+ *  replaced treatment photos take theirs from src/data/static-image-alts.json. */
 export const IMAGE_ALT: Record<string, string> = {
+  ...STATIC_IMAGE_ALT,
   '/assets/hero-facial.jpg': 'טיפול פנים בקליניקה בתל אביב',
   '/assets/hero-clinic.jpg': 'חדר טיפולים בקליניקה לאסתטיקה',
   '/assets/hero-consult.jpg': 'פינת ישיבה לפגישת ייעוץ בקליניקה',
   '/assets/hero-skin.jpg': 'בקבוק סרום לטיפוח העור',
-  '/assets/biz-facial.jpg': 'טיפול פנים אצל קוסמטיקאית',
-  '/assets/biz-hair.jpg': 'עיצוב שיער במספרה',
   '/assets/biz-laser.jpg': 'טיפול הסרת שיער בלייזר',
   '/assets/biz-medical.jpg': 'הזרקה אסתטית בקליניקה',
-  '/assets/biz-nails.jpg': 'טיפול ציפורניים במכון',
   '/assets/biz-spa.jpg': 'חדר טיפולים בספא',
   '/assets/cat-body.jpg': 'טיפול לעיצוב וחיטוב הגוף',
+  '/assets/cat-tan.jpg': 'טיפול שיזוף בהתזה במכון',
   '/assets/cat-dental.jpg': 'טיפול באסתטיקה דנטלית',
   '/assets/cat-hairrest.jpg': 'פגישת ייעוץ להשתלת שיער',
   '/assets/cat-lashes.jpg': 'הדבקת תוספות ריסים',
