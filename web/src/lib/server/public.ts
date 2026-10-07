@@ -23,6 +23,8 @@ export interface ListingFilter {
   /** Any category the listing carries, primary or secondary; the primary ones come first in the recommended order. */
   category?: string;
   q?: string; // free text: business name, city or treatment name
+  /** Search page only: with a category, also list businesses whose name or published treatments use one of these terms. */
+  categoryTerms?: string[];
   verifiedOnly?: boolean;
   accessible?: boolean;
   freeParking?: boolean;
@@ -69,7 +71,23 @@ function where(f: ListingFilter): Prisma.BranchWhereInput {
   if (f.citySlug) and.push({ city: { slug: f.citySlug } });
   // Every business that offers the category is listed, whether it is its primary category (the one in its
   // address) or a secondary one; listBranches puts the primary ones first.
-  if (f.category) and.push({ categories: { some: { categorySlug: f.category } } });
+  if (f.category) {
+    const inCategory: Prisma.BranchWhereInput = { categories: { some: { categorySlug: f.category } } };
+    const terms = f.categoryTerms ?? [];
+    and.push(
+      terms.length
+        ? {
+            OR: [
+              inCategory,
+              ...terms.flatMap(v => [
+                { name: { contains: v, mode: 'insensitive' as const } },
+                { treatments: { some: { isPublished: true, name: { contains: v, mode: 'insensitive' as const } } } },
+              ]),
+            ],
+          }
+        : inCategory,
+    );
+  }
   if (f.verifiedOnly) and.push({ isClaimed: true });
   if (f.accessible) and.push({ accessible: true });
   if (f.freeParking) and.push({ freeParking: true });

@@ -172,3 +172,29 @@ export function queryTokens(q: string): string[][] {
     return [...forms];
   });
 }
+
+/**
+ * Core terms of each treatment field. On the search page a field chip also lists businesses whose name or
+ * published treatments use one of these terms, so a clinic that offers permanent makeup is found under
+ * איפור קבוע even when its main category is cosmetics. Ambiguous words (פן, לייזר) are left out on purpose.
+ */
+const FIELD_TERMS: Record<string, string[]> = {
+  nails: ['מניקור', 'פדיקור', 'לק', 'ציפורניים'],
+  'medical-aesthetics': ['בוטוקס', 'היאלורונית', 'מילוי'],
+  'plastic-surgery': ['ניתוח פלסטי', 'כירורגיה פלסטית'],
+  'dental-aesthetics': ['הלבנת שיניים', 'ציפוי שיניים', 'ציפויי חרסינה'],
+  'hair-restoration': ['השתלת שיער', 'השתלות שיער', 'נשירה'],
+  'hair-salons': ['תספורת', 'צביעת שיער', 'צבע לשיער', 'החלקה', 'גוונים', 'מספרה'],
+  'hair-removal': ['הסרת שיער', 'אפילציה', 'שעווה'],
+  'brows-lashes': ['גבות', 'ריסים'],
+  makeup: ['איפור ערב', 'איפור כלות', 'איפור מקצועי', 'מאפרת'],
+  'permanent-makeup': ['איפור קבוע', 'מיקרובליידינג'],
+  'spa-massage': ['ספא', 'עיסוי', 'מסאז', "מסאז'", 'מסאג׳'],
+  'body-contouring': ['חיטוב', 'צלוליט', 'הצרת היקפים'],
+  tanning: ['שיזוף'],
+  facials: ['טיפול פנים', 'טיפולי פנים', 'ניקוי פנים', 'פילינג'],
+};
+
+export function fieldTerms(slug: string | null | undefined): string[] {
+  return slug ? FIELD_TERMS[slug] ?? [] : [];
+}

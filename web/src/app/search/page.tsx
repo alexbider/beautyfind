@@ -27,7 +27,7 @@ import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { CATEGORIES, MENU_REGION_ORDER, regionBySlug } from '@/lib/catalog';
 import { listBranches, listingCounts, type ListingFilter } from '@/lib/server/public';
 import { publicMetadata } from '@/lib/seo/meta';
-import { understand } from '@/lib/search/understand';
+import { fieldTerms, understand } from '@/lib/search/understand';
 import { redirect } from 'next/navigation';
 import { cardExtras } from './extras';
 import p from './page.module.css';
@@ -101,7 +101,7 @@ export default async function SearchPage({ searchParams }: Props) {
     const next: SearchState = { ...st, q: u.q, city: st.city ?? u.city, region: st.region ?? u.region, t: st.t ?? u.t };
     if (searchHref(next) !== searchHref(st)) redirect(searchHref(next));
   }
-  const filter = toFilter(st);
+  const filter: ListingFilter = { ...toFilter(st), categoryTerms: fieldTerms(st.t) };
   const [{ total, items }, counts] = await Promise.all([fetchUpTo(filter, st.page * PER_LOAD), listingCounts()]);
   const [extras, rescues] = await Promise.all([cardExtras(items.map(i => i.id)), total === 0 ? rescueOptions(st) : Promise.resolve([])]);
 
