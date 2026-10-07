@@ -55,3 +55,62 @@ export async function setIndexingAction(name: string, value: boolean): Promise<{
   revalidatePath('/sitemap.xml');
   return { ok: true };
 }
+
+// ---------- Google indexing (tab גוגל) ----------
+
+const GOOGLE_FLAGS = ['enabled', 'submitNew', 'submitBacklog', 'inspect'] as const;
+type GoogleFlag = (typeof GOOGLE_FLAGS)[number];
+
+/** One switch of the Google indexing settings, saved and logged. */
+export async function setGoogleIndexingFlagAction(name: string, value: boolean): Promise<{ ok: boolean; error?: string }> {
+  const user = await areaUserOrNull('content', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  if (!(GOOGLE_FLAGS as readonly string[]).includes(name)) return { ok: false, error: 'הגדרה לא מוכרת' };
+  const cur = await platformSettings();
+  await savePlatformSettings(user.id, { googleIndexing: { ...cur.googleIndexing, [name as GoogleFlag]: value } });
+  await db.auditLog.create({ data: { actorId: user.id, action: 'google_indexing_update', subjectType: 'indexing', subjectId: user.id, meta: { ref: name, value } } });
+  revalidatePath('/ops/content');
+  return { ok: true };
+}
+
+const GoogleLimits = z.object({
+  dailySubmitLimit: z.coerce.number().int().min(1).max(2000),
+  dailyInspectLimit: z.coerce.number().int().min(0).max(2000),
+  property: z.string().trim().max(200).refine(v => v === '' || /^sc-domain:[a-z0-9.-]+$/i.test(v) || /^https?:\/\/[^\s]+\/$/.test(v), 'נכס לא תקין: sc-domain:example.com או כתובת מלאה שמסתיימת ב־/'),
+});
+
+export async function saveGoogleIndexingLimitsAction(input: Record<string, string>): Promise<{ ok: true } | { ok: false; error: string }> {
+  const user = await areaUserOrNull('content', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const p = GoogleLimits.safeParse(input);
+  if (!p.success) return { ok: false, error: p.error.issues[0]?.message ?? 'קלט לא תקין' };
+  const cur = await platformSettings();
+  await savePlatformSettings(user.id, { googleIndexing: { ...cur.googleIndexing, ...p.data } });
+  revalidatePath('/ops/content');
+  return { ok: true };
+}
+
+/** Gets a token and inspects the homepage. Changes nothing on Google's side. */
+export async function testGoogleIndexingAction(): Promise<{ ok: true; text: string } | { ok: false; error: string }> {
+  const user = await areaUserOrNull('content', 'view');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { testGoogleConnection } = await import('@/lib/server/googleIndexing');
+  const r = await testGoogleConnection();
+  if (!r.ok) return r;
+  const h = r.homepage;
+  return { ok: true, text: `החיבור תקין. דף הבית: ${h.indexed ? 'באינדקס של גוגל' : 'לא באינדקס'}${h.coverageState ? ` (${h.coverageState})` : ''}` };
+}
+
+/** Runs the indexer now with the saved settings and quotas. */
+export async function runGoogleIndexingAction(): Promise<{ ok: true; text: string } | { ok: false; error: string }> {
+  const user = await areaUserOrNull('content', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { runGoogleIndexing } = await import('@/lib/server/googleIndexing');
+  const r = await runGoogleIndexing({ trigger: 'manual', actorId: user.id });
+  await db.auditLog.create({ data: { actorId: user.id, action: 'google_indexing_run', subjectType: 'indexing', subjectId: user.id, meta: { ref: r.runId ?? r.skipped ?? 'run', submitted: r.submitted, inspected: r.inspected, errors: r.errors } } });
+  revalidatePath('/ops/content');
+  const SKIP: Record<string, string> = { disabled: 'האינדוקס האוטומטי כבוי', not_configured: 'GOOGLE_INDEXING_CREDENTIALS לא מוגדר או לא תקין', site_not_indexable: 'האתר חסום לאינדוקס (STAGING או המתג הראשי)' };
+  if (r.skipped) return r.ok ? { ok: true, text: `לא רץ: ${SKIP[r.skipped] ?? r.skipped}` } : { ok: false, error: SKIP[r.skipped] ?? r.skipped };
+  const text = `נוספו ${r.discovered} כתובות חדשות · נבדקו ${r.inspected} · נשלחו לגוגל ${r.submitted} · שגיאות ${r.errors}${r.note ? ` · ${r.note}` : ''}`;
+  return r.ok ? { ok: true, text } : { ok: false, error: text };
+}

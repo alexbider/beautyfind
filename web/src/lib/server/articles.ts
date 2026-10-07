@@ -333,6 +333,8 @@ export async function publishArticle(actor: Actor, id: string, opts: { note?: st
   }
   try {
     const row = await db.$transaction(tx => applyPublish(tx, actor, cur.id, opts.note));
+    // Tell Google about the new article now instead of at the next scheduled run (src/lib/server/googleIndexing.ts).
+    void import('./googleIndexing').then(m => m.indexSoon([articlePath(row.slug), '/magazine', ...(row.category ? [categoryUrl(row.category.slug)] : [])])).catch(() => undefined);
     return { ok: true, article: articleView(row), canonicalUrl: articleCanonical(row.slug), warnings: issues.filter(i => i.severity === 'warning').map(i => `${i.code}${i.detail ? ` (${i.detail})` : ''}`), revalidated: refresh(row) };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) };

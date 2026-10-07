@@ -1816,6 +1816,54 @@ model PageSeo {
   @@map("page_seo")
 }
 
+// ---------- Google indexing (src/lib/server/googleIndexing.ts) ----------
+// Every URL of the sitemap the indexer has seen, with what Google said about it (URL Inspection) and what
+// was sent to it (Indexing API). Rows are never deleted: a URL that leaves the sitemap gets removedAt.
+
+model IndexingUrl {
+  id               String    @id @default(uuid()) @db.Uuid
+  url              String    @unique
+  path             String
+  type             String
+  /// true for URLs that appeared after the first sync; those are submitted before the backlog.
+  isNew            Boolean   @default(false) @map("is_new")
+  firstSeenAt      DateTime  @default(now()) @map("first_seen_at")
+  removedAt        DateTime? @map("removed_at")
+  /// URL Inspection: null until inspected; true when Google reports it indexed.
+  indexed          Boolean?
+  verdict          String?
+  coverageState    String?   @map("coverage_state")
+  lastCrawlAt      DateTime? @map("last_crawl_at")
+  inspectedAt      DateTime? @map("inspected_at")
+  inspectError     String?   @map("inspect_error")
+  /// Indexing API (URL_UPDATED notifications).
+  submitCount      Int       @default(0) @map("submit_count")
+  lastSubmittedAt  DateTime? @map("last_submitted_at")
+  lastSubmitError  String?   @map("last_submit_error")
+
+  @@index([indexed, lastSubmittedAt])
+  @@index([inspectedAt])
+  @@map("indexing_urls")
+}
+
+/// One run of the indexer (cron, manual or after a publish), for the admin history.
+model IndexingRun {
+  id          String    @id @default(uuid()) @db.Uuid
+  trigger     String
+  actorId     String?   @map("actor_id") @db.Uuid
+  startedAt   DateTime  @default(now()) @map("started_at")
+  finishedAt  DateTime? @map("finished_at")
+  discovered  Int       @default(0)
+  removed     Int       @default(0)
+  inspected   Int       @default(0)
+  submitted   Int       @default(0)
+  errors      Int       @default(0)
+  note        String?
+
+  @@index([startedAt])
+  @@map("indexing_runs")
+}
+
 // ---------- MCP server (/api/mcp): OAuth clients, tokens and authorization codes ----------
 
 // An app registered through OAuth dynamic client registration (claude.ai, Claude Desktop, Claude Code).

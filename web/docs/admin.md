@@ -25,7 +25,7 @@ Two-factor authentication does not exist in the system; the team page says so fo
 | `/ops/moderation` | Reviews queue (publish, reject, remove) and reports from contact messages. |
 | `/ops/verification` and `/ops/import/*` | The existing consoles, unchanged in behaviour, rendered inside the new shell. |
 | `/ops/accounting` | Income ledger, subscriptions and charges, expenses, VAT note, profit and loss, manual platform invoices, accountant export. Platform invoices carry no Israeli VAT (`docs/decisions.md`). |
-| `/ops/content` | Per-page SEO overrides (`PageSeo`, applied through `applySeo`), the indexing switches (below), catalog, sitemap and robots state. |
+| `/ops/content` | Per-page SEO overrides (`PageSeo`, applied through `applySeo`), the indexing switches (below), Google indexing (below), catalog, sitemap and robots state. |
 | `/ops/messages` | The 25-template catalog with what the code already sends, the messaging adapter state, consent counts, editable draft copy. |
 | `/ops/ai` | The operations assistant, AI providers, the MCP server tab (connection steps, tools, personal tokens, connected apps, recent calls), the approvals queue, usage and costs (below). |
 | `/ops/integrations` | Payments and invoicing providers with connected-business counts, messaging, calendars, analytics, import sources, operations. "בדיקה" runs a free check (database round trip, site, GitHub workflow state, key presence). Secrets are never shown. |
@@ -68,6 +68,18 @@ What search engines may index is decided in `src/lib/indexing.ts` (pure) and rea
 - **Single pages:** the noindex box in the עמודים tab (`PageSeo.noindex`). **Single listings:** the "מוסתר ממנועי חיפוש" box in the branch editor's details (`Branch.noindex`); the profile gets noindex and leaves the sitemap.
 - **`STAGING=1`** on the deployment overrides everything: robots.txt disallows all, every response is noindex, the sitemap is empty, and the tab says so. Remove the variable in Vercel to launch; the switches saved meanwhile take effect then.
 - Every public page passes its metadata through `applySeo(path, metadata)`, including the directory pages and the business profile, so the policy is applied in one place. Pages that are noindex by design (search, magazine, filtered directories) keep their own robots metadata.
+
+## Google indexing (Indexing API and URL Inspection)
+
+`src/lib/server/googleIndexing.ts`, settings and history on `/ops/content`, tab גוגל. Off until someone turns it on.
+
+- **Which URLs:** only what `sitemapEntries()` returns, so the indexing policy above decides: staging, the master switch, sections that are off and noindex pages never reach Google. Each URL is a row in `indexing_urls`; one that leaves the sitemap gets `removed_at` and is never sent.
+- **A run** (`runGoogleIndexing`): sync the sitemap (the very first sync marks everything as existing; anything that appears later is `is_new`), inspect what is due with Search Console's URL Inspection API (never inspected first, then not-indexed URLs weekly and indexed ones monthly, within `dailyInspectLimit`), then send `URL_UPDATED` notifications to the Indexing API within `dailySubmitLimit`: new URLs first, then URLs Google reports as not indexed (again after 14 days, at most 3 times), then URLs not inspected yet. Only a `PASS` verdict counts as indexed, and an indexed URL is never sent. A 429 or a permission error stops that API for the run. Each run is a row in `indexing_runs`.
+- **When it runs:** daily at 03:17 UTC by the Vercel cron in `vercel.json` (`GET /api/cron/indexing`, which needs `Authorization: Bearer $CRON_SECRET`; Vercel sends it); right after an article is published (`indexSoon`, limited to the article, its category page and `/magazine`, no inspection); and from the "הרצה עכשיו" button. The "בדיקת חיבור" button gets a token and inspects the homepage, and changes nothing.
+- **Settings** (`googleIndexing` in platform settings): `enabled`, `submitNew`, `submitBacklog`, `inspect`, `dailySubmitLimit` (Google's default quota is 200 a day), `dailyInspectLimit` (2,000 a day per property is the API limit), `property` (empty means `SITE_URL` with a trailing slash; a domain property is `sc-domain:beautyfind.co.il`). Changes are `google_indexing_update` audit rows, manual runs `google_indexing_run`.
+- **Secrets (Vercel, server-side only):** `GOOGLE_INDEXING_CREDENTIALS`, the service account JSON key, raw or base64. It is never stored in the database, logged or shown; the tab shows only the service account email. `CRON_SECRET` for the scheduled route.
+- **Google side:** a Google Cloud project with the Web Search Indexing API and the Google Search Console API enabled, a service account with a JSON key, and that service account added as an **Owner** of the Search Console property (Settings, Users and permissions). Without Owner the Indexing API answers 403.
+- **Caveat:** Google documents the Indexing API for job posting and livestream pages. For other pages it accepts the notification but promises nothing; the sitemap keeps working alongside it.
 
 ## AI completion of listings
 

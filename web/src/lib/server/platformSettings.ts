@@ -42,6 +42,17 @@ export const PlatformSettingsSchema = z.object({
   // index. A missing section means on. STAGING=1 on the deployment blocks everything regardless.
   indexSite: z.boolean().default(true),
   indexSections: z.partialRecord(z.enum(INDEX_SECTION_KEYS), z.boolean()).default({}),
+  // Google indexing (/ops/content, tab גוגל): the Indexing API and URL Inspection runner in
+  // src/lib/server/googleIndexing.ts. Off until a person turns it on; the service account key is an env secret.
+  googleIndexing: z.object({
+    enabled: z.boolean().default(false),
+    submitNew: z.boolean().default(true), // new sitemap URLs go to Google on the next run (and right after an article is published)
+    submitBacklog: z.boolean().default(true), // URLs Google has not indexed (or not inspected yet) are sent within the daily quota
+    inspect: z.boolean().default(true), // URL Inspection API checks which URLs are indexed
+    dailySubmitLimit: z.number().int().min(1).max(2000).default(200), // Google's default Indexing API quota is 200 a day
+    dailyInspectLimit: z.number().int().min(0).max(2000).default(500), // URL Inspection allows 2,000 a day per property
+    property: z.string().trim().max(200).default(''), // Search Console property; empty means SITE_URL with a trailing slash
+  }).prefault({}),
   // Team: per-role area levels (ops is always full). Stored sparsely.
   // partialRecord: zod 4's record with an enum key is exhaustive, and the overrides are sparse.
   rolePermissions: z.partialRecord(z.enum(OPS_ROLES as [string, ...string[]]), z.partialRecord(z.enum(AREAS as [string, ...string[]]), Level)).default({}),

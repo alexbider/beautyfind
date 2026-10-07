@@ -1,23 +1,28 @@
+import type { Prisma } from '@prisma/client';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { AdminShell } from '@/components/ops/AdminShell';
 import { areaLevel, requireArea } from '@/components/ops/guard';
 import { atLeast } from '@/components/ops/roles';
-import { Card, Chip, Empty, Kpis, PageHead, Pills, Table, Tabs, dateIL, int, pct, ui } from '@/components/ops/ui';
+import { Card, Chip, Empty, Kpis, PageHead, Pills, Table, Tabs, dateIL, dateTimeIL, int, pct, ui } from '@/components/ops/ui';
 import { PRIVATE_AREAS, PRIVATE_PREFIXES } from '@/lib/indexing';
 import { indexingPolicy } from '@/lib/server/indexing';
 import { siteUrl } from '@/lib/server/site';
 import { analytics30, articles, categoryRows, indexingFacts, JSON_LD_TYPES, pageRows, sitemapFacts } from './data';
 import { IndexingToggle } from './IndexingControls';
+import { GoogleLimitsForm, GoogleRunButtons, GoogleToggle } from './GoogleIndexingControls';
+import { googleIndexingStatus, propertyOf } from '@/lib/server/googleIndexing';
+import { db } from '@/lib/server/db';
 import { SeoForm } from './SeoForm';
 
 export const metadata: Metadata = { title: 'תוכן ו־SEO · ניהול', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300; // the "run now" button on the Google tab runs the indexer inside this request
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? '';
 const TABS = [
-  { key: 'pages', name: 'עמודים' }, { key: 'indexing', name: 'אינדוקס' }, { key: 'posts', name: 'פוסטים' }, { key: 'categories', name: 'קטגוריות' }, { key: 'settings', name: 'הגדרות SEO' },
+  { key: 'pages', name: 'עמודים' }, { key: 'indexing', name: 'אינדוקס' }, { key: 'google', name: 'גוגל' }, { key: 'posts', name: 'פוסטים' }, { key: 'categories', name: 'קטגוריות' }, { key: 'settings', name: 'הגדרות SEO' },
   { key: 'schema', name: 'סכמה' }, { key: 'redirects', name: 'הפניות ו־404' }, { key: 'sitemap', name: 'מפת אתר ו־robots' }, { key: 'performance', name: 'ביצועים ומעקב' },
 ] as const;
 type Tab = (typeof TABS)[number]['key'];
@@ -70,6 +75,7 @@ export default async function ContentPage({ searchParams }: { searchParams: SP }
         </>
       ) : null}
       {tab === 'indexing' ? <IndexingTab canEdit={canEdit} /> : null}
+      {tab === 'google' ? <GoogleTab canEdit={canEdit} filter={one(sp.g) || 'all'} /> : null}
       {tab === 'posts' ? <PostsTab /> : null}
       {tab === 'categories' ? <CategoriesTab /> : null}
       {tab === 'settings' ? (
@@ -101,6 +107,98 @@ export default async function ContentPage({ searchParams }: { searchParams: SP }
       {tab === 'sitemap' ? <SitemapTab /> : null}
       {tab === 'performance' ? <PerformanceTab /> : null}
     </AdminShell>
+  );
+}
+
+const G_FILTERS: Array<{ key: string; name: string; where: Prisma.IndexingUrlWhereInput }> = [
+  { key: 'all', name: 'הכול', where: {} },
+  { key: 'new', name: 'חדשות', where: { isNew: true } },
+  { key: 'not', name: 'לא באינדקס', where: { indexed: false } },
+  { key: 'yes', name: 'באינדקס', where: { indexed: true } },
+  { key: 'unknown', name: 'לא נבדקו', where: { indexed: null } },
+  { key: 'errors', name: 'שגיאות', where: { OR: [{ inspectError: { not: null } }, { lastSubmitError: { not: null } }] } },
+];
+const TRIGGER: Record<string, string> = { cron: 'מתוזמן', manual: 'ידני', publish: 'אחרי פרסום' };
+
+async function GoogleTab({ canEdit, filter }: { canEdit: boolean; filter: string }) {
+  const st = await googleIndexingStatus();
+  const f = G_FILTERS.find(x => x.key === filter) ?? G_FILTERS[0];
+  const live = { removedAt: null };
+  const [counts, rows, runs] = await Promise.all([
+    Promise.all(G_FILTERS.map(x => db.indexingUrl.count({ where: { ...live, ...x.where } }))),
+    db.indexingUrl.findMany({ where: { ...live, ...f.where }, orderBy: [{ isNew: 'desc' }, { firstSeenAt: 'desc' }], take: 100 }),
+    db.indexingRun.findMany({ orderBy: { startedAt: 'desc' }, take: 10 }),
+  ]);
+  const count = Object.fromEntries(G_FILTERS.map((x, i) => [x.key, counts[i]])) as Record<string, number>;
+  const s = st.settings;
+  const ready = st.configured && st.cron && !st.blockedBy;
+  return (
+    <div className={ui.stack}>
+      <Kpis items={[
+        { label: 'מצב', value: !s.enabled ? 'כבוי' : !st.configured ? 'חסר מפתח' : st.blockedBy ? 'האתר חסום' : 'פעיל', tone: s.enabled && ready ? 'ok' : s.enabled ? 'bad' : 'warn', note: st.clientEmail ? <span dir="ltr">{st.clientEmail}</span> : 'GOOGLE_INDEXING_CREDENTIALS' },
+        { label: 'באינדקס של גוגל', value: int(count.yes), note: `מתוך ${int(count.all)} כתובות במפת האתר` },
+        { label: 'לא באינדקס', value: int(count.not), note: `${int(count.unknown)} עוד לא נבדקו`, tone: count.not ? 'warn' : undefined },
+        { label: 'נשלחו ב־24 שעות', value: int(st.submittedToday), note: `מכסה ${int(s.dailySubmitLimit)} · נבדקו ${int(st.inspectedToday)}/${int(s.dailyInspectLimit)}` },
+      ]} />
+      <div className={ui.grid2}>
+        <Card title="אינדוקס אוטומטי" flush>
+          <GoogleToggle name="enabled" checked={s.enabled} title="הפעלה" sub="המתג הראשי. כבוי: שום דבר לא נשלח לגוגל" canEdit={canEdit} />
+          <GoogleToggle name="submitNew" checked={s.submitNew} title="שליחת עמודים חדשים" sub="עמוד שנוסף למפת האתר נשלח בהרצה הבאה; מאמר נשלח מיד עם הפרסום" canEdit={canEdit} />
+          <GoogleToggle name="submitBacklog" checked={s.submitBacklog} title="שליחת עמודים שלא באינדקס" sub="עמודים קיימים שגוגל לא הכניס לאינדקס, או שעוד לא נבדקו. עד 3 פעמים, כל 14 יום" canEdit={canEdit} />
+          <GoogleToggle name="inspect" checked={s.inspect} title="בדיקת מצב האינדקס" sub="URL Inspection של Search Console: מה באינדקס ומה לא. כל שבוע ללא אינדקס, כל חודש עם" canEdit={canEdit} />
+        </Card>
+        <Card title="מכסות ונכס">
+          <GoogleLimitsForm values={{ dailySubmitLimit: s.dailySubmitLimit, dailyInspectLimit: s.dailyInspectLimit, property: s.property }} defaultProperty={propertyOf({ ...s, property: '' })} canEdit={canEdit} />
+          <div style={{ marginTop: 14 }}><GoogleRunButtons canEdit={canEdit} configured={st.configured} /></div>
+        </Card>
+      </div>
+      <Card title="הגדרת המערכת" sub="מה צריך כדי שהאינדוקס ירוץ">
+        <ul className={ui.list}>
+          <li className={ui.note}>{st.configured ? <Chip tone="ok">מוגדר</Chip> : <Chip tone="bad">חסר</Chip>} <b>מפתח חשבון שירות:</b> <span className={ui.mono}>GOOGLE_INDEXING_CREDENTIALS</span> ב־Vercel (קובץ ה־JSON של חשבון השירות, כמו שהוא או ב־base64). לא נשמר במסד ולא מוצג כאן.</li>
+          <li className={ui.note}>{st.cron ? <Chip tone="ok">מוגדר</Chip> : <Chip tone="bad">חסר</Chip>} <b>הרצה מתוזמנת:</b> <span className={ui.mono}>CRON_SECRET</span> ב־Vercel; הריצה היומית ב־06:17 (שעון ישראל) ב־<span className={ui.mono} dir="ltr">/api/cron/indexing</span>.</li>
+          <li className={ui.note}>{st.blockedBy ? <Chip tone="bad">חסום</Chip> : <Chip tone="ok">פתוח</Chip>} <b>מדיניות האינדוקס:</b> רק כתובות ממפת האתר נשלחות, כך שעמודי noindex, אזורים כבויים וסביבת בדיקה לא מגיעים לגוגל.</li>
+          <li className={ui.note}><b>Search Console:</b> חשבון השירות{st.clientEmail ? <> (<span dir="ltr">{st.clientEmail}</span>)</> : null} צריך להיות <b>Owner</b> בנכס <span dir="ltr" className={ui.mono}>{st.property}</span>, וב־Google Cloud צריכים להיות פעילים Web Search Indexing API ו־Google Search Console API.</li>
+        </ul>
+        <p className={ui.hint} style={{ marginTop: 10 }}>גוגל מגדירה את Indexing API רשמית לעמודי משרות ושידורים חיים; לעמודים אחרים היא לא מתחייבת לאינדוקס. מפת האתר ממשיכה לעבוד במקביל.</p>
+      </Card>
+      <div className={ui.toolbar}>
+        <Pills current={f.key} items={G_FILTERS.map(x => ({ key: x.key, name: x.name, count: count[x.key], href: `/ops/content?tab=google${x.key === 'all' ? '' : `&g=${x.key}`}` }))} />
+      </div>
+      <Card flush>
+        {rows.length ? (
+          <Table head={['כתובת', 'סוג', 'באינדקס', 'מצב בגוגל', 'נבדק', 'נשלח', '']} foot={count[f.key] > rows.length ? `מוצגות ${int(rows.length)} מתוך ${int(count[f.key])}` : undefined}>
+            {rows.map(r => (
+              <tr key={r.id}>
+                <td><a href={r.url} className={ui.rowLink} target="_blank" rel="noreferrer" dir="ltr">{decodeURI(r.path)}</a>{r.isNew ? <span className={ui.sub}>חדש · {dateIL(r.firstSeenAt)}</span> : null}</td>
+                <td className={ui.mono}>{r.type}</td>
+                <td>{r.indexed === true ? <Chip tone="ok">כן</Chip> : r.indexed === false ? <Chip tone="warn">לא</Chip> : <span className={ui.sub}>לא נבדק</span>}</td>
+                <td>{r.coverageState ?? '—'}{r.lastCrawlAt ? <span className={ui.sub}>נסרק {dateIL(r.lastCrawlAt)}</span> : null}</td>
+                <td className={ui.num}>{r.inspectedAt ? dateIL(r.inspectedAt) : '—'}</td>
+                <td className={ui.num}>{r.lastSubmittedAt ? `${dateIL(r.lastSubmittedAt)} (${int(r.submitCount)})` : '—'}</td>
+                <td>{r.inspectError || r.lastSubmitError ? <span className={ui.error}>{r.lastSubmitError ?? r.inspectError}</span> : null}</td>
+              </tr>
+            ))}
+          </Table>
+        ) : <Empty title="אין כתובות" text={count.all ? 'אין כתובות במסנן הזה.' : 'הכתובות ייאספו ממפת האתר בהרצה הראשונה.'} />}
+      </Card>
+      <Card title="הרצות אחרונות" flush>
+        {runs.length ? (
+          <Table head={['התחלה', 'הפעלה', 'חדשות', 'נבדקו', 'נשלחו', 'שגיאות', 'הערה']}>
+            {runs.map(r => (
+              <tr key={r.id}>
+                <td className={ui.num}>{dateTimeIL(r.startedAt)}</td>
+                <td>{TRIGGER[r.trigger] ?? r.trigger}</td>
+                <td className={ui.num}>{int(r.discovered)}</td>
+                <td className={ui.num}>{int(r.inspected)}</td>
+                <td className={ui.num}>{int(r.submitted)}</td>
+                <td className={ui.num}>{r.errors ? <Chip tone="bad">{int(r.errors)}</Chip> : '0'}</td>
+                <td>{r.note ?? (r.finishedAt ? '' : 'רץ')}</td>
+              </tr>
+            ))}
+          </Table>
+        ) : <Empty title="עוד לא היו הרצות" />}
+      </Card>
+    </div>
   );
 }
 
