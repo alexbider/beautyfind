@@ -21,10 +21,10 @@ export interface SearchState {
 }
 
 /** Design props (BeautyFind Search.dc.html data-props). */
-export const PER_LOAD = 6;
+export const PER_LOAD = 12;
 export const MAP_VIEW = true;
 /** Upper bound for "load more" so one URL never asks for an unbounded list. */
-export const MAX_PAGE = 20;
+export const MAX_PAGE = 10;
 
 // Only the features the data model has. The design also lists free consult, doctor on site,
 // injecting nurses, evening hours and Friday hours; those need new Branch fields.

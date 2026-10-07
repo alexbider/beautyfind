@@ -8,6 +8,7 @@ import { seoName } from '../seo/seoName';
 import { consumerAgorot } from '../vat';
 import { db } from './db';
 import { vatRatePct } from './vat';
+import { queryTokens } from '@/lib/search/understand';
 
 // Read-only queries for public pages. Only live branches of live businesses are ever returned.
 // Ratings: Google and BeautyFind are separate fields and are never averaged together (decision A4).
@@ -74,15 +75,15 @@ function where(f: ListingFilter): Prisma.BranchWhereInput {
   if (f.freeParking) and.push({ freeParking: true });
   if (f.onlineBooking && BOOKING_LIVE) and.push({ onlineBooking: true, isClaimed: true }); // booking exists only where an owner runs the listing
   if (f.maxPriceShekels != null) and.push({ treatments: { some: { isPublished: true, priceAgorot: { lte: f.maxPriceShekels * 100 } } } });
-  const q = f.q?.trim();
-  if (q) {
+  // Every word of the query must match somewhere (in any order), in any of its spellings (ג'ל, ג׳ל, גל).
+  for (const forms of queryTokens(f.q ?? '')) {
     and.push({
-      OR: [
-        { name: { contains: q, mode: 'insensitive' } },
-        { cityName: { contains: q, mode: 'insensitive' } },
-        { treatments: { some: { isPublished: true, name: { contains: q, mode: 'insensitive' } } } },
-        { categories: { some: { category: { name: { contains: q, mode: 'insensitive' } } } } },
-      ],
+      OR: forms.flatMap(v => [
+        { name: { contains: v, mode: 'insensitive' as const } },
+        { cityName: { contains: v, mode: 'insensitive' as const } },
+        { treatments: { some: { isPublished: true, name: { contains: v, mode: 'insensitive' as const } } } },
+        { categories: { some: { category: { name: { contains: v, mode: 'insensitive' as const } } } } },
+      ]),
     });
   }
   return { AND: and };

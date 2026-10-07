@@ -27,6 +27,8 @@ import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { CATEGORIES, MENU_REGION_ORDER, regionBySlug } from '@/lib/catalog';
 import { listBranches, listingCounts, type ListingFilter } from '@/lib/server/public';
 import { publicMetadata } from '@/lib/seo/meta';
+import { understand } from '@/lib/search/understand';
+import { redirect } from 'next/navigation';
 import { cardExtras } from './extras';
 import p from './page.module.css';
 
@@ -92,6 +94,13 @@ async function rescueOptions(st: SearchState): Promise<Rescue[]> {
 
 export default async function SearchPage({ searchParams }: Props) {
   const st = parseSearch(await searchParams);
+  // Free text that names a city or a treatment field becomes the matching filter (shown as a removable chip),
+  // so "ציפורניים בחיפה" lists the nail salons in Haifa instead of looking for that exact phrase.
+  if (st.q && st.page === 1) {
+    const u = understand(st.q, { city: st.city, region: st.region, t: st.t });
+    const next: SearchState = { ...st, q: u.q, city: st.city ?? u.city, region: st.region ?? u.region, t: st.t ?? u.t };
+    if (searchHref(next) !== searchHref(st)) redirect(searchHref(next));
+  }
   const filter = toFilter(st);
   const [{ total, items }, counts] = await Promise.all([fetchUpTo(filter, st.page * PER_LOAD), listingCounts()]);
   const [extras, rescues] = await Promise.all([cardExtras(items.map(i => i.id)), total === 0 ? rescueOptions(st) : Promise.resolve([])]);
