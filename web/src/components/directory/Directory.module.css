@@ -159,6 +159,8 @@
   background: #ffffff; border: 1px solid var(--line); border-radius: 16px;
   transition: border-color .22s, box-shadow .22s, transform .22s var(--ease-out);
   animation: bfCard .4s var(--ease-out) backwards;
+  /* Long city lists: the browser skips layout and paint for cards far below the screen until they near it. */
+  content-visibility: auto; contain-intrinsic-size: auto 460px;
 }
 @media (hover: hover) and (pointer: fine) {
   .card:hover { border-color: var(--line-strong); box-shadow: var(--shadow-card); transform: translateY(-2px); }
