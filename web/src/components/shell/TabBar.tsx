@@ -3,7 +3,7 @@
 import { relFor } from '@/lib/routes';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { TABS, isFocused, tabFor, variantFor, type ShellTab } from '@/lib/ui/shell';
+import { TABS, hidesTabBar, isFocused, tabFor, variantFor, type ShellTab } from '@/lib/ui/shell';
 import { haptic } from './haptics';
 import { TabIcon } from './TabIcon';
 import styles from './TabBar.module.css';
@@ -40,7 +40,7 @@ export function TabBar() {
   const variant = variantFor(path);
   const tabs = variant === 'staff' ? null : TABS[variant];
   const active = tabs ? tabFor(tabs, path) : undefined;
-  const hidden = !tabs || isFocused(path);
+  const hidden = !tabs || isFocused(path) || hidesTabBar(path);
   const [badges, setBadges] = useState<Badges>({});
   const restoring = useRef<string | null>(null);
 
