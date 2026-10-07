@@ -159,7 +159,8 @@ export function understand(raw: string, have: { city: string | null; region: Reg
  */
 export function queryTokens(q: string): string[][] {
   const words = normalizeQuery(q).split(' ').filter(Boolean);
-  const kept = words.filter(w => !STOPWORDS.has(w));
+  // טוב/טובה are filler in "מספרה טובה" (dropped by understand) but often part of a business name (נייל טוב).
+  const kept = words.filter(w => !STOPWORDS.has(w) || w === 'טוב' || w === 'טובה');
   return (kept.length ? kept : words).filter(w => w.length >= 2).map(w => {
     const forms = new Set<string>();
     const addForms = (x: string) => {
