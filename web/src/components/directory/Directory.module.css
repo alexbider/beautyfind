@@ -110,7 +110,7 @@
 .panel[data-kind="sort"] { width: 210px; }
 .opt {
   display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 0 10px;
-  border: 0; border-radius: 9px; background: transparent; font: inherit; font-size: 14.5px; font-weight: 500;
+  border: 0; border-radius: 9px; background: transparent; font: inherit; font-size: 16px; font-weight: 500;
   color: var(--navy); text-align: right; cursor: pointer; transition: background .15s;
 }
 @media (hover: hover) and (pointer: fine) {

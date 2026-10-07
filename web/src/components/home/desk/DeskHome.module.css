@@ -292,7 +292,7 @@
 @media (hover: hover) and (pointer: fine) { .stdLinks a:hover { color: var(--navy) !important; } }
 .stdGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 32px; }
 .stdCard { display: flex; flex-direction: column; gap: 10px; min-height: 190px; padding: 24px; border-radius: 20px; background: #ffffff; border: 1px solid var(--line); }
-.stdNum { font-family: var(--font-display); font-size: 32px; line-height: 1; color: var(--teal); text-align: right; }
+.stdNum { font-family: var(--font-display); font-size: 32px; line-height: 1; color: var(--teal-deep); text-align: right; }
 .stdTitle { margin: 0; font-size: 19px; font-weight: 700; line-height: 1.35; }
 .stdDesc { font-size: 15px; line-height: 1.6; color: var(--text); }
 .board {

@@ -189,9 +189,9 @@ export default async function SearchPage({ searchParams }: Props) {
               <LoadMore shown={items.length} total={total} perLoad={PER_LOAD} />
 
               <section aria-labelledby="h-related" className={p.related}>
-                <h2 id="h-related" className={p.relatedTitle}>דפים מאונדקסים לחיפוש הזה</h2>
+                <h2 id="h-related" className={p.relatedTitle}>חיפושים קשורים</h2>
                 <p className={p.relatedLine}>
-                  דפי חיפוש אינם מאונדקסים. אלה דפי האינדקס שמכסים את אותו תחום, כך שהקישורים והדירוג נשארים על כתובת קנונית אחת לכל עיר ולכל תחום טיפול.
+                  עמודי האזור והתחום שמרכזים את כל העסקים, טווחי המחירים והמדריכים לחיפוש הזה.
                 </p>
                 <div className={p.relatedLinks}>
                   {related.map(l => (
