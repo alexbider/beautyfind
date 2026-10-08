@@ -182,6 +182,20 @@ describe('google indexing: a run against a mock Google', { skip }, () => {
     mock.quotaAfter = null;
   });
 
+  it('known not-indexed URLs are sent before inspection, even with no inspection quota left', async () => {
+    const cur = (await settings.platformSettings()).googleIndexing;
+    const sentToday = await db.indexingUrl.count({ where: { lastSubmittedAt: { gte: new Date(Date.now() - 86_400_000) } } });
+    await settings.savePlatformSettings(userId, { googleIndexing: { ...cur, dailySubmitLimit: sentToday + 3, dailyInspectLimit: 0 } });
+    const inspectedBefore = mock.inspected.length;
+    const sent = mock.published.length;
+    const r = await g.runGoogleIndexing({ trigger: 'cron' });
+    assert.equal(r.inspected, 0);
+    assert.equal(mock.inspected.length, inspectedBefore);
+    assert.equal(r.submitted, 3, r.note ?? '');
+    for (const u of mock.published.slice(sent)) assert.notEqual(u, home);
+    await settings.savePlatformSettings(userId, { googleIndexing: { ...cur } });
+  });
+
   it('a publish run is limited to the given paths', async () => {
     const pick = await db.indexingUrl.findFirst({ where: { indexed: false, submitCount: 0 }, orderBy: { url: 'desc' } });
     assert.ok(pick);

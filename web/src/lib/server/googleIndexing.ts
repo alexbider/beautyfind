@@ -31,8 +31,11 @@ const MAX_SUBMITS = 3;
 /** Inspection results go stale: not-indexed URLs are checked again weekly, indexed ones monthly. */
 const REINSPECT_NOT_INDEXED = 7 * DAY;
 const REINSPECT_INDEXED = 30 * DAY;
-/** A run stops starting new Google calls after this, to finish inside the function's time limit. */
-const RUN_BUDGET_MS = 240_000;
+/** A run stops starting new Google calls after this, to finish inside the function's time limit (300 s). */
+const RUN_BUDGET_MS = 250_000;
+/** Inspection stops here, so the last submit step always has time. */
+const INSPECT_BUDGET_MS = 190_000;
+const INSPECT_PARALLEL = 10;
 
 // Tests point the client at a local mock server. Never in production.
 function endpoint(real: string): string {
@@ -226,9 +229,9 @@ export interface RunResult {
 const EMPTY = { discovered: 0, removed: 0, inspected: 0, submitted: 0, errors: 0 };
 
 /**
- * One pass: sync the sitemap into indexing_urls, inspect what is due (within the daily inspection quota),
- * then notify Google, new URLs first and then URLs that are not indexed, within the daily submit quota.
- * `paths` limits the submit step to those paths (after a publish) and skips the inspection step.
+ * One pass: sync the sitemap into indexing_urls; send new URLs and known not-indexed URLs; inspect what is
+ * due (within the daily inspection quota); then send what the inspection found not indexed, all within the
+ * daily submit quota. `paths` limits sending to those paths (after a publish) and skips the inspection.
  */
 export async function runGoogleIndexing(opts: { trigger: RunTrigger; actorId?: string | null; paths?: string[] }): Promise<RunResult> {
   const s = (await platformSettings()).googleIndexing;
@@ -239,7 +242,6 @@ export async function runGoogleIndexing(opts: { trigger: RunTrigger; actorId?: s
   if (policy.staging || !policy.site) return { ok: true, skipped: 'site_not_indexable', ...EMPTY };
 
   const started = Date.now();
-  const inTime = () => Date.now() - started < RUN_BUDGET_MS;
   const run = await db.indexingRun.create({ data: { trigger: opts.trigger, actorId: opts.actorId ?? null } });
   const out = { ...EMPTY };
   const notes: string[] = [];
@@ -258,23 +260,61 @@ export async function runGoogleIndexing(opts: { trigger: RunTrigger; actorId?: s
 
     const since = new Date(Date.now() - DAY);
     const property = propertyOf(s);
+    const scope = opts.paths ? { path: { in: opts.paths } } : {};
+    const retryBefore = new Date(Date.now() - RESUBMIT_AFTER);
+    let submitStopped = false;
+    const submitLeft = async () => s.dailySubmitLimit - (await db.indexingUrl.count({ where: { lastSubmittedAt: { gte: since } } }));
+    const pick = async (where: object, take: number) => take > 0
+      ? db.indexingUrl.findMany({ where: { removedAt: null, ...scope, ...where }, orderBy: [{ firstSeenAt: 'desc' }], take, select: { id: true, url: true } })
+      : [];
+    // Sends URL_UPDATED one URL at a time (Google's default quota is 200 a day, so this is never long) and
+    // stops for the day on a quota answer or a permission refusal.
+    const submit = async (list: Array<{ id: string; url: string }>) => {
+      for (const u of list) {
+        if (submitStopped) return;
+        if (Date.now() - started > RUN_BUDGET_MS) { notes.push('time budget reached'); submitStopped = true; return; }
+        try {
+          await publishUrl(sa, u.url);
+          await db.indexingUrl.update({ where: { id: u.id }, data: { submitCount: { increment: 1 }, lastSubmittedAt: new Date(), lastSubmitError: null } });
+          out.submitted++;
+        } catch (e) {
+          out.errors++;
+          const err = e instanceof GoogleError ? e : null;
+          await db.indexingUrl.update({ where: { id: u.id }, data: { lastSubmitError: (err?.message ?? String(e)).slice(0, 300) } });
+          if (err && (err.quota || err.status === 401 || err.status === 403)) { notes.push(err.quota ? 'submit quota reached' : 'submit refused: permission'); submitStopped = true; return; }
+        }
+      }
+    };
+    const notIndexedWhere = (exclude: string[]) => ({ id: { notIn: exclude }, indexed: false, submitCount: { lt: MAX_SUBMITS }, OR: [{ lastSubmittedAt: null }, { lastSubmittedAt: { lt: retryBefore } }] });
 
-    // 2. Inspect: never-inspected first, then stale results. Skipped after a publish (that run only submits).
+    // 2. Submit what is already known first, so the daily quota is used even when inspection takes the
+    //    rest of the run: new URLs, then URLs an earlier inspection found not indexed.
+    if (s.submitNew || s.submitBacklog) {
+      const left = await submitLeft();
+      const fresh = s.submitNew ? await pick({ isNew: true, submitCount: 0, OR: [{ indexed: false }, { indexed: null }] }, left) : [];
+      const known = s.submitBacklog ? await pick(notIndexedWhere(fresh.map(f => f.id)), left - fresh.length) : [];
+      await submit([...fresh, ...known]);
+    }
+
+    // 3. Inspect: never-inspected first, then stale results, ten at a time, until the inspection share of
+    //    the run is used. Skipped after a publish (that run only submits).
     if (s.inspect && !opts.paths) {
       const left = s.dailyInspectLimit - (await db.indexingUrl.count({ where: { inspectedAt: { gte: since } } }));
       if (left > 0) {
         const now = Date.now();
+        const stale = new Date(now - REINSPECT_NOT_INDEXED);
         const due = await db.indexingUrl.findMany({
-          where: { removedAt: null, OR: [{ inspectedAt: null }, { indexed: false, inspectedAt: { lt: new Date(now - REINSPECT_NOT_INDEXED) } }, { indexed: null, inspectedAt: { lt: new Date(now - REINSPECT_NOT_INDEXED) } }, { indexed: true, inspectedAt: { lt: new Date(now - REINSPECT_INDEXED) } }] },
+          where: { removedAt: null, OR: [{ inspectedAt: null }, { indexed: false, inspectedAt: { lt: stale } }, { indexed: null, inspectedAt: { lt: stale } }, { indexed: true, inspectedAt: { lt: new Date(now - REINSPECT_INDEXED) } }] },
           orderBy: [{ isNew: 'desc' }, { inspectedAt: { sort: 'asc', nulls: 'first' } }, { firstSeenAt: 'asc' }],
           take: left,
           select: { id: true, url: true },
         });
-        for (let i = 0; i < due.length && inTime(); i += 5) {
-          const batch = due.slice(i, i + 5);
+        for (let i = 0; i < due.length; i += INSPECT_PARALLEL) {
+          if (Date.now() - started > INSPECT_BUDGET_MS) { notes.push(`inspection paused: ${due.length - i} due`); break; }
+          const batch = due.slice(i, i + INSPECT_PARALLEL);
           const results = await Promise.allSettled(batch.map(u => inspectUrl(sa, u.url, property)));
           let stop = false;
-          for (const [k, r] of results.entries()) {
+          await Promise.all(results.map(async (r, k) => {
             if (r.status === 'fulfilled') {
               await db.indexingUrl.update({ where: { id: batch[k].id }, data: { ...r.value, inspectedAt: new Date(), inspectError: null } });
               out.inspected++;
@@ -284,36 +324,20 @@ export async function runGoogleIndexing(opts: { trigger: RunTrigger; actorId?: s
               await db.indexingUrl.update({ where: { id: batch[k].id }, data: { inspectError: (err?.message ?? String(r.reason)).slice(0, 300) } });
               if (err && (err.quota || err.status === 401 || err.status === 403)) stop = true;
             }
-          }
+          }));
           if (stop) { notes.push('inspection stopped: quota or permission'); break; }
         }
       }
     }
 
-    // 3. Submit within the daily quota: new URLs, then not-indexed, then never-inspected backlog.
-    const left = s.dailySubmitLimit - (await db.indexingUrl.count({ where: { lastSubmittedAt: { gte: since } } }));
-    if (left > 0 && (s.submitNew || s.submitBacklog)) {
-      const retryBefore = new Date(Date.now() - RESUBMIT_AFTER);
-      const scope = opts.paths ? { path: { in: opts.paths } } : {};
-      const pick = async (where: object, take: number) => take > 0
-        ? db.indexingUrl.findMany({ where: { removedAt: null, ...scope, ...where }, orderBy: [{ firstSeenAt: 'desc' }], take, select: { id: true, url: true } })
-        : [];
-      const fresh = s.submitNew ? await pick({ isNew: true, submitCount: 0, OR: [{ indexed: false }, { indexed: null }] }, left) : [];
-      const notIndexed = s.submitBacklog ? await pick({ id: { notIn: fresh.map(f => f.id) }, indexed: false, submitCount: { lt: MAX_SUBMITS }, OR: [{ lastSubmittedAt: null }, { lastSubmittedAt: { lt: retryBefore } }] }, left - fresh.length) : [];
-      const unknown = s.submitBacklog ? await pick({ id: { notIn: [...fresh, ...notIndexed].map(f => f.id) }, indexed: null, submitCount: 0 }, left - fresh.length - notIndexed.length) : [];
-      for (const u of [...fresh, ...notIndexed, ...unknown]) {
-        if (!inTime()) { notes.push('time budget reached'); break; }
-        try {
-          await publishUrl(sa, u.url);
-          await db.indexingUrl.update({ where: { id: u.id }, data: { submitCount: { increment: 1 }, lastSubmittedAt: new Date(), lastSubmitError: null } });
-          out.submitted++;
-        } catch (e) {
-          out.errors++;
-          const err = e instanceof GoogleError ? e : null;
-          await db.indexingUrl.update({ where: { id: u.id }, data: { lastSubmitError: (err?.message ?? String(e)).slice(0, 300) } });
-          if (err && (err.quota || err.status === 401 || err.status === 403)) { notes.push(err.quota ? 'submit quota reached' : 'submit refused: permission'); break; }
-        }
-      }
+    // 4. Submit what this run's inspection found not indexed, with what is left of the quota. URLs never
+    //    inspected are sent only when inspection is off: with it on, they wait for their check, so the quota
+    //    is not spent on pages Google already has.
+    if (s.submitBacklog && !submitStopped) {
+      const left = await submitLeft();
+      const found = await pick(notIndexedWhere([]), left);
+      const unknown = !s.inspect ? await pick({ id: { notIn: found.map(f => f.id) }, indexed: null, submitCount: 0 }, left - found.length) : [];
+      await submit([...found, ...unknown]);
     }
   } catch (e) {
     out.errors++;

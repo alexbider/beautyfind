@@ -158,7 +158,7 @@ async function GoogleTab({ canEdit, filter }: { canEdit: boolean; filter: string
       <Card title="הגדרת המערכת" sub="מה צריך כדי שהאינדוקס ירוץ">
         <ul className={ui.list}>
           <li className={ui.note}>{st.configured ? <Chip tone="ok">מוגדר</Chip> : <Chip tone="bad">חסר</Chip>} <b>מפתח חשבון שירות:</b> מעלים אותו בכרטיס ״מפתח Google״ למעלה (נשמר מוצפן ולא מוצג שוב), או מגדירים <span className={ui.mono}>GOOGLE_INDEXING_CREDENTIALS</span> ב־Vercel.</li>
-          <li className={ui.note}>{st.cron ? <Chip tone="ok">מוגדר</Chip> : <Chip tone="bad">חסר</Chip>} <b>הרצה מתוזמנת:</b> <span className={ui.mono}>CRON_SECRET</span> ב־Vercel; הריצה היומית ב־06:17 (שעון ישראל) ב־<span className={ui.mono} dir="ltr">/api/cron/indexing</span>.</li>
+          <li className={ui.note}>{st.cron ? <Chip tone="ok">מוגדר</Chip> : <Chip tone="bad">חסר</Chip>} <b>הרצה מתוזמנת:</b> <span className={ui.mono}>CRON_SECRET</span> ב־Vercel; שתי ריצות ביום, ב־06:17 וב־18:17 (שעון ישראל), בכל אחת שליחה לפני הבדיקה כך שהמכסה היומית מנוצלת ב־<span className={ui.mono} dir="ltr">/api/cron/indexing</span>.</li>
           <li className={ui.note}>{st.blockedBy ? <Chip tone="bad">חסום</Chip> : <Chip tone="ok">פתוח</Chip>} <b>מדיניות האינדוקס:</b> רק כתובות ממפת האתר נשלחות, כך שעמודי noindex, אזורים כבויים וסביבת בדיקה לא מגיעים לגוגל.</li>
           <li className={ui.note}><b>Search Console:</b> חשבון השירות{st.clientEmail ? <> (<span dir="ltr">{st.clientEmail}</span>)</> : null} צריך להיות <b>Owner</b> בנכס <span dir="ltr" className={ui.mono}>{st.property}</span>, וב־Google Cloud צריכים להיות פעילים Web Search Indexing API ו־Google Search Console API.</li>
         </ul>

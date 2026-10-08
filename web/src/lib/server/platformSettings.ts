@@ -50,7 +50,7 @@ export const PlatformSettingsSchema = z.object({
     submitBacklog: z.boolean().default(true), // URLs Google has not indexed (or not inspected yet) are sent within the daily quota
     inspect: z.boolean().default(true), // URL Inspection API checks which URLs are indexed
     dailySubmitLimit: z.number().int().min(1).max(2000).default(200), // Google's default Indexing API quota is 200 a day
-    dailyInspectLimit: z.number().int().min(0).max(2000).default(500), // URL Inspection allows 2,000 a day per property
+    dailyInspectLimit: z.number().int().min(0).max(2000).default(2000), // URL Inspection allows 2,000 a day per property
     property: z.string().trim().max(200).default(''), // Search Console property; empty means SITE_URL with a trailing slash
   }).prefault({}),
   // Team: per-role area levels (ops is always full). Stored sparsely.
