@@ -2,6 +2,7 @@ import 'server-only';
 import { createSign } from 'node:crypto';
 import { after } from 'next/server';
 import { db } from './db';
+import { open, seal } from './secure';
 import { indexingPolicy } from './indexing';
 import { platformSettings, type PlatformSettings } from './platformSettings';
 import { siteUrl } from './site';
@@ -11,8 +12,9 @@ import { sitemapEntries } from './sitemapEntries';
 // of them Google has indexed, and notifies the Indexing API (URL_UPDATED) about new URLs first and then
 // about URLs Google has not indexed, within the daily quotas set on /ops/content (tab גוגל).
 //
-// Credentials: a Google Cloud service account, as the JSON key in GOOGLE_INDEXING_CREDENTIALS (raw JSON
-// or base64). Server-side only; the key is never logged, stored in the database or shown in the admin.
+// Credentials: a Google Cloud service account JSON key, either uploaded on the Google tab (stored in
+// platform_secrets, encrypted with DATA_KEY) or set as GOOGLE_INDEXING_CREDENTIALS on Vercel (raw JSON or
+// base64), which wins when both exist. Server-side only: the key is never logged or shown, only its email.
 // The service account must be an Owner of the Search Console property, or the Indexing API refuses it.
 // The source of URLs is sitemapEntries(), so the indexer follows the indexing policy exactly: staging,
 // the master switch, section switches and noindex pages never reach Google.
@@ -53,6 +55,44 @@ export function serviceAccount(raw = process.env.GOOGLE_INDEXING_CREDENTIALS): S
   } catch {
     return null;
   }
+}
+
+const SECRET_KEY = 'google_indexing_credentials';
+
+export type KeySource = 'env' | 'admin';
+
+/** The service account in use: GOOGLE_INDEXING_CREDENTIALS first, then the key uploaded in the admin. */
+export async function resolveServiceAccount(): Promise<{ sa: ServiceAccount; source: KeySource } | null> {
+  const env = serviceAccount();
+  if (env) return { sa: env, source: 'env' };
+  const row = await db.platformSecret.findUnique({ where: { key: SECRET_KEY } }).catch(() => null);
+  if (!row) return null;
+  try {
+    const sa = serviceAccount(open<string>(row.valueEnc));
+    return sa ? { sa, source: 'admin' } : null;
+  } catch {
+    return null; // DATA_KEY changed or missing: treated as not configured
+  }
+}
+
+/** Checks an uploaded key (parses it and signs once with it), then stores it encrypted. Returns only the email. */
+export async function saveServiceAccountKey(raw: string, actorId: string): Promise<{ ok: true; clientEmail: string } | { ok: false; error: string }> {
+  const sa = serviceAccount(raw);
+  if (!sa) return { ok: false, error: 'זה לא קובץ מפתח של חשבון שירות: חסרים client_email או private_key' };
+  try {
+    createSign('RSA-SHA256').update('check').sign(sa.privateKey);
+  } catch {
+    return { ok: false, error: 'המפתח הפרטי שבקובץ פגום' };
+  }
+  const valueEnc = seal(JSON.stringify({ client_email: sa.clientEmail, private_key: sa.privateKey }));
+  await db.platformSecret.upsert({ where: { key: SECRET_KEY }, create: { key: SECRET_KEY, valueEnc, label: sa.clientEmail, updatedById: actorId }, update: { valueEnc, label: sa.clientEmail, updatedById: actorId } });
+  cached = null;
+  return { ok: true, clientEmail: sa.clientEmail };
+}
+
+export async function removeServiceAccountKey(): Promise<void> {
+  await db.platformSecret.deleteMany({ where: { key: SECRET_KEY } });
+  cached = null;
 }
 
 const b64url = (v: string | Buffer) => Buffer.from(v).toString('base64url');
@@ -126,6 +166,7 @@ export async function publishUrl(sa: ServiceAccount, url: string): Promise<void>
 export interface IndexingStatus {
   configured: boolean;
   clientEmail: string | null;
+  keySource: KeySource | null;
   property: string;
   settings: PlatformSettings['googleIndexing'];
   blockedBy: 'staging' | 'site' | null;
@@ -135,16 +176,16 @@ export interface IndexingStatus {
 }
 
 export async function googleIndexingStatus(): Promise<IndexingStatus> {
-  const [s, policy] = await Promise.all([platformSettings(), indexingPolicy()]);
-  const sa = serviceAccount();
+  const [s, policy, key] = await Promise.all([platformSettings(), indexingPolicy(), resolveServiceAccount()]);
   const since = new Date(Date.now() - DAY);
   const [submittedToday, inspectedToday] = await Promise.all([
     db.indexingUrl.count({ where: { lastSubmittedAt: { gte: since } } }),
     db.indexingUrl.count({ where: { inspectedAt: { gte: since } } }),
   ]);
   return {
-    configured: !!sa,
-    clientEmail: sa?.clientEmail ?? null,
+    configured: !!key,
+    clientEmail: key?.sa.clientEmail ?? null,
+    keySource: key?.source ?? null,
     property: propertyOf(s.googleIndexing),
     settings: s.googleIndexing,
     blockedBy: policy.staging ? 'staging' : !policy.site ? 'site' : null,
@@ -156,8 +197,8 @@ export async function googleIndexingStatus(): Promise<IndexingStatus> {
 
 /** Test connection: gets a token and inspects the homepage. Read-only on Google's side. */
 export async function testGoogleConnection(): Promise<{ ok: true; homepage: InspectionState } | { ok: false; error: string }> {
-  const sa = serviceAccount();
-  if (!sa) return { ok: false, error: 'GOOGLE_INDEXING_CREDENTIALS לא מוגדר או לא תקין' };
+  const sa = (await resolveServiceAccount())?.sa;
+  if (!sa) return { ok: false, error: 'לא הועלה מפתח של חשבון שירות' };
   const s = (await platformSettings()).googleIndexing;
   try {
     return { ok: true, homepage: await inspectUrl(sa, `${siteUrl().replace(/\/+$/, '')}/`, propertyOf(s)) };
@@ -192,7 +233,7 @@ const EMPTY = { discovered: 0, removed: 0, inspected: 0, submitted: 0, errors: 0
 export async function runGoogleIndexing(opts: { trigger: RunTrigger; actorId?: string | null; paths?: string[] }): Promise<RunResult> {
   const s = (await platformSettings()).googleIndexing;
   const policy = await indexingPolicy();
-  const sa = serviceAccount();
+  const sa = (await resolveServiceAccount())?.sa;
   if (!s.enabled) return { ok: true, skipped: 'disabled', ...EMPTY };
   if (!sa) return { ok: false, skipped: 'not_configured', ...EMPTY };
   if (policy.staging || !policy.site) return { ok: true, skipped: 'site_not_indexable', ...EMPTY };
@@ -291,7 +332,7 @@ export async function runGoogleIndexing(opts: { trigger: RunTrigger; actorId?: s
 export function indexSoon(paths: string[]): void {
   const job = async () => {
     const s = (await platformSettings()).googleIndexing;
-    if (!s.enabled || !s.submitNew || !serviceAccount()) return;
+    if (!s.enabled || !s.submitNew || !(await resolveServiceAccount())) return;
     await runGoogleIndexing({ trigger: 'publish', paths });
   };
   const safe = () => job().catch(() => undefined);

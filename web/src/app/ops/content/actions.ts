@@ -109,8 +109,31 @@ export async function runGoogleIndexingAction(): Promise<{ ok: true; text: strin
   const r = await runGoogleIndexing({ trigger: 'manual', actorId: user.id });
   await db.auditLog.create({ data: { actorId: user.id, action: 'google_indexing_run', subjectType: 'indexing', subjectId: user.id, meta: { ref: r.runId ?? r.skipped ?? 'run', submitted: r.submitted, inspected: r.inspected, errors: r.errors } } });
   revalidatePath('/ops/content');
-  const SKIP: Record<string, string> = { disabled: 'האינדוקס האוטומטי כבוי', not_configured: 'GOOGLE_INDEXING_CREDENTIALS לא מוגדר או לא תקין', site_not_indexable: 'האתר חסום לאינדוקס (STAGING או המתג הראשי)' };
+  const SKIP: Record<string, string> = { disabled: 'האינדוקס האוטומטי כבוי', not_configured: 'לא הועלה מפתח של חשבון שירות', site_not_indexable: 'האתר חסום לאינדוקס (STAGING או המתג הראשי)' };
   if (r.skipped) return r.ok ? { ok: true, text: `לא רץ: ${SKIP[r.skipped] ?? r.skipped}` } : { ok: false, error: SKIP[r.skipped] ?? r.skipped };
   const text = `נוספו ${r.discovered} כתובות חדשות · נבדקו ${r.inspected} · נשלחו לגוגל ${r.submitted} · שגיאות ${r.errors}${r.note ? ` · ${r.note}` : ''}`;
   return r.ok ? { ok: true, text } : { ok: false, error: text };
+}
+
+/** Uploads the service account JSON key; stored encrypted (platform_secrets). Only the account email comes back. */
+export async function saveGoogleKeyAction(raw: string): Promise<{ ok: true; text: string } | { ok: false; error: string }> {
+  const user = await areaUserOrNull('content', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  if (raw.length > 20_000) return { ok: false, error: 'הקובץ גדול מדי לקובץ מפתח' };
+  const { saveServiceAccountKey } = await import('@/lib/server/googleIndexing');
+  const r = await saveServiceAccountKey(raw, user.id);
+  if (!r.ok) return r;
+  await db.auditLog.create({ data: { actorId: user.id, action: 'google_indexing_key', subjectType: 'indexing', subjectId: user.id, meta: { ref: r.clientEmail, op: 'save' } } });
+  revalidatePath('/ops/content');
+  return { ok: true, text: `המפתח נשמר: ${r.clientEmail}` };
+}
+
+export async function removeGoogleKeyAction(): Promise<{ ok: true; text: string } | { ok: false; error: string }> {
+  const user = await areaUserOrNull('content', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { removeServiceAccountKey } = await import('@/lib/server/googleIndexing');
+  await removeServiceAccountKey();
+  await db.auditLog.create({ data: { actorId: user.id, action: 'google_indexing_key', subjectType: 'indexing', subjectId: user.id, meta: { ref: 'removed', op: 'remove' } } });
+  revalidatePath('/ops/content');
+  return { ok: true, text: 'המפתח הוסר' };
 }

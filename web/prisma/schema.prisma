@@ -1846,6 +1846,18 @@ model IndexingUrl {
   @@map("indexing_urls")
 }
 
+/// Platform-level secrets entered in the admin (today: the Google indexing service account key), sealed with
+/// DATA_KEY (src/lib/server/seal-core.ts). Only `label` (a non-secret hint such as the account email) is ever shown.
+model PlatformSecret {
+  key         String   @id
+  valueEnc    String   @map("value_enc")
+  label       String?
+  updatedById String?  @map("updated_by_id") @db.Uuid
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("platform_secrets")
+}
+
 /// One run of the indexer (cron, manual or after a publish), for the admin history.
 model IndexingRun {
   id          String    @id @default(uuid()) @db.Uuid

@@ -27,6 +27,7 @@ export function IntegrationCard({ item }: { item: Integration }) {
       <div className={styles.note}>{item.note}</div>
       <div className={styles.where}>הגדרה: <span dir="ltr">{item.where}</span></div>
       <div className={styles.actions}>
+        {item.href ? <a href={item.href} className={`${ui.btn} ${ui.small} ${ui.primary}`}>הגדרה</a> : null}
         {item.checkable ? (
           <button
             type="button" className={`${ui.btn} ${ui.small}`} disabled={pending}

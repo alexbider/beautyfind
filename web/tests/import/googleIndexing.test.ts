@@ -211,4 +211,35 @@ describe('google indexing: a run against a mock Google', { skip }, () => {
     process.env.GOOGLE_INDEXING_CREDENTIALS = keep;
     assert.equal((await g.googleIndexingStatus()).clientEmail, 'indexer@beautyfind-test.iam.gserviceaccount.com');
   });
+
+  it('a key uploaded in the admin is stored encrypted, used for runs, and can be removed', async () => {
+    const keep = process.env.GOOGLE_INDEXING_CREDENTIALS;
+    delete process.env.GOOGLE_INDEXING_CREDENTIALS;
+    try {
+      for (const bad of ['', 'not json', JSON.stringify({ client_email: 'a@b.c', private_key: '-----BEGIN PRIVATE KEY-----\nbroken\n-----END PRIVATE KEY-----' })]) {
+        assert.equal((await g.saveServiceAccountKey(bad, userId)).ok, false, bad);
+      }
+      const r = await g.saveServiceAccountKey(KEY_JSON, userId);
+      assert.deepEqual(r, { ok: true, clientEmail: 'indexer@beautyfind-test.iam.gserviceaccount.com' });
+      const row = await db.platformSecret.findUnique({ where: { key: 'google_indexing_credentials' } });
+      assert.ok(row?.valueEnc.startsWith('v1.'), 'sealed with DATA_KEY');
+      assert.ok(!row?.valueEnc.includes('PRIVATE KEY') && !row?.valueEnc.includes('indexer@'), 'nothing readable in the column');
+      assert.equal(row?.label, 'indexer@beautyfind-test.iam.gserviceaccount.com');
+      const st = await g.googleIndexingStatus();
+      assert.equal(st.configured, true);
+      assert.equal(st.keySource, 'admin');
+      const tokens = mock.tokens;
+      const run = await g.runGoogleIndexing({ trigger: 'manual' });
+      assert.equal(run.skipped, undefined);
+      assert.ok(mock.tokens >= tokens, 'the run authenticated with the stored key');
+      process.env.GOOGLE_INDEXING_CREDENTIALS = keep;
+      assert.equal((await g.googleIndexingStatus()).keySource, 'env', 'the Vercel variable wins when both exist');
+      delete process.env.GOOGLE_INDEXING_CREDENTIALS;
+      await g.removeServiceAccountKey();
+      assert.equal((await g.googleIndexingStatus()).configured, false);
+    } finally {
+      process.env.GOOGLE_INDEXING_CREDENTIALS = keep;
+      await db.platformSecret.deleteMany({ where: { key: 'google_indexing_credentials' } });
+    }
+  });
 });

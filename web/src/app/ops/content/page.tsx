@@ -10,7 +10,7 @@ import { indexingPolicy } from '@/lib/server/indexing';
 import { siteUrl } from '@/lib/server/site';
 import { analytics30, articles, categoryRows, indexingFacts, JSON_LD_TYPES, pageRows, sitemapFacts } from './data';
 import { IndexingToggle } from './IndexingControls';
-import { GoogleLimitsForm, GoogleRunButtons, GoogleToggle } from './GoogleIndexingControls';
+import { GoogleKeyForm, GoogleLimitsForm, GoogleRunButtons, GoogleToggle } from './GoogleIndexingControls';
 import { googleIndexingStatus, propertyOf } from '@/lib/server/googleIndexing';
 import { db } from '@/lib/server/db';
 import { SeoForm } from './SeoForm';
@@ -135,11 +135,14 @@ async function GoogleTab({ canEdit, filter }: { canEdit: boolean; filter: string
   return (
     <div className={ui.stack}>
       <Kpis items={[
-        { label: 'מצב', value: !s.enabled ? 'כבוי' : !st.configured ? 'חסר מפתח' : st.blockedBy ? 'האתר חסום' : 'פעיל', tone: s.enabled && ready ? 'ok' : s.enabled ? 'bad' : 'warn', note: st.clientEmail ? <span dir="ltr">{st.clientEmail}</span> : 'GOOGLE_INDEXING_CREDENTIALS' },
+        { label: 'מצב', value: !s.enabled ? 'כבוי' : !st.configured ? 'חסר מפתח' : st.blockedBy ? 'האתר חסום' : 'פעיל', tone: s.enabled && ready ? 'ok' : s.enabled ? 'bad' : 'warn', note: st.clientEmail ? <span dir="ltr">{st.clientEmail}</span> : 'צריך להעלות מפתח' },
         { label: 'באינדקס של גוגל', value: int(count.yes), note: `מתוך ${int(count.all)} כתובות במפת האתר` },
         { label: 'לא באינדקס', value: int(count.not), note: `${int(count.unknown)} עוד לא נבדקו`, tone: count.not ? 'warn' : undefined },
         { label: 'נשלחו ב־24 שעות', value: int(st.submittedToday), note: `מכסה ${int(s.dailySubmitLimit)} · נבדקו ${int(st.inspectedToday)}/${int(s.dailyInspectLimit)}` },
       ]} />
+      <Card title="מפתח Google (Indexing API)">
+        <GoogleKeyForm clientEmail={st.clientEmail} source={st.keySource} canEdit={canEdit} />
+      </Card>
       <div className={ui.grid2}>
         <Card title="אינדוקס אוטומטי" flush>
           <GoogleToggle name="enabled" checked={s.enabled} title="הפעלה" sub="המתג הראשי. כבוי: שום דבר לא נשלח לגוגל" canEdit={canEdit} />
@@ -154,7 +157,7 @@ async function GoogleTab({ canEdit, filter }: { canEdit: boolean; filter: string
       </div>
       <Card title="הגדרת המערכת" sub="מה צריך כדי שהאינדוקס ירוץ">
         <ul className={ui.list}>
-          <li className={ui.note}>{st.configured ? <Chip tone="ok">מוגדר</Chip> : <Chip tone="bad">חסר</Chip>} <b>מפתח חשבון שירות:</b> <span className={ui.mono}>GOOGLE_INDEXING_CREDENTIALS</span> ב־Vercel (קובץ ה־JSON של חשבון השירות, כמו שהוא או ב־base64). לא נשמר במסד ולא מוצג כאן.</li>
+          <li className={ui.note}>{st.configured ? <Chip tone="ok">מוגדר</Chip> : <Chip tone="bad">חסר</Chip>} <b>מפתח חשבון שירות:</b> מעלים אותו בכרטיס ״מפתח Google״ למעלה (נשמר מוצפן ולא מוצג שוב), או מגדירים <span className={ui.mono}>GOOGLE_INDEXING_CREDENTIALS</span> ב־Vercel.</li>
           <li className={ui.note}>{st.cron ? <Chip tone="ok">מוגדר</Chip> : <Chip tone="bad">חסר</Chip>} <b>הרצה מתוזמנת:</b> <span className={ui.mono}>CRON_SECRET</span> ב־Vercel; הריצה היומית ב־06:17 (שעון ישראל) ב־<span className={ui.mono} dir="ltr">/api/cron/indexing</span>.</li>
           <li className={ui.note}>{st.blockedBy ? <Chip tone="bad">חסום</Chip> : <Chip tone="ok">פתוח</Chip>} <b>מדיניות האינדוקס:</b> רק כתובות ממפת האתר נשלחות, כך שעמודי noindex, אזורים כבויים וסביבת בדיקה לא מגיעים לגוגל.</li>
           <li className={ui.note}><b>Search Console:</b> חשבון השירות{st.clientEmail ? <> (<span dir="ltr">{st.clientEmail}</span>)</> : null} צריך להיות <b>Owner</b> בנכס <span dir="ltr" className={ui.mono}>{st.property}</span>, וב־Google Cloud צריכים להיות פעילים Web Search Indexing API ו־Google Search Console API.</li>

@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Toggle } from '@/components/ops/Toggle';
 import { ui } from '@/components/ops/ui';
-import { runGoogleIndexingAction, saveGoogleIndexingLimitsAction, setGoogleIndexingFlagAction, testGoogleIndexingAction } from './actions';
+import { removeGoogleKeyAction, runGoogleIndexingAction, saveGoogleIndexingLimitsAction, saveGoogleKeyAction, setGoogleIndexingFlagAction, testGoogleIndexingAction } from './actions';
 
 // The controls of the Google tab: switches that save on change, the quotas and property form, and the
 // test and run buttons. The server actions check the permission and log every change.
@@ -49,6 +49,52 @@ export function GoogleRunButtons({ canEdit, configured }: { canEdit: boolean; co
         <button type="button" className={ui.btn} disabled={pending || !configured} onClick={() => go(testGoogleIndexingAction)}>בדיקת חיבור</button>
         {canEdit ? <button type="button" className={`${ui.btn} ${ui.primary}`} disabled={pending || !configured} onClick={() => go(runGoogleIndexingAction)}>{pending ? 'רץ…' : 'הרצה עכשיו'}</button> : null}
       </div>
+      {msg ? <span className={msg.ok ? ui.ok : ui.error} role="status">{msg.text}</span> : null}
+    </div>
+  );
+}
+
+/**
+ * The service account key: pick the JSON file Google downloaded, or paste its contents. The key goes to the
+ * server once and is never sent back; the page shows only the account email.
+ */
+export function GoogleKeyForm({ clientEmail, source, canEdit }: { clientEmail: string | null; source: 'env' | 'admin' | null; canEdit: boolean }) {
+  const router = useRouter();
+  const [text, setText] = useState('');
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [pending, start] = useTransition();
+  const run = (fn: () => Promise<{ ok: true; text: string } | { ok: false; error: string }>) => start(async () => {
+    setMsg(null);
+    const r = await fn();
+    setMsg(r.ok ? { ok: true, text: r.text } : { ok: false, text: r.error });
+    if (r.ok) { setText(''); router.refresh(); }
+  });
+  return (
+    <div className={ui.stack} style={{ gap: 10 }}>
+      {clientEmail ? (
+        <p className={ui.note}>
+          מפתח פעיל: <b dir="ltr">{clientEmail}</b>{source === 'env' ? ' (ממשתנה הסביבה GOOGLE_INDEXING_CREDENTIALS ב־Vercel, שגובר על מפתח שהועלה כאן)' : ' (הועלה כאן, שמור מוצפן)'}
+        </p>
+      ) : <p className={ui.note}>עוד לא הועלה מפתח.</p>}
+      {canEdit ? (
+        <>
+          <div className={ui.field}>
+            <label className={ui.label} htmlFor="g-key-file">קובץ המפתח (JSON) שהורדתם מ־Google Cloud</label>
+            <input
+              id="g-key-file" type="file" accept="application/json,.json" className={ui.input} disabled={pending}
+              onChange={async e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) setText(await f.text()); }}
+            />
+          </div>
+          <div className={ui.field}>
+            <label className={ui.label} htmlFor="g-key-text">או הדביקו כאן את תוכן הקובץ</label>
+            <textarea id="g-key-text" className={ui.textarea} dir="ltr" spellCheck={false} autoComplete="off" value={text} onChange={e => setText(e.target.value)} placeholder='{"type": "service_account", "client_email": "...", "private_key": "..."}' style={{ minHeight: 90, fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 12 }} />
+          </div>
+          <div className={ui.actions}>
+            <button type="button" className={`${ui.btn} ${ui.primary}`} disabled={pending || !text.trim()} onClick={() => run(() => saveGoogleKeyAction(text))}>שמירת המפתח</button>
+            {source === 'admin' ? <button type="button" className={ui.btn} disabled={pending} onClick={() => { if (confirm('להסיר את המפתח? האינדוקס יפסיק עד שיועלה מפתח חדש.')) run(removeGoogleKeyAction); }}>הסרת המפתח</button> : null}
+          </div>
+        </>
+      ) : null}
       {msg ? <span className={msg.ok ? ui.ok : ui.error} role="status">{msg.text}</span> : null}
     </div>
   );
