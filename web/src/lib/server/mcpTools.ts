@@ -33,6 +33,8 @@ import { DEFAULT_OG_IMAGE, SITE_NAME } from '@/lib/seo/meta';
 import { LOGO_SIZE, LOGO_URL, ORG_ID, absoluteUrl } from '@/lib/seo/schema';
 import { siteUrl } from './site';
 import { sitemapEntries } from './sitemapEntries';
+import { copyListingImages, type MediaProvenance } from './importMedia';
+import type { Prisma } from '@prisma/client';
 
 // Everything the MCP server offers Claude: the whole admin, as tools. Reads return the same data the
 // admin screens show; writes call the same server actions the screens call, so validation, audit rows,
@@ -141,6 +143,48 @@ export const MCP_TOOLS: McpTool[] = [
       ...(p.gallery ? { gallery: p.gallery.map(g => ({ url: g.url, alt: g.alt, tag: g.tag ?? '' })) } : {}),
       ...(p.videos ? { videos: p.videos.map(v => { const old = b.media.videos.find(x => x.id === v.id); return { id: v.id, title: v.title ?? old?.title ?? '', status: old?.status ?? 'ok', source: old?.source ?? 'owner' }; }) } : {}) };
     return result(await saveMediaAction(b.id, media));
+  } },
+  { name: 'add_branch_photos', area: 'businesses', level: 'edit', write: true, schema: z.object({
+    branch_id: uuid,
+    photos: z.array(z.object({
+      url: z.string().url().max(2000).describe('כתובת https ציבורית של התמונה'),
+      page_url: z.string().url().max(2000).optional().describe('העמוד או הפרופיל שבו נמצאה'),
+      provider: z.enum(['website', 'instagram', 'facebook', 'google_profile']).optional(),
+      alt: z.string().min(4).max(200).optional().describe('תיאור נגישות בעברית'),
+    })).max(8).optional(),
+    logo_url: z.string().url().max(2000).optional().describe('נשמר רק כשאין לוגו'),
+  }), description: 'הוספת תמונות וסמל לסניף מכתובות ציבוריות (למשל מאתר העסק או מאינסטגרם שלו): כל תמונה נבדקת (סוג, גודל, איכות, כפילויות), מומרת ל־WebP ונשמרת אצלנו עם רישום המקור. התמונות מתווספות לגלריה (עד 24); אם אין תמונת שער, הטובה ביותר הופכת לשער; לוגו נשמר רק כשאין. סניף בבעלות מאומתת לא משתנה.', run: async (a, ctx) => {
+    const b = await branchOr404(String(a.branch_id)); if ('error' in b) return b;
+    if (b.details.isClaimed) return { ok: false, error: 'claimed: the owner manages this listing' };
+    const photos = (a.photos ?? []) as Array<{ url: string; page_url?: string; provider?: 'website' | 'instagram' | 'facebook' | 'google_profile'; alt?: string }>;
+    const wantLogo = !b.media.logoUrl && typeof a.logo_url === 'string' ? a.logo_url : null;
+    const room = Math.max(0, 24 - b.media.gallery.length);
+    if (!wantLogo && (!photos.length || !room)) return { ok: false, error: photos.length ? 'gallery_full' : 'nothing_to_add' };
+    const copied = await copyListingImages({
+      name: b.details.name, cityName: b.details.cityName, logoUrl: wantLogo, photoUrls: room ? photos.map(p => p.url) : [],
+      candidates: photos.map(p => ({ url: p.url, pageUrl: p.page_url ?? null, provider: p.provider ?? 'website', alt: p.alt ?? null })),
+    }, ctx.actor.id, b.businessId, Math.min(room, photos.length));
+    const altBySource = new Map(photos.filter(p => p.alt).map(p => [p.url, p.alt!.trim()]));
+    const sourceOf = new Map(copied.provenance.map(p => [p.url, p.sourceUrl]));
+    const added = copied.photos.slice(0, room).map(p => ({ url: p.url, alt: altBySource.get(sourceOf.get(p.url) ?? '') ?? p.alt, tag: '' }));
+    const coverEmpty = !b.media.coverUrl || !b.media.coverUrl.startsWith('/media/');
+    const cover = coverEmpty ? added[0] : undefined;
+    const rest = cover ? added.slice(1) : added;
+    const media = {
+      ...b.media,
+      ...(cover ? { coverUrl: cover.url, coverAlt: cover.alt } : {}),
+      ...(copied.logoUrl ? { logoUrl: copied.logoUrl } : {}),
+      gallery: [...b.media.gallery, ...rest].slice(0, 24),
+    };
+    if (!added.length && !copied.logoUrl) return { ok: true, added: 0, cover: false, logo: false, rejected: photos.length, note: 'no image passed the checks (broken, too small, a graphic or a duplicate)' };
+    const saved = await saveMediaAction(b.id, media);
+    if (!saved.ok) return fail(saved);
+    if (copied.provenance.length) {
+      const row = await db.branch.findUnique({ where: { id: b.id }, select: { mediaProvenance: true } });
+      const prev = (Array.isArray(row?.mediaProvenance) ? row!.mediaProvenance : []) as unknown as MediaProvenance[];
+      await db.branch.update({ where: { id: b.id }, data: { mediaProvenance: [...prev, ...copied.provenance] as unknown as Prisma.InputJsonValue } });
+    }
+    return { ok: true, added: added.length, cover: !!cover, logo: !!copied.logoUrl, rejected: photos.length - added.length };
   } },
   { name: 'generate_alt_text', area: 'businesses', level: 'edit', write: true, schema: z.object({ branch_id: uuid, url: z.string().max(80).describe('כתובת /media/... מתוך get_branch'), kind: z.enum(['cover', 'logo', 'gallery']), tag: z.string().max(20).optional() }), description: 'תיאור נגישות לתמונה ב־AI (Claude). מחזיר את הטקסט; שמירה דרך update_branch_media.', run: async a => result(await generateAltAction(String(a.branch_id), { url: String(a.url), kind: a.kind as 'cover', tag: a.tag as string | undefined })) },
   { name: 'update_branch_facts', area: 'businesses', level: 'edit', write: true, schema: z.object({ branch_id: uuid, patch: FactsPatch }), description: 'עדכון עובדות: רשתות חברתיות, שנת הקמה, שפות, גודל צוות, אנשי צוות שמופיעים באתר, נגישות וחניה (לא ידוע/כן/לא).', run: async a => {
