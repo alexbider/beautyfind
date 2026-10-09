@@ -175,7 +175,7 @@ export interface GapRow {
   updatedAt: Date;
 }
 
-export interface GapFilter { region?: string; city?: string; category?: string; q?: string; missing?: string; status?: string; claimed?: 'all' | 'claimed' | 'unclaimed'; live?: 'all' | 'live'; branchIds?: string[]; take?: number }
+export interface GapFilter { region?: string; city?: string; category?: string; q?: string; missing?: string; status?: string; claimed?: 'all' | 'claimed' | 'unclaimed'; live?: 'all' | 'live'; branchIds?: string[]; take?: number; skip?: number; order?: 'updated' | 'created' }
 
 export const GAP_SECTIONS = MANIFEST.filter(m => m.weight > 0).map(m => m.id);
 
@@ -192,7 +192,7 @@ export async function listGaps(f: GapFilter = {}): Promise<{ rows: GapRow[]; tot
     ...(f.q ? { OR: [{ name: { contains: f.q, mode: 'insensitive' } }, { cityName: { contains: f.q, mode: 'insensitive' } }] } : {}),
   };
   const [branches, total, settings] = await Promise.all([
-    db.branch.findMany({ where, include: { categories: true, treatments: { where: { isPublished: true }, select: { priceAgorot: true } } }, orderBy: [{ updatedAt: 'desc' }], take }),
+    db.branch.findMany({ where, include: { categories: true, treatments: { where: { isPublished: true }, select: { priceAgorot: true } } }, orderBy: f.order === 'created' ? [{ createdAt: 'asc' }, { id: 'asc' }] : [{ updatedAt: 'desc' }], take, skip: Math.max(0, Math.floor(f.skip ?? 0)) }),
     db.branch.count({ where }),
     getSettings(),
   ]);
