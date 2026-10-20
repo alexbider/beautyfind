@@ -2,6 +2,7 @@ import 'server-only';
 import type { OtpChannel, Prisma } from '@prisma/client';
 import type { SiblingBranch } from './shared';
 import { db } from '@/lib/server/db';
+import { codeChannels, type CodeChannels } from '@/lib/server/verificationSend';
 import { fromE164 } from '@/lib/format';
 import { DEFAULT_DAYS, TIME_RE, type ClaimMethod, type DayHours, type ListingHit } from './shared';
 
@@ -35,7 +36,7 @@ export const isClaimedRow = (b: { isClaimed: boolean; business: { ownerUserId: s
 export function claimTarget(b: { phone: string | null; email: string | null }, method: ClaimMethod): { target: string; channel: OtpChannel } | null {
   if (method === 'mail') return b.email ? { target: b.email.trim().toLowerCase(), channel: 'email' } : null;
   if (!b.phone) return null;
-  return { target: b.phone, channel: method === 'call' ? 'voice' : 'sms' };
+  return { target: b.phone, channel: METHOD_CHANNEL[method] };
 }
 
 function parseDays(raw: Prisma.JsonValue): DayHours[] {
@@ -48,7 +49,16 @@ function parseDays(raw: Prisma.JsonValue): DayHours[] {
   });
 }
 
-function toHit(b: BranchRow): ListingHit {
+/** The message channel each claim method sends its code on. */
+export const METHOD_CHANNEL: Record<ClaimMethod, OtpChannel> = { sms: 'sms', call: 'voice', mail: 'email' };
+
+function toHit(b: BranchRow, ch: CodeChannels): ListingHit {
+  const contact: Record<ClaimMethod, string | null> = {
+    sms: b.phone ? maskPhone(b.phone) : null,
+    call: b.phone ? maskPhone(b.phone) : null,
+    mail: b.email ? maskEmail(b.email) : null,
+  };
+  const off = (Object.keys(contact) as ClaimMethod[]).filter(m => contact[m] && !ch[METHOD_CHANNEL[m]]);
   const cats = [...b.categories].sort((x, y) => x.category.sortOrder - y.category.sortOrder);
   return {
     id: b.id,
@@ -59,11 +69,8 @@ function toHit(b: BranchRow): ListingHit {
     img: b.coverUrl,
     imgAlt: b.coverAlt ?? '',
     claimed: isClaimedRow(b),
-    targets: {
-      sms: b.phone ? maskPhone(b.phone) : null,
-      call: b.phone ? maskPhone(b.phone) : null,
-      mail: b.email ? maskEmail(b.email) : null,
-    },
+    targets: { sms: off.includes('sms') ? null : contact.sms, call: off.includes('call') ? null : contact.call, mail: off.includes('mail') ? null : contact.mail },
+    off,
     prefill: {
       address: b.address,
       phone: b.phone ? fromE164(b.phone) : '',
@@ -92,14 +99,15 @@ export async function searchLiveBranches(q: string): Promise<ListingHit[]> {
     orderBy: { name: 'asc' },
     take: MAX_HITS,
   });
-  return rows.map(toHit);
+  const ch = await codeChannels();
+  return rows.map(b => toHit(b, ch));
 }
 
 /** The listing the visitor arrived from (profile page claim link), as a search hit, or null. */
 export async function loadListingHit(id: string): Promise<ListingHit | null> {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
   const b = await db.branch.findFirst({ where: { id, status: 'live' }, include: branchInclude });
-  return b ? toHit(b) : null;
+  return b ? toHit(b, await codeChannels()) : null;
 }
 
 /** A live branch by id, with what the claim checks need. */

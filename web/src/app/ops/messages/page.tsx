@@ -10,7 +10,7 @@ import { DraftEditor } from './DraftEditor';
 import { MessaggioKeyForm, MessaggioSettingsForm, MessaggioTestForm, MessaggioToggle } from './MessaggioControls';
 import { messaggioStatus } from '@/lib/server/messaggio';
 import { twilioStatus } from '@/lib/server/twilio';
-import { TwilioCredsForm, TwilioSenderForm, TwilioTestForm, TwilioToggle } from './TwilioControls';
+import { TwilioCredsForm, TwilioSenderForm, TwilioTestForm, TwilioToggle, TwilioVoiceForm } from './TwilioControls';
 
 export const metadata: Metadata = { title: 'הודעות ותבניות · ניהול', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
@@ -56,6 +56,9 @@ export default async function MessagesPage() {
           </div>
         </div>
       </Card>
+      <Card title="Twilio · שיחה קולית לאימות בעלות">
+        <TwilioVoiceForm voiceFrom={tw.settings.voiceFrom} voice={tw.settings.voice} effectiveFrom={tw.voiceFrom} configured={tw.configured} canEdit={canEdit} />
+      </Card>
       <Card title="Messaggio · קודי אימות ב־WhatsApp">
         <p className={ui.note} style={{ marginBottom: 14 }}>{mgLive ? <Chip tone="ok">פעיל</Chip> : <Chip tone="warn">כבוי</Chip>} {mgLive ? 'קודים ב־WhatsApp נשלחים דרך Messaggio. קודים ב־SMS עוברים דרך Twilio כשהוא פעיל, ורק אחרת דרך Messaggio.' : 'כבוי: קודים ב־WhatsApp נשלחים ב־SMS (דרך Twilio כשהוא פעיל). הזינו מפתח, שלחו בדיקה והפעילו.'}</p>
         <div className={ui.grid2}>
@@ -81,10 +84,10 @@ export default async function MessagesPage() {
               <tr key={m.id}>
                 <td className={ui.num}>{dateTimeIL(m.createdAt)}</td>
                 <td>{m.provider === 'twilio' ? 'Twilio' : 'Messaggio'}</td>
-                <td>{m.channel === 'sms' ? 'SMS' : 'WhatsApp'}{m.fallbackFrom ? <span className={ui.sub}>גיבוי ל־{m.fallbackFrom === 'whatsapp' ? 'WhatsApp' : m.fallbackFrom}</span> : null}</td>
+                <td>{m.channel === 'sms' ? 'SMS' : m.channel === 'voice' ? 'שיחה' : 'WhatsApp'}{m.fallbackFrom ? <span className={ui.sub}>גיבוי ל־{m.fallbackFrom === 'whatsapp' ? 'WhatsApp' : m.fallbackFrom}</span> : null}</td>
                 <td>{m.test ? 'בדיקה' : m.template === 'M16_otp' ? 'קוד אימות' : m.template}</td>
                 <td className={ui.num} dir="ltr">{m.toMasked}</td>
-                <td>{m.status === 'failed' ? <Chip tone="bad">נדחה</Chip> : m.deliveryStatus === 'delivered' ? <Chip tone="ok">נמסר</Chip> : m.deliveryStatus === 'undelivered' || m.deliveryStatus === 'failed' ? <Chip tone="bad">לא נמסר</Chip> : <Chip tone="info">נשלח</Chip>}{m.deliveryStatus && !['delivered', 'undelivered', 'failed'].includes(m.deliveryStatus) ? <span className={ui.sub} dir="ltr">{m.deliveryStatus}</span> : null}</td>
+                <td>{m.status === 'failed' ? <Chip tone="bad">נדחה</Chip> : m.deliveryStatus === 'delivered' || m.deliveryStatus === 'completed' ? <Chip tone="ok">{m.channel === 'voice' ? 'נענתה' : 'נמסר'}</Chip> : ['undelivered', 'failed', 'busy', 'no-answer', 'canceled'].includes(m.deliveryStatus ?? '') ? <Chip tone="bad">{m.channel === 'voice' ? 'לא נענתה' : 'לא נמסר'}</Chip> : <Chip tone="info">נשלח</Chip>}{m.deliveryStatus && !['delivered', 'completed', 'undelivered', 'failed'].includes(m.deliveryStatus) ? <span className={ui.sub} dir="ltr">{m.deliveryStatus}</span> : null}</td>
                 <td>{m.error || m.deliveryError ? <span className={ui.error} dir="ltr">{m.error ?? m.deliveryError}</span> : <span className={ui.mono} dir="ltr">{m.providerId}</span>}</td>
               </tr>
             ))}

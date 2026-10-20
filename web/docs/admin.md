@@ -94,6 +94,15 @@ Routing is in `src/lib/server/verificationSend.ts`: an SMS code goes to **Twilio
 - **Delivery reports:** every SMS carries `StatusCallback = SITE_URL/api/twilio/status` (only on a public https address). The route checks `X-Twilio-Signature` (HMAC-SHA1 with the Auth Token over the URL and the sorted parameters, as Twilio documents) and the AccountSid, then writes `delivery_status` (queued, sent, delivered, undelivered, failed), the error code and `delivered_at` on the `message_sends` row. The log on `/ops/messages` shows נמסר / לא נמסר.
 - **Switch:** "שליחת קודי SMS דרך Twilio" can be turned on only with a sender set. Test SMS ("שליחת בדיקה") works with the switch off. Audit: `twilio_key`, `twilio_update`, `twilio_test`.
 - **Israel:** an alphanumeric sender ID (e.g. BeautyFind) or a number able to send to Israel must be enabled in the Twilio account (Messaging, Geo permissions: Israel on).
+- **Voice calls (ownership claim, "שיחה קולית"):** `POST .../Accounts/{AccountSid}/Calls.json` with `To`, `From` and `Twiml`, which says the code digit by digit, twice, in Hebrew (`<Say voice="Google.he-IL-Standard-A" language="he-IL">`). `From` must be a Twilio phone number with voice: the card "Twilio · שיחה קולית לאימות בעלות" takes it (empty means the SMS sender when that is a phone number; an alphanumeric sender cannot call) and the voice name. "שיחת בדיקה" places a real call with the switch off. Call status callbacks (`CallSid`, `CallStatus`: completed, busy, no-answer, failed, canceled) go to the same route; the log shows נענתה / לא נענתה. Voice to Israel needs Voice Geo permissions for Israel in the Twilio account.
+
+### Which channels the screens offer
+
+`codeChannels()` in `verificationSend.ts` says which channels a code can reach right now. In production with `MESSAGING_ADAPTER=console`, only channels a provider carries count: SMS (Twilio or Messaggio SMS), WhatsApp (Messaggio WhatsApp with a sender), voice (Twilio with a phone number). Email has no provider yet, so it never counts. Outside production every channel counts, since the log is how codes are read in development.
+
+- **Sign-in and sign-up (`/login`):** with WhatsApp connected the screen asks for WhatsApp, otherwise for SMS, and every label (button, title, toast, hint) names the channel the code actually went on, which `sendOtp` returns. "שליחה ב־SMS במקום" appears only after a WhatsApp send.
+- **Ownership claim:** a method whose channel has no provider shows "לא זמין כרגע" and cannot be picked; the server action refuses it too. Today that means "דוא״ל" is off until an email provider is connected, and "שיחה קולית" is off until Twilio has a voice number.
+- **Staff invites:** always SMS.
 
 ### Messaggio
 

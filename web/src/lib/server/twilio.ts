@@ -1,6 +1,6 @@
 import 'server-only';
 import { maskPhone } from '../vendors/messaggio';
-import { TwilioError, isAccountSid, twilioAccount, twilioSend, type TwilioConfig } from '../vendors/twilio';
+import { TwilioError, isAccountSid, isPhone, twilioAccount, twilioCall, twilioSend, voiceTwiml, type TwilioConfig } from '../vendors/twilio';
 import { db } from './db';
 import { platformSettings, type PlatformSettings } from './platformSettings';
 import { open, seal } from './secure';
@@ -67,15 +67,67 @@ export async function twilioReady(force = false): Promise<TwilioConfig | null> {
   return twilioConfig(c, s.twilio);
 }
 
+type LogExtra = { fallbackFrom?: string; test?: boolean };
+
+async function logSend(channel: 'sms' | 'voice', msg: { to: string; template: string }, extra: LogExtra, r: { id: string; status: string | null } | { error: unknown }) {
+  const ok = 'id' in r;
+  await db.messageSend.create({
+    data: {
+      provider: 'twilio', channel, template: msg.template, toMasked: maskPhone(msg.to), status: ok ? 'sent' : 'failed',
+      providerId: ok ? r.id : null, deliveryStatus: ok ? r.status : null,
+      error: ok ? null : (r.error instanceof Error ? r.error.message : String(r.error)).slice(0, 300),
+      fallbackFrom: extra.fallbackFrom ?? null, test: !!extra.test,
+    },
+  }).catch(() => undefined);
+}
+
 /** One SMS through Twilio, logged. Throws TwilioError. */
-export async function twilioAttempt(cfg: TwilioConfig, msg: { to: string; template: string }, text: string, extra: { fallbackFrom?: string; test?: boolean } = {}): Promise<{ id: string }> {
+export async function twilioAttempt(cfg: TwilioConfig, msg: { to: string; template: string }, text: string, extra: LogExtra = {}): Promise<{ id: string }> {
   try {
     const r = await twilioSend(cfg, msg.to, text);
-    await db.messageSend.create({ data: { provider: 'twilio', channel: 'sms', template: msg.template, toMasked: maskPhone(msg.to), status: 'sent', providerId: r.id, deliveryStatus: r.status, fallbackFrom: extra.fallbackFrom ?? null, test: !!extra.test } }).catch(() => undefined);
+    await logSend('sms', msg, extra, r);
     return { id: r.id };
   } catch (e) {
-    await db.messageSend.create({ data: { provider: 'twilio', channel: 'sms', template: msg.template, toMasked: maskPhone(msg.to), status: 'failed', error: (e instanceof Error ? e.message : String(e)).slice(0, 300), fallbackFrom: extra.fallbackFrom ?? null, test: !!extra.test } }).catch(() => undefined);
+    await logSend('sms', msg, extra, { error: e });
     throw e;
+  }
+}
+
+export type TwilioVoiceConfig = TwilioConfig & { voiceFrom: string; voice: string };
+
+/** The number calls come from: the voice number, or the SMS sender when that is a phone number. */
+export const voiceFromOf = (s: PlatformSettings['twilio']) => (s.voiceFrom && isPhone(s.voiceFrom) ? s.voiceFrom : isPhone(s.from) ? s.from : '');
+
+/** Twilio can call when it is on, has credentials and a phone number to call from. */
+export async function twilioVoiceReady(force = false): Promise<TwilioVoiceConfig | null> {
+  const [s, c] = await Promise.all([platformSettings(), twilioCreds()]);
+  if (!c || (!s.twilio.enabled && !force)) return null;
+  const voiceFrom = voiceFromOf(s.twilio);
+  if (!voiceFrom) return null;
+  return { ...twilioConfig(c, s.twilio), voiceFrom, voice: s.twilio.voice || 'Google.he-IL-Standard-A' };
+}
+
+/** One call that reads the code aloud, logged. The code goes into the call script only, never the log. */
+export async function twilioVoiceAttempt(cfg: TwilioVoiceConfig, msg: { to: string; template: string }, code: string, extra: LogExtra = {}): Promise<{ id: string }> {
+  try {
+    const r = await twilioCall(cfg, msg.to, voiceTwiml(code, cfg.voice));
+    await logSend('voice', msg, extra, r);
+    return { id: r.id };
+  } catch (e) {
+    await logSend('voice', msg, extra, { error: e });
+    throw e;
+  }
+}
+
+/** Admin test: one real call to the phone entered, whatever the on switch says. */
+export async function twilioTestCall(to: string): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
+  const cfg = await twilioVoiceReady(true);
+  if (!cfg) return { ok: false, error: 'חסרים פרטי חשבון או מספר Twilio לשיחות' };
+  try {
+    const r = await twilioVoiceAttempt(cfg, { to, template: 'twilio_test' }, String(100000 + Math.floor(Math.random() * 900000)), { test: true });
+    return { ok: true, id: r.id };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
   }
 }
 
@@ -105,15 +157,15 @@ export async function twilioTestSend(to: string): Promise<{ ok: true; id: string
   }
 }
 
-/** Applies one status callback to its send. Unknown SIDs are ignored. */
+/** Applies one status callback (an SMS or a call) to its send. Unknown SIDs are ignored. */
 export async function applyTwilioStatus(p: Record<string, string>): Promise<boolean> {
-  const sid = p.MessageSid || p.SmsSid;
-  const status = p.MessageStatus || p.SmsStatus;
+  const sid = p.MessageSid || p.SmsSid || p.CallSid;
+  const status = p.MessageStatus || p.SmsStatus || p.CallStatus;
   if (!sid || !status) return false;
   const err = p.ErrorCode ? `${p.ErrorCode}${p.ErrorMessage ? `: ${p.ErrorMessage}` : ''}` : null;
   const r = await db.messageSend.updateMany({
     where: { provider: 'twilio', providerId: sid },
-    data: { deliveryStatus: status.slice(0, 20), ...(err ? { deliveryError: err.slice(0, 300) } : {}), ...(status === 'delivered' ? { deliveredAt: new Date() } : {}) },
+    data: { deliveryStatus: status.slice(0, 20), ...(err ? { deliveryError: err.slice(0, 300) } : {}), ...(status === 'delivered' || status === 'completed' ? { deliveredAt: new Date() } : {}) },
   });
   return r.count > 0;
 }
@@ -124,6 +176,7 @@ export interface TwilioStatus {
   accountSid: string | null;
   settings: PlatformSettings['twilio'];
   ready: boolean;
+  voiceFrom: string | null;
   callback: string | null;
   sent24h: number;
   failed24h: number;
@@ -135,7 +188,7 @@ export async function twilioStatus(): Promise<TwilioStatus> {
   const since = new Date(Date.now() - 86_400_000);
   const w = (x: object) => db.messageSend.count({ where: { provider: 'twilio', test: false, createdAt: { gte: since }, ...x } });
   const [s, c, sent24h, failed24h, delivered24h, undelivered24h] = await Promise.all([
-    platformSettings(), twilioCreds(), w({ status: 'sent' }), w({ status: 'failed' }), w({ deliveryStatus: 'delivered' }), w({ deliveryStatus: { in: ['undelivered', 'failed'] } }),
+    platformSettings(), twilioCreds(), w({ status: 'sent' }), w({ status: 'failed' }), w({ deliveryStatus: { in: ['delivered', 'completed'] } }), w({ deliveryStatus: { in: ['undelivered', 'failed', 'busy', 'no-answer', 'canceled'] } }),
   ]);
   return {
     configured: !!c,
@@ -143,6 +196,7 @@ export async function twilioStatus(): Promise<TwilioStatus> {
     accountSid: c?.accountSid ?? null,
     settings: s.twilio,
     ready: !!c && s.twilio.enabled && !!(s.twilio.from || s.twilio.messagingServiceSid),
+    voiceFrom: voiceFromOf(s.twilio) || null,
     callback: twilioStatusUrl() ?? null,
     sent24h, failed24h, delivered24h, undelivered24h,
   };

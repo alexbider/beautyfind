@@ -31,7 +31,8 @@ export type AuthError =
   | 'blocked';
 
 export type Fail = { ok: false; error: AuthError; retryInSeconds?: number };
-export type CodeSent = { ok: true; phone: string; cooldownSeconds: number };
+/** `channel` is how the code actually went: a WhatsApp request goes by SMS while WhatsApp is not connected. */
+export type CodeSent = { ok: true; phone: string; cooldownSeconds: number; channel: 'whatsapp' | 'sms' };
 export type SignedIn = { ok: true; kind: AccountKind; redirectTo: string };
 
 const fail = (error: AuthError, retryInSeconds?: number): Fail => ({ ok: false, error, ...(retryInSeconds ? { retryInSeconds } : {}) });
@@ -64,7 +65,7 @@ export async function sendSigninCode(input: z.input<typeof signinCodeInput>): Pr
   if (!user) return fail('unknown_phone');
   const sent = await sendOtp({ target: p.data.phone, channel: p.data.channel, purpose: 'login' });
   if (!sent.ok) return fail('cooldown', sent.retryInSeconds);
-  return { ok: true, phone: p.data.phone, cooldownSeconds: sent.cooldownSeconds };
+  return { ok: true, phone: p.data.phone, cooldownSeconds: sent.cooldownSeconds, channel: sent.channel === 'whatsapp' ? 'whatsapp' : 'sms' };
 }
 
 const verifySigninInput = z.object({ phone, code, remember: z.boolean(), next });
@@ -150,7 +151,7 @@ export async function sendSignupCode(input: z.input<typeof sendSignupInput>): Pr
   if (taken) return taken;
   const sent = await sendOtp({ target: p.data.form.phone, channel: p.data.channel, purpose: 'signup' });
   if (!sent.ok) return fail('cooldown', sent.retryInSeconds);
-  return { ok: true, phone: p.data.form.phone, cooldownSeconds: sent.cooldownSeconds };
+  return { ok: true, phone: p.data.form.phone, cooldownSeconds: sent.cooldownSeconds, channel: sent.channel === 'whatsapp' ? 'whatsapp' : 'sms' };
 }
 
 const completeSignupInput = z.object({ form: signupInput, code, remember: z.boolean(), next });

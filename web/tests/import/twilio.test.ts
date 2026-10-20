@@ -31,6 +31,18 @@ describe('twilio: request shape and signatures', () => {
     assert.equal(mg.From, undefined);
   });
 
+  it('builds the voice call: the code digit by digit, twice, in Hebrew, with XML escaped', async () => {
+    const t = await import('../../src/lib/vendors/twilio');
+    assert.equal(t.spokenDigits('482915'), '4, 8, 2, 9, 1, 5');
+    const x = t.voiceTwiml('482915', 'Google.he-IL-Standard-A');
+    assert.match(x, /^<Response>.*<\/Response>$/);
+    assert.equal(x.match(/4, 8, 2, 9, 1, 5/g)?.length, 2);
+    assert.match(x, /<Say voice="Google.he-IL-Standard-A" language="he-IL">/);
+    assert.ok(!t.voiceTwiml('1', 'a"b<c').includes('a"b<c'), 'the voice name is escaped');
+    const c = { accountSid: SID, authToken: TOKEN, from: 'BeautyFind', messagingServiceSid: '', voiceFrom: '+97233721234', statusCallback: 'https://beautyfind.co.il/api/twilio/status' };
+    assert.deepEqual(Object.fromEntries(t.twilioCallForm(c, '+972541234567', x)), { To: '+972541234567', From: '+97233721234', Twiml: x, StatusCallback: 'https://beautyfind.co.il/api/twilio/status' });
+  });
+
   it('computes the webhook signature as Twilio documents it', async () => {
     const t = await import('../../src/lib/vendors/twilio');
     // The worked example from Twilio's webhook security documentation.
@@ -44,10 +56,10 @@ describe('twilio: request shape and signatures', () => {
 });
 
 interface Sent { auth: string | undefined; form: Record<string, string> }
-interface Mock { url: string; sms: Sent[]; mg: Array<{ channels: string[] }>; twilioFail: { status: number; code: number; message: string } | null; mgFailWhatsapp: boolean; server: Server }
+interface Mock { url: string; sms: Sent[]; calls: Sent[]; mg: Array<{ channels: string[] }>; twilioFail: { status: number; code: number; message: string } | null; mgFailWhatsapp: boolean; server: Server }
 
 function startMock(): Promise<Mock> {
-  const m: Mock = { url: '', sms: [], mg: [], twilioFail: null, mgFailWhatsapp: false, server: null as unknown as Server };
+  const m: Mock = { url: '', sms: [], calls: [], mg: [], twilioFail: null, mgFailWhatsapp: false, server: null as unknown as Server };
   const basic = `Basic ${Buffer.from(`${SID}:${TOKEN}`).toString('base64')}`;
   m.server = createServer((req, res) => {
     let raw = '';
@@ -68,6 +80,11 @@ function startMock(): Promise<Mock> {
         m.sms.push({ auth: req.headers.authorization, form });
         if (m.twilioFail) return send(m.twilioFail.status, { code: m.twilioFail.code, message: m.twilioFail.message, status: m.twilioFail.status });
         return send(201, { sid: `SM${String(m.sms.length).padStart(32, '0')}`, status: 'queued', to: form.To });
+      }
+      if (req.method === 'POST' && req.url === `/2010-04-01/Accounts/${SID}/Calls.json`) {
+        const form = Object.fromEntries(new URLSearchParams(raw));
+        m.calls.push({ auth: req.headers.authorization, form });
+        return send(201, { sid: `CA${String(m.calls.length).padStart(32, '0')}`, status: 'queued', to: form.To });
       }
       send(404, { code: 20404, message: 'The requested resource was not found' });
     });
@@ -108,7 +125,7 @@ describe('twilio: verification codes through sendOtp', { skip }, () => {
     userId = u.id;
     const cur = await settings.platformSettings();
     saved = { twilio: cur.twilio, messaggio: cur.messaggio };
-    await settings.savePlatformSettings(userId, { messaggio: { ...cur.messaggio, enabled: false }, twilio: { enabled: false, from: '', messagingServiceSid: '' } });
+    await settings.savePlatformSettings(userId, { messaggio: { ...cur.messaggio, enabled: false }, twilio: { enabled: false, from: '', messagingServiceSid: '', voiceFrom: '', voice: 'Google.he-IL-Standard-A' } });
     await db.platformSecret.deleteMany({ where: { key: { in: ['twilio_credentials', 'messaggio_login'] } } });
     await db.messageSend.deleteMany({});
   });
@@ -145,7 +162,7 @@ describe('twilio: verification codes through sendOtp', { skip }, () => {
 
   it('an SMS code goes to Twilio with basic auth, the sender, the code and the status callback; logged masked', async () => {
     process.env.SITE_URL = 'https://beautyfind.example';
-    await settings.savePlatformSettings(userId, { twilio: { enabled: true, from: 'BeautyFind', messagingServiceSid: '' } });
+    await settings.savePlatformSettings(userId, { twilio: { enabled: true, from: 'BeautyFind', messagingServiceSid: '', voiceFrom: '', voice: 'Google.he-IL-Standard-A' } });
     const r = await otp.sendOtp({ target: phone(2), channel: 'sms', purpose: 'signup' });
     assert.equal(r.ok, true);
     assert.equal(mock.sms.length, 1);
@@ -163,10 +180,54 @@ describe('twilio: verification codes through sendOtp', { skip }, () => {
 
   it('a WhatsApp code with no WhatsApp provider goes by Twilio SMS', async () => {
     const r = await otp.sendOtp({ target: phone(3), channel: 'whatsapp', purpose: 'login' });
-    assert.equal(r.ok, true);
+    assert.equal(r.ok && r.channel, 'sms', 'the result says it went by SMS, so the screen can say so');
+    assert.equal((await db.otpCode.findFirst({ where: { target: phone(3) } }))?.channel, 'sms');
     assert.equal(mock.sms.at(-1)?.form.To, phone(3));
     const row = await db.messageSend.findFirst({ where: { provider: 'twilio' }, orderBy: { createdAt: 'desc' } });
     assert.equal(row?.fallbackFrom, 'whatsapp');
+  });
+
+  it('the channels a code can reach: SMS by Twilio; no WhatsApp, voice or email without a provider', async () => {
+    const { codeChannels } = await import('../../src/lib/server/verificationSend');
+    assert.deepEqual(await codeChannels({ anyAdapter: false }), { whatsapp: false, sms: true, voice: false, email: false });
+    assert.deepEqual(await codeChannels({ anyAdapter: true }), { whatsapp: true, sms: true, voice: true, email: true });
+  });
+
+  it('a voice code: no call while the only sender is a name; with a Twilio number, a call that reads the code', async () => {
+    const calls = mock.calls.length;
+    await otp.sendOtp({ target: phone(9), channel: 'voice', purpose: 'claim' });
+    assert.equal(mock.calls.length, calls, 'an alphanumeric sender cannot call');
+    const cur = (await settings.platformSettings()).twilio;
+    await settings.savePlatformSettings(userId, { twilio: { ...cur, voiceFrom: '+97233721234' } });
+    const { codeChannels } = await import('../../src/lib/server/verificationSend');
+    assert.equal((await codeChannels({ anyAdapter: false })).voice, true);
+    const r = await otp.sendOtp({ target: phone(10), channel: 'voice', purpose: 'claim' });
+    assert.equal(r.ok && r.channel, 'voice');
+    assert.equal(mock.calls.length, calls + 1);
+    const f = mock.calls.at(-1)!.form;
+    assert.equal(f.To, phone(10));
+    assert.equal(f.From, '+97233721234');
+    assert.equal(f.StatusCallback, 'https://beautyfind.example/api/twilio/status');
+    const digits = f.Twiml.match(/(\d, ){5}\d/)?.[0];
+    assert.ok(digits, 'the code is read digit by digit');
+    const row = await db.messageSend.findFirst({ where: { provider: 'twilio', channel: 'voice' }, orderBy: { createdAt: 'desc' } });
+    assert.equal(row?.status, 'sent');
+    assert.match(row?.providerId ?? '', /^CA\d{32}$/);
+    assert.ok(!JSON.stringify(row).includes(digits!.replace(/, /g, '')), 'the code is not logged');
+    // The call's status callback: completed marks it answered.
+    const { POST } = await import('../../src/app/api/twilio/status/route');
+    const { twilioSignature } = await import('../../src/lib/vendors/twilio');
+    const url = 'https://beautyfind.example/api/twilio/status';
+    const params = { AccountSid: SID, CallSid: row!.providerId!, CallStatus: 'completed' };
+    const res = await POST(new Request(url, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', 'x-twilio-signature': twilioSignature(TOKEN, url, params) }, body: new URLSearchParams(params) }));
+    assert.equal(res.status, 204);
+    const done = await db.messageSend.findUnique({ where: { id: row!.id } });
+    assert.equal(done?.deliveryStatus, 'completed');
+    assert.ok(done?.deliveredAt);
+    // The admin test call works with the switch off.
+    await settings.savePlatformSettings(userId, { twilio: { ...cur, voiceFrom: '+97233721234', enabled: false } });
+    assert.equal((await tw.twilioTestCall(phone(11))).ok, true);
+    await settings.savePlatformSettings(userId, { twilio: { ...cur, voiceFrom: '' } });
   });
 
   it('with Messaggio on for WhatsApp, WhatsApp goes there, and a refused WhatsApp falls back to Twilio SMS', async () => {
@@ -174,11 +235,13 @@ describe('twilio: verification codes through sendOtp', { skip }, () => {
     const cur = (await settings.platformSettings()).messaggio;
     await settings.savePlatformSettings(userId, { messaggio: { ...cur, enabled: true, whatsapp: true, sms: true, whatsappSender: 'wa-1', fallbackToSms: true, baseUrl: `${mock.url}/api/v1` } });
     const smsBefore = mock.sms.length;
-    await otp.sendOtp({ target: phone(4), channel: 'whatsapp', purpose: 'login' });
+    const wa = await otp.sendOtp({ target: phone(4), channel: 'whatsapp', purpose: 'login' });
+    assert.equal(wa.ok && wa.channel, 'whatsapp');
     assert.deepEqual(mock.mg.at(-1)?.channels, ['whatsapp']);
     assert.equal(mock.sms.length, smsBefore, 'WhatsApp worked: no SMS');
     mock.mgFailWhatsapp = true;
-    await otp.sendOtp({ target: phone(5), channel: 'whatsapp', purpose: 'login' });
+    const fb = await otp.sendOtp({ target: phone(5), channel: 'whatsapp', purpose: 'login' });
+    assert.equal(fb.ok && fb.channel, 'sms');
     assert.equal(mock.sms.length, smsBefore + 1, 'fell back to Twilio, not Messaggio SMS');
     assert.equal(mock.sms.at(-1)?.form.To, phone(5));
     mock.mgFailWhatsapp = false;
@@ -219,7 +282,7 @@ describe('twilio: verification codes through sendOtp', { skip }, () => {
   });
 
   it('the admin test SMS works with the switch off; a rejected token is reported', async () => {
-    await settings.savePlatformSettings(userId, { twilio: { enabled: false, from: 'BeautyFind', messagingServiceSid: '' } });
+    await settings.savePlatformSettings(userId, { twilio: { enabled: false, from: 'BeautyFind', messagingServiceSid: '', voiceFrom: '', voice: 'Google.he-IL-Standard-A' } });
     const r = await tw.twilioTestSend(phone(8));
     assert.equal(r.ok, true);
     assert.match(mock.sms.at(-1)!.form.Body, /הודעת בדיקה/);

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { CATEGORIES, REGIONS } from '@/lib/catalog';
 import { db } from '@/lib/server/db';
+import { codeChannels } from '@/lib/server/verificationSend';
 import { currentUser } from '@/lib/server/session';
 import { AuthScreen, type AuthView, type Role } from './AuthScreen';
 import { destinationFor, safeNext } from './redirects';
@@ -11,7 +12,7 @@ import { findResetToken, normalizeEmail } from './reset-token';
 
 export const metadata: Metadata = {
   title: 'כניסה והרשמה',
-  description: 'כניסה והרשמה ל־BeautyFind בקוד בוואטסאפ או בסיסמה: לקוחות קובעים ומנהלים תורים, ובעלי עסקים מנהלים את הפרופיל, היומן והלקוחות.',
+  description: 'כניסה והרשמה ל־BeautyFind בקוד לטלפון או בסיסמה: לקוחות קובעים ומנהלים תורים, ובעלי עסקים מנהלים את הפרופיל, היומן והלקוחות.',
   alternates: { canonical: '/login' },
   robots: { index: false, follow: true },
 };
@@ -28,6 +29,15 @@ async function listingStat(): Promise<{ n: string; label: string }> {
     // Aside stats are decorative; never fail the page over them.
   }
   return { n: '60+', label: 'ערים' };
+}
+
+/** Whether codes can go by WhatsApp. Off (or unreadable) means the screen asks for SMS. */
+async function whatsappOn(): Promise<boolean> {
+  try {
+    return (await codeChannels()).whatsapp;
+  } catch {
+    return false;
+  }
 }
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<Search> }) {
@@ -59,6 +69,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       next={next}
       reset={withToken ? { email, token, valid: resetValid } : null}
       clientStats={[await listingStat(), { n: String(REGIONS.length), label: 'אזורים' }, { n: String(CATEGORIES.length), label: 'קטגוריות' }]}
+      whatsapp={await whatsappOn()}
     />
   );
 }

@@ -1,8 +1,9 @@
 import { validTwilioSignature } from '@/lib/vendors/twilio';
 import { applyTwilioStatus, twilioCreds, twilioStatusUrl } from '@/lib/server/twilio';
 
-// Twilio delivery reports (StatusCallback on every SMS sent by src/lib/server/twilio.ts). Twilio POSTs a form
-// with MessageSid and MessageStatus (queued, sent, delivered, undelivered, failed) and an X-Twilio-Signature
+// Twilio delivery reports (StatusCallback on every SMS and call made by src/lib/server/twilio.ts). Twilio POSTs a form
+// with MessageSid and MessageStatus (queued, sent, delivered, undelivered, failed), or CallSid and CallStatus
+// (completed, busy, no-answer, failed, canceled), and an X-Twilio-Signature
 // header; requests without a valid signature are refused. The URL used for the signature is the one the site
 // gave Twilio (SITE_URL + this path), so proxies in front of the function do not change it.
 

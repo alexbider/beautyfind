@@ -128,12 +128,15 @@ export function AuthScreen({
   next,
   reset,
   clientStats,
+  whatsapp,
 }: {
   initialRole: Role;
   initialView: AuthView;
   next: string | null;
   reset: { email: string; token: string; valid: boolean } | null;
   clientStats: Stat[];
+  /** WhatsApp is connected for codes. Off: codes are asked and promised by SMS. */
+  whatsapp: boolean;
 }) {
   const router = useRouter();
   const [role, setRole] = useState<Role>(initialRole);
@@ -151,7 +154,9 @@ export function AuthScreen({
   const [otpBad, setOtpBad] = useState(false);
   const [otpFlow, setOtpFlow] = useState<'signin' | 'signup'>('signin');
   const [otpPhone, setOtpPhone] = useState('');
-  const [channel, setChannel] = useState<Channel>('whatsapp');
+  const preferred: Channel = whatsapp ? 'whatsapp' : 'sms';
+  const via = (ch: Channel) => (ch === 'sms' ? 'ב־SMS' : 'בוואטסאפ');
+  const [channel, setChannel] = useState<Channel>(preferred);
   const [cooldown, setCooldown] = useState(0);
   const [sentTo, setSentTo] = useState('');
   const [resetValid, setResetValid] = useState(reset?.valid ?? false);
@@ -379,13 +384,13 @@ export function AuthScreen({
       return;
     }
     if (method === 'otp') {
-      const res = await run(() => sendSigninCode({ phone: f.ident, channel: 'whatsapp' }));
+      const res = await run(() => sendSigninCode({ phone: f.ident, channel: preferred }));
       if (!res) return;
       if (res.ok) {
-        enterOtp('signin', res, 'whatsapp');
-        flash('קוד נשלח בוואטסאפ');
+        enterOtp('signin', res, res.channel);
+        flash(`קוד נשלח ${via(res.channel)}`);
       } else if (res.error === 'cooldown') {
-        enterOtp('signin', { ok: true, phone: toE164(f.ident) ?? f.ident, cooldownSeconds: res.retryInSeconds ?? 30 }, channel);
+        enterOtp('signin', { ok: true, phone: toE164(f.ident) ?? f.ident, cooldownSeconds: res.retryInSeconds ?? 30, channel }, channel);
       } else showError(res, 'signin');
       return;
     }
@@ -402,13 +407,13 @@ export function AuthScreen({
       setTried(true);
       return;
     }
-    const res = await run(() => sendSignupCode({ form: signupForm(), channel: 'whatsapp' }));
+    const res = await run(() => sendSignupCode({ form: signupForm(), channel: preferred }));
     if (!res) return;
     if (res.ok) {
-      enterOtp('signup', res, 'whatsapp');
-      flash('שלחנו קוד אימות בוואטסאפ');
+      enterOtp('signup', res, res.channel);
+      flash(`שלחנו קוד אימות ${via(res.channel)}`);
     } else if (res.error === 'cooldown') {
-      enterOtp('signup', { ok: true, phone: toE164(f.phone) ?? f.phone, cooldownSeconds: res.retryInSeconds ?? 30 }, channel);
+      enterOtp('signup', { ok: true, phone: toE164(f.phone) ?? f.phone, cooldownSeconds: res.retryInSeconds ?? 30, channel }, channel);
     } else showError(res, 'signup');
   };
 
@@ -436,12 +441,12 @@ export function AuthScreen({
     const res = await run(() => (otpFlow === 'signin' ? sendSigninCode({ phone: otpPhone, channel: ch }) : sendSignupCode({ form: signupForm(), channel: ch })));
     if (!res) return;
     if (res.ok) {
-      setChannel(ch);
+      setChannel(res.channel);
       setCooldown(res.cooldownSeconds);
       setOtp(Array(OTP_LEN).fill(''));
       setOtpBad(false);
       setTried(false);
-      flash(ch === 'sms' ? 'הקוד נשלח ב־SMS' : 'קוד חדש נשלח בוואטסאפ');
+      flash(res.channel === 'sms' ? 'הקוד נשלח ב־SMS' : 'קוד חדש נשלח בוואטסאפ');
     } else showError(res, 'otp');
   };
 
@@ -621,7 +626,7 @@ export function AuthScreen({
                 {errorNode}
 
                 <button type="submit" className={`${styles.primary} ${styles.primaryGap}`} disabled={busy}>
-                  {method === 'password' ? 'כניסה' : 'שליחת קוד בוואטסאפ'}
+                  {method === 'password' ? 'כניסה' : `שליחת קוד ${via(preferred)}`}
                 </button>
 
                 {biz && (
@@ -645,7 +650,7 @@ export function AuthScreen({
                           <path d="M8 1.6a6.4 6.4 0 0 0-5.5 9.7L1.6 14.4l3.2-.85A6.4 6.4 0 1 0 8 1.6Z" />
                         </svg>
                       </span>
-                      <span>{method === 'password' ? 'כניסה עם קוד בוואטסאפ' : 'כניסה עם סיסמה'}</span>
+                      <span>{method === 'password' ? `כניסה עם קוד ${via(preferred)}` : 'כניסה עם סיסמה'}</span>
                     </button>
                   </>
                 )}

@@ -24,6 +24,8 @@ export interface ListingHit {
   imgAlt: string;
   claimed: boolean;
   targets: Record<ClaimMethod, string | null>;
+  /** Methods the listing has a contact for but that cannot deliver a code right now (no provider connected). */
+  off: ClaimMethod[];
   prefill: {
     address: string;
     phone: string;

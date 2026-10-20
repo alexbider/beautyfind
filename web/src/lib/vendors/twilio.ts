@@ -9,6 +9,8 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 // MessagingServiceSid (MG…), plus StatusCallback for delivery reports. Answer: the Message resource, whose `sid`
 // (SM…) identifies it. Errors: JSON { code, message, more_info, status }.
 // Credentials check: GET {base}/2010-04-01/Accounts/{AccountSid}.json (sends nothing, costs nothing).
+// Voice (the ownership claim's "שיחה קולית"): POST {base}/2010-04-01/Accounts/{AccountSid}/Calls.json with To, From
+// (a Twilio phone number with voice), Twiml (what the call says) and StatusCallback. Answer: the Call resource (CA…).
 
 export const TWILIO_BASE = 'https://api.twilio.com';
 
@@ -61,6 +63,42 @@ export async function twilioSend(c: TwilioConfig, to: string, body: string): Pro
     method: 'POST',
     headers: { authorization: auth(c), 'content-type': 'application/x-www-form-urlencoded', accept: 'application/json' },
     body: twilioForm(c, to, body),
+    signal: AbortSignal.timeout(15_000),
+  }).catch(e => { throw new TwilioError(`network: ${e instanceof Error ? e.message : String(e)}`, 0); });
+  const j = await parse(r);
+  if (!r.ok) fail(r, j);
+  return { id: typeof j.sid === 'string' ? j.sid : 'accepted', status: typeof j.status === 'string' ? j.status : null };
+}
+
+export const isPhone = (v: string) => /^\+[1-9]\d{6,14}$/.test(v);
+
+/** The digits read one by one, so a text-to-speech voice does not read "123456" as a number. */
+export const spokenDigits = (code: string) => code.replace(/\D/g, '').split('').join(', ');
+
+const xml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+/** What the verification call says: the code twice, digit by digit, in Hebrew. */
+export function voiceTwiml(code: string, voice: string): string {
+  const say = (t: string) => `<Say voice="${xml(voice)}" language="he-IL">${xml(t)}</Say>`;
+  const digits = spokenDigits(code);
+  return `<Response><Pause length="1"/>${say(`שלום, זו שיחה מ-BeautyFind. קוד האימות שלך הוא: ${digits}.`)}<Pause length="1"/>${say(`שוב, הקוד הוא: ${digits}.`)}<Pause length="1"/>${say('תודה, להתראות.')}</Response>`;
+}
+
+/** The form body of one verification call. */
+export function twilioCallForm(c: TwilioConfig & { voiceFrom: string }, to: string, twiml: string): URLSearchParams {
+  const f = new URLSearchParams({ To: to, From: c.voiceFrom, Twiml: twiml });
+  if (c.statusCallback) f.set('StatusCallback', c.statusCallback);
+  return f;
+}
+
+/** Places one call that reads the code. Returns the call SID; throws TwilioError. */
+export async function twilioCall(c: TwilioConfig & { voiceFrom: string }, to: string, twiml: string): Promise<{ id: string; status: string | null }> {
+  if (!isPhone(to)) throw new TwilioError('invalid phone number', 400);
+  if (!isPhone(c.voiceFrom)) throw new TwilioError('no voice number configured (a Twilio phone number)', 400);
+  const r = await fetch(`${base(c)}/2010-04-01/Accounts/${encodeURIComponent(c.accountSid)}/Calls.json`, {
+    method: 'POST',
+    headers: { authorization: auth(c), 'content-type': 'application/x-www-form-urlencoded', accept: 'application/json' },
+    body: twilioCallForm(c, to, twiml),
     signal: AbortSignal.timeout(15_000),
   }).catch(e => { throw new TwilioError(`network: ${e instanceof Error ? e.message : String(e)}`, 0); });
   const j = await parse(r);

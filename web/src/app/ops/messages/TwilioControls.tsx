@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Toggle } from '@/components/ops/Toggle';
 import { ui } from '@/components/ops/ui';
-import { removeTwilioCredsAction, saveTwilioCredsAction, saveTwilioSenderAction, setTwilioFlagAction, twilioCheckAction, twilioTestAction } from './actions';
+import { removeTwilioCredsAction, saveTwilioCredsAction, saveTwilioSenderAction, saveTwilioVoiceAction, setTwilioFlagAction, twilioCheckAction, twilioTestAction, twilioTestCallAction } from './actions';
 
 // The Twilio card's controls. The Auth Token goes to the server once and is never sent back.
 
@@ -27,7 +27,7 @@ function useRun() {
 const Msg = ({ m }: { m: { ok: boolean; text: string } | null }) => (m ? <span className={m.ok ? ui.ok : ui.error} role="status">{m.text}</span> : null);
 
 export function TwilioToggle({ checked, canEdit }: { checked: boolean; canEdit: boolean }) {
-  return <Toggle name="enabled" checked={checked} title="שליחת קודי SMS דרך Twilio" sub="כולל גיבוי ה־SMS של קודי WhatsApp. כבוי: SMS עובר ל־Messaggio אם הוא פעיל, אחרת ללוג" onChange={setTwilioFlagAction} disabled={!canEdit} />;
+  return <Toggle name="enabled" checked={checked} title="שליחת קודי SMS ושיחות קוליות דרך Twilio" sub="כולל גיבוי ה־SMS של קודי WhatsApp. כבוי: SMS עובר ל־Messaggio אם הוא פעיל, אחרת ללוג" onChange={setTwilioFlagAction} disabled={!canEdit} />;
 }
 
 export function TwilioCredsForm({ accountSid, source, canEdit }: { accountSid: string | null; source: 'env' | 'admin' | null; canEdit: boolean }) {
@@ -94,6 +94,44 @@ export function TwilioTestForm({ ready, canEdit }: { ready: boolean; canEdit: bo
         <button type="button" className={`${ui.btn} ${ui.primary}`} disabled={pending || !ready || !phone.trim()} onClick={() => run(() => twilioTestAction({ phone }))}>{pending ? 'שולח…' : 'שליחת בדיקה'}</button>
       </div>
       <Msg m={msg} />
+    </div>
+  );
+}
+
+/** The voice call that reads a claim code aloud: the number it calls from, the voice, and a test call. */
+export function TwilioVoiceForm({ voiceFrom, voice, effectiveFrom, configured, canEdit }: { voiceFrom: string; voice: string; effectiveFrom: string | null; configured: boolean; canEdit: boolean }) {
+  const [v, setV] = useState({ voiceFrom, voice });
+  const [phone, setPhone] = useState('');
+  const save = useRun();
+  const test = useRun();
+  return (
+    <div className={ui.stack} style={{ gap: 10 }}>
+      <p className={ui.note}>{effectiveFrom ? <>שיחות קוליות יוצאות מ־<b dir="ltr">{effectiveFrom}</b>. כך עובד אימות הבעלות בשיחה קולית.</> : 'אין מספר Twilio לשיחות, ולכן האפשרות "שיחה קולית" באימות בעלות מוסתרת.'}</p>
+      <form className={ui.stack} style={{ gap: 10 }} onSubmit={e => { e.preventDefault(); save.run(() => saveTwilioVoiceAction(v)); }}>
+        <div className={ui.field}>
+          <label className={ui.label} htmlFor="tw-voice-from">מספר לשיחות (לא חובה)</label>
+          <input id="tw-voice-from" className={ui.input} dir="ltr" placeholder="+972…" value={v.voiceFrom} disabled={!canEdit} onChange={e => setV({ ...v, voiceFrom: e.target.value })} />
+          <span className={ui.hint}>מספר Twilio עם יכולת Voice. ריק: משתמשים בשולח ה־SMS אם הוא מספר טלפון. שם שולח אלפאנומרי לא יכול להתקשר.</span>
+        </div>
+        <div className={ui.field}>
+          <label className={ui.label} htmlFor="tw-voice">קול</label>
+          <input id="tw-voice" className={ui.input} dir="ltr" placeholder="Google.he-IL-Standard-A" value={v.voice} disabled={!canEdit} onChange={e => setV({ ...v, voice: e.target.value })} />
+          <span className={ui.hint}>קול עברי של Twilio, למשל Google.he-IL-Standard-A או Google.he-IL-Wavenet-B</span>
+        </div>
+        {canEdit ? <div className={ui.actions}><button type="submit" className={`${ui.btn} ${ui.small}`} disabled={save.pending}>שמירה</button><Msg m={save.msg} /></div> : null}
+      </form>
+      {canEdit ? (
+        <>
+          <div className={ui.field}>
+            <label className={ui.label} htmlFor="tw-call">שיחת בדיקה אל</label>
+            <input id="tw-call" className={ui.input} dir="ltr" inputMode="tel" placeholder="050-1234567" value={phone} onChange={e => setPhone(e.target.value)} />
+          </div>
+          <div className={ui.actions}>
+            <button type="button" className={ui.btn} disabled={test.pending || !configured || !effectiveFrom || !phone.trim()} onClick={() => test.run(() => twilioTestCallAction({ phone }))}>{test.pending ? 'מתקשר…' : 'שיחת בדיקה'}</button>
+          </div>
+          <Msg m={test.msg} />
+        </>
+      ) : null}
     </div>
   );
 }

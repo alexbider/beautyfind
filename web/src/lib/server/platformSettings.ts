@@ -71,6 +71,10 @@ export const PlatformSettingsSchema = z.object({
     enabled: z.boolean().default(false),
     from: z.string().trim().max(20).default(''), // E.164 Twilio number or alphanumeric sender ID
     messagingServiceSid: z.string().trim().max(40).default(''), // MG…; takes precedence over `from`
+    // Voice calls read the code aloud (the ownership claim's "שיחה קולית"). They need a Twilio phone number with
+    // voice; empty means `from` when that is a phone number. The voice is a Twilio text-to-speech voice for Hebrew.
+    voiceFrom: z.string().trim().max(20).default(''),
+    voice: z.string().trim().max(60).default('Google.he-IL-Standard-A'),
   }).prefault({}),
   // Team: per-role area levels (ops is always full). Stored sparsely.
   // partialRecord: zod 4's record with an enum key is exhaustive, and the overrides are sparse.

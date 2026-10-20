@@ -174,3 +174,35 @@ export async function twilioTestAction(input: { phone: string }): Promise<Res> {
   revalidatePath('/ops/messages');
   return r.ok ? { ok: true, text: `נשלח. מזהה ב־Twilio: ${r.id}. מצב המסירה יופיע ביומן למטה תוך כמה שניות.` } : { ok: false, error: r.error };
 }
+
+// ---------- Twilio voice (the ownership claim's "שיחה קולית") ----------
+
+export async function saveTwilioVoiceAction(input: { voiceFrom: string; voice: string }): Promise<Res> {
+  const user = await areaUserOrNull('messages', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { toE164 } = await import('@/lib/format');
+  const { isPhone } = await import('@/lib/vendors/twilio');
+  const raw = (input.voiceFrom ?? '').trim();
+  const voiceFrom = !raw ? '' : raw.startsWith('+') ? raw.replace(/[\s-]/g, '') : (toE164(raw) ?? raw);
+  if (voiceFrom && !isPhone(voiceFrom)) return { ok: false, error: 'מספר לשיחות: מספר Twilio בפורמט +972… (או ריק כדי להשתמש בשולח ה־SMS)' };
+  const voice = (input.voice ?? '').trim() || 'Google.he-IL-Standard-A';
+  if (!/^[A-Za-z0-9.\-_]{2,60}$/.test(voice)) return { ok: false, error: 'שם קול לא תקין, למשל Google.he-IL-Standard-A' };
+  const cur = await platformSettings();
+  await savePlatformSettings(user.id, { twilio: { ...cur.twilio, voiceFrom, voice } });
+  revalidatePath('/ops/messages');
+  return { ok: true, text: 'נשמר' };
+}
+
+export async function twilioTestCallAction(input: { phone: string }): Promise<Res> {
+  const user = await areaUserOrNull('messages', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { toE164 } = await import('@/lib/format');
+  const raw = (input.phone ?? '').trim();
+  const to = raw.startsWith('+') ? raw.replace(/[^\d+]/g, '') : toE164(raw);
+  if (!to || !/^\+\d{8,15}$/.test(to)) return { ok: false, error: 'מספר טלפון לא תקין' };
+  const { twilioTestCall } = await import('@/lib/server/twilio');
+  const r = await twilioTestCall(to);
+  await db.auditLog.create({ data: { actorId: user.id, action: 'twilio_test', subjectType: 'platform_settings', subjectId: user.id, meta: { ref: 'voice', ok: r.ok } } });
+  revalidatePath('/ops/messages');
+  return r.ok ? { ok: true, text: `השיחה יצאה. מזהה ב־Twilio: ${r.id}. בסיום השיחה המצב יופיע ביומן למטה.` } : { ok: false, error: r.error };
+}

@@ -8,7 +8,8 @@ const TTL_MIN = 10;
 const MAX_ATTEMPTS = 5;
 const RESEND_COOLDOWN_S = 30;
 
-export type OtpSendResult = { ok: true; cooldownSeconds: number } | { ok: false; error: 'cooldown'; retryInSeconds: number };
+/** `channel` is the channel that carried the code: a WhatsApp code goes by SMS when WhatsApp is not connected. */
+export type OtpSendResult = { ok: true; cooldownSeconds: number; channel: OtpChannel } | { ok: false; error: 'cooldown'; retryInSeconds: number };
 
 /** Sends a 6-digit code (M16). Only an HMAC of the code is stored. */
 export async function sendOtp(opts: {
@@ -36,20 +37,25 @@ export async function sendOtp(opts: {
       context: opts.context,
     },
   });
+  let channel: OtpChannel = opts.channel;
   try {
-    await messaging().send({
+    const sent = await messaging().send({
       channel: opts.channel,
       to: opts.target,
       template: 'M16_otp',
       vars: { code, minutes: String(TTL_MIN) },
       kind: 'service',
     });
+    if (sent.channel && sent.channel !== channel) {
+      channel = sent.channel;
+      await db.otpCode.update({ where: { id: row.id }, data: { channel } }).catch(() => undefined);
+    }
   } catch (e) {
     // Not delivered: drop the code so the person can ask again right away instead of waiting out the cooldown.
     await db.otpCode.delete({ where: { id: row.id } }).catch(() => undefined);
     throw e;
   }
-  return { ok: true, cooldownSeconds: RESEND_COOLDOWN_S };
+  return { ok: true, cooldownSeconds: RESEND_COOLDOWN_S, channel };
 }
 
 export type OtpVerifyResult =

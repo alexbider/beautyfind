@@ -59,6 +59,7 @@ export function VerifyStep(p: Props) {
         {CLAIM_METHODS.map(m => {
           const t = p.picked.targets[m];
           const on = m === p.method && !!t;
+          const off = p.picked.off.includes(m);
           const copy = METHOD_COPY[m];
           return (
             <button
@@ -73,8 +74,8 @@ export function VerifyStep(p: Props) {
               onClick={() => t && p.onMethod(m)}
             >
               <span className={styles.methodName}>{copy.name}</span>
-              {t ? <span dir="ltr" className={`${styles.methodTarget} ltr`}>{t}</span> : <span className={styles.methodTarget}>{copy.missingTarget}</span>}
-              <span className={styles.methodNote}>{t ? copy.note : copy.missingNote}</span>
+              {t ? <span dir="ltr" className={`${styles.methodTarget} ltr`}>{t}</span> : <span className={styles.methodTarget}>{off ? 'לא זמין כרגע' : copy.missingTarget}</span>}
+              <span className={styles.methodNote}>{t ? copy.note : off ? 'בחרו דרך אימות אחרת' : copy.missingNote}</span>
             </button>
           );
         })}

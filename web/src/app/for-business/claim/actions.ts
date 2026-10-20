@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { toE164 } from '@/lib/format';
 import { db } from '@/lib/server/db';
 import { sendOtp, verifyOtp } from '@/lib/server/otp';
+import { codeChannels } from '@/lib/server/verificationSend';
 import { nextRef } from '@/lib/server/refs';
 import { currentUser } from '@/lib/server/session';
 import { clearClaimProof, readClaimProof, setClaimProof } from './claim-token';
@@ -56,6 +57,8 @@ export async function sendClaimCode(input: { branchId: string; method: string })
     if (isClaimedRow(branch)) return { ok: false, error: 'claimed' };
     const t = claimTarget(branch, parsed.data.method);
     if (!t) return { ok: false, error: 'no_target' };
+    // A method whose channel has no provider would only write the code to the log: refuse it.
+    if (!(await codeChannels())[t.channel]) return { ok: false, error: 'no_target' };
     const res = await sendOtp({ target: t.target, channel: t.channel, purpose: 'claim', context: { branchId: branch.id, userId: user.id } });
     if (!res.ok) return { ok: false, error: 'cooldown', retryInSeconds: res.retryInSeconds };
     return { ok: true, cooldownSeconds: res.cooldownSeconds };

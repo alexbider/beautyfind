@@ -16,7 +16,8 @@ export interface OutgoingMessage {
 }
 
 export interface MessagingAdapter {
-  send(msg: OutgoingMessage): Promise<{ id: string }>;
+  /** `channel` is the channel that carried the message when it differs from the one asked (a WhatsApp code sent by SMS). */
+  send(msg: OutgoingMessage): Promise<{ id: string; channel?: Channel }>;
 }
 
 const consoleAdapter: MessagingAdapter = {
@@ -28,14 +29,14 @@ const consoleAdapter: MessagingAdapter = {
 };
 
 /**
- * The adapter every caller uses. Verification codes by SMS or WhatsApp go to Twilio (SMS) and Messaggio
- * (WhatsApp) when those are on (src/lib/server/verificationSend.ts); everything else, and codes while no
+ * The adapter every caller uses. Verification codes by SMS, WhatsApp or voice go to Twilio (SMS, calls) and
+ * Messaggio (WhatsApp) when those are on (src/lib/server/verificationSend.ts); everything else, and codes while no
  * provider is on, goes to the MESSAGING_ADAPTER below exactly as before.
  */
 export function messaging(): MessagingAdapter {
   return {
     async send(msg) {
-      if (msg.channel === 'sms' || msg.channel === 'whatsapp') {
+      if (msg.channel === 'sms' || msg.channel === 'whatsapp' || msg.channel === 'voice') {
         const { sendVerification } = await import('../server/verificationSend');
         const r = await sendVerification(msg);
         if (r) return r;
