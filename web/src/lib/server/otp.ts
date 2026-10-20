@@ -26,7 +26,7 @@ export async function sendOtp(opts: {
     if (age < RESEND_COOLDOWN_S) return { ok: false, error: 'cooldown', retryInSeconds: Math.ceil(RESEND_COOLDOWN_S - age) };
   }
   const code = process.env.NODE_ENV !== 'production' && process.env.DEV_FIXED_OTP ? process.env.DEV_FIXED_OTP : randomDigits(6);
-  await db.otpCode.create({
+  const row = await db.otpCode.create({
     data: {
       target: opts.target,
       channel: opts.channel,
@@ -36,13 +36,19 @@ export async function sendOtp(opts: {
       context: opts.context,
     },
   });
-  await messaging().send({
-    channel: opts.channel,
-    to: opts.target,
-    template: 'M16_otp',
-    vars: { code, minutes: String(TTL_MIN) },
-    kind: 'service',
-  });
+  try {
+    await messaging().send({
+      channel: opts.channel,
+      to: opts.target,
+      template: 'M16_otp',
+      vars: { code, minutes: String(TTL_MIN) },
+      kind: 'service',
+    });
+  } catch (e) {
+    // Not delivered: drop the code so the person can ask again right away instead of waiting out the cooldown.
+    await db.otpCode.delete({ where: { id: row.id } }).catch(() => undefined);
+    throw e;
+  }
   return { ok: true, cooldownSeconds: RESEND_COOLDOWN_S };
 }
 

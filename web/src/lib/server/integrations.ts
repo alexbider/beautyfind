@@ -2,6 +2,7 @@ import 'server-only';
 import { db } from './db';
 import { googleAvailable } from './googleDisplay';
 import { resolveServiceAccount } from './googleIndexing';
+import { messaggioStatus } from './messaggio';
 import { platformSettings } from './platformSettings';
 import { getSettings as importSettings } from './importOps';
 import { checkDatabase, checkSite } from './opsHealth';
@@ -30,10 +31,11 @@ const has = (k: string) => Boolean(process.env[k]);
 const rel = (d: Date | null) => (d ? `דיווח אחרון ${Math.max(0, Math.round((Date.now() - d.getTime()) / 60_000))} דק׳` : 'העובד עוד לא דיווח');
 
 export async function integrationGroups(): Promise<IntegrationGroup[]> {
-  const [conns, s, gKey, gOn] = await Promise.all([
+  const [conns, s, gKey, mg, gOn] = await Promise.all([
     db.providerConnection.groupBy({ by: ['provider', 'kind', 'status'], _count: true }).catch(() => []),
     importSettings().catch(() => null),
     resolveServiceAccount().catch(() => null),
+    messaggioStatus().catch(() => null),
     platformSettings().then(p => p.googleIndexing.enabled).catch(() => false),
   ]);
   const w = s?.workerStatus ?? null;
@@ -77,7 +79,7 @@ export async function integrationGroups(): Promise<IntegrationGroup[]> {
   };
   const messages: IntegrationGroup = {
     name: 'הודעות',
-    items: [msg('msg:whatsapp', 'WhatsApp Business', 'אישורי תור, תזכורות, הודעות שירות'), msg('msg:sms', 'SMS', 'גיבוי לוואטסאפ ו־OTP'), msg('msg:email', 'אימייל', 'חשבוניות, איפוס סיסמה, דיוור')],
+    items: [{ key: 'msg:messaggio', name: 'Messaggio', desc: 'קודי אימות ב־SMS וב־WhatsApp: כניסה, הרשמה, אישור בעלות והזמנות צוות', state: mg?.configured && mg.settings.enabled ? (mg.failed24h && !mg.sent24h ? 'attention' : 'connected') : 'not_connected', note: !mg?.configured ? 'לא הוזן מפתח API' : !mg.settings.enabled ? 'מפתח קיים; השליחה כבויה' : `${mg.sent24h} נשלחו ב־24 שעות${mg.failed24h ? ` · ${mg.failed24h} נכשלו` : ''}`, where: '/ops/messages', checkable: false, href: '/ops/messages' }, msg('msg:whatsapp', 'WhatsApp Business', 'אישורי תור, תזכורות, הודעות שירות'), msg('msg:sms', 'SMS', 'גיבוי לוואטסאפ ו־OTP'), msg('msg:email', 'אימייל', 'חשבוניות, איפוס סיסמה, דיוור')],
   };
   const calendars: IntegrationGroup = {
     name: 'יומנים',

@@ -81,6 +81,18 @@ What search engines may index is decided in `src/lib/indexing.ts` (pure) and rea
 - **Google side:** a Google Cloud project with the Web Search Indexing API and the Google Search Console API enabled, a service account with a JSON key, and that service account added as an **Owner** of the Search Console property (Settings, Users and permissions). Without Owner the Indexing API answers 403.
 - **Caveat:** Google documents the Indexing API for job posting and livestream pages. For other pages it accepts the notification but promises nothing; the sitemap keeps working alongside it.
 
+## Verification codes by SMS and WhatsApp (Messaggio)
+
+`src/lib/vendors/messaggio.ts` (the HTTP client, the only place that knows Messaggio's request shape) and `src/lib/server/messaggio.ts` (key, settings, routing, log). Set up on `/ops/messages`, card "Messaggio".
+
+- **What goes through it:** the verification code (`M16_otp`) by SMS or WhatsApp, which covers sign-in, sign-up, ownership claims and staff invites. Every other message (booking WhatsApp templates, email) still goes to `MESSAGING_ADAPTER` as before. With Messaggio off or without a key, codes also go there.
+- **Request:** `POST {baseUrl}/send` with `Messaggio-Login: <key>` and `{ recipients: [{ phone }], channels: [channel], <channel>: { from, content: [{ type: "text", text }] } }`; phones are international digits without "+". With a WhatsApp authentication template set, the WhatsApp content is `{ type: "template", template: { name, params: [code] } }`. The answer's `messages[0].message_uid` is kept as the provider id. This shape was written without access to Messaggio's documentation and must be checked against it with a real test send; any difference is a change to that one file and its test.
+- **Fallback:** a WhatsApp send the API refuses is retried once as SMS when "גיבוי ב־SMS" is on. A 401 or 403 (bad key) is not retried. When the code cannot be sent, `sendOtp` deletes it and throws, so the person sees "משהו השתבש" and can ask again without waiting out the cooldown.
+- **Key:** entered on the card (password field), stored in `platform_secrets` encrypted with `DATA_KEY`, shown only as its last four characters; `MESSAGGIO_LOGIN` on Vercel wins when set. Saves and removals are `messaggio_key` audit rows; settings changes `messaggio_update`; test sends `messaggio_test`.
+- **Log:** every attempt is a row in `message_sends` (provider, channel, template, masked recipient, status, provider id or error, fallback, test flag), shown on the card. Codes and message text are never stored.
+- **Status:** the card, the KPI on `/ops/messages`, the Messaggio card on `/ops/integrations` and the health page read the same status.
+- **Not built yet:** Messaggio's delivery reports (DLR callbacks). "Sent" means Messaggio accepted the message, not that the phone received it.
+
 ## AI completion of listings
 
 `src/lib/server/enhanceRuns.ts`. A completion is an enhance run of the import worker: the website read again, ChatGPT research for what is still missing, the writer for the description and FAQs, and images copied, each step only where the listing's gaps call for it (`planFor` in `src/lib/import/enrichPlan.ts`). It fills empty fields only; a staff or owner edit stands. Two rules carry over from the import: a claimed listing is never touched, and only live listings are completed.

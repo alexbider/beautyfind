@@ -53,6 +53,18 @@ export const PlatformSettingsSchema = z.object({
     dailyInspectLimit: z.number().int().min(0).max(2000).default(2000), // URL Inspection allows 2,000 a day per property
     property: z.string().trim().max(200).default(''), // Search Console property; empty means SITE_URL with a trailing slash
   }).prefault({}),
+  // Messaggio (/ops/messages): SMS and WhatsApp for verification codes (src/lib/vendors/messaggio.ts). The API
+  // key is a secret (platform_secrets or MESSAGGIO_LOGIN), never stored here.
+  messaggio: z.object({
+    enabled: z.boolean().default(false),
+    sms: z.boolean().default(true),
+    whatsapp: z.boolean().default(true),
+    smsSender: z.string().trim().max(11).default('BeautyFind'), // alphanumeric sender id, up to 11 characters
+    whatsappSender: z.string().trim().max(64).default(''), // the WhatsApp sender registered in Messaggio
+    whatsappTemplate: z.string().trim().max(120).default(''), // approved authentication template; empty sends text
+    fallbackToSms: z.boolean().default(true), // a WhatsApp send the API refuses is retried once as SMS
+    baseUrl: z.string().trim().url().max(200).default('https://msg.messaggio.com/api/v1'),
+  }).prefault({}),
   // Team: per-role area levels (ops is always full). Stored sparsely.
   // partialRecord: zod 4's record with an enum key is exhaustive, and the overrides are sparse.
   rolePermissions: z.partialRecord(z.enum(OPS_ROLES as [string, ...string[]]), z.partialRecord(z.enum(AREAS as [string, ...string[]]), Level)).default({}),

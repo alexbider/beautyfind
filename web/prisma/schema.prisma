@@ -1858,6 +1858,25 @@ model PlatformSecret {
   @@map("platform_secrets")
 }
 
+/// One outgoing message handed to a real provider (today: Messaggio for SMS and WhatsApp verification codes),
+/// for the delivery log on /ops/messages. The recipient is stored masked; the message text and codes never are.
+model MessageSend {
+  id           String   @id @default(uuid()) @db.Uuid
+  provider     String
+  channel      String
+  template     String
+  toMasked     String   @map("to_masked")
+  status       String // sent | failed
+  providerId   String?  @map("provider_id")
+  error        String?
+  fallbackFrom String?  @map("fallback_from")
+  test         Boolean  @default(false)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("message_sends")
+}
+
 /// One run of the indexer (cron, manual or after a publish), for the admin history.
 model IndexingRun {
   id          String    @id @default(uuid()) @db.Uuid

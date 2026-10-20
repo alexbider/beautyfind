@@ -1,8 +1,8 @@
 import 'server-only';
 
-// Messaging vendors (WhatsApp BSP, SMS gateway, transactional email) are not chosen yet
-// (see 08-open-decisions.md §B). Everything sends through this interface; the console
-// adapter logs instead of sending so flows are testable end to end.
+// Everything sends through this interface. Verification codes by SMS and WhatsApp go through Messaggio when
+// it is configured on /ops/messages; the other messages (WhatsApp templates, email) have no provider yet and
+// go to MESSAGING_ADAPTER, whose console adapter logs instead of sending so flows are testable end to end.
 
 export type Channel = 'whatsapp' | 'sms' | 'voice' | 'email';
 
@@ -27,7 +27,25 @@ const consoleAdapter: MessagingAdapter = {
   },
 };
 
+/**
+ * The adapter every caller uses. Verification codes by SMS or WhatsApp go to Messaggio when it is switched on
+ * and has a key (src/lib/server/messaggio.ts); everything else, and codes while Messaggio is off, goes to the
+ * MESSAGING_ADAPTER below exactly as before.
+ */
 export function messaging(): MessagingAdapter {
+  return {
+    async send(msg) {
+      if (msg.channel === 'sms' || msg.channel === 'whatsapp') {
+        const { sendViaMessaggio } = await import('../server/messaggio');
+        const r = await sendViaMessaggio(msg);
+        if (r) return r;
+      }
+      return baseAdapter().send(msg);
+    },
+  };
+}
+
+function baseAdapter(): MessagingAdapter {
   const name = process.env.MESSAGING_ADAPTER ?? 'console';
   switch (name) {
     case 'console':

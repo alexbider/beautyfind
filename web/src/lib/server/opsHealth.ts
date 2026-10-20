@@ -69,5 +69,10 @@ export async function serviceChecks(): Promise<ServiceCheck[]> {
   const storage: ServiceCheck = process.env.STORAGE_ADAPTER === 'blob' || process.env.BLOB_READ_WRITE_TOKEN
     ? { key: 'storage', name: 'אחסון תמונות · Vercel Blob', state: 'ok', ms: null, note: 'מחובר' }
     : { key: 'storage', name: 'אחסון תמונות', state: 'unknown', ms: null, note: 'אחסון מקומי (UPLOAD_DIR)' };
-  return [site, dbc, worker, msg, storage];
+  const { messaggioStatus } = await import('./messaggio');
+  const mg = await messaggioStatus().catch(() => null);
+  const codes: ServiceCheck = mg?.configured && mg.settings.enabled
+    ? { key: 'messaggio', name: 'קודי אימות · Messaggio', state: mg.failed24h && !mg.sent24h ? 'down' : 'ok', ms: null, note: `${mg.sent24h} נשלחו ב־24 שעות${mg.failed24h ? ` · ${mg.failed24h} נכשלו` : ''}` }
+    : { key: 'messaggio', name: 'קודי אימות · Messaggio', state: process.env.NODE_ENV === 'production' ? 'down' : 'unknown', ms: null, note: mg?.configured ? 'מפתח קיים; השליחה כבויה ב־/ops/messages' : 'לא מחובר: קודי האימות נרשמים ללוג בלבד' };
+  return [site, dbc, worker, codes, msg, storage];
 }
