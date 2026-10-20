@@ -1,7 +1,7 @@
 import 'server-only';
 
-// Everything sends through this interface. Verification codes by SMS and WhatsApp go through Messaggio when
-// it is configured on /ops/messages; the other messages (WhatsApp templates, email) have no provider yet and
+// Everything sends through this interface. Verification codes go through Twilio (SMS) and Messaggio (WhatsApp)
+// when they are configured on /ops/messages; the other messages (WhatsApp templates, email) have no provider yet and
 // go to MESSAGING_ADAPTER, whose console adapter logs instead of sending so flows are testable end to end.
 
 export type Channel = 'whatsapp' | 'sms' | 'voice' | 'email';
@@ -28,16 +28,16 @@ const consoleAdapter: MessagingAdapter = {
 };
 
 /**
- * The adapter every caller uses. Verification codes by SMS or WhatsApp go to Messaggio when it is switched on
- * and has a key (src/lib/server/messaggio.ts); everything else, and codes while Messaggio is off, goes to the
- * MESSAGING_ADAPTER below exactly as before.
+ * The adapter every caller uses. Verification codes by SMS or WhatsApp go to Twilio (SMS) and Messaggio
+ * (WhatsApp) when those are on (src/lib/server/verificationSend.ts); everything else, and codes while no
+ * provider is on, goes to the MESSAGING_ADAPTER below exactly as before.
  */
 export function messaging(): MessagingAdapter {
   return {
     async send(msg) {
       if (msg.channel === 'sms' || msg.channel === 'whatsapp') {
-        const { sendViaMessaggio } = await import('../server/messaggio');
-        const r = await sendViaMessaggio(msg);
+        const { sendVerification } = await import('../server/verificationSend');
+        const r = await sendVerification(msg);
         if (r) return r;
       }
       return baseAdapter().send(msg);

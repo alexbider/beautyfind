@@ -11,8 +11,6 @@ import { open, seal } from './secure';
 // row in message_sends with the recipient masked; codes and message text are never stored or logged.
 
 const SECRET_KEY = 'messaggio_login';
-/** The templates Messaggio sends. Everything else keeps going through MESSAGING_ADAPTER as before. */
-export const MESSAGGIO_TEMPLATES = new Set(['M16_otp']);
 
 export type KeySource = 'env' | 'admin';
 
@@ -54,36 +52,33 @@ async function log(row: { channel: string; template: string; to: string; status:
   await db.messageSend.create({ data: { provider: 'messaggio', channel: row.channel, template: row.template, toMasked: maskPhone(row.to), status: row.status, providerId: row.providerId ?? null, error: row.error?.slice(0, 300) ?? null, fallbackFrom: row.fallbackFrom ?? null, test: !!row.test } }).catch(() => undefined);
 }
 
-/**
- * Sends one message through Messaggio on the asked channel, and once more as SMS when WhatsApp is refused and
- * the fallback is on. Returns null when Messaggio does not handle this message (off, no key, channel off, not a
- * verification template), so the caller uses the default adapter. Throws when Messaggio handles it and fails.
- */
+/** What Messaggio can send right now. Null when it is off or has no key (force: ignore the on switches). */
+export async function messaggioReady(force = false): Promise<{ cfg: MessaggioConfig; whatsapp: boolean; sms: boolean; fallbackToSms: boolean } | null> {
+  const [s, key] = await Promise.all([platformSettings(), messaggioLogin()]);
+  if (!key || (!s.messaggio.enabled && !force)) return null;
+  const m = s.messaggio;
+  return { cfg: configOf(key.login, m), whatsapp: (m.whatsapp || force) && !!m.whatsappSender, sms: m.sms || force, fallbackToSms: m.fallbackToSms };
+}
+
+/** One message on one channel through Messaggio, logged. Throws MessaggioError. */
+export async function messaggioAttempt(cfg: MessaggioConfig, channel: MessaggioChannel, msg: Pick<OutgoingMessage, 'to' | 'template' | 'vars'>, text: string, extra: { fallbackFrom?: string; test?: boolean } = {}): Promise<{ id: string }> {
+  try {
+    const r = await messaggioSend(cfg, channel, msg.to, text, msg.vars);
+    await log({ channel, template: msg.template, to: msg.to, status: 'sent', providerId: r.id, ...extra });
+    return r;
+  } catch (e) {
+    await log({ channel, template: msg.template, to: msg.to, status: 'failed', error: e instanceof Error ? e.message : String(e), ...extra });
+    throw e;
+  }
+}
+
+/** Kept for callers of the Messaggio-only path; verification codes go through sendVerification (verificationSend.ts). */
 export async function sendViaMessaggio(msg: OutgoingMessage, opts: { test?: boolean; force?: boolean } = {}): Promise<{ id: string } | null> {
   if (msg.channel !== 'sms' && msg.channel !== 'whatsapp') return null;
-  if (!opts.force && !MESSAGGIO_TEMPLATES.has(msg.template)) return null;
-  const s = (await platformSettings()).messaggio;
-  const key = await messaggioLogin();
-  if (!key || (!s.enabled && !opts.force)) return null;
-  const channels: MessaggioChannel[] = [];
-  if (msg.channel === 'whatsapp' && (s.whatsapp || opts.force)) channels.push('whatsapp');
-  if ((msg.channel === 'sms' && (s.sms || opts.force)) || (msg.channel === 'whatsapp' && s.fallbackToSms && s.sms)) channels.push('sms');
-  if (!channels.length) return null;
-  const cfg = configOf(key.login, s);
-  const text = verificationText(msg.template, msg.vars);
-  let last: unknown = null;
-  for (const [i, ch] of channels.entries()) {
-    try {
-      const r = await messaggioSend(cfg, ch, msg.to, text, msg.vars);
-      await log({ channel: ch, template: msg.template, to: msg.to, status: 'sent', providerId: r.id, fallbackFrom: i > 0 ? channels[0] : undefined, test: opts.test });
-      return r;
-    } catch (e) {
-      last = e;
-      await log({ channel: ch, template: msg.template, to: msg.to, status: 'failed', error: e instanceof Error ? e.message : String(e), fallbackFrom: i > 0 ? channels[0] : undefined, test: opts.test });
-      if (e instanceof MessaggioError && (e.status === 401 || e.status === 403)) break; // a bad key fails on every channel
-    }
-  }
-  throw last instanceof Error ? last : new Error('Messaggio send failed');
+  const mg = await messaggioReady(opts.force);
+  if (!mg) return null;
+  if (msg.channel === 'whatsapp' && !mg.whatsapp) throw new MessaggioError('no WhatsApp sender configured', 400);
+  return messaggioAttempt(mg.cfg, msg.channel, msg, verificationText(msg.template, msg.vars), { test: opts.test });
 }
 
 /** Admin test: one real message to a phone the staff member enters, whatever the switches say. */

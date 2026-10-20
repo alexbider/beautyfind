@@ -65,6 +65,13 @@ export const PlatformSettingsSchema = z.object({
     fallbackToSms: z.boolean().default(true), // a WhatsApp send the API refuses is retried once as SMS
     baseUrl: z.string().trim().url().max(200).default('https://msg.messaggio.com/api/v1'),
   }).prefault({}),
+  // Twilio (/ops/messages): SMS for verification codes (src/lib/vendors/twilio.ts). When on, every SMS code goes
+  // through Twilio, including the SMS fallback of a WhatsApp code. Account SID and Auth Token are secrets.
+  twilio: z.object({
+    enabled: z.boolean().default(false),
+    from: z.string().trim().max(20).default(''), // E.164 Twilio number or alphanumeric sender ID
+    messagingServiceSid: z.string().trim().max(40).default(''), // MG…; takes precedence over `from`
+  }).prefault({}),
   // Team: per-role area levels (ops is always full). Stored sparsely.
   // partialRecord: zod 4's record with an enum key is exhaustive, and the overrides are sparse.
   rolePermissions: z.partialRecord(z.enum(OPS_ROLES as [string, ...string[]]), z.partialRecord(z.enum(AREAS as [string, ...string[]]), Level)).default({}),

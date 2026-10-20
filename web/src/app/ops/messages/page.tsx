@@ -9,13 +9,15 @@ import { RULES, TEMPLATES } from './catalog';
 import { DraftEditor } from './DraftEditor';
 import { MessaggioKeyForm, MessaggioSettingsForm, MessaggioTestForm, MessaggioToggle } from './MessaggioControls';
 import { messaggioStatus } from '@/lib/server/messaggio';
+import { twilioStatus } from '@/lib/server/twilio';
+import { TwilioCredsForm, TwilioSenderForm, TwilioTestForm, TwilioToggle } from './TwilioControls';
 
 export const metadata: Metadata = { title: 'הודעות ותבניות · ניהול', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
 
 export default async function MessagesPage() {
   const user = await requireArea('messages', 'view', '/ops/messages');
-  const [level, s, consents, optedOut, otp30, mg, sends] = await Promise.all([
+  const [level, s, consents, optedOut, otp30, mg, sends, tw] = await Promise.all([
     areaLevel(user, 'messages'),
     platformSettings(),
     db.messageConsent.groupBy({ by: ['channel'], where: { marketing: true }, _count: true }),
@@ -23,6 +25,7 @@ export default async function MessagesPage() {
     db.otpCode.count({ where: { createdAt: { gte: new Date(Date.now() - 30 * 86_400_000) } } }),
     messaggioStatus(),
     db.messageSend.findMany({ orderBy: { createdAt: 'desc' }, take: 20 }),
+    twilioStatus(),
   ]);
   const mgLive = mg.configured && mg.settings.enabled;
   const canEdit = atLeast(level, 'edit');
@@ -34,13 +37,27 @@ export default async function MessagesPage() {
     <AdminShell user={user}>
       <PageHead eyebrow="צמיחה" title="הודעות ותבניות" lead="כל הודעה שהפלטפורמה שולחת: מה מפעיל אותה, למי, באיזה ערוץ, ומה כבר פעיל בקוד. הודעות שירות תמיד נשלחות; שיווק רק בהסכמה." />
       <Kpis items={[
-        { label: 'קודי אימות (SMS / WhatsApp)', value: mgLive ? 'Messaggio' : 'לא מחובר', note: mgLive ? `${int(mg.sent24h)} נשלחו ב־24 שעות${mg.failed24h ? ` · ${int(mg.failed24h)} נכשלו` : ''}` : 'הקודים נרשמים ללוג בלבד עד שמחברים את Messaggio', tone: mgLive ? (mg.failed24h ? 'warn' : 'ok') : 'bad' },
+        { label: 'קודי אימות', value: tw.ready || mgLive ? [tw.ready ? 'Twilio' : null, mgLive && mg.settings.whatsapp && mg.settings.whatsappSender ? 'Messaggio' : null].filter(Boolean).join(' + ') || 'Messaggio' : 'לא מחובר', note: tw.ready || mgLive ? `SMS: ${tw.ready ? 'Twilio' : mgLive && mg.settings.sms ? 'Messaggio' : '—'} · WhatsApp: ${mgLive && mg.settings.whatsapp && mg.settings.whatsappSender ? 'Messaggio' : 'עובר ל־SMS'} · ${int(tw.sent24h + mg.sent24h)} נשלחו ב־24 שעות` : 'הקודים נרשמים ללוג בלבד עד שמחברים ספק', tone: tw.ready || mgLive ? (tw.failed24h + mg.failed24h ? 'warn' : 'ok') : 'bad' },
         { label: 'שאר ההודעות', value: adapter === 'console' ? 'לא מחובר' : adapter, note: adapter === 'console' ? 'MESSAGING_ADAPTER=console: הודעות נרשמות ללוג בלבד' : 'WhatsApp, SMS ואימייל דרך הספק', tone: adapter === 'console' ? 'warn' : 'ok' },
         { label: 'תבניות פעילות בקוד', value: `${int(live)} / ${int(TEMPLATES.length)}`, note: 'נשלחות לפי מזהה תבנית' },
         { label: 'הסכמות שיווק', value: int(consents.reduce((a, x) => a + x._count, 0)), note: `WhatsApp ${int(c('wa'))} · אימייל ${int(c('email'))} · SMS ${int(c('sms'))} · ${int(optedOut)} הסרות · ${int(otp30)} קודים ב־30 יום` },
       ]} />
-      <Card title="Messaggio · קודי אימות ב־SMS וב־WhatsApp">
-        <p className={ui.note} style={{ marginBottom: 14 }}>{mgLive ? <Chip tone="ok">פעיל</Chip> : <Chip tone="warn">כבוי</Chip>} {mgLive ? 'קודי הכניסה, ההרשמה, אישור הבעלות והזמנות הצוות נשלחים דרך Messaggio.' : 'קודי האימות נרשמים ללוג בלבד ולא מגיעים ללקוחות. הזינו מפתח, שלחו בדיקה והפעילו.'}</p>
+      <Card title="Twilio · קודי אימות ב־SMS">
+        <p className={ui.note} style={{ marginBottom: 14 }}>{tw.ready ? <Chip tone="ok">פעיל</Chip> : <Chip tone="warn">כבוי</Chip>} {tw.ready ? `כל קוד אימות ב־SMS נשלח דרך Twilio. ב־24 שעות: ${int(tw.sent24h)} נשלחו, ${int(tw.delivered24h)} נמסרו${tw.undelivered24h ? `, ${int(tw.undelivered24h)} לא נמסרו` : ''}${tw.failed24h ? `, ${int(tw.failed24h)} נדחו` : ''}.` : 'הזינו את פרטי החשבון והשולח, שלחו SMS בדיקה והפעילו.'}</p>
+        <div className={ui.grid2}>
+          <div className={ui.stack} style={{ gap: 14 }}>
+            <TwilioCredsForm accountSid={tw.accountSid} source={tw.keySource} canEdit={canEdit} />
+            <TwilioToggle checked={tw.settings.enabled} canEdit={canEdit} />
+          </div>
+          <div className={ui.stack} style={{ gap: 14 }}>
+            <TwilioSenderForm from={tw.settings.from} messagingServiceSid={tw.settings.messagingServiceSid} canEdit={canEdit} />
+            <TwilioTestForm ready={tw.configured && !!(tw.settings.from || tw.settings.messagingServiceSid)} canEdit={canEdit} />
+            <p className={ui.hint}>{tw.callback ? <>דוחות מסירה: Twilio מדווח ל־<span dir="ltr" className={ui.mono}>{tw.callback}</span> (חתום ונבדק).</> : 'דוחות מסירה פעילים רק באתר החי (כתובת https ציבורית).'}</p>
+          </div>
+        </div>
+      </Card>
+      <Card title="Messaggio · קודי אימות ב־WhatsApp">
+        <p className={ui.note} style={{ marginBottom: 14 }}>{mgLive ? <Chip tone="ok">פעיל</Chip> : <Chip tone="warn">כבוי</Chip>} {mgLive ? 'קודים ב־WhatsApp נשלחים דרך Messaggio. קודים ב־SMS עוברים דרך Twilio כשהוא פעיל, ורק אחרת דרך Messaggio.' : 'כבוי: קודים ב־WhatsApp נשלחים ב־SMS (דרך Twilio כשהוא פעיל). הזינו מפתח, שלחו בדיקה והפעילו.'}</p>
         <div className={ui.grid2}>
           <div className={ui.stack} style={{ gap: 14 }}>
             <MessaggioKeyForm hint={mg.keyHint} source={mg.keySource} canEdit={canEdit} />
@@ -57,17 +74,18 @@ export default async function MessagesPage() {
           </div>
         </div>
       </Card>
-      <Card title="שליחות אחרונות דרך הספק" sub="הנמען מוצג חלקית; הקודים ותוכן ההודעה לא נשמרים" flush>
+      <Card title="שליחות אחרונות דרך הספקים" sub="הנמען מוצג חלקית; הקודים ותוכן ההודעה לא נשמרים" flush>
         {sends.length ? (
-          <Table head={['זמן', 'ערוץ', 'הודעה', 'נמען', 'מצב', 'מזהה / שגיאה']}>
+          <Table head={['זמן', 'ספק', 'ערוץ', 'הודעה', 'נמען', 'מצב', 'מזהה / שגיאה']}>
             {sends.map(m => (
               <tr key={m.id}>
                 <td className={ui.num}>{dateTimeIL(m.createdAt)}</td>
+                <td>{m.provider === 'twilio' ? 'Twilio' : 'Messaggio'}</td>
                 <td>{m.channel === 'sms' ? 'SMS' : 'WhatsApp'}{m.fallbackFrom ? <span className={ui.sub}>גיבוי ל־{m.fallbackFrom === 'whatsapp' ? 'WhatsApp' : m.fallbackFrom}</span> : null}</td>
                 <td>{m.test ? 'בדיקה' : m.template === 'M16_otp' ? 'קוד אימות' : m.template}</td>
                 <td className={ui.num} dir="ltr">{m.toMasked}</td>
-                <td>{m.status === 'sent' ? <Chip tone="ok">נשלח</Chip> : <Chip tone="bad">נכשל</Chip>}</td>
-                <td>{m.error ? <span className={ui.error} dir="ltr">{m.error}</span> : <span className={ui.mono} dir="ltr">{m.providerId}</span>}</td>
+                <td>{m.status === 'failed' ? <Chip tone="bad">נדחה</Chip> : m.deliveryStatus === 'delivered' ? <Chip tone="ok">נמסר</Chip> : m.deliveryStatus === 'undelivered' || m.deliveryStatus === 'failed' ? <Chip tone="bad">לא נמסר</Chip> : <Chip tone="info">נשלח</Chip>}{m.deliveryStatus && !['delivered', 'undelivered', 'failed'].includes(m.deliveryStatus) ? <span className={ui.sub} dir="ltr">{m.deliveryStatus}</span> : null}</td>
+                <td>{m.error || m.deliveryError ? <span className={ui.error} dir="ltr">{m.error ?? m.deliveryError}</span> : <span className={ui.mono} dir="ltr">{m.providerId}</span>}</td>
               </tr>
             ))}
           </Table>

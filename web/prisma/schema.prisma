@@ -1872,8 +1872,13 @@ model MessageSend {
   fallbackFrom String?  @map("fallback_from")
   test         Boolean  @default(false)
   createdAt    DateTime @default(now()) @map("created_at")
+  /// Delivery report from the provider (Twilio status callback): queued, sent, delivered, undelivered, failed.
+  deliveryStatus String?   @map("delivery_status")
+  deliveryError  String?   @map("delivery_error")
+  deliveredAt    DateTime? @map("delivered_at")
 
   @@index([createdAt])
+  @@index([provider, providerId])
   @@map("message_sends")
 }
 

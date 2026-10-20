@@ -81,7 +81,21 @@ What search engines may index is decided in `src/lib/indexing.ts` (pure) and rea
 - **Google side:** a Google Cloud project with the Web Search Indexing API and the Google Search Console API enabled, a service account with a JSON key, and that service account added as an **Owner** of the Search Console property (Settings, Users and permissions). Without Owner the Indexing API answers 403.
 - **Caveat:** Google documents the Indexing API for job posting and livestream pages. For other pages it accepts the notification but promises nothing; the sitemap keeps working alongside it.
 
-## Verification codes by SMS and WhatsApp (Messaggio)
+## Verification codes: Twilio (SMS) and Messaggio (WhatsApp)
+
+Routing is in `src/lib/server/verificationSend.ts`: an SMS code goes to **Twilio** when it is on, otherwise to Messaggio's SMS when that is on; a WhatsApp code goes to **Messaggio** when its WhatsApp is on and has a sender, and a refused WhatsApp send is retried once by SMS (the same SMS route) when "גיבוי ב־SMS" is on; a WhatsApp code with no WhatsApp route goes by SMS. A provider that rejects the credentials (401/403) is not asked again for that code. With nothing on, codes go to `MESSAGING_ADAPTER` (the log).
+
+### Twilio
+
+`src/lib/vendors/twilio.ts` (HTTP client and webhook signature), `src/lib/server/twilio.ts` (credentials, settings, log, status), card "Twilio" on `/ops/messages`.
+
+- **Send:** `POST https://api.twilio.com/2010-04-01/Accounts/{AccountSid}/Messages.json`, basic auth Account SID : Auth Token, form `To`, `Body`, `From` (Twilio number or alphanumeric sender ID) or `MessagingServiceSid` (wins), and `StatusCallback`. The returned `sid` (SM…) is the provider id. Twilio errors keep their code (e.g. `21211: The 'To' number is not a valid phone number.`).
+- **Credentials:** Account SID and Auth Token, entered on the card (the token in a password field), stored together in `platform_secrets` encrypted with `DATA_KEY`; only the SID is shown. `TWILIO_ACCOUNT_SID` plus `TWILIO_AUTH_TOKEN` on Vercel win. "שמירה ובדיקה" saves and then reads the account (`GET /Accounts/{sid}.json`, sends nothing); a trial account is flagged, since it can only send to verified numbers.
+- **Delivery reports:** every SMS carries `StatusCallback = SITE_URL/api/twilio/status` (only on a public https address). The route checks `X-Twilio-Signature` (HMAC-SHA1 with the Auth Token over the URL and the sorted parameters, as Twilio documents) and the AccountSid, then writes `delivery_status` (queued, sent, delivered, undelivered, failed), the error code and `delivered_at` on the `message_sends` row. The log on `/ops/messages` shows נמסר / לא נמסר.
+- **Switch:** "שליחת קודי SMS דרך Twilio" can be turned on only with a sender set. Test SMS ("שליחת בדיקה") works with the switch off. Audit: `twilio_key`, `twilio_update`, `twilio_test`.
+- **Israel:** an alphanumeric sender ID (e.g. BeautyFind) or a number able to send to Israel must be enabled in the Twilio account (Messaging, Geo permissions: Israel on).
+
+### Messaggio
 
 `src/lib/vendors/messaggio.ts` (the HTTP client, the only place that knows Messaggio's request shape) and `src/lib/server/messaggio.ts` (key, settings, routing, log). Set up on `/ops/messages`, card "Messaggio".
 

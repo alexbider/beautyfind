@@ -100,3 +100,77 @@ export async function messaggioTestAction(input: z.input<typeof TestInput>): Pro
   revalidatePath('/ops/messages');
   return r.ok ? { ok: true, text: `נשלח. מזהה ב־Messaggio: ${r.id}. בדקו שההודעה הגיעה לטלפון.` } : { ok: false, error: r.error };
 }
+
+// ---------- Twilio (SMS verification codes) ----------
+
+export async function setTwilioFlagAction(name: string, value: boolean): Promise<{ ok: boolean; error?: string }> {
+  const user = await areaUserOrNull('messages', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  if (name !== 'enabled') return { ok: false, error: 'הגדרה לא מוכרת' };
+  const cur = await platformSettings();
+  if (value && !cur.twilio.from && !cur.twilio.messagingServiceSid) return { ok: false, error: 'הגדירו קודם שולח (From או Messaging Service SID)' };
+  await savePlatformSettings(user.id, { twilio: { ...cur.twilio, enabled: value } });
+  await db.auditLog.create({ data: { actorId: user.id, action: 'twilio_update', subjectType: 'platform_settings', subjectId: user.id, meta: { ref: name, value } } });
+  revalidatePath('/ops/messages');
+  return { ok: true };
+}
+
+export async function saveTwilioSenderAction(input: { from: string; messagingServiceSid: string }): Promise<Res> {
+  const user = await areaUserOrNull('messages', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { isSender, isServiceSid } = await import('@/lib/vendors/twilio');
+  const rawFrom = (input.from ?? '').trim();
+  const { toE164 } = await import('@/lib/format');
+  const from = /^\+/.test(rawFrom) ? rawFrom.replace(/[\s-]/g, '') : /^\d/.test(rawFrom) ? (toE164(rawFrom) ?? rawFrom) : rawFrom;
+  const mg = (input.messagingServiceSid ?? '').trim();
+  if (!from && !mg) return { ok: false, error: 'צריך מספר שולח (From) או Messaging Service SID' };
+  if (from && !isSender(from)) return { ok: false, error: 'From: מספר Twilio בפורמט +972… או שם שולח של עד 11 תווים לטיניים' };
+  if (mg && !isServiceSid(mg)) return { ok: false, error: 'Messaging Service SID מתחיל ב־MG ואחריו 32 תווים' };
+  const cur = await platformSettings();
+  await savePlatformSettings(user.id, { twilio: { ...cur.twilio, from, messagingServiceSid: mg } });
+  revalidatePath('/ops/messages');
+  return { ok: true, text: 'נשמר' };
+}
+
+export async function saveTwilioCredsAction(input: { accountSid: string; authToken: string }): Promise<Res> {
+  const user = await areaUserOrNull('messages', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { saveTwilioCreds, twilioCheck } = await import('@/lib/server/twilio');
+  const r = await saveTwilioCreds(input.accountSid ?? '', input.authToken ?? '', user.id);
+  if (!r.ok) return r;
+  await db.auditLog.create({ data: { actorId: user.id, action: 'twilio_key', subjectType: 'platform_settings', subjectId: user.id, meta: { ref: r.label, op: 'save' } } });
+  revalidatePath('/ops/messages');
+  const check = await twilioCheck();
+  return check.ok ? { ok: true, text: `נשמר. ${check.text}` } : { ok: false, error: `נשמר, אבל הבדיקה נכשלה: ${check.error}` };
+}
+
+export async function removeTwilioCredsAction(): Promise<Res> {
+  const user = await areaUserOrNull('messages', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { removeTwilioCreds } = await import('@/lib/server/twilio');
+  await removeTwilioCreds();
+  await db.auditLog.create({ data: { actorId: user.id, action: 'twilio_key', subjectType: 'platform_settings', subjectId: user.id, meta: { ref: 'removed', op: 'remove' } } });
+  revalidatePath('/ops/messages');
+  return { ok: true, text: 'הפרטים הוסרו' };
+}
+
+export async function twilioCheckAction(): Promise<Res> {
+  const user = await areaUserOrNull('messages', 'view');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { twilioCheck } = await import('@/lib/server/twilio');
+  return twilioCheck();
+}
+
+export async function twilioTestAction(input: { phone: string }): Promise<Res> {
+  const user = await areaUserOrNull('messages', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { toE164 } = await import('@/lib/format');
+  const raw = (input.phone ?? '').trim();
+  const to = raw.startsWith('+') ? raw.replace(/[^\d+]/g, '') : toE164(raw);
+  if (!to || !/^\+\d{8,15}$/.test(to)) return { ok: false, error: 'מספר טלפון לא תקין' };
+  const { twilioTestSend } = await import('@/lib/server/twilio');
+  const r = await twilioTestSend(to);
+  await db.auditLog.create({ data: { actorId: user.id, action: 'twilio_test', subjectType: 'platform_settings', subjectId: user.id, meta: { ref: 'sms', ok: r.ok } } });
+  revalidatePath('/ops/messages');
+  return r.ok ? { ok: true, text: `נשלח. מזהה ב־Twilio: ${r.id}. מצב המסירה יופיע ביומן למטה תוך כמה שניות.` } : { ok: false, error: r.error };
+}

@@ -69,10 +69,14 @@ export async function serviceChecks(): Promise<ServiceCheck[]> {
   const storage: ServiceCheck = process.env.STORAGE_ADAPTER === 'blob' || process.env.BLOB_READ_WRITE_TOKEN
     ? { key: 'storage', name: 'אחסון תמונות · Vercel Blob', state: 'ok', ms: null, note: 'מחובר' }
     : { key: 'storage', name: 'אחסון תמונות', state: 'unknown', ms: null, note: 'אחסון מקומי (UPLOAD_DIR)' };
-  const { messaggioStatus } = await import('./messaggio');
-  const mg = await messaggioStatus().catch(() => null);
-  const codes: ServiceCheck = mg?.configured && mg.settings.enabled
-    ? { key: 'messaggio', name: 'קודי אימות · Messaggio', state: mg.failed24h && !mg.sent24h ? 'down' : 'ok', ms: null, note: `${mg.sent24h} נשלחו ב־24 שעות${mg.failed24h ? ` · ${mg.failed24h} נכשלו` : ''}` }
-    : { key: 'messaggio', name: 'קודי אימות · Messaggio', state: process.env.NODE_ENV === 'production' ? 'down' : 'unknown', ms: null, note: mg?.configured ? 'מפתח קיים; השליחה כבויה ב־/ops/messages' : 'לא מחובר: קודי האימות נרשמים ללוג בלבד' };
+  const [{ messaggioStatus }, { twilioStatus }] = await Promise.all([import('./messaggio'), import('./twilio')]);
+  const [mg, tw] = await Promise.all([messaggioStatus().catch(() => null), twilioStatus().catch(() => null)]);
+  const mgOn = !!(mg?.configured && mg.settings.enabled);
+  const sent = (tw?.sent24h ?? 0) + (mg?.sent24h ?? 0);
+  const failed = (tw?.failed24h ?? 0) + (mg?.failed24h ?? 0);
+  const providers = [tw?.ready ? 'Twilio (SMS)' : null, mgOn ? 'Messaggio' : null].filter(Boolean).join(' + ');
+  const codes: ServiceCheck = providers
+    ? { key: 'verification', name: 'קודי אימות', state: failed && !sent ? 'down' : 'ok', ms: null, note: `${providers} · ${sent} נשלחו ב־24 שעות${failed ? ` · ${failed} נכשלו` : ''}` }
+    : { key: 'verification', name: 'קודי אימות', state: process.env.NODE_ENV === 'production' ? 'down' : 'unknown', ms: null, note: 'אין ספק פעיל: קודי האימות נרשמים ללוג בלבד (Twilio / Messaggio ב־/ops/messages)' };
   return [site, dbc, worker, codes, msg, storage];
 }
