@@ -18,6 +18,14 @@ const v = (vars: Record<string, string>, k: string) => (vars[k] ?? '').trim();
 const hi = (name: string) => (name ? `שלום ${name},` : 'שלום,');
 const join = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(' ');
 
+/** How the client answers a consultation message: the reply page on a paid plan, else a call to the business. */
+function replyLine(vars: Record<string, string>): { line: string; sms: string; cta?: { label: string; url: string } } {
+  const link = v(vars, 'reply_link');
+  if (link) return { line: 'אפשר להשיב לעסק בקישור, והתשובה תגיע אליהם ישירות.', sms: `לתשובה לעסק: ${link}`, cta: { label: 'תשובה לעסק', url: link } };
+  const phone = v(vars, 'business_phone');
+  return phone ? { line: `לתשובה, אפשר להתקשר לעסק: ${phone}.`, sms: `לתשובה התקשרו לעסק: ${phone}` } : { line: '', sms: '' };
+}
+
 /** Verification code text (also used by the SMS and voice senders). */
 export function codeText(vars: Record<string, string>): string {
   return `קוד האימות שלך ב-${BRAND}: ${v(vars, 'code')}. בתוקף ${v(vars, 'minutes') || '10'} דקות. אין למסור את הקוד לאיש.`;
@@ -100,11 +108,31 @@ export function renderMessage(template: string, vars: Record<string, string>, si
         sms: `${BRAND}: התפנה תור ${when}, שמור לך ${v(vars, 'minutes')} דקות: ${link}`,
       };
 
-    case 'M8_consult_details':
-      return { subject: `בקשת הייעוץ ב${business}`, lines: [hi(name), `${business} צריכים עוד כמה פרטים כדי לטפל בבקשת הייעוץ (מספר ${v(vars, 'ref')}). הצוות ייצור איתך קשר.`], sms: `${BRAND}: ${business} צריכים עוד פרטים לבקשת הייעוץ ${v(vars, 'ref')}. הצוות ייצור איתך קשר.` };
-    case 'M9_consult_proposal':
+    case 'M8_consult_details': {
+      const reply = replyLine(vars);
+      return { subject: `בקשת הייעוץ ב${business}`, lines: [hi(name), `${business} צריכים עוד כמה פרטים כדי לטפל בבקשת הייעוץ (מספר ${v(vars, 'ref')}).`, reply.line].filter(Boolean), ...(reply.cta ? { cta: reply.cta } : {}), sms: join(`${BRAND}: ${business} צריכים עוד פרטים לבקשת הייעוץ ${v(vars, 'ref')}.`, reply.sms) };
+    }
+    case 'M9_consult_proposal': {
+      const reply = replyLine(vars);
+      return { subject: `בקשת הייעוץ ב${business}`, lines: [v(vars, 'text'), reply.line].filter(Boolean), ...(reply.cta ? { cta: reply.cta } : {}), sms: join(`${BRAND}: ${v(vars, 'text')}`, reply.sms) };
+    }
     case 'M10_consult_declined':
       return { subject: `בקשת הייעוץ ב${business}`, lines: [v(vars, 'text')], sms: `${BRAND}: ${v(vars, 'text')}` };
+
+    case 'M_consult_reply': {
+      const rows = [`תשובה: ${v(vars, 'answer')}`, v(vars, 'proposed') && `המועד שהוצע: ${v(vars, 'proposed')}`, v(vars, 'text') && `ההודעה: ${v(vars, 'text')}`, `טלפון: ${v(vars, 'phone')}`].filter((x): x is string => !!x);
+      return { subject: `תשובה מ${name} לבקשת הייעוץ ${v(vars, 'ref')}`, lines: [`${name} השיבו לבקשת הייעוץ ${v(vars, 'ref')} ב${business}:`, ...rows], cta: { label: 'לתיבת הייעוצים', url: link }, sms: `${BRAND}: ${name} השיבו לבקשת הייעוץ ${v(vars, 'ref')}: ${v(vars, 'answer')}. ${link}` };
+    }
+
+    case 'M2_reminder': {
+      const who = v(vars, 'practitioner') ? ` אצל ${v(vars, 'practitioner')}` : '';
+      return {
+        subject: `תזכורת: התור שלך ב${business} מחר`,
+        lines: [hi(name), `תזכורת לתור מחר: ${v(vars, 'treatment')} ב${business}, ${when}${who}.`, v(vars, 'address') ? `כתובת: ${v(vars, 'address')}` : '', `מספר הזמנה: ${v(vars, 'ref')}`, 'צריך להעביר או לבטל? אפשר לעשות זאת מהקישור, לפי מדיניות הביטול של העסק.'].filter(Boolean),
+        cta: { label: 'ניהול התור', url: link },
+        sms: `${BRAND}: תזכורת לתור מחר ב${business}, ${when}. לניהול התור: ${link}`,
+      };
+    }
 
     case 'M11_refund':
       return { subject: `החזר כספי מ-${BRAND}`, lines: ['שלום,', `ביצענו החזר של ${v(vars, 'amount')} ₪ לאמצעי התשלום שלך${v(vars, 'reason') ? ` (${v(vars, 'reason')})` : ''}.`, 'ההחזר מופיע בדרך כלל בחשבון תוך כמה ימי עסקים, לפי חברת האשראי. חשבונית הזיכוי נשמרת בחשבון שלך.'], sms: `${BRAND}: ביצענו החזר של ${v(vars, 'amount')} ₪ לאמצעי התשלום שלך.` };

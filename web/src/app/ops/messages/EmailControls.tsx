@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Toggle } from '@/components/ops/Toggle';
 import { ui } from '@/components/ops/ui';
-import { emailDomainCheckAction, emailTestAction, removeEmailKeyAction, saveEmailKeyAction, saveEmailSenderAction, setEmailFlagAction } from './actions';
+import { emailDomainCheckAction, emailTestAction, removeEmailKeyAction, saveEmailHookAction, saveEmailKeyAction, saveEmailSenderAction, setEmailFlagAction } from './actions';
 
 // The email (Resend) card's controls. The API key goes to the server once and is never sent back.
 
@@ -88,6 +88,30 @@ export function EmailTestForm({ ready, canEdit }: { ready: boolean; canEdit: boo
       <div className={ui.actions}>
         <button type="button" className={`${ui.btn} ${ui.primary}`} disabled={pending || !ready || !email.trim()} onClick={() => run(() => emailTestAction({ email }))}>{pending ? 'שולח…' : 'שליחת בדיקה'}</button>
       </div>
+      <Msg m={msg} />
+    </div>
+  );
+}
+
+/** Delivery tracking: the webhook address to give Resend, and its signing secret. */
+export function EmailHookForm({ url, configured, canEdit }: { url: string | null; configured: boolean; canEdit: boolean }) {
+  const [secret, setSecret] = useState('');
+  const { msg, pending, run } = useRun();
+  return (
+    <div className={ui.stack} style={{ gap: 10 }}>
+      <p className={ui.note}>{configured ? 'מעקב מסירה פעיל: Resend מדווח על כל מייל אם נמסר, חזר (bounce) או סומן כספאם.' : 'מעקב מסירה כבוי. כדי להפעיל: ב־Resend, Webhooks, Add Endpoint, הדביקו את הכתובת, סמנו את כל אירועי email והדביקו כאן את ה־Signing secret.'}</p>
+      {url ? <p className={ui.hint}>כתובת ל־Resend: <span dir="ltr" className={ui.mono}>{url}</span></p> : <p className={ui.hint}>מעקב מסירה עובד רק באתר החי (כתובת https ציבורית).</p>}
+      {canEdit ? (
+        <>
+          <div className={ui.field}>
+            <label className={ui.label} htmlFor="rs-hook">Signing secret</label>
+            <input id="rs-hook" className={ui.input} type="password" dir="ltr" autoComplete="off" spellCheck={false} placeholder="whsec_…" value={secret} onChange={e => setSecret(e.target.value)} />
+          </div>
+          <div className={ui.actions}>
+            <button type="button" className={`${ui.btn} ${ui.small}`} disabled={pending || !secret.trim()} onClick={() => run(() => saveEmailHookAction({ secret }), () => setSecret(''))}>שמירה</button>
+          </div>
+        </>
+      ) : null}
       <Msg m={msg} />
     </div>
   );

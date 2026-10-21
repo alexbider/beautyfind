@@ -15,13 +15,13 @@ export interface TemplateSpec {
 
 export const TEMPLATES: TemplateSpec[] = [
   { id: 'M1', name: 'אישור תור / תור הועבר', trigger: 'תור אושר או הוזז', to: 'לקוחה', channels: 'WhatsApp + אימייל', type: 'S', target: 'ניהול תור', codeIds: ['M1_booking_confirmed', 'M1_booking_rescheduled'] },
-  { id: 'M2', name: 'תזכורת', trigger: '24 שעות לפני (ניתן לשינוי)', to: 'לקוחה', channels: 'WhatsApp', type: 'S', target: 'ניהול תור', codeIds: [] },
+  { id: 'M2', name: 'תזכורת', trigger: 'יום לפני התור, בשעות אחר הצהריים (מסלול בתשלום)', to: 'לקוחה', channels: 'אימייל', type: 'S', target: 'ניהול תור', codeIds: ['M2_reminder'] },
   { id: 'M3', name: 'בקשת הצהרת בריאות', trigger: 'תור שדורש הצהרה; שוב 24 שעות לפני', to: 'לקוחה', channels: 'WhatsApp', type: 'S', target: 'הצהרת בריאות', codeIds: ['M3_declaration_request'] },
   { id: 'M4', name: 'לקליניקה: תור חדש / צ׳ק־אין / הצהרה מסומנת', trigger: 'אירועי תור', to: 'צוות', channels: 'באפליקציה + WhatsApp', type: 'S', target: 'תור בקליניקה', codeIds: ['M4_clinic_checked_in', 'M4_clinic_declaration_flagged'] },
   { id: 'M5', name: 'הנחיות אחרי טיפול', trigger: 'תור הושלם', to: 'לקוחה', channels: 'WhatsApp', type: 'S', target: 'הנחיות', codeIds: ['M5_aftercare'] },
   { id: 'M6', name: 'בקשת ביקורת', trigger: '3 ימים אחרי השלמה', to: 'לקוחה', channels: 'WhatsApp', type: 'S', target: 'ביקורת', codeIds: [] },
   { id: 'M7', name: 'הצעת תור מרשימת המתנה', trigger: 'תור התפנה ומתאים', to: 'לקוחה', channels: 'WhatsApp', type: 'S', target: 'רשימת המתנה', codeIds: ['M7_waitlist_offer'] },
-  { id: 'M8', name: 'ייעוץ: בקשת פרטים נוספים', trigger: 'פעולת קליניקה', to: 'לקוחה', channels: 'WhatsApp', type: 'S', target: 'תשובה בצ׳אט', codeIds: ['M8_consult_details'] },
+  { id: 'M8', name: 'ייעוץ: בקשת פרטים נוספים', trigger: 'פעולת קליניקה', to: 'לקוחה', channels: 'WhatsApp', type: 'S', target: 'תשובה בצ׳אט', codeIds: ['M8_consult_details', 'M_consult_reply'] },
   { id: 'M9', name: 'ייעוץ: הצעת מועד', trigger: 'פעולת קליניקה', to: 'לקוחה', channels: 'WhatsApp', type: 'S', target: 'אישור בצ׳אט', codeIds: ['M9_consult_proposal'] },
   { id: 'M10', name: 'ייעוץ: דחייה עם הסבר', trigger: 'פעולת קליניקה', to: 'לקוחה', channels: 'WhatsApp', type: 'S', target: '—', codeIds: ['M10_consult_declined'] },
   { id: 'M11', name: 'החזר וחשבונית זיכוי', trigger: 'ביטול בזמן', to: 'לקוחה', channels: 'אימייל', type: 'S', target: 'קבלה', codeIds: ['M11_refund'] },

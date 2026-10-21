@@ -66,7 +66,7 @@ export default async function ConsultsInboxPage({ searchParams }: { searchParams
   });
   const ids = rows.map(x => x.id);
   const tIds = [...new Set(rows.map(x => x.treatmentId).filter((x): x is string => !!x))];
-  const [bookings, treatments] = await Promise.all([
+  const [bookings, treatments, replies] = await Promise.all([
     ids.length
       ? db.booking.findMany({
           where: { consultRequestId: { in: ids } },
@@ -74,7 +74,15 @@ export default async function ConsultsInboxPage({ searchParams }: { searchParams
         })
       : [],
     tIds.length ? db.treatment.findMany({ where: { id: { in: tIds } }, select: { id: true, name: true } }) : [],
+    ids.length ? db.consultReply.findMany({ where: { consultRequestId: { in: ids } }, orderBy: { createdAt: 'asc' } }) : [],
   ]);
+  const ANSWER: Record<string, string> = { confirm: 'מאשר/ת את המועד שהוצע', other_time: 'מבקש/ת מועד אחר', message: 'הודעה' };
+  const repliesOf = new Map<string, InboxRequest['replies']>();
+  for (const rp of replies) {
+    const list = repliesOf.get(rp.consultRequestId) ?? [];
+    list.push({ answer: ANSWER[rp.kind] ?? rp.kind, text: rp.text, at: received(rp.createdAt) });
+    repliesOf.set(rp.consultRequestId, list);
+  }
   const bookingOf = new Map(bookings.map(b => [b.consultRequestId!, b]));
   const treatmentOf = new Map(treatments.map(t => [t.id, t.name]));
 
@@ -108,6 +116,7 @@ export default async function ConsultsInboxPage({ searchParams }: { searchParams
       status: x.status,
       flags,
       outcome: x.outcomeText,
+      replies: repliesOf.get(x.id) ?? [],
       proposed: x.proposedSlot && x.proposedSlot.getTime() > Date.now() && !live ? { iso: x.proposedSlot.toISOString(), label: slotLabel(x.proposedSlot) } : null,
       booking: b ? { label: slotLabel(b.startsAt), live, ref: b.ref, practitioner: b.practitioner?.displayName ?? null, lapsed: !live } : null,
       treatment: x.treatmentId ? treatmentOf.get(x.treatmentId) ?? null : null,

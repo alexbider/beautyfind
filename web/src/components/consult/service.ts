@@ -1,3 +1,4 @@
+import { replyVars } from '@/lib/server/consultReply';
 import 'server-only';
 import type { BookingStatus, ConsultRequest, ConsultStatus, DepositPolicy, Prisma } from '@prisma/client';
 import { availability } from '@/lib/server/availability';
@@ -291,7 +292,7 @@ export async function askDetails(actor: Actor, id: string): Promise<ActionResult
     return moved;
   });
   if (!ok) return FAIL_STALE;
-  await wa(req.clientPhone, 'M8_consult_details', { name: firstName(req.clientName), business: req.branch.name, ref: req.ref });
+  await wa(req.clientPhone, 'M8_consult_details', { name: firstName(req.clientName), business: req.branch.name, ref: req.ref, ...(await replyVars(req)) });
   return { ok: true, message: `ההודעה נשלחה ל${firstName(req.clientName)}` };
 }
 
@@ -326,6 +327,7 @@ export async function proposeSlot(actor: Actor, id: string, startsAtIso: string)
   const day = dayLabel(ilDateKey(startsAt));
   const time = hhmm(startsAt);
   await wa(req.clientPhone, 'M9_consult_proposal', {
+    ...(await replyVars(req)),
     name: firstName(req.clientName), business: req.branch.name, doctor: doctor.displayName, day, time,
     fee: String(req.feeAgorot / 100), text: proposeMessage({ first: firstName(req.clientName), business: req.branch.name, doctor: doctor.displayName, day, time, fee: req.feeAgorot / 100 }),
   });

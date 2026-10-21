@@ -110,16 +110,75 @@ export interface EmailStatus {
   ready: boolean;
   sent24h: number;
   failed24h: number;
+  delivered24h: number;
+  bounced24h: number;
+  hookConfigured: boolean;
+  hookUrl: string | null;
 }
 
 export async function emailStatus(): Promise<EmailStatus> {
   const since = new Date(Date.now() - 86_400_000);
   const w = (x: object) => db.messageSend.count({ where: { provider: 'resend', test: false, createdAt: { gte: since }, ...x } });
-  const [s, k, row, sent24h, failed24h] = await Promise.all([
+  const [s, k, row, sent24h, failed24h, delivered24h, bounced24h, hook] = await Promise.all([
     platformSettings(), resendKey(), db.platformSecret.findUnique({ where: { key: SECRET_KEY }, select: { label: true } }).catch(() => null), w({ status: 'sent' }), w({ status: 'failed' }),
+    w({ deliveryStatus: 'delivered' }), w({ deliveryStatus: { in: ['bounced', 'complained', 'failed'] } }), resendWebhookSecret(),
   ]);
   return {
     configured: !!k, keySource: k?.source ?? null, keyHint: k?.source === 'env' ? 'RESEND_API_KEY' : row?.label ?? null,
     settings: s.email, ready: !!k && s.email.enabled && !!fromAddress(s.email.from), sent24h, failed24h,
+    delivered24h, bounced24h, hookConfigured: !!hook, hookUrl: resendWebhookUrl(),
   };
+}
+
+// ---------- Delivery tracking (Resend webhooks) ----------
+
+const HOOK_KEY = 'resend_webhook_secret';
+
+export async function resendWebhookSecret(): Promise<{ secret: string; source: KeySource } | null> {
+  const env = process.env.RESEND_WEBHOOK_SECRET?.trim();
+  if (env) return { secret: env, source: 'env' };
+  const row = await db.platformSecret.findUnique({ where: { key: HOOK_KEY } }).catch(() => null);
+  if (!row) return null;
+  try {
+    const secret = open<string>(row.valueEnc);
+    return secret ? { secret, source: 'admin' } : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveResendWebhookSecret(raw: string, actorId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { isWebhookSecret } = await import('../vendors/resend');
+  const secret = raw.trim();
+  if (!isWebhookSecret(secret)) return { ok: false, error: 'Signing secret לא תקין: מתחיל ב־whsec_' };
+  await db.platformSecret.upsert({ where: { key: HOOK_KEY }, create: { key: HOOK_KEY, valueEnc: seal(secret), label: 'whsec_•••', updatedById: actorId }, update: { valueEnc: seal(secret), updatedById: actorId } });
+  return { ok: true };
+}
+
+/** The address Resend posts events to. Only a public https site can receive them. */
+export function resendWebhookUrl(): string | null {
+  const base = siteUrl().replace(/\/+$/, '');
+  return base.startsWith('https://') && !/localhost|127\.0\.0\.1/.test(base) ? `${base}/api/resend/webhook` : null;
+}
+
+const FINAL = ['delivered', 'bounced', 'complained', 'failed'];
+const EVENT_STATUS: Record<string, string> = {
+  'email.sent': 'sent', 'email.delivered': 'delivered', 'email.delivery_delayed': 'delayed',
+  'email.bounced': 'bounced', 'email.complained': 'complained', 'email.failed': 'failed',
+};
+
+/** Applies one Resend event to its send. Opens and clicks are ignored; a final state is never replaced by an earlier one. */
+export async function applyResendEvent(e: { type?: unknown; data?: unknown }): Promise<boolean> {
+  const status = typeof e.type === 'string' ? EVENT_STATUS[e.type] : undefined;
+  const d = (e.data && typeof e.data === 'object' ? e.data : {}) as Record<string, unknown>;
+  const id = typeof d.email_id === 'string' ? d.email_id : null;
+  if (!status || !id) return false;
+  const bounce = (d.bounce && typeof d.bounce === 'object' ? d.bounce : {}) as Record<string, unknown>;
+  const failed = (d.failed && typeof d.failed === 'object' ? d.failed : {}) as Record<string, unknown>;
+  const reason = typeof bounce.message === 'string' ? bounce.message : typeof failed.reason === 'string' ? failed.reason : null;
+  const r = await db.messageSend.updateMany({
+    where: { provider: 'resend', providerId: id, ...(FINAL.includes(status) ? {} : { OR: [{ deliveryStatus: null }, { deliveryStatus: { notIn: FINAL } }] }) },
+    data: { deliveryStatus: status, ...(reason ? { deliveryError: reason.slice(0, 300) } : {}), ...(status === 'delivered' ? { deliveredAt: new Date() } : {}) },
+  });
+  return r.count > 0;
 }

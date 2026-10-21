@@ -11,7 +11,7 @@ import { MessaggioKeyForm, MessaggioSettingsForm, MessaggioTestForm, MessaggioTo
 import { messaggioStatus } from '@/lib/server/messaggio';
 import { twilioStatus } from '@/lib/server/twilio';
 import { emailStatus } from '@/lib/server/email';
-import { EmailKeyForm, EmailSenderForm, EmailTestForm, EmailToggle } from './EmailControls';
+import { EmailHookForm, EmailKeyForm, EmailSenderForm, EmailTestForm, EmailToggle } from './EmailControls';
 import { TwilioCredsForm, TwilioSenderForm, TwilioTestForm, TwilioSetupCheck, TwilioToggle, TwilioVoiceForm } from './TwilioControls';
 
 export const metadata: Metadata = { title: 'הודעות ותבניות · ניהול', robots: { index: false, follow: false } };
@@ -41,7 +41,7 @@ export default async function MessagesPage() {
       <PageHead eyebrow="צמיחה" title="הודעות ותבניות" lead="כל הודעה שהפלטפורמה שולחת: מה מפעיל אותה, למי, באיזה ערוץ, ומה כבר פעיל בקוד. הודעות שירות תמיד נשלחות; שיווק רק בהסכמה." />
       <Kpis items={[
         { label: 'קודי אימות', value: tw.ready || mgLive ? [tw.ready ? 'Twilio' : null, mgLive && mg.settings.whatsapp && mg.settings.whatsappSender ? 'Messaggio' : null].filter(Boolean).join(' + ') || 'Messaggio' : 'לא מחובר', note: tw.ready || mgLive ? `SMS: ${tw.ready ? 'Twilio' : mgLive && mg.settings.sms ? 'Messaggio' : '—'} · WhatsApp: ${mgLive && mg.settings.whatsapp && mg.settings.whatsappSender ? 'Messaggio' : 'עובר ל־SMS'} · ${int(tw.sent24h + mg.sent24h)} נשלחו ב־24 שעות` : 'הקודים נרשמים ללוג בלבד עד שמחברים ספק', tone: tw.ready || mgLive ? (tw.failed24h + mg.failed24h ? 'warn' : 'ok') : 'bad' },
-        { label: 'אימייל', value: em.ready ? 'Resend' : 'לא מחובר', note: em.ready ? `${int(em.sent24h)} נשלחו ב־24 שעות${em.failed24h ? ` · ${int(em.failed24h)} נכשלו` : ''}` : 'אימיילים נרשמים ללוג בלבד עד שמחברים את Resend', tone: em.ready ? (em.failed24h ? 'warn' : 'ok') : 'bad' },
+        { label: 'אימייל', value: em.ready ? 'Resend' : 'לא מחובר', note: em.ready ? `${int(em.sent24h)} נשלחו ב־24 שעות${em.hookConfigured ? ` · ${int(em.delivered24h)} נמסרו${em.bounced24h ? ` · ${int(em.bounced24h)} חזרו` : ''}` : ''}${em.failed24h ? ` · ${int(em.failed24h)} נכשלו` : ''}` : 'אימיילים נרשמים ללוג בלבד עד שמחברים את Resend', tone: em.ready ? (em.failed24h ? 'warn' : 'ok') : 'bad' },
         { label: 'הודעות שירות (תורים)', value: tw.ready ? 'SMS דרך Twilio' : adapter === 'console' ? 'לא מחובר' : adapter, note: tw.ready ? 'אישורים, ביטולים והצעות מרשימת המתנה נשלחים ב־SMS עד שתבניות WhatsApp יאושרו' : 'נרשמות ללוג בלבד', tone: tw.ready ? 'ok' : 'warn' },
         { label: 'תבניות פעילות בקוד', value: `${int(live)} / ${int(TEMPLATES.length)}`, note: 'נשלחות לפי מזהה תבנית' },
         { label: 'הסכמות שיווק', value: int(consents.reduce((a, x) => a + x._count, 0)), note: `WhatsApp ${int(c('wa'))} · אימייל ${int(c('email'))} · SMS ${int(c('sms'))} · ${int(optedOut)} הסרות · ${int(otp30)} קודים ב־30 יום` },
@@ -56,6 +56,7 @@ export default async function MessagesPage() {
           <div className={ui.stack} style={{ gap: 14 }}>
             <EmailSenderForm from={em.settings.from} replyTo={em.settings.replyTo} canEdit={canEdit} />
             <EmailTestForm ready={em.configured} canEdit={canEdit} />
+            <EmailHookForm url={em.hookUrl} configured={em.hookConfigured} canEdit={canEdit} />
           </div>
         </div>
       </Card>
@@ -107,7 +108,7 @@ export default async function MessagesPage() {
                 <td>{m.channel === 'sms' ? 'SMS' : m.channel === 'voice' ? 'שיחה' : m.channel === 'email' ? 'אימייל' : 'WhatsApp'}{m.fallbackFrom ? <span className={ui.sub}>גיבוי ל־{m.fallbackFrom === 'whatsapp' ? 'WhatsApp' : m.fallbackFrom}</span> : null}</td>
                 <td>{m.test ? 'בדיקה' : m.template === 'M16_otp' ? 'קוד אימות' : m.template}</td>
                 <td className={ui.num} dir="ltr">{m.toMasked}</td>
-                <td>{m.status === 'failed' ? <Chip tone="bad">נדחה</Chip> : m.deliveryStatus === 'delivered' || m.deliveryStatus === 'completed' ? <Chip tone="ok">{m.channel === 'voice' ? 'נענתה' : 'נמסר'}</Chip> : ['undelivered', 'failed', 'busy', 'no-answer', 'canceled'].includes(m.deliveryStatus ?? '') ? <Chip tone="bad">{m.channel === 'voice' ? 'לא נענתה' : 'לא נמסר'}</Chip> : <Chip tone="info">נשלח</Chip>}{m.deliveryStatus && !['delivered', 'completed', 'undelivered', 'failed'].includes(m.deliveryStatus) ? <span className={ui.sub} dir="ltr">{m.deliveryStatus}</span> : null}</td>
+                <td>{m.status === 'failed' ? <Chip tone="bad">נדחה</Chip> : m.deliveryStatus === 'delivered' || m.deliveryStatus === 'completed' ? <Chip tone="ok">{m.channel === 'voice' ? 'נענתה' : 'נמסר'}</Chip> : m.deliveryStatus === 'complained' ? <Chip tone="bad">סומן כספאם</Chip> : m.deliveryStatus === 'bounced' ? <Chip tone="bad">חזר</Chip> : ['undelivered', 'failed', 'busy', 'no-answer', 'canceled'].includes(m.deliveryStatus ?? '') ? <Chip tone="bad">{m.channel === 'voice' ? 'לא נענתה' : 'לא נמסר'}</Chip> : <Chip tone="info">נשלח</Chip>}{m.deliveryStatus && !['delivered', 'completed', 'undelivered', 'failed', 'bounced', 'complained'].includes(m.deliveryStatus) ? <span className={ui.sub} dir="ltr">{m.deliveryStatus}</span> : null}</td>
                 <td>{m.error || m.deliveryError ? <span className={ui.error} dir="ltr">{m.error ?? m.deliveryError}</span> : <span className={ui.mono} dir="ltr">{m.providerId}</span>}</td>
               </tr>
             ))}

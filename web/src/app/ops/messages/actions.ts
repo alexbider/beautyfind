@@ -287,3 +287,14 @@ export async function emailTestAction(input: { email: string }): Promise<Res> {
   revalidatePath('/ops/messages');
   return r.ok ? { ok: true, text: `נשלח. מזהה ב־Resend: ${r.id}. בדקו את תיבת הדואר (וגם את הספאם).` } : { ok: false, error: r.error };
 }
+
+export async function saveEmailHookAction(input: { secret: string }): Promise<Res> {
+  const user = await areaUserOrNull('messages', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { saveResendWebhookSecret } = await import('@/lib/server/email');
+  const r = await saveResendWebhookSecret(input.secret ?? '', user.id);
+  if (!r.ok) return r;
+  await db.auditLog.create({ data: { actorId: user.id, action: 'email_key', subjectType: 'platform_settings', subjectId: user.id, meta: { ref: 'webhook', op: 'save' } } });
+  revalidatePath('/ops/messages');
+  return { ok: true, text: 'נשמר. מעכשיו מצב המסירה של כל מייל יופיע ביומן.' };
+}

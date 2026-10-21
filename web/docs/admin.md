@@ -94,6 +94,17 @@ A notice that fails is logged in `message_sends` and never fails the booking, fo
 
 The text of every message (subject, RTL HTML email, plain text, SMS) is in `src/lib/messages/render.ts`; `tests/import/resend.test.ts` fails if a template the code sends has no text.
 
+### Paid-plan notices
+
+"Paid" means the business subscription is active, or past due while its charge is retried (`src/lib/server/plan.ts`).
+
+- **Consultation replies.** On a paid plan, the clinic's messages asking for details (M8) or proposing a time (M9) carry a signed link to `/r/{token}` (`src/lib/server/consultReply.ts`). There the client confirms the proposed time, asks for another, or writes a message. The answer is stored in `consult_replies`, emailed to the clinic (the branch email, else the owner's) with the client's phone, and shown in the consult inbox on `/clinic/consults`. Without a paid plan the message tells the client to call the business, and the reply page refuses answers. At most 20 replies per request, one every 20 seconds.
+- **Day-before reminder (M2).** The cron `/api/cron/reminders` runs once a day at 15:07 UTC (17:07 or 18:07 in Israel) and emails every confirmed booking for the next Israeli day at a paid business whose client left an email (`src/lib/server/reminders.ts`). `bookings.reminded_at` is claimed before sending, so a booking is never reminded twice; a failed send releases it. With Resend off the run does nothing. It runs daily, not hourly, so it works on any Vercel plan.
+
+### Delivery tracking (Resend webhooks)
+
+In Resend, Webhooks, Add Endpoint: the URL shown on the card (`SITE_URL/api/resend/webhook`) with all email events, then paste its Signing secret (`whsec_…`) in the card, or set `RESEND_WEBHOOK_SECRET`. Each request is checked the Svix way (headers `svix-id`, `svix-timestamp`, `svix-signature`; HMAC-SHA256 of `id.timestamp.body`; five-minute window). Sent, delivered, delayed, bounced, complained and failed update `delivery_status` (bounce reason in `delivery_error`); opens and clicks are ignored, and a final state is never replaced by an earlier one. The log shows נמסר, חזר or סומן כספאם.
+
 ### Resend
 
 `src/lib/vendors/resend.ts` (client), `src/lib/server/email.ts` (key, settings, log, test, domain check), card "אימייל · Resend" on `/ops/messages`.

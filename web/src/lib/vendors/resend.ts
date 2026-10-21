@@ -1,4 +1,5 @@
 import 'server-only';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 
 // Resend for every email the platform sends (codes, password reset, booking confirmations, receipts, invites).
 // Send: POST {base}/emails with Authorization: Bearer <API key>, JSON { from, to: [..], subject, html, text, reply_to }.
@@ -66,3 +67,28 @@ export async function resendDomains(c: ResendConfig): Promise<Array<{ name: stri
   const list = Array.isArray(j.data) ? (j.data as Array<Record<string, unknown>>) : [];
   return list.map(d => ({ name: String(d.name ?? '').toLowerCase(), status: String(d.status ?? '') }));
 }
+
+/**
+ * Resend webhooks are signed the Svix way: headers svix-id, svix-timestamp and svix-signature ("v1,<base64>",
+ * space separated when there are several). The signed content is "{id}.{timestamp}.{raw body}", HMAC-SHA256 keyed
+ * with the base64 part of the signing secret ("whsec_…"). Timestamps older or newer than five minutes are refused.
+ */
+export function svixSignature(secret: string, id: string, timestamp: string, body: string): string {
+  const key = Buffer.from(secret.replace(/^whsec_/, ''), 'base64');
+  return createHmac('sha256', key).update(`${id}.${timestamp}.${body}`).digest('base64');
+}
+
+export function validSvix(secret: string, h: { id: string | null; timestamp: string | null; signature: string | null }, body: string, now = Date.now()): boolean {
+  if (!h.id || !h.timestamp || !h.signature) return false;
+  const ts = Number(h.timestamp);
+  if (!Number.isFinite(ts) || Math.abs(now / 1000 - ts) > 300) return false;
+  const want = Buffer.from(svixSignature(secret, h.id, h.timestamp, body));
+  return h.signature.split(' ').some(part => {
+    const [ver, sig] = part.split(',');
+    if (ver !== 'v1' || !sig) return false;
+    const got = Buffer.from(sig);
+    return got.length === want.length && timingSafeEqual(got, want);
+  });
+}
+
+export const isWebhookSecret = (v: string) => /^whsec_[A-Za-z0-9+/=]{16,200}$/.test(v);

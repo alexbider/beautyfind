@@ -45,6 +45,8 @@ export interface InboxRequest {
   treatment: string | null;
   branchName: string;
   feeShekels: number;
+  /** The client's answers from the reply page (/r/{token}), oldest first. */
+  replies: Array<{ answer: string; text: string; at: string }>;
 }
 
 type Filter = 'open' | 'new' | 'awaiting_client' | 'consult_scheduled' | 'closed' | 'all';
@@ -314,6 +316,11 @@ export function ConsultInbox({ bizName, requests, initialId, canManage, isPhysic
                   <LtrText text={sel.outcome} />
                 </p>
               )}
+              {sel.replies.map((r, i) => (
+                <p key={i} className={`${styles.neutralNote} ${ix.inset}`}>
+                  <strong>תשובת הלקוח, {r.at}: {r.answer}.</strong>{r.text ? <> <LtrText text={r.text} /></> : null}
+                </p>
+              ))}
               {sel.booking?.lapsed && sel.status === 'consult_scheduled' && (
                 <p className={`${styles.warn} ${ix.inset}`}>
                   <strong>תור הייעוץ בוטל או שהתשלום לא הושלם.</strong> אפשר להציע מועד חדש או לסגור את הבקשה.
