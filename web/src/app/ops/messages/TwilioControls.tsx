@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Toggle } from '@/components/ops/Toggle';
 import { ui } from '@/components/ops/ui';
-import { removeTwilioCredsAction, saveTwilioCredsAction, saveTwilioSenderAction, saveTwilioVoiceAction, setTwilioFlagAction, twilioCheckAction, twilioTestAction, twilioTestCallAction } from './actions';
+import { removeTwilioCredsAction, saveTwilioCredsAction, saveTwilioSenderAction, saveTwilioVoiceAction, setTwilioFlagAction, twilioCheckAction, twilioSetupAction, twilioTestAction, twilioTestCallAction, type TwilioSetupRes } from './actions';
 
 // The Twilio card's controls. The Auth Token goes to the server once and is never sent back.
 
@@ -130,6 +130,52 @@ export function TwilioVoiceForm({ voiceFrom, voice, effectiveFrom, configured, c
             <button type="button" className={ui.btn} disabled={test.pending || !configured || !effectiveFrom || !phone.trim()} onClick={() => test.run(() => twilioTestCallAction({ phone }))}>{test.pending ? 'מתקשר…' : 'שיחת בדיקה'}</button>
           </div>
           <Msg m={test.msg} />
+        </>
+      ) : null}
+    </div>
+  );
+}
+
+/** Reads the Twilio account and lists what is ready and what is missing; any number that can call is one click away. */
+export function TwilioSetupCheck({ configured, voice, canEdit }: { configured: boolean; voice: string; canEdit: boolean }) {
+  const router = useRouter();
+  const [res, setRes] = useState<TwilioSetupRes | null>(null);
+  const [pending, start] = useTransition();
+  const [saved, setSaved] = useState<string | null>(null);
+  const check = () => start(async () => { setSaved(null); setRes(await twilioSetupAction()); });
+  const use = (phone: string) => start(async () => {
+    const r = await saveTwilioVoiceAction({ voiceFrom: phone, voice });
+    setSaved(r.ok ? `נבחר ${phone} לשיחות` : r.error);
+    setRes(await twilioSetupAction());
+    router.refresh();
+  });
+  return (
+    <div className={ui.stack} style={{ gap: 10 }}>
+      <div className={ui.actions}>
+        <button type="button" className={`${ui.btn} ${ui.primary}`} disabled={pending || !configured} onClick={check}>{pending ? 'בודק…' : 'בדיקת הגדרות Twilio'}</button>
+        {!configured ? <span className={ui.hint}>הזינו קודם Account SID ו־Auth Token</span> : <span className={ui.hint}>קורא את החשבון ב־Twilio, לא שולח כלום</span>}
+      </div>
+      {res && !res.ok ? <span className={ui.error} role="status">{res.error}</span> : null}
+      {res && res.ok ? (
+        <>
+          <ul className={ui.stack} style={{ gap: 6, listStyle: 'none', padding: 0, margin: 0 }}>
+            {res.checks.map(c => (
+              <li key={c.text}><span className={c.ok === true ? ui.ok : c.ok === false ? ui.error : ui.hint}>{c.ok === true ? 'תקין' : c.ok === false ? 'חסר' : 'לא ידוע'}</span> {c.text}</li>
+            ))}
+          </ul>
+          {res.numbers.length ? (
+            <div className={ui.stack} style={{ gap: 6 }}>
+              <span className={ui.label}>המספרים בחשבון</span>
+              {res.numbers.map(n => (
+                <div key={n.phone} className={ui.actions}>
+                  <b dir="ltr">{n.phone}</b>
+                  <span className={ui.hint}>{[n.sms ? 'SMS' : null, n.voice ? 'שיחות' : null].filter(Boolean).join(' · ') || 'ללא SMS ושיחות'}{n.name && n.name !== n.phone ? ` · ${n.name}` : ''}</span>
+                  {canEdit && n.voice ? (res.voiceFrom === n.phone ? <span className={ui.ok}>בשימוש לשיחות</span> : <button type="button" className={`${ui.btn} ${ui.small}`} disabled={pending} onClick={() => use(n.phone)}>שימוש לשיחות</button>) : null}
+                </div>
+              ))}
+            </div>
+          ) : null}
+          {saved ? <span className={ui.ok} role="status">{saved}</span> : null}
         </>
       ) : null}
     </div>

@@ -106,6 +106,38 @@ export async function twilioCall(c: TwilioConfig & { voiceFrom: string }, to: st
   return { id: typeof j.sid === 'string' ? j.sid : 'accepted', status: typeof j.status === 'string' ? j.status : null };
 }
 
+export interface TwilioNumber { phone: string; name: string; voice: boolean; sms: boolean }
+
+/** The phone numbers the account owns, with what each can do. GET .../IncomingPhoneNumbers.json. Sends nothing. */
+export async function twilioNumbers(c: TwilioConfig): Promise<TwilioNumber[]> {
+  const r = await fetch(`${base(c)}/2010-04-01/Accounts/${encodeURIComponent(c.accountSid)}/IncomingPhoneNumbers.json?PageSize=100`, {
+    headers: { authorization: auth(c), accept: 'application/json' },
+    signal: AbortSignal.timeout(15_000),
+  }).catch(e => { throw new TwilioError(`network: ${e instanceof Error ? e.message : String(e)}`, 0); });
+  const j = await parse(r);
+  if (!r.ok) fail(r, j);
+  const list = Array.isArray(j.incoming_phone_numbers) ? (j.incoming_phone_numbers as Array<Record<string, unknown>>) : [];
+  return list.map(n => {
+    const cap = (n.capabilities ?? {}) as Record<string, unknown>;
+    return { phone: String(n.phone_number ?? ''), name: String(n.friendly_name ?? ''), voice: cap.voice === true, sms: cap.sms === true || cap.SMS === true };
+  }).filter(n => isPhone(n.phone));
+}
+
+/**
+ * Whether the account may call ordinary numbers in a country (Voice Geo permissions):
+ * GET https://voice.twilio.com/v1/DialingPermissions/Countries/{ISO}, field low_risk_numbers_enabled. Null when unknown.
+ */
+export async function twilioVoiceCountry(c: TwilioConfig, iso: string): Promise<boolean | null> {
+  const root = c.baseUrl ? base(c) : 'https://voice.twilio.com';
+  const r = await fetch(`${root}/v1/DialingPermissions/Countries/${encodeURIComponent(iso)}`, {
+    headers: { authorization: auth(c), accept: 'application/json' },
+    signal: AbortSignal.timeout(15_000),
+  }).catch(() => null);
+  if (!r || !r.ok) return null;
+  const j = await parse(r);
+  return typeof j.low_risk_numbers_enabled === 'boolean' ? j.low_risk_numbers_enabled : null;
+}
+
 /** Checks the credentials by reading the account. Sends nothing. */
 export async function twilioAccount(c: TwilioConfig): Promise<{ name: string; status: string; type: string }> {
   const r = await fetch(`${base(c)}/2010-04-01/Accounts/${encodeURIComponent(c.accountSid)}.json`, {

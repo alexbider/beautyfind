@@ -1,6 +1,6 @@
 import 'server-only';
 import { maskPhone } from '../vendors/messaggio';
-import { TwilioError, isAccountSid, isPhone, twilioAccount, twilioCall, twilioSend, voiceTwiml, type TwilioConfig } from '../vendors/twilio';
+import { TwilioError, isAccountSid, isPhone, twilioAccount, twilioCall, twilioNumbers, twilioSend, twilioVoiceCountry, voiceTwiml, type TwilioConfig, type TwilioNumber } from '../vendors/twilio';
 import { db } from './db';
 import { platformSettings, type PlatformSettings } from './platformSettings';
 import { open, seal } from './secure';
@@ -200,4 +200,38 @@ export async function twilioStatus(): Promise<TwilioStatus> {
     callback: twilioStatusUrl() ?? null,
     sent24h, failed24h, delivered24h, undelivered24h,
   };
+}
+
+export type SetupCheck = { ok: boolean | null; text: string };
+export interface TwilioSetup { checks: SetupCheck[]; numbers: TwilioNumber[]; voiceFrom: string | null }
+
+/**
+ * Reads the Twilio account and says what is set up and what is missing for verification codes: credentials, a
+ * paid account, the SMS sender, the switch, a number that can call, Israel allowed for calls. Sends nothing.
+ */
+export async function twilioSetup(): Promise<{ ok: true; setup: TwilioSetup } | { ok: false; error: string }> {
+  const [s, c] = await Promise.all([platformSettings(), twilioCreds()]);
+  if (!c) return { ok: false, error: 'לא הוזנו Account SID ו־Auth Token' };
+  const cfg = twilioConfig(c, s.twilio);
+  let account;
+  try {
+    account = await twilioAccount(cfg);
+  } catch (e) {
+    return { ok: false, error: e instanceof TwilioError && e.status === 401 ? 'Twilio דחה את הפרטים (401)' : e instanceof Error ? e.message : String(e) };
+  }
+  const [numbers, ilVoice] = await Promise.all([twilioNumbers(cfg).catch(() => [] as TwilioNumber[]), twilioVoiceCountry(cfg, 'IL')]);
+  const voiceNumbers = numbers.filter(n => n.voice);
+  const voiceFrom = voiceFromOf(s.twilio) || null;
+  const owned = voiceFrom ? numbers.find(n => n.phone === voiceFrom) : undefined;
+  const trial = account.type.toLowerCase() === 'trial';
+  const checks: SetupCheck[] = [
+    { ok: account.status === 'active', text: `חשבון ${account.name || c.accountSid}: ${account.status}` },
+    { ok: !trial, text: trial ? 'חשבון ניסיון: אפשר לשלוח ולהתקשר רק למספרים מאומתים ב־Twilio. כדי לשלוח לכל לקוח צריך לשדרג (Upgrade)' : 'חשבון בתשלום: אפשר לשלוח לכל מספר' },
+    { ok: !!(s.twilio.from || s.twilio.messagingServiceSid), text: s.twilio.messagingServiceSid ? `שולח SMS: Messaging Service ${s.twilio.messagingServiceSid}` : s.twilio.from ? `שולח SMS: ${s.twilio.from}` : 'אין שולח SMS' },
+    { ok: s.twilio.enabled, text: s.twilio.enabled ? 'שליחת קודים דרך Twilio פעילה' : 'שליחת קודים דרך Twilio כבויה' },
+    { ok: voiceNumbers.length > 0, text: voiceNumbers.length ? `${voiceNumbers.length} מספרים בחשבון יכולים להתקשר` : numbers.length ? 'אף מספר בחשבון לא יכול להתקשר (Voice)' : 'אין מספרי טלפון בחשבון. לשיחות קוליות צריך לקנות מספר עם Voice' },
+    { ok: !!voiceFrom && (!owned || owned.voice), text: !voiceFrom ? 'לא נבחר מספר לשיחות, ולכן "שיחה קולית" באימות בעלות מוסתרת' : owned && !owned.voice ? `המספר ${voiceFrom} לא תומך בשיחות` : `שיחות יוצאות מ־${voiceFrom}${owned ? '' : ' (המספר לא נמצא ברשימת המספרים של החשבון)'}` },
+    { ok: ilVoice, text: ilVoice === null ? 'לא הצלחתי לקרוא את הרשאות השיחות לישראל. בדקו ב־Voice, Settings, Geo permissions' : ilVoice ? 'שיחות לישראל מותרות (Voice Geo permissions)' : 'שיחות לישראל חסומות: הפעילו את Israel ב־Voice, Settings, Geo permissions' },
+  ];
+  return { ok: true, setup: { checks, numbers, voiceFrom } };
 }

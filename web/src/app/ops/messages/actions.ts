@@ -206,3 +206,14 @@ export async function twilioTestCallAction(input: { phone: string }): Promise<Re
   revalidatePath('/ops/messages');
   return r.ok ? { ok: true, text: `השיחה יצאה. מזהה ב־Twilio: ${r.id}. בסיום השיחה המצב יופיע ביומן למטה.` } : { ok: false, error: r.error };
 }
+
+export type TwilioSetupRes = { ok: true; checks: Array<{ ok: boolean | null; text: string }>; numbers: Array<{ phone: string; name: string; voice: boolean; sms: boolean }>; voiceFrom: string | null } | { ok: false; error: string };
+
+/** Reads the Twilio account (sends nothing) and reports what is set up for codes, SMS and calls. */
+export async function twilioSetupAction(): Promise<TwilioSetupRes> {
+  const user = await areaUserOrNull('messages', 'view');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { twilioSetup } = await import('@/lib/server/twilio');
+  const r = await twilioSetup();
+  return r.ok ? { ok: true, ...r.setup } : r;
+}

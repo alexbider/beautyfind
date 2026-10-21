@@ -81,6 +81,13 @@ function startMock(): Promise<Mock> {
         if (m.twilioFail) return send(m.twilioFail.status, { code: m.twilioFail.code, message: m.twilioFail.message, status: m.twilioFail.status });
         return send(201, { sid: `SM${String(m.sms.length).padStart(32, '0')}`, status: 'queued', to: form.To });
       }
+      if (req.method === 'GET' && req.url?.startsWith(`/2010-04-01/Accounts/${SID}/IncomingPhoneNumbers.json`)) {
+        return send(200, { incoming_phone_numbers: [
+          { phone_number: '+97233721234', friendly_name: 'Tel Aviv', capabilities: { voice: true, sms: true, mms: false } },
+          { phone_number: '+12025550100', friendly_name: 'US SMS', capabilities: { voice: false, sms: true } },
+        ] });
+      }
+      if (req.method === 'GET' && req.url === '/v1/DialingPermissions/Countries/IL') return send(200, { iso_code: 'IL', name: 'Israel', low_risk_numbers_enabled: true });
       if (req.method === 'POST' && req.url === `/2010-04-01/Accounts/${SID}/Calls.json`) {
         const form = Object.fromEntries(new URLSearchParams(raw));
         m.calls.push({ auth: req.headers.authorization, form });
@@ -279,6 +286,22 @@ describe('twilio: verification codes through sendOtp', { skip }, () => {
     const after2 = await db.messageSend.findUnique({ where: { id: row.id } });
     assert.equal(after2?.deliveryStatus, 'undelivered');
     assert.equal(after2?.deliveryError, '30006: Landline or unreachable carrier');
+  });
+
+  it('the setup check reads the account, its numbers and Israel call permission, and sends nothing', async () => {
+    const sms = mock.sms.length;
+    const calls = mock.calls.length;
+    const r = await tw.twilioSetup();
+    assert.equal(r.ok, true);
+    if (!r.ok) return;
+    assert.deepEqual(r.setup.numbers.map(n => [n.phone, n.voice, n.sms]), [['+97233721234', true, true], ['+12025550100', false, true]]);
+    const text = r.setup.checks.map(c => `${c.ok}:${c.text}`).join('\n');
+    assert.match(text, /true:חשבון בתשלום/);
+    assert.match(text, /true:1 מספרים בחשבון יכולים להתקשר/);
+    assert.match(text, /false:לא נבחר מספר לשיחות/);
+    assert.match(text, /true:שיחות לישראל מותרות/);
+    assert.equal(mock.sms.length, sms);
+    assert.equal(mock.calls.length, calls);
   });
 
   it('the admin test SMS works with the switch off; a rejected token is reported', async () => {

@@ -10,7 +10,7 @@ import { DraftEditor } from './DraftEditor';
 import { MessaggioKeyForm, MessaggioSettingsForm, MessaggioTestForm, MessaggioToggle } from './MessaggioControls';
 import { messaggioStatus } from '@/lib/server/messaggio';
 import { twilioStatus } from '@/lib/server/twilio';
-import { TwilioCredsForm, TwilioSenderForm, TwilioTestForm, TwilioToggle, TwilioVoiceForm } from './TwilioControls';
+import { TwilioCredsForm, TwilioSenderForm, TwilioTestForm, TwilioSetupCheck, TwilioToggle, TwilioVoiceForm } from './TwilioControls';
 
 export const metadata: Metadata = { title: 'הודעות ותבניות · ניהול', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
@@ -55,6 +55,9 @@ export default async function MessagesPage() {
             <p className={ui.hint}>{tw.callback ? <>דוחות מסירה: Twilio מדווח ל־<span dir="ltr" className={ui.mono}>{tw.callback}</span> (חתום ונבדק).</> : 'דוחות מסירה פעילים רק באתר החי (כתובת https ציבורית).'}</p>
           </div>
         </div>
+      </Card>
+      <Card title="Twilio · בדיקת הגדרות">
+        <TwilioSetupCheck configured={tw.configured} voice={tw.settings.voice} canEdit={canEdit} />
       </Card>
       <Card title="Twilio · שיחה קולית לאימות בעלות">
         <TwilioVoiceForm voiceFrom={tw.settings.voiceFrom} voice={tw.settings.voice} effectiveFrom={tw.voiceFrom} configured={tw.configured} canEdit={canEdit} />
