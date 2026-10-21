@@ -4,6 +4,7 @@ import { googleAvailable } from './googleDisplay';
 import { resolveServiceAccount } from './googleIndexing';
 import { messaggioStatus } from './messaggio';
 import { twilioStatus } from './twilio';
+import { emailStatus } from './email';
 import { platformSettings } from './platformSettings';
 import { getSettings as importSettings } from './importOps';
 import { checkDatabase, checkSite } from './opsHealth';
@@ -32,13 +33,14 @@ const has = (k: string) => Boolean(process.env[k]);
 const rel = (d: Date | null) => (d ? `דיווח אחרון ${Math.max(0, Math.round((Date.now() - d.getTime()) / 60_000))} דק׳` : 'העובד עוד לא דיווח');
 
 export async function integrationGroups(): Promise<IntegrationGroup[]> {
-  const [conns, s, gKey, mg, tw, gOn] = await Promise.all([
+  const [conns, s, gKey, mg, tw, gOn, em] = await Promise.all([
     db.providerConnection.groupBy({ by: ['provider', 'kind', 'status'], _count: true }).catch(() => []),
     importSettings().catch(() => null),
     resolveServiceAccount().catch(() => null),
     messaggioStatus().catch(() => null),
     twilioStatus().catch(() => null),
     platformSettings().then(p => p.googleIndexing.enabled).catch(() => false),
+    emailStatus().catch(() => null),
   ]);
   const w = s?.workerStatus ?? null;
   const wAt = w?.at ? new Date(w.at) : null;
@@ -81,7 +83,7 @@ export async function integrationGroups(): Promise<IntegrationGroup[]> {
   };
   const messages: IntegrationGroup = {
     name: 'הודעות',
-    items: [{ key: 'msg:twilio', name: 'Twilio', desc: 'קודי אימות ב־SMS: כניסה, הרשמה, אישור בעלות והזמנות צוות, עם דוחות מסירה', state: tw?.ready ? (tw.failed24h && !tw.sent24h ? 'attention' : 'connected') : 'not_connected', note: !tw?.configured ? 'לא הוזנו פרטי חשבון' : !tw.ready ? 'פרטים קיימים; השליחה כבויה או חסר שולח' : `${tw.sent24h} נשלחו · ${tw.delivered24h} נמסרו ב־24 שעות${tw.failed24h ? ` · ${tw.failed24h} נדחו` : ''}`, where: '/ops/messages', checkable: false, href: '/ops/messages' }, { key: 'msg:messaggio', name: 'Messaggio', desc: 'קודי אימות ב־WhatsApp (ו־SMS כש־Twilio כבוי)', state: mg?.configured && mg.settings.enabled ? (mg.failed24h && !mg.sent24h ? 'attention' : 'connected') : 'not_connected', note: !mg?.configured ? 'לא הוזן מפתח API' : !mg.settings.enabled ? 'מפתח קיים; השליחה כבויה' : `${mg.sent24h} נשלחו ב־24 שעות${mg.failed24h ? ` · ${mg.failed24h} נכשלו` : ''}`, where: '/ops/messages', checkable: false, href: '/ops/messages' }, msg('msg:whatsapp', 'WhatsApp Business', 'אישורי תור, תזכורות, הודעות שירות'), msg('msg:sms', 'SMS', 'גיבוי לוואטסאפ ו־OTP'), msg('msg:email', 'אימייל', 'חשבוניות, איפוס סיסמה, דיוור')],
+    items: [{ key: 'msg:twilio', name: 'Twilio', desc: 'קודים ב־SMS ובשיחה, והודעות שירות על תורים ב־SMS, עם דוחות מסירה', state: tw?.ready ? (tw.failed24h && !tw.sent24h ? 'attention' : 'connected') : 'not_connected', note: !tw?.configured ? 'לא הוזנו פרטי חשבון' : !tw.ready ? 'פרטים קיימים; השליחה כבויה או חסר שולח' : `${tw.sent24h} נשלחו · ${tw.delivered24h} נמסרו ב־24 שעות${tw.failed24h ? ` · ${tw.failed24h} נדחו` : ''}`, where: '/ops/messages', checkable: false, href: '/ops/messages' }, { key: 'msg:messaggio', name: 'Messaggio', desc: 'קודי אימות ב־WhatsApp (ו־SMS כש־Twilio כבוי)', state: mg?.configured && mg.settings.enabled ? (mg.failed24h && !mg.sent24h ? 'attention' : 'connected') : 'not_connected', note: !mg?.configured ? 'לא הוזן מפתח API' : !mg.settings.enabled ? 'מפתח קיים; השליחה כבויה' : `${mg.sent24h} נשלחו ב־24 שעות${mg.failed24h ? ` · ${mg.failed24h} נכשלו` : ''}`, where: '/ops/messages', checkable: false, href: '/ops/messages' }, msg('msg:whatsapp', 'WhatsApp Business', 'אישורי תור, תזכורות, הודעות שירות'), { key: 'msg:resend', name: 'Resend', desc: 'כל האימיילים: איפוס סיסמה, אישורי תור, החזרים, כרטיסי מתנה, הזמנות צוות וקודים במייל', state: em?.ready ? (em.failed24h && !em.sent24h ? 'attention' : 'connected') : 'not_connected', note: !em?.configured ? 'לא הוזן מפתח API' : !em.ready ? 'מפתח קיים; השליחה כבויה' : `${em.sent24h} נשלחו ב־24 שעות${em.failed24h ? ` · ${em.failed24h} נכשלו` : ''}`, where: '/ops/messages', checkable: false, href: '/ops/messages' }],
   };
   const calendars: IntegrationGroup = {
     name: 'יומנים',

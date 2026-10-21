@@ -76,6 +76,13 @@ export const PlatformSettingsSchema = z.object({
     voiceFrom: z.string().trim().max(20).default(''),
     voice: z.string().trim().max(60).default('Google.he-IL-Standard-A'),
   }).prefault({}),
+  // Email (/ops/messages): every email goes through Resend (src/lib/vendors/resend.ts) when this is on and an API key is
+  // stored. The key is a secret (platform_secrets or RESEND_API_KEY). The from address must be on a domain verified in Resend.
+  email: z.object({
+    enabled: z.boolean().default(false),
+    from: z.string().trim().max(160).default('BeautyFind <noreply@beautyfind.co.il>'),
+    replyTo: z.string().trim().max(160).default(''),
+  }).prefault({}),
   // Team: per-role area levels (ops is always full). Stored sparsely.
   // partialRecord: zod 4's record with an enum key is exhaustive, and the overrides are sparse.
   rolePermissions: z.partialRecord(z.enum(OPS_ROLES as [string, ...string[]]), z.partialRecord(z.enum(AREAS as [string, ...string[]]), Level)).default({}),

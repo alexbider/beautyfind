@@ -81,6 +81,28 @@ What search engines may index is decided in `src/lib/indexing.ts` (pure) and rea
 - **Google side:** a Google Cloud project with the Web Search Indexing API and the Google Search Console API enabled, a service account with a JSON key, and that service account added as an **Owner** of the Search Console property (Settings, Users and permissions). Without Owner the Indexing API answers 403.
 - **Caveat:** Google documents the Indexing API for job posting and livestream pages. For other pages it accepts the notification but promises nothing; the sitemap keeps working alongside it.
 
+## Email (Resend) and service notices
+
+Every outgoing message goes through `messaging()`, which asks `src/lib/server/deliver.ts` first:
+
+- **Verification codes** by SMS, WhatsApp or voice: Twilio and Messaggio (below).
+- **Email**, codes included: **Resend**, when "שליחת אימיילים דרך Resend" is on and a key is stored. That covers password reset (M17), booking confirmation and reschedule (M1), client cancellation (M13), refunds (M11), gift cards sent by email (M14), staff invites and the inviter's notices (M18), verification and claim outcomes (M19, M20), contact form receipts and leads to businesses, and claim codes by email.
+- **Service notices** the code asks to send by WhatsApp (M1, M3, M4, M5, M7, M8 to M10, M12, M13, M14): **Twilio SMS** with the same text while Twilio is on, logged with `fallback_from = whatsapp`, until WhatsApp templates are approved by Meta.
+- **Marketing** messages are never sent automatically by SMS or email; they stay on `MESSAGING_ADAPTER`.
+
+A notice that fails is logged in `message_sends` and never fails the booking, form or action that sent it. A code that fails throws, so the code is dropped and the person can ask again.
+
+The text of every message (subject, RTL HTML email, plain text, SMS) is in `src/lib/messages/render.ts`; `tests/import/resend.test.ts` fails if a template the code sends has no text.
+
+### Resend
+
+`src/lib/vendors/resend.ts` (client), `src/lib/server/email.ts` (key, settings, log, test, domain check), card "אימייל · Resend" on `/ops/messages`.
+
+- **Setup:** create an account at resend.com, add the domain `beautyfind.co.il` under Domains and add the DNS records it shows (SPF, DKIM, and the MX for bounces) at the DNS host. Create an API key with Full access, paste it in the card ("שמירה ובדיקה" also checks the domain), set the from address (default `BeautyFind <noreply@beautyfind.co.il>`) and a reply-to address, send a test email and turn it on.
+- **Send:** `POST https://api.resend.com/emails`, `Authorization: Bearer re_…`, JSON `from`, `to`, `subject`, `html`, `text`, `reply_to`. The key can also be set as `RESEND_API_KEY` on Vercel, which wins.
+- **Domain check:** `GET /domains`, the from address's domain must be `verified`. A key limited to sending cannot read domains; the check says so and the test email is the proof.
+- **Log:** provider `resend`, channel `email`, the address masked (`da••@example.com`). Audit: `email_key`, `email_update`, `email_test`.
+
 ## Verification codes: Twilio (SMS) and Messaggio (WhatsApp)
 
 Routing is in `src/lib/server/verificationSend.ts`: an SMS code goes to **Twilio** when it is on, otherwise to Messaggio's SMS when that is on; a WhatsApp code goes to **Messaggio** when its WhatsApp is on and has a sender, and a refused WhatsApp send is retried once by SMS (the same SMS route) when "גיבוי ב־SMS" is on; a WhatsApp code with no WhatsApp route goes by SMS. A provider that rejects the credentials (401/403) is not asked again for that code. With nothing on, codes go to `MESSAGING_ADAPTER` (the log).

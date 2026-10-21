@@ -3,6 +3,7 @@ import { MessaggioError } from '../vendors/messaggio';
 import type { Channel, OutgoingMessage } from '../vendors/messaging';
 import { TwilioError } from '../vendors/twilio';
 import { messaggioAttempt, messaggioReady, verificationText } from './messaggio';
+import { emailReady } from './email';
 import { twilioAttempt, twilioReady, twilioVoiceAttempt, twilioVoiceReady } from './twilio';
 
 // Where a verification code goes (sign-in, sign-up, ownership claims, staff invites):
@@ -64,15 +65,16 @@ export type CodeChannels = Record<Channel, boolean>;
 /**
  * The channels a verification code can actually reach a person on right now. Outside production, and when
  * MESSAGING_ADAPTER is a real provider, every channel counts (the console adapter is how codes are read in
- * development). In production with the console adapter, only channels a configured provider carries count.
+ * development). In production with the console adapter, only channels a configured provider carries count
+ * (email: Resend).
  */
 export async function codeChannels(opts: { anyAdapter?: boolean } = {}): Promise<CodeChannels> {
   const anyAdapter = opts.anyAdapter ?? (process.env.NODE_ENV !== 'production' || (process.env.MESSAGING_ADAPTER ?? 'console') !== 'console');
-  const [mg, tw, voice] = await Promise.all([messaggioReady(), twilioReady(), twilioVoiceReady()]);
+  const [mg, tw, voice, mail] = await Promise.all([messaggioReady(), twilioReady(), twilioVoiceReady(), emailReady()]);
   return {
     whatsapp: anyAdapter || !!mg?.whatsapp,
     sms: anyAdapter || !!tw || !!mg?.sms,
     voice: anyAdapter || !!voice,
-    email: anyAdapter,
+    email: anyAdapter || !!mail,
   };
 }

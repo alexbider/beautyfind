@@ -1,8 +1,8 @@
 import 'server-only';
 
-// Everything sends through this interface. Verification codes go through Twilio (SMS) and Messaggio (WhatsApp)
-// when they are configured on /ops/messages; the other messages (WhatsApp templates, email) have no provider yet and
-// go to MESSAGING_ADAPTER, whose console adapter logs instead of sending so flows are testable end to end.
+// Everything sends through this interface. src/lib/server/deliver.ts routes each message to the provider configured
+// on /ops/messages: codes to Twilio and Messaggio, email to Resend, service notices to Twilio SMS. What no provider
+// carries goes to MESSAGING_ADAPTER, whose console adapter logs instead of sending so flows are testable end to end.
 
 export type Channel = 'whatsapp' | 'sms' | 'voice' | 'email';
 
@@ -28,19 +28,13 @@ const consoleAdapter: MessagingAdapter = {
   },
 };
 
-/**
- * The adapter every caller uses. Verification codes by SMS, WhatsApp or voice go to Twilio (SMS, calls) and
- * Messaggio (WhatsApp) when those are on (src/lib/server/verificationSend.ts); everything else, and codes while no
- * provider is on, goes to the MESSAGING_ADAPTER below exactly as before.
- */
+/** The adapter every caller uses: the configured providers first (src/lib/server/deliver.ts), then MESSAGING_ADAPTER. */
 export function messaging(): MessagingAdapter {
   return {
     async send(msg) {
-      if (msg.channel === 'sms' || msg.channel === 'whatsapp' || msg.channel === 'voice') {
-        const { sendVerification } = await import('../server/verificationSend');
-        const r = await sendVerification(msg);
-        if (r) return r;
-      }
+      const { deliver } = await import('../server/deliver');
+      const r = await deliver(msg);
+      if (r) return r;
       return baseAdapter().send(msg);
     },
   };

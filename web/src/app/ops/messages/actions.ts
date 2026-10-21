@@ -217,3 +217,73 @@ export async function twilioSetupAction(): Promise<TwilioSetupRes> {
   const r = await twilioSetup();
   return r.ok ? { ok: true, ...r.setup } : r;
 }
+
+// ---------- Email (Resend) ----------
+
+export async function setEmailFlagAction(name: string, value: boolean): Promise<{ ok: boolean; error?: string }> {
+  const user = await areaUserOrNull('messages', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  if (name !== 'enabled') return { ok: false, error: 'הגדרה לא מוכרת' };
+  const { resendKey } = await import('@/lib/server/email');
+  if (value && !(await resendKey())) return { ok: false, error: 'הזינו קודם מפתח API של Resend' };
+  const cur = await platformSettings();
+  await savePlatformSettings(user.id, { email: { ...cur.email, enabled: value } });
+  await db.auditLog.create({ data: { actorId: user.id, action: 'email_update', subjectType: 'platform_settings', subjectId: user.id, meta: { ref: name, value } } });
+  revalidatePath('/ops/messages');
+  return { ok: true };
+}
+
+export async function saveEmailKeyAction(input: { key: string }): Promise<Res> {
+  const user = await areaUserOrNull('messages', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { saveResendKey, emailDomainCheck } = await import('@/lib/server/email');
+  const r = await saveResendKey(input.key ?? '', user.id);
+  if (!r.ok) return r;
+  await db.auditLog.create({ data: { actorId: user.id, action: 'email_key', subjectType: 'platform_settings', subjectId: user.id, meta: { ref: r.hint, op: 'save' } } });
+  revalidatePath('/ops/messages');
+  const check = await emailDomainCheck();
+  return check.ok ? { ok: true, text: `נשמר. ${check.text}` } : { ok: true, text: `נשמר. ${check.error}` };
+}
+
+export async function removeEmailKeyAction(): Promise<Res> {
+  const user = await areaUserOrNull('messages', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { removeResendKey } = await import('@/lib/server/email');
+  await removeResendKey();
+  await db.auditLog.create({ data: { actorId: user.id, action: 'email_key', subjectType: 'platform_settings', subjectId: user.id, meta: { ref: 'removed', op: 'remove' } } });
+  revalidatePath('/ops/messages');
+  return { ok: true, text: 'המפתח הוסר' };
+}
+
+export async function saveEmailSenderAction(input: { from: string; replyTo: string }): Promise<Res> {
+  const user = await areaUserOrNull('messages', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { fromAddress } = await import('@/lib/vendors/resend');
+  const from = (input.from ?? '').trim();
+  const replyTo = (input.replyTo ?? '').trim();
+  if (!fromAddress(from)) return { ok: false, error: 'כתובת שולח לא תקינה. למשל: BeautyFind <noreply@beautyfind.co.il>' };
+  if (replyTo && !fromAddress(replyTo)) return { ok: false, error: 'כתובת לתשובות לא תקינה' };
+  const cur = await platformSettings();
+  await savePlatformSettings(user.id, { email: { ...cur.email, from, replyTo } });
+  revalidatePath('/ops/messages');
+  return { ok: true, text: 'נשמר' };
+}
+
+export async function emailDomainCheckAction(): Promise<Res> {
+  const user = await areaUserOrNull('messages', 'view');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { emailDomainCheck } = await import('@/lib/server/email');
+  return emailDomainCheck();
+}
+
+export async function emailTestAction(input: { email: string }): Promise<Res> {
+  const user = await areaUserOrNull('messages', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const to = (input.email ?? '').trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(to)) return { ok: false, error: 'כתובת אימייל לא תקינה' };
+  const { emailTestSend } = await import('@/lib/server/email');
+  const r = await emailTestSend(to);
+  await db.auditLog.create({ data: { actorId: user.id, action: 'email_test', subjectType: 'platform_settings', subjectId: user.id, meta: { ref: 'email', ok: r.ok } } });
+  revalidatePath('/ops/messages');
+  return r.ok ? { ok: true, text: `נשלח. מזהה ב־Resend: ${r.id}. בדקו את תיבת הדואר (וגם את הספאם).` } : { ok: false, error: r.error };
+}
