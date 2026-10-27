@@ -1,4 +1,5 @@
 import { replyVars } from '@/lib/server/consultReply';
+import { sealConsultMedical } from '@/lib/server/consultMedical';
 import 'server-only';
 import type { BookingStatus, ConsultRequest, ConsultStatus, DepositPolicy, Prisma } from '@prisma/client';
 import { availability } from '@/lib/server/availability';
@@ -209,8 +210,8 @@ export async function submitConsultRequest(i: SubmitInput): Promise<SubmitResult
   const ref = await nextRef('R', 3);
   const base = {
     ref, branchId: branch.id, clientUserId: i.client.userId ?? null, clientName: i.client.name, clientPhone: i.client.phone, treatmentId,
-    areas: i.areas, goal: i.goal, priorInjections: i.prior, format: i.format,
-    consentShareMedical: true, medicalFlags: i.flags, feeAgorot,
+    areas: i.areas, format: i.format, consentShareMedical: true, feeAgorot,
+    ...sealConsultMedical({ goal: i.goal, prior: i.prior, flags: i.flags }),
   };
   const submitted = (tx: Tx | typeof db, id: string, action: string) =>
     tx.decision.create({ data: { actorId: i.client.userId ?? null, actorRole: 'client', subjectType: 'consult_request', subjectId: id, action } });

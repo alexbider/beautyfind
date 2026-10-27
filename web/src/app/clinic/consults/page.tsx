@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { consultMedical } from '@/lib/server/consultMedical';
 import Link from 'next/link';
 import { ConsultInbox, type InboxRequest } from '@/components/consult/ConsultInbox';
 import { FLAGS, FORMATS, PRIOR, TIMES, DAY_LETTERS, type FlagKey } from '@/components/consult/constants';
@@ -92,7 +93,8 @@ export default async function ConsultsInboxPage({ searchParams }: { searchParams
   const requests: InboxRequest[] = rows.map(x => {
     const b = bookingOf.get(x.id);
     const live = !!b && LIVE.has(b.status);
-    const flags = x.medicalFlags.filter((f): f is FlagKey => FLAGS.some(g => g.key === f));
+    const med = consultMedical(x);
+    const flags = med.flags.filter((f): f is FlagKey => FLAGS.some(g => g.key === f));
     const when = x.preferredTimes.length
       ? [
           TIMES.filter(t => x.preferredTimes.includes(t.key)).map(t => t.name).join(', '),
@@ -109,8 +111,8 @@ export default async function ConsultsInboxPage({ searchParams }: { searchParams
       phoneE164: x.clientPhone,
       received: received(x.createdAt),
       areas: x.areas,
-      goal: x.goal,
-      prior: PRIOR.find(p => p.key === x.priorInjections)?.name ?? x.priorInjections,
+      goal: med.goal,
+      prior: PRIOR.find(p => p.key === med.prior)?.name ?? med.prior,
       format: FORMATS.find(f => f.key === x.format)?.name ?? x.format,
       when,
       status: x.status,

@@ -1026,6 +1026,9 @@ model ConsultRequest {
   preferredDays       Int[]         @map("preferred_days")
   consentShareMedical Boolean       @default(false) @map("consent_share_medical")
   medicalFlags        String[]      @map("medical_flags")
+  // goal, priorInjections and medicalFlags sealed with DATA_KEY ({ goal, prior, flags }); the plain columns above
+  // are then left empty. Read through consultMedical() in src/lib/server/consultMedical.ts.
+  medicalEnc          String?       @map("medical_enc")
   status              ConsultStatus
   proposedSlot        DateTime?     @map("proposed_slot")
   outcomeText         String?       @map("outcome_text")

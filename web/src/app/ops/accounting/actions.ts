@@ -29,7 +29,7 @@ export async function createExpenseAction(form: FormData): Promise<Result> {
   let receiptUrl = p.data.receiptUrl || null;
   const file = form.get('receipt');
   if (file instanceof File && file.size > 0) {
-    const up = await saveUpload(file, { ownerId: user.id, isPrivate: true, alt: `receipt ${p.data.vendor}` });
+    const up = await saveUpload(file, { ownerId: user.id, isPrivate: true, alt: `receipt ${p.data.vendor}`, kind: 'receipt' });
     if (!up.ok) return { ok: false, error: up.error === 'type' ? 'הקבלה חייבת להיות PDF או תמונה' : up.error === 'size' ? 'הקובץ גדול מ־8MB' : 'הקובץ ריק' };
     receiptUrl = up.url;
   }

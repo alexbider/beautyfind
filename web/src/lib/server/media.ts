@@ -15,7 +15,7 @@ export type UploadResult = { ok: true; id: string; url: string } | { ok: false; 
  */
 export async function saveUpload(
   file: File,
-  opts: { ownerId: string; businessId?: string | null; isPrivate?: boolean; alt?: string },
+  opts: { ownerId: string; businessId?: string | null; isPrivate?: boolean; alt?: string; kind?: string },
 ): Promise<UploadResult> {
   if (!file || file.size === 0) return { ok: false, error: 'empty' };
   if (file.size > MAX_UPLOAD_BYTES) return { ok: false, error: 'size' };
@@ -25,7 +25,7 @@ export async function saveUpload(
   const key = `${opts.isPrivate ? 'private' : 'public'}/${randomUUID()}.${ext}`;
   await storage().put(key, Buffer.from(await file.arrayBuffer()), file.type);
   const row = await db.mediaFile.create({
-    data: { ownerId: opts.ownerId, businessId: opts.businessId ?? null, key, mime: file.type, bytes: file.size, alt: opts.alt, isPrivate: !!opts.isPrivate },
+    data: { ownerId: opts.ownerId, businessId: opts.businessId ?? null, key, mime: file.type, bytes: file.size, alt: opts.alt, isPrivate: !!opts.isPrivate, kind: opts.kind ?? null },
   });
   return { ok: true, id: row.id, url: opts.isPrivate ? `/ops/media/${row.id}` : `/media/${row.id}` };
 }

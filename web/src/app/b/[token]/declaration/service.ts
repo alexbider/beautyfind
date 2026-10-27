@@ -165,7 +165,7 @@ export async function submitDeclaration(bookingId: string, raw: unknown, png: Bu
   const ownerId = b.clientUserId ?? b.branch.business.ownerUserId ?? b.branch.business.staff.find(s => s.userId)?.userId;
   if (!ownerId) return { ok: false, error: ERR.server };
   const file = new File([new Uint8Array(png)], 'signature.png', { type: 'image/png' });
-  const up = await saveUpload(file, { ownerId, businessId: b.branch.businessId, isPrivate: true, alt: 'חתימה על הצהרת בריאות' });
+  const up = await saveUpload(file, { ownerId, businessId: b.branch.businessId, isPrivate: true, alt: 'חתימה על הצהרת בריאות', kind: 'signature' });
   if (!up.ok) return { ok: false, error: ERR.sig };
 
   const signedAt = new Date();

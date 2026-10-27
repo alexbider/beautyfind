@@ -21,6 +21,9 @@ run('npx prisma migrate deploy');
 console.log('[prebuild] demo purge (only with PURGE_DEMO=1 or PURGE_BUSINESS_IDS)');
 run('npx tsx scripts/purge-demo.ts');
 
+console.log('[prebuild] seal consultation health answers');
+run('npx tsx scripts/seal-consults.ts');
+
 console.log('[prebuild] master admin account');
 run('npx tsx scripts/ops-bootstrap.ts');
 
