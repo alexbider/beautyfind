@@ -270,5 +270,7 @@ export async function submitJoin(input: JoinPayload & { media?: z.input<typeof M
     return { ok: false, reason: 'server', error: 'השליחה נכשלה. הפרטים נשמרו בטופס, נסו שוב בעוד רגע.' };
   }
 
+  const { alertOps } = await import('@/lib/server/alerts');
+  await alertOps(`join:${bizRef}`, `עסק חדש נרשם ומחכה לאימות: ${f.name.trim()} (${bizRef}).`);
   return { ok: true, ref: bizRef };
 }

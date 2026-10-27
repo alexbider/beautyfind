@@ -1,4 +1,5 @@
 import type Stripe from 'stripe';
+import { alertOps } from '@/lib/server/alerts';
 import { handleStripeEvent } from '@/lib/server/billing/webhook';
 import { stripe, stripeConfigured } from '@/lib/server/billing/stripe';
 
@@ -35,6 +36,7 @@ export async function POST(req: Request) {
     return Response.json({ ok: true, result });
   } catch (e) {
     console.error('[stripe webhook] failed', event.type, event.id, e);
+    await alertOps('stripe-webhook', `אירוע Stripe נכשל בעיבוד (${event.type}). Stripe ינסה שוב; אם זה חוזר, בדקו את הלוג.`);
     return Response.json({ ok: false, error: 'handler_failed' }, { status: 500 });
   }
 }

@@ -458,6 +458,8 @@ export async function recordPaidInvoice(inv: Stripe.Invoice): Promise<void> {
 
 /** A failed subscription charge: past due from now, and the business shows as past due. */
 export async function recordFailedInvoice(inv: Stripe.Invoice, subscriptionId: string | null): Promise<void> {
+  const { alertOps } = await import('../alerts');
+  await alertOps(`charge-failed:${inv.id}`, `חיוב נכשל ב־Stripe: ${inv.customer_name ?? inv.customer_email ?? 'לקוח'}, ${(inv.amount_due / 100).toFixed(2)} ₪ (${subscriptionId ? 'מנוי' : 'מקום ממומן'}).`);
   if (!subscriptionId) return; // a sponsored invoice: Stripe retries and emails; nothing changes on the listing
   const s = await stripe().subscriptions.retrieve(subscriptionId);
   await applyStripeSubscription(s);
@@ -491,6 +493,14 @@ export async function runBillingCron(): Promise<{ synced: number; hidden: number
       out.errors++;
       console.error('[billing] cron sync failed', r.businessId, e);
     }
+  }
+  if (out.errors) {
+    const { alertOps } = await import('../alerts');
+    await alertOps('billing-cron', `ריצת החיוב היומית: ${out.errors} עסקים לא סונכרנו עם Stripe. בדקו את הלוג.`);
+  }
+  if (out.hidden) {
+    const { alertOps } = await import('../alerts');
+    await alertOps('billing-hidden', `${out.hidden} עסקים הוסתרו היום בגלל חוב פתוח.`);
   }
   return out;
 }
