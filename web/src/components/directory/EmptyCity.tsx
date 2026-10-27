@@ -19,7 +19,7 @@ interface Props {
  * Point to what exists nearby and invite a listing.
  */
 export function EmptyCity({ region, city, category, siblings, regionTotal, cityTotal }: Props) {
-  const scoped = (c: City) => (category ? `/${c.region}/${c.slug}/${category.slug}` : `/${c.region}/${c.slug}`);
+  const scoped = (c: City) => (category ? `/${c.region}/${c.slug}/${category.slug}` : c.slug === c.region ? `/${c.region}` : `/${c.region}/${c.slug}`);
   const cards: Array<{ key: string; name: string; note: string; n: number; href: string }> = [];
 
   if (category && cityTotal > 0) {

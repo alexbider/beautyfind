@@ -285,7 +285,8 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
   const clearHref = dirHref(s.path, { ...q, filters: [], page: 1 } satisfies DirQuery);
   const anyPrice = list.items.some(c => c.priceFromShekels != null);
   const few = o.total <= 3 && o.siblings.length > 0;
-  const siblingHref = (c: City) => (s.category ? `/${c.region}/${c.slug}/${s.category.slug}` : `/${c.region}/${c.slug}`);
+  // The bare page of a region-named city (Haifa, Jerusalem) is the region page, so link there directly.
+  const siblingHref = (c: City) => (s.category ? `/${c.region}/${c.slug}/${s.category.slug}` : c.slug === c.region ? `/${c.region}` : `/${c.region}/${c.slug}`);
 
   return (
     <div className={styles.root}>
