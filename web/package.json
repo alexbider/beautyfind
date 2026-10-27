@@ -33,7 +33,8 @@
     "import:editorial-report": "tsx scripts/import/editorialReport.ts",
     "import:gold-examples": "tsx scripts/import/goldExamples.ts",
     "import:medical-report": "tsx scripts/import/medicalReport.ts",
-    "magazine:seed": "tsx --conditions=react-server scripts/magazine-seed.ts"
+    "magazine:seed": "tsx --conditions=react-server scripts/magazine-seed.ts",
+    "test:messages": "tsx --conditions=react-server --test tests/messages/*.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

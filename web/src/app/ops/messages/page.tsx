@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { AdminShell } from '@/components/ops/AdminShell';
 import { areaLevel, requireArea } from '@/components/ops/guard';
 import { atLeast } from '@/components/ops/roles';
@@ -38,7 +39,7 @@ export default async function MessagesPage() {
 
   return (
     <AdminShell user={user}>
-      <PageHead eyebrow="צמיחה" title="הודעות ותבניות" lead="כל הודעה שהפלטפורמה שולחת: מה מפעיל אותה, למי, באיזה ערוץ, ומה כבר פעיל בקוד. הודעות שירות תמיד נשלחות; שיווק רק בהסכמה." />
+      <PageHead eyebrow="צמיחה" title="הודעות ותבניות" lead="כל הודעה שהפלטפורמה שולחת: מה מפעיל אותה, למי, באיזה ערוץ, ומה כבר פעיל בקוד. הודעות שירות תמיד נשלחות; שיווק רק בהסכמה." actions={<Link href="/ops/messages/automations" className={ui.btn}>אוטומציות ותור הודעות</Link>} />
       <Kpis items={[
         { label: 'קודי אימות', value: tw.ready || mgLive ? [tw.ready ? 'Twilio' : null, mgLive && mg.settings.whatsapp && mg.settings.whatsappSender ? 'Messaggio' : null].filter(Boolean).join(' + ') || 'Messaggio' : 'לא מחובר', note: tw.ready || mgLive ? `SMS: ${tw.ready ? 'Twilio' : mgLive && mg.settings.sms ? 'Messaggio' : '—'} · WhatsApp: ${mgLive && mg.settings.whatsapp && mg.settings.whatsappSender ? 'Messaggio' : 'עובר ל־SMS'} · ${int(tw.sent24h + mg.sent24h)} נשלחו ב־24 שעות` : 'הקודים נרשמים ללוג בלבד עד שמחברים ספק', tone: tw.ready || mgLive ? (tw.failed24h + mg.failed24h ? 'warn' : 'ok') : 'bad' },
         { label: 'אימייל', value: em.ready ? 'Resend' : 'לא מחובר', note: em.ready ? `${int(em.sent24h)} נשלחו ב־24 שעות${em.hookConfigured ? ` · ${int(em.delivered24h)} נמסרו${em.bounced24h ? ` · ${int(em.bounced24h)} חזרו` : ''}` : ''}${em.failed24h ? ` · ${int(em.failed24h)} נכשלו` : ''}` : 'אימיילים נרשמים ללוג בלבד עד שמחברים את Resend', tone: em.ready ? (em.failed24h ? 'warn' : 'ok') : 'bad' },

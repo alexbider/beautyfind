@@ -94,6 +94,18 @@ export const PlatformSettingsSchema = z.object({
   // Magazine: when on, publish_article (MCP and admin) files a proposal in the approvals queue instead of
   // publishing; a person approves on /ops/ai and the approval publishes.
   magazinePublishApproval: z.boolean().default(false),
+  // Automations (/ops/automations): each switch stops new messages of that kind and holds the ones already queued.
+  // Claim invites start off: they go to businesses that never asked to hear from us, so staff send them in batches.
+  automations: z.object({
+    reviewRequest: z.boolean().default(true), // M6, three days after a completed booking
+    reminderSms: z.boolean().default(true), // M2 by SMS when the client left no email or email is not connected
+    giftDelivery: z.boolean().default(true), // M14 on the send date the buyer picked
+    giftExpiry: z.boolean().default(true), // M15, 90 and 30 days before a gift card with a balance expires
+    paymentFailed: z.boolean().default(true), // M23, days 0, 3, 7 and 14 of a failed subscription charge
+    sponsored: z.boolean().default(true), // M22: approved, rejected, started, ended
+    onboarding: z.boolean().default(true), // welcome, finish the profile, add a card
+    claimInvites: z.boolean().default(false), // one invite per unclaimed business, sent in staff batches
+  }).prefault({}),
 });
 
 export type PlatformSettings = z.infer<typeof PlatformSettingsSchema>;

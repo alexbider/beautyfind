@@ -18,7 +18,7 @@ import { VERIFY_TEMPLATES, sendVerification } from './verificationSend';
 export async function deliver(msg: OutgoingMessage): Promise<{ id: string; channel: Channel } | null> {
   const isCode = VERIFY_TEMPLATES.has(msg.template);
   if (isCode && msg.channel !== 'email') return sendVerification(msg);
-  if (msg.kind !== 'service') return null;
+  if (msg.kind !== 'service' && !msg.cleared) return null;
   try {
     if (msg.channel === 'email') {
       const cfg = await emailReady();

@@ -13,6 +13,8 @@ export interface OutgoingMessage {
   vars: Record<string, string>;
   /** service messages ignore marketing consent */
   kind: 'service' | 'marketing';
+  /** Set only by the scheduler (src/lib/server/scheduler.ts) after it checked consent, opt-outs and the sending window. */
+  cleared?: boolean;
 }
 
 export interface MessagingAdapter {

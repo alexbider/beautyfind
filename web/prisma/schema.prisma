@@ -2001,3 +2001,42 @@ model RateLimit {
   @@index([windowStart])
   @@map("rate_limits")
 }
+
+/// Messages the automations send later (src/lib/server/scheduler.ts): review requests, scheduled gift cards,
+/// gift card expiry notices, failed payment follow-ups, sponsored placement notices, onboarding and claim invites.
+/// `key` makes every enqueue idempotent (one review request per booking, one invite per business). Contact and
+/// vars are sealed, because vars can hold a gift card code. The cron at /api/cron/messages sends what is due,
+/// inside the sending window, after the automation's own check that the message still makes sense.
+model ScheduledMessage {
+  id             String    @id @default(uuid()) @db.Uuid
+  key            String    @unique
+  automation     String // review_request | gift_delivery | gift_expiry | payment_failed | sponsored | onboarding | claim_invite
+  template       String
+  channel        String // email | whatsapp | sms
+  toSealed       String    @map("to_sealed")
+  toMasked       String    @map("to_masked")
+  /// A second route when the first channel has no provider yet (an email that can go by SMS meanwhile).
+  fallbackSealed String?   @map("fallback_sealed")
+  varsSealed     String    @map("vars_sealed")
+  kind           String    @default("service") // service | marketing
+  /// Marketing consent scope: a business id, or "all".
+  scope          String?
+  businessId     String?   @map("business_id") @db.Uuid
+  refId          String?   @map("ref_id") // the booking, gift card, subscription, campaign or business this is about
+  dueAt          DateTime  @map("due_at")
+  /// After this the message is no longer useful and is dropped (expired) instead of sent late.
+  staleAt        DateTime? @map("stale_at")
+  status         String    @default("pending") // pending | sending | sent | skipped | failed | expired | cancelled
+  attempts       Int       @default(0)
+  note           String?
+  sentChannel    String?   @map("sent_channel")
+  sentAt         DateTime? @map("sent_at")
+  createdById    String?   @map("created_by_id") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@index([status, dueAt])
+  @@index([automation, createdAt])
+  @@index([businessId])
+  @@map("scheduled_messages")
+}

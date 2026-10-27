@@ -20,6 +20,34 @@
     {
       "path": "/api/cron/health",
       "schedule": "7 5 * * *"
+    },
+    {
+      "path": "/api/cron/messages",
+      "schedule": "12 6 * * *"
+    },
+    {
+      "path": "/api/cron/messages",
+      "schedule": "12 8 * * *"
+    },
+    {
+      "path": "/api/cron/messages",
+      "schedule": "12 10 * * *"
+    },
+    {
+      "path": "/api/cron/messages",
+      "schedule": "12 12 * * *"
+    },
+    {
+      "path": "/api/cron/messages",
+      "schedule": "12 14 * * *"
+    },
+    {
+      "path": "/api/cron/messages",
+      "schedule": "12 16 * * *"
+    },
+    {
+      "path": "/api/cron/messages",
+      "schedule": "12 18 * * *"
     }
   ]
 }

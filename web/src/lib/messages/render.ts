@@ -11,6 +11,8 @@ export interface Rendered {
   cta?: { label: string; url: string };
   /** The SMS version: one short message, link included. */
   sms: string;
+  /** Marketing and first-contact messages carry an unsubscribe link (Communications Law §30A). */
+  unsubscribe?: string;
 }
 
 const BRAND = 'BeautyFind';
@@ -180,6 +182,63 @@ export function renderMessage(template: string, vars: Record<string, string>, si
       return { subject: `פנייה חדשה ל${business} מ-${BRAND}`, lines: [`פנייה חדשה הגיעה דרך הפרופיל של ${business}:`, ...rows], cta: { label: 'לכל הפניות', url: v(vars, 'leads_link') || `${root}/biz/leads` }, sms: `${BRAND}: פנייה חדשה מ${name} ל${business}. ${v(vars, 'leads_link')}` };
     }
 
+    case 'M6_review_request':
+      return {
+        subject: `איך היה ב${business}?`,
+        lines: [hi(name), `מקווים שנהנית מהטיפול ב${business}. נשמח לשמוע איך היה: ביקורת קצרה עוזרת לאחרים לבחור, ולעסק להשתפר.`, 'לוקח פחות מדקה, ורק מי שהגיעו לתור יכולים לכתוב.'],
+        cta: { label: 'לכתיבת ביקורת', url: link },
+        sms: `${BRAND}: איך היה ב${business}? נשמח לביקורת קצרה (פחות מדקה): ${link}`,
+      };
+
+    case 'M15_gift_expiry': {
+      const days = v(vars, 'days');
+      return {
+        subject: `כרטיס המתנה ל${business} פג בעוד ${days} ימים`,
+        lines: [hi(name), `בכרטיס המתנה ל${business} נשארו ${v(vars, 'amount')}, והוא בתוקף עד ${v(vars, 'expires')}.`, 'כדאי לקבוע תור לפני שהתוקף פג. אפשר לממש באתר או בעסק עצמו.'],
+        cta: { label: 'לבדיקת הכרטיס', url: link },
+        sms: `${BRAND}: בכרטיס המתנה ל${business} נשארו ${v(vars, 'amount')}, בתוקף עד ${v(vars, 'expires')}. פרטים: ${link}`,
+      };
+    }
+
+    case 'M23_payment_failed': {
+      const step = v(vars, 'step');
+      const hide = v(vars, 'hide_date');
+      const opening = step === '0' ? `החיוב החודשי של ${business} לא עבר.` : `החיוב של ${business} עדיין לא עבר.`;
+      return {
+        subject: step === '0' ? `החיוב ב-${BRAND} לא עבר` : `תזכורת: החיוב ב-${BRAND} לא עבר`,
+        lines: [hi(name), opening, 'בדרך כלל זה כרטיס שפג תוקפו או חסימה זמנית של חברת האשראי. אפשר לעדכן את הכרטיס בדקה מעמוד החיובים.', hide ? `אם החיוב לא יוסדר עד ${hide}, הפרופיל יוסתר מהחיפוש עד שיוסדר.` : ''].filter(Boolean),
+        cta: { label: 'לעדכון אמצעי התשלום', url: link },
+        sms: `${BRAND}: החיוב של ${business} לא עבר. לעדכון הכרטיס: ${link}${hide ? ` (הפרופיל יוסתר ב-${hide} אם לא יוסדר)` : ''}`,
+      };
+    }
+
+    case 'M22_sponsored_approved':
+      return { subject: `המקום הממומן ${v(vars, 'ref')} אושר`, lines: [hi(name), `המקום הממומן של ${business} (${v(vars, 'where')}) אושר ויעלה ב-${v(vars, 'start')} למשך ${v(vars, 'weeks')} שבועות.`], cta: { label: 'למקומות הממומנים', url: link }, sms: `${BRAND}: המקום הממומן ${v(vars, 'ref')} אושר ויעלה ב-${v(vars, 'start')}. ${link}` };
+    case 'M22_sponsored_rejected':
+      return { subject: `המקום הממומן ${v(vars, 'ref')} לא אושר`, lines: [hi(name), `המקום הממומן של ${business} (${v(vars, 'where')}) לא אושר, ולא חויבתם עליו.`, v(vars, 'reason') ? `הסיבה: ${v(vars, 'reason')}` : '', 'אפשר לתקן ולשלוח שוב.'].filter(Boolean), cta: { label: 'למקומות הממומנים', url: link }, sms: `${BRAND}: המקום הממומן ${v(vars, 'ref')} לא אושר${v(vars, 'reason') ? `: ${v(vars, 'reason')}` : ''}. ${link}` };
+    case 'M22_sponsored_started':
+      return { subject: `המקום הממומן של ${business} עלה`, lines: [hi(name), `מהיום ${business} מופיעים כמקום ממומן ב${v(vars, 'where')}, עד ${v(vars, 'end')}.`], cta: { label: 'למקומות הממומנים', url: link }, sms: `${BRAND}: המקום הממומן של ${business} עלה היום ויופיע עד ${v(vars, 'end')}.` };
+    case 'M22_sponsored_ended':
+      return { subject: `המקום הממומן של ${business} הסתיים`, lines: [hi(name), `המקום הממומן ב${v(vars, 'where')} הסתיים. רוצים להמשיך? אפשר להזמין שבועות נוספים מלוח הניהול.`], cta: { label: 'להזמנת מקום ממומן', url: link }, sms: `${BRAND}: המקום הממומן של ${business} הסתיים. להמשך: ${link}` };
+
+    case 'M_onboard_welcome':
+      return { subject: `ברוכים הבאים ל-${BRAND}`, lines: [hi(name), `${business} נרשמו ל-${BRAND}. אנחנו בודקים את הפרטים, ובינתיים כדאי להשלים את הפרופיל: תמונות, תפריט טיפולים ומחירים ושעות פעילות.`, 'פרופיל מלא מופיע גבוה יותר בחיפוש ומקבל יותר פניות.'], cta: { label: 'ללוח הניהול', url: link }, sms: `${BRAND}: ברוכים הבאים! כדאי להשלים את הפרופיל של ${business} (תמונות, טיפולים, שעות): ${link}` };
+    case 'M_onboard_profile':
+      return { subject: `הפרופיל של ${business} עדיין לא באוויר`, lines: [hi(name), `הפרופיל של ${business} עדיין לא פורסם. חסרים בעיקר: ${v(vars, 'missing') || 'פרטים בסיסיים'}.`, 'ברגע שהוא מלא ומאושר, הוא עולה לחיפוש.'], cta: { label: 'להשלמת הפרופיל', url: link }, sms: `${BRAND}: הפרופיל של ${business} עדיין לא באוויר. להשלמה: ${link}` };
+    case 'M_onboard_card':
+      return { subject: `נשאר צעד אחד: אמצעי תשלום`, lines: [hi(name), `הפרופיל של ${business} באוויר, אבל עדיין לא שמור אמצעי תשלום למנוי.`, 'בלי כרטיס המנוי לא מתחדש, והפרופיל עלול לרדת מהחיפוש.'], cta: { label: 'להוספת כרטיס', url: link }, sms: `${BRAND}: להשארת ${business} בחיפוש צריך להוסיף אמצעי תשלום: ${link}` };
+
+    case 'M_claim_invite': {
+      const unsub = v(vars, 'unsubscribe');
+      return {
+        subject: `${business} מופיעים ב-${BRAND}`,
+        lines: ['שלום,', `${business} מופיעים במדריך ${BRAND}, שבו לקוחות מחפשים ומשווים טיפולי יופי ואסתטיקה.`, 'אפשר לאשר בעלות על הפרופיל בחינם, לעדכן תמונות, טיפולים ומחירים, ולקבל פניות ישירות.', 'אם לא תרצו לשמוע מאיתנו שוב, אפשר להסיר את הפרטים בקישור שבתחתית.'],
+        cta: { label: 'לאישור בעלות על הפרופיל', url: link },
+        sms: `${BRAND}: ${business} מופיעים במדריך שלנו. לאישור בעלות בחינם ועדכון הפרופיל: ${link}${unsub ? ` להסרה: ${unsub}` : ''}`,
+        ...(unsub ? { unsubscribe: unsub } : {}),
+      };
+    }
+
     case 'messaggio_test':
     case 'twilio_test':
     case 'email_test':
@@ -199,8 +258,10 @@ export function emailBody(r: Rendered): { html: string; text: string } {
     + `<table role="presentation" width="560" cellpadding="0" cellspacing="0" dir="rtl" style="width:100%;max-width:560px;background:#ffffff;border-radius:14px;font-family:Arial,Helvetica,sans-serif;text-align:right">`
     + `<tr><td style="padding:22px 28px 6px;font-size:22px;font-weight:bold;color:#0f7a7a;direction:ltr;text-align:right">beautyfind.</td></tr>`
     + `<tr><td style="padding:12px 28px 20px">${r.lines.map(p).join('')}${button}</td></tr>`
-    + `<tr><td style="padding:14px 28px 22px;border-top:1px solid #e5e9ee;font-size:12px;color:#5b6b7b">הודעת שירות מ-BeautyFind. מידע כללי בלבד, לא ייעוץ רפואי.</td></tr>`
+    + (r.unsubscribe
+      ? `<tr><td style="padding:14px 28px 22px;border-top:1px solid #e5e9ee;font-size:12px;color:#5b6b7b">BeautyFind. לא רוצים לקבל מאיתנו הודעות? <a href="${esc(r.unsubscribe)}" style="color:#5b6b7b">להסרה</a></td></tr>`
+      : `<tr><td style="padding:14px 28px 22px;border-top:1px solid #e5e9ee;font-size:12px;color:#5b6b7b">הודעת שירות מ-BeautyFind. מידע כללי בלבד, לא ייעוץ רפואי.</td></tr>`)
     + `</table></td></tr></table></body></html>`;
-  const text = [...r.lines, r.cta?.url ? `${r.cta.label}: ${r.cta.url}` : '', '', 'הודעת שירות מ-BeautyFind'].filter((x, i, a) => x || (i > 0 && a[i - 1])).join('\n');
+  const text = [...r.lines, r.cta?.url ? `${r.cta.label}: ${r.cta.url}` : '', '', r.unsubscribe ? `להסרה: ${r.unsubscribe}` : 'הודעת שירות מ-BeautyFind'].filter((x, i, a) => x || (i > 0 && a[i - 1])).join('\n');
   return { html, text };
 }
