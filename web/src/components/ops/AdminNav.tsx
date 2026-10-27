@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Wordmark } from '@/components/Wordmark';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
 import { AREA_HREF, AREA_NAMES, type Area } from './roles';
@@ -66,7 +67,7 @@ export function AdminNav({
       <aside className={styles.side} aria-label="תפריט הניהול">
         <div className={styles.brand}>
           <Link href="/ops" dir="ltr" className={styles.mark} aria-label="BeautyFind, ניהול">
-            beauty<span className={styles.markFind}>find.</span>
+            <Wordmark size={23} onDark />
           </Link>
           <div className={styles.brandSub}>ניהול ראשי · {staging ? 'בדיקה' : 'ייצור'}</div>
         </div>

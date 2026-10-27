@@ -247,6 +247,9 @@ export function renderMessage(template: string, vars: Record<string, string>, si
   return null;
 }
 
+// Hosted PNG of the logo for email clients (most do not render inline SVG).
+const LOGO_EMAIL = 'https://beautyfind.co.il/assets/logo-email.png';
+
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /** The email as HTML (one 560px RTL table, inline styles, Arial fallback) and as plain text. */
@@ -256,7 +259,7 @@ export function emailBody(r: Rendered): { html: string; text: string } {
   const html = `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(r.subject)}</title></head>`
     + `<body style="margin:0;padding:0;background:#f4f6f8"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8"><tr><td align="center" style="padding:24px 12px">`
     + `<table role="presentation" width="560" cellpadding="0" cellspacing="0" dir="rtl" style="width:100%;max-width:560px;background:#ffffff;border-radius:14px;font-family:Arial,Helvetica,sans-serif;text-align:right">`
-    + `<tr><td style="padding:22px 28px 6px;font-size:22px;font-weight:bold;color:#0f7a7a;direction:ltr;text-align:right">beautyfind.</td></tr>`
+    + `<tr><td style="padding:22px 28px 6px;direction:ltr;text-align:right"><img src="${LOGO_EMAIL}" width="150" height="31" alt="BeautyFind" style="display:inline-block;border:0;outline:none;text-decoration:none;height:31px;width:150px"></td></tr>`
     + `<tr><td style="padding:12px 28px 20px">${r.lines.map(p).join('')}${button}</td></tr>`
     + (r.unsubscribe
       ? `<tr><td style="padding:14px 28px 22px;border-top:1px solid #e5e9ee;font-size:12px;color:#5b6b7b">BeautyFind. לא רוצים לקבל מאיתנו הודעות? <a href="${esc(r.unsubscribe)}" style="color:#5b6b7b">להסרה</a></td></tr>`

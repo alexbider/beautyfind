@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Wordmark } from '@/components/Wordmark';
 import { requireArea } from '@/components/ops/guard';
 import { AREA_NAMES } from '@/components/ops/roles';
 import { ui } from '@/components/ops/ui';
@@ -34,7 +35,7 @@ export default async function AuthorizePage({ searchParams }: { searchParams: SP
   return (
     <main className={styles.wrap} dir="rtl" lang="he">
       <section className={styles.card}>
-        <div className={styles.brand}><span dir="ltr" className={styles.mark}>beauty<span>find.</span></span><span className={styles.badge}>חיבור MCP</span></div>
+        <div className={styles.brand}><Wordmark size={22} /><span className={styles.badge}>חיבור MCP</span></div>
         {!parsed.ok ? (
           <>
             <h1 className={styles.h1}>הבקשה לא תקינה</h1>

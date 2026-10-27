@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useTransition } from 'react';
+import { Wordmark } from '@/components/Wordmark';
 import { buyGiftCard } from '@/app/gift/[branch]/actions';
 import { ActionBar } from '@/components/shell/ActionBar';
 import { haptic } from '@/components/shell/haptics';
@@ -237,7 +238,7 @@ export function BuyForm({ slug, businessName, years, expiry, treatments, today, 
       <span aria-hidden="true" className={s.shine} />
       <span className={s.pvTop}>
         <span className={s.pvLabel}>שובר מתנה</span>
-        <span dir="ltr" className={s.pvMark}>beauty<span>find.</span></span>
+        <Wordmark size={16} onDark className={s.pvMark} />
       </span>
       <span className={s.pvValue}>{money(valueAgorot)}</span>
       <span className={s.pvWhat}>{cardWhat}</span>

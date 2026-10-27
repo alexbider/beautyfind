@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Wordmark } from '@/components/Wordmark';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { completeSetup } from './actions';
@@ -34,7 +35,7 @@ export function SetupForm({ token, email }: { token: string; email: string | nul
     <div dir="rtl" lang="he" className={styles.root}>
       <main className={styles.wrap}>
         <div className={styles.brand}>
-          <span dir="ltr" className={styles.mark}>beauty<span>find.</span></span>
+          <Wordmark size={23} onDark />
           <span className={styles.badge}>ממשק ניהול</span>
         </div>
         {email ? (

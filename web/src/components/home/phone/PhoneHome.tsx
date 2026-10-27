@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { Wordmark } from '@/components/Wordmark';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
@@ -261,7 +262,7 @@ function Menu({ open, section, setSection, onClose, region, pickRegion }: {
         <div className={s.menuScrim} onClick={onClose} />
         <nav ref={panel} aria-label="תפריט ראשי" className={s.menuPanel}>
           <div className={s.menuTop}>
-            <span dir="ltr" className={s.wordmark} style={{ fontSize: 24 }}>beauty<span className={s.accent}>find</span><span className={s.accentDot}>.</span></span>
+            <Wordmark size={24} />
             <button type="button" onClick={onClose} aria-label="סגירת התפריט" className={s.menuClose}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#0C243E" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" /></svg>
             </button>
@@ -571,7 +572,7 @@ export function PhoneHome({ lists, reviews, regionCities, catCount, guides }: Ph
     <div className={s.root} dir="rtl">
       <header className={s.header} data-screen-label="Top bar">
         <Link href="/" aria-label="BeautyFind, לדף הבית" dir="ltr" className={s.wordmark}>
-          beauty<span className={s.accent}>find</span><span className={s.accentDot}>.</span>
+          <Wordmark size={26} />
         </Link>
         <div className={s.headActions}>
           <button type="button" className={s.regionBtn} aria-label={`אזור נבחר: ${rName(region)}`} onClick={() => openMenu('reg')}>
@@ -846,7 +847,7 @@ export function PhoneHome({ lists, reviews, regionCities, catCount, guides }: Ph
       {/* ---------- Footer ---------- */}
       <footer className={s.footer}>
         <div className={s.footTop}>
-          <div dir="ltr" className={s.footMark}>beauty<span className={s.accent}>find</span><span className={s.accentDot}>.</span></div>
+          <div dir="ltr" className={s.footMark}><Wordmark size={30} /></div>
           <p className={s.footLede}>אינדקס עצמאי של מכוני יופי וקליניקות לאסתטיקה בישראל: עסקים מאומתים מסומנים בתג, ביקורות אחרי ביקור ומחירים גלויים.</p>
           <div className={`${s.two} ${s.mt18}`}>
             <a href={`mailto:${SUPPORT_EMAIL}`} className={s.btnMail}><Mail />שליחת מייל</a>

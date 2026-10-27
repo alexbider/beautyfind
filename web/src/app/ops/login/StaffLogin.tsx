@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Wordmark } from '@/components/Wordmark';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { staffSignin } from './actions';
@@ -38,7 +39,7 @@ export function StaffLogin({ next, signedInAs, denied }: { next: string; signedI
     <div dir="rtl" lang="he" className={styles.root}>
       <main className={styles.wrap}>
         <div className={styles.brand}>
-          <span dir="ltr" className={styles.mark}>beauty<span>find.</span></span>
+          <Wordmark size={23} onDark />
           <span className={styles.badge}>ממשק ניהול</span>
         </div>
         <form className={styles.card} onSubmit={submit} noValidate>

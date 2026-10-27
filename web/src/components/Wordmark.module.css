@@ -1,5 +1,5 @@
-.mark { font-family: var(--font-wordmark); font-weight: 300; line-height: 1; color: var(--navy); white-space: nowrap; }
-.accent { color: var(--teal); }
-.dot { font-weight: 400; }
-.dark { color: #ffffff; }
-.dark .accent { color: var(--teal-light); }
+.mark { display: inline-block; vertical-align: middle; flex: none; max-width: 100%; height: auto; }
+.beauty { fill: #0B233D; }
+.find { fill: #23BACC; }
+.dark .beauty { fill: #ffffff; }
+.dark .find { fill: #4FD0DD; }
