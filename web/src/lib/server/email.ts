@@ -72,10 +72,20 @@ export async function sendTemplateEmail(cfg: ResendConfig, msg: { to: string; te
 }
 
 /** Admin test: one real email to the address entered, whatever the switch says. */
-export async function emailTestSend(to: string): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
+export async function emailTestSend(to: string, template = 'email_test'): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
   const cfg = await emailReady(true);
   if (!cfg) return { ok: false, error: 'חסר מפתח API של Resend או כתובת שולח תקינה' };
   try {
+    if (template !== 'email_test') {
+      // A real template with its sample data (src/lib/messages/samples.ts), subject marked as a sample.
+      const { SAMPLES } = await import('../messages/samples');
+      const sample = SAMPLES.find(x => x.id === template);
+      if (!sample) return { ok: false, error: 'תבנית לא מוכרת' };
+      const r = renderMessage(sample.id, sample.vars, siteUrl());
+      if (!r) return { ok: false, error: 'no template' };
+      const sent = await emailAttempt(cfg, { to, template: sample.id }, { ...emailBody(r), subject: `[דוגמה] ${r.subject}` }, { test: true });
+      return { ok: true, id: sent.id };
+    }
     const r = await sendTemplateEmail(cfg, { to, template: 'email_test', vars: {} }, { test: true });
     return r ? { ok: true, id: r.id } : { ok: false, error: 'no template' };
   } catch (e) {

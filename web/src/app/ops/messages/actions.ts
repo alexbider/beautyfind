@@ -276,14 +276,30 @@ export async function emailDomainCheckAction(): Promise<Res> {
   return emailDomainCheck();
 }
 
-export async function emailTestAction(input: { email: string }): Promise<Res> {
+export async function emailTestAction(input: { email: string; template?: string }): Promise<Res> {
   const user = await areaUserOrNull('messages', 'edit');
   if (!user) return { ok: false, error: 'אין הרשאה' };
   const to = (input.email ?? '').trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(to)) return { ok: false, error: 'כתובת אימייל לא תקינה' };
   const { emailTestSend } = await import('@/lib/server/email');
-  const r = await emailTestSend(to);
-  await db.auditLog.create({ data: { actorId: user.id, action: 'email_test', subjectType: 'platform_settings', subjectId: user.id, meta: { ref: 'email', ok: r.ok } } });
+  const template = (input.template ?? 'email_test').trim() || 'email_test';
+  if (template === 'all') {
+    // Every template with sample data, one by one (Resend allows a few requests a second).
+    const { SAMPLES } = await import('@/lib/messages/samples');
+    let sent = 0;
+    const failed: string[] = [];
+    for (const s of SAMPLES) {
+      const r = await emailTestSend(to, s.id);
+      if (r.ok) sent++;
+      else failed.push(`${s.id}: ${r.error}`);
+      await new Promise(res => setTimeout(res, 600));
+    }
+    await db.auditLog.create({ data: { actorId: user.id, action: 'email_test', subjectType: 'platform_settings', subjectId: user.id, meta: { ref: 'all_templates', sent, failed: failed.length } } });
+    revalidatePath('/ops/messages');
+    return failed.length ? { ok: false, error: `נשלחו ${sent} מתוך ${SAMPLES.length}. נכשלו: ${failed.slice(0, 3).join(' · ')}` } : { ok: true, text: `נשלחו כל ${sent} התבניות אל ${to}.` };
+  }
+  const r = await emailTestSend(to, template);
+  await db.auditLog.create({ data: { actorId: user.id, action: 'email_test', subjectType: 'platform_settings', subjectId: user.id, meta: { ref: template, ok: r.ok } } });
   revalidatePath('/ops/messages');
   return r.ok ? { ok: true, text: `נשלח. מזהה ב־Resend: ${r.id}. בדקו את תיבת הדואר (וגם את הספאם).` } : { ok: false, error: r.error };
 }

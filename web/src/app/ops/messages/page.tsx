@@ -17,6 +17,8 @@ import { TwilioCredsForm, TwilioSenderForm, TwilioTestForm, TwilioSetupCheck, Tw
 
 export const metadata: Metadata = { title: 'הודעות ותבניות · ניהול', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
+// Sending every template as a test (EmailTestForm) takes about 40 seconds.
+export const maxDuration = 90;
 
 export default async function MessagesPage() {
   const user = await requireArea('messages', 'view', '/ops/messages');

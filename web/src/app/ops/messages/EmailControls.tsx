@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Toggle } from '@/components/ops/Toggle';
 import { ui } from '@/components/ops/ui';
+import { SAMPLES } from '@/lib/messages/samples';
 import { emailDomainCheckAction, emailTestAction, removeEmailKeyAction, saveEmailHookAction, saveEmailKeyAction, saveEmailSenderAction, setEmailFlagAction } from './actions';
 
 // The email (Resend) card's controls. The API key goes to the server once and is never sent back.
@@ -77,16 +78,31 @@ export function EmailSenderForm({ from, replyTo, canEdit }: { from: string; repl
 
 export function EmailTestForm({ ready, canEdit }: { ready: boolean; canEdit: boolean }) {
   const [email, setEmail] = useState('');
+  const [template, setTemplate] = useState('email_test');
   const { msg, pending, run } = useRun();
   if (!canEdit) return null;
+  const groups = [...new Set(SAMPLES.map(s => s.group))];
   return (
     <div className={ui.stack} style={{ gap: 10 }}>
       <div className={ui.field}>
         <label className={ui.label} htmlFor="rs-test">שליחת מייל בדיקה אל</label>
         <input id="rs-test" className={ui.input} dir="ltr" inputMode="email" placeholder="name@example.com" value={email} onChange={e => setEmail(e.target.value)} />
       </div>
+      <div className={ui.field}>
+        <label className={ui.label} htmlFor="rs-template">מה לשלוח</label>
+        <select id="rs-template" className={ui.input} value={template} onChange={e => setTemplate(e.target.value)}>
+          <option value="email_test">הודעת בדיקה קצרה</option>
+          <option value="all">כל התבניות עם נתוני דוגמה ({SAMPLES.length} מיילים)</option>
+          {groups.map(g => (
+            <optgroup key={g} label={g}>
+              {SAMPLES.filter(s => s.group === g).map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+            </optgroup>
+          ))}
+        </select>
+        <span className={ui.hint}>תבניות נשלחות עם נתוני דוגמה, והנושא מתחיל ב־[דוגמה].</span>
+      </div>
       <div className={ui.actions}>
-        <button type="button" className={`${ui.btn} ${ui.primary}`} disabled={pending || !ready || !email.trim()} onClick={() => run(() => emailTestAction({ email }))}>{pending ? 'שולח…' : 'שליחת בדיקה'}</button>
+        <button type="button" className={`${ui.btn} ${ui.primary}`} disabled={pending || !ready || !email.trim()} onClick={() => run(() => emailTestAction({ email, template }))}>{pending ? 'שולח…' : 'שליחת בדיקה'}</button>
       </div>
       <Msg m={msg} />
     </div>
