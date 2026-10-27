@@ -1,23 +1,37 @@
 // Removes the fictional demo clinics (prisma/seed.ts LISTINGS and prisma/seed-demo.ts) and
 // everything hanging off them. Runs in the Vercel build only when PURGE_DEMO=1.
 //
+// PURGE_BUSINESS_IDS (comma separated uuids) instead removes exactly those businesses, e.g. a test account
+// made to try billing. Only businesses that are hidden or still pending are removed, so a live listing
+// cannot be deleted by a mistyped id. Clear the variable after the deploy.
+//
 // Demo = a business with no owner account, no Google place id on any branch, and no staff linked to a
 // real user. Real sign-ups always have an owner; imported listings always have a Google place id;
 // the catalog (regions, cities, categories), user accounts and the audit log are never touched.
 import { PrismaClient } from '@prisma/client';
 
 async function main() {
-  if (process.env.PURGE_DEMO !== '1') return;
+  const ids = (process.env.PURGE_BUSINESS_IDS ?? '')
+    .split(',')
+    .map(x => x.trim())
+    .filter(x => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(x));
+  if (process.env.PURGE_DEMO !== '1' && !ids.length) return;
   const db = new PrismaClient();
   try {
     const counts = await db.$transaction(
       async tx => {
         const q = (sql: string) => tx.$executeRawUnsafe(sql);
-        await q(`CREATE TEMP TABLE demo_biz ON COMMIT DROP AS
-          SELECT b.id FROM businesses b
-          WHERE b.owner_user_id IS NULL
-            AND NOT EXISTS (SELECT 1 FROM branches br WHERE br.business_id = b.id AND br.google_place_id IS NOT NULL)
-            AND NOT EXISTS (SELECT 1 FROM staff_members s WHERE s.business_id = b.id AND s.user_id IS NOT NULL)`);
+        if (ids.length) {
+          await q(`CREATE TEMP TABLE demo_biz ON COMMIT DROP AS
+            SELECT b.id FROM businesses b
+            WHERE b.id IN (${ids.map(i => `'${i}'::uuid`).join(',')}) AND b.status IN ('hidden', 'pending')`);
+        } else {
+          await q(`CREATE TEMP TABLE demo_biz ON COMMIT DROP AS
+            SELECT b.id FROM businesses b
+            WHERE b.owner_user_id IS NULL
+              AND NOT EXISTS (SELECT 1 FROM branches br WHERE br.business_id = b.id AND br.google_place_id IS NOT NULL)
+              AND NOT EXISTS (SELECT 1 FROM staff_members s WHERE s.business_id = b.id AND s.user_id IS NOT NULL)`);
+        }
         await q(`CREATE TEMP TABLE demo_branch ON COMMIT DROP AS SELECT id FROM branches WHERE business_id IN (SELECT id FROM demo_biz)`);
         await q(`CREATE TEMP TABLE demo_booking ON COMMIT DROP AS SELECT id FROM bookings WHERE branch_id IN (SELECT id FROM demo_branch)`);
         await q(`CREATE TEMP TABLE demo_card ON COMMIT DROP AS SELECT id FROM gift_cards WHERE business_id IN (SELECT id FROM demo_biz)`);
