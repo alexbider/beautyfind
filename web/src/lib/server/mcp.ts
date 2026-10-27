@@ -40,10 +40,13 @@ export async function authenticateBearer(req: Request): Promise<McpCaller | null
   return { user: t.user, tokenId: t.id, clientId: t.clientId, kind: t.kind, scope: asScope(t.scope) };
 }
 
-/** A personal token for a staff member, shown once. Stored as a hash, never expires until revoked. `scope` "magazine" narrows it to the article tools. */
+/** Personal tokens made from now on expire after this many days; existing ones keep working until revoked. */
+export const PERSONAL_TOKEN_DAYS = 180;
+
+/** A personal token for a staff member, shown once. Stored as a hash, expires after PERSONAL_TOKEN_DAYS. `scope` "magazine" narrows it to the article tools. */
 export async function createPersonalToken(user: Pick<User, 'id'>, name: string, scope: TokenScope = null): Promise<{ id: string; token: string }> {
   const token = PERSONAL_TOKEN_PREFIX + randomToken(32);
-  const row = await db.mcpToken.create({ data: { userId: user.id, kind: 'personal', name: name.trim().slice(0, 60) || 'אסימון אישי', tokenHash: sha256(token), scope }, select: { id: true } });
+  const row = await db.mcpToken.create({ data: { userId: user.id, kind: 'personal', name: name.trim().slice(0, 60) || 'אסימון אישי', tokenHash: sha256(token), scope, expiresAt: days(PERSONAL_TOKEN_DAYS) }, select: { id: true } });
   await db.auditLog.create({ data: { actorId: user.id, action: 'mcp_token_created', subjectType: 'mcp_token', subjectId: row.id, meta: { ref: name, ...(scope ? { scope } : {}) } } });
   return { id: row.id, token };
 }
