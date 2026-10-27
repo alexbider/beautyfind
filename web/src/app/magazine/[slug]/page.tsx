@@ -34,7 +34,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   if (!a) return { title: 'המאמר לא נמצא', robots: { index: false, follow: true } };
   const path = articlePath(a.slug);
   const description = articleDescription(a);
-  const title = a.seoTitle?.trim() || a.title;
+  // Some SEO titles already end with the brand; it is added once.
+  const title = (a.seoTitle?.trim() || a.title).replace(/\s*[|·–-]\s*BeautyFind\s*$/i, '');
   const og = a.ogImageId ? await db.mediaFile.findUnique({ where: { id: a.ogImageId } }) : a.featuredImage;
   const image = og && !og.isPrivate ? { url: absoluteUrl(mediaUrl(og)), ...(og.width ? { width: og.width } : {}), ...(og.height ? { height: og.height } : {}), alt: og.alt ?? '' } : { url: absoluteUrl(DEFAULT_OG_IMAGE) };
   const [index, follow] = a.robots.split(',').map(s => s.trim());

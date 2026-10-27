@@ -147,6 +147,7 @@ export async function loadBusiness(id: string) {
 
 export const csvOf = (rows: BizRow[]) => {
   const head = ['name', 'legal_name', 'company_no', 'city', 'region', 'category', 'branches', 'live_branches', 'plan', 'subscription_status', 'monthly_nis', 'responsible', 'responsibility', 'status', 'claimed', 'created_at'];
-  const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  // A leading = + - @ would run as a formula in Excel or Sheets, so it is prefixed with an apostrophe.
+  const esc = (v: unknown) => `"${String(v ?? '').replace(/^([=+\-@\t\r])/, "'$1").replace(/"/g, '""')}"`;
   return [head.join(','), ...rows.map(r => [r.name, r.legalName, r.companyNo, r.city, r.region, r.category, r.branches, r.liveBranches, r.plan, r.subscriptionStatus, r.monthlyNis, r.responsible, r.responsibility, r.status, r.claimed, r.createdAt.toISOString()].map(esc).join(','))].join('\n');
 };

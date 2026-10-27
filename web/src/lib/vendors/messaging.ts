@@ -23,7 +23,13 @@ export interface MessagingAdapter {
 const consoleAdapter: MessagingAdapter = {
   async send(msg) {
     const id = 'dev-' + Math.random().toString(36).slice(2, 10);
-    console.info(`[messaging:${msg.channel}] ${msg.template} → ${msg.to}`, msg.vars);
+    if (process.env.NODE_ENV === 'production') {
+      // Codes, reset links, invite links and gift codes live in vars: in production only the fact is logged.
+      const to = msg.to.includes('@') ? msg.to.replace(/^(.{0,2})[^@]*/, '$1••') : msg.to.replace(/\d(?=\d{3})/g, '•');
+      console.warn(`[messaging:${msg.channel}] NOT SENT (no provider for this channel): ${msg.template} → ${to}`);
+    } else {
+      console.info(`[messaging:${msg.channel}] ${msg.template} → ${msg.to}`, msg.vars);
+    }
     return { id };
   },
 };

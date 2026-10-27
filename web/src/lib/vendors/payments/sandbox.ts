@@ -5,9 +5,9 @@ import type { PaymentAdapter } from './types';
 
 // Sandbox provider: a fake hosted checkout on our own site (/pay/sandbox/[paymentId]) so every paid
 // flow works end to end in development and demos. It never moves money. Disabled in production
-// unless ALLOW_SANDBOX_PAYMENTS=1.
+// unless ALLOW_SANDBOX_PAYMENTS=1 on a STAGING=1 deployment (never on the live site).
 
-const enabled = () => process.env.NODE_ENV !== 'production' || process.env.ALLOW_SANDBOX_PAYMENTS === '1';
+const enabled = () => process.env.NODE_ENV !== 'production' || (process.env.ALLOW_SANDBOX_PAYMENTS === '1' && process.env.STAGING === '1');
 
 export const sandboxSignature = (paymentId: string, status: string) => hmac(`sandbox:${paymentId}:${status}`);
 

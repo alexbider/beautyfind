@@ -78,6 +78,7 @@ export async function verifySigninCode(input: z.input<typeof verifySigninInput>)
   const user = await db.user.findUnique({ where: { phone: p.data.phone } });
   if (!user) return fail('unknown_phone');
   if (user.blockedAt) return fail('blocked'); // blocked by BeautyFind staff (/ops/clients)
+  if (user.opsRole) return fail('unknown_phone'); // staff sign in at /ops/login
   if (!user.phoneVerifiedAt) await db.user.update({ where: { id: user.id }, data: { phoneVerifiedAt: new Date() } });
   await claimGuestRecords(user);
   await createSession(user.id, p.data.remember);
@@ -108,6 +109,8 @@ export async function passwordSignin(input: z.input<typeof passwordSigninInput>)
   }
   if (!(await verifyPassword(p.data.password, user.passwordHash))) return fail('bad_credentials');
   if (user.blockedAt) return fail('blocked');
+  // Staff sign in at /ops/login, which has the lockout and the audit trail; this form never opens a staff session.
+  if (user.opsRole) return fail('bad_credentials');
   await createSession(user.id, p.data.remember);
   return { ok: true, kind: user.kind, redirectTo: destinationFor(user.kind, p.data.next ?? null) };
 }
@@ -216,7 +219,8 @@ export async function requestPasswordReset(input: z.input<typeof resetRequestInp
     : e164
       ? await db.user.findUnique({ where: { phone: e164 } })
       : null;
-  if (!user || user.kind !== 'business' || !user.email) return { ok: true };
+  // Staff passwords are reset by another admin, never by an emailed link.
+  if (!user || user.kind !== 'business' || !user.email || user.opsRole) return { ok: true };
 
   const target = normalizeEmail(user.email);
   const last = await db.otpCode.findFirst({ where: { target, purpose: 'password_reset' }, orderBy: { createdAt: 'desc' } });
@@ -253,7 +257,7 @@ export async function completePasswordReset(input: z.input<typeof completeResetI
   const row = await findResetToken(p.data.email, p.data.token);
   if (!row) return fail('reset_invalid');
   const user = await db.user.findUnique({ where: { email: row.target } });
-  if (!user) return fail('reset_invalid');
+  if (!user || user.opsRole) return fail('reset_invalid');
 
   const passwordHash = await hashPassword(p.data.password);
   // Consume the token only if it is still open, so two tabs cannot both use it.

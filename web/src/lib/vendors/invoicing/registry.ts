@@ -13,7 +13,7 @@ export const INVOICE_PROVIDERS: ProviderInfo[] = [
 // Sandbox: numbers documents locally, no PDF. For development and demos only.
 const sandbox: InvoiceAdapter = {
   async verify() {
-    if (process.env.NODE_ENV === 'production' && process.env.ALLOW_SANDBOX_PAYMENTS !== '1') return { ok: false, error: 'sandbox_disabled' };
+    if (process.env.NODE_ENV === 'production' && !(process.env.ALLOW_SANDBOX_PAYMENTS === '1' && process.env.STAGING === '1')) return { ok: false, error: 'sandbox_disabled' };
     return { ok: true };
   },
   async issue(_c, req) {

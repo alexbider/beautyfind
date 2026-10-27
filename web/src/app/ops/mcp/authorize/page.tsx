@@ -53,6 +53,10 @@ export default async function AuthorizePage({ searchParams }: { searchParams: SP
         ) : (
           <>
             <h1 className={styles.h1}>{client.name} מבקשת לעבוד עם ניהול BeautyFind</h1>
+            <p className={ui.note}>
+              הגישה תישלח אל <b dir="ltr">{(() => { try { return new URL(parsed.params.redirectUri).host; } catch { return parsed.params.redirectUri; } })()}</b>.
+              {' '}אשרו רק אם זו הכתובת של האפליקציה שאתם מחברים (למשל claude.ai). אם לא ביקשתם להתחבר עכשיו, סגרו את החלון.
+            </p>
             <p className={ui.note}>אתם מחוברים כ־<b>{user.fullName || user.email}</b>. האפליקציה תוכל לקרוא ולשנות בניהול בדיוק מה שההרשאות שלכם מאפשרות, בשמכם: כל קריאה וכל שינוי נרשמים ביומן הפעולות על שמכם, ושינוי עובר את אותם אימותים כמו במסך.</p>
             <ul className={styles.tools}>
               {groups.map(g => (

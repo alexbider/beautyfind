@@ -173,4 +173,5 @@ export async function reconcile(lines: BankLine[]) {
   return { matched, unmatchedLines, unmatchedPayments };
 }
 
-export const csvEscape = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+// A leading = + - @ would run as a formula in Excel or Sheets, so it is prefixed with an apostrophe.
+export const csvEscape = (v: unknown) => `"${String(v ?? '').replace(/^([=+\-@\t\r])/, "'$1").replace(/"/g, '""')}"`;

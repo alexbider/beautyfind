@@ -10,12 +10,13 @@ import styles from './page.module.css';
 
 export const metadata = { title: 'תשלום בסביבת בדיקה', robots: { index: false } };
 
-const sandboxAllowed = () => process.env.NODE_ENV !== 'production' || process.env.ALLOW_SANDBOX_PAYMENTS === '1';
+const sandboxAllowed = () => process.env.NODE_ENV !== 'production' || (process.env.ALLOW_SANDBOX_PAYMENTS === '1' && process.env.STAGING === '1');
 const safeReturn = (u: string | undefined) => {
   if (!u) return '/';
   try {
     const url = new URL(u);
-    return url.pathname + url.search; // same-site only
+    const path = url.pathname.replace(/^\/+/, '/'); // "//evil.com" would leave the site
+    return path + url.search; // same-site only
   } catch {
     return '/';
   }

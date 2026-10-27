@@ -79,7 +79,7 @@ export async function integrationGroups(): Promise<IntegrationGroup[]> {
   const payments: IntegrationGroup = {
     name: 'תשלומים',
     items: [stripePlatform].concat(PAYMENT_PROVIDERS.filter(p => p.key !== 'sandbox').map(p => businessProvider(p, p.key === 'cardcom' ? 'סליקה, טוקנים וחיוב חוזר למנויים' : 'סליקה לקליניקות')).concat([
-      { key: 'payments:sandbox', name: 'סביבת בדיקה', desc: 'סליקה מדומה לפיתוח והדגמות', state: process.env.NODE_ENV === 'production' && process.env.ALLOW_SANDBOX_PAYMENTS !== '1' ? 'not_connected' : 'connected', note: process.env.NODE_ENV === 'production' && process.env.ALLOW_SANDBOX_PAYMENTS !== '1' ? 'חסום בייצור' : `${count('sandbox', 'payments', 'connected')} עסקים מחוברים`, where: 'ALLOW_SANDBOX_PAYMENTS', checkable: false },
+      { key: 'payments:sandbox', name: 'סביבת בדיקה', desc: 'סליקה מדומה לפיתוח והדגמות', state: process.env.NODE_ENV === 'production' && !(process.env.ALLOW_SANDBOX_PAYMENTS === '1' && process.env.STAGING === '1') ? 'not_connected' : 'connected', note: process.env.NODE_ENV === 'production' && !(process.env.ALLOW_SANDBOX_PAYMENTS === '1' && process.env.STAGING === '1') ? 'חסום בייצור' : `${count('sandbox', 'payments', 'connected')} עסקים מחוברים`, where: 'ALLOW_SANDBOX_PAYMENTS', checkable: false },
     ])),
   };
   const invoicing: IntegrationGroup = {

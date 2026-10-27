@@ -70,11 +70,12 @@ export async function verifyOtp(opts: { target: string; purpose: OtpPurpose; cod
   });
   if (!row) return { ok: false, error: 'invalid' };
   if (row.expiresAt < new Date()) return { ok: false, error: 'expired' };
-  if (row.attempts >= MAX_ATTEMPTS) return { ok: false, error: 'too_many_attempts' };
-  if (row.codeHash !== hmac(`${opts.target}:${opts.purpose}:${opts.code.trim()}`)) {
-    await db.otpCode.update({ where: { id: row.id }, data: { attempts: { increment: 1 } } });
-    return { ok: false, error: 'invalid' };
-  }
-  await db.otpCode.update({ where: { id: row.id }, data: { consumedAt: new Date() } });
+  // The attempt is counted before the comparison, atomically, so parallel guesses cannot all slip under the limit.
+  const counted = await db.otpCode.updateMany({ where: { id: row.id, consumedAt: null, attempts: { lt: MAX_ATTEMPTS } }, data: { attempts: { increment: 1 } } });
+  if (counted.count !== 1) return { ok: false, error: 'too_many_attempts' };
+  if (row.codeHash !== hmac(`${opts.target}:${opts.purpose}:${opts.code.trim()}`)) return { ok: false, error: 'invalid' };
+  // Consumed once only: a second request with the same right code gets nothing.
+  const used = await db.otpCode.updateMany({ where: { id: row.id, consumedAt: null }, data: { consumedAt: new Date() } });
+  if (used.count !== 1) return { ok: false, error: 'invalid' };
   return { ok: true, context: row.context };
 }
