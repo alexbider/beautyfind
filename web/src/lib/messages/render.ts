@@ -304,6 +304,19 @@ export function renderMessage(template: string, vars: Record<string, string>, si
         cta: { label: 'ללוח הניהול', url: link },
         sms: `${BRAND}: ברוכים הבאים! כדאי להשלים את הפרופיל של ${business} (תמונות, טיפולים, שעות): ${link}`,
       };
+    case 'M_activation_payment': {
+      const step = v(vars, 'step') || '0';
+      const price = v(vars, 'price');
+      return {
+        subject: step === '0' ? `נשאר צעד אחד כדי ש־${business} יופיעו בחיפוש` : `תזכורת: ${business} עדיין לא מופיעים בחיפוש`,
+        preheader: 'הפרופיל אושר, נשאר רק אמצעי תשלום', kicker: 'business', title: step === '0' ? 'הפרופיל אושר' : 'הפרופיל מחכה לכם',
+        lines: [hi(name), `הפרופיל של ${business} אושר. כדי שיופיע בחיפוש ויתחיל לקבל פניות, נשאר להוסיף אמצעי תשלום למנוי.`, 'ברגע שהכרטיס נשמר והחיוב הראשון עובר, הפרופיל עולה לאוויר אוטומטית.'],
+        details: [['מסלול', v(vars, 'plan')], ['מחיר', price]],
+        cta: { label: 'להוספת אמצעי תשלום', url: link },
+        note: { tone: 'info', text: 'אפשר לבטל בכל עת מעמוד החיובים. שאלות? אפשר להשיב למייל הזה.' },
+        sms: `${BRAND}: הפרופיל של ${business} אושר. כדי שיופיע בחיפוש, נשאר להוסיף אמצעי תשלום${price ? ` (${price})` : ''}: ${link}`,
+      };
+    }
     case 'M_onboard_profile':
       return { subject: `הפרופיל של ${business} עדיין לא באוויר`, kicker: 'business', title: 'עוד קצת והפרופיל באוויר', lines: [hi(name), `הפרופיל של ${business} עדיין לא פורסם. ברגע שהוא מלא ומאושר, הוא עולה לחיפוש.`], details: [['מה חסר', v(vars, 'missing') || 'פרטים בסיסיים']], cta: { label: 'להשלמת הפרופיל', url: link }, sms: `${BRAND}: הפרופיל של ${business} עדיין לא באוויר. להשלמה: ${link}` };
     case 'M_onboard_card':

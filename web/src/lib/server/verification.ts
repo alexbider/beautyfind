@@ -123,7 +123,22 @@ async function onApprove(tx: Tx, req: Req): Promise<'license_pending' | 'already
         const medical = b.categories.some(c => c.category.isMedical);
         if (medical && b.medicalResponsible?.license?.status !== 'verified') return 'license_pending';
       }
-      const biz = await tx.business.update({ where: { id: req.businessId }, data: { status: 'live' } });
+      // Approved businesses go live only once a card is on file: until then the listing is hidden and marked
+      // awaitingPayment, the owner gets the activation email (automations.ts), and the first successful charge
+      // puts it live (billing/index.ts applyStripeSubscription).
+      const [cur, sub] = await Promise.all([
+        tx.business.findUnique({ where: { id: req.businessId }, select: { settings: true } }),
+        tx.subscription.findUnique({ where: { businessId: req.businessId }, select: { id: true, status: true, stripeSubscriptionId: true } }),
+      ]);
+      const unpaid = !sub?.stripeSubscriptionId;
+      const settings = (cur?.settings && typeof cur.settings === 'object' && !Array.isArray(cur.settings) ? cur.settings : {}) as Record<string, unknown>;
+      const biz = await tx.business.update({
+        where: { id: req.businessId },
+        data: unpaid
+          ? { status: 'hidden', settings: { ...settings, awaitingPayment: true, awaitingPaymentSince: new Date().toISOString() } as Prisma.InputJsonValue }
+          : { status: 'live' },
+      });
+      if (unpaid && sub && sub.status === 'active') await tx.subscription.update({ where: { id: sub.id }, data: { status: 'incomplete' } });
       // Listed through Onboarding by its owner, so ownership is verified along with the listing.
       await tx.branch.updateMany({ where: { businessId: req.businessId, status: 'draft' }, data: { status: 'live', isClaimed: biz.ownerUserId !== null } });
       return null;

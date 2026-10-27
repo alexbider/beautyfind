@@ -24,6 +24,7 @@ export const SAMPLES: Sample[] = [
   { id: 'M15_gift_expiry', group: 'כרטיסי מתנה', label: 'כרטיס עומד לפוג', vars: { name: 'דנה', business: 'ספא ים', amount: '250 ₪', expires: '15/12/2026', days: '30', link: `${S}/gift/check` } },
   { id: 'M11_refund', group: 'תשלומים', label: 'החזר כספי', vars: { amount: '150', reason: 'ביטול בזמן' } },
   { id: 'M23_payment_failed', group: 'תשלומים', label: 'חיוב נכשל', vars: { name: 'אורה', business: 'סטודיו אורה', step: '0', hide_date: '10/11/2026', link: `${S}/biz/billing` } },
+  { id: 'M_activation_payment', group: 'עסקים', label: 'אושר, נשאר לשלם', vars: { name: 'לינה', business: 'סטודיו אורה', plan: 'בסיסי, חודשי', price: '149 ₪ לחודש לסניף', step: '0', link: `${S}/biz/billing` } },
   { id: 'M_onboard_welcome', group: 'עסקים', label: 'ברוכים הבאים', vars: { name: 'אורה', business: 'סטודיו אורה', link: `${S}/biz` } },
   { id: 'M_onboard_profile', group: 'עסקים', label: 'השלמת פרופיל', vars: { name: 'אורה', business: 'סטודיו אורה', missing: 'תמונות וטיפולים ומחירים', link: `${S}/biz/profile` } },
   { id: 'M_onboard_card', group: 'עסקים', label: 'הוספת כרטיס', vars: { name: 'אורה', business: 'סטודיו אורה', link: `${S}/biz/billing` } },

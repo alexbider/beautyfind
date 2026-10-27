@@ -1,6 +1,6 @@
 'use server';
 
-import type { BusinessStatus } from '@prisma/client';
+import type { BusinessStatus, Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { areaUserOrNull } from '@/components/ops/access';
@@ -12,7 +12,7 @@ import { ensureImportRecords, estimateCompletion, startCompletion, type EnhanceR
 // change is an append-only decision plus an audit row, and the public pages are refreshed so a hidden
 // business leaves the directory at once.
 
-const Input = z.object({ id: z.string().uuid(), status: z.enum(['pending', 'live', 'past_due', 'hidden']), reason: z.string().trim().max(300).optional() });
+const Input = z.object({ id: z.string().uuid(), status: z.enum(['pending', 'live', 'past_due', 'hidden', 'hold_payment']), reason: z.string().trim().max(300).optional() });
 
 export type BizActionResult = { ok: true } | { ok: false; error: 'forbidden' | 'invalid' | 'not_found' };
 
@@ -21,9 +21,35 @@ export async function setBusinessStatusAction(input: z.input<typeof Input>): Pro
   if (!user) return { ok: false, error: 'forbidden' };
   const p = Input.safeParse(input);
   if (!p.success) return { ok: false, error: 'invalid' };
-  const b = await db.business.findUnique({ where: { id: p.data.id }, select: { id: true, status: true, branches: { select: { regionSlug: true, slug: true } } } });
+  const b = await db.business.findUnique({ where: { id: p.data.id }, select: { id: true, status: true, settings: true, subscription: { select: { id: true, status: true, stripeSubscriptionId: true } }, branches: { select: { regionSlug: true, slug: true } } } });
   if (!b) return { ok: false, error: 'not_found' };
+  if (p.data.status === 'hold_payment') {
+    // Hidden until the first payment: the same state a new approval without a card gets (verification.ts). The
+    // owner gets the activation email from the automations, and the first successful charge puts it live.
+    const st = (b.settings && typeof b.settings === 'object' && !Array.isArray(b.settings) ? b.settings : {}) as Record<string, unknown>;
+    const sub = b.subscription;
+    await db.$transaction([
+      db.business.update({ where: { id: b.id }, data: { status: 'hidden', settings: { ...st, awaitingPayment: true, awaitingPaymentSince: new Date().toISOString() } as Prisma.InputJsonValue } }),
+      ...(sub && !sub.stripeSubscriptionId && sub.status === 'active' ? [db.subscription.update({ where: { id: sub.id }, data: { status: 'incomplete' } })] : []),
+      db.decision.create({ data: { actorId: user.id, actorRole: user.opsRole ?? 'ops', subjectType: 'business', subjectId: b.id, action: 'status_hold_payment', reason: p.data.reason || null } }),
+      db.auditLog.create({ data: { actorId: user.id, action: 'business_held_for_payment', subjectType: 'business', subjectId: b.id, businessId: b.id, meta: { from: b.status, note: p.data.reason || null } } }),
+    ]);
+    // Queue the activation email now instead of waiting for the next automation run.
+    const { planAutomations } = await import('@/lib/server/automations');
+    await planAutomations().catch(() => undefined);
+    revalidatePath('/');
+    revalidatePath('/search');
+    for (const br of b.branches) revalidatePath(`/${br.regionSlug}`);
+    revalidatePath(`/ops/businesses/${b.id}`);
+    revalidatePath('/ops/businesses');
+    return { ok: true };
+  }
   if (b.status === p.data.status) return { ok: true };
+  if (p.data.status === 'live' && (b.settings as Record<string, unknown> | null)?.awaitingPayment === true) {
+    // Staff putting it live by hand ends the wait for payment.
+    const { awaitingPayment: _a, awaitingPaymentSince: _b, ...rest } = b.settings as Record<string, unknown>;
+    await db.business.update({ where: { id: b.id }, data: { settings: rest as Prisma.InputJsonValue } });
+  }
   await db.$transaction([
     db.business.update({ where: { id: b.id }, data: { status: p.data.status as BusinessStatus } }),
     db.decision.create({ data: { actorId: user.id, actorRole: user.opsRole ?? 'ops', subjectType: 'business', subjectId: b.id, action: `status_${p.data.status}`, reason: p.data.reason || null } }),

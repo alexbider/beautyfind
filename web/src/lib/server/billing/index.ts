@@ -220,6 +220,16 @@ export async function applyStripeSubscription(s: Stripe.Subscription): Promise<v
   if (status === 'active' && (row.status === 'past_due' || row.status === 'hidden')) {
     ops.push(db.business.updateMany({ where: { id: row.businessId, status: { in: ['past_due', 'hidden'] } }, data: { status: 'live' } }));
   }
+  if (status === 'active') {
+    // Approved but held until the first payment (verification.ts): it goes live now.
+    const biz = await db.business.findUnique({ where: { id: row.businessId }, select: { status: true, settings: true } });
+    const st = (biz?.settings && typeof biz.settings === 'object' && !Array.isArray(biz.settings) ? biz.settings : {}) as Record<string, unknown>;
+    if (biz && st.awaitingPayment === true) {
+      const { awaitingPayment: _a, awaitingPaymentSince: _b, ...rest } = st;
+      ops.push(db.business.update({ where: { id: row.businessId }, data: { status: biz.status === 'hidden' ? 'live' : biz.status, settings: rest as Prisma.InputJsonValue } }));
+      ops.push(db.auditLog.create({ data: { action: 'business_activated_on_payment', subjectType: 'business', subjectId: row.businessId, businessId: row.businessId, meta: { sub: s.id } } }));
+    }
+  }
   if (row.status !== status) {
     ops.push(db.auditLog.create({ data: { action: 'subscription_stripe', subjectType: 'subscription', subjectId: row.id, businessId: row.businessId, meta: { from: row.status, to: status, stripe: s.status, sub: s.id } } }));
   }

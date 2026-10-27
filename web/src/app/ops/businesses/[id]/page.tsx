@@ -172,7 +172,7 @@ export default async function BusinessCardPage({ params }: { params: Promise<{ i
           </Card>
 
           <Card title="מצב העסק">
-            <StatusActions id={b.id} current={b.status} canEdit={canEdit} />
+            <StatusActions id={b.id} current={b.status} canEdit={canEdit} awaitingPayment={(b.settings as Record<string, unknown> | null)?.awaitingPayment === true} />
           </Card>
         </div>
       </div>

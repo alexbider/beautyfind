@@ -173,6 +173,35 @@ export async function planAutomations(now = new Date()): Promise<PlanRun> {
       add('onboarding', await q('profile', 'M_onboard_profile', 3 * DAY, 10 * DAY, `${site}/biz/profile`));
       add('onboarding', await q('card', 'M_onboard_card', 5 * DAY, 14 * DAY, `${site}/biz/billing`));
     }
+
+    // Approved but waiting for the first payment (verification.ts, or staff "hide until paid"): the activation
+    // message right away by email and SMS, then reminders on day 3 and day 7 while the listing is still held.
+    const held = await db.business.findMany({
+      where: { ownerUserId: { not: null }, settings: { path: ['awaitingPayment'], equals: true } },
+      select: { id: true, settings: true, invoiceEmail: true, owner: { select: { email: true, phone: true } }, subscription: { select: { plan: true, cycle: true, pricePerBranchAgorot: true } } },
+    });
+    for (const h of held) {
+      const o = await ownerOf(h.id);
+      if (!o) continue;
+      const since = Date.parse(String((h.settings as Record<string, unknown>).awaitingPaymentSince ?? '')) || now.getTime();
+      const sub = h.subscription;
+      const vars = {
+        name: o.name, business: o.business, link: `${site}/biz/billing`,
+        plan: sub ? `${sub.plan === 'advanced' ? 'מתקדם' : 'בסיסי'}, ${sub.cycle === 'yearly' ? 'שנתי' : 'חודשי'}` : '',
+        price: sub ? `${Math.round(sub.pricePerBranchAgorot / 100).toLocaleString('en-US')} ₪ לחודש לסניף` : '',
+      };
+      const email = h.owner?.email ?? h.invoiceEmail ?? null;
+      const phone = h.owner?.phone ?? null;
+      const q = (key: string, channel: SendChannel, to: string, step: string, after: number, fallbackPhone: string | null = null) =>
+        enqueue({ key: `ACT:${h.id}:${Math.floor(since / DAY)}:${key}`, automation: 'onboarding', template: 'M_activation_payment', channel, to, fallbackPhone, vars: { ...vars, step }, businessId: h.id, refId: h.id, dueAt: at(since + after), staleAt: at(since + after + 4 * DAY) });
+      if (isEmail(email)) add('onboarding', await q('0e', 'email', email, '0', 0));
+      if (phone) add('onboarding', await q('0s', 'sms', phone, '0', 0));
+      const r = route(email, phone);
+      if (r) {
+        add('onboarding', await q('3', r.channel, r.to, '3', 3 * DAY, r.fallbackPhone));
+        add('onboarding', await q('7', r.channel, r.to, '7', 7 * DAY, r.fallbackPhone));
+      }
+    }
   });
 
   await Promise.all(steps);
@@ -267,9 +296,11 @@ registerGuard('sponsored', async row => {
 registerGuard('onboarding', async (row, vars) => {
   const b = await db.business.findUnique({
     where: { id: row.businessId! },
-    select: { ownerUserId: true, status: true, subscription: { select: { status: true, stripeSubscriptionId: true } }, branches: { select: { status: true, coverUrl: true, treatments: { select: { id: true }, take: 1 } } } },
+    select: { ownerUserId: true, status: true, settings: true, subscription: { select: { status: true, stripeSubscriptionId: true } }, branches: { select: { status: true, coverUrl: true, treatments: { select: { id: true }, take: 1 } } } },
   }).catch(() => null);
   if (!b?.ownerUserId) return { send: false, reason: 'אין בעלים לעסק' };
+  const awaiting = (b.settings as Record<string, unknown> | null)?.awaitingPayment === true;
+  if (row.template === 'M_activation_payment') return awaiting ? { send: true } : { send: false, reason: 'כבר שולם' };
   const live = b.branches.some(x => x.status === 'live');
   if (row.template === 'M_onboard_profile') {
     if (live) return { send: false, reason: 'הפרופיל כבר באוויר' };
@@ -277,6 +308,7 @@ registerGuard('onboarding', async (row, vars) => {
     return { send: true, vars: { ...vars, missing } };
   }
   if (row.template === 'M_onboard_card') {
+    if (awaiting) return { send: false, reason: 'נשלחת הודעת הפעלה במקום' };
     if (!live) return { send: false, reason: 'הפרופיל עוד לא באוויר' };
     if (b.subscription?.stripeSubscriptionId || b.subscription?.status === 'cancelled') return { send: false, reason: 'כבר יש אמצעי תשלום' };
   }

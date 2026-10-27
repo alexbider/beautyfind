@@ -204,6 +204,9 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                   {periodEnd ? <>, ב־<span className="ltr">{periodEnd}</span></> : null}. עד אז המנוי השנתי ממשיך כרגיל.
                 </p>
               ) : null}
+              {(business as { settings?: unknown }).settings && ((business as { settings?: Record<string, unknown> }).settings?.awaitingPayment === true) ? (
+                <p className={`${b.callout} ${b.calloutWarn}`}>הפרופיל אושר ויעלה לחיפוש ברגע שתוסיפו אמצעי תשלום והחיוב הראשון יעבור. אפשר להוסיף כרטיס בתיבת ״אמצעי תשלום״.</p>
+              ) : null}
               {sub?.status === 'past_due' ? (
                 <p className={`${b.callout} ${b.calloutBad}`}>החיוב האחרון לא עבר. ננסה לחייב שוב אוטומטית, ובינתיים הפרופיל ממשיך להופיע. כדי להסדיר מיד, עדכנו את הכרטיס בתיבת ״אמצעי תשלום״.</p>
               ) : sub?.status === 'hidden' ? (
