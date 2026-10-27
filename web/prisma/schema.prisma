@@ -466,6 +466,7 @@ enum BillingCycle {
 }
 
 enum SubscriptionStatus {
+  incomplete // a plan is picked but no card is on file yet, so nothing is billed
   active
   past_due
   hidden
@@ -486,6 +487,14 @@ model Subscription {
   currentPeriodEnd     DateTime?          @map("current_period_end")
   // { attempts, next_at }
   retry                Json?
+  // Stripe (Bidernet account): the customer holds the card, the subscription bills the live branches.
+  stripeCustomerId     String?            @unique @map("stripe_customer_id")
+  stripeSubscriptionId String?            @unique @map("stripe_subscription_id")
+  cardBrand            String?            @map("card_brand")
+  cardLast4            String?            @map("card_last4")
+  cardExp              String?            @map("card_exp") // MM/YY
+  cancelAtPeriodEnd    Boolean            @default(false) @map("cancel_at_period_end")
+  pastDueSince         DateTime?          @map("past_due_since")
   createdAt            DateTime           @default(now()) @map("created_at")
   updatedAt            DateTime           @updatedAt @map("updated_at")
 

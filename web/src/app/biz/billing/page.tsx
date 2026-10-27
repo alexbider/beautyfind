@@ -5,11 +5,13 @@ import { BRANCHES, Count, dateIL, nf } from '@/components/dashboard/charts/forma
 import ui from '@/components/dashboard/charts/ui.module.css';
 import { BillingDetails } from '@/components/dashboard/billing/BillingDetails';
 import b from '@/components/dashboard/billing/billing.module.css';
+import { PaymentMethod } from '@/components/dashboard/billing/PaymentMethod';
 import { PlanPicker, type PlanCard } from '@/components/dashboard/billing/PlanPicker';
 import { tabGuard } from '@/components/dashboard/guard';
 import { ReadOnlyBanner } from '@/components/dashboard/ReadOnlyBanner';
 import { CHAIN_DISCOUNT, CHAIN_FULL_PRICE_BRANCHES, PLAN_MONTHLY_NIS, PLATFORM_BILLING_LINE, PLATFORM_PRICE_NOTE, chainTotal, planPrice, YEARLY_MULTIPLIER, type PlanKey } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
+import { db } from '@/lib/server/db';
 
 // Design: project/BeautyFind Dashboard.dc.html (isBilling; PLANS, INVOICES, QUARTERS, SPEND)
 // Two plans only (08-open-decisions.md A3). The design's add-ons are removed.
@@ -43,10 +45,38 @@ const RANK: Record<PlanKey, number> = { basic: 0, advanced: 1 };
 const money = (agorot: number) =>
   '₪' + (agorot / 100).toLocaleString('en-US', { minimumFractionDigits: agorot % 100 ? 2 : 0, maximumFractionDigits: 2 });
 
-export default async function BillingPage() {
+type Line = { description?: string };
+const firstLine = (lines: unknown) => (Array.isArray(lines) ? ((lines[0] as Line | undefined)?.description ?? 'BeautyFind') : 'BeautyFind');
+const quarterOf = (d: Date) => {
+  const il = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' }));
+  return { key: `${il.getFullYear()}-Q${Math.floor(il.getMonth() / 3) + 1}`, label: `רבעון ${Math.floor(il.getMonth() / 3) + 1} · ${il.getFullYear()}` };
+};
+
+export default async function BillingPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const ctx = await tabGuard('billing');
   const { business, canEdit } = ctx;
   const sub = business.subscription;
+  const sp = await searchParams;
+  const checkout = typeof sp.checkout === 'string' ? sp.checkout : null;
+
+  // BeautyFind's invoices to this business (Stripe invoices recorded by the webhook), newest first.
+  const invoices = await db.document.findMany({
+    where: { issuer: 'platform', businessId: business.id },
+    orderBy: { issuedAt: 'desc' },
+    take: 60,
+    select: { id: true, number: true, issuedAt: true, grossAgorot: true, lines: true, pdfUrl: true, type: true, payment: { select: { purpose: true, status: true } } },
+  });
+  const quarters = new Map<string, { label: string; count: number; plan: number; total: number }>();
+  for (const inv of invoices) {
+    if (inv.payment?.purpose !== 'subscription') continue;
+    const q = quarterOf(inv.issuedAt);
+    const row = quarters.get(q.key) ?? { label: q.label, count: 0, plan: 0, total: 0 };
+    row.count++;
+    row.plan += inv.grossAgorot;
+    row.total += inv.grossAgorot;
+    quarters.set(q.key, row);
+  }
+  const card = sub?.cardLast4 ? `${(sub.cardBrand ?? 'card').replace(/^./, c => c.toUpperCase())} ·${sub.cardLast4}${sub.cardExp ? ` · ${sub.cardExp}` : ''}` : null;
 
   // Only live branches are billed. Drafts and unpublished branches are not.
   const billed = business.branches.filter(x => x.status === 'live').length;
@@ -75,7 +105,7 @@ export default async function BillingPage() {
   const monthlyUnit = plan ? PLAN_MONTHLY_NIS[sub?.pendingPlan ?? plan] : 0;
   const yearlyLine =
     `המעבר נכנס לתוקף מיד: ₪${nf(yearlyUnit)} לסניף לשנה במקום ₪${nf(monthlyUnit)} לחודש, כלומר שנה שלמה במחיר של ${YEARLY_MULTIPLIER === 10 ? 'עשרה' : nf(YEARLY_MULTIPLIER)} חודשים. ` +
-    'החיוב היחסי על יתרת החודש הנוכחי יקוזז בחשבונית הבאה.';
+    'החיוב השנתי מתבצע מיד, והחלק שלא נוצל מהחודש הנוכחי מקוזז ממנו.';
 
   return (
     <>
@@ -87,6 +117,21 @@ export default async function BillingPage() {
             כל הסכומים בשקלים. החשבונית נשלחת אוטומטית בדוא״ל ביום החיוב, ואפשר להעביר אותה ישירות למשרד רואה החשבון. {PLATFORM_BILLING_LINE}
           </p>
         </div>
+
+        {checkout === 'done' ? (
+          <p className={`${b.callout} ${b.calloutInfo}`} role="status" style={{ marginBottom: 14 }}>
+            {billed > 0 ? 'הכרטיס נשמר והמנוי פעיל. החשבונית תגיע לדוא״ל ותופיע כאן תוך דקה.' : 'הכרטיס נשמר. החיוב יתחיל כשהסניף הראשון יתפרסם.'}
+          </p>
+        ) : checkout === 'cancelled' ? (
+          <p className={`${b.callout} ${b.calloutWarn}`} role="status" style={{ marginBottom: 14 }}>התשלום לא הושלם. אפשר לנסות שוב בכל רגע.</p>
+        ) : null}
+        {sub && !card && checkout !== 'done' ? (
+          <p className={`${b.callout} ${b.calloutWarn}`} style={{ marginBottom: 14 }}>
+            {billed > 0
+              ? 'כדי שהמנוי יישאר פעיל, הוסיפו כרטיס אשראי בתיבת ״אמצעי תשלום״ למטה.'
+              : 'כדאי להוסיף כבר עכשיו כרטיס אשראי בתיבת ״אמצעי תשלום״ למטה, כדי שהפרופיל יעבור לחיוב בלי עיכוב כשהוא מתפרסם.'}
+          </p>
+        ) : null}
 
         <PlanPicker
           plans={cards}
@@ -159,14 +204,30 @@ export default async function BillingPage() {
                 </p>
               ) : null}
               {sub?.status === 'past_due' ? (
-                <p className={`${b.callout} ${b.calloutBad}`}>החיוב האחרון לא עבר. נעדכן אתכם לפני ניסיון החיוב הבא, ובינתיים הפרופיל ממשיך להופיע.</p>
+                <p className={`${b.callout} ${b.calloutBad}`}>החיוב האחרון לא עבר. ננסה לחייב שוב אוטומטית, ובינתיים הפרופיל ממשיך להופיע. כדי להסדיר מיד, עדכנו את הכרטיס בתיבת ״אמצעי תשלום״.</p>
+              ) : sub?.status === 'hidden' ? (
+                <p className={`${b.callout} ${b.calloutBad}`}>הפרופיל מוסתר בגלל חוב פתוח. עדכנו את הכרטיס בתיבת ״אמצעי תשלום״, והפרופיל יחזור לאוויר מיד עם התשלום.</p>
+              ) : null}
+              {sub?.cancelAtPeriodEnd ? (
+                <p className={`${b.callout} ${b.calloutWarn}`}>
+                  המנוי בוטל ויסתיים בסוף התקופה{periodEnd ? <>, ב־<span className="ltr">{periodEnd}</span></> : null}. אפשר לחדש אותו בניהול אמצעי התשלום.
+                </p>
               ) : null}
             </div>
 
             <div className={`${ui.card} ${b.payCard}`}>
               <span className={b.payLabel}>אמצעי תשלום</span>
-              {/* TODO(payments): show the tokenised card (last four digits, brand, expiry) and the update/cancel actions once a payment provider is connected. */}
-              <p className={ui.emptyInline}>עדיין לא נשמר כרטיס אשראי. עדכון הכרטיס יתאפשר כאן לפני החיוב הראשון.</p>
+              {sub ? (
+                <PaymentMethod
+                  card={card}
+                  canEdit={canEdit}
+                  hasCustomer={!!sub.stripeCustomerId}
+                  liveBranches={billed}
+                  label={sub.status === 'past_due' || sub.status === 'hidden' ? 'עדכון כרטיס והסדרת התשלום' : undefined}
+                />
+              ) : (
+                <p className={ui.emptyInline}>בחרו מסלול למעלה, ואז אפשר יהיה לשמור כרטיס אשראי.</p>
+              )}
             </div>
           </div>
         </div>
@@ -189,8 +250,18 @@ export default async function BillingPage() {
               <span>מסלול</span>
               <span>סה״כ</span>
             </div>
-            {/* TODO(payments): quarterly totals from Israfind Group invoices, with CSV export per quarter. */}
-            <p className={ui.emptyRow}>הריכוז הרבעוני יופיע כאן אחרי החיוב הראשון.</p>
+            {quarters.size ? (
+              [...quarters.values()].map(q => (
+                <div key={q.label} className={b.qRow}>
+                  <span>{q.label}</span>
+                  <span className="ltr">{q.count}</span>
+                  <span>{money(q.plan)}</span>
+                  <span>{money(q.total)}</span>
+                </div>
+              ))
+            ) : (
+              <p className={ui.emptyRow}>הריכוז הרבעוני יופיע כאן אחרי החיוב הראשון.</p>
+            )}
           </div>
           <p className={ui.insight} style={{ marginTop: 14, lineHeight: 1.7 }}>
             הריכוז הרבעוני כולל את דמי המנוי בלבד. מקומות ממומנים מופיעים בחשבוניות נפרדות. הכנסות מטיפולים אינן נמדדות ב־BeautyFind ואינן מופיעות כאן.
@@ -215,8 +286,24 @@ export default async function BillingPage() {
             <span>פירוט</span>
             <span>סכום</span>
           </div>
-          {/* TODO(payments): list BeautyFind tax invoices (date, description, amount, paid status, PDF) once a documents table exists. */}
-          <p className={ui.emptyRow}>החשבונית הראשונה תופיע כאן אחרי החיוב הראשון.</p>
+          {invoices.length ? (
+            invoices.map(inv => (
+              <div key={inv.id} className={b.invRow}>
+                <span className="ltr">{dateIL(inv.issuedAt)}</span>
+                <span>
+                  {firstLine(inv.lines)}
+                  {inv.pdfUrl ? (
+                    <> · <a href={inv.pdfUrl} target="_blank" rel="noreferrer">חשבונית {inv.number}</a></>
+                  ) : (
+                    <> · חשבונית {inv.number}</>
+                  )}
+                </span>
+                <span>{money(inv.grossAgorot)}</span>
+              </div>
+            ))
+          ) : (
+            <p className={ui.emptyRow}>החשבונית הראשונה תופיע כאן אחרי החיוב הראשון.</p>
+          )}
         </div>
 
         <p className={ui.foot}>

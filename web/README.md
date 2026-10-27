@@ -110,6 +110,7 @@ How it fits together:
 - **Clinic features need the advanced plan.** Basic listings book without deposits; clinic pages show an upgrade card.
 - **Health declarations** are sealed with AES-256-GCM (`DATA_KEY`). Only the treating practitioner or the branch's medical doctor can read the answers or the signature, and every read is audit-logged.
 - **Guest to account:** clients book as guests by phone. When the same phone is verified by OTP (sign-up or sign-in), its bookings, waitlist entries, consult requests and consents move to the account.
+- **Platform billing (Stripe):** BeautyFind's own plans and sponsored weeks are charged through Stripe (`src/lib/server/billing`). Set `STRIPE_SECRET_KEY` (a restricted key with write access to Customers, Checkout Sessions, Subscriptions, Subscription Schedules, Invoices, Invoice Items, Setup Intents, Billing Portal and read access to Prices and Events is enough). `STRIPE_WEBHOOK_SECRET` is optional: without it the webhook reads each event back from Stripe to confirm it. Stripe objects (made once in the Stripe account, found by lookup key): prices `beautyfind_{basic|advanced}_{monthly|yearly}` (graduated: full price for branches 1 to 3, 25% off from the 4th) and `beautyfind_sponsored_week`, a billing portal configuration with metadata `site=beautyfind`, and a webhook to `/api/billing/stripe/webhook` for `checkout.session.completed`, `customer.subscription.*`, `invoice.paid`, `invoice.payment_failed` and `customer.updated`. If plan prices change in `/ops/settings`, add new Stripe prices with the same lookup keys (`transfer_lookup_key`). The daily `/api/cron/billing` run starts subscriptions for businesses that saved a card before going live, keeps the billed branch count current and hides listings in debt after the "hide in debt" days.
 - **Local payments:** the `sandbox` provider serves a fake checkout at `/pay/sandbox/[paymentId]`. Production builds refuse it unless `ALLOW_SANDBOX_PAYMENTS=1`. `SITE_URL` must match the address you open, or checkout redirects go elsewhere.
 
 ### Phones: app shell
@@ -121,11 +122,9 @@ On phones (and touch tablets under 1024px) the site runs as an app shell: top ba
 - **Messaging** (`src/lib/vendors/messaging.ts`): WhatsApp BSP, SMS and email all go through one interface; only the console adapter exists. It prints codes and links, so it refuses to run in production unless `ALLOW_CONSOLE_MESSAGING=1` (local testing only).
 - **File storage** (`src/lib/vendors/storage.ts`): local disk under `.data/uploads` until a vendor is chosen. Public images are served from `/media/<id>`; license scans are private and only readable by verifiers at `/ops/media/<id>`.
 - **Registry lookups** (Ministry of Health, company registry): the verification console shows a manual-check state (`TODO(registry)`).
-- **Billing job**: nothing applies `pendingPlan` / `pendingCycle` at `currentPeriodEnd` yet (`TODO(billing-job)`).
 - **Sponsored placements**: no campaigns table yet, so no ממומן cards anywhere (`TODO(sponsored)`).
 - **Map view** on Search: needs branch coordinates (`TODO(map)`).
 - **Magazine / articles**: no CMS yet; links point to `/magazine` (`TODO(cms)`).
-- **Platform billing**: a `Subscription` row is created with the chosen plan; nothing is charged to the business yet.
 - **Clinic payment and invoicing providers**: the adapter interfaces and registry are in `src/lib/vendors/payments` and `src/lib/vendors/invoicing`. Only `sandbox` works; Cardcom, Tranzila, Grow, PayPlus, Green Invoice, iCount and EZcount are listed as coming soon.
 - **Scheduler**: nothing runs on a timer yet. Pages close expired holds, offers and waitlist entries when they load. Still missing: M6 review requests, gift card delivery on a future date and expiry reminders, marking cards expired.
 - **Treatment booking from an approved consult**: the approval is recorded, but the clinic books the treatment itself (`TODO(clinic-booking)`).

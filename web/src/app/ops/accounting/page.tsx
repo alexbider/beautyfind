@@ -23,7 +23,7 @@ const TABS = [
 ] as const;
 type Tab = (typeof TABS)[number]['key'];
 const KIND_NAME = { subscription: 'מנוי', sponsored: 'ממומן', manual: 'ידני', credit: 'זיכוי' } as const;
-const SUB_STATUS: Record<string, { name: string; tone: 'ok' | 'bad' | 'neutral' | 'warn' }> = { active: { name: 'פעיל', tone: 'ok' }, past_due: { name: 'חוב פתוח', tone: 'bad' }, hidden: { name: 'מוסתר', tone: 'neutral' }, cancelled: { name: 'בוטל', tone: 'neutral' } };
+const SUB_STATUS: Record<string, { name: string; tone: 'ok' | 'bad' | 'neutral' | 'warn' }> = { incomplete: { name: 'ללא כרטיס', tone: 'warn' }, active: { name: 'פעיל', tone: 'ok' }, past_due: { name: 'חוב פתוח', tone: 'bad' }, hidden: { name: 'מוסתר', tone: 'neutral' }, cancelled: { name: 'בוטל', tone: 'neutral' } };
 
 export default async function AccountingPage({ searchParams }: { searchParams: SP }) {
   const user = await requireArea('accounting', 'view', '/ops/accounting');
@@ -31,7 +31,7 @@ export default async function AccountingPage({ searchParams }: { searchParams: S
   const tab = (TABS.some(t => t.key === one(sp.tab)) ? one(sp.tab) : 'ledger') as Tab;
   const q = one(sp.q).slice(0, 60);
   const filter = (LEDGER_FILTERS.some(f => f.key === one(sp.filter)) ? one(sp.filter) : 'all') as LedgerFilter;
-  const subFilter = (['all', 'active', 'past_due', 'hidden', 'cancelled'].includes(one(sp.filter)) ? one(sp.filter) : 'all') as 'all' | 'active' | 'past_due' | 'hidden' | 'cancelled';
+  const subFilter = (['all', 'incomplete', 'active', 'past_due', 'hidden', 'cancelled'].includes(one(sp.filter)) ? one(sp.filter) : 'all') as 'all' | 'incomplete' | 'active' | 'past_due' | 'hidden' | 'cancelled';
   const [level, m, pnl, coll, s] = await Promise.all([areaLevel(user, 'accounting'), mrr(), profitAndLoss(12), collectionStats(), platformSettings()]);
   const canEdit = atLeast(level, 'edit');
   const thisMonth = pnl[pnl.length - 1];
@@ -119,7 +119,7 @@ async function LedgerTab({ filter, q }: { filter: LedgerFilter; q: string }) {
   );
 }
 
-async function SubscriptionsTab({ filter, canEdit }: { filter: 'all' | 'active' | 'past_due' | 'hidden' | 'cancelled'; canEdit: boolean }) {
+async function SubscriptionsTab({ filter, canEdit }: { filter: 'all' | 'incomplete' | 'active' | 'past_due' | 'hidden' | 'cancelled'; canEdit: boolean }) {
   const rows = await subscriptions(filter);
   const counts = await db.subscription.groupBy({ by: ['status'], _count: true });
   const c = (k: string) => counts.find(x => x.status === k)?._count ?? 0;
@@ -127,11 +127,11 @@ async function SubscriptionsTab({ filter, canEdit }: { filter: 'all' | 'active' 
   return (
     <>
       <div className={ui.toolbar}>
-        <Pills current={filter} items={[{ key: 'all', name: 'הכול', count: counts.reduce((a, x) => a + x._count, 0), href: '/ops/accounting?tab=subscriptions' }, { key: 'active', name: 'פעילים', count: c('active'), href: '/ops/accounting?tab=subscriptions&filter=active' }, { key: 'past_due', name: 'חוב פתוח', count: c('past_due'), href: '/ops/accounting?tab=subscriptions&filter=past_due' }, { key: 'hidden', name: 'מוסתרים', count: c('hidden'), href: '/ops/accounting?tab=subscriptions&filter=hidden' }, { key: 'cancelled', name: 'בוטלו', count: c('cancelled'), href: '/ops/accounting?tab=subscriptions&filter=cancelled' }]} />
+        <Pills current={filter} items={[{ key: 'all', name: 'הכול', count: counts.reduce((a, x) => a + x._count, 0), href: '/ops/accounting?tab=subscriptions' }, { key: 'incomplete', name: 'ללא כרטיס', count: c('incomplete'), href: '/ops/accounting?tab=subscriptions&filter=incomplete' }, { key: 'active', name: 'פעילים', count: c('active'), href: '/ops/accounting?tab=subscriptions&filter=active' }, { key: 'past_due', name: 'חוב פתוח', count: c('past_due'), href: '/ops/accounting?tab=subscriptions&filter=past_due' }, { key: 'hidden', name: 'מוסתרים', count: c('hidden'), href: '/ops/accounting?tab=subscriptions&filter=hidden' }, { key: 'cancelled', name: 'בוטלו', count: c('cancelled'), href: '/ops/accounting?tab=subscriptions&filter=cancelled' }]} />
       </div>
       <Card flush>
         {rows.length ? (
-          <Table head={['עסק', 'מסלול', 'סניפים חיים', 'חיוב חודשי', 'סוף תקופה', 'ניסיון חוזר', 'מצב', '']}>
+          <Table head={['עסק', 'מסלול', 'סניפים חיים', 'חיוב חודשי', 'סוף תקופה', 'כרטיס', 'ניסיון חוזר', 'מצב', '']}>
             {rows.map(r => (
               <tr key={r.id}>
                 <td><Link href={`/ops/businesses/${r.businessId}`} className={ui.rowLink}>{r.businessName}</Link></td>
@@ -139,6 +139,7 @@ async function SubscriptionsTab({ filter, canEdit }: { filter: 'all' | 'active' 
                 <td className={ui.num}>{int(r.liveBranches)}</td>
                 <td className={`${ui.num} ${ui.strong}`}>{nisWhole(r.monthlyNis)}</td>
                 <td className={ui.num}>{dateIL(r.currentPeriodEnd)}</td>
+                <td className={ui.num}>{r.card ? r.card : r.stripe ? '—' : <Chip tone="warn">אין</Chip>}</td>
                 <td className={ui.num}>{r.retry?.next_at ? `${dateIL(r.retry.next_at)} · ניסיון ${int(r.retry.attempts ?? 1)}` : '—'}</td>
                 <td><Chip tone={SUB_STATUS[r.status]?.tone ?? 'neutral'}>{SUB_STATUS[r.status]?.name ?? r.status}</Chip></td>
                 <td>{canEdit ? <SubscriptionActions id={r.id} status={r.status} /> : null}</td>
@@ -147,7 +148,7 @@ async function SubscriptionsTab({ filter, canEdit }: { filter: 'all' | 'active' 
           </Table>
         ) : <Empty title="אין מנויים בסינון הזה" />}
       </Card>
-      <p className={ui.hint} style={{ marginTop: 10 }}>חיוב שנכשל: ניסיון חוזר אחרי {3} ו־{7} ימים, הסתרת הפרופיל אחרי 14 יום (ניתן לשינוי בהגדרות הפלטפורמה). ההודעות לעסק: M23.</p>
+      <p className={ui.hint} style={{ marginTop: 10 }}>החיוב עובר דרך Stripe: חיוב שנכשל מנוסה שוב אוטומטית לפי הגדרות Stripe, המנוי מסומן בחוב, והפרופיל מוסתר כשהחוב פתוח יותר מימי ההסתרה בהגדרות הפלטפורמה (ריצת חיוב יומית). ״ללא כרטיס״: נבחר מסלול אבל עוד לא נשמר כרטיס, ולכן אין חיוב.</p>
     </>
   );
 }

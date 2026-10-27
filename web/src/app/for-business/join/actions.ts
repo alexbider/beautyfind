@@ -262,7 +262,7 @@ export async function submitJoin(input: JoinPayload & { media?: z.input<typeof M
       });
 
       await tx.subscription.create({
-        data: { businessId: business.id, plan: p.plan, cycle: 'monthly', pricePerBranchAgorot: PLAN_MONTHLY_NIS[p.plan] * 100, status: 'active' },
+        data: { businessId: business.id, plan: p.plan, cycle: 'monthly', pricePerBranchAgorot: PLAN_MONTHLY_NIS[p.plan] * 100, status: 'incomplete' },
       });
     });
   } catch (e) {

@@ -4,6 +4,7 @@ import type { BusinessStatus } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { areaUserOrNull } from '@/components/ops/access';
+import { syncBillingSafe } from '@/lib/server/billing';
 import { db } from '@/lib/server/db';
 import { ensureImportRecords, estimateCompletion, startCompletion, type EnhanceResult } from '@/lib/server/enhanceRuns';
 
@@ -28,6 +29,8 @@ export async function setBusinessStatusAction(input: z.input<typeof Input>): Pro
     db.decision.create({ data: { actorId: user.id, actorRole: user.opsRole ?? 'ops', subjectType: 'business', subjectId: b.id, action: `status_${p.data.status}`, reason: p.data.reason || null } }),
     db.auditLog.create({ data: { actorId: user.id, action: 'business_status', subjectType: 'business', subjectId: b.id, businessId: b.id, meta: { from: b.status, to: p.data.status, note: p.data.reason || null } } }),
   ]);
+  // Going live can start the Stripe subscription of a business that already saved a card.
+  if (p.data.status === 'live') await syncBillingSafe(b.id);
   revalidatePath('/');
   revalidatePath('/search');
   for (const br of b.branches) revalidatePath(`/${br.regionSlug}`);

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { areaUserOrNull } from '@/components/ops/access';
 import { CATEGORIES, REGIONS } from '@/lib/catalog';
+import { billCampaignSafe } from '@/lib/server/billing';
 import { db } from '@/lib/server/db';
 import { platformSettings } from '@/lib/server/platformSettings';
 import { nextRef } from '@/lib/server/refs';
@@ -13,9 +14,9 @@ import { reviewChecks } from './data';
 
 // A sponsored placement is approved or rejected here, with the automatic checks recomputed at the
 // moment of the decision (a list that filled up meanwhile cannot be approved). Billing: the charge
-// is created against the business's platform account only after approval; with no platform
-// charging engine connected yet the approval records the amount due, and the accounting screen shows
-// it as an open charge. A manual order lets staff enter a placement a business asked for by phone.
+// is created only after approval, as a Stripe invoice (src/lib/server/billing): charged to the saved card,
+// or emailed as a payment link when there is none. Until it is paid the accounting screen shows it as an
+// open charge. A manual order lets staff enter a placement a business asked for by phone.
 
 type Result = { ok: true; ref?: string } | { ok: false; error: string };
 
@@ -38,6 +39,8 @@ export async function reviewCampaignAction(input: z.input<typeof ReviewInput>): 
     db.decision.create({ data: { actorId: user.id, actorRole: user.opsRole ?? 'ops', subjectType: 'campaign', subjectId: c.id, action: status === 'approved' ? 'approve' : 'reject', reason: p.data.note || null } }),
     db.auditLog.create({ data: { actorId: user.id, action: 'campaign_review', subjectType: 'campaign', subjectId: c.id, businessId: c.businessId, meta: { ref: c.ref, decision: status, note: p.data.note || null } } }),
   ]);
+  // Approved placements are billed at once through Stripe (charged to the saved card, or a payment link by email).
+  if (status === 'approved') await billCampaignSafe(c.id);
   revalidatePath('/ops/sponsored');
   revalidatePath('/ops');
   return { ok: true };

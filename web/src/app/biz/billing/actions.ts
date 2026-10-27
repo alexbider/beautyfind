@@ -4,16 +4,34 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { EMAIL_RE, isCompanyNo } from '@/lib/format';
 import { isPlanKey, planPrice, type PlanKey } from '@/lib/pricing';
+import { applyPlanChange, checkoutUrl, portalUrl } from '@/lib/server/billing';
 import { requireArea } from '@/lib/server/biz';
 import { db } from '@/lib/server/db';
 
 // Billing tab actions. Every action re-checks `billing: edit` on the server.
 // Plan rules (08-open-decisions.md A3): upgrades apply now (prorated), downgrades wait for the end of the cycle.
 
-export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
+export type ActionResult = { ok: true; message?: string; url?: string } | { ok: false; error: string };
 
 const RANK: Record<PlanKey, number> = { basic: 0, advanced: 1 };
 const FORBIDDEN = 'אין לכם הרשאה לשנות את המנוי. שינויים אפשריים רק דרך המנהל הראשי.';
+
+/**
+ * Sends the change to Stripe when the business is billed there. `now` applies the saved plan and cycle
+ * at once; anything still pending is then scheduled for the end of the period (or a schedule is undone).
+ * A Stripe failure is reported, but the change stays saved and the daily billing run retries the count.
+ */
+async function pushToStripe(businessId: string, now: boolean): Promise<string | null> {
+  try {
+    if (now) await applyPlanChange(businessId, 'now');
+    const sub = await db.subscription.findUnique({ where: { businessId }, select: { pendingPlan: true, pendingCycle: true } });
+    await applyPlanChange(businessId, sub?.pendingPlan || sub?.pendingCycle ? 'period_end' : 'undo');
+    return null;
+  } catch (e) {
+    console.error('[billing] plan change in Stripe failed', businessId, e);
+    return 'השינוי נשמר, אבל עדכון החיוב לא הושלם. ננסה שוב אוטומטית, ואם זה נמשך נחזור אליכם.';
+  }
+}
 
 async function guard() {
   try {
@@ -31,28 +49,34 @@ export async function changePlan(target: string): Promise<ActionResult> {
   const businessId = ctx.business.id;
   const sub = await db.subscription.findUnique({ where: { businessId } });
 
+  let warn: string | null = null;
   if (!sub) {
-    // TODO(payments): the first charge happens when the first branch goes live.
+    // No card yet, so nothing is billed: the first charge happens through Checkout, or when the first
+    // branch goes live if the card was saved before that.
     await db.subscription.create({
-      data: { businessId, plan: target, cycle: 'monthly', pricePerBranchAgorot: planPrice(target, 'monthly') * 100 },
+      data: { businessId, plan: target, cycle: 'monthly', pricePerBranchAgorot: planPrice(target, 'monthly') * 100, status: 'incomplete' },
     });
   } else if (target === sub.plan) {
     // Picking the current plan again cancels a scheduled downgrade.
-    if (sub.pendingPlan) await db.subscription.update({ where: { businessId }, data: { pendingPlan: null } });
+    if (sub.pendingPlan) {
+      await db.subscription.update({ where: { businessId }, data: { pendingPlan: null } });
+      warn = await pushToStripe(businessId, false);
+    }
   } else if (RANK[target] > RANK[sub.plan]) {
-    // Upgrade: effective immediately.
-    // TODO(payments): charge the prorated difference for the rest of the current period on the next invoice.
+    // Upgrade: effective immediately; the prorated difference for the rest of the period is on the next invoice.
     await db.subscription.update({
       where: { businessId },
       data: { plan: target, pendingPlan: null, pricePerBranchAgorot: planPrice(target, sub.cycle) * 100 },
     });
+    warn = await pushToStripe(businessId, true);
   } else {
     // Downgrade: scheduled for currentPeriodEnd. Clinic-system data is kept 90 days after it takes effect.
     await db.subscription.update({ where: { businessId }, data: { pendingPlan: target } });
+    warn = await pushToStripe(businessId, false);
   }
 
   revalidatePath('/biz', 'layout');
-  return { ok: true };
+  return warn ? { ok: true, message: warn } : { ok: true };
 }
 
 /** Monthly → yearly applies now (prorated). Yearly → monthly is scheduled for the renewal date. */
@@ -66,24 +90,30 @@ export async function changeCycle(target: string): Promise<ActionResult> {
   if (!sub) return { ok: false, error: 'עדיין אין מנוי. בחרו מסלול קודם.' };
   if (sub.cycle === target) {
     // Picking the current cycle again cancels a scheduled switch.
-    if (sub.pendingCycle) await db.subscription.update({ where: { businessId }, data: { pendingCycle: null } });
+    let warn: string | null = null;
+    if (sub.pendingCycle) {
+      await db.subscription.update({ where: { businessId }, data: { pendingCycle: null } });
+      warn = await pushToStripe(businessId, false);
+    }
     revalidatePath('/biz/billing');
-    return { ok: true };
+    return warn ? { ok: true, message: warn } : { ok: true };
   }
   if (target === 'monthly') {
-    // TODO(billing-job): apply pendingPlan / pendingCycle at currentPeriodEnd.
+    // Yearly → monthly waits for the renewal date (a Stripe subscription schedule switches the price then).
     await db.subscription.update({ where: { businessId }, data: { pendingCycle: 'monthly' } });
+    const warn = await pushToStripe(businessId, false);
     revalidatePath('/biz/billing');
-    return { ok: true };
+    return warn ? { ok: true, message: warn } : { ok: true };
   }
 
-  // TODO(payments): charge the yearly price minus the unused part of the current month.
+  // Monthly → yearly: Stripe charges the yearly price now and credits the unused part of the current month.
   await db.subscription.update({
     where: { businessId },
-    data: { cycle: 'yearly', pricePerBranchAgorot: planPrice(sub.plan, 'yearly') * 100 },
+    data: { cycle: 'yearly', pendingCycle: null, pricePerBranchAgorot: planPrice(sub.plan, 'yearly') * 100 },
   });
+  const warn = await pushToStripe(businessId, true);
   revalidatePath('/biz/billing');
-  return { ok: true };
+  return warn ? { ok: true, message: warn } : { ok: true };
 }
 
 const Details = z.object({
@@ -112,4 +142,30 @@ export async function saveBillingDetails(input: { companyNo: string; invoiceEmai
   });
   revalidatePath('/biz/billing');
   return { ok: true, message: 'הפרטים נשמרו' };
+}
+
+/** Opens Stripe Checkout to save a card (and start the subscription when a branch is already live). */
+export async function startCheckout(): Promise<ActionResult> {
+  const ctx = await guard();
+  if (!ctx) return { ok: false, error: FORBIDDEN };
+  try {
+    const r = await checkoutUrl(ctx.business.id);
+    return r.ok ? { ok: true, url: r.url } : r;
+  } catch (e) {
+    console.error('[billing] checkout failed', e);
+    return { ok: false, error: 'לא הצלחנו לפתוח את עמוד התשלום. נסו שוב בעוד רגע.' };
+  }
+}
+
+/** Opens Stripe's billing portal: update the card, download invoices, cancel at the end of the period. */
+export async function openPortal(): Promise<ActionResult> {
+  const ctx = await guard();
+  if (!ctx) return { ok: false, error: FORBIDDEN };
+  try {
+    const r = await portalUrl(ctx.business.id);
+    return r.ok ? { ok: true, url: r.url } : r;
+  } catch (e) {
+    console.error('[billing] portal failed', e);
+    return { ok: false, error: 'לא הצלחנו לפתוח את ניהול התשלום. נסו שוב בעוד רגע.' };
+  }
 }

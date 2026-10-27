@@ -1,6 +1,7 @@
 import 'server-only';
 import type { OpsRole, Prisma, VerificationStatus } from '@prisma/client';
 import { withPrimary } from '../category';
+import { syncBillingSafe } from './billing';
 import { db } from './db';
 import { messaging } from '../vendors/messaging';
 
@@ -76,6 +77,8 @@ export async function decide(opts: {
   });
 
   if (!result.ok) return result;
+  // A business that just went live starts its Stripe subscription if a card is already saved.
+  if (result.status === 'approved' && result.req.kind === 'business' && result.req.businessId) await syncBillingSafe(result.req.businessId);
   // M19 / M20 outcome message. Service message; sent after commit.
   if (result.status !== 'open' && result.req.submittedById) {
     const user = await db.user.findUnique({ where: { id: result.req.submittedById } });

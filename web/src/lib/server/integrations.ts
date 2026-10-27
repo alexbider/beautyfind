@@ -68,11 +68,19 @@ export async function integrationGroups(): Promise<IntegrationGroup[]> {
   });
   const notBuilt = (key: string, name: string, desc: string): Integration => ({ key, name, desc, state: 'unavailable', note: 'עוד לא מחובר בקוד', where: '—', checkable: false });
 
+  const stripeOn = !!process.env.STRIPE_SECRET_KEY;
+  const stripeSubs = stripeOn ? await db.subscription.count({ where: { stripeSubscriptionId: { not: null } } }).catch(() => 0) : 0;
+  const stripePlatform: Integration = {
+    key: 'payments:stripe', name: 'Stripe (חיובי BeautyFind)', desc: 'מנויים ומקומות ממומנים: כרטיס, חיוב חוזר, חשבוניות וגבייה חוזרת',
+    state: stripeOn ? 'connected' : 'not_connected',
+    note: stripeOn ? `${stripeSubs} מנויים מחויבים ב־Stripe` : 'STRIPE_SECRET_KEY חסר: אי אפשר לשמור כרטיס או לחייב',
+    where: 'STRIPE_SECRET_KEY (ו־STRIPE_WEBHOOK_SECRET, לא חובה) בסביבת האתר', checkable: false,
+  };
   const payments: IntegrationGroup = {
     name: 'תשלומים',
-    items: PAYMENT_PROVIDERS.filter(p => p.key !== 'sandbox').map(p => businessProvider(p, p.key === 'cardcom' ? 'סליקה, טוקנים וחיוב חוזר למנויים' : 'סליקה לקליניקות')).concat([
+    items: [stripePlatform].concat(PAYMENT_PROVIDERS.filter(p => p.key !== 'sandbox').map(p => businessProvider(p, p.key === 'cardcom' ? 'סליקה, טוקנים וחיוב חוזר למנויים' : 'סליקה לקליניקות')).concat([
       { key: 'payments:sandbox', name: 'סביבת בדיקה', desc: 'סליקה מדומה לפיתוח והדגמות', state: process.env.NODE_ENV === 'production' && process.env.ALLOW_SANDBOX_PAYMENTS !== '1' ? 'not_connected' : 'connected', note: process.env.NODE_ENV === 'production' && process.env.ALLOW_SANDBOX_PAYMENTS !== '1' ? 'חסום בייצור' : `${count('sandbox', 'payments', 'connected')} עסקים מחוברים`, where: 'ALLOW_SANDBOX_PAYMENTS', checkable: false },
-    ]),
+    ])),
   };
   const invoicing: IntegrationGroup = {
     name: 'חשבוניות ומיסוי',

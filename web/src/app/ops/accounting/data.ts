@@ -80,9 +80,13 @@ export interface SubscriptionRow {
   currentPeriodEnd: Date | null;
   retry: { attempts?: number; next_at?: string } | null;
   businessStatus: string;
+  /** "visa ·4242" when Stripe holds a card. */
+  card: string | null;
+  /** Billed through a Stripe subscription. */
+  stripe: boolean;
 }
 
-export async function subscriptions(filter: 'all' | 'active' | 'past_due' | 'hidden' | 'cancelled'): Promise<SubscriptionRow[]> {
+export async function subscriptions(filter: 'all' | 'incomplete' | 'active' | 'past_due' | 'hidden' | 'cancelled'): Promise<SubscriptionRow[]> {
   const s = await platformSettings();
   const subs = await db.subscription.findMany({
     where: filter === 'all' ? {} : { status: filter }, orderBy: [{ status: 'asc' }, { updatedAt: 'desc' }], take: 300,
@@ -94,6 +98,7 @@ export async function subscriptions(filter: 'all' | 'active' | 'past_due' | 'hid
     return {
       id: x.id, businessId: x.business.id, businessName: x.business.branches[0]?.name ?? 'עסק', plan: x.plan, cycle: x.cycle, liveBranches: live,
       monthlyNis: live ? chainTotal(live, unit).total : 0, status: x.status, currentPeriodEnd: x.currentPeriodEnd, retry: (x.retry ?? null) as SubscriptionRow['retry'], businessStatus: x.business.status,
+      card: x.cardLast4 ? `${x.cardBrand ?? 'card'} ·${x.cardLast4}` : null, stripe: !!x.stripeSubscriptionId,
     };
   });
 }
