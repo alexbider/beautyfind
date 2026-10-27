@@ -85,6 +85,21 @@ async function hasDefaultCard(customerId: string): Promise<boolean> {
   return !!(c as Stripe.Customer).invoice_settings?.default_payment_method;
 }
 
+/**
+ * The Stripe price for a business: its plan and cycle, unless BILLING_PRICE_OVERRIDES (JSON
+ * {"<businessId>": "<price lookup key>"}) names a special price for it, e.g. a 1 ₪ demo account used to
+ * test billing end to end, or a negotiated price.
+ */
+async function priceForBusiness(businessId: string, plan: PlanKey, cycle: Cycle): Promise<string> {
+  try {
+    const map = JSON.parse(process.env.BILLING_PRICE_OVERRIDES || '{}') as Record<string, string>;
+    if (typeof map[businessId] === 'string' && map[businessId]) return priceId(map[businessId]);
+  } catch {
+    console.warn('[billing] BILLING_PRICE_OVERRIDES is not valid JSON');
+  }
+  return planPriceId(plan, cycle);
+}
+
 const effectivePlan = (s: SubRow): { plan: PlanKey; cycle: Cycle } => ({ plan: s.plan, cycle: s.cycle });
 
 /**
@@ -113,7 +128,7 @@ export async function checkoutUrl(businessId: string): Promise<BillingResult> {
       ? await stripe().checkout.sessions.create({
           ...common,
           mode: 'subscription',
-          line_items: [{ price: await planPriceId(plan, cycle), quantity: b.liveBranches }],
+          line_items: [{ price: await priceForBusiness(businessId, plan, cycle), quantity: b.liveBranches }],
           subscription_data: { metadata: { site: SITE, businessId }, description: `BeautyFind · ${b.name}` },
           payment_method_collection: 'always',
         })
@@ -262,7 +277,7 @@ export async function syncBilling(businessId: string): Promise<{ action: string 
     await stripe().subscriptions.update(s.id, { items: [{ id: item.id, quantity: n }], proration_behavior: 'create_prorations' });
     if (pending) {
       const next = { plan: sub.pendingPlan ?? sub.plan, cycle: (sub.pendingCycle ?? sub.cycle) as Cycle };
-      await scheduleAtPeriodEnd(await stripe().subscriptions.retrieve(s.id), await planPriceId(next.plan, next.cycle), n, next.cycle);
+      await scheduleAtPeriodEnd(await stripe().subscriptions.retrieve(s.id), await priceForBusiness(businessId, next.plan, next.cycle), n, next.cycle);
     }
     return { action: 'quantity' };
   }
@@ -275,7 +290,7 @@ export async function syncBilling(businessId: string): Promise<{ action: string 
   const s = await stripe().subscriptions.create(
     {
       customer: sub.stripeCustomerId,
-      items: [{ price: await planPriceId(plan, cycle), quantity: n }],
+      items: [{ price: await priceForBusiness(businessId, plan, cycle), quantity: n }],
       collection_method: 'charge_automatically',
       payment_behavior: 'allow_incomplete',
       metadata: { site: SITE, businessId },
@@ -317,7 +332,7 @@ export async function applyPlanChange(businessId: string, when: 'now' | 'period_
   if (when === 'now') {
     await releaseSchedule(s);
     const updated = await stripe().subscriptions.update(s.id, {
-      items: [{ id: item.id, price: await planPriceId(sub.plan, sub.cycle), quantity: qty }],
+      items: [{ id: item.id, price: await priceForBusiness(businessId, sub.plan, sub.cycle), quantity: qty }],
       // Upgrades show the prorated difference on the next invoice; a switch to yearly is charged at once
       // (Stripe restarts the cycle and credits the unused part of the month).
       proration_behavior: item.price.recurring?.interval === (sub.cycle === 'yearly' ? 'year' : 'month') ? 'create_prorations' : 'always_invoice',
@@ -326,7 +341,7 @@ export async function applyPlanChange(businessId: string, when: 'now' | 'period_
     return;
   }
   const next = { plan: sub.pendingPlan ?? sub.plan, cycle: (sub.pendingCycle ?? sub.cycle) as Cycle };
-  await scheduleAtPeriodEnd(s, await planPriceId(next.plan, next.cycle), qty, next.cycle);
+  await scheduleAtPeriodEnd(s, await priceForBusiness(businessId, next.plan, next.cycle), qty, next.cycle);
 }
 
 /**
