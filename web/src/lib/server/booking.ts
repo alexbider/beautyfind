@@ -163,6 +163,7 @@ export async function sendConfirmation(bookingId: string, template: 'M1_booking_
   const vars = {
     name: b.clientName, business: b.branch.name, treatment: b.treatment?.name ?? 'פגישת ייעוץ',
     date: ilDate(b.startsAt), time: hhmm(b.startsAt), practitioner: b.practitioner?.displayName ?? '', ref: b.ref, link: manageUrl(b.id),
+    address: b.branch.address ?? '',
   };
   await messaging().send({ channel: 'whatsapp', to: b.clientPhone, template, vars, kind: 'service' });
   if (b.clientEmail) await messaging().send({ channel: 'email', to: b.clientEmail, template, vars, kind: 'service' });

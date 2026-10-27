@@ -1,0 +1,47 @@
+// Sample vars for every template, for the email preview (admin and the design gallery). Invented data only.
+
+const S = 'https://beautyfind.co.il';
+
+export interface Sample { id: string; group: string; label: string; vars: Record<string, string> }
+
+const booking = { name: 'נועה', business: 'סטודיו אורה', treatment: 'טיפול פנים לחות עמוק', date: '04/11/2026', time: '10:30', practitioner: 'מיכל', address: 'רחוב הרצל 12, תל אביב', ref: 'BF-4288', link: `${S}/b/sample` };
+
+export const SAMPLES: Sample[] = [
+  { id: 'M1_booking_confirmed', group: 'תורים', label: 'התור אושר', vars: booking },
+  { id: 'M1_booking_rescheduled', group: 'תורים', label: 'התור הועבר', vars: booking },
+  { id: 'M2_reminder', group: 'תורים', label: 'תזכורת יום לפני', vars: booking },
+  { id: 'M3_declaration_request', group: 'תורים', label: 'הצהרת בריאות', vars: { ...booking, link: `${S}/b/sample/declaration` } },
+  { id: 'M5_aftercare', group: 'תורים', label: 'הנחיות אחרי טיפול', vars: { ...booking, link: `${S}/b/sample/aftercare` } },
+  { id: 'M6_review_request', group: 'תורים', label: 'בקשת ביקורת', vars: { name: 'נועה', business: 'סטודיו אורה', link: `${S}/review/sample` } },
+  { id: 'M7_waitlist_offer', group: 'תורים', label: 'הצעה מרשימת המתנה', vars: { ...booking, minutes: '30', link: `${S}/w/sample` } },
+  { id: 'M12_clinic_cancelled', group: 'תורים', label: 'העסק ביטל', vars: { ref: 'BF-4288', reason: 'המטפלת חולה' } },
+  { id: 'M13_client_cancelled', group: 'תורים', label: 'הלקוחה ביטלה', vars: { ...booking, refunded: '150' } },
+  { id: 'M8_consult_details', group: 'ייעוץ', label: 'בקשת פרטים', vars: { name: 'נועה', business: 'מרפאת לומן', ref: 'CQ-112', reply_link: `${S}/r/sample` } },
+  { id: 'M9_consult_proposal', group: 'ייעוץ', label: 'הצעת מועד', vars: { business: 'מרפאת לומן', ref: 'CQ-112', text: 'שלום נועה, נשמח לראות אותך לפגישת ייעוץ ביום שלישי 10/11 בשעה 16:00.', reply_link: `${S}/r/sample` } },
+  { id: 'M10_consult_declined', group: 'ייעוץ', label: 'דחייה עם הסבר', vars: { business: 'מרפאת לומן', text: 'שלום נועה, הטיפול שביקשת לא מתאים לפי הפרטים ששלחת. מומלץ לפנות לרופא/ת עור.' } },
+  { id: 'M_consult_reply', group: 'ייעוץ', label: 'תשובת לקוחה (לעסק)', vars: { name: 'נועה כהן', business: 'מרפאת לומן', ref: 'CQ-112', answer: 'מאשרת את המועד', proposed: '10/11 בשעה 16:00', phone: '050-1234567', link: `${S}/clinic/consults` } },
+  { id: 'M14_gift_card', group: 'כרטיסי מתנה', label: 'קיבלת כרטיס מתנה', vars: { recipient: 'דנה', buyer: 'יעל', business: 'ספא ים', amount: '400 ₪', code: 'NOA-7KQ2-M9XD', message: 'יום הולדת שמח! תפנקי את עצמך', link: `${S}/gift/check` } },
+  { id: 'M15_gift_expiry', group: 'כרטיסי מתנה', label: 'כרטיס עומד לפוג', vars: { name: 'דנה', business: 'ספא ים', amount: '250 ₪', expires: '15/12/2026', days: '30', link: `${S}/gift/check` } },
+  { id: 'M11_refund', group: 'תשלומים', label: 'החזר כספי', vars: { amount: '150', reason: 'ביטול בזמן' } },
+  { id: 'M23_payment_failed', group: 'תשלומים', label: 'חיוב נכשל', vars: { name: 'אורה', business: 'סטודיו אורה', step: '0', hide_date: '10/11/2026', link: `${S}/biz/billing` } },
+  { id: 'M_onboard_welcome', group: 'עסקים', label: 'ברוכים הבאים', vars: { name: 'אורה', business: 'סטודיו אורה', link: `${S}/biz` } },
+  { id: 'M_onboard_profile', group: 'עסקים', label: 'השלמת פרופיל', vars: { name: 'אורה', business: 'סטודיו אורה', missing: 'תמונות וטיפולים ומחירים', link: `${S}/biz/profile` } },
+  { id: 'M_onboard_card', group: 'עסקים', label: 'הוספת כרטיס', vars: { name: 'אורה', business: 'סטודיו אורה', link: `${S}/biz/billing` } },
+  { id: 'M_profile_lead', group: 'עסקים', label: 'פנייה חדשה', vars: { name: 'נועה כהן', business: 'סטודיו אורה', phone: '050-1234567', email: 'noa@example.com', treatment: 'הסרת שיער בלייזר', message: 'אשמח לשמוע מחיר לסדרה של 6 טיפולים', leads_link: `${S}/biz/leads` } },
+  { id: 'M4_clinic_checked_in', group: 'עסקים', label: 'צ׳ק־אין', vars: { time: '10:30', ref: 'BF-4288', link: `${S}/clinic` } },
+  { id: 'M4_clinic_declaration_flagged', group: 'עסקים', label: 'הצהרה לבדיקה', vars: { ...booking, link: `${S}/clinic` } },
+  { id: 'M19_verification_outcome', group: 'עסקים', label: 'תוצאת אימות', vars: { ref: 'VR-208', status: 'approved' } },
+  { id: 'M20_claim_outcome', group: 'עסקים', label: 'תוצאת בעלות (מסמך)', vars: { ref: 'CL-77', status: 'awaiting_document', reason: 'צריך תעודת עוסק או אישור מרשם החברות' } },
+  { id: 'M22_sponsored_approved', group: 'עסקים', label: 'ממומן אושר', vars: { name: 'אורה', business: 'סטודיו אורה', ref: 'AD-85', where: 'טיפולי פנים, גוש דן', start: '08/11/2026', weeks: '2', link: `${S}/biz/billing` } },
+  { id: 'M22_sponsored_rejected', group: 'עסקים', label: 'ממומן נדחה', vars: { name: 'אורה', business: 'סטודיו אורה', ref: 'AD-85', where: 'טיפולי פנים, גוש דן', reason: 'השורה מבטיחה תוצאה רפואית', link: `${S}/biz/billing` } },
+  { id: 'M22_sponsored_started', group: 'עסקים', label: 'ממומן עלה', vars: { name: 'אורה', business: 'סטודיו אורה', where: 'טיפולי פנים, גוש דן', end: '21/11/2026', link: `${S}/biz/billing` } },
+  { id: 'M22_sponsored_ended', group: 'עסקים', label: 'ממומן הסתיים', vars: { name: 'אורה', business: 'סטודיו אורה', where: 'טיפולי פנים, גוש דן', link: `${S}/biz/billing` } },
+  { id: 'M_claim_invite', group: 'עסקים', label: 'הזמנה לאישור בעלות', vars: { business: 'סטודיו אורה', link: `${S}/for-business/claim?branch=sample`, unsubscribe: `${S}/unsubscribe/sample` } },
+  { id: 'M16_otp', group: 'חשבון וצוות', label: 'קוד אימות', vars: { code: '482913', minutes: '10' } },
+  { id: 'M17_reset', group: 'חשבון וצוות', label: 'איפוס סיסמה', vars: { name: 'אורה', minutes: '30', link: `${S}/login/reset/sample` } },
+  { id: 'M18_staff_invite', group: 'חשבון וצוות', label: 'הזמנת איש צוות', vars: { name: 'מיכל', business: 'סטודיו אורה', inviter: 'אורה', role: 'מטפלת', expires: '03/11/2026', link: `${S}/invite/sample` } },
+  { id: 'staff_invite_accepted', group: 'חשבון וצוות', label: 'הזמנה התקבלה', vars: { name: 'מיכל', business: 'סטודיו אורה', role: 'מטפלת' } },
+  { id: 'staff_invite_declined', group: 'חשבון וצוות', label: 'הזמנה נדחתה', vars: { business: 'סטודיו אורה', email: 'michal@example.com' } },
+  { id: 'staff_invite_renewal_request', group: 'חשבון וצוות', label: 'בקשה להזמנה חדשה', vars: { business: 'סטודיו אורה', email: 'michal@example.com' } },
+  { id: 'M_contact_receipt', group: 'חשבון וצוות', label: 'קבלת פנייה', vars: { ref: 'CT-3051', reason: '' } },
+];
