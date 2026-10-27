@@ -51,7 +51,7 @@ export async function ensureCustomer(businessId: string): Promise<string> {
       name: b.legalName ? `${b.name} (${b.legalName})` : b.name,
       email,
       phone: b.owner?.phone ?? undefined,
-      preferred_locales: ['he', 'en'],
+      preferred_locales: ['en'], // Stripe emails and invoices have no Hebrew
       metadata: { site: SITE, businessId },
     },
     { idempotencyKey: `bf-customer-${businessId}` },
@@ -101,7 +101,7 @@ export async function checkoutUrl(businessId: string): Promise<BillingResult> {
   const base = siteUrl();
   const common = {
     customer,
-    locale: 'he' as const,
+    locale: 'auto' as const, // Checkout has no Hebrew; auto follows the browser
     success_url: `${base}/biz/billing?checkout=done`,
     cancel_url: `${base}/biz/billing?checkout=cancelled`,
     client_reference_id: businessId,
