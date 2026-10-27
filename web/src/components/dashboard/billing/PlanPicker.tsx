@@ -16,11 +16,11 @@ export type PlanCard = {
   rank: number;
 };
 
-type Ask = { kind: 'plan'; plan: PlanCard } | { kind: 'yearly' } | null;
+type Ask = { kind: 'plan'; plan: PlanCard } | { kind: 'yearly' } | { kind: 'monthly' } | null;
 
 /** Plan cards + monthly/yearly switch, each change behind an explicit confirmation. */
 export function PlanPicker({
-  plans, current, pending, cycle, canEdit, periodEnd, yearlyLine,
+  plans, current, pending, cycle, canEdit, periodEnd, yearlyLine, billed,
 }: {
   plans: PlanCard[];
   current: PlanCard['key'] | null;
@@ -30,6 +30,8 @@ export function PlanPicker({
   /** 1.10.2026, or null when the period end is not known yet. */
   periodEnd: string | null;
   yearlyLine: string;
+  /** A paid Stripe subscription exists. Without one nothing was charged, so every change applies at once. */
+  billed: boolean;
 }) {
   const [ask, setAsk] = useState<Ask>(null);
   const [error, setError] = useState('');
@@ -47,9 +49,13 @@ export function PlanPicker({
   const when = periodEnd ? <>, ב־<span className="ltr">{periodEnd}</span></> : null;
   // Below 768px the confirmation is a bottom sheet.
   const sheet = useSheetMode();
-  const askTitle = !ask ? '' : ask.kind === 'plan' ? `לעבור למסלול ${ask.plan.name}?` : 'לעבור לחיוב שנתי?';
-  const askLine: ReactNode = !ask ? null : ask.kind === 'yearly' ? (
+  const askTitle = !ask ? '' : ask.kind === 'plan' ? `לעבור למסלול ${ask.plan.name}?` : ask.kind === 'yearly' ? 'לעבור לחיוב שנתי?' : 'לעבור לחיוב חודשי?';
+  const askLine: ReactNode = !ask ? null : !billed ? (
+    <>השינוי נשמר מיד. עדיין לא בוצע חיוב, והחיוב הראשון יהיה לפי הבחירה הזו.</>
+  ) : ask.kind === 'yearly' ? (
     yearlyLine
+  ) : ask.kind === 'monthly' ? (
+    <>החיוב השנתי כבר שולם, ולכן המעבר לחיוב חודשי ייכנס לתוקף בתאריך החידוש{when}. עד אז המנוי השנתי ממשיך כרגיל.</>
   ) : cur && ask.plan.rank < cur.rank ? (
     <>מערכת ניהול הקליניקה (יומן, CRM, מלאי, אוטומציות) תיסגר בסוף מחזור החיוב{when}. עד אז הכול ממשיך לעבוד, והמידע יישמר 90 יום למקרה שתחזרו.</>
   ) : cur ? (
@@ -59,7 +65,7 @@ export function PlanPicker({
   );
   const confirm = () => {
     if (!ask) return;
-    run(() => (ask.kind === 'plan' ? changePlan(ask.plan.key) : changeCycle('yearly')));
+    run(() => (ask.kind === 'plan' ? changePlan(ask.plan.key) : changeCycle(ask.kind)));
   };
 
   return (
@@ -72,7 +78,7 @@ export function PlanPicker({
             className={s.cycleBtn}
             aria-pressed={cycle === 'monthly'}
             disabled={!canEdit || busy || cycle === 'monthly'}
-            onClick={() => setError('מעבר מחיוב שנתי לחודשי נכנס לתוקף רק בתאריך החידוש השנתי. פנו אלינו ונקבע את המעבר לתאריך הזה.')}
+            onClick={() => { setError(''); setAsk({ kind: 'monthly' }); }}
           >
             חודשי
           </button>

@@ -141,6 +141,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
           canEdit={canEdit}
           periodEnd={periodEnd}
           yearlyLine={yearlyLine}
+          billed={!!sub?.stripeSubscriptionId}
         />
 
         <div className={`${ui.twoCols} ${ui.alignStart}`} style={{ marginBottom: 14 }}>

@@ -62,8 +62,9 @@ export async function changePlan(target: string): Promise<ActionResult> {
       await db.subscription.update({ where: { businessId }, data: { pendingPlan: null } });
       warn = await pushToStripe(businessId, false);
     }
-  } else if (RANK[target] > RANK[sub.plan]) {
-    // Upgrade: effective immediately; the prorated difference for the rest of the period is on the next invoice.
+  } else if (RANK[target] > RANK[sub.plan] || !sub.stripeSubscriptionId) {
+    // An upgrade, or any change before the first charge (nothing paid yet, so nothing to wait for).
+    // Effective immediately; for an upgrade the prorated difference for the rest of the period is on the next invoice.
     await db.subscription.update({
       where: { businessId },
       data: { plan: target, pendingPlan: null, pricePerBranchAgorot: planPrice(target, sub.cycle) * 100 },
@@ -97,6 +98,12 @@ export async function changeCycle(target: string): Promise<ActionResult> {
     }
     revalidatePath('/biz/billing');
     return warn ? { ok: true, message: warn } : { ok: true };
+  }
+  if (target === 'monthly' && !sub.stripeSubscriptionId) {
+    // Nothing paid yet: the switch back to monthly applies at once.
+    await db.subscription.update({ where: { businessId }, data: { cycle: 'monthly', pendingCycle: null, pricePerBranchAgorot: planPrice(sub.plan, 'monthly') * 100 } });
+    revalidatePath('/biz/billing');
+    return { ok: true };
   }
   if (target === 'monthly') {
     // Yearly → monthly waits for the renewal date (a Stripe subscription schedule switches the price then).
