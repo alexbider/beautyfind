@@ -1988,3 +1988,13 @@ model McpAuthCode {
 
   @@map("mcp_auth_codes")
 }
+
+// Shared rate limits (src/lib/server/rateLimit.ts): one fixed-window counter per key, e.g. "login:ip:1.2.3.4".
+model RateLimit {
+  key         String   @id
+  windowStart DateTime @map("window_start")
+  count       Int      @default(0)
+
+  @@index([windowStart])
+  @@map("rate_limits")
+}

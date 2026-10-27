@@ -1,5 +1,6 @@
 'use server';
 
+import { LIMITS, clientIp, hit } from '@/lib/server/rateLimit';
 import { z } from 'zod';
 import { createGiftCard, retryGiftPayment, type BuyError } from '@/components/gift/server';
 
@@ -40,6 +41,7 @@ const Input = z.object({
 export async function buyGiftCard(slug: string, raw: unknown): Promise<BuyActionResult> {
   const parsed = Input.safeParse(raw);
   if (!parsed.success) return { ok: false, error: 'חלק מהפרטים חסרים או לא תקינים.' };
+  if (!(await hit(`form:ip:${await clientIp()}`, LIMITS.formIp)).ok) return { ok: false, error: 'יותר מדי ניסיונות מהרשת הזו. נסו שוב בעוד כשעה.' };
   const r = await createGiftCard(String(slug), parsed.data);
   return r.ok ? { ok: true, checkoutUrl: r.checkoutUrl } : { ok: false, error: ERRORS[r.error] };
 }

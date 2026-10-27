@@ -3,6 +3,7 @@ import type { OtpChannel, OtpPurpose, Prisma } from '@prisma/client';
 import { db } from './db';
 import { hmac, randomDigits } from './crypto';
 import { messaging } from '../vendors/messaging';
+import { LIMITS, hitAll } from './rateLimit';
 
 const TTL_MIN = 10;
 const MAX_ATTEMPTS = 5;
@@ -26,6 +27,9 @@ export async function sendOtp(opts: {
     const age = (Date.now() - last.createdAt.getTime()) / 1000;
     if (age < RESEND_COOLDOWN_S) return { ok: false, error: 'cooldown', retryInSeconds: Math.ceil(RESEND_COOLDOWN_S - age) };
   }
+  // At most 6 codes an hour and 15 a day to one phone or email, whichever flow asks (SMS costs money).
+  const rl = await hitAll([[`otp:target:${opts.target}`, LIMITS.codeTarget], [`otp:day:${opts.target}`, LIMITS.codeTargetDay]]);
+  if (!rl.ok) return { ok: false, error: 'cooldown', retryInSeconds: rl.retryInSeconds };
   const code = process.env.NODE_ENV !== 'production' && process.env.DEV_FIXED_OTP ? process.env.DEV_FIXED_OTP : randomDigits(6);
   const row = await db.otpCode.create({
     data: {

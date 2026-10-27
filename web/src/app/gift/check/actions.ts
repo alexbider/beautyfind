@@ -1,6 +1,7 @@
 'use server';
 
 import { headers } from 'next/headers';
+import { LIMITS, hit } from '@/lib/server/rateLimit';
 import { allowLookup, publicLookup, type PublicCard } from '@/components/gift/server';
 
 // Balance check for gift card holders. Rate-limited per IP (10 per 10 minutes, in memory), and the answer
@@ -14,7 +15,7 @@ async function clientIp() {
 }
 
 export async function checkGiftCode(raw: string): Promise<CheckResult> {
-  if (!allowLookup(await clientIp())) return { ok: false, error: 'rate' };
+  if (!(await hit(`gift:ip:${await clientIp()}`, LIMITS.giftLookupIp)).ok || !allowLookup(await clientIp())) return { ok: false, error: 'rate' };
   const card = await publicLookup(String(raw).slice(0, 40));
   return card ? { ok: true, card } : { ok: false, error: 'not_found' };
 }

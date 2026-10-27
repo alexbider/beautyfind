@@ -1,5 +1,6 @@
 'use server';
 
+import { LIMITS as RATE, clientIp, hit } from '@/lib/server/rateLimit';
 import { z } from 'zod';
 import { CONTACT_REASONS, reasonInfo } from '@/components/contact/reasons';
 import { toE164 } from '@/lib/format';
@@ -36,6 +37,9 @@ export async function submitContact(input: ContactInput): Promise<ContactResult>
 
   const email = p.email.trim().toLowerCase();
   const since = new Date(Date.now() - DAY_MS);
+  if (!(await hit(`form:ip:${await clientIp()}`, RATE.formIp)).ok) {
+    return { ok: false, error: 'rate', message: 'נשלחו יותר מדי פניות מהרשת הזו בשעה האחרונה. נסו שוב מאוחר יותר.' };
+  }
 
   try {
     const recent = await db.contactMessage.count({ where: { email, createdAt: { gte: since } } });

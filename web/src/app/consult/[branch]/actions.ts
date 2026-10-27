@@ -1,5 +1,6 @@
 'use server';
 
+import { LIMITS, clientIp, hit } from '@/lib/server/rateLimit';
 import { z } from 'zod';
 import { AREAS, FLAGS, FORMATS, GOAL_MAX, GOAL_MIN, NAME_MAX, PRIOR, TIMES } from '@/components/consult/constants';
 import { submitConsultRequest } from '@/components/consult/service';
@@ -48,6 +49,7 @@ export async function submitConsult(input: ConsultPayload): Promise<ConsultSubmi
 
   const phone = toE164(p.phone);
   if (!phone) return fail('invalid');
+  if (!(await hit(`form:ip:${await clientIp()}`, LIMITS.formIp)).ok) return fail('rate');
   // Either a real slot, or "no slot fits" with at least one time range.
   if (p.noFit ? p.times.length === 0 || p.slot !== null : p.slot === null) return fail('invalid');
 

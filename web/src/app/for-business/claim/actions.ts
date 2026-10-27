@@ -1,5 +1,6 @@
 'use server';
 
+import { LIMITS, clientIp, hit } from '@/lib/server/rateLimit';
 import type { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { toE164 } from '@/lib/format';
@@ -51,6 +52,8 @@ export async function sendClaimCode(input: { branchId: string; method: string })
   if (!user) return { ok: false, error: 'unauthorized' };
   const parsed = codeTargetInput.safeParse(input);
   if (!parsed.success) return { ok: false, error: 'not_found' };
+  const rl = await hit(`code:ip:${await clientIp()}`, LIMITS.codeIp);
+  if (!rl.ok) return { ok: false, error: 'cooldown', retryInSeconds: rl.retryInSeconds };
   try {
     const branch = await loadLiveBranch(parsed.data.branchId);
     if (!branch) return { ok: false, error: 'not_found' };

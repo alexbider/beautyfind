@@ -334,6 +334,13 @@ export function AuthScreen({
         ),
       },
       bad_credentials: { text: 'פרטי הכניסה שגויים. בדקו את הדוא״ל או הטלפון ואת הסיסמה.' },
+      rate_limited: {
+        text: (
+          <>
+            יותר מדי ניסיונות. נסו שוב בעוד <Ltr>{Math.max(1, Math.ceil((res.retryInSeconds ?? 60) / 60))}</Ltr> דק׳.
+          </>
+        ),
+      },
       blocked: { text: 'החשבון חסום. לפרטים פנו אלינו דרך עמוד יצירת הקשר.' },
       otp_invalid: { text: 'הקוד שגוי. בדקו את הספרות ונסו שוב.' },
       otp_expired: { text: 'תוקף הקוד פג. שלחו קוד חדש.' },

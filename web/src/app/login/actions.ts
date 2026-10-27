@@ -7,6 +7,7 @@ import { EMAIL_RE, toE164 } from '@/lib/format';
 import { hashPassword, hmac, randomToken, verifyPassword } from '@/lib/server/crypto';
 import { db } from '@/lib/server/db';
 import { sendOtp, verifyOtp } from '@/lib/server/otp';
+import { LIMITS, clientIp, hitAll } from '@/lib/server/rateLimit';
 import { claimGuestRecords } from '@/lib/server/claim-guest';
 import { createSession } from '@/lib/server/session';
 import { messaging } from '@/lib/vendors/messaging';
@@ -28,7 +29,8 @@ export type AuthError =
   | 'otp_expired'
   | 'otp_too_many'
   | 'reset_invalid'
-  | 'blocked';
+  | 'blocked'
+  | 'rate_limited';
 
 export type Fail = { ok: false; error: AuthError; retryInSeconds?: number };
 /** `channel` is how the code actually went: a WhatsApp request goes by SMS while WhatsApp is not connected. */
@@ -61,6 +63,8 @@ const signinCodeInput = z.object({ phone, channel });
 export async function sendSigninCode(input: z.input<typeof signinCodeInput>): Promise<CodeSent | Fail> {
   const p = signinCodeInput.safeParse(input);
   if (!p.success) return fail('invalid_input');
+  const rl = await hitAll([[`code:ip:${await clientIp()}`, LIMITS.codeIp]]);
+  if (!rl.ok) return fail('rate_limited', rl.retryInSeconds);
   const user = await db.user.findUnique({ where: { phone: p.data.phone }, select: { id: true } });
   if (!user) return fail('unknown_phone');
   const sent = await sendOtp({ target: p.data.phone, channel: p.data.channel, purpose: 'login' });
@@ -96,6 +100,8 @@ export async function passwordSignin(input: z.input<typeof passwordSigninInput>)
   const p = passwordSigninInput.safeParse(input);
   if (!p.success) return fail('bad_credentials');
   const { ident } = p.data;
+  const rl = await hitAll([[`pw:ip:${await clientIp()}`, LIMITS.passwordIp], [`pw:acct:${ident.toLowerCase()}`, LIMITS.passwordAccount]]);
+  if (!rl.ok) return fail('rate_limited', rl.retryInSeconds);
   const e164 = EMAIL_RE.test(ident) ? null : toE164(ident);
   const user = EMAIL_RE.test(ident)
     ? await db.user.findUnique({ where: { email: normalizeEmail(ident) } })
@@ -152,6 +158,8 @@ export async function sendSignupCode(input: z.input<typeof sendSignupInput>): Pr
   if (!p.success) return fail('invalid_input');
   const taken = await takenError(p.data.form);
   if (taken) return taken;
+  const rl = await hitAll([[`code:ip:${await clientIp()}`, LIMITS.codeIp]]);
+  if (!rl.ok) return fail('rate_limited', rl.retryInSeconds);
   const sent = await sendOtp({ target: p.data.form.phone, channel: p.data.channel, purpose: 'signup' });
   if (!sent.ok) return fail('cooldown', sent.retryInSeconds);
   return { ok: true, phone: p.data.form.phone, cooldownSeconds: sent.cooldownSeconds, channel: sent.channel === 'whatsapp' ? 'whatsapp' : 'sms' };
@@ -213,6 +221,8 @@ export async function requestPasswordReset(input: z.input<typeof resetRequestInp
   const p = resetRequestInput.safeParse(input);
   if (!p.success) return { ok: true };
   const { ident } = p.data;
+  // Same answer when limited, so the limit does not reveal anything either.
+  if (!(await hitAll([[`reset:ip:${await clientIp()}`, LIMITS.resetIp]])).ok) return { ok: true };
   const e164 = EMAIL_RE.test(ident) ? null : toE164(ident);
   const user = EMAIL_RE.test(ident)
     ? await db.user.findUnique({ where: { email: normalizeEmail(ident) } })

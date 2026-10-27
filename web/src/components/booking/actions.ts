@@ -1,5 +1,6 @@
 'use server';
 
+import { LIMITS, clientIp, hit } from '@/lib/server/rateLimit';
 import { z } from 'zod';
 import { EMAIL_RE, toE164 } from '@/lib/format';
 import { availability, eligiblePractitioners } from '@/lib/server/availability';
@@ -68,6 +69,7 @@ export async function submitBooking(input: SubmitInput): Promise<SubmitResult> {
   const d = parsed.data;
   const phone = toE164(d.phone);
   if (!isMobileE164(phone)) return { ok: false, error: 'invalid' };
+  if (!(await hit(`form:ip:${await clientIp()}`, LIMITS.formIp)).ok) return { ok: false, error: 'rate_limited' };
   const email = d.email ? d.email.toLowerCase() : null;
   if (email && !EMAIL_RE.test(email)) return { ok: false, error: 'invalid' };
 
