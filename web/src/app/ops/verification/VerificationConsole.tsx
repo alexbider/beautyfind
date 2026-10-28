@@ -64,6 +64,38 @@ function Rows({ rows, onSelect }: { rows: Row[]; onSelect?: (id: string) => void
   );
 }
 
+/** Undo a decision: the request goes back to the queue, and what the approval did is taken back. */
+function ReviseBox({ item, pending, error, onRevise }: { item: QueueItem; pending: boolean; error: string | null; onRevise: (reason: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState('');
+  const id = useId();
+  const effect =
+    item.status === 'rejected' ? 'הבקשה תחזור לתור כפתוחה, ואפשר יהיה להחליט בה מחדש.'
+    : item.kind === 'business' ? 'העסק יורד מהאתר ויחזור לסטטוס ממתין לאישור. בקשת התשלום שבתור תבוטל. אישור מחדש יחזיר אותו (ואם עדיין לא שילם, יחכה לתשלום).'
+    : item.kind === 'license' ? 'הרישיון יחזור ללא מאומת. אם זה הרופא האחראי של סניף עם טיפולים רפואיים, העסק יורד מהאתר עד לאישור מחדש.'
+    : 'ההסמכה תחזור ללא מאומתת ולא תוצג בעמוד איש המקצוע.';
+  if (!open) {
+    return (
+      <div className={styles.revise}>
+        <button type="button" className={styles.ghost} onClick={() => setOpen(true)}>שינוי החלטה</button>
+      </div>
+    );
+  }
+  return (
+    <div className={styles.revise} role="group" aria-labelledby={`${id}-t`}>
+      <span id={`${id}-t`} className={styles.reasonsTitle}>ביטול ההחלטה והחזרת הבקשה לתור</span>
+      <p className={styles.footNote}>{effect} לעסק לא נשלחת הודעה.</p>
+      <label htmlFor={`${id}-r`} className={styles.noteLabel}>למה מבטלים (נרשם ביומן)</label>
+      <textarea id={`${id}-r`} className={styles.note} value={reason} onChange={e => setReason(e.target.value)} maxLength={600} placeholder="למשל: אושר בטעות לפני שהתקבל תשלום" />
+      {error && <p className={styles.error} role="alert">{error}</p>}
+      <div className={styles.btns}>
+        <button type="button" className={styles.reject} disabled={pending || !reason.trim()} onClick={() => onRevise(reason.trim())}>{pending ? 'מבטל…' : 'ביטול ההחלטה'}</button>
+        <button type="button" className={styles.cancel} onClick={() => { setOpen(false); setReason(''); }}>סגירה</button>
+      </div>
+    </div>
+  );
+}
+
 // Desktop-first (spec §6 BeautyFind staff). On phones: list → detail with the request id in the URL
 // (?id=, so back returns to the list), a "best on a computer" note, and every decision behind a
 // confirmation sheet opened from the sticky action bar. Staff have no tab bar.
@@ -89,7 +121,8 @@ export function VerificationConsole({ items, who }: { items: QueueItem[]; who: s
   const headingId = useId();
   const noteId = useId();
 
-  const list = items.filter(x => inKind(x.kind, kind) && (status === 'all' || x.status === status));
+  const matches = (x: QueueItem, st: StatusFilter) => st === 'all' || (st === 'awaiting_payment' ? x.pay?.key === 'awaiting' : x.status === st);
+  const list = items.filter(x => inKind(x.kind, kind) && matches(x, status));
   // The request in the URL wins (phones: the detail screen stays on it after a decision).
   const routed = detail.id ? items.find(x => x.id === detail.id) ?? null : null;
   const cur = routed ?? list.find(x => x.id === selId) ?? list[0] ?? null;
@@ -140,7 +173,7 @@ export function VerificationConsole({ items, who }: { items: QueueItem[]; who: s
     const s = next.status ?? status;
     setKind(k);
     setStatus(s);
-    if (routed && !(inKind(routed.kind, k) && (s === 'all' || routed.status === s))) detail.replace(null);
+    if (routed && !(inKind(routed.kind, k) && matches(routed, s))) detail.replace(null);
   }
 
   function openMode(mode: Mode) {
@@ -192,7 +225,7 @@ export function VerificationConsole({ items, who }: { items: QueueItem[]; who: s
 
   const activeIn = (k: KindFilter) => items.filter(x => isActive(x.status) && inKind(x.kind, k)).length;
   const statusCount = (s: StatusFilter) =>
-    s === 'open' || s === 'awaiting_document' ? items.filter(x => x.status === s && inKind(x.kind, kind)).length : null;
+    s === 'open' || s === 'awaiting_document' || s === 'awaiting_payment' ? items.filter(x => matches(x, s) && inKind(x.kind, kind)).length : null;
 
   const reasons = cur && d ? (d.mode === 'reject' ? REJECT_REASONS : DOCUMENT_REASONS)[cur.kind] : [];
   const canSubmit = !!d && (!!d.reason || d.note.trim() !== '');
@@ -282,6 +315,7 @@ export function VerificationConsole({ items, who }: { items: QueueItem[]; who: s
                   </span>
                   <span className={styles.chips}>
                     <span className={styles.chip} data-st={x.status}>{STATUS_NAME[x.status]}</span>
+                    {x.pay && <span className={styles.chip} data-pay={x.pay.tone}>{x.pay.label}</span>}
                     {x.flags.slice(0, 1).map(f => (
                       <span key={f.text} className={styles.flag} data-tone={f.tone} title={f.text}>
                         {f.text}
@@ -328,8 +362,11 @@ export function VerificationConsole({ items, who }: { items: QueueItem[]; who: s
                   {cur.biz ? `${cur.biz} · ` : ''}הוגשה <Segs v={cur.when} />
                 </span>
               </div>
-              <span className={styles.badge} data-st={cur.status}>
-                {STATUS_NAME[cur.status]}
+              <span className={styles.badges}>
+                <span className={styles.badge} data-st={cur.status}>
+                  {STATUS_NAME[cur.status]}
+                </span>
+                {cur.pay && <span className={styles.badge} data-pay={cur.pay.tone}>{cur.pay.label}</span>}
               </span>
             </div>
 
@@ -397,6 +434,8 @@ export function VerificationConsole({ items, who }: { items: QueueItem[]; who: s
                 </p>
               )}
 
+              {cur.revisable && <ReviseBox key={cur.id} item={cur} pending={pending} error={err} onRevise={reason => run('revise', reason)} />}
+
               <div className={styles.log}>
                 <span className={styles.logTitle}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -426,7 +465,7 @@ export function VerificationConsole({ items, who }: { items: QueueItem[]; who: s
                 ) : (
                   <p className={styles.muted}>עדיין לא התקבלו החלטות בבקשה הזו.</p>
                 )}
-                <span className={styles.logNote}>רשומות קבועות: אי אפשר לערוך או למחוק החלטה.</span>
+                <span className={styles.logNote}>רשומות קבועות: אי אפשר למחוק החלטה. ביטול החלטה נרשם כשורה חדשה.</span>
               </div>
             </div>
 

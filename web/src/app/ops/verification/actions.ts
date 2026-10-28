@@ -9,7 +9,7 @@ import type { DecideActionResult } from './shared';
 
 const Input = z.object({
   requestId: z.uuid(),
-  action: z.enum(['approve', 'reject', 'request_document', 'reopen']),
+  action: z.enum(['approve', 'reject', 'request_document', 'reopen', 'revise']),
   reason: z.string().max(600).optional(),
 });
 
@@ -29,6 +29,12 @@ export async function decideAction(input: { requestId: string; action: string; r
       return { ok: false, error: res.error };
     }
     revalidatePath('/ops/verification');
+    // Approving or undoing an approval can put a business on or off the public site.
+    if (action === 'approve' || action === 'revise') {
+      revalidatePath('/');
+      revalidatePath('/search');
+      revalidatePath('/ops/businesses');
+    }
     return { ok: true, status: res.status };
   } catch (e) {
     console.error('[verification] decide failed', e);

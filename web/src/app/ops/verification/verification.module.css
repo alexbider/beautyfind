@@ -169,6 +169,13 @@
 .badge[data-st='approved'] { background: #EAF3EA; color: var(--ok); }
 .chip[data-st='rejected'],
 .badge[data-st='rejected'] { background: #FDEDEC; color: var(--bad); }
+.chip[data-pay='ok'], .badge[data-pay='ok'] { background: #EAF3EA; color: var(--ok); }
+.chip[data-pay='warn'], .badge[data-pay='warn'] { background: #FFF8EC; color: var(--warn); }
+.chip[data-pay='bad'], .badge[data-pay='bad'] { background: #FDEDEC; color: var(--bad); }
+.chip[data-pay='todo'], .badge[data-pay='todo'] { background: #F0F3F5; color: #5B6B7B; }
+.badges { display: inline-flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.revise { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: 1px dashed #E6E6E6; border-radius: 12px; }
+.revise > .ghost { align-self: flex-start; min-height: 40px; }
 
 /* ---------- Detail ---------- */
 

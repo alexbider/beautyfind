@@ -7,9 +7,11 @@ import { messaging } from '../vendors/messaging';
 
 // Verification decisions (03-states.md "Verification request").
 // open → awaiting_document (SLA paused) → open · open → approved | rejected.
+// approved | rejected → open ("revise"): staff undo a decision with a reason. Undoing an approval takes back its
+// effect (the business leaves the site, the license is unchecked); an approved ownership claim cannot be undone here.
 // Every decision is an append-only Decision row; the request status is derived state.
 
-export type VerifyAction = 'approve' | 'reject' | 'request_document' | 'reopen';
+export type VerifyAction = 'approve' | 'reject' | 'request_document' | 'reopen' | 'revise';
 
 export type DecideResult =
   | { ok: true; status: VerificationStatus }
@@ -30,15 +32,22 @@ export async function decide(opts: {
 }): Promise<DecideResult> {
   if (!opts.actor.opsRole || !VERIFIER_ROLES.includes(opts.actor.opsRole)) return { ok: false, error: 'forbidden' };
   const reason = opts.reason?.trim() || null;
-  if ((opts.action === 'reject' || opts.action === 'request_document') && !reason) return { ok: false, error: 'reason_required' };
+  if ((opts.action === 'reject' || opts.action === 'request_document' || opts.action === 'revise') && !reason) return { ok: false, error: 'reason_required' };
 
   const result = await db.$transaction(async tx => {
     const req = await tx.verificationRequest.findUnique({ where: { id: opts.requestId } });
     if (!req) return { ok: false, error: 'not_found' } as const;
-    if (req.status === 'approved' || req.status === 'rejected') return { ok: false, error: 'closed' } as const;
+    const closed = req.status === 'approved' || req.status === 'rejected';
+    if (closed !== (opts.action === 'revise')) return { ok: false, error: closed ? 'closed' : 'invalid' } as const;
 
     let status: VerificationStatus;
     switch (opts.action) {
+      case 'revise': {
+        const effect = req.status === 'approved' ? await onRevokeApproval(tx, req) : null;
+        if (effect) return { ok: false, error: effect } as const;
+        status = 'open';
+        break;
+      }
       case 'request_document':
         status = 'awaiting_document';
         break;
@@ -203,6 +212,40 @@ async function onApprove(tx: Tx, req: Req): Promise<'license_pending' | 'already
       return null;
     }
   }
+}
+
+/** Takes back what an approval did. The request goes back to the queue; approving again redoes it. */
+async function onRevokeApproval(tx: Tx, req: Req): Promise<'invalid' | null> {
+  const sub = obj(req.submitted);
+  switch (req.kind) {
+    case 'claim':
+      // Ownership was transferred and the claimant's details written to the listing: not reversible from here.
+      return 'invalid';
+    case 'business': {
+      if (!req.businessId) return 'invalid';
+      const cur = await tx.business.findUnique({ where: { id: req.businessId }, select: { settings: true } });
+      const st = obj(cur?.settings ?? null);
+      const { awaitingPayment: _a, awaitingPaymentSince: _b, ...rest } = st;
+      await tx.business.update({ where: { id: req.businessId }, data: { status: 'pending', settings: rest as Prisma.InputJsonValue } });
+      await tx.scheduledMessage.updateMany({ where: { key: { startsWith: `ACT:${req.businessId}:` }, status: 'pending' }, data: { status: 'cancelled', note: 'האישור בוטל' } });
+      return null;
+    }
+    case 'license':
+    case 'cert': {
+      const licenseId = str(sub.licenseId);
+      if (!licenseId) return 'invalid';
+      await tx.license.update({ where: { id: licenseId }, data: { status: 'pending', verifiedAt: null } });
+      // A listing with medical treatments needs a verified doctor: if this was its doctor's license, it leaves the site.
+      if (req.kind === 'license' && req.businessId) {
+        const medical = await tx.branch.count({
+          where: { businessId: req.businessId, medicalResponsible: { license: { id: licenseId } }, categories: { some: { category: { isMedical: true } } } },
+        });
+        if (medical) await tx.business.updateMany({ where: { id: req.businessId, status: { in: ['live', 'hidden', 'past_due'] } }, data: { status: 'pending' } });
+      }
+      return null;
+    }
+  }
+  return null;
 }
 
 async function onReject(tx: Tx, req: Req) {

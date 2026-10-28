@@ -80,8 +80,23 @@ const REQ_STATUS: Record<Status, string> = { open: 'ממתין', awaiting_docume
 const PLAN_NAME: Record<string, string> = { basic: 'רישום בסיסי', advanced: 'רישום מתקדם + CRM' };
 const CLAIM_METHOD: Record<string, string> = { sms: 'קוד ב־SMS למספר הרשום', call: 'שיחה קולית למספר הרשום', mail: 'קוד לדואר האלקטרוני הרשום' };
 const ACTION_NAME: Record<string, string> = {
-  approve: 'אושר', reject: 'נדחה', request_document: 'נשלחה בקשה למסמך', reopen: 'הוחזר לתור',
+  approve: 'אושר', reject: 'נדחה', request_document: 'נשלחה בקשה למסמך', reopen: 'הוחזר לתור', revise: 'ההחלטה בוטלה, הבקשה חזרה לתור',
 };
+
+/** Where the business stands after verification: on the site, waiting for its first payment, in debt or hidden. */
+type BizForPay = { status: string; settings: Prisma.JsonValue; subscription: { status: string; stripeSubscriptionId: string | null; cardLast4: string | null } | null };
+export function payState(b: BizForPay): QueueItem['pay'] {
+  const awaiting = obj(b.settings).awaitingPayment === true;
+  const sub = b.subscription;
+  if (awaiting) return { key: 'awaiting', label: 'ממתין לתשלום', tone: 'warn', text: 'מוסתר מהאתר עד התשלום הראשון. נשלחה לבעלים בקשת תשלום, והעסק יעלה לאוויר לבד כשהחיוב יעבור.' };
+  if (b.status === 'pending') return { key: 'pending', label: 'לא באוויר', tone: 'todo', text: 'העסק ממתין לאישור ולא מופיע באתר.' };
+  if (sub?.status === 'past_due' || b.status === 'past_due') return { key: 'debt', label: 'חוב פתוח', tone: 'bad', text: 'החיוב האחרון נכשל. Stripe מנסה שוב, והפרופיל עדיין באוויר.' };
+  if (sub?.status === 'hidden') return { key: 'debt', label: 'מוסתר בגלל חוב', tone: 'bad', text: 'הפרופיל הוסתר כי החוב לא הוסדר. יחזור לאוויר עם התשלום.' };
+  if (b.status === 'hidden') return { key: 'hidden', label: 'מוסתר', tone: 'warn', text: 'העסק הוסתר ידנית מהאתר.' };
+  if (b.status === 'live' && sub?.stripeSubscriptionId && sub.status === 'active') return { key: 'paid', label: 'שולם · באוויר', tone: 'ok', text: `באוויר ומחויב בקביעות${sub.cardLast4 ? ` (כרטיס ·${sub.cardLast4})` : ''}.` };
+  if (b.status === 'live') return { key: 'unpaid_live', label: 'באוויר בלי תשלום', tone: 'bad', text: 'העסק באוויר אבל אין מנוי פעיל ב־Stripe. אפשר להסתיר עד תשלום מכרטיס העסק.' };
+  return null;
+}
 const SHORT_DAYS = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'שבת'];
 
 const catNames = (v: unknown) =>
@@ -132,7 +147,7 @@ export async function loadQueue(now = new Date()): Promise<QueueItem[]> {
   const docIds = [...new Set(reqs.map(r => str(obj(r.submitted).document)).filter((x): x is string => !!x && UUID_RE.test(x)))];
 
   const [businesses, branches, licenses, docs, decisions, related] = await Promise.all([
-    db.business.findMany({ where: { id: { in: businessIds } }, include: { owner: { select: { id: true, fullName: true, email: true } } } }),
+    db.business.findMany({ where: { id: { in: businessIds } }, include: { owner: { select: { id: true, fullName: true, email: true } }, subscription: { select: { status: true, stripeSubscriptionId: true, cardLast4: true } } } }),
     db.branch.findMany({
       where: { id: { in: branchIds } },
       include: { medicalResponsible: { include: { license: true } } },
@@ -253,6 +268,8 @@ export async function loadQueue(now = new Date()): Promise<QueueItem[]> {
     if (business) {
       const [bs, bt] = BIZ_STATUS[business.status] ?? [business.status, 'todo' as Tone];
       push(context, 'סטטוס העסק', bs, { tone: bt });
+      const ps = payState(business);
+      if (ps) push(context, 'תשלום', ps.text, { tone: ps.tone });
       const owner = business.owner;
       const ownerIsOther = !!owner && owner.id !== r.submittedById;
       push(
@@ -349,7 +366,9 @@ export async function loadQueue(now = new Date()): Promise<QueueItem[]> {
           kind === 'license' ? (license?.kind === 'nurse' ? 'בדיקה חוזרת אוטומטית כל 90 יום.' : 'השם יופיע בפרופיל כאחריות רפואית. בדיקה חוזרת אוטומטית כל 90 יום.')
           : kind === 'cert' ? 'ההסמכה תוצג בעמוד איש המקצוע.'
           : kind === 'claim' ? 'הבעלות הועברה והפרטים שהוגשו עודכנו בכרטיס.'
-          : 'העסק והסניפים שלו עלו לאוויר.';
+          : business && obj(business.settings).awaitingPayment === true ? 'העסק אושר וממתין לתשלום הראשון. הוא יעלה לאוויר לבד כשהחיוב יעבור.'
+          : business?.status === 'live' ? 'העסק והסניפים שלו באוויר.'
+          : 'העסק אושר.';
         outcome = [{ t: `אושר ${by} · ` }, at, { t: `. ${tail}` }];
       } else if (outcomeAction === 'reject') {
         const tail = !last.actorId && kind === 'claim' ? 'בקשת בעלות אחרת על העסק אושרה.' : 'העסק קיבל הסבר ואפשרות להגיש מחדש.';
@@ -365,6 +384,8 @@ export async function loadQueue(now = new Date()): Promise<QueueItem[]> {
       id: r.id, ref: r.ref, kind, status, what, who, biz, when,
       sla: s.sla, slaUrgent: s.urgent, flags,
       submitted, context, source, doc, checks, outcome, log,
+      pay: business && status === 'approved' && (kind === 'business' || kind === 'license' || kind === 'cert') ? payState(business) : null,
+      revisable: status === 'rejected' || (status === 'approved' && kind !== 'claim'),
     };
     return { item, due: r.slaDueAt?.getTime() ?? Infinity, created: r.createdAt.getTime(), updated: r.updatedAt.getTime() };
   });

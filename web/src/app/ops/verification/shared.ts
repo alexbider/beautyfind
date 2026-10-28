@@ -4,7 +4,7 @@
 export type Kind = 'business' | 'license' | 'cert' | 'claim';
 export type Status = 'open' | 'awaiting_document' | 'approved' | 'rejected';
 export type Tone = 'ok' | 'warn' | 'bad' | 'todo';
-export type Action = 'approve' | 'reject' | 'request_document' | 'reopen';
+export type Action = 'approve' | 'reject' | 'request_document' | 'reopen' | 'revise';
 
 /** A run of text; `ltr` runs are refs, numbers, phones, emails and dates inside Hebrew. */
 export type Seg = { t: string; ltr?: boolean };
@@ -31,6 +31,10 @@ export type QueueItem = {
   checks: Array<{ tone: Tone; text: string }>;
   outcome: Seg[] | null;
   log: LogEntry[];
+  /** For approved business and license requests: where the business stands now (site, payment). */
+  pay: { key: 'awaiting' | 'pending' | 'debt' | 'hidden' | 'paid' | 'unpaid_live'; label: string; tone: Tone; text: string } | null;
+  /** A decided request whose decision staff can undo. */
+  revisable: boolean;
 };
 
 export type DecideActionResult =
@@ -50,6 +54,7 @@ export const STATUS_FILTERS = [
   { key: 'open', name: 'פתוחות' },
   { key: 'awaiting_document', name: 'ממתינות למסמך' },
   { key: 'approved', name: 'אושרו' },
+  { key: 'awaiting_payment', name: 'ממתינים לתשלום' },
   { key: 'rejected', name: 'נדחו' },
 ] as const;
 export type StatusFilter = (typeof STATUS_FILTERS)[number]['key'];
@@ -91,11 +96,13 @@ export const TOAST: Record<Action, string> = {
   request_document: 'הבקשה נשלחה לעסק במייל',
   reject: 'נדחה · הסבר נשלח לעסק',
   reopen: 'הבקשה חזרה לתור · שעון ה־SLA חודש',
+  revise: 'ההחלטה בוטלה · הבקשה חזרה לתור',
 };
 
 export function errorText(r: Extract<DecideActionResult, { ok: false }>, action: Action): string {
   switch (r.error) {
     case 'reason_required':
+      if (action === 'revise') return 'יש לכתוב למה ההחלטה מבוטלת. הסיבה נרשמת ביומן.';
       return action === 'request_document'
         ? 'יש לבחור איזה מסמך לבקש או לכתוב אותו. הבקשה תישלח לעסק.'
         : 'יש לבחור סיבה או לכתוב אותה. היא תישלח לעסק.';
@@ -110,6 +117,7 @@ export function errorText(r: Extract<DecideActionResult, { ok: false }>, action:
     case 'forbidden':
       return 'אין לך הרשאה לקבל החלטות אימות.';
     case 'invalid':
+      if (action === 'revise') return 'אי אפשר לבטל מכאן אישור בעלות: הבעלות כבר הועברה. אפשר לשנות בעלים מכרטיס העסק.';
       return action === 'reopen'
         ? 'אפשר להחזיר לתור רק בקשה שממתינה למסמך.'
         : 'בבקשה חסרים נתונים הדרושים לאישור (רישיון או סניף). אי אפשר לאשר אותה מכאן.';
