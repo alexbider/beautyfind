@@ -11,6 +11,8 @@ import { fromAddress } from '@/lib/vendors/resend';
 // /ops/emails: mark replies handled, run the Resend tracking setup, and set where replies are forwarded.
 
 type Result = { ok: true } | { ok: false; error: string };
+/** audit_logs.subject_id is a uuid; platform-wide settings use the nil uuid. */
+const PLATFORM_SUBJECT = '00000000-0000-0000-0000-000000000000';
 
 export async function setReplyStatusAction(input: { id: string; status: 'new' | 'handled' }): Promise<Result> {
   const user = await areaUserOrNull('emails', 'edit');
@@ -33,7 +35,7 @@ export async function runTrackingSetupAction(): Promise<SetupResult> {
   const r = await setupEmailTracking(user.id);
   // DNS records are public values (no secrets); logged so the team can add them from the deployment logs too.
   console.info(`[email-setup] ${JSON.stringify({ ok: r.ok, error: r.error ?? null, steps: r.steps, dns: r.dns })}`);
-  await db.auditLog.create({ data: { actorId: user.id, action: 'email_tracking_setup', subjectType: 'platform', subjectId: 'email', meta: { ok: r.ok, steps: r.steps.map(s => `${s.key}:${s.ok}`) } } });
+  await db.auditLog.create({ data: { actorId: user.id, action: 'email_tracking_setup', subjectType: 'platform', subjectId: PLATFORM_SUBJECT, meta: { ok: r.ok, steps: r.steps.map(s => `${s.key}:${s.ok}`) } } }).catch(e => console.error('[email-setup] audit', e));
   revalidatePath('/ops/emails');
   return r;
 }
@@ -48,7 +50,7 @@ export async function saveReplySettingsAction(input: { forwardTo: string; replyD
   if (replyDomain && fromAddress(forwardTo)!.endsWith(`@${replyDomain}`)) return { ok: false, error: 'כתובת ההעברה לא יכולה להיות על דומיין התשובות' };
   const cur = await platformSettings();
   await savePlatformSettings(user.id, { email: { ...cur.email, forwardTo, replyDomain } });
-  await db.auditLog.create({ data: { actorId: user.id, action: 'email_reply_settings', subjectType: 'platform', subjectId: 'email', meta: { forwardTo, replyDomain } } });
+  await db.auditLog.create({ data: { actorId: user.id, action: 'email_reply_settings', subjectType: 'platform', subjectId: PLATFORM_SUBJECT, meta: { forwardTo, replyDomain } } }).catch(e => console.error('[email-settings] audit', e));
   revalidatePath('/ops/emails');
   return { ok: true };
 }

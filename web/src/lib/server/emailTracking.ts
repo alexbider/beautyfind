@@ -220,16 +220,35 @@ export async function setupEmailTracking(actorId: string): Promise<SetupResult> 
       steps.push({ key: 'webhook', label: 'Webhook', ok: false, note: 'כתובת האתר אינה https ציבורית' });
     } else {
       const hooks = await resendWebhooks(cfg);
-      const hook = hooks.find(h => h.endpoint.replace(/\/+$/, '') === url);
+      const norm = (e: string) => e.replace(/\/+$/, '');
+      // Other webhooks for this site (www, an old host): they would double-count every open. Their secret is not the
+      // stored one either, so their requests are refused anyway.
+      const ours = (e: string) => { try { const u = new URL(e); return u.pathname.replace(/\/+$/, '') === '/api/resend/webhook' && (u.hostname === zone || u.hostname.endsWith(`.${zone}`)); } catch { return false; } };
+      let hook = hooks.find(h => norm(h.endpoint) === url);
+      let note: string | undefined;
+      if (!hook) {
+        // An existing webhook on another host of ours: move it here and keep its secret.
+        const variant = hooks.find(h => ours(h.endpoint) && h.status === 'enabled');
+        if (variant) {
+          await resendUpdateWebhook(cfg, variant.id, { endpoint: url, events: [...new Set([...variant.events, ...WEBHOOK_EVENTS])], status: 'enabled' });
+          hook = { ...variant, endpoint: url, events: WEBHOOK_EVENTS, status: 'enabled' };
+          note = `הכתובת עודכנה ל־${url}`;
+        }
+      }
       if (hook) {
-        const missing = WEBHOOK_EVENTS.filter(x => !hook.events.includes(x));
+        const missing = WEBHOOK_EVENTS.filter(x => !hook!.events.includes(x));
         if (missing.length || hook.status !== 'enabled') await resendUpdateWebhook(cfg, hook.id, { endpoint: hook.endpoint, events: [...new Set([...hook.events, ...WEBHOOK_EVENTS])], status: 'enabled' });
-        steps.push({ key: 'webhook', label: 'Webhook לכל האירועים', ok: true, note: missing.length ? `נוספו: ${missing.join(', ')}` : undefined });
+        if (missing.length) note = `נוספו: ${missing.join(', ')}`;
       } else {
         const created = await resendCreateWebhook(cfg, { endpoint: url, events: WEBHOOK_EVENTS });
         if (created.secret) await saveResendWebhookSecret(created.secret, actorId);
-        steps.push({ key: 'webhook', label: 'Webhook לכל האירועים', ok: !!created.secret, note: created.secret ? 'נוצר והסוד נשמר' : 'נוצר, אבל Resend לא החזיר סוד. העתיקו אותו מ־Resend' });
+        hook = { id: created.id, endpoint: url, events: WEBHOOK_EVENTS, status: 'enabled' };
+        note = created.secret ? 'נוצר והסוד נשמר' : 'נוצר, אבל Resend לא החזיר סוד. העתיקו אותו מ־Resend';
       }
+      const dupes = hooks.filter(h => h.id !== hook!.id && ours(h.endpoint) && h.status === 'enabled');
+      for (const d of dupes) await resendUpdateWebhook(cfg, d.id, { endpoint: d.endpoint, events: d.events, status: 'disabled' });
+      if (dupes.length) note = `${note ? `${note}. ` : ''}הושבתו ${dupes.length} webhooks כפולים (${dupes.map(d => d.endpoint).join(', ')})`;
+      steps.push({ key: 'webhook', label: 'Webhook לכל האירועים', ok: true, note });
     }
 
     // 4. Use the reply domain for new emails once Resend can receive on it.
