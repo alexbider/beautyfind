@@ -13,6 +13,7 @@ import { messaggioStatus } from '@/lib/server/messaggio';
 import { twilioStatus } from '@/lib/server/twilio';
 import { emailStatus } from '@/lib/server/email';
 import { EmailHookForm, EmailKeyForm, EmailSenderForm, EmailTestForm, EmailToggle } from './EmailControls';
+import { WhatsAppSenderForm, WhatsAppTemplatesSync, WhatsAppTestForm, WhatsAppToggles } from './WhatsAppControls';
 import { TwilioCredsForm, TwilioSenderForm, TwilioTestForm, TwilioSetupCheck, TwilioToggle, TwilioVoiceForm } from './TwilioControls';
 
 export const metadata: Metadata = { title: 'הודעות ותבניות · ניהול', robots: { index: false, follow: false } };
@@ -20,9 +21,12 @@ export const dynamic = 'force-dynamic';
 // Sending every template as a test (EmailTestForm) takes about 40 seconds.
 export const maxDuration = 90;
 
+const WA_STATUS: Record<string, string> = { approved: 'מאושרת', pending: 'ממתינה לאישור', received: 'ממתינה לאישור', rejected: 'נדחתה', paused: 'מושהית', disabled: 'מושבתת', missing: 'עוד לא נוצרה', unsubmitted: 'לא נשלחה' };
+
 export default async function MessagesPage() {
   const user = await requireArea('messages', 'view', '/ops/messages');
-  const [level, s, consents, optedOut, otp30, mg, sends, tw, em] = await Promise.all([
+  const { whatsappStatusSummary, whatsappTemplates } = await import('@/lib/server/whatsapp');
+  const [level, s, consents, optedOut, otp30, mg, sends, tw, em, wa, waTemplates] = await Promise.all([
     areaLevel(user, 'messages'),
     platformSettings(),
     db.messageConsent.groupBy({ by: ['channel'], where: { marketing: true }, _count: true }),
@@ -32,6 +36,8 @@ export default async function MessagesPage() {
     db.messageSend.findMany({ orderBy: { createdAt: 'desc' }, take: 20 }),
     twilioStatus(),
     emailStatus(),
+    whatsappStatusSummary(),
+    whatsappTemplates(),
   ]);
   const mgLive = mg.configured && mg.settings.enabled;
   const canEdit = atLeast(level, 'edit');
@@ -45,7 +51,7 @@ export default async function MessagesPage() {
       <Kpis items={[
         { label: 'קודי אימות', value: tw.ready || mgLive ? [tw.ready ? 'Twilio' : null, mgLive && mg.settings.whatsapp && mg.settings.whatsappSender ? 'Messaggio' : null].filter(Boolean).join(' + ') || 'Messaggio' : 'לא מחובר', note: tw.ready || mgLive ? `SMS: ${tw.ready ? 'Twilio' : mgLive && mg.settings.sms ? 'Messaggio' : '—'} · WhatsApp: ${mgLive && mg.settings.whatsapp && mg.settings.whatsappSender ? 'Messaggio' : 'עובר ל־SMS'} · ${int(tw.sent24h + mg.sent24h)} נשלחו ב־24 שעות` : 'הקודים נרשמים ללוג בלבד עד שמחברים ספק', tone: tw.ready || mgLive ? (tw.failed24h + mg.failed24h ? 'warn' : 'ok') : 'bad' },
         { label: 'אימייל', value: em.ready ? 'Resend' : 'לא מחובר', note: em.ready ? `${int(em.sent24h)} נשלחו ב־24 שעות${em.hookConfigured ? ` · ${int(em.delivered24h)} נמסרו${em.bounced24h ? ` · ${int(em.bounced24h)} חזרו` : ''}` : ''}${em.failed24h ? ` · ${int(em.failed24h)} נכשלו` : ''}` : 'אימיילים נרשמים ללוג בלבד עד שמחברים את Resend', tone: em.ready ? (em.failed24h ? 'warn' : 'ok') : 'bad' },
-        { label: 'הודעות שירות (תורים)', value: tw.ready ? 'SMS דרך Twilio' : adapter === 'console' ? 'לא מחובר' : adapter, note: tw.ready ? 'אישורים, ביטולים והצעות מרשימת המתנה נשלחים ב־SMS עד שתבניות WhatsApp יאושרו' : 'נרשמות ללוג בלבד', tone: tw.ready ? 'ok' : 'warn' },
+        { label: 'הודעות שירות (תורים)', value: wa.ready && wa.approved ? (tw.ready ? 'WhatsApp + SMS' : 'WhatsApp') : tw.ready ? 'SMS דרך Twilio' : adapter === 'console' ? 'לא מחובר' : adapter, note: wa.ready ? `WhatsApp: ${int(wa.approved)} מתוך ${int(wa.total)} תבניות מאושרות · ${int(wa.sent24h)} נשלחו, ${int(wa.read24h)} נקראו, ${int(wa.fallback24h)} עברו ל־SMS ב־24 שעות` : tw.ready ? 'אישורים, ביטולים והצעות מרשימת המתנה נשלחים ב־SMS עד ש־WhatsApp יחובר' : 'נרשמות ללוג בלבד', tone: tw.ready || wa.ready ? 'ok' : 'warn' },
         { label: 'תבניות פעילות בקוד', value: `${int(live)} / ${int(TEMPLATES.length)}`, note: 'נשלחות לפי מזהה תבנית' },
         { label: 'הסכמות שיווק', value: int(consents.reduce((a, x) => a + x._count, 0)), note: `WhatsApp ${int(c('wa'))} · אימייל ${int(c('email'))} · SMS ${int(c('sms'))} · ${int(optedOut)} הסרות · ${int(otp30)} קודים ב־30 יום` },
       ]} />
@@ -83,6 +89,41 @@ export default async function MessagesPage() {
       <Card title="Twilio · שיחה קולית לאימות בעלות">
         <TwilioVoiceForm voiceFrom={tw.settings.voiceFrom} voice={tw.settings.voice} effectiveFrom={tw.voiceFrom} configured={tw.configured} canEdit={canEdit} />
       </Card>
+      <Card title="Twilio · WhatsApp להודעות שירות">
+        <p className={ui.note} style={{ marginBottom: 14 }}>
+          {wa.ready ? <Chip tone="ok">פעיל</Chip> : <Chip tone="warn">כבוי</Chip>}{' '}
+          {wa.ready
+            ? `הודעות שירות עם תבנית מאושרת יוצאות ב־WhatsApp מ־${wa.from}. ${int(wa.approved)} מתוך ${int(wa.total)} תבניות מאושרות.`
+            : 'שלושה צעדים: רושמים מספר WhatsApp ב־Twilio Console (Messaging, Senders, WhatsApp senders), בוחרים אותו כאן, ושולחים את התבניות לאישור של Meta. כשיש תבנית מאושרת, מפעילים.'}
+        </p>
+        <div className={ui.split}>
+          <div className={ui.stack}>
+            <WhatsAppSenderForm from={s.twilio.whatsappFrom} canEdit={canEdit} />
+            <WhatsAppToggles enabled={s.twilio.whatsappEnabled} forSms={s.twilio.whatsappForSms} canEdit={canEdit} />
+          </div>
+          <div className={ui.stack}>
+            <p className={ui.note}>כל הודעה שהמערכת שולחת הופכת לתבנית אחת ב־Twilio (בעברית, קטגוריית Utility), עם המשתנים במקום הפרטים. Meta מאשרת בדרך כלל תוך דקות עד יום. הודעה שלא תואמת תבנית מאושרת יוצאת ב־SMS.</p>
+            <WhatsAppTemplatesSync canEdit={canEdit} hasCreds={tw.configured} />
+            <WhatsAppTestForm templates={waTemplates.filter(t => t.status === 'approved').map(t => ({ id: t.id, label: t.label }))} canEdit={canEdit} />
+          </div>
+        </div>
+        <div className={ui.tableWrap} style={{ marginTop: 14 }}>
+          <table className={ui.table}>
+            <thead><tr><th>הודעה</th><th>תבנית</th><th>מצב</th><th>טקסט</th></tr></thead>
+            <tbody>
+              {waTemplates.map(t => (
+                <tr key={t.id}>
+                  <td>{t.label}<div className={ui.note}><span className="ltr">{t.id}</span></div></td>
+                  <td className="ltr">{t.name ?? '—'}</td>
+                  <td><Chip tone={t.status === 'approved' ? 'ok' : t.status === 'rejected' ? 'bad' : t.status === 'missing' ? 'neutral' : 'warn'}>{WA_STATUS[t.status] ?? t.status}</Chip>{t.reason ? <div className={ui.note}>{t.reason}</div> : null}</td>
+                  <td style={{ whiteSpace: 'pre-wrap', maxWidth: 420 }} dir="rtl" className={ui.note}>{t.body}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
       <Card title="Messaggio · קודי אימות ב־WhatsApp">
         <p className={ui.note} style={{ marginBottom: 14 }}>{mgLive ? <Chip tone="ok">פעיל</Chip> : <Chip tone="warn">כבוי</Chip>} {mgLive ? 'קודים ב־WhatsApp נשלחים דרך Messaggio. קודים ב־SMS עוברים דרך Twilio כשהוא פעיל, ורק אחרת דרך Messaggio.' : 'כבוי: קודים ב־WhatsApp נשלחים ב־SMS (דרך Twilio כשהוא פעיל). הזינו מפתח, שלחו בדיקה והפעילו.'}</p>
         <div className={ui.grid2}>

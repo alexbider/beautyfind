@@ -75,6 +75,21 @@ export const PlatformSettingsSchema = z.object({
     // voice; empty means `from` when that is a phone number. The voice is a Twilio text-to-speech voice for Hebrew.
     voiceFrom: z.string().trim().max(20).default(''),
     voice: z.string().trim().max(60).default('Google.he-IL-Standard-A'),
+    // WhatsApp through the same Twilio account (src/lib/server/whatsapp.ts): service notices go as approved Content
+    // templates from this sender, and fall back to SMS when WhatsApp cannot deliver. `whatsappForSms` also sends
+    // notices asked as SMS by WhatsApp first (cheaper in Israel); verification codes keep their own route.
+    whatsappEnabled: z.boolean().default(false),
+    whatsappFrom: z.string().trim().max(20).default(''),
+    whatsappForSms: z.boolean().default(true),
+    // template id → the Twilio Content template made for it and its WhatsApp approval state.
+    whatsappTemplates: z.record(z.string().max(60), z.object({
+      sid: z.string().max(40),
+      name: z.string().max(80),
+      vars: z.array(z.string().max(40)).max(20),
+      skeleton: z.string().max(2000),
+      status: z.string().max(30).default('unsubmitted'),
+      reason: z.string().max(300).optional(),
+    })).default({}),
   }).prefault({}),
   // Email (/ops/messages): every email goes through Resend (src/lib/vendors/resend.ts) when this is on and an API key is
   // stored. The key is a secret (platform_secrets or RESEND_API_KEY). The from address must be on a domain verified in Resend.

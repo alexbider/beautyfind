@@ -164,3 +164,78 @@ export function validTwilioSignature(authToken: string, url: string, params: Rec
   const got = Buffer.from(given);
   return want.length === got.length && timingSafeEqual(want, got);
 }
+
+// ---------- WhatsApp (same account) ----------
+// Send: the Messages endpoint with From=whatsapp:+972…, To=whatsapp:+972…, ContentSid (an approved Content template,
+// HX…) and ContentVariables (JSON {"1": "…"}). Delivery reports arrive on the same StatusCallback, with "read".
+// Templates: Content API at content.twilio.com. POST /v1/Content creates one, POST /v1/Content/{sid}/ApprovalRequests/whatsapp
+// submits it to Meta ({ name, category }), GET /v1/Content/{sid}/ApprovalRequests reads the result.
+// Senders: GET messaging.twilio.com/v2/Channels/Senders?Channel=whatsapp lists the account's WhatsApp numbers.
+
+export const CONTENT_BASE = 'https://content.twilio.com';
+export const MESSAGING_BASE = 'https://messaging.twilio.com';
+
+async function twilioJson(c: TwilioConfig, url: string, init: RequestInit = {}): Promise<Record<string, unknown>> {
+  const r = await fetch(url, {
+    ...init,
+    headers: { authorization: auth(c), accept: 'application/json', ...(init.body ? { 'content-type': 'application/json' } : {}), ...(init.headers ?? {}) },
+    signal: AbortSignal.timeout(15_000),
+  }).catch(e => { throw new TwilioError(`network: ${e instanceof Error ? e.message : String(e)}`, 0); });
+  const j = await parse(r);
+  if (!r.ok) fail(r, j);
+  return j;
+}
+
+const contentBase = (c: TwilioConfig) => (c.baseUrl ?? CONTENT_BASE).replace(/\/+$/, '');
+const messagingBase = (c: TwilioConfig) => (c.baseUrl ?? MESSAGING_BASE).replace(/\/+$/, '');
+
+/** Sends one WhatsApp template message. Returns the message SID; throws TwilioError. */
+export async function twilioSendWhatsApp(c: TwilioConfig, from: string, to: string, contentSid: string, variables: Record<string, string>): Promise<{ id: string; status: string | null }> {
+  if (!isPhone(to)) throw new TwilioError('invalid phone number', 400);
+  if (!isPhone(from)) throw new TwilioError('no WhatsApp sender configured', 400);
+  const f = new URLSearchParams({ To: `whatsapp:${to}`, From: `whatsapp:${from}`, ContentSid: contentSid, ContentVariables: JSON.stringify(variables) });
+  if (c.statusCallback) f.set('StatusCallback', c.statusCallback);
+  const r = await fetch(`${base(c)}/2010-04-01/Accounts/${encodeURIComponent(c.accountSid)}/Messages.json`, {
+    method: 'POST',
+    headers: { authorization: auth(c), 'content-type': 'application/x-www-form-urlencoded', accept: 'application/json' },
+    body: f,
+    signal: AbortSignal.timeout(15_000),
+  }).catch(e => { throw new TwilioError(`network: ${e instanceof Error ? e.message : String(e)}`, 0); });
+  const j = await parse(r);
+  if (!r.ok) fail(r, j);
+  return { id: typeof j.sid === 'string' ? j.sid : 'accepted', status: typeof j.status === 'string' ? j.status : null };
+}
+
+/** Creates a twilio/text Content template ({{1}} style variables, with sample values). Returns its HX SID. */
+export async function twilioCreateContent(c: TwilioConfig, t: { friendlyName: string; language: string; body: string; samples: Record<string, string> }): Promise<string> {
+  const j = await twilioJson(c, `${contentBase(c)}/v1/Content`, {
+    method: 'POST',
+    body: JSON.stringify({ friendly_name: t.friendlyName, language: t.language, variables: t.samples, types: { 'twilio/text': { body: t.body } } }),
+  });
+  if (typeof j.sid !== 'string') throw new TwilioError('no content sid returned', 500);
+  return j.sid;
+}
+
+/** Submits a Content template to Meta for WhatsApp approval. */
+export async function twilioSubmitWhatsApp(c: TwilioConfig, sid: string, name: string, category: 'UTILITY' | 'MARKETING' | 'AUTHENTICATION'): Promise<{ status: string }> {
+  const j = await twilioJson(c, `${contentBase(c)}/v1/Content/${encodeURIComponent(sid)}/ApprovalRequests/whatsapp`, { method: 'POST', body: JSON.stringify({ name, category }) });
+  return { status: typeof j.status === 'string' ? j.status : 'received' };
+}
+
+/** The WhatsApp approval state of a Content template: approved, pending, received, rejected, paused, disabled or unsubmitted. */
+export async function twilioWhatsAppApproval(c: TwilioConfig, sid: string): Promise<{ status: string; reason: string | null }> {
+  const j = await twilioJson(c, `${contentBase(c)}/v1/Content/${encodeURIComponent(sid)}/ApprovalRequests`);
+  const w = (j.whatsapp && typeof j.whatsapp === 'object' ? j.whatsapp : j) as Record<string, unknown>;
+  const reason = typeof w.rejection_reason === 'string' && w.rejection_reason ? w.rejection_reason : null;
+  return { status: typeof w.status === 'string' && w.status ? w.status.toLowerCase() : 'unsubmitted', reason };
+}
+
+/** The account's WhatsApp senders (E.164 number and status, e.g. ONLINE). */
+export async function twilioWhatsAppSenders(c: TwilioConfig): Promise<Array<{ phone: string; status: string; name: string | null }>> {
+  const j = await twilioJson(c, `${messagingBase(c)}/v2/Channels/Senders?Channel=whatsapp&PageSize=50`);
+  const list = Array.isArray(j.senders) ? (j.senders as Array<Record<string, unknown>>) : [];
+  return list.map(s => {
+    const profile = (s.profile && typeof s.profile === 'object' ? s.profile : {}) as Record<string, unknown>;
+    return { phone: String(s.sender_id ?? '').replace(/^whatsapp:/, ''), status: String(s.status ?? ''), name: typeof profile.name === 'string' ? profile.name : null };
+  }).filter(s => isPhone(s.phone));
+}

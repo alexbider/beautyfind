@@ -1908,6 +1908,9 @@ model MessageSend {
   deliveryStatus String?   @map("delivery_status")
   deliveryError  String?   @map("delivery_error")
   deliveredAt    DateTime? @map("delivered_at")
+  /// WhatsApp only: the SMS to send instead if WhatsApp cannot deliver (number and text, sealed with DATA_KEY).
+  /// Cleared on the first final status, so it never outlives the delivery report.
+  fallbackEnc    String?   @map("fallback_enc")
 
   // Email monitoring (/ops/emails). Who the email went to, resolved at send time from the address: a business
   // (owner, staff, branch or marketing contact), a client, BeautyFind staff, or unknown. The address itself stays masked.

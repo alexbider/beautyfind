@@ -132,7 +132,7 @@ describe('twilio: verification codes through sendOtp', { skip }, () => {
     userId = u.id;
     const cur = await settings.platformSettings();
     saved = { twilio: cur.twilio, messaggio: cur.messaggio };
-    await settings.savePlatformSettings(userId, { messaggio: { ...cur.messaggio, enabled: false }, twilio: { enabled: false, from: '', messagingServiceSid: '', voiceFrom: '', voice: 'Google.he-IL-Standard-A' } });
+    await settings.savePlatformSettings(userId, { messaggio: { ...cur.messaggio, enabled: false }, twilio: { enabled: false, from: '', messagingServiceSid: '', voiceFrom: '', voice: 'Google.he-IL-Standard-A', whatsappEnabled: false, whatsappFrom: '', whatsappForSms: true, whatsappTemplates: {} } });
     await db.platformSecret.deleteMany({ where: { key: { in: ['twilio_credentials', 'messaggio_login'] } } });
     await db.messageSend.deleteMany({});
   });
@@ -169,7 +169,7 @@ describe('twilio: verification codes through sendOtp', { skip }, () => {
 
   it('an SMS code goes to Twilio with basic auth, the sender, the code and the status callback; logged masked', async () => {
     process.env.SITE_URL = 'https://beautyfind.example';
-    await settings.savePlatformSettings(userId, { twilio: { enabled: true, from: 'BeautyFind', messagingServiceSid: '', voiceFrom: '', voice: 'Google.he-IL-Standard-A' } });
+    await settings.savePlatformSettings(userId, { twilio: { enabled: true, from: 'BeautyFind', messagingServiceSid: '', voiceFrom: '', voice: 'Google.he-IL-Standard-A', whatsappEnabled: false, whatsappFrom: '', whatsappForSms: true, whatsappTemplates: {} } });
     const r = await otp.sendOtp({ target: phone(2), channel: 'sms', purpose: 'signup' });
     assert.equal(r.ok, true);
     assert.equal(mock.sms.length, 1);
@@ -305,7 +305,7 @@ describe('twilio: verification codes through sendOtp', { skip }, () => {
   });
 
   it('the admin test SMS works with the switch off; a rejected token is reported', async () => {
-    await settings.savePlatformSettings(userId, { twilio: { enabled: false, from: 'BeautyFind', messagingServiceSid: '', voiceFrom: '', voice: 'Google.he-IL-Standard-A' } });
+    await settings.savePlatformSettings(userId, { twilio: { enabled: false, from: 'BeautyFind', messagingServiceSid: '', voiceFrom: '', voice: 'Google.he-IL-Standard-A', whatsappEnabled: false, whatsappFrom: '', whatsappForSms: true, whatsappTemplates: {} } });
     const r = await tw.twilioTestSend(phone(8));
     assert.equal(r.ok, true);
     assert.match(mock.sms.at(-1)!.form.Body, /הודעת בדיקה/);

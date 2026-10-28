@@ -167,6 +167,11 @@ export async function applyTwilioStatus(p: Record<string, string>): Promise<bool
     where: { provider: 'twilio', providerId: sid },
     data: { deliveryStatus: status.slice(0, 20), ...(err ? { deliveryError: err.slice(0, 300) } : {}), ...(status === 'delivered' || status === 'completed' ? { deliveredAt: new Date() } : {}) },
   });
+  // A WhatsApp send that failed goes by SMS once; any final status wipes its sealed SMS text.
+  if (r.count) {
+    const { whatsappStatus } = await import('./whatsapp');
+    await whatsappStatus(sid, status).catch(e => console.error('[whatsapp] status', e instanceof Error ? e.message : String(e)));
+  }
   return r.count > 0;
 }
 

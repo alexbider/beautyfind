@@ -314,3 +314,60 @@ export async function saveEmailHookAction(input: { secret: string }): Promise<Re
   revalidatePath('/ops/messages');
   return { ok: true, text: 'נשמר. מעכשיו מצב המסירה של כל מייל יופיע ביומן.' };
 }
+
+// ---------- WhatsApp through Twilio (service notices) ----------
+
+export async function setWhatsAppFlagAction(name: string, value: boolean): Promise<{ ok: boolean; error?: string }> {
+  const user = await areaUserOrNull('messages', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  if (name !== 'whatsappEnabled' && name !== 'whatsappForSms') return { ok: false, error: 'הגדרה לא מוכרת' };
+  const cur = await platformSettings();
+  if (name === 'whatsappEnabled' && value && !/^\+[1-9]\d{6,14}$/.test(cur.twilio.whatsappFrom)) return { ok: false, error: 'בחרו קודם מספר שולח של WhatsApp' };
+  await savePlatformSettings(user.id, { twilio: { ...cur.twilio, [name]: value } });
+  await db.auditLog.create({ data: { actorId: user.id, action: 'whatsapp_update', subjectType: 'platform_settings', subjectId: user.id, meta: { ref: name, value } } });
+  revalidatePath('/ops/messages');
+  return { ok: true };
+}
+
+export async function saveWhatsAppFromAction(input: { from: string }): Promise<Res> {
+  const user = await areaUserOrNull('messages', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const from = input.from.replace(/[\s-]/g, '');
+  if (from && !/^\+[1-9]\d{6,14}$/.test(from)) return { ok: false, error: 'מספר בפורמט בינלאומי, למשל +972531234567' };
+  const cur = await platformSettings();
+  await savePlatformSettings(user.id, { twilio: { ...cur.twilio, whatsappFrom: from, ...(from ? {} : { whatsappEnabled: false }) } });
+  await db.auditLog.create({ data: { actorId: user.id, action: 'whatsapp_update', subjectType: 'platform_settings', subjectId: user.id, meta: { ref: 'from', value: from } } });
+  revalidatePath('/ops/messages');
+  return { ok: true, text: from ? `נשמר: ${from}` : 'הוסר' };
+}
+
+export async function whatsappSendersAction(): Promise<{ ok: true; senders: Array<{ phone: string; status: string; name: string | null }> } | { ok: false; error: string }> {
+  const user = await areaUserOrNull('messages', 'view');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { whatsappSenders } = await import('@/lib/server/whatsapp');
+  return whatsappSenders();
+}
+
+export async function syncWhatsAppTemplatesAction(): Promise<Res> {
+  const user = await areaUserOrNull('messages', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { syncWhatsAppTemplates } = await import('@/lib/server/whatsapp');
+  const r = await syncWhatsAppTemplates(user.id);
+  console.info(`[whatsapp-templates] ${JSON.stringify(r)}`);
+  revalidatePath('/ops/messages');
+  if (!r.ok) return r;
+  const head = `נוצרו ${r.created}, נשלחו לאישור ${r.submitted}. מאושרות ${r.approved}, ממתינות ${r.pending}, נדחו ${r.rejected}.`;
+  return r.errors.length ? { ok: false, error: `${head} שגיאות: ${r.errors.slice(0, 3).join(' · ')}` } : { ok: true, text: head };
+}
+
+export async function whatsappTestAction(input: { phone: string; template?: string }): Promise<Res> {
+  const user = await areaUserOrNull('messages', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const phone = input.phone.replace(/[\s-]/g, '');
+  const e164 = phone.startsWith('0') ? `+972${phone.slice(1)}` : phone;
+  if (!/^\+[1-9]\d{6,14}$/.test(e164)) return { ok: false, error: 'מספר טלפון לא תקין' };
+  const { whatsappTestSend } = await import('@/lib/server/whatsapp');
+  const r = await whatsappTestSend(e164, input.template || undefined);
+  revalidatePath('/ops/messages');
+  return r.ok ? { ok: true, text: `נשלח. מזהה ב־Twilio: ${r.id}. בדקו שההודעה הגיעה ל־WhatsApp.` } : { ok: false, error: r.error };
+}

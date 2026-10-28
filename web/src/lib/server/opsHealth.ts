@@ -78,7 +78,10 @@ export async function serviceChecks(): Promise<ServiceCheck[]> {
   const { emailStatus } = await import('./email');
   const em = await emailStatus().catch(() => null);
   const smsOn = !!tw?.ready || !!(mgOn && mg?.settings.sms);
-  const waOn = !!(mgOn && mg?.settings.whatsapp);
+  const { whatsappStatusSummary } = await import('./whatsapp');
+  const twa = await whatsappStatusSummary().catch(() => null);
+  const twaOn = !!(twa?.ready && twa.approved);
+  const waOn = twaOn || !!(mgOn && mg?.settings.whatsapp);
   const emailOn = !!em?.ready;
   const prod = process.env.NODE_ENV === 'production';
   const count = (sent24: number, failed24: number) => `${sent24} נשלחו ב־24 שעות${failed24 ? ` · ${failed24} נכשלו` : ''}`;
@@ -89,8 +92,12 @@ export async function serviceChecks(): Promise<ServiceCheck[]> {
   const email: ServiceCheck = emailOn
     ? { key: 'email', name: 'אימייל · Resend', state: em!.failed24h && !em!.sent24h ? 'down' : 'ok', ms: null, note: `${count(em!.sent24h, em!.failed24h)}${em!.settings.replyDomain ? ' · מעקב פתיחות ותשובות פעיל' : ''}`, label: em!.failed24h && !em!.sent24h ? 'שגיאות' : 'מחובר' }
     : { key: 'email', name: 'אימייל', state: prod ? 'down' : 'unknown', ms: null, note: em?.configured ? 'מפתח קיים, השליחה כבויה' : 'להגדרה: /ops/messages', label: 'לא מחובר' };
-  const whatsapp: ServiceCheck = waOn
-    ? { key: 'whatsapp', name: 'WhatsApp · Messaggio', state: 'ok', ms: null, note: 'מחובר', label: 'מחובר' }
+  const whatsapp: ServiceCheck = twaOn
+    ? { key: 'whatsapp', name: 'WhatsApp · Twilio', state: twa!.failed24h && !twa!.sent24h ? 'down' : 'ok', ms: null, note: `${twa!.approved} תבניות מאושרות · ${count(twa!.sent24h, twa!.failed24h)}${twa!.fallback24h ? ` · ${twa!.fallback24h} עברו ל־SMS` : ''}`, label: twa!.failed24h && !twa!.sent24h ? 'שגיאות' : 'מחובר' }
+    : waOn
+    ? { key: 'whatsapp', name: 'WhatsApp · Messaggio', state: 'ok', ms: null, note: 'קודי אימות בלבד', label: 'מחובר' }
+    : twa?.ready
+    ? { key: 'whatsapp', name: 'WhatsApp · Twilio', state: 'degraded', ms: null, note: 'מחכה לאישור תבניות מ־Meta · בינתיים ב־SMS', label: 'ממתין' }
     : { key: 'whatsapp', name: 'WhatsApp', state: 'unknown', ms: null, note: smsOn ? 'הודעות WhatsApp נשלחות ב־SMS' : 'להגדרה: /ops/messages', label: 'לא מחובר' };
   const codes: ServiceCheck = providers
     ? { key: 'verification', name: 'קודי אימות', state: failed && !sent ? 'down' : 'ok', ms: null, note: `${providers} · ${sent} נשלחו ב־24 שעות${failed ? ` · ${failed} נכשלו` : ''}` }
