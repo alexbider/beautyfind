@@ -1,4 +1,5 @@
 import 'server-only';
+import { israelDay, pageTitle, statTotals } from './sponsored';
 import { CATEGORIES, REGIONS } from '../catalog';
 import { nisFromAgorot } from '../format';
 import { ilDate } from '../time';
@@ -141,22 +142,32 @@ export async function planAutomations(now = new Date()): Promise<PlanRun> {
 
   if (s.sponsored) step('sponsored', async () => {
     const rows = await db.campaign.findMany({
-      where: { OR: [{ reviewedAt: { gte: at(now.getTime() - 3 * DAY) } }, { status: 'approved', weekStart: { gte: at(now.getTime() - 13 * 7 * DAY) } }] },
-      select: { id: true, ref: true, businessId: true, status: true, reviewNote: true, reviewedAt: true, weekStart: true, weeks: true, regionSlug: true, categorySlug: true },
-      take: 1000,
+      where: { OR: [{ reviewedAt: { gte: at(now.getTime() - 3 * DAY) } }, { status: 'approved', endedAt: null }, { endedAt: { gte: at(now.getTime() - 3 * DAY) } }] },
+      select: { id: true, ref: true, businessId: true, status: true, reviewNote: true, reviewedAt: true, startsAt: true, activeUntil: true, endedAt: true, pageKey: true, placement: true, categorySlug: true, citySlug: true, regionSlug: true, freeMonths: true, monthlyPriceAgorot: true },
+      take: 2000,
     });
+    const live = rows.filter(c => c.status === 'approved' && !c.endedAt && c.activeUntil && c.activeUntil > now && c.startsAt <= now);
+    const week = await statTotals(live.map(c => c.id), at(now.getTime() - 7 * DAY));
+    const weekNo = Math.floor(israelDay(now).getTime() / (7 * DAY));
+    const sunday = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jerusalem', weekday: 'short' }).format(now) === 'Sun';
     for (const c of rows) {
       const o = await ownerOf(c.businessId);
       if (!o?.route) continue;
-      const end = c.weekStart.getTime() + c.weeks * 7 * DAY;
-      const base = { name: o.name, business: o.business, ref: c.ref, where: `${catName(c.categorySlug)}, ${regionName(c.regionSlug)}`, start: ilDate(c.weekStart), end: ilDate(at(end - DAY)), weeks: String(c.weeks), link: `${site}/biz/billing` };
+      const link = `${site}/biz/sponsored`;
+      const base = { name: o.name, business: o.business, ref: c.ref, where: pageTitle(c), start: ilDate(c.startsAt), end: c.activeUntil ? ilDate(c.activeUntil) : '', price: `${(c.monthlyPriceAgorot / 100).toLocaleString('en-US')} ₪`, free: c.freeMonths > 0 ? 'yes' : '', link };
       const q = (suffix: string, template: string, dueAt: Date, staleAt: Date, extra: Record<string, string> = {}) =>
         enqueue({ key: `M22:${c.id}:${suffix}`, automation: 'sponsored', template, ...o.route!, vars: { ...base, ...extra }, businessId: c.businessId, refId: c.id, dueAt, staleAt });
       const recent = c.reviewedAt && c.reviewedAt.getTime() >= now.getTime() - 3 * DAY;
-      if (recent && c.status === 'approved') add('sponsored', await q('approved', 'M22_sponsored_approved', now, at(c.weekStart.getTime())));
+      if (recent && c.status === 'approved') add('sponsored', await q('approved', 'M22_sponsored_approved', now, at(now.getTime() + 3 * DAY)));
       if (recent && c.status === 'rejected') add('sponsored', await q('rejected', 'M22_sponsored_rejected', now, at(now.getTime() + 3 * DAY), { reason: c.reviewNote ?? '' }));
-      if (c.status === 'approved' && c.weekStart <= at(now.getTime() + DAY) && end > now.getTime()) add('sponsored', await q('started', 'M22_sponsored_started', at(c.weekStart.getTime() + 9 * 3600_000), at(c.weekStart.getTime() + 2 * DAY)));
-      if (c.status === 'approved' && end <= now.getTime() && end > now.getTime() - 3 * DAY) add('sponsored', await q('ended', 'M22_sponsored_ended', at(end), at(end + 4 * DAY)));
+      const isLive = live.includes(c);
+      if (isLive && c.startsAt.getTime() >= now.getTime() - 2 * DAY) add('sponsored', await q('started', 'M22_sponsored_started', now, at(c.startsAt.getTime() + 3 * DAY)));
+      if (c.endedAt && c.status === 'cancelled' && c.reviewedAt && c.endedAt.getTime() >= now.getTime() - 3 * DAY) add('sponsored', await q('ended', 'M22_sponsored_ended', now, at(c.endedAt.getTime() + 4 * DAY)));
+      // The weekly report, on Sundays, for placements that ran the whole week.
+      if (isLive && sunday && c.startsAt.getTime() <= now.getTime() - 6 * DAY) {
+        const t = week.get(c.id) ?? { impressions: 0, clicks: 0, contacts: 0 };
+        add('sponsored', await q(`report:${weekNo}`, 'M22_sponsored_report', now, at(now.getTime() + 2 * DAY), { impressions: t.impressions.toLocaleString('en-US'), clicks: t.clicks.toLocaleString('en-US'), contacts: t.contacts.toLocaleString('en-US') }));
+      }
     }
   });
 
@@ -288,7 +299,7 @@ registerGuard('payment_failed', async (row, vars) => {
 registerGuard('sponsored', async row => {
   const c = await db.campaign.findUnique({ where: { id: row.refId! }, select: { status: true } });
   if (!c) return { send: false, reason: 'המקום נמחק' };
-  const wantsApproved = !row.template.endsWith('_rejected');
+  const wantsApproved = !row.template.endsWith('_rejected') && !row.template.endsWith('_ended');
   if (wantsApproved && c.status !== 'approved') return { send: false, reason: 'המקום כבר לא מאושר' };
   return { send: true };
 });

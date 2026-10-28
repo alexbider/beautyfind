@@ -27,20 +27,3 @@ export function contentChecks(line: string, featured?: string | null): CheckResu
   if (!hits.length && line.trim()) out.push({ result: 'ok', text: 'ללא הבטחת תוצאה או טענת עליונות' });
   return out;
 }
-
-/** Discount for longer campaigns (02-data-model.md: 10% from four weeks). */
-export const discountPctFor = (weeks: number) => (weeks >= 4 ? 10 : 0);
-
-/** Sunday 00:00 Asia/Jerusalem on or after the given date, as a Date. */
-export function nextWeekStart(from = new Date()): Date {
-  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jerusalem', year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' }).formatToParts(from).map(p => [p.type, p.value]));
-  const dow = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(parts.weekday);
-  const utcMidnight = Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day));
-  const sunday = new Date(utcMidnight + (dow === 0 ? 0 : 7 - dow) * 86_400_000);
-  // Local midnight in Israel is UTC midnight minus the offset (2 or 3 hours).
-  const local = new Date(sunday.toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' }));
-  const utc = new Date(sunday.toLocaleString('en-US', { timeZone: 'UTC' }));
-  return new Date(sunday.getTime() - (local.getTime() - utc.getTime()));
-}
-
-export const weekEnd = (weekStart: Date, weeks: number) => new Date(weekStart.getTime() + weeks * 7 * 86_400_000 - 1);

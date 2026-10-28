@@ -10,12 +10,12 @@ import { PlatformSettingsSchema, savePlatformSettings, type PlatformSettings } f
 // Platform settings. Numbers are saved as one patch from the form; feature switches save one at a
 // time. The public pages that read a setting are refreshed so the change shows at once.
 
-const NUMBER_KEYS = ['basicMonthlyNis', 'advancedMonthlyNis', 'sponsoredWeeklyNis', 'sponsoredMaxPerList', 'vatRatePct', 'retryFirstDays', 'retrySecondDays', 'hideInDebtDays', 'giftCardMinYears'] as const;
+const NUMBER_KEYS = ['basicMonthlyNis', 'advancedMonthlyNis', 'sponsoredListMonthlyNis', 'sponsoredHomeMonthlyNis', 'sponsoredSlotsPerPage', 'sponsoredFreeMonthQuota', 'sponsoredMakeGoodVisits', 'vatRatePct', 'retryFirstDays', 'retrySecondDays', 'hideInDebtDays', 'giftCardMinYears'] as const;
 const FLAG_KEYS = ['onlineBooking', 'giftCards', 'waitlist', 'clientAssistant', 'maintenanceMode'] as const;
 export type NumberKey = (typeof NUMBER_KEYS)[number];
 export type FlagKey = (typeof FLAG_KEYS)[number];
 
-const refresh = () => { for (const p of ['/', '/search', '/ops', '/ops/settings', '/for-business', '/regions']) revalidatePath(p); };
+const refresh = () => { for (const p of ['/', '/search', '/ops', '/ops/settings', '/for-business', '/for-business/sponsored', '/listing-standards/sponsorship', '/regions']) revalidatePath(p); };
 
 export async function saveNumbersAction(input: Record<string, number | string>): Promise<{ ok: true } | { ok: false; error: string }> {
   const user = await areaUserOrNull('settings', 'edit');

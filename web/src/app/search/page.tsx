@@ -184,9 +184,8 @@ export default async function SearchPage({ searchParams }: Props) {
             <section aria-labelledby="h-results" className={p.results}>
               <ResultsToolbar />
 
-              {/* TODO(sponsored): no campaigns table yet, so no sponsored slot. When it exists: at most 2
-                  sponsored cards per list, each tagged "ממומן", shown with the note "מקום בתשלום. הוא לעולם
-                  אינו משנה את סדר התוצאות שמתחת." and never changing the order of the results below. */}
+              {/* No sponsored slider on search: placements are sold per page (city + category lists, treatment
+                  pages, the homepage; src/lib/server/sponsored), and search results stay unpaid. */}
 
               <ResultsRegion hasResults={total > 0}>
                 {total === 0 ? (

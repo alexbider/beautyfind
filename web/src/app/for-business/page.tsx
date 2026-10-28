@@ -11,6 +11,8 @@ import { nis } from '@/lib/format';
 import { PLAN_MONTHLY_NIS, PLATFORM_BILLING_LINE, PLATFORM_PRICE_NOTE, type PlanKey } from '@/lib/pricing';
 import { ROUTES, joinWithPlan } from '@/lib/routes';
 import { applySeo } from '@/lib/server/seo';
+import { SponsoredSample } from '@/components/sponsored/SponsoredSample';
+import { DEFAULT_FREE_MONTH_QUOTA, DEFAULT_HOME_MONTHLY_NIS, DEFAULT_LIST_MONTHLY_NIS, DEFAULT_MAKE_GOOD_VISITS, DEFAULT_SLOTS_PER_PAGE, type SponsoredCardData } from '@/lib/sponsored';
 import { StickyJoinBar } from './StickyJoinBar';
 import styles from './page.module.css';
 
@@ -26,6 +28,21 @@ const PROOF = [
   { strong: '7 אזורים ומעל 60 ערים', post: ' בכל רחבי ישראל' },
   { strong: '14 תחומי טיפול', post: ', מאסתטיקה רפואית ועד ספא' },
   { pre: 'דירוגי Google ', strong: 'מתעדכנים מדי שבוע' },
+];
+
+// Sample cards for the sponsored section: invented names, the site's own stock photos.
+const SAMPLE = (over: Partial<SponsoredCardData>): SponsoredCardData => ({
+  campaignId: 'sample', branchId: 'sample', href: '#', name: '', line: '', featured: null, categoryName: null, cityName: '',
+  coverUrl: null, coverAlt: '', google: null, beautyfind: null, verified: true, priceFromShekels: null, ...over,
+});
+const SPONSORED_SAMPLES = [
+  SAMPLE({ name: 'סטודיו לאור', categoryName: 'טיפולי פנים', cityName: 'רמת גן', coverUrl: '/assets/biz-facial.jpg', line: 'טיפול פנים מותאם אחרי אבחון עור, עם מעקב אחרי חודש', featured: 'טיפול פנים מעמיק', google: { rating: 4.9, count: 214 }, beautyfind: { rating: 4.8, count: 37 } }),
+  SAMPLE({ name: 'בית הציפורניים של מאיה', categoryName: 'ציפורניים', cityName: 'חיפה', coverUrl: '/assets/biz-nails.jpg', line: 'ג׳ל בנייה עמיד לשלושה שבועות, תורים גם בערב', featured: 'בניית ציפורניים', google: { rating: 4.8, count: 162 } }),
+];
+const SPONSORED_POINTS: Array<[string, string]> = [
+  ['העמוד שאתם בוחרים', 'רשימת העסקים בעיר ובתחום שלכם, עמוד התחום הארצי או עמוד הבית. עד 10 עסקים בכל עמוד, בסדר אקראי בכל טעינה.'],
+  ['כרטיס שמוכר', 'תמונה, דירוג בגוגל, שורת הדגשה אחת וטיפול מוביל. רואים אותו בדיוק כמו שהמבקרים יראו, לפני ששולחים.'],
+  ['בלי סיכון', `החיוב מתחיל רק אחרי אישור התוכן, ביטול בכל רגע, וחודש עם פחות מ־${DEFAULT_MAKE_GOOD_VISITS} כניסות לפרופיל מזכה בחצי מחיר על החודש הבא.`],
 ];
 
 const FEATURES = [
@@ -360,6 +377,46 @@ export default function GetListedPage() {
                 </div>
                 <div className={styles.listedMeta}>12 תמונות · 24 טיפולים עם מחיר · קביעת תור אונליין</div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="h-sponsored" className={styles.sponsored}>
+          <div className={styles.sponsoredInner}>
+            <div className={styles.sponsoredCopy}>
+              <span className={styles.sponsoredKicker}>מקומות ממומנים</span>
+              <h2 id="h-sponsored" className={styles.sponsoredH2}>
+                הכרטיס שלכם בראש העמוד, מול לקוחות שכבר מחפשים<span aria-hidden="true" className={styles.dot}>.</span>
+              </h2>
+              <p className={styles.sponsoredLede}>
+                {nis(DEFAULT_LIST_MONTHLY_NIS)} לחודש בעמוד תחום, {nis(DEFAULT_HOME_MONTHLY_NIS)} לחודש בעמוד הבית. החודש הראשון חינם ל־{DEFAULT_FREE_MONTH_QUOTA} העסקים הראשונים.
+              </p>
+              <ul className={styles.sponsoredPoints}>
+                {SPONSORED_POINTS.map(([t, b]) => (
+                  <li key={t}>
+                    <Check />
+                    <span><strong>{t}.</strong> {b}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className={styles.sponsoredActions}>
+                <Link href="/biz/sponsored" className={styles.sponsoredCta}>
+                  <span>לבחירת מקום</span>
+                  <ArrowForward />
+                </Link>
+                <Link href={ROUTES.sponsorship} className={styles.sponsoredLink}>הכללים והמחירים המלאים</Link>
+              </div>
+            </div>
+            <div className={styles.sponsoredStage} aria-label="דוגמה לכרטיסים ממומנים">
+              <div className={styles.sponsoredBar}>
+                <span className={styles.sponsoredBadge}>ממומן</span>
+                <span>עסקים מקודמים</span>
+                <span className={styles.sponsoredSlots}><span className="ltr">{DEFAULT_SLOTS_PER_PAGE}</span> מקומות בעמוד</span>
+              </div>
+              <div className={styles.sponsoredCards}>
+                {SPONSORED_SAMPLES.map(c => <SponsoredSample key={c.name} c={c} />)}
+              </div>
+              <p className={styles.sponsoredNote}>דוגמה. שמות העסקים בדויים.</p>
             </div>
           </div>
         </section>

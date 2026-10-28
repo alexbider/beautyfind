@@ -6,7 +6,8 @@ import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
 import type { PrismaClient } from '@prisma/client';
 import { AREAS, DEFAULT_PERMISSIONS, firstArea, levelOf, permissionMatrix } from '../../src/components/ops/roles';
-import { contentChecks, discountPctFor, nextWeekStart, SPONSORED_LINE_MAX } from '../../src/lib/sponsoredChecks';
+import { contentChecks, SPONSORED_LINE_MAX } from '../../src/lib/sponsoredChecks';
+import { addMonth, monthlyNisFor, pageKeyOf, parsePageKey, pathOfPageKey, shuffled } from '../../src/lib/sponsored';
 
 const URL_OK = /@(localhost|127\.0\.0\.1)(:\d+)?\//.test(process.env.DATABASE_URL ?? '');
 const skip = URL_OK ? false : 'needs a local DATABASE_URL';
@@ -64,11 +65,21 @@ describe('sponsored content checks', () => {
     const plain = contentChecks('מניקור ג׳ל בלב רמת גן');
     assert.ok(plain.every(c => c.result === 'ok'));
   });
-  it('discount and week start follow the data model', () => {
-    assert.equal(discountPctFor(3), 0);
-    assert.equal(discountPctFor(4), 10);
-    const ws = nextWeekStart(new Date('2026-09-30T10:00:00Z'));
-    assert.ok(ws.getTime() > new Date('2026-09-30T10:00:00Z').getTime());
+  it('page keys round-trip to the page they sell', () => {
+    const list = pageKeyOf({ placement: 'city_list', region: 'gush-dan', city: 'ramat-gan', category: 'nails' });
+    assert.equal(list, 'list:gush-dan/ramat-gan/nails');
+    assert.deepEqual(parsePageKey(list), { placement: 'city_list', region: 'gush-dan', city: 'ramat-gan', category: 'nails' });
+    assert.equal(pathOfPageKey('treatment:hair-restoration'), '/treatments/hair-restoration');
+    assert.equal(pathOfPageKey('home'), '/');
+    assert.equal(parsePageKey('list:../x'), null);
+  });
+  it('monthly price, month arithmetic and shuffle', () => {
+    assert.equal(monthlyNisFor('homepage', { listMonthlyNis: 499, homeMonthlyNis: 999 }), 999);
+    assert.equal(monthlyNisFor('treatment_page', { listMonthlyNis: 499, homeMonthlyNis: 999 }), 499);
+    assert.equal(addMonth(new Date('2026-01-31T10:00:00Z')).toISOString().slice(0, 10), '2026-02-28');
+    assert.equal(addMonth(new Date('2026-10-15T10:00:00Z'), 2).toISOString().slice(0, 10), '2026-12-15');
+    const xs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    assert.deepEqual([...shuffled(xs)].sort((a, b) => a - b), xs);
   });
 });
 

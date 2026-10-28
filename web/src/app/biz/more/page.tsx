@@ -19,7 +19,7 @@ export default async function BizMorePage() {
 
   const manage: MoreRow[] = views.map(v => ({ kind: 'link', label: v.name, href: v.href }));
   const business: MoreRow[] = [
-    // Branches and sponsored placements get rows here once /biz/branches and /biz/sponsored exist.
+    // Sponsored placements come in through the views (/biz/sponsored); branches get a row once /biz/branches exists.
     ...(profileHref ? [{ kind: 'link', label: 'תצוגת הפרופיל הציבורי', href: profileHref } as MoreRow] : []),
     ...(advanced ? [{ kind: 'link', label: 'מערכת הקליניקה', href: '/clinic' } as MoreRow] : []),
   ];

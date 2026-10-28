@@ -25,7 +25,7 @@ export default async function HomePage() {
       <a href="#main" className={styles.skip}>דלגו לתוכן</a>
       <HomeHeader regions={home.headerRegions} total={home.total} />
       <main id="main">
-        <DeskHome lists={home.cardLists} regionCounts={home.regionCounts} reviews={home.cardReviews} regionCities={home.regionCities} guides={home.guides} />
+        <DeskHome sponsored={home.sponsored} lists={home.cardLists} regionCounts={home.regionCounts} reviews={home.cardReviews} regionCities={home.regionCities} guides={home.guides} />
       </main>
       <HomeFooter guides={home.guides} />
     </div>

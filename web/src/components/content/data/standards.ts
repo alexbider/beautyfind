@@ -5,20 +5,19 @@
 import { nis } from '@/lib/format';
 import { PLAN_MONTHLY_NIS, YEARLY_MULTIPLIER, PLATFORM_BILLING_LINE } from '@/lib/pricing';
 import { ROUTES } from '@/lib/routes';
+import { DEFAULT_FREE_MONTH_QUOTA, DEFAULT_HOME_MONTHLY_NIS, DEFAULT_LIST_MONTHLY_NIS, DEFAULT_MAKE_GOOD_VISITS, DEFAULT_SLOTS_PER_PAGE, FULL_REFUND_HOURS } from '@/lib/sponsored';
 import type { ContentView, Faq, Plan } from '../types';
 import { LIVE_COUNT } from './about';
 
 export type StandardsKey = 'standards' | 'sponsorship';
 
-/**
- * Weekly sponsored price range, before VAT: region base × category factor, rounded to ₪10
- * (BeautyFind Sponsored.dc.html: south ₪160 × nails 0.7 → ₪110; Gush Dan ₪340 × medical 1.4 → ₪480).
- * TODO(pricing): read from the Sponsored price table once it moves into src/lib.
- */
-export const SPONSORED_WEEK_NIS = { from: 110, to: 480 };
-export const SPONSORED_MAX_PER_LIST = 2;
-export const SPONSORED_MULTIWEEK = { minWeeks: 4, discountPct: 10 };
-export const SPONSORED_CANCEL_HOURS = 48;
+/** Sponsored placements (docs/sponsored.md): monthly, per page, in a slider marked "ממומן". Defaults; ops can tune them. */
+export const SPONSORED_LIST_NIS = DEFAULT_LIST_MONTHLY_NIS;
+export const SPONSORED_HOME_NIS = DEFAULT_HOME_MONTHLY_NIS;
+export const SPONSORED_SLOTS = DEFAULT_SLOTS_PER_PAGE;
+export const SPONSORED_FREE_FIRST = DEFAULT_FREE_MONTH_QUOTA;
+export const SPONSORED_MAKE_GOOD_VISITS = DEFAULT_MAKE_GOOD_VISITS;
+export const SPONSORED_CANCEL_HOURS = FULL_REFUND_HOURS;
 
 const basic = nis(PLAN_MONTHLY_NIS.basic);
 const advanced = nis(PLAN_MONTHLY_NIS.advanced);
@@ -52,16 +51,16 @@ export const PLANS: Plan[] = [
   },
   {
     tag: 'ממומן',
-    name: 'מקום ממומן ברשימה',
-    price: `${nis(SPONSORED_WEEK_NIS.from)}–${nis(SPONSORED_WEEK_NIS.to)}`,
-    unit: 'לשבוע · לפי אזור ותחום · ללא מע״מ ישראלי',
+    name: 'מקום ממומן',
+    price: nis(SPONSORED_LIST_NIS),
+    unit: `לחודש בעמוד תחום · ${nis(SPONSORED_HOME_NIS)} בעמוד הבית · ללא מע״מ ישראלי`,
     sponsored: true,
     items: [
-      'כרטיס ברשימת אזור ותחום, מסומן תמיד "ממומן"',
-      `עד ${SPONSORED_MAX_PER_LIST} מקומות ממומנים בכל רשימה בכל שבוע`,
-      'אינו משפיע על הדירוג ואינו נכלל בהשוואה',
-      `${SPONSORED_MULTIWEEK.discountPct}% הנחה מ־${SPONSORED_MULTIWEEK.minWeeks} שבועות ומעלה`,
-      `חיוב רק אחרי אישור התוכן, וביטול עד ${SPONSORED_CANCEL_HOURS} שעות לפני תחילת שבוע`,
+      `${nis(SPONSORED_LIST_NIS)} לחודש ברשימת עיר ותחום או בעמוד תחום ארצי`,
+      `${nis(SPONSORED_HOME_NIS)} לחודש בעמוד הבית`,
+      `עד ${SPONSORED_SLOTS} עסקים בכל סליידר, מסומנים תמיד "ממומן"`,
+      `החודש הראשון חינם ל־${SPONSORED_FREE_FIRST} העסקים הראשונים`,
+      'חיוב רק אחרי אישור התוכן, ביטול בכל רגע',
     ],
   },
 ];
@@ -69,7 +68,15 @@ export const PLANS: Plan[] = [
 export const SPONSORSHIP_FAQS: Faq[] = [
   {
     q: 'אפשר לקנות מקום גבוה יותר בדירוג?',
-    a: `לא. הדירוג נקבע מדירוג בגוגל, מביקורות BeautyFind מאומתות ומשלמות הפרופיל, ותשלום אינו אחד המשקלים. מקום ממומן מוצג בנפרד, מעל או לצד הרשימה, עד ${SPONSORED_MAX_PER_LIST} בכל רשימה, תמיד עם התג "ממומן", ואינו נכלל בהשוואה בין עסקים.`,
+    a: `לא. הדירוג נקבע מדירוג בגוגל, מביקורות BeautyFind מאומתות ומשלמות הפרופיל, ותשלום אינו אחד המשקלים. מקום ממומן מוצג בסליידר נפרד בראש העמוד, עד ${SPONSORED_SLOTS} עסקים בכל עמוד ובסדר אקראי בכל טעינה, תמיד עם התג "ממומן", ואינו נכלל בהשוואה בין עסקים.`,
+  },
+  {
+    q: 'כמה עולה מקום ממומן ומה מקבלים?',
+    a: `${nis(SPONSORED_LIST_NIS)} לחודש ברשימת עיר ותחום או בעמוד תחום ארצי, ו־${nis(SPONSORED_HOME_NIS)} לחודש בעמוד הבית, ללא מע״מ ישראלי. הכרטיס שלכם מופיע בסליידר "ממומן" בראש העמוד עם תמונה, דירוג ושורת הדגשה אחת, ובכל יום ראשון נשלח אליכם דוח הצגות, כניסות לפרופיל ופניות.`,
+  },
+  {
+    q: 'מה אם המקום לא הביא תוצאות?',
+    a: `אם בחודש מסוים הכרטיס הביא פחות מ־${SPONSORED_MAKE_GOOD_VISITS} כניסות לפרופיל, החודש הבא באותו מקום עולה חצי מחיר, אוטומטית. אפשר גם לבטל בכל רגע: המקום נשאר עד סוף החודש ששולם, וביטול עד ${SPONSORED_CANCEL_HOURS} שעות לפני תחילת החודש מזכה בהחזר מלא.`,
   },
   {
     q: 'אפשר להסיר ביקורת שלילית?',
@@ -254,23 +261,23 @@ export const STANDARDS_VIEWS: Record<StandardsKey, ContentView<StandardsKey>> = 
     dek: 'באינדקס יש שני דברים בתשלום: רישום עסק, בשני מסלולים, ופרסום ממומן שמסומן בגלוי. דירוג, מקום בהשוואה, אזכור במדריכים והסרת ביקורות אינם למכירה, בשום מחיר. כאן הפירוט המלא, כולל מחירים.',
     metaTitle: 'פרסום ממומן ב־BeautyFind: מחירים וכללים',
     description:
-      'מה אפשר לקנות ב־BeautyFind ומה לא: רישום בסיסי או מתקדם לכל סניף, מקום ממומן לשבוע לפי אזור ותחום, סימון "ממומן" גלוי ובדיקת תוכן לפני העלייה.',
+      `מה אפשר לקנות ב־BeautyFind ומה לא: רישום בסיסי או מתקדם לכל סניף, מקום ממומן חודשי (${nis(SPONSORED_LIST_NIS)} בעמוד תחום, ${nis(SPONSORED_HOME_NIS)} בעמוד הבית), סימון "ממומן" גלוי ובדיקת תוכן לפני העלייה.`,
     stats: [
       { label: 'רישום לסניף', value: `${basic}–${advanced}` },
-      { label: 'מקומות ממומנים ברשימה', value: `עד ${SPONSORED_MAX_PER_LIST}` },
+      { label: 'מקומות ממומנים בעמוד', value: `עד ${SPONSORED_SLOTS}` },
       { label: 'משקל התשלום בדירוג', value: '0%' },
       { label: 'עמלה על תורים', value: '0%' },
     ],
     aside: {
       title: 'רוצים לפרסם?',
-      body: 'מקומות ממומנים נמכרים לפי שבוע, לפי אזור ותחום, ומספרם מוגבל. עסק רשום רוכש אותם מלוח הבקרה.',
-      label: 'ללוח הבקרה',
-      href: ROUTES.dashboard,
+      body: `מקום ממומן נמכר לחודש, לעמוד אחד: רשימת עיר ותחום, עמוד תחום ארצי או עמוד הבית. עד ${SPONSORED_SLOTS} מקומות בכל עמוד, והחודש הראשון חינם ל־${SPONSORED_FREE_FIRST} העסקים הראשונים.`,
+      label: 'לבחירת מקום',
+      href: '/biz/sponsored',
     },
     cta: {
       title: 'רוצים לבדוק זמינות?',
-      body: 'בלוח הבקרה רואים אילו שבועות פנויים בכל אזור ותחום, ואת המחיר המדויק לפני התשלום. יש שאלה? כתבו לנו.',
-      primary: { label: 'רכישת מקום ממומן', href: ROUTES.dashboard },
+      body: 'בלוח הבקרה רואים כמה מקומות פנויים בכל עמוד, ואת הכרטיס שלכם בדיוק כמו שמבקרים יראו אותו, לפני ששולחים. יש שאלה? כתבו לנו.',
+      primary: { label: 'בחירת מקום ממומן', href: '/biz/sponsored' },
       secondary: { label: 'דברו איתנו', href: ROUTES.contact },
     },
     sections: [
@@ -283,9 +290,9 @@ export const STANDARDS_VIEWS: Record<StandardsKey, ContentView<StandardsKey>> = 
             rules: [
               { ok: true, tag: 'למכירה', body: 'רישום עסק, בסיסי או מתקדם עם CRM: פרופיל מלא עם מחירים, שעות, קביעת תור וקישורי יצירת קשר.' },
               { ok: false, tag: 'לא למכירה', body: 'מקום בדירוג, שינוי סדר התוצאות, או מקום בהשוואה בין עסקים.' },
-              { ok: true, tag: 'למכירה', body: 'מקום ממומן לשבוע ברשימת אזור ותחום, מסומן "ממומן" ומופרד מהדירוג.' },
+              { ok: true, tag: 'למכירה', body: 'מקום חודשי בסליידר "ממומן" בעמוד תחום או בעמוד הבית, מסומן בגלוי ומופרד מהדירוג.' },
               { ok: false, tag: 'לא למכירה', body: 'אזכור במדריך מערכתי, ראיון, או המלצה של הצוות.' },
-              { ok: true, tag: 'למכירה', body: 'דוח הצגות, כניסות לפרופיל ותורים לכל קמפיין, רק ממבקרים שאישרו Cookie מדידה.' },
+              { ok: true, tag: 'למכירה', body: 'דוח שבועי של הצגות, כניסות לפרופיל ופניות. הצגות וכניסות הן ספירות כלליות בלי מידע על מבקרים; פניות נספרות רק אצל מי שאישר Cookie מדידה.' },
               { ok: false, tag: 'לא למכירה', body: 'הסרת ביקורת שלילית, או הסרת מתחרה מהעמוד.' },
             ],
           },
@@ -298,7 +305,7 @@ export const STANDARDS_VIEWS: Record<StandardsKey, ContentView<StandardsKey>> = 
           {
             kind: 'paras',
             paras: [
-              `כל המחירים בשקלים, בלי עמלות על תורים, מקדמות או שוברי מתנה. רישום מחויב לכל סניף מפורסם לחודש, ומנוי שנתי עולה כמו ${YEARLY_MULTIPLIER} חודשים; סניף בטיוטה אינו מחויב. מקום ממומן מחויב לשבוע, בנפרד מהמנוי. ${PLATFORM_BILLING_LINE}`,
+              `כל המחירים בשקלים, בלי עמלות על תורים, מקדמות או שוברי מתנה. רישום מחויב לכל סניף מפורסם לחודש, ומנוי שנתי עולה כמו ${YEARLY_MULTIPLIER} חודשים; סניף בטיוטה אינו מחויב. מקום ממומן מחויב לחודש, בנפרד מהמנוי, ומתחדש אוטומטית עד שמבטלים. ${PLATFORM_BILLING_LINE}`,
             ],
           },
           { kind: 'plans', plans: PLANS },
@@ -306,7 +313,7 @@ export const STANDARDS_VIEWS: Record<StandardsKey, ContentView<StandardsKey>> = 
             kind: 'note',
             note: {
               title: 'זמינות.',
-              body: `בכל רשימה של אזור ותחום יש עד ${SPONSORED_MAX_PER_LIST} מקומות ממומנים בכל שבוע. כשהמקומות מלאים, השבוע מסומן כתפוס, ואין הגדלה של מספר המקומות בתשלום נוסף. שבועות שנבחרו נשמרים לכם 24 שעות, עד שבדיקת התוכן מסתיימת.`,
+              body: `בכל עמוד יש עד ${SPONSORED_SLOTS} מקומות ממומנים, וכל העסקים בסליידר מוצגים בסדר אקראי בכל טעינה, בלי מקום ראשון בתשלום. כשהעמוד מלא אין הגדלה בתשלום נוסף. מקום שהוזמן נשמר לכם 24 שעות עד שבדיקת התוכן מסתיימת. אם בחודש מסוים הכרטיס הביא פחות מ־${SPONSORED_MAKE_GOOD_VISITS} כניסות לפרופיל, החודש הבא עולה חצי מחיר.`,
             },
           },
         ],
@@ -318,7 +325,7 @@ export const STANDARDS_VIEWS: Record<StandardsKey, ContentView<StandardsKey>> = 
           {
             kind: 'paras',
             paras: [
-              'תג "ממומן" מוצג על הכרטיס עצמו, בניגודיות מלאה, ובלי תלות במיקום בעמוד. לקוח שמסנן או מסדר את התוצאות רואה את הכרטיס הממומן מחוץ לרשימה הממוינת, והוא אינו נכלל בהשוואה בין עסקים.',
+              'כרטיסים ממומנים מוצגים בסליידר נפרד שכותרתו "ממומן", ועל כל כרטיס יש גם תג "ממומן" בניגודיות מלאה. הסליידר אינו חלק מהרשימה המדורגת: לקוח שמסנן או מסדר את התוצאות רואה את הדירוג כרגיל, והכרטיס הממומן אינו נכלל בהשוואה בין עסקים.',
             ],
           },
           { kind: 'sponsoredLabel' },
@@ -326,7 +333,7 @@ export const STANDARDS_VIEWS: Record<StandardsKey, ContentView<StandardsKey>> = 
             kind: 'note',
             note: {
               title: 'בדיקת תוכן לפני עלייה.',
-              body: 'כל שורת הדגשה נבדקת לפני שהמקום עולה, והחיוב מתבצע רק אחרי אישור. ניסוח שמבטיח תוצאה, "ללא כאב" או "ללא סיכון", טענת עליונות בלי אסמכתה, ותמונות "לפני ואחרי" בטיפול רפואי לא יאושרו, בהתאם לכללי משרד הבריאות לפרסום.',
+              body: 'כל שורת הדגשה, עד 60 תווים, נבדקת לפני שהמקום עולה, והחיוב מתבצע רק אחרי אישור. ניסוח שמבטיח תוצאה, "ללא כאב" או "ללא סיכון", טענת עליונות בלי אסמכתה, ותמונות "לפני ואחרי" בטיפול רפואי לא יאושרו, בהתאם לכללי משרד הבריאות לפרסום. מקום בתחום רפואי מחייב רופא/ה אחראי/ת עם רישיון מאומת בסניף.',
             },
           },
         ],

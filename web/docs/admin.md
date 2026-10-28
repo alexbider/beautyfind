@@ -21,7 +21,7 @@ Two-factor authentication does not exist in the system; the team page says so fo
 | `/ops/clients` | Client accounts with consent and block/unblock; privacy requests with due dates; completing a deletion anonymizes the account. |
 | `/ops/bookings` | Every booking with filters and KPIs. |
 | `/ops/disputes` | Deposit and gift card disputes opened from a booking ref or gift code, with the system facts and the policy shown; decisions: recommend refund, policy upheld, escalate to legal. |
-| `/ops/sponsored` | Sponsored placements (`Campaign`) reviewed before going live: forbidden promises, line length, capacity per list, open debt. Approve or reject with a reason. Orders are entered by staff; there is no business-side flow yet. |
+| `/ops/sponsored` | Sponsored placements (`Campaign`), monthly per page: the review queue with checks recomputed on open (forbidden promises, line length, verified doctor for medical pages, branch live, slots left on the page, open debt), live and all campaigns with their stats, and an order form for staff. Approving activates billing; rejecting needs a reason. Businesses order from `/biz/sponsored`. See `docs/sponsored.md`. |
 | `/ops/moderation` | Reviews queue (publish, reject, remove) and reports from contact messages. |
 | `/ops/verification` and `/ops/import/*` | The existing consoles, unchanged in behaviour, rendered inside the new shell. |
 | `/ops/accounting` | Income ledger, subscriptions and charges, expenses, VAT note, profit and loss, manual platform invoices, accountant export. Platform invoices carry no Israeli VAT (`docs/decisions.md`). |
@@ -39,7 +39,7 @@ Two-factor authentication does not exist in the system; the team page says so fo
 One JSON row (`platform_settings`, id 1) parsed with `PlatformSettingsSchema`; code constants are the defaults so an empty row behaves exactly as before. Where they are read:
 
 - `basicMonthlyNis`, `advancedMonthlyNis`: MRR on the overview and accounting pages, the assistant's business tool. New subscriptions take the setting at signup; existing subscriptions keep their stored price.
-- `sponsoredWeeklyNis`, `sponsoredMaxPerList`: sponsored orders and capacity checks.
+- `sponsoredListMonthlyNis`, `sponsoredHomeMonthlyNis`, `sponsoredSlotsPerPage`, `sponsoredFreeMonthQuota`, `sponsoredMakeGoodVisits`: sponsored prices, slots per page, the free first month quota and the make-good threshold (`docs/sponsored.md`).
 - `vatRatePct`: clinic-side display only. Platform billing has no Israeli VAT.
 - `onlineBooking`, `giftCards`, `waitlist`: gates on `/book/[branch]`, `/gift/[branch]` and `/waitlist/[branch]` (`src/components/shell/FeatureOff.tsx`). Existing bookings and cards keep working.
 - `maintenanceMode`, `maintenanceMessage`: a banner on the home page and the same gates above show the message.

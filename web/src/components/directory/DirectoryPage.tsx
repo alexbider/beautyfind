@@ -28,6 +28,9 @@ import { businessCount, businessPlural } from '@/lib/seo/businessNoun';
 import { breadcrumbNode, faqNode, graph, itemListNode, ldJson, listId, webPageNode } from '@/lib/seo/schema';
 import { ResultsShell } from './ResultsShell';
 import { SidebarFaq } from './SidebarFaq';
+import { SponsoredSlider } from '@/components/sponsored/SponsoredSlider';
+import { sponsoredCardsFor } from '@/lib/server/sponsored';
+import { pageKeyOf } from '@/lib/sponsored';
 import styles from './Directory.module.css';
 
 // Design: project/BeautyFind Directory.dc.html (pageType=city and pageType=treatment).
@@ -141,9 +144,11 @@ function pageGraph(s: Scope, title: string, items: DirectoryCard[], faqs: Array<
 export async function DirectoryPage({ params, searchParams }: { params: DirParams; searchParams: DirSearch }) {
   const s = await resolveScope(params);
   const q = parseQuery(await searchParams);
-  const [o, list] = await Promise.all([
+  const [o, list, sponsored] = await Promise.all([
     getOverview(s.region.slug, s.city.slug, s.category?.slug),
     getListings({ region: s.region.slug, city: s.city, category: s.category?.slug }, q),
+    // The sponsored slider runs on city + category lists only, on the first page (src/lib/server/sponsored).
+    s.category && q.page <= 1 ? sponsoredCardsFor(pageKeyOf({ placement: 'city_list', region: s.region.slug, city: s.city.slug, category: s.category.slug })) : Promise.resolve([]),
   ]);
 
   const where = `ב${s.city.name}`;
@@ -345,8 +350,8 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
                   <span className={styles.resultCount}>{resultCount}</span>
                 </div>
 
-                {/* TODO(sponsored): up to 2 "ממומן" slots per list go here, rendered apart from the ranked list,
-                    once the campaigns table exists. Sponsored never changes the order below. */}
+                {/* Sponsored placements sit apart from the ranked list and never change its order. */}
+                {sponsored.length > 0 && <SponsoredSlider cards={sponsored} title={`עסקים מקודמים ${where}`} context={title} />}
                 <ResultsShell base={s.path} query={q} filterCounts={o.filterCounts} matched={matched} total={o.total} shown={shown}>
                   {list.items.length === 0 ? (
                     <div className={styles.none}>

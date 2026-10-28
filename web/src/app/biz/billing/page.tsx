@@ -58,6 +58,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
   const sub = business.subscription;
   const sp = await searchParams;
   const checkout = typeof sp.checkout === 'string' ? sp.checkout : null;
+  const sponsoredLive = await db.campaign.count({ where: { businessId: business.id, status: { in: ['approved', 'pending_review'] }, endedAt: null } });
 
   // BeautyFind's invoices to this business (Stripe invoices recorded by the webhook), newest first.
   const invoices = await db.document.findMany({
@@ -148,11 +149,14 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
           <div className={ui.card}>
             <h2 className={ui.h2Tight}>מקום ממומן</h2>
             <p className={ui.meta} style={{ margin: '0 0 12px', fontSize: 13.5, color: 'var(--muted)', textWrap: 'pretty' }}>
-              נראות נוספת בראש הרשימות לפי אזור ותחום, בחיוב שבועי. נרכש בנפרד, מחויב רק אחרי אישור התוכן ומופיע בחשבונית נפרדת.
+              כרטיס בסליידר ״ממומן״ בראש רשימת העיר והתחום, בעמוד התחום או בעמוד הבית, במחיר חודשי קבוע. נרכש בנפרד מהמנוי, מחויב רק אחרי אישור התוכן ומופיע בחשבונית נפרדת.
             </p>
-            {/* TODO(sponsored): list this business's campaigns once the campaigns table exists. */}
-            <div className={b.sponsorEmpty}>אין קמפיינים פעילים או מתוכננים.</div>
-            {/* TODO(sponsored): purchase link once /biz/sponsored exists. */}
+            {sponsoredLive ? (
+              <div className={b.sponsorEmpty}>{sponsoredLive === 1 ? 'מקום ממומן אחד פעיל' : `${sponsoredLive} מקומות ממומנים פעילים`}.</div>
+            ) : (
+              <div className={b.sponsorEmpty}>אין מקומות ממומנים פעילים או מתוכננים.</div>
+            )}
+            <Link href="/biz/sponsored" className={ui.strong} style={{ display: 'inline-block', marginTop: 10, color: 'var(--teal-deep)' }}>למקומות הממומנים</Link>
           </div>
 
           <div className={ui.stack}>

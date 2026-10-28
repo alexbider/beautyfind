@@ -150,21 +150,6 @@
 .moreName { flex: 1; min-width: 0; font-size: 15px; font-weight: 700; line-height: 1.25; text-wrap: balance; }
 
 /* ---------- Businesses by region ---------- */
-.adWrap { position: relative; display: inline-flex; }
-.adBtn {
-  display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px 0 10px; border-radius: 999px; border: 1px solid var(--line);
-  background: #ffffff; font: inherit; font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer; transition: border-color .18s, color .18s;
-}
-@media (hover: hover) and (pointer: fine) { .adBtn:hover { border-color: var(--navy); color: var(--navy); } }
-.adPop {
-  position: absolute; top: calc(100% + 10px); right: 0; z-index: 30; width: 300px; padding: 16px; border-radius: 16px; background: #ffffff;
-  border: 1px solid var(--line); box-shadow: 0 20px 48px rgba(12, 36, 62, .16); font-size: 14px; line-height: 1.6; color: var(--text);
-  text-align: right; animation: dkHintIn .18s ease backwards;
-}
-.adPopHead { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: var(--navy); }
-.adClose { margin-right: auto; width: 28px; height: 28px; border: 0; border-radius: 8px; background: var(--bg-page); cursor: pointer; display: grid; place-items: center; }
-.adPopText { display: block; margin: 8px 0 10px; }
-.adPop .textLink { font-size: 14px; }
 
 .tabsRow { margin-top: 24px; display: flex; align-items: center; gap: 16px; max-width: 100%; }
 .tabs {
@@ -396,3 +381,7 @@
   .go, .sheen, .nudge, .tapRing, .tapHand, .swipe, .tapHint, .dragHint { animation: none !important; }
   .tapRing { display: none; }
 }
+
+/* The homepage sponsored slider sits between the trust strip and the categories. */
+.sponsoredWrap { padding-top: 56px; }
+.sponsoredWrap > section { margin-bottom: 0; }

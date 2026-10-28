@@ -1754,36 +1754,72 @@ enum CampaignStatus {
   cancelled
 }
 
-// A sponsored placement: one branch, one region and category, from a Sunday for N weeks (02-data-model.md).
-// Reviewed before it runs and before it is billed; at most 2 approved per region, category and week.
+enum CampaignPlacement {
+  city_list // one city + category list, e.g. /dan/tel-aviv/nails
+  treatment_page // the national treatment page, e.g. /treatments/nails
+  homepage // the homepage slider
+}
+
+// A sponsored placement, sold by the month (docs/sponsored.md): one branch, one page (a city + category
+// list, a national treatment page or the homepage), one card in that page's sponsored slider. Reviewed
+// before it runs and before it is billed; at most N live per page (platform settings, 10 by default).
+// Billing is a monthly Stripe subscription (metadata purpose=sponsored) started on approval; the card
+// shows while activeUntil (the paid or free period) has not passed and the campaign has not ended.
 model Campaign {
-  id                String         @id @default(uuid()) @db.Uuid
-  ref               String         @unique // AD-85
-  businessId        String         @map("business_id") @db.Uuid
-  branchId          String         @map("branch_id") @db.Uuid
-  regionSlug        RegionSlug     @map("region_slug")
-  categorySlug      String         @map("category_slug")
-  weekStart         DateTime       @map("week_start") // Sunday 00:00 Asia/Jerusalem
-  weeks             Int            @default(1)
-  line              String // <= 60 characters, the sponsored line on the card
-  featuredTreatment String?        @map("featured_treatment")
-  weeklyPriceAgorot Int            @map("weekly_price_agorot")
-  discountPct       Int            @default(0) @map("discount_pct")
-  status            CampaignStatus @default(pending_review)
-  holdUntil         DateTime?      @map("hold_until")
+  id                   String            @id @default(uuid()) @db.Uuid
+  ref                  String            @unique // AD-85
+  businessId           String            @map("business_id") @db.Uuid
+  branchId             String            @map("branch_id") @db.Uuid
+  placement            CampaignPlacement @default(city_list)
+  /// The page the card runs on: "home", "treatment:<category>" or "list:<region>/<city>/<category>". Capacity is counted per page.
+  pageKey              String            @default("") @map("page_key")
+  regionSlug           RegionSlug?       @map("region_slug")
+  citySlug             String?           @map("city_slug")
+  categorySlug         String?           @map("category_slug")
+  /// Requested start (on approval when empty or past), Asia/Jerusalem.
+  startsAt             DateTime          @map("week_start")
+  line                 String // <= 60 characters, the sponsored line on the card
+  featuredTreatment    String?           @map("featured_treatment")
+  monthlyPriceAgorot   Int               @default(0) @map("monthly_price_agorot")
+  /// Months given free before the first charge (the launch offer), 0 or 1.
+  freeMonths           Int               @default(0) @map("free_months")
+  status               CampaignStatus    @default(pending_review)
+  holdUntil            DateTime?         @map("hold_until")
   // [{ result: ok|warn|bad, text }] from the automatic review
-  checks            Json           @default("[]")
-  reviewNote        String?        @map("review_note")
-  reviewedById      String?        @map("reviewed_by_id") @db.Uuid
-  reviewedAt        DateTime?      @map("reviewed_at")
-  paymentId         String?        @map("payment_id") @db.Uuid
-  stats             Json?
-  createdAt         DateTime       @default(now()) @map("created_at")
-  updatedAt         DateTime       @updatedAt @map("updated_at")
+  checks               Json              @default("[]")
+  reviewNote           String?           @map("review_note")
+  reviewedById         String?           @map("reviewed_by_id") @db.Uuid
+  reviewedAt           DateTime?         @map("reviewed_at")
+  paymentId            String?           @map("payment_id") @db.Uuid
+  stripeCustomerId     String?           @map("stripe_customer_id")
+  stripeSubscriptionId String?           @unique @map("stripe_subscription_id")
+  /// The card is shown until this moment: the end of the paid (or free) month. Extended by every paid invoice.
+  activeUntil          DateTime?         @map("active_until")
+  cancelAtPeriodEnd    Boolean           @default(false) @map("cancel_at_period_end")
+  endedAt              DateTime?         @map("ended_at")
+  stats                Json?
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime          @updatedAt @map("updated_at")
+  dailyStats           SponsoredStat[]
 
   @@index([status])
-  @@index([regionSlug, categorySlug, weekStart])
+  @@index([pageKey, status])
+  @@index([businessId])
   @@map("campaigns")
+}
+
+// Aggregate counts per sponsored card per day: on-screen views, clicks to the profile, and contact clicks
+// (call, WhatsApp, booking, Waze) made after arriving from the card. No visitor data is stored.
+model SponsoredStat {
+  campaignId  String   @map("campaign_id") @db.Uuid
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  day         DateTime @db.Date
+  impressions Int      @default(0)
+  clicks      Int      @default(0)
+  contacts    Int      @default(0)
+
+  @@id([campaignId, day])
+  @@map("sponsored_stats")
 }
 
 // The platform's own expenses, for the profit and loss and the accountant export.

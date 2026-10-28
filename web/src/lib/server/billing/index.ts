@@ -7,7 +7,8 @@ import { platformSettings } from '../platformSettings';
 import { siteUrl } from '../site';
 import { customerIdOf, periodEndOf, planOfPrice, planPriceId, portalConfigurationId, priceId, SITE, stripe, stripeConfigured, type Cycle } from './stripe';
 
-// Platform billing: BeautyFind's own subscriptions and sponsored weeks, charged through Stripe.
+// Platform billing: BeautyFind's own subscriptions, charged through Stripe. Sponsored placements are
+// monthly subscriptions of their own (src/lib/server/sponsored), handled before these.
 // - A business saves a card through Stripe Checkout. If it already has live branches the subscription
 //   starts right there; if not, the card is only saved (setup mode) and the subscription starts when the
 //   first branch goes live (syncBilling, called on approval and by the daily billing cron).
@@ -354,72 +355,6 @@ export async function applyPlanChange(businessId: string, when: 'now' | 'period_
   await scheduleAtPeriodEnd(s, await priceForBusiness(businessId, next.plan, next.cycle), qty, next.cycle);
 }
 
-/**
- * Bills an approved sponsored placement: one invoice for the weeks, after the multi-week discount.
- * With a saved card it is charged at once; without one Stripe emails a payment link due in three days.
- */
-export async function billCampaign(campaignId: string): Promise<BillingResult> {
-  if (!stripeConfigured()) return { ok: false, error: NOT_CONFIGURED };
-  const c = await db.campaign.findUnique({ where: { id: campaignId } });
-  if (!c) return { ok: false, error: 'not found' };
-  if (c.paymentId) return { ok: true, message: 'already billed' };
-  const sub = await db.subscription.findUnique({ where: { businessId: c.businessId }, select: { id: true } });
-  // A business with no plan has no billing account yet; the placement stays an open charge for the accounting screen.
-  if (!sub) return { ok: false, error: 'no_subscription' };
-  const customer = await ensureCustomer(c.businessId);
-  const weeksTotal = c.weeklyPriceAgorot * c.weeks;
-  const amount = Math.round(weeksTotal * (1 - c.discountPct / 100));
-  const card = await hasDefaultCard(customer);
-  const meta = { site: SITE, purpose: 'sponsored', campaignId: c.id, businessId: c.businessId, ref: c.ref };
-  const weekStart = c.weekStart.toLocaleDateString('he-IL', { timeZone: 'Asia/Jerusalem' });
-
-  const inv = await stripe().invoices.create(
-    {
-      customer,
-      currency: 'ils',
-      collection_method: card ? 'charge_automatically' : 'send_invoice',
-      ...(card ? {} : { days_until_due: 3 }),
-      pending_invoice_items_behavior: 'exclude',
-      auto_advance: true,
-      description: `מקום ממומן ${c.ref}`,
-      metadata: meta,
-    },
-    { idempotencyKey: `bf-campaign-invoice-${c.id}` },
-  );
-  await stripe().invoiceItems.create(
-    {
-      customer,
-      invoice: inv.id,
-      currency: 'ils',
-      amount,
-      description: `מקום ממומן ${c.ref} · ${c.weeks === 1 ? 'שבוע אחד' : `${c.weeks} שבועות`} מ־${weekStart}${c.discountPct ? ` · הנחה ${c.discountPct}%` : ''}`,
-      metadata: meta,
-    },
-    { idempotencyKey: `bf-campaign-item-${c.id}` },
-  );
-  const fin = await stripe().invoices.finalizeInvoice(inv.id!, { auto_advance: true });
-  if (card) {
-    try {
-      await stripe().invoices.pay(fin.id!);
-    } catch (e) {
-      // A declined card: Stripe retries on its own schedule and emails the customer; the webhook records the outcome.
-      console.warn('[billing] sponsored charge declined', c.ref, (e as Error).message);
-    }
-  } else {
-    await stripe().invoices.sendInvoice(fin.id!);
-  }
-  return { ok: true, message: card ? 'charged' : 'invoice_sent' };
-}
-
-/** billCampaign that never throws. */
-export async function billCampaignSafe(campaignId: string): Promise<void> {
-  try {
-    await billCampaign(campaignId);
-  } catch (e) {
-    console.error('[billing] sponsored invoice failed', campaignId, e);
-  }
-}
-
 /** Plain-text lines of a Stripe invoice for our document record. */
 function invoiceLines(inv: Stripe.Invoice) {
   return (inv.lines?.data ?? []).map(l => ({ description: l.description ?? 'BeautyFind', qty: l.quantity ?? 1, unitAgorot: l.quantity ? Math.round(l.amount / l.quantity) : l.amount }));
@@ -459,9 +394,6 @@ export async function recordPaidInvoice(inv: Stripe.Invoice): Promise<void> {
         provider: 'stripe', providerRef: inv.id, pdfUrl: inv.invoice_pdf ?? inv.hosted_invoice_url ?? null, sentTo: inv.customer_email ?? null, issuedAt: paidAt,
       },
     });
-    if (purpose === 'sponsored' && inv.metadata?.campaignId) {
-      await tx.campaign.updateMany({ where: { id: inv.metadata.campaignId, paymentId: null }, data: { paymentId: p.id } });
-    }
     await tx.auditLog.create({ data: { action: 'platform_payment', subjectType: 'payment', subjectId: p.id, businessId: sub.businessId, meta: { ref: number, purpose, gross: amount / 100, provider: 'stripe' } } });
   });
 }

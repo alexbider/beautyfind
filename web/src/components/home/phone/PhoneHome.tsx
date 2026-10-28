@@ -1,6 +1,8 @@
 'use client';
 
 import Image from 'next/image';
+import { SponsoredSlider } from '@/components/sponsored/SponsoredSlider';
+import type { SponsoredCardData } from '@/lib/sponsored';
 import { Wordmark } from '@/components/Wordmark';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -56,6 +58,7 @@ export interface PhoneHomeProps {
   regionCities: Record<RegionSlug, Array<{ name: string; href: string }>>;
   catCount: number;
   guides: HomeGuide[];
+  sponsored: SponsoredCardData[];
 }
 
 // The design opens on גוש דן; a region picked anywhere on the site (header, map) wins.
@@ -514,7 +517,7 @@ export function ListingSteps({ variant }: { variant?: 'desk' }) {
 
 /* ---------------------------------------------------------------- Page */
 
-export function PhoneHome({ lists, reviews, regionCities, catCount, guides }: PhoneHomeProps) {
+export function PhoneHome({ lists, reviews, regionCities, catCount, guides, sponsored }: PhoneHomeProps) {
   const router = useRouter();
   const [stored, setStored] = useRegion();
   const region: RegionSlug = stored === 'all' ? FALLBACK_REGION : stored;
@@ -641,6 +644,13 @@ export function PhoneHome({ lists, reviews, regionCities, catCount, guides }: Ph
             ))}
           </div>
         </section>
+
+        {/* ---------- Sponsored (only when someone bought a homepage slot) ---------- */}
+        {sponsored.length > 0 && (
+          <div className={s.pad40}>
+            <SponsoredSlider cards={sponsored} title="עסקים מקודמים בכל הארץ" context="עמוד הבית" />
+          </div>
+        )}
 
         {/* ---------- Categories ---------- */}
         <section className={s.pad40} aria-labelledby="h-cats-m">

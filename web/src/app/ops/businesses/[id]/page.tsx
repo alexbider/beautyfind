@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { PHASE, phaseOf } from '@/app/ops/sponsored/data';
+import { pageTitle } from '@/lib/server/sponsored';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { AdminShell } from '@/components/ops/AdminShell';
@@ -187,7 +189,7 @@ export default async function BusinessCardPage({ params }: { params: Promise<{ i
           {b.campaigns.length || b.disputes.length ? (
             <Card title="ממומנים ומחלוקות" flush>
               <ul className={ui.list}>
-                {b.campaigns.map(c => <li key={c.id} className={ui.listItem}><div className={ui.listText}><div className={ui.listTitle}><Link href="/ops/sponsored" className={ui.rowLink}>{c.ref}</Link> · {c.line}</div><div className={ui.listSub}>{dateIL(c.weekStart)} · {c.weeks} שבועות</div></div><Chip>{c.status}</Chip></li>)}
+                {b.campaigns.map(c => <li key={c.id} className={ui.listItem}><div className={ui.listText}><div className={ui.listTitle}><Link href="/ops/sponsored" className={ui.rowLink}>{c.ref}</Link> · {c.line}</div><div className={ui.listSub}>{pageTitle(c)} · {nisAgorot(c.monthlyPriceAgorot)} לחודש · {c.activeUntil ? `עד ${dateIL(c.activeUntil)}` : dateIL(c.startsAt)}</div></div><Chip tone={PHASE[phaseOf(c)].tone}>{PHASE[phaseOf(c)].name}</Chip></li>)}
                 {b.disputes.map(d => <li key={d.id} className={ui.listItem}><div className={ui.listText}><div className={ui.listTitle}><Link href="/ops/disputes" className={ui.rowLink}>{d.ref}</Link> · {d.clientName}</div><div className={ui.listSub}>{nisAgorot(d.amountAgorot)}</div></div><Chip>{d.status}</Chip></li>)}
               </ul>
             </Card>

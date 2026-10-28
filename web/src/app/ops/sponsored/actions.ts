@@ -1,26 +1,29 @@
 'use server';
 
-import type { Prisma, RegionSlug } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { areaUserOrNull } from '@/components/ops/access';
-import { CATEGORIES, REGIONS } from '@/lib/catalog';
-import { billCampaignSafe } from '@/lib/server/billing';
 import { db } from '@/lib/server/db';
-import { platformSettings } from '@/lib/server/platformSettings';
-import { nextRef } from '@/lib/server/refs';
-import { contentChecks, discountPctFor, nextWeekStart, SPONSORED_LINE_MAX } from '@/lib/sponsoredChecks';
-import { reviewChecks } from './data';
+import { activateCampaignSafe, cancelCampaign, requestCampaign, reviewChecks } from '@/lib/server/sponsored';
+import { pathOfPageKey } from '@/lib/sponsored';
+import { SPONSORED_LINE_MAX } from '@/lib/sponsoredChecks';
 
-// A sponsored placement is approved or rejected here, with the automatic checks recomputed at the
-// moment of the decision (a list that filled up meanwhile cannot be approved). Billing: the charge
-// is created only after approval, as a Stripe invoice (src/lib/server/billing): charged to the saved card,
-// or emailed as a payment link when there is none. Until it is paid the accounting screen shows it as an
-// open charge. A manual order lets staff enter a placement a business asked for by phone.
+// A sponsored placement is approved or rejected here, with the automatic checks recomputed at the moment of
+// the decision (a page that filled up meanwhile cannot be approved). Approval starts billing at once: the
+// monthly Stripe subscription on the business's card (src/lib/server/sponsored), or a wait for the owner to
+// save a card. A manual order lets staff enter a placement a business asked for by phone.
 
-type Result = { ok: true; ref?: string } | { ok: false; error: string };
+type Result = { ok: true; ref?: string; message?: string } | { ok: false; error: string };
+
+const refresh = (pageKey?: string) => {
+  for (const p of ['/ops/sponsored', '/ops', '/biz/sponsored']) revalidatePath(p);
+  if (pageKey) revalidatePath(pathOfPageKey(pageKey));
+};
 
 const ReviewInput = z.object({ id: z.string().uuid(), decision: z.enum(['approve', 'reject']), note: z.string().trim().max(600).optional() });
+
+const STATE_TEXT = { billing: 'אושר והחיוב החודשי הופעל', free_month: 'אושר; החודש הראשון חינם והחיוב יתחיל אחריו', needs_card: 'אושר; העסק צריך לשמור כרטיס כדי שהמקום יעלה', manual: 'אושר; Stripe לא מחובר, יש לתאם תשלום ידנית' } as const;
 
 export async function reviewCampaignAction(input: z.input<typeof ReviewInput>): Promise<Result> {
   const user = await areaUserOrNull('sponsored', 'edit');
@@ -35,55 +38,53 @@ export async function reviewCampaignAction(input: z.input<typeof ReviewInput>): 
   if (p.data.decision === 'reject' && !p.data.note) return { ok: false, error: 'דחייה דורשת הסבר לעסק' };
   const status = p.data.decision === 'approve' ? 'approved' : 'rejected';
   await db.$transaction([
-    db.campaign.update({ where: { id: c.id }, data: { status, checks: r.checks as unknown as Prisma.InputJsonValue, reviewNote: p.data.note || null, reviewedById: user.id, reviewedAt: new Date(), holdUntil: null } }),
+    db.campaign.update({ where: { id: c.id }, data: { status, checks: r.checks as unknown as Prisma.InputJsonValue, reviewNote: p.data.note || null, reviewedById: user.id, reviewedAt: new Date(), holdUntil: null, ...(status === 'rejected' ? { endedAt: new Date() } : {}) } }),
     db.decision.create({ data: { actorId: user.id, actorRole: user.opsRole ?? 'ops', subjectType: 'campaign', subjectId: c.id, action: status === 'approved' ? 'approve' : 'reject', reason: p.data.note || null } }),
     db.auditLog.create({ data: { actorId: user.id, action: 'campaign_review', subjectType: 'campaign', subjectId: c.id, businessId: c.businessId, meta: { ref: c.ref, decision: status, note: p.data.note || null } } }),
   ]);
-  // Approved placements are billed at once through Stripe (charged to the saved card, or a payment link by email).
-  if (status === 'approved') await billCampaignSafe(c.id);
-  revalidatePath('/ops/sponsored');
-  revalidatePath('/ops');
-  return { ok: true };
+  let message: string | undefined;
+  if (status === 'approved') {
+    const a = await activateCampaignSafe(c.id);
+    message = a.ok ? STATE_TEXT[a.state] : a.error;
+  }
+  refresh(c.pageKey);
+  return { ok: true, message };
 }
 
 const OrderInput = z.object({
   branchId: z.string().uuid(),
-  region: z.string(),
-  category: z.string(),
-  weekStart: z.string().optional(),
-  weeks: z.coerce.number().int().min(1).max(12),
+  pageKey: z.string().min(4).max(120),
   line: z.string().trim().min(3).max(SPONSORED_LINE_MAX),
   featuredTreatment: z.string().trim().max(80).optional(),
+  startsAt: z.string().optional(),
 });
 
 export async function createCampaignAction(input: z.input<typeof OrderInput>): Promise<Result> {
   const user = await areaUserOrNull('sponsored', 'edit');
   if (!user) return { ok: false, error: 'אין הרשאה' };
   const p = OrderInput.safeParse(input);
-  if (!p.success) return { ok: false, error: `קלט לא תקין: שורה עד ${SPONSORED_LINE_MAX} תווים, 1 עד 12 שבועות` };
-  if (!REGIONS.some(r => r.slug === p.data.region)) return { ok: false, error: 'אזור לא מוכר' };
-  if (!CATEGORIES.some(c => c.slug === p.data.category)) return { ok: false, error: 'תחום לא מוכר' };
-  const branch = await db.branch.findUnique({ where: { id: p.data.branchId }, select: { id: true, businessId: true } });
+  if (!p.success) return { ok: false, error: `קלט לא תקין: שורה של 3 עד ${SPONSORED_LINE_MAX} תווים` };
+  const branch = await db.branch.findUnique({ where: { id: p.data.branchId }, select: { businessId: true } });
   if (!branch) return { ok: false, error: 'סניף לא נמצא' };
-  const s = await platformSettings();
-  let weekStart = nextWeekStart();
-  if (p.data.weekStart) {
-    const d = new Date(p.data.weekStart);
+  let startsAt: Date | null = null;
+  if (p.data.startsAt) {
+    const d = new Date(`${p.data.startsAt}T00:00:00+03:00`);
     if (Number.isNaN(d.getTime())) return { ok: false, error: 'תאריך לא תקין' };
-    weekStart = nextWeekStart(d);
+    startsAt = d;
   }
-  const ref = await nextRef('AD', 2);
-  const checks = contentChecks(p.data.line, p.data.featuredTreatment);
-  await db.$transaction([
-    db.campaign.create({
-      data: {
-        ref, businessId: branch.businessId, branchId: branch.id, regionSlug: p.data.region as RegionSlug, categorySlug: p.data.category, weekStart, weeks: p.data.weeks,
-        line: p.data.line, featuredTreatment: p.data.featuredTreatment || null, weeklyPriceAgorot: s.sponsoredWeeklyNis * 100, discountPct: discountPctFor(p.data.weeks),
-        holdUntil: new Date(Date.now() + 24 * 3_600_000), checks: checks as unknown as Prisma.InputJsonValue,
-      },
-    }),
-    db.auditLog.create({ data: { actorId: user.id, action: 'campaign_order', subjectType: 'campaign', subjectId: branch.id, businessId: branch.businessId, meta: { ref, weeks: p.data.weeks, region: p.data.region, category: p.data.category } } }),
-  ]);
-  revalidatePath('/ops/sponsored');
-  return { ok: true, ref };
+  const r = await requestCampaign({ businessId: branch.businessId, branchId: p.data.branchId, pageKey: p.data.pageKey, line: p.data.line, featuredTreatment: p.data.featuredTreatment, startsAt }, { userId: user.id, via: 'ops' });
+  if (!r.ok) return r;
+  refresh();
+  return { ok: true, ref: r.ref, message: r.free ? 'החודש הראשון חינם (מבצע ההשקה)' : undefined };
+}
+
+export async function cancelCampaignAction(id: string): Promise<Result> {
+  const user = await areaUserOrNull('sponsored', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  if (!z.string().uuid().safeParse(id).success) return { ok: false, error: 'קלט לא תקין' };
+  const r = await cancelCampaign(id, { userId: user.id });
+  if (!r.ok) return r;
+  const c = await db.campaign.findUnique({ where: { id }, select: { pageKey: true } });
+  refresh(c?.pageKey);
+  return { ok: true, message: r.message };
 }

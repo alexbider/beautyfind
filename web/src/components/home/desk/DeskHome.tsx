@@ -1,6 +1,8 @@
 'use client';
 
 import Image from 'next/image';
+import { SponsoredSlider } from '@/components/sponsored/SponsoredSlider';
+import type { SponsoredCardData } from '@/lib/sponsored';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
@@ -31,6 +33,7 @@ export interface DeskHomeProps {
   reviews: PhoneReview[];
   regionCities: Record<RegionSlug, Array<{ name: string; href: string }>>;
   guides: HomeGuide[];
+  sponsored: SponsoredCardData[];
 }
 
 const CATS = [
@@ -247,26 +250,14 @@ function Carousel({ cards, region }: { cards: PhoneCard[]; region: RegionSlug })
   );
 }
 
-export function DeskHome({ lists, regionCounts, reviews, regionCities, guides }: DeskHomeProps) {
+export function DeskHome({ lists, regionCounts, reviews, regionCities, guides, sponsored }: DeskHomeProps) {
   const router = useRouter();
   const [stored, setStored] = useRegion();
   const region: RegionSlug = stored === 'all' ? FALLBACK_REGION : stored;
   const [q, setQ] = useState('');
   const [located, setLocated] = useState<RegionSlug | null>(null);
   const [locating, setLocating] = useState(false);
-  const [adInfo, setAdInfo] = useState(false);
   const [faq, setFaq] = useState(0);
-  const adRef = useRef<HTMLSpanElement>(null);
-
-  // The ad popover closes on outside click and Escape.
-  useEffect(() => {
-    if (!adInfo) return;
-    const onDown = (e: MouseEvent) => { if (!adRef.current?.contains(e.target as Node)) setAdInfo(false); };
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setAdInfo(false); };
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
-  }, [adInfo]);
 
   const locate = () => {
     if (!('geolocation' in navigator)) return;
@@ -347,6 +338,13 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities, guides }:
         </div>
       </section>
 
+      {/* ---------- Sponsored (only when someone bought a homepage slot) ---------- */}
+      {sponsored.length > 0 && (
+        <div className={`${s.wrap} ${s.sponsoredWrap}`}>
+          <SponsoredSlider cards={sponsored} title="עסקים מקודמים בכל הארץ" context="עמוד הבית" />
+        </div>
+      )}
+
       {/* ---------- Categories ---------- */}
       <section aria-labelledby="h-cats" className={`${s.wrap} ${s.pt88}`}>
         <div className={s.head}>
@@ -386,24 +384,6 @@ export function DeskHome({ lists, regionCounts, reviews, regionCities, guides }:
           <Kicker>מכונים לפי אזור</Kicker>
           <div className={s.titleRow}>
             <h2 id="h-clinics" className={s.h2}>מכוני יופי באזור שלכם<Dot /></h2>
-            <span ref={adRef} className={s.adWrap}>
-              <button type="button" onClick={() => setAdInfo(v => !v)} aria-expanded={adInfo} aria-controls="ad-info" className={s.adBtn}>
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.5" /><path d="M8 7v4M8 5h.01" strokeLinecap="round" /></svg>
-                ממומן
-              </button>
-              {adInfo && (
-                <span id="ad-info" role="dialog" aria-label="מה זה ממומן" className={s.adPop}>
-                  <span className={s.adPopHead}>
-                    מה זה ממומן?
-                    <button type="button" onClick={() => setAdInfo(false)} aria-label="סגירה" className={s.adClose}>
-                      <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#0C243E" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" /></svg>
-                    </button>
-                  </span>
-                  <span className={s.adPopText}>עסקים יכולים לשלם על קידום באזור ובתחום הטיפול. עסק מקודם מסומן תמיד בתג ״ממומן״. הקידום משפיע רק על המיקום ברשימה, ואינו משפיע על הדירוג, על הביקורות או על אימות העסק. בכל רשימה מוצגים לכל היותר שני עסקים ממומנים.</span>
-                  <Link href={`${ROUTES.methodology}#ranking`} className={s.textLink}>איך מדרגים<Arrow width={1.7} /></Link>
-                </span>
-              )}
-            </span>
           </div>
           <div className={s.tabsRow}>
             <div role="tablist" aria-label="אזורים" className={s.tabs}>

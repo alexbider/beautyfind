@@ -20,7 +20,7 @@ test('marketing skips Shabbat, holidays and their eves', () => {
 
 test('new templates render with links and the claim invite carries an unsubscribe link', () => {
   const site = 'https://beautyfind.co.il';
-  for (const t of ['M6_review_request', 'M15_gift_expiry', 'M23_payment_failed', 'M22_sponsored_approved', 'M22_sponsored_rejected', 'M22_sponsored_started', 'M22_sponsored_ended', 'M_onboard_welcome', 'M_onboard_profile', 'M_onboard_card']) {
+  for (const t of ['M6_review_request', 'M15_gift_expiry', 'M23_payment_failed', 'M22_sponsored_approved', 'M22_sponsored_rejected', 'M22_sponsored_started', 'M22_sponsored_ended', 'M22_sponsored_report', 'M_onboard_welcome', 'M_onboard_profile', 'M_onboard_card']) {
     const r = renderMessage(t, { name: 'נועה', business: 'סטודיו', link: `${site}/x`, days: '30', amount: '200 ₪', expires: '01/01/2027', step: '0' }, site);
     assert.ok(r, t);
     assert.ok(r!.sms.includes(`${site}/x`) || t === 'M22_sponsored_started', `${t} sms has link`);

@@ -4,6 +4,7 @@ import { db } from '../db';
 import { applyStripeSubscription, recordFailedInvoice, recordPaidInvoice, refreshCard, syncBilling } from './index';
 import { customerIdOf, invoiceSubscriptionId, SITE, stripe } from './stripe';
 import { handleMarketingEvent } from '../marketing';
+import { handleSponsoredEvent } from '../sponsored';
 
 // Stripe events for BeautyFind. The Stripe account also bills other sites, so every handler first
 // finds our subscription row by the Stripe customer and ignores anything it does not know.
@@ -18,6 +19,9 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<'handled' 
   // invoice of a customer who also has a listing plan never reaches the plan handlers below.
   const marketing = await handleMarketingEvent(event);
   if (marketing) return marketing;
+  // Sponsored placements (metadata purpose=sponsored) likewise: their subscriptions and invoices never reach the plan handlers.
+  const sponsored = await handleSponsoredEvent(event);
+  if (sponsored) return sponsored;
   switch (event.type) {
     case 'checkout.session.completed': {
       const s = event.data.object as Stripe.Checkout.Session;

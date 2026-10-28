@@ -18,8 +18,13 @@ const GROUPS: NumberGroup[] = [
   { title: 'תמחור', fields: [
     { key: 'basicMonthlyNis', label: 'רישום בסיסי · לסניף לחודש', unit: '₪' },
     { key: 'advancedMonthlyNis', label: 'רישום מתקדם + CRM · לסניף לחודש', unit: '₪' },
-    { key: 'sponsoredWeeklyNis', label: 'מקום ממומן · לשבוע', unit: '₪' },
-    { key: 'sponsoredMaxPerList', label: 'ממומנים מקסימום ברשימה', unit: '' },
+  ] },
+  { title: 'מקומות ממומנים', fields: [
+    { key: 'sponsoredListMonthlyNis', label: 'רשימת עיר ותחום או עמוד תחום · לחודש', unit: '₪' },
+    { key: 'sponsoredHomeMonthlyNis', label: 'עמוד הבית · לחודש', unit: '₪' },
+    { key: 'sponsoredSlotsPerPage', label: 'מקומות בסליידר של כל עמוד', unit: '' },
+    { key: 'sponsoredFreeMonthQuota', label: 'חודש ראשון חינם · לכמה עסקים ראשונים', unit: 'עסקים' },
+    { key: 'sponsoredMakeGoodVisits', label: 'פחות כניסות מזה בחודש = 50% הנחה בחודש הבא (0 = כבוי)', unit: 'כניסות' },
   ] },
   { title: 'מע״מ ומסמכים', fields: [
     { key: 'vatRatePct', label: 'שיעור מע״מ · במסמכי הקליניקות', unit: '%', step: 0.5 },
@@ -39,7 +44,7 @@ export default async function SettingsPage() {
   const [level, s, row, market] = await Promise.all([areaLevel(user, 'settings'), platformSettings(), db.platformSettings.findUnique({ where: { id: 1 }, select: { updatedAt: true, updatedById: true } }), marketPrices()]);
   const canEdit = atLeast(level, 'edit');
   const editor = row?.updatedById ? await db.user.findUnique({ where: { id: row.updatedById }, select: { fullName: true, email: true } }) : null;
-  const values = { basicMonthlyNis: s.basicMonthlyNis, advancedMonthlyNis: s.advancedMonthlyNis, sponsoredWeeklyNis: s.sponsoredWeeklyNis, sponsoredMaxPerList: s.sponsoredMaxPerList, vatRatePct: s.vatRatePct, retryFirstDays: s.retryFirstDays, retrySecondDays: s.retrySecondDays, hideInDebtDays: s.hideInDebtDays, giftCardMinYears: s.giftCardMinYears };
+  const values = { basicMonthlyNis: s.basicMonthlyNis, advancedMonthlyNis: s.advancedMonthlyNis, sponsoredListMonthlyNis: s.sponsoredListMonthlyNis, sponsoredHomeMonthlyNis: s.sponsoredHomeMonthlyNis, sponsoredSlotsPerPage: s.sponsoredSlotsPerPage, sponsoredFreeMonthQuota: s.sponsoredFreeMonthQuota, sponsoredMakeGoodVisits: s.sponsoredMakeGoodVisits, vatRatePct: s.vatRatePct, retryFirstDays: s.retryFirstDays, retrySecondDays: s.retrySecondDays, hideInDebtDays: s.hideInDebtDays, giftCardMinYears: s.giftCardMinYears };
 
   return (
     <AdminShell user={user}>

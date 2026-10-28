@@ -6,20 +6,29 @@ import { INDEX_SECTION_KEYS } from '@/lib/indexing';
 import { DEFAULT_MEDICAL_DISCLAIMER, DEFAULT_MEDICAL_STATED_DISCLAIMER } from '@/lib/medical';
 import { MarketPricesSchema } from '@/lib/marketPrices';
 import { PLAN_MONTHLY_NIS, VAT_RATE } from '@/lib/pricing';
+import { DEFAULT_FREE_MONTH_QUOTA, DEFAULT_HOME_MONTHLY_NIS, DEFAULT_LIST_MONTHLY_NIS, DEFAULT_MAKE_GOOD_VISITS, DEFAULT_SLOTS_PER_PAGE } from '@/lib/sponsored';
 import { db } from './db';
 
 // Platform settings edited on /ops/settings (one row, JSON). Code constants are the defaults, so a
 // fresh database behaves exactly as before; a saved value overrides them where the server reads them
-// (plan prices on billing screens, the sponsored weekly price, feature flags, maintenance mode).
+// (plan prices on billing screens, the sponsored monthly prices, feature flags, maintenance mode).
 
 const Level = z.enum(LEVELS as [string, ...string[]]);
 
 export const PlatformSettingsSchema = z.object({
-  // Pricing (NIS per live branch per month; sponsored per week). Defaults from src/lib/pricing.ts.
+  // Pricing (NIS per live branch per month). Defaults from src/lib/pricing.ts.
   basicMonthlyNis: z.number().int().min(0).max(100_000).default(PLAN_MONTHLY_NIS.basic),
   advancedMonthlyNis: z.number().int().min(0).max(100_000).default(PLAN_MONTHLY_NIS.advanced),
-  sponsoredWeeklyNis: z.number().int().min(0).max(100_000).default(364),
-  sponsoredMaxPerList: z.number().int().min(0).max(10).default(2),
+  // Sponsored placements, by the month (src/lib/sponsored.ts): a city + category list or a treatment page,
+  // and the homepage; slots per page; the free first month quota; the make-good threshold.
+  sponsoredListMonthlyNis: z.number().int().min(0).max(100_000).default(DEFAULT_LIST_MONTHLY_NIS),
+  sponsoredHomeMonthlyNis: z.number().int().min(0).max(100_000).default(DEFAULT_HOME_MONTHLY_NIS),
+  sponsoredSlotsPerPage: z.number().int().min(0).max(20).default(DEFAULT_SLOTS_PER_PAGE),
+  sponsoredFreeMonthQuota: z.number().int().min(0).max(10_000).default(DEFAULT_FREE_MONTH_QUOTA),
+  sponsoredMakeGoodVisits: z.number().int().min(0).max(10_000).default(DEFAULT_MAKE_GOOD_VISITS),
+  // Weekly-era keys, kept so a saved settings row still parses; nothing reads them.
+  sponsoredWeeklyNis: z.number().int().min(0).max(100_000).optional(),
+  sponsoredMaxPerList: z.number().int().min(0).max(20).optional(),
   // VAT shown on clinic prices (Israeli VAT). Platform invoices carry no Israeli VAT (docs/decisions.md).
   vatRatePct: z.number().min(0).max(50).default(Math.round(VAT_RATE * 100)),
   // Billing policy for failed subscription charges (M23: day 0, 3, 7, 14).

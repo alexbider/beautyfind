@@ -1,72 +1,97 @@
 import 'server-only';
-import type { Campaign, CampaignStatus } from '@prisma/client';
-import { categoryBySlug, regionBySlug } from '@/lib/catalog';
+import type { Campaign, CampaignStatus, Prisma } from '@prisma/client';
 import { db } from '@/lib/server/db';
-import { platformSettings } from '@/lib/server/platformSettings';
-import { contentChecks, weekEnd, type CheckResult } from '@/lib/sponsoredChecks';
+import { pageTitle, reviewChecks, statTotals, type StatTotals } from '@/lib/server/sponsored';
+import { pathOfPageKey, PLACEMENT_NAME } from '@/lib/sponsored';
+import type { CheckResult } from '@/lib/sponsoredChecks';
 
-// Sponsored placements waiting for review, with the automatic checks a reviewer needs in front of
-// them: the content rules, the medical responsibility of the branch (a medical category needs a
-// verified doctor), the capacity of the list (max N approved per region, category and week) and
-// whether the business has an open debt (no charge until it is settled).
+// Sponsored placements for the admin: the review queue with the automatic checks a reviewer needs (content
+// rules, the branch's medical responsible, free slots on the page, open debt), and every placement with its
+// state, billing and results.
 
-export const STATUS_NAME: Record<CampaignStatus, string> = { pending_review: 'לבדיקה', approved: 'אושר', rejected: 'נדחה', cancelled: 'בוטל' };
-export const STATUS_TONE: Record<CampaignStatus, 'warn' | 'ok' | 'bad' | 'neutral'> = { pending_review: 'warn', approved: 'ok', rejected: 'bad', cancelled: 'neutral' };
-const MEDICAL_GROUP = /רפואי|רפואית|הזרקות|לייזר/u;
+export const STATUS_NAME: Record<CampaignStatus, string> = { pending_review: 'לבדיקה', approved: 'אושר', rejected: 'נדחה', cancelled: 'הסתיים' };
+
+export type Phase = 'review' | 'needs_card' | 'scheduled' | 'free_month' | 'live' | 'ending' | 'ended' | 'rejected';
+
+export const PHASE: Record<Phase, { name: string; tone: 'warn' | 'ok' | 'bad' | 'neutral' }> = {
+  review: { name: 'לבדיקה', tone: 'warn' },
+  needs_card: { name: 'אושר · ממתין לכרטיס', tone: 'warn' },
+  scheduled: { name: 'אושר · יעלה בקרוב', tone: 'ok' },
+  free_month: { name: 'פעיל · חודש חינם', tone: 'ok' },
+  live: { name: 'פעיל', tone: 'ok' },
+  ending: { name: 'פעיל · לא יתחדש', tone: 'neutral' },
+  ended: { name: 'הסתיים', tone: 'neutral' },
+  rejected: { name: 'נדחה', tone: 'bad' },
+};
+
+export function phaseOf(c: Pick<Campaign, 'status' | 'endedAt' | 'activeUntil' | 'startsAt' | 'cancelAtPeriodEnd' | 'freeMonths' | 'stripeSubscriptionId' | 'paymentId'>, now = new Date()): Phase {
+  if (c.status === 'pending_review') return 'review';
+  if (c.status === 'rejected') return 'rejected';
+  if (c.status === 'cancelled' || c.endedAt) return 'ended';
+  if (!c.activeUntil) return c.stripeSubscriptionId ? 'scheduled' : 'needs_card';
+  if (c.activeUntil <= now) return 'ended';
+  if (c.startsAt > now) return 'scheduled';
+  if (c.cancelAtPeriodEnd) return 'ending';
+  if (c.freeMonths > 0 && !c.paymentId) return 'free_month';
+  return 'live';
+}
 
 export interface CampaignView extends Campaign {
-  businessName: string;
   branchName: string;
-  regionName: string;
-  categoryName: string;
+  page: string;
+  path: string;
+  placementName: string;
+  phase: Phase;
   checks: CheckResult[];
   blocking: boolean;
-  capacityUsed: number;
-  capacityMax: number;
-  totalAgorot: number;
+  taken: number;
+  slots: number;
+  totals: StatTotals;
 }
 
-export async function reviewChecks(c: Campaign): Promise<{ checks: CheckResult[]; capacityUsed: number; capacityMax: number }> {
-  const s = await platformSettings();
-  const checks = contentChecks(c.line, c.featuredTreatment);
-  const [branch, business, overlapping] = await Promise.all([
-    db.branch.findUnique({ where: { id: c.branchId }, select: { status: true, medicalResponsible: { select: { profession: true, license: { select: { status: true } } } } } }),
-    db.business.findUnique({ where: { id: c.businessId }, select: { status: true, subscription: { select: { status: true } } } }),
-    db.campaign.count({ where: { id: { not: c.id }, status: 'approved', regionSlug: c.regionSlug, categorySlug: c.categorySlug, weekStart: { lt: weekEnd(c.weekStart, c.weeks) }, AND: [{ weekStart: { gte: new Date(c.weekStart.getTime() - 26 * 7 * 86_400_000) } }] } }),
-  ]);
-  const cat = categoryBySlug(c.categorySlug);
-  const medical = !!cat && (MEDICAL_GROUP.test(cat.group) || MEDICAL_GROUP.test(cat.name));
-  if (medical) {
-    const doc = branch?.medicalResponsible;
-    if (doc?.profession === 'doctor' && doc.license?.status === 'verified') checks.push({ result: 'ok', text: 'הרופא/ה האחראי/ת מאומת/ת' });
-    else checks.push({ result: 'bad', text: 'תחום רפואי ללא רופא/ה אחראי/ת מאומת/ת בסניף' });
-  }
-  if (!branch || branch.status !== 'live') checks.push({ result: 'bad', text: 'הסניף אינו מפורסם' });
-  const max = s.sponsoredMaxPerList;
-  if (overlapping < max) checks.push({ result: 'ok', text: `יש מקום פנוי: ${overlapping + 1} מתוך ${max}` });
-  else checks.push({ result: 'bad', text: `הרשימה מלאה: ${overlapping} מתוך ${max} ממומנים בשבועות האלה` });
-  if (business?.status === 'past_due' || business?.subscription?.status === 'past_due') checks.push({ result: 'warn', text: 'לעסק חוב פתוח: לא ניתן לחייב עד הסדרה' });
-  return { checks, capacityUsed: overlapping, capacityMax: max };
-}
+export type Filter = 'pending' | 'live' | 'all';
 
-export async function listCampaigns(filter: 'pending' | 'all'): Promise<CampaignView[]> {
-  const rows = await db.campaign.findMany({ where: filter === 'pending' ? { status: 'pending_review' } : {}, orderBy: [{ status: 'asc' }, { weekStart: 'asc' }], take: 100 });
+export async function listCampaigns(filter: Filter): Promise<CampaignView[]> {
+  const now = new Date();
+  const where: Prisma.CampaignWhereInput = filter === 'pending' ? { status: 'pending_review' } : filter === 'live' ? { status: 'approved', endedAt: null } : {};
+  const rows = await db.campaign.findMany({ where, orderBy: [{ status: 'asc' }, { createdAt: 'desc' }], take: 200 });
   const branchIds = [...new Set(rows.map(r => r.branchId))];
-  const branches = branchIds.length ? await db.branch.findMany({ where: { id: { in: branchIds } }, select: { id: true, name: true, businessId: true } }) : [];
+  const [branches, totals] = await Promise.all([
+    branchIds.length ? db.branch.findMany({ where: { id: { in: branchIds } }, select: { id: true, name: true } }) : [],
+    statTotals(rows.map(r => r.id)),
+  ]);
   const out: CampaignView[] = [];
   for (const c of rows) {
-    const r = c.status === 'pending_review' ? await reviewChecks(c) : { checks: (Array.isArray(c.checks) ? c.checks : []) as CheckResult[], capacityUsed: 0, capacityMax: 0 };
-    const br = branches.find(b => b.id === c.branchId);
-    const gross = c.weeklyPriceAgorot * c.weeks;
+    const r = c.status === 'pending_review' ? await reviewChecks(c) : { checks: (Array.isArray(c.checks) ? c.checks : []) as unknown as CheckResult[], taken: 0, slots: 0 };
     out.push({
-      ...c, businessName: br?.name ?? 'עסק', branchName: br?.name ?? '—', regionName: regionBySlug(c.regionSlug)?.name ?? c.regionSlug, categoryName: categoryBySlug(c.categorySlug)?.name ?? c.categorySlug,
-      checks: r.checks, blocking: r.checks.some(x => x.result === 'bad'), capacityUsed: r.capacityUsed, capacityMax: r.capacityMax, totalAgorot: Math.round(gross * (1 - c.discountPct / 100)),
+      ...c,
+      branchName: branches.find(b => b.id === c.branchId)?.name ?? 'עסק',
+      page: pageTitle(c), path: pathOfPageKey(c.pageKey), placementName: PLACEMENT_NAME[c.placement],
+      phase: phaseOf(c, now),
+      checks: r.checks, blocking: r.checks.some(x => x.result === 'bad'), taken: r.taken, slots: r.slots,
+      totals: totals.get(c.id) ?? { impressions: 0, clicks: 0, contacts: 0 },
     });
   }
   return out;
 }
 
-/** Businesses with live branches, for the manual order form. */
+/** Live branches, for the manual order form. */
 export async function orderableBranches() {
-  return db.branch.findMany({ where: { status: 'live', business: { status: { in: ['live', 'past_due'] } } }, select: { id: true, name: true, cityName: true, regionSlug: true, businessId: true, categories: { select: { categorySlug: true, isPrimary: true } } }, orderBy: { name: 'asc' }, take: 500 });
+  const rows = await db.branch.findMany({
+    where: { status: 'live', business: { status: { in: ['live', 'past_due'] } } },
+    select: { id: true, name: true, cityName: true, regionSlug: true, businessId: true, city: { select: { slug: true } }, categories: { select: { categorySlug: true, isPrimary: true } } },
+    orderBy: { name: 'asc' },
+    take: 3000,
+  });
+  return rows.map(b => ({ id: b.id, name: b.name, cityName: b.cityName, regionSlug: b.regionSlug, citySlug: b.city?.slug ?? null, categories: b.categories.sort((a, z) => Number(z.isPrimary) - Number(a.isPrimary)).map(c => c.categorySlug) }));
+}
+
+export async function counts() {
+  const now = new Date();
+  const [pending, live, needsCard] = await Promise.all([
+    db.campaign.count({ where: { status: 'pending_review' } }),
+    db.campaign.count({ where: { status: 'approved', endedAt: null, startsAt: { lte: now }, activeUntil: { gt: now } } }),
+    db.campaign.count({ where: { status: 'approved', endedAt: null, activeUntil: null, stripeSubscriptionId: null } }),
+  ]);
+  return { pending, live, needsCard };
 }

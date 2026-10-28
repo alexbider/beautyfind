@@ -66,7 +66,7 @@ export default async function BizLayout({ children }: { children: React.ReactNod
             <span className={styles.bizName}>{name}</span>
             <span className={styles.bizLine}>{line}</span>
           </div>
-          {/* Sponsored placements and branch switching (/biz/sponsored, /biz/branches) arrive in phase 5. */}
+          {/* Branch switching (/biz/branches) arrives in phase 5. Sponsored placements live at /biz/sponsored. */}
           <span className={`${styles.chip} ${styles.chipTeal}`}>
             {branchCount === 1 ? 'סניף אחד' : branchCount === 2 ? 'שני סניפים' : <><span className="ltr">{branchCount}</span>&nbsp;סניפים</>}
           </span>

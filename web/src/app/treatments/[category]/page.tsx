@@ -26,6 +26,9 @@ import { marketPricesFor } from '@/lib/server/marketPrices';
 import { listBranches, listingCounts } from '@/lib/server/public';
 import { STATIC_IMAGE_ALT } from '@/lib/siteImages';
 import styles from './page.module.css';
+import { SponsoredSlider } from '@/components/sponsored/SponsoredSlider';
+import { sponsoredCardsFor } from '@/lib/server/sponsored';
+import { pageKeyOf } from '@/lib/sponsored';
 
 // Design: project/BeautyFind Treatment Category.dc.html (prop `category`: one page per catalog category)
 
@@ -65,7 +68,8 @@ export default async function TreatmentCategoryPage({ params }: Props) {
   const body = cat && CATEGORY_CONTENT[cat.slug];
   if (!cat || !body) notFound();
 
-  const [counts, breakdown, ratings, market, top, ...regionTops] = await Promise.all([
+  const [sponsored, counts, breakdown, ratings, market, top, ...regionTops] = await Promise.all([
+    sponsoredCardsFor(pageKeyOf({ placement: 'treatment_page', category: cat.slug })),
     listingCounts(),
     listingBreakdown(),
     ratingMedians(),
@@ -279,6 +283,13 @@ export default async function TreatmentCategoryPage({ params }: Props) {
             }
           />
         </div>
+
+        {sponsored.length > 0 && (
+          <div className={styles.block}>
+            {/* Sponsored placements, apart from the ranking below (src/lib/server/sponsored). */}
+            <SponsoredSlider cards={sponsored} title={`עסקים מקודמים ב${cat.name}`} context={cat.name} />
+          </div>
+        )}
 
         <div className={styles.block}>
           <BizTabs

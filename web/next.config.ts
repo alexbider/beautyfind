@@ -35,8 +35,6 @@ const nextConfig: NextConfig = {
     return [
       // One address per page: www goes to the bare domain.
       { source: '/:path*', has: [{ type: 'host', value: 'www.beautyfind.co.il' }], destination: 'https://beautyfind.co.il/:path*', permanent: true },
-      // The help center links to a sponsored-purchase screen that is not built yet; billing is where placements show.
-      { source: '/biz/sponsored', destination: '/biz/billing', permanent: false },
     ];
   },
   async rewrites() {

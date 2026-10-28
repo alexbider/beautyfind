@@ -10,7 +10,7 @@ import { PLAN_MONTHLY_NIS, YEARLY_MULTIPLIER, PLATFORM_BILLING_LINE } from '@/li
 import { ROUTES } from '@/lib/routes';
 import { COMPANY, DOC_UPDATED, MAIL, PENDING, PENDING_REVIEW, formatDate, orPending } from '../meta';
 import type { ContentView, Table } from '../types';
-import { SPONSORED_CANCEL_HOURS, SPONSORED_MAX_PER_LIST } from './standards';
+import { SPONSORED_CANCEL_HOURS, SPONSORED_HOME_NIS, SPONSORED_LIST_NIS, SPONSORED_MAKE_GOOD_VISITS, SPONSORED_SLOTS } from './standards';
 
 export type LegalKey = 'privacy' | 'terms' | 'accessibility';
 
@@ -141,7 +141,7 @@ export const LEGAL_VIEWS: Record<LegalKey, ContentView<LegalKey>> = {
             kind: 'note',
             note: {
               title: 'ללא פרסום מבוסס פרופיל.',
-              body: 'איננו מוכרים מידע אישי, איננו מעבירים אותו למפרסמים, ואיננו בונים פרופיל התנהגותי לצורכי פרסום. מקום ממומן נקבע לפי האזור והתחום של הרשימה, לא לפי מי שצופה בה.',
+              body: 'איננו מוכרים מידע אישי, איננו מעבירים אותו למפרסמים, ואיננו בונים פרופיל התנהגותי לצורכי פרסום. מקום ממומן נקבע לפי העמוד, לא לפי מי שצופה בו.',
             },
           },
         ],
@@ -181,7 +181,7 @@ export const LEGAL_VIEWS: Record<LegalKey, ContentView<LegalKey>> = {
               { name: 'הכרחיים', body: 'אזור, סינון שמור, כניסה לחשבון ואבטחה. בלעדיהם האתר לא עובד, ולכן אי אפשר לכבות אותם.' },
               {
                 name: 'מדידה מצטברת',
-                body: 'אילו עמודים נקראים ואיפה החיפוש נתקע, ללא זיהוי אישי. גם דוחות הפרסום הממומן מבוססים רק על מבקרים שאישרו קטגוריה זו.',
+                body: 'אילו עמודים נקראים ואיפה החיפוש נתקע, ללא זיהוי אישי. גם פניות שמיוחסות למקום ממומן נספרות רק אצל מבקרים שאישרו קטגוריה זו; הצגות וכניסות נספרות כמספרים כלליים בלי מידע על המבקר.',
               },
               {
                 name: 'תוכן מוטמע',
@@ -413,7 +413,7 @@ export const LEGAL_VIEWS: Record<LegalKey, ContentView<LegalKey>> = {
               },
               {
                 name: 'פרסום ממומן',
-                body: `נמכר לפי שבוע, לפי אזור ותחום, עד ${SPONSORED_MAX_PER_LIST} מקומות בכל רשימה, ותמיד מסומן "ממומן". הוא אינו משפיע על הדירוג ואינו נכלל בהשוואה. התוכן נבדק לפני העלייה לפי כללי משרד הבריאות לפרסום, והחיוב מתבצע רק אחרי אישורו. ביטול עד ${SPONSORED_CANCEL_HOURS} שעות לפני תחילת השבוע מזכה בהחזר מלא על אותו שבוע. [מידע על פרסום](${ROUTES.sponsorship})`,
+                body: `נמכר לחודש, לעמוד אחד: רשימת עיר ותחום או עמוד תחום ארצי (₪${SPONSORED_LIST_NIS} לחודש) או עמוד הבית (₪${SPONSORED_HOME_NIS} לחודש), ללא מע״מ ישראלי. עד ${SPONSORED_SLOTS} מקומות בכל עמוד, בסדר אקראי, ותמיד מסומן "ממומן". הוא אינו משפיע על הדירוג ואינו נכלל בהשוואה. התוכן נבדק לפני העלייה לפי כללי משרד הבריאות לפרסום, והחיוב מתבצע רק אחרי אישורו. המנוי מתחדש כל חודש עד שמבטלים; ביטול עד ${SPONSORED_CANCEL_HOURS} שעות לפני תחילת החודש מזכה בהחזר מלא, וביטול מאוחר יותר משאיר את המקום עד סוף החודש ששולם. חודש עם פחות מ־${SPONSORED_MAKE_GOOD_VISITS} כניסות לפרופיל מזכה ב־50% הנחה על החודש הבא. [מידע על פרסום](${ROUTES.sponsorship})`,
               },
               { name: 'תקן הרישום', body: `הרישום כפוף ל[תקן הרישום](${ROUTES.listingStandards}), כולל אימות רישיון לטיפולים רפואיים.` },
               {

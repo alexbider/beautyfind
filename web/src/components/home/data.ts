@@ -1,4 +1,6 @@
 import 'server-only';
+import { sponsoredCardsFor } from '@/lib/server/sponsored';
+import type { SponsoredCardData } from '@/lib/sponsored';
 import type { Metadata } from 'next';
 import { cardExtras } from '@/app/search/extras';
 import { CATEGORY_IMAGE, PLACEHOLDER_GUIDES, type HomeGuide } from '@/components/home/content';
@@ -40,11 +42,14 @@ export interface HomeData {
   total: number;
   /** The three newest published articles, or the "coming soon" placeholders until there is one. */
   guides: HomeGuide[];
+  /** The homepage sponsored slider (src/lib/server/sponsored); empty when nobody bought a slot. */
+  sponsored: SponsoredCardData[];
 }
 
 /** Live listings per region, the newest reviews and the region menu, from the public reads only. */
 export async function loadHome(): Promise<HomeData> {
-  const [counts, reviews, guides, ...perRegion] = await Promise.all([
+  const [sponsored, counts, reviews, guides, ...perRegion] = await Promise.all([
+    sponsoredCardsFor('home'),
     listingCounts(),
     recentReviews(6),
     homeGuides().catch(() => null),
@@ -103,5 +108,5 @@ export async function loadHome(): Promise<HomeData> {
     cities: topCities(r.slug, 5).map(c => ({ name: c.name, href: cityPageHref(c) })),
   }));
 
-  return { cardLists, regionCounts, regionCities, cardReviews, headerRegions, total: counts.total, guides: guides ?? PLACEHOLDER_GUIDES };
+  return { cardLists, regionCounts, regionCities, cardReviews, headerRegions, total: counts.total, guides: guides ?? PLACEHOLDER_GUIDES, sponsored };
 }

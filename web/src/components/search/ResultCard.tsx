@@ -76,8 +76,6 @@ export function ResultCard({ card: c, extra, index, delay, query }: { card: List
             <Link href={c.href}>{c.name}</Link>
           </h3>
           <CompactRating google={c.google} beautyfind={c.beautyfind} className={`${s.phoneRating} bf-shell-only`} />
-          {/* TODO(sponsored): no campaigns table yet. When it lands: at most 2 sponsored cards per list,
-              always tagged "ממומן" (neutral bordered tag here, data-ad border), never changing the order below. */}
           {c.verified && (
             <span className={s.verified}>
               <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

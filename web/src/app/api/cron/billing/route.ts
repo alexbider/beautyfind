@@ -1,9 +1,11 @@
 import { timingSafeEqual } from 'node:crypto';
 import { runBillingCron } from '@/lib/server/billing';
+import { runSponsoredCron } from '@/lib/server/sponsored';
 
 // Daily billing run (vercel.json "crons"). Vercel calls it with "Authorization: Bearer <CRON_SECRET>";
 // without CRON_SECRET the route refuses every call. What a run does: runBillingCron in
-// src/lib/server/billing/index.ts.
+// src/lib/server/billing/index.ts, then runSponsoredCron in src/lib/server/sponsored (placements that
+// ended, billing that waited for a card, the make-good discount).
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -16,5 +18,6 @@ export async function GET(req: Request) {
   const given = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '');
   if (!given || !same(given, secret)) return Response.json({ ok: false, error: 'forbidden' }, { status: 403 });
   const r = await runBillingCron();
-  return Response.json({ ok: true, ...r });
+  const sponsored = await runSponsoredCron().catch(e => ({ error: (e as Error).message }));
+  return Response.json({ ok: true, ...r, sponsored });
 }
