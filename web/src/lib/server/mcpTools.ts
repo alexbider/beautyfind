@@ -295,6 +295,28 @@ export const MCP_TOOLS: McpTool[] = [
   { name: 'update_marketing_order', area: 'marketing', level: 'edit', write: true, schema: z.object({ order_id: uuid, status: z.enum(['quote_requested', 'quoted', 'awaiting_payment', 'paid', 'onboarding', 'in_progress', 'active', 'completed', 'past_due', 'cancelled']), status_note: z.string().max(600).optional().describe('שורת הסטטוס שהלקוח רואה'), internal_note: z.string().max(4000).optional(), notify: z.boolean().optional().describe('לשלוח ללקוח מייל עם העדכון'), business_id: z.string().uuid().optional() }), description: 'עדכון סטטוס של הזמנת שירות שיווק, הערות, קישור לעסק, ושליחת עדכון ללקוח במייל.', run: async a => result(await updateMarketingOrderAction({ id: String(a.order_id), status: a.status as 'in_progress', statusNote: a.status_note as string | undefined, internalNote: a.internal_note as string | undefined, notify: Boolean(a.notify), businessId: a.business_id as string | undefined })) },
   { name: 'set_marketing_service', area: 'marketing', level: 'full', write: true, schema: z.object({ slug: z.string().max(40), enabled: z.boolean(), mode: z.enum(['buy', 'quote', 'both']), packages: z.record(z.string().max(40), z.object({ priceNis: z.number().int().min(0).optional(), setupNis: z.number().int().min(0).optional(), hidden: z.boolean().optional() })).optional() }), description: 'מחירים, אופן הזמנה (רכישה, הצעת מחיר או שניהם) וזמינות של שירות שיווק. השינוי מתפרסם מיד.', run: async a => result(await saveServiceConfigAction({ slug: String(a.slug), enabled: Boolean(a.enabled), mode: a.mode as 'both', packages: (a.packages as Record<string, { priceNis?: number; setupNis?: number; hidden?: boolean }>) ?? {} })) },
 
+  // ---------- email monitoring (/ops/emails) ----------
+  { name: 'email_stats', area: 'emails', level: 'view', write: false, schema: z.object({ days: z.number().int().min(1).max(365).optional(), audience: z.enum(['business', 'client', 'staff', 'other']).optional() }), description: 'מעקב מיילים: כמה נשלחו, נמסרו, נפתחו, הקליקו, ענו וחזרו, בסך הכול ולפי תבנית, סוג נמען ועסק.', run: async a => {
+    const { emailBy, emailTotals } = await import('./emailTracking');
+    const days = Number(a.days ?? 30);
+    const f = a.audience ? { audience: String(a.audience) } : {};
+    const [totals, byTemplate, byAudience, byBusiness] = await Promise.all([emailTotals(days, f), emailBy('template', days, f, 40), emailBy('audience', days, {}, 10), emailBy('business', days, f, 20)]);
+    return { days, totals, by_template: byTemplate, by_audience: byAudience, by_business: byBusiness, note: 'opened is an estimate: some mail apps open emails automatically' };
+  } },
+  { name: 'list_email_replies', area: 'emails', level: 'view', write: false, schema: z.object({ status: z.enum(['new', 'handled', 'all']).optional(), limit }), description: 'תשובות שהתקבלו למיילים של המערכת: מאת, עסק, המייל המקורי, הטקסט, מצב טיפול.', run: async a => {
+    const st = (a.status as string) ?? 'new';
+    const rows = await db.emailReply.findMany({ where: st === 'all' ? {} : { status: st }, orderBy: { receivedAt: 'desc' }, take: Number(a.limit ?? 30), include: { send: { select: { id: true, template: true, createdAt: true } } } });
+    return rows.map(r => ({ id: r.id, received_at: r.receivedAt, from: r.fromEmail, from_name: r.fromName, business_id: r.businessId, subject: r.subject, text: r.text?.slice(0, 4000), in_reply_to: r.send ? { email_id: r.send.id, template: r.send.template, sent_at: r.send.createdAt } : null, forwarded: !!r.forwardedAt, status: r.status }));
+  } },
+  { name: 'set_email_reply_status', area: 'emails', level: 'edit', write: true, schema: z.object({ reply_id: uuid, status: z.enum(['new', 'handled']) }), description: 'סימון תשובה למייל כטופלה, או החזרה לטיפול.', run: async a => {
+    const { setReplyStatusAction } = await import('@/app/ops/emails/actions');
+    return result(await setReplyStatusAction({ id: String(a.reply_id), status: a.status as 'handled' }));
+  } },
+  { name: 'email_tracking_setup', area: 'emails', level: 'full', write: true, schema: null, description: 'מפעיל ב־Resend מעקב פתיחות והקלקות, תת־דומיין לקבלת תשובות ו־Webhook לכל האירועים, ומחזיר את רשומות ה־DNS שעוד חסרות. בטוח להריץ שוב.', run: async () => {
+    const { runTrackingSetupAction } = await import('@/app/ops/emails/actions');
+    return runTrackingSetupAction();
+  } },
+
   // ---------- clients and privacy ----------
   { name: 'list_clients', area: 'clients', level: 'view', write: false, schema: z.object({ filter: z.enum(['all', 'consented', 'blocked']).optional(), q: z.string().max(120).optional(), limit }), description: 'חשבונות לקוחות: שם, טלפון, דוא״ל, עיר, הזמנות, ביקור אחרון, הסכמה, חסימה. בלי פרטי בריאות.', run: a => listClients({ filter: (a.filter as 'all') ?? 'all', q: String(a.q ?? ''), take: Number(a.limit ?? 50) }) },
   { name: 'block_client', area: 'clients', level: 'edit', write: true, schema: z.object({ client_id: uuid, block: z.boolean(), reason: z.string().max(300).optional() }), description: 'חסימה או שחרור של חשבון לקוח (כניסה נדחית בזמן חסימה; הרשומות נשארות).', run: async a => result(await blockClientAction({ id: String(a.client_id), block: Boolean(a.block), reason: a.reason as string | undefined })) },

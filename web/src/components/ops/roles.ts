@@ -28,17 +28,17 @@ export const OPS_ROLES: OpsRoleKey[] = ['ops', 'verifier', 'moderator', 'support
 
 export type Area =
   | 'overview' | 'businesses' | 'clients' | 'bookings' | 'disputes' | 'sponsored' | 'marketing' | 'moderation' | 'verification' | 'import'
-  | 'accounting' | 'content' | 'magazine' | 'messages' | 'ai' | 'integrations' | 'team' | 'audit' | 'settings' | 'health';
+  | 'accounting' | 'content' | 'magazine' | 'messages' | 'emails' | 'ai' | 'integrations' | 'team' | 'audit' | 'settings' | 'health';
 
 export const AREAS: Area[] = [
   'overview', 'businesses', 'clients', 'bookings', 'disputes', 'sponsored', 'marketing', 'moderation', 'verification', 'import',
-  'accounting', 'content', 'magazine', 'messages', 'ai', 'integrations', 'team', 'audit', 'settings', 'health',
+  'accounting', 'content', 'magazine', 'messages', 'emails', 'ai', 'integrations', 'team', 'audit', 'settings', 'health',
 ];
 
 export const AREA_NAMES: Record<Area, string> = {
   overview: 'סקירה כללית', businesses: 'עסקים', clients: 'לקוחות ופרטיות', bookings: 'הזמנות', disputes: 'מחלוקות', sponsored: 'מקומות ממומנים', marketing: 'שירותי שיווק',
   moderation: 'ביקורות', verification: 'אימות רישיונות', import: 'ייבוא עסקים', accounting: 'הנהלת חשבונות', content: 'תוכן ו־SEO', magazine: 'מגזין',
-  messages: 'הודעות ותבניות', ai: 'AI ו־MCP', integrations: 'אינטגרציות ומקורות', team: 'צוות והרשאות', audit: 'יומן פעולות',
+  messages: 'הודעות ותבניות', emails: 'מעקב מיילים', ai: 'AI ו־MCP', integrations: 'אינטגרציות ומקורות', team: 'צוות והרשאות', audit: 'יומן פעולות',
   settings: 'הגדרות פלטפורמה', health: 'בריאות מערכת',
 };
 
@@ -47,7 +47,7 @@ export const MATRIX_GROUPS: Array<{ name: string; areas: Area[] }> = [
   { name: 'עסקים', areas: ['businesses', 'clients', 'bookings', 'import'] },
   { name: 'אמון', areas: ['verification', 'moderation', 'disputes', 'sponsored'] },
   { name: 'כספים', areas: ['accounting', 'marketing'] },
-  { name: 'תוכן', areas: ['content', 'magazine', 'messages'] },
+  { name: 'תוכן', areas: ['content', 'magazine', 'messages', 'emails'] },
   { name: 'AI ו־MCP', areas: ['ai', 'integrations'] },
   { name: 'הגדרות', areas: ['settings', 'team', 'health'] },
   { name: 'יומן', areas: ['audit'] },
@@ -62,7 +62,7 @@ export const DEFAULT_PERMISSIONS: Record<OpsRoleKey, Record<Area, Level>> = {
   ops: full(),
   verifier: none({ verification: 'edit', businesses: 'view' }),
   moderator: none({ moderation: 'edit', businesses: 'view', content: 'view' }),
-  support: none({ businesses: 'view', clients: 'view', bookings: 'view', messages: 'view', marketing: 'view' }),
+  support: none({ businesses: 'view', clients: 'view', bookings: 'view', messages: 'view', marketing: 'view', emails: 'edit' }),
   legal: none({ disputes: 'edit', audit: 'view', businesses: 'view' }),
 };
 
@@ -92,6 +92,6 @@ export function firstArea(role: string | null | undefined, overrides?: Permissio
 export const AREA_HREF: Record<Area, string> = {
   overview: '/ops', businesses: '/ops/businesses', clients: '/ops/clients', bookings: '/ops/bookings', disputes: '/ops/disputes',
   sponsored: '/ops/sponsored', marketing: '/ops/marketing', moderation: '/ops/moderation', verification: '/ops/verification', import: '/ops/import',
-  accounting: '/ops/accounting', content: '/ops/content', magazine: '/ops/magazine', messages: '/ops/messages', ai: '/ops/ai', integrations: '/ops/integrations',
+  accounting: '/ops/accounting', content: '/ops/content', magazine: '/ops/magazine', messages: '/ops/messages', emails: '/ops/emails', ai: '/ops/ai', integrations: '/ops/integrations',
   team: '/ops/team', audit: '/ops/audit', settings: '/ops/settings', health: '/ops/health',
 };

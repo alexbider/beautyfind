@@ -13,6 +13,8 @@ export interface ResendConfig {
   apiKey: string;
   from: string; // "BeautyFind <noreply@beautyfind.co.il>"
   replyTo: string;
+  /** Reply tracking subdomain (reply.beautyfind.co.il); empty sends replies to replyTo. */
+  replyDomain?: string;
   baseUrl?: string; // tests only
 }
 
@@ -49,16 +51,132 @@ async function call(c: ResendConfig, path: string, init: RequestInit = {}): Prom
   return j;
 }
 
-export function resendBody(c: ResendConfig, to: string, mail: { subject: string; html: string; text: string }) {
-  return { from: c.from, to: [to], subject: mail.subject, html: mail.html, text: mail.text, ...(c.replyTo ? { reply_to: c.replyTo } : {}) };
+export interface SendOptions {
+  /** Per-email reply address (the tracked r-<token>@reply domain); falls back to the configured reply-to. */
+  replyTo?: string;
+  tags?: Array<{ name: string; value: string }>;
+  /** Files Resend downloads from a URL when it sends (forwarded reply attachments). */
+  attachments?: Array<{ filename: string; path: string }>;
+  /** Overrides the configured from (forwarded replies show the sender's name). */
+  from?: string;
+}
+
+export function resendBody(c: ResendConfig, to: string, mail: { subject: string; html: string; text: string }, o: SendOptions = {}) {
+  const replyTo = o.replyTo || c.replyTo;
+  return {
+    from: o.from || c.from, to: [to], subject: mail.subject, html: mail.html, text: mail.text,
+    ...(replyTo ? { reply_to: replyTo } : {}),
+    ...(o.tags?.length ? { tags: o.tags } : {}),
+    ...(o.attachments?.length ? { attachments: o.attachments } : {}),
+  };
 }
 
 /** Sends one email. Returns Resend's id; throws ResendError. */
-export async function resendSend(c: ResendConfig, to: string, mail: { subject: string; html: string; text: string }): Promise<{ id: string }> {
+export async function resendSend(c: ResendConfig, to: string, mail: { subject: string; html: string; text: string }, o: SendOptions = {}): Promise<{ id: string }> {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(to)) throw new ResendError('invalid email address', 400);
-  if (!fromAddress(c.from)) throw new ResendError('no sender address configured', 400);
-  const j = await call(c, '/emails', { method: 'POST', body: JSON.stringify(resendBody(c, to, mail)) });
+  if (!fromAddress(o.from || c.from)) throw new ResendError('no sender address configured', 400);
+  const j = await call(c, '/emails', { method: 'POST', body: JSON.stringify(resendBody(c, to, mail, o)) });
   return { id: typeof j.id === 'string' ? j.id : 'accepted' };
+}
+
+// ---------- Receiving (replies) ----------
+// GET /emails/receiving/{id} → { id, from, to, subject, html, text, headers, message_id, attachments, ... }
+// GET /emails/receiving/{id}/attachments → { data: [{ id, filename, size, content_type, download_url, expires_at }] }
+
+export interface ReceivedEmail {
+  id: string;
+  from: string;
+  to: string[];
+  subject: string | null;
+  text: string | null;
+  html: string | null;
+  messageId: string | null;
+  inReplyTo: string | null;
+  references: string | null;
+}
+
+const str = (v: unknown) => (typeof v === 'string' ? v : null);
+const strs = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : typeof v === 'string' ? [v] : []);
+
+export async function resendReceived(c: ResendConfig, id: string): Promise<ReceivedEmail> {
+  const j = await call(c, `/emails/receiving/${encodeURIComponent(id)}`);
+  const h = (j.headers && typeof j.headers === 'object' ? j.headers : {}) as Record<string, unknown>;
+  const header = (name: string) => {
+    const k = Object.keys(h).find(x => x.toLowerCase() === name);
+    return k ? (strs(h[k])[0] ?? null) : null;
+  };
+  return {
+    id, from: str(j.from) ?? '', to: strs(j.to), subject: str(j.subject), text: str(j.text), html: str(j.html),
+    messageId: str(j.message_id), inReplyTo: header('in-reply-to'), references: header('references'),
+  };
+}
+
+export async function resendReceivedAttachments(c: ResendConfig, id: string): Promise<Array<{ filename: string; size: number; contentType: string; url: string | null }>> {
+  const j = await call(c, `/emails/receiving/${encodeURIComponent(id)}/attachments`);
+  const list = Array.isArray(j.data) ? (j.data as Array<Record<string, unknown>>) : [];
+  return list.map(a => ({ filename: str(a.filename) ?? 'attachment', size: Number(a.size) || 0, contentType: str(a.content_type) ?? '', url: str(a.download_url) }));
+}
+
+// ---------- Account setup: tracking, receiving domain, webhook ----------
+
+export interface ResendDomain {
+  id: string;
+  name: string;
+  status: string;
+  openTracking: boolean;
+  clickTracking: boolean;
+  trackingSubdomain: string | null;
+  sending: string;
+  receiving: string;
+  records: Array<{ record: string; name: string; type: string; value: string; priority?: number; status: string }>;
+}
+
+function domainOf(d: Record<string, unknown>): ResendDomain {
+  const cap = (d.capabilities && typeof d.capabilities === 'object' ? d.capabilities : {}) as Record<string, unknown>;
+  const recs = Array.isArray(d.records) ? (d.records as Array<Record<string, unknown>>) : [];
+  return {
+    id: String(d.id ?? ''), name: String(d.name ?? '').toLowerCase(), status: String(d.status ?? ''),
+    openTracking: d.open_tracking === true, clickTracking: d.click_tracking === true, trackingSubdomain: str(d.tracking_subdomain),
+    sending: String(cap.sending ?? 'enabled'), receiving: String(cap.receiving ?? 'disabled'),
+    records: recs.map(r => ({ record: String(r.record ?? ''), name: String(r.name ?? ''), type: String(r.type ?? ''), value: String(r.value ?? ''), ...(r.priority != null ? { priority: Number(r.priority) } : {}), status: String(r.status ?? '') })),
+  };
+}
+
+export async function resendDomain(c: ResendConfig, id: string): Promise<ResendDomain> {
+  return domainOf(await call(c, `/domains/${encodeURIComponent(id)}`));
+}
+
+export async function resendUpdateDomain(c: ResendConfig, id: string, body: Record<string, unknown>): Promise<void> {
+  await call(c, `/domains/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(body) });
+}
+
+export async function resendCreateDomain(c: ResendConfig, body: Record<string, unknown>): Promise<ResendDomain> {
+  return domainOf(await call(c, '/domains', { method: 'POST', body: JSON.stringify(body) }));
+}
+
+export async function resendVerifyDomain(c: ResendConfig, id: string): Promise<void> {
+  await call(c, `/domains/${encodeURIComponent(id)}/verify`, { method: 'POST' });
+}
+
+export async function resendDomainList(c: ResendConfig): Promise<Array<{ id: string; name: string; status: string }>> {
+  const j = await call(c, '/domains');
+  const list = Array.isArray(j.data) ? (j.data as Array<Record<string, unknown>>) : [];
+  return list.map(d => ({ id: String(d.id ?? ''), name: String(d.name ?? '').toLowerCase(), status: String(d.status ?? '') }));
+}
+
+export async function resendWebhooks(c: ResendConfig): Promise<Array<{ id: string; endpoint: string; events: string[]; status: string }>> {
+  const j = await call(c, '/webhooks');
+  const list = Array.isArray(j.data) ? (j.data as Array<Record<string, unknown>>) : [];
+  return list.map(w => ({ id: String(w.id ?? ''), endpoint: String(w.endpoint ?? ''), events: strs(w.events), status: String(w.status ?? '') }));
+}
+
+export async function resendUpdateWebhook(c: ResendConfig, id: string, body: { endpoint?: string; events?: string[]; status?: string }): Promise<void> {
+  await call(c, `/webhooks/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(body) });
+}
+
+export async function resendCreateWebhook(c: ResendConfig, body: { endpoint: string; events: string[] }): Promise<{ id: string; secret: string | null }> {
+  const j = await call(c, '/webhooks', { method: 'POST', body: JSON.stringify(body) });
+  return { id: String(j.id ?? ''), secret: str(j.signing_secret) };
 }
 
 /** The account's domains and their status. Sends nothing. */

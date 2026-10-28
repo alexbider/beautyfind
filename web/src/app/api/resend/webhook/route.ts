@@ -1,7 +1,8 @@
 import { validSvix } from '@/lib/vendors/resend';
 import { applyResendEvent, resendWebhookSecret } from '@/lib/server/email';
 
-// Resend delivery events (Webhooks in the Resend dashboard, pointed at SITE_URL/api/resend/webhook): sent,
+// Resend events (Webhooks in the Resend dashboard, pointed at SITE_URL/api/resend/webhook): sent, opened, clicked,
+// received (replies on the reply domain, src/lib/server/emailTracking.ts),
 // delivered, delayed, bounced, complained, failed. Each request is checked against the signing secret (Svix
 // headers); unsigned or wrongly signed requests are refused. The event updates the matching message_sends row.
 
@@ -15,6 +16,6 @@ export async function POST(req: Request) {
   if (!ok) return new Response('forbidden', { status: 403 });
   let event: { type?: unknown; data?: unknown };
   try { event = JSON.parse(body); } catch { return new Response('bad request', { status: 400 }); }
-  await applyResendEvent(event);
+  await applyResendEvent(event, req.headers.get('svix-id'));
   return new Response(null, { status: 204 });
 }

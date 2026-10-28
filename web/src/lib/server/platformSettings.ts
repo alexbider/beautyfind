@@ -82,6 +82,11 @@ export const PlatformSettingsSchema = z.object({
     enabled: z.boolean().default(false),
     from: z.string().trim().max(160).default('BeautyFind <noreply@beautyfind.co.il>'),
     replyTo: z.string().trim().max(160).default(''),
+    // Reply tracking (/ops/emails): each email gets its own reply address r-<token>@<replyDomain>, a subdomain whose MX
+    // points to Resend (receiving), so a reply is matched to its email, stored and forwarded to `forwardTo`.
+    // Empty replyDomain means replies go to replyTo as before.
+    replyDomain: z.string().trim().toLowerCase().max(120).default(''),
+    forwardTo: z.string().trim().max(160).default('hello@beautyfind.co.il'),
   }).prefault({}),
   // Team: per-role area levels (ops is always full). Stored sparsely.
   // partialRecord: zod 4's record with an enum key is exhaustive, and the overrides are sparse.

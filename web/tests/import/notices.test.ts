@@ -88,7 +88,7 @@ describe('replies, reminders and delivery tracking', { skip }, () => {
     await email.saveResendKey(KEY, userId);
     await twilio.saveTwilioCreds(SID, TOKEN, userId);
     await settings.savePlatformSettings(userId, {
-      email: { enabled: true, from: 'BeautyFind <noreply@beautyfind.co.il>', replyTo: '' },
+      email: { enabled: true, from: 'BeautyFind <noreply@beautyfind.co.il>', replyTo: '', replyDomain: '', forwardTo: 'hello@beautyfind.co.il' },
       twilio: { ...cur.twilio, enabled: true, from: 'BeautyFind', messagingServiceSid: '' },
       messaggio: { ...cur.messaggio, enabled: false },
     });

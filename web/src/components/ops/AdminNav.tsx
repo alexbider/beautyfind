@@ -28,6 +28,7 @@ const ICONS: Record<Area, ReactNode> = {
   content: <path d="M4 6h16M4 10h16M4 14h10M4 18h7" />,
   magazine: <path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM8 8h7M8 12h7M8 16h4" />,
   messages: <path d="M4 5h16v11H9l-5 4z" />,
+  emails: <path d="M3 6h18v12H3zM3 7l9 6 9-6" />,
   ai: <path d="M12 2v4M12 18v4M2 12h4M18 12h4M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />,
   integrations: <path d="M9 3v4M15 3v4M6 7h12v5a6 6 0 0 1-12 0zM12 18v3" />,
   team: <path d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM17 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 20a6 6 0 0 1 12 0M15 20a5 5 0 0 1 6-4" />,

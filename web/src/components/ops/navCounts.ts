@@ -12,7 +12,7 @@ const safe = (p: Promise<number>) => p.catch(() => 0);
 export async function navCounts(): Promise<Partial<Record<Area, NavCount>>> {
   const now = new Date();
   const [
-    pendingBusinesses, privacy, openDisputes, sponsoredReview, reviews, verification, importReview, pastDue, aiProposed, integrationErrors, marketingNew,
+    pendingBusinesses, privacy, openDisputes, sponsoredReview, reviews, verification, importReview, pastDue, aiProposed, integrationErrors, marketingNew, newReplies,
   ] = await Promise.all([
     safe(db.business.count({ where: { status: 'pending' } })),
     safe(db.decision.count({ where: { subjectType: 'user', action: 'delete_request' } }).then(async n => {
@@ -30,6 +30,8 @@ export async function navCounts(): Promise<Partial<Record<Area, NavCount>>> {
     safe(db.providerConnection.count({ where: { status: 'error', updatedAt: { gte: new Date(now.getTime() - 30 * 86_400_000) } } })),
     // Marketing orders waiting for the team: quote requests, fresh payments and intakes to review, failed charges.
     safe(db.marketingOrder.count({ where: { status: { in: ['quote_requested', 'paid', 'onboarding', 'past_due'] } } })),
+    // Replies to our emails that nobody marked as handled yet.
+    safe(db.emailReply.count({ where: { status: 'new' } })),
   ]);
   const out: Partial<Record<Area, NavCount>> = {};
   if (pendingBusinesses) out.businesses = { count: pendingBusinesses, tone: 'warn' };
@@ -42,6 +44,7 @@ export async function navCounts(): Promise<Partial<Record<Area, NavCount>>> {
   if (pastDue) out.accounting = { count: pastDue, tone: 'bad' };
   if (aiProposed) out.ai = { count: aiProposed, tone: 'warn' };
   if (marketingNew) out.marketing = { count: marketingNew, tone: 'warn' };
+  if (newReplies) out.emails = { count: newReplies, tone: 'warn' };
   if (integrationErrors) out.integrations = { count: integrationErrors, tone: 'bad' };
   return out;
 }

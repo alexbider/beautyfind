@@ -1909,9 +1909,84 @@ model MessageSend {
   deliveryError  String?   @map("delivery_error")
   deliveredAt    DateTime? @map("delivered_at")
 
+  // Email monitoring (/ops/emails). Who the email went to, resolved at send time from the address: a business
+  // (owner, staff, branch or marketing contact), a client, BeautyFind staff, or unknown. The address itself stays masked.
+  audience      String? // business | client | staff | other
+  userId        String?   @map("user_id") @db.Uuid
+  businessId    String?   @map("business_id") @db.Uuid
+  /// Secret part of the per-email reply address (r-<token>@reply domain), so a reply finds its email.
+  replyToken    String?   @unique @map("reply_token")
+  /// RFC Message-ID from Resend's events, the second way a reply finds its email (In-Reply-To).
+  messageId     String?   @map("message_id")
+  openCount     Int       @default(0) @map("open_count")
+  openedAt      DateTime? @map("opened_at")
+  lastOpenedAt  DateTime? @map("last_opened_at")
+  clickCount    Int       @default(0) @map("click_count")
+  clickedAt     DateTime? @map("clicked_at")
+  lastClickedAt DateTime? @map("last_clicked_at")
+  /// Origin and path of the last clicked link, never the query string (reset and invite links carry tokens).
+  lastClickUrl  String?   @map("last_click_url")
+  replyCount    Int       @default(0) @map("reply_count")
+  repliedAt     DateTime? @map("replied_at")
+
+  events  EmailEvent[]
+  replies EmailReply[]
+
   @@index([createdAt])
   @@index([provider, providerId])
+  @@index([businessId, createdAt])
+  @@index([userId])
+  @@index([messageId])
+  @@index([template, createdAt])
   @@map("message_sends")
+}
+
+/// Every Resend webhook event for an email, once (the Svix message id is the key, so retries are not counted twice).
+model EmailEvent {
+  id         String       @id // svix-id
+  sendId     String?      @map("send_id") @db.Uuid
+  send       MessageSend? @relation(fields: [sendId], references: [id], onDelete: Cascade)
+  providerId String?      @map("provider_id")
+  type       String // email.sent | delivered | delivery_delayed | bounced | complained | failed | suppressed | opened | clicked | received
+  at         DateTime
+  /// Clicks: origin and path of the link.
+  link       String?
+  detail     String?
+  createdAt  DateTime     @default(now()) @map("created_at")
+
+  @@index([sendId, at])
+  @@index([type, at])
+  @@map("email_events")
+}
+
+/// A reply to one of our emails, received by Resend on the reply domain and forwarded to the team mailbox.
+model EmailReply {
+  id           String       @id @default(uuid()) @db.Uuid
+  resendId     String       @unique @map("resend_id")
+  sendId       String?      @map("send_id") @db.Uuid
+  send         MessageSend? @relation(fields: [sendId], references: [id], onDelete: SetNull)
+  businessId   String?      @map("business_id") @db.Uuid
+  userId       String?      @map("user_id") @db.Uuid
+  fromEmail    String       @map("from_email")
+  fromName     String?      @map("from_name")
+  toAddress    String       @map("to_address")
+  subject      String?
+  /// Plain text of the reply (from the text part, or the HTML stripped), capped. The HTML is not kept.
+  text         String?
+  attachments  Json         @default("[]") // [{ filename, contentType, size }]
+  receivedAt   DateTime     @map("received_at")
+  forwardedAt  DateTime?    @map("forwarded_at")
+  forwardError String?      @map("forward_error")
+  /// Team workflow on /ops/emails: new | handled.
+  status       String       @default("new")
+  handledById  String?      @map("handled_by_id") @db.Uuid
+  handledAt    DateTime?    @map("handled_at")
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  @@index([status, receivedAt])
+  @@index([businessId, receivedAt])
+  @@index([sendId])
+  @@map("email_replies")
 }
 
 /// One run of the indexer (cron, manual or after a publish), for the admin history.
@@ -2041,7 +2116,6 @@ model ScheduledMessage {
   @@index([businessId])
   @@map("scheduled_messages")
 }
-
 
 // ---------- Marketing services (BeautyFind for Business) ----------
 // Digital marketing services sold to businesses from /for-business/marketing (docs/marketing-services.md).

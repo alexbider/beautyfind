@@ -2,13 +2,15 @@ import 'server-only';
 import { emailBody, renderMessage } from '../messages/render';
 import { ResendError, emailDomain, fromAddress, isResendKey, maskEmail, resendDomains, resendSend, type ResendConfig } from '../vendors/resend';
 import { db } from './db';
+import { newReplyToken, replyAddress, resolveRecipient, type Recipient } from './emailRecipients';
 import { platformSettings, type PlatformSettings } from './platformSettings';
 import { open, seal } from './secure';
 import { siteUrl } from './site';
 
 // Email through Resend. Settings and the API key on /ops/messages; the key is stored encrypted with DATA_KEY
 // (platform_secrets) or set as RESEND_API_KEY on Vercel, which wins. Every send is a row in message_sends with the
-// address masked; the message body is never stored or logged.
+// address masked and who it went to (src/lib/server/emailRecipients.ts); the message body is never stored or logged.
+// Opens, clicks and replies are tracked on /ops/emails (src/lib/server/emailTracking.ts).
 
 const SECRET_KEY = 'resend_api_key';
 export type KeySource = 'env' | 'admin';
@@ -39,7 +41,7 @@ export async function removeResendKey(): Promise<void> {
 }
 
 const configOf = (key: string, s: PlatformSettings['email']): ResendConfig => ({
-  apiKey: key, from: s.from, replyTo: s.replyTo,
+  apiKey: key, from: s.from, replyTo: s.replyTo, replyDomain: s.replyDomain || undefined,
   baseUrl: process.env.NODE_ENV !== 'production' ? process.env.RESEND_TEST_BASE : undefined,
 });
 
@@ -50,12 +52,29 @@ export async function emailReady(force = false): Promise<ResendConfig | null> {
   return configOf(k.key, s.email);
 }
 
-/** One email, logged. Throws ResendError. */
+/** The display name of the from address ("BeautyFind" in "BeautyFind <noreply@…>"). */
+const senderName = (from: string) => from.match(/^\s*"?([^"<]{1,80}?)"?\s*</)?.[1]?.trim() || 'BeautyFind';
+const tagValue = (v: string) => v.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 256) || 'none';
+
+/** One email, logged with who it went to and, when reply tracking is on, its own reply address. Throws ResendError. */
 export async function emailAttempt(cfg: ResendConfig, msg: { to: string; template: string }, mail: { subject: string; html: string; text: string }, extra: { test?: boolean } = {}): Promise<{ id: string }> {
-  const log = (data: { status: string; providerId?: string; error?: string }) =>
-    db.messageSend.create({ data: { provider: 'resend', channel: 'email', template: msg.template, toMasked: maskEmail(msg.to), status: data.status, providerId: data.providerId ?? null, error: data.error?.slice(0, 300) ?? null, test: !!extra.test } }).catch(() => undefined);
+  const token = cfg.replyDomain ? newReplyToken() : null;
+  const who: Promise<Recipient | null> = resolveRecipient(msg.to).catch(() => null);
+  const log = async (data: { status: string; providerId?: string; error?: string }) => {
+    const r = await who;
+    await db.messageSend.create({
+      data: {
+        provider: 'resend', channel: 'email', template: msg.template, toMasked: maskEmail(msg.to), status: data.status, providerId: data.providerId ?? null,
+        error: data.error?.slice(0, 300) ?? null, test: !!extra.test, audience: r?.audience ?? null, userId: r?.userId ?? null, businessId: r?.businessId ?? null,
+        replyToken: data.status === 'sent' ? token : null,
+      },
+    }).catch(() => undefined);
+  };
   try {
-    const r = await resendSend(cfg, msg.to, mail);
+    const r = await resendSend(cfg, msg.to, mail, {
+      ...(token && cfg.replyDomain ? { replyTo: `${senderName(cfg.from)} <${replyAddress(token, cfg.replyDomain)}>` } : {}),
+      tags: [{ name: 'template', value: tagValue(msg.template) }, ...(extra.test ? [{ name: 'test', value: '1' }] : [])],
+    });
     await log({ status: 'sent', providerId: r.id });
     return r;
   } catch (e) {
@@ -171,24 +190,8 @@ export function resendWebhookUrl(): string | null {
   return base.startsWith('https://') && !/localhost|127\.0\.0\.1/.test(base) ? `${base}/api/resend/webhook` : null;
 }
 
-const FINAL = ['delivered', 'bounced', 'complained', 'failed'];
-const EVENT_STATUS: Record<string, string> = {
-  'email.sent': 'sent', 'email.delivered': 'delivered', 'email.delivery_delayed': 'delayed',
-  'email.bounced': 'bounced', 'email.complained': 'complained', 'email.failed': 'failed',
-};
-
-/** Applies one Resend event to its send. Opens and clicks are ignored; a final state is never replaced by an earlier one. */
-export async function applyResendEvent(e: { type?: unknown; data?: unknown }): Promise<boolean> {
-  const status = typeof e.type === 'string' ? EVENT_STATUS[e.type] : undefined;
-  const d = (e.data && typeof e.data === 'object' ? e.data : {}) as Record<string, unknown>;
-  const id = typeof d.email_id === 'string' ? d.email_id : null;
-  if (!status || !id) return false;
-  const bounce = (d.bounce && typeof d.bounce === 'object' ? d.bounce : {}) as Record<string, unknown>;
-  const failed = (d.failed && typeof d.failed === 'object' ? d.failed : {}) as Record<string, unknown>;
-  const reason = typeof bounce.message === 'string' ? bounce.message : typeof failed.reason === 'string' ? failed.reason : null;
-  const r = await db.messageSend.updateMany({
-    where: { provider: 'resend', providerId: id, ...(FINAL.includes(status) ? {} : { OR: [{ deliveryStatus: null }, { deliveryStatus: { notIn: FINAL } }] }) },
-    data: { deliveryStatus: status, ...(reason ? { deliveryError: reason.slice(0, 300) } : {}), ...(status === 'delivered' ? { deliveredAt: new Date() } : {}) },
-  });
-  return r.count > 0;
+/** Applies one Resend event (delivery, open, click, received reply). Kept here for older callers. */
+export async function applyResendEvent(e: { type?: unknown; data?: unknown; created_at?: unknown }, eventId?: string | null): Promise<boolean> {
+  const { applyEmailEvent } = await import('./emailTracking');
+  return applyEmailEvent(e, eventId ?? null);
 }

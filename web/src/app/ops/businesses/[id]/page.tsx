@@ -11,6 +11,9 @@ import { chainTotal } from '@/lib/pricing';
 import { profileHref } from '@/lib/server/public';
 import { platformSettings } from '@/lib/server/platformSettings';
 import { listGaps } from '@/lib/server/enhanceRuns';
+import { emailState, emailTotals } from '@/lib/server/emailTracking';
+import { db } from '@/lib/server/db';
+import { templateName } from '../../emails/data';
 import { loadBusiness, PLAN_NAME, STATUS_NAME, STATUS_TONE } from '../data';
 import { BusinessDetailsForm } from '../BusinessDetailsForm';
 import { StatusActions } from '../StatusActions';
@@ -35,6 +38,12 @@ export default async function BusinessCardPage({ params }: { params: Promise<{ i
   const unit = b.subscription ? (b.subscription.plan === 'advanced' ? s.advancedMonthlyNis : s.basicMonthlyNis) : null;
   const total = unit != null && live ? chainTotal(live, unit) : null;
   const name = b.branches[0]?.name ?? b.legalName ?? 'עסק ללא שם';
+  // Communication: what we emailed this business and how it responded (/ops/emails).
+  const [mail, mails, mailReplies] = await Promise.all([
+    emailTotals(365, { businessId: b.id }).catch(() => null),
+    db.messageSend.findMany({ where: { businessId: b.id, channel: 'email', test: false }, orderBy: { createdAt: 'desc' }, take: 8 }).catch(() => []),
+    db.emailReply.count({ where: { businessId: b.id } }).catch(() => 0),
+  ]);
 
   return (
     <AdminShell user={user}>
@@ -156,6 +165,23 @@ export default async function BusinessCardPage({ params }: { params: Promise<{ i
                 ))}
               </Table>
             ) : <Empty title="עוד לא נגבו תשלומים" />}
+          </Card>
+
+          <Card title="תקשורת במייל" sub={mail?.sent ? `${int(mail.sent)} מיילים בשנה האחרונה · ${int(mail.opened)} נפתחו · ${int(mail.clicked)} הקליקו · ${int(mailReplies)} תשובות` : 'עוד לא נשלחו מיילים מתועדים לעסק'} aside={<Link href={`/ops/emails?tab=sent&days=90&business=${b.id}`} className={ui.rowLink}>לכל המיילים</Link>} flush>
+            {mails.length ? (
+              <Table head={['נשלח', 'תבנית', 'מצב']}>
+                {mails.map(m => {
+                  const st = emailState(m);
+                  return (
+                    <tr key={m.id}>
+                      <td className={ui.num}><Link href={`/ops/emails/${m.id}`} className={ui.rowLink}>{dateTimeIL(m.createdAt)}</Link></td>
+                      <td>{templateName(m.template)}</td>
+                      <td><Chip tone={st.tone}>{st.label}</Chip></td>
+                    </tr>
+                  );
+                })}
+              </Table>
+            ) : <Empty title="אין מיילים להצגה" />}
           </Card>
 
           {b.campaigns.length || b.disputes.length ? (
