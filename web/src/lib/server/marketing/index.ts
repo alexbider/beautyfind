@@ -96,21 +96,16 @@ export function priceLine(p: Pick<ServicePackage, 'priceNis' | 'cycle' | 'setupN
 
 // ---------- Who is ordering ----------
 
-/** The business of a signed-in owner or staff member, else the business whose owner has this email. */
-async function linkBusiness(userId: string | null, email: string): Promise<{ businessId: string | null; branchId: string | null }> {
-  if (userId) {
-    const m = await db.staffMember.findFirst({ where: { userId, status: 'active' }, orderBy: { createdAt: 'asc' }, select: { businessId: true } });
-    if (m) {
-      const br = await db.branch.findFirst({ where: { businessId: m.businessId }, orderBy: { createdAt: 'asc' }, select: { id: true } });
-      return { businessId: m.businessId, branchId: br?.id ?? null };
-    }
-  }
-  const owner = await db.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' }, kind: 'business' }, select: { id: true } });
-  if (owner) {
-    const b = await db.business.findFirst({ where: { ownerUserId: owner.id }, orderBy: { createdAt: 'asc' }, select: { id: true } });
-    if (b) return { businessId: b.id, branchId: null };
-  }
-  return { businessId: null, branchId: null };
+/**
+ * The business of a signed-in owner or staff member. Guests are never linked by the email they type
+ * (anyone could type an owner's email): the admin links those orders from /ops/marketing.
+ */
+async function linkBusiness(userId: string | null): Promise<{ businessId: string | null; branchId: string | null }> {
+  if (!userId) return { businessId: null, branchId: null };
+  const m = await db.staffMember.findFirst({ where: { userId, status: 'active' }, orderBy: { createdAt: 'asc' }, select: { businessId: true } });
+  if (!m) return { businessId: null, branchId: null };
+  const br = await db.branch.findFirst({ where: { businessId: m.businessId }, orderBy: { createdAt: 'asc' }, select: { id: true } });
+  return { businessId: m.businessId, branchId: br?.id ?? null };
 }
 
 export type OrderContact = {
@@ -138,7 +133,7 @@ export const orderPagePath = (token: string) => `/for-business/marketing/order/$
 export async function createQuoteRequest(slug: ServiceSlug, contact: OrderContact, userId: string | null, packageKey?: string | null): Promise<MarketingOrder> {
   const service = getService(slug);
   const pkg = packageKey ? service.packages.find(p => p.key === packageKey) : undefined;
-  const link = await linkBusiness(userId, contact.contactEmail);
+  const link = await linkBusiness(userId);
   const order = await db.marketingOrder.create({
     data: {
       ref: await nextRef('MK'),
@@ -185,7 +180,7 @@ export async function startCheckout(slug: ServiceSlug, packageKey: string, conta
   if (!pkg) return { ok: false, message: 'החבילה שנבחרה אינה זמינה.' };
   if (!stripeConfigured()) return { ok: false, message: 'התשלום אונליין אינו זמין כרגע. אפשר לבקש הצעת מחיר ונחזור אליכם.' };
 
-  const link = await linkBusiness(userId, contact.contactEmail);
+  const link = await linkBusiness(userId);
   const priceAgorot = Math.round(pkg.priceNis * 100);
   const setupAgorot = Math.round((pkg.setupNis ?? 0) * 100);
   const order = await db.marketingOrder.create({
@@ -275,6 +270,18 @@ export async function handleMarketingEvent(ev: Stripe.Event): Promise<'handled' 
       await markPaid(s);
       return 'handled';
     }
+    case 'checkout.session.expired': {
+      const s = ev.data.object as Stripe.Checkout.Session;
+      if (!isMarketing(s.metadata)) return null;
+      const id = s.metadata?.orderId ?? s.client_reference_id;
+      if (id) {
+        const o = await db.marketingOrder.findUnique({ where: { id }, select: { status: true, timeline: true } });
+        if (o?.status === 'awaiting_payment') {
+          await db.marketingOrder.update({ where: { id }, data: { status: 'cancelled', timeline: pushEvent(o.timeline, event('cancelled', 'דף התשלום פג תוקף')) } });
+        }
+      }
+      return 'handled';
+    }
     case 'customer.subscription.created':
     case 'customer.subscription.updated':
     case 'customer.subscription.deleted': {
@@ -286,16 +293,7 @@ export async function handleMarketingEvent(ev: Stripe.Event): Promise<'handled' 
     case 'invoice.paid':
     case 'invoice.payment_failed': {
       const inv = ev.data.object as Stripe.Invoice;
-      let orderId = isMarketing(inv.metadata) ? inv.metadata?.orderId : undefined;
-      const subId = invoiceSubscriptionId(inv);
-      if (!orderId && subId) {
-        const own = await db.marketingOrder.findUnique({ where: { stripeSubscriptionId: subId }, select: { id: true } });
-        if (own) orderId = own.id;
-        else {
-          const sub = await stripe().subscriptions.retrieve(subId);
-          if (isMarketing(sub.metadata)) orderId = sub.metadata.orderId;
-        }
-      }
+      const orderId = await marketingOrderOfInvoice(inv);
       if (!orderId) return null;
       if (ev.type === 'invoice.paid') await recordMarketingPayment(orderId, inv);
       else await recordMarketingFailure(orderId, inv);
@@ -303,6 +301,34 @@ export async function handleMarketingEvent(ev: Stripe.Event): Promise<'handled' 
     }
     default:
       return null;
+  }
+}
+
+/**
+ * The marketing order an invoice belongs to, or undefined. Runs for every invoice on the shared Stripe
+ * account, so it reads metadata first, touches the Stripe API only for customers that have marketing
+ * orders, and never throws (a failure here must not block the platform plan handlers).
+ */
+async function marketingOrderOfInvoice(inv: Stripe.Invoice): Promise<string | undefined> {
+  if (isMarketing(inv.metadata) && inv.metadata?.orderId) return inv.metadata.orderId;
+  const parentMeta = (inv as unknown as { parent?: { subscription_details?: { metadata?: Stripe.Metadata | null } | null } | null }).parent?.subscription_details?.metadata;
+  if (isMarketing(parentMeta) && parentMeta?.orderId) return parentMeta.orderId;
+  const lineMeta = inv.lines?.data?.map(l => l.metadata).find(m => isMarketing(m));
+  if (lineMeta?.orderId) return lineMeta.orderId;
+  const subId = invoiceSubscriptionId(inv);
+  if (!subId) return undefined;
+  const own = await db.marketingOrder.findUnique({ where: { stripeSubscriptionId: subId }, select: { id: true } });
+  if (own) return own.id;
+  const customerId = customerIdOf(inv.customer);
+  if (!customerId) return undefined;
+  const known = await db.marketingOrder.findFirst({ where: { stripeCustomerId: customerId }, select: { id: true } });
+  if (!known) return undefined;
+  try {
+    const sub = await stripe().subscriptions.retrieve(subId);
+    return isMarketing(sub.metadata) ? sub.metadata.orderId : undefined;
+  } catch (e) {
+    console.warn('[marketing] could not read subscription for invoice', e);
+    return undefined;
   }
 }
 
@@ -329,8 +355,9 @@ async function markPaid(s: Stripe.Checkout.Session) {
       console.warn('[marketing] could not tag customer', e);
     }
   }
-  const updated = await db.marketingOrder.update({
-    where: { id: order.id },
+  // Claim the transition once: two deliveries of the event at the same time must not notify twice.
+  const claimed = await db.marketingOrder.updateMany({
+    where: { id: order.id, paidAt: null },
     data: {
       status: 'paid',
       paidAt: new Date(),
@@ -340,6 +367,8 @@ async function markPaid(s: Stripe.Checkout.Session) {
       timeline: pushEvent(order.timeline, event('paid')),
     },
   });
+  if (claimed.count !== 1) return;
+  const updated = await db.marketingOrder.findUniqueOrThrow({ where: { id: order.id } });
   await audit(updated, 'marketing_order_paid');
   await notifyClient(updated, 'M_mk_order_paid');
   const service = getService(updated.serviceSlug as ServiceSlug);
@@ -417,8 +446,12 @@ export async function orderByToken(token: string) {
   return db.marketingOrder.findUnique({ where: { accessToken: token } });
 }
 
+/** The intake form is open only for purchases that were paid. */
+export const canOnboard = (o: Pick<MarketingOrder, 'kind' | 'status'>) => o.kind === 'purchase' && ['paid', 'onboarding', 'in_progress', 'active'].includes(o.status);
+
 export async function saveOnboarding(order: MarketingOrder, answers: OnboardingAnswers): Promise<MarketingOrder> {
-  const next: MarketingOrderStatus = order.status === 'paid' || order.status === 'awaiting_payment' ? 'onboarding' : order.status;
+  if (!canOnboard(order)) throw new Error('order is not open for onboarding');
+  const next: MarketingOrderStatus = order.status === 'paid' ? 'onboarding' : order.status;
   const updated = await db.marketingOrder.update({
     where: { id: order.id },
     data: {
@@ -453,11 +486,11 @@ export async function setOrderStatus(orderId: string, status: MarketingOrderStat
   return updated;
 }
 
-/** Orders a business sees: those linked to it, plus guest orders placed with the owner's email. */
-export async function ordersForBusiness(businessId: string, ownerEmail?: string | null) {
+/** Orders linked to a business (by a signed-in staff order, or by the admin for guest orders). */
+export async function ordersForBusiness(businessId: string) {
   return db.marketingOrder.findMany({
     where: {
-      OR: [{ businessId }, ...(ownerEmail ? [{ businessId: null, contactEmail: ownerEmail.toLowerCase() }] : [])],
+      businessId,
       NOT: { status: 'awaiting_payment', createdAt: { lt: new Date(Date.now() - 86_400_000) } },
     },
     orderBy: { createdAt: 'desc' },

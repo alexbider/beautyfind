@@ -51,7 +51,7 @@ export default async function ServicePage({ params }: Params) {
   const { service: slug } = await params;
   if (!isServiceSlug(slug)) notFound();
   const s = await resolvedService(slug);
-  if (!s) notFound();
+  if (!s || !s.enabled) notFound();
   const path = marketingService(slug);
   const packages = s.resolvedPackages.filter(p => !p.hidden);
   const buy = canBuy(s);

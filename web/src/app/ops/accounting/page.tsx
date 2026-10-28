@@ -22,7 +22,7 @@ const TABS = [
   { key: 'pnl', name: 'רווח והפסד' }, { key: 'bank', name: 'התאמת בנק' }, { key: 'document', name: 'הפקת מסמך' }, { key: 'export', name: 'ייצוא לרו״ח' },
 ] as const;
 type Tab = (typeof TABS)[number]['key'];
-const KIND_NAME = { subscription: 'מנוי', sponsored: 'ממומן', manual: 'ידני', credit: 'זיכוי' } as const;
+const KIND_NAME = { subscription: 'מנוי', sponsored: 'ממומן', marketing: 'שירות שיווק', manual: 'ידני', credit: 'זיכוי' } as const;
 const SUB_STATUS: Record<string, { name: string; tone: 'ok' | 'bad' | 'neutral' | 'warn' }> = { incomplete: { name: 'ללא כרטיס', tone: 'warn' }, active: { name: 'פעיל', tone: 'ok' }, past_due: { name: 'חוב פתוח', tone: 'bad' }, hidden: { name: 'מוסתר', tone: 'neutral' }, cancelled: { name: 'בוטל', tone: 'neutral' } };
 
 export default async function AccountingPage({ searchParams }: { searchParams: SP }) {

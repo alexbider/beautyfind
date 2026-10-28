@@ -24,7 +24,7 @@ const dateIL = (d: Date) => d.toLocaleDateString('he-IL', { day: 'numeric', mont
 
 export default async function BizMarketingPage() {
   const ctx = await tabGuard('billing');
-  const [orders, services] = await Promise.all([ordersForBusiness(ctx.business.id, ctx.member.isOwner ? ctx.user.email : null), resolvedServices()]);
+  const [orders, services] = await Promise.all([ordersForBusiness(ctx.business.id), resolvedServices()]);
   const open = orders.filter(o => isOpen(o.status));
   const past = orders.filter(o => !isOpen(o.status));
   const ownedSlugs = new Set(open.map(o => o.serviceSlug));

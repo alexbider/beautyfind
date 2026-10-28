@@ -36,7 +36,10 @@ minutes). Prices are shown without Israeli VAT, like the platform plans (`PLATFO
 `marketing_orders` holds both purchases and quote requests (`kind`). Statuses: quote_requested, quoted,
 awaiting_payment, paid, onboarding, in_progress, active, completed, past_due, cancelled. Each order has a secret
 `access_token` for its order page, a `timeline` JSON and intake answers in `onboarding`. Guests can order; the
-business is linked automatically for a signed-in owner or staff member, or by the owner's email, or by the admin.
+business is linked automatically only when a signed-in owner or staff member orders (and only then is the
+business's Stripe customer reused). Guest orders are linked by the admin from the order page in /ops/marketing,
+never by the email typed into the form. The onboarding form opens only for paid purchases, and stores only the
+questions that order's form asks.
 
 Server code: `src/lib/server/marketing/index.ts` (catalog with overrides, quote requests, checkout, Stripe events,
 onboarding, admin status changes, notifications). Public actions: `src/app/for-business/marketing/actions.ts`
@@ -51,9 +54,12 @@ session, the subscription and the invoice. `handleMarketingEvent` runs first in 
 (`src/lib/server/billing/webhook.ts`) and claims these events before the platform plan handlers, so a marketing
 subscription never touches the listing `Subscription` row of the same Stripe customer.
 
-Events used: `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+Events used: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.expired`
+(cancels the abandoned order),
 `customer.subscription.created|updated|deleted`, `invoice.paid`, `invoice.payment_failed`. Make sure the webhook
-endpoint in the Stripe dashboard sends `checkout.session.async_payment_succeeded` too.
+endpoint in the Stripe dashboard sends `checkout.session.async_payment_succeeded` and `checkout.session.expired` too.
+Invoices on the shared account are matched to orders by metadata first; the Stripe API is read only for customers
+that already have marketing orders, and a failure there never blocks the platform handlers.
 
 Each paid invoice creates a platform `Payment` (purpose `marketing`) and a `Document` (`platform_invoice`). Monthly
 plan changes and cancellations are handled by the team (the dashboard links to contact); a customer portal for

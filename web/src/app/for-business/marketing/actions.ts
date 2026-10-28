@@ -3,7 +3,9 @@
 import { z } from 'zod';
 import { isServiceSlug } from '@/content/marketing/types';
 import { db } from '@/lib/server/db';
-import { canQuote, createQuoteRequest, orderByToken, resolvedService, saveOnboarding, startCheckout, type OrderContact } from '@/lib/server/marketing';
+import { getService } from '@/content/marketing';
+import { COMMON_ONBOARDING } from '@/content/marketing/common';
+import { canOnboard, canQuote, createQuoteRequest, orderByToken, resolvedService, saveOnboarding, startCheckout, type OrderContact } from '@/lib/server/marketing';
 import { LIMITS as RATE, clientIp, hit } from '@/lib/server/rateLimit';
 import { currentUser } from '@/lib/server/session';
 import { LIMITS, validateContact, type ActionResult, type ContactInput } from './shared';
@@ -94,8 +96,11 @@ export async function submitOnboarding(input: { token: string; answers: Record<s
   if (!parsed.success || typeof input.token !== 'string') return { ok: false, message: 'חלק מהתשובות אינן תקינות.' };
   const order = await orderByToken(input.token);
   if (!order) return { ok: false, message: 'ההזמנה לא נמצאה.' };
-  if (order.status === 'cancelled') return { ok: false, message: 'ההזמנה בוטלה.' };
+  if (!canOnboard(order) || !isServiceSlug(order.serviceSlug)) return { ok: false, message: 'השאלון נפתח אחרי שהתשלום מתקבל.' };
   if (!(await hit(`form:ip:${await clientIp()}`, RATE.formIp)).ok) return { ok: false, message: 'יותר מדי ניסיונות. נסו שוב בעוד כמה דקות.' };
-  await saveOnboarding(order, parsed.data);
+  // Only the questions this order's form actually asks.
+  const allowed = new Set([...COMMON_ONBOARDING, ...getService(order.serviceSlug).onboarding.fields].map(f => f.key));
+  const answers = Object.fromEntries(Object.entries(parsed.data).filter(([k]) => allowed.has(k)));
+  await saveOnboarding(order, answers);
   return { ok: true, ref: order.ref };
 }

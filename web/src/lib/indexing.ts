@@ -1,3 +1,4 @@
+import { isServiceSlug } from '@/content/marketing/types';
 import { CATEGORIES, REGIONS } from './catalog'; // relative: next.config.ts loads this file without the "@/" alias
 
 // What search engines may index, decided in one place. Two layers:
@@ -70,7 +71,7 @@ export function sectionOfPath(rawPath: string): IndexSectionKey | null {
   if (path === '/treatments' || path.startsWith('/treatments/')) return 'categories';
   if (CONTENT_PATHS.has(path)) return 'content';
   // Marketing services hub and service pages; the /order steps under a service stay out of the index.
-  if (path === '/for-business/marketing' || /^\/for-business\/marketing\/[a-z-]+$/.test(path)) return path.endsWith('/order') ? null : 'content';
+  if (path === '/for-business/marketing' || (path.startsWith('/for-business/marketing/') && isServiceSlug(path.slice('/for-business/marketing/'.length)))) return 'content';
   if (/^\/magazine\/[^/]+$/.test(path) || /^\/magazine\/category\/[^/]+$/.test(path)) return 'content'; // articles and category pages follow the content switch
   if (LEGAL_PATHS.has(path)) return 'legal';
   const seg = path.slice(1).split('/');

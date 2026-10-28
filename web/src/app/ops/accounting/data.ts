@@ -10,9 +10,9 @@ import { platformSettings } from '@/lib/server/platformSettings';
 // export. Clinic money (deposits, treatments, gift cards) never appears here: it flows through each
 // clinic's own providers.
 
-export type LedgerFilter = 'all' | 'subscription' | 'sponsored' | 'manual' | 'credit';
+export type LedgerFilter = 'all' | 'subscription' | 'sponsored' | 'marketing' | 'manual' | 'credit';
 export const LEDGER_FILTERS: Array<{ key: LedgerFilter; name: string }> = [
-  { key: 'all', name: 'הכול' }, { key: 'subscription', name: 'מנויים' }, { key: 'sponsored', name: 'ממומן' }, { key: 'manual', name: 'ידני' }, { key: 'credit', name: 'זיכויים' },
+  { key: 'all', name: 'הכול' }, { key: 'subscription', name: 'מנויים' }, { key: 'sponsored', name: 'ממומן' }, { key: 'marketing', name: 'שירותי שיווק' }, { key: 'manual', name: 'ידני' }, { key: 'credit', name: 'זיכויים' },
 ];
 
 export interface LedgerRow {
@@ -21,7 +21,7 @@ export interface LedgerRow {
   issuedAt: Date;
   customer: string;
   description: string;
-  kind: 'subscription' | 'sponsored' | 'manual' | 'credit';
+  kind: 'subscription' | 'sponsored' | 'marketing' | 'manual' | 'credit';
   netAgorot: number;
   vatAgorot: number;
   grossAgorot: number;
@@ -31,12 +31,12 @@ export interface LedgerRow {
 }
 
 const kindOf = (d: { type: string; payment: { purpose: string } | null; provider: string }): LedgerRow['kind'] =>
-  d.type === 'credit_note' ? 'credit' : d.payment?.purpose === 'subscription' ? 'subscription' : d.payment?.purpose === 'sponsored' ? 'sponsored' : 'manual';
+  d.type === 'credit_note' ? 'credit' : d.payment?.purpose === 'subscription' ? 'subscription' : d.payment?.purpose === 'sponsored' ? 'sponsored' : d.payment?.purpose === 'marketing' ? 'marketing' : 'manual';
 
 export async function ledger(opts: { filter: LedgerFilter; q: string; from?: Date; to?: Date; take?: number }): Promise<LedgerRow[]> {
   const where: Prisma.DocumentWhereInput = {
     issuer: 'platform',
-    ...(opts.filter === 'credit' ? { type: 'credit_note' } : opts.filter === 'subscription' || opts.filter === 'sponsored' ? { payment: { purpose: opts.filter } } : opts.filter === 'manual' ? { type: { not: 'credit_note' }, paymentId: null } : {}),
+    ...(opts.filter === 'credit' ? { type: 'credit_note' } : opts.filter === 'subscription' || opts.filter === 'sponsored' || opts.filter === 'marketing' ? { payment: { purpose: opts.filter } } : opts.filter === 'manual' ? { type: { not: 'credit_note' }, paymentId: null } : {}),
     ...(opts.q ? { OR: [{ number: { contains: opts.q } }, { sentTo: { contains: opts.q, mode: 'insensitive' } }] } : {}),
     ...(opts.from || opts.to ? { issuedAt: { ...(opts.from ? { gte: opts.from } : {}), ...(opts.to ? { lt: opts.to } : {}) } } : {}),
   };
@@ -58,14 +58,15 @@ export async function ledger(opts: { filter: LedgerFilter; q: string; from?: Dat
 }
 
 export async function ledgerCounts(): Promise<Record<LedgerFilter, number>> {
-  const [all, credit, subscription, sponsored, manual] = await Promise.all([
+  const [all, credit, subscription, sponsored, marketing, manual] = await Promise.all([
     db.document.count({ where: { issuer: 'platform' } }),
     db.document.count({ where: { issuer: 'platform', type: 'credit_note' } }),
     db.document.count({ where: { issuer: 'platform', payment: { purpose: 'subscription' } } }),
     db.document.count({ where: { issuer: 'platform', payment: { purpose: 'sponsored' } } }),
+    db.document.count({ where: { issuer: 'platform', payment: { purpose: 'marketing' } } }),
     db.document.count({ where: { issuer: 'platform', type: { not: 'credit_note' }, paymentId: null } }),
   ]);
-  return { all, credit, subscription, sponsored, manual };
+  return { all, credit, subscription, sponsored, marketing, manual };
 }
 
 export interface SubscriptionRow {

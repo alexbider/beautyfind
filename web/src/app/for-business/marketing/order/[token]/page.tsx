@@ -68,6 +68,9 @@ export default async function MarketingOrderPage({ params, searchParams }: Props
                     בינתיים אפשר לקרוא עוד על <Link href={marketingService(s.slug)}>{s.name}</Link> או לעבור על <Link href={ROUTES.marketing}>שאר השירותים</Link>.
                   </p>
                 )}
+              </section>
+            )}
+
             {needsOnboarding && s.onboarding.access.length > 0 && (
               <section className={styles.panel} aria-labelledby="h-access">
                 <h2 id="h-access">גישות שנצטרך</h2>
@@ -87,9 +90,6 @@ export default async function MarketingOrderPage({ params, searchParams }: Props
                     </li>
                   ))}
                 </ol>
-              </section>
-            )}
-
               </section>
             )}
           </div>
@@ -122,7 +122,7 @@ export default async function MarketingOrderPage({ params, searchParams }: Props
             )}
             <p className={styles.asOf}>שאלות? השיבו למייל האישור, או כתבו לנו דרך <Link href={ROUTES.contact}>עמוד יצירת הקשר</Link> עם מספר ההזמנה.</p>
             <p className={styles.asOf}>
-              בעלי עסק רשום ב־BeautyFind רואים את ההזמנה גם ב<Link href={ROUTES.bizMarketing}>לוח הניהול</Link>.
+              עסקים רשומים ב־BeautyFind רואים את ההזמנות שלהם גם ב<Link href={ROUTES.bizMarketing}>לוח הניהול</Link>.
             </p>
           </aside>
         </div>
