@@ -62,10 +62,6 @@ export async function checkWorker(): Promise<ServiceCheck & { lastSeen: Date | n
 /** Everything on one list, for the overview card and the health page. */
 export async function serviceChecks(): Promise<ServiceCheck[]> {
   const [dbc, site, worker] = await Promise.all([checkDatabase(), checkSite(), checkWorker()]);
-  const messaging = process.env.MESSAGING_ADAPTER ?? 'console';
-  const msg: ServiceCheck = messaging === 'console'
-    ? { key: 'messaging', name: 'הודעות · WhatsApp / SMS / אימייל', state: process.env.NODE_ENV === 'production' ? 'down' : 'unknown', ms: null, note: 'אין ספק הודעות מחובר (MESSAGING_ADAPTER=console)' }
-    : { key: 'messaging', name: 'הודעות · WhatsApp / SMS / אימייל', state: 'ok', ms: null, note: `ספק: ${messaging}` };
   const storage: ServiceCheck = process.env.STORAGE_ADAPTER === 'blob' || process.env.BLOB_READ_WRITE_TOKEN
     ? { key: 'storage', name: 'אחסון תמונות · Vercel Blob', state: 'ok', ms: null, note: 'מחובר' }
     : { key: 'storage', name: 'אחסון תמונות', state: 'unknown', ms: null, note: 'אחסון מקומי (UPLOAD_DIR)' };
@@ -75,6 +71,19 @@ export async function serviceChecks(): Promise<ServiceCheck[]> {
   const sent = (tw?.sent24h ?? 0) + (mg?.sent24h ?? 0);
   const failed = (tw?.failed24h ?? 0) + (mg?.failed24h ?? 0);
   const providers = [tw?.ready ? 'Twilio (SMS)' : null, mgOn ? 'Messaggio' : null].filter(Boolean).join(' + ');
+  // Messages go through the providers set on /ops/messages (src/lib/server/deliver.ts): SMS by Twilio or Messaggio,
+  // email by Resend, WhatsApp by Messaggio. MESSAGING_ADAPTER is only the fallback for what no provider carries.
+  const { emailStatus } = await import('./email');
+  const em = await emailStatus().catch(() => null);
+  const smsOn = !!tw?.ready || !!(mgOn && mg?.settings.sms);
+  const waOn = !!(mgOn && mg?.settings.whatsapp);
+  const emailOn = !!em?.ready;
+  const parts = [smsOn ? 'SMS' : null, emailOn ? 'אימייל' : null, waOn ? 'WhatsApp' : null].filter(Boolean);
+  const missing = [smsOn ? null : 'SMS', emailOn ? null : 'אימייל', waOn ? null : 'WhatsApp (נשלח ב־SMS)'].filter(Boolean);
+  const emailNote = em ? ` · אימייל: ${em.sent24h} נשלחו ב־24 שעות${em.failed24h ? `, ${em.failed24h} נכשלו` : ''}` : '';
+  const msg: ServiceCheck = !smsOn && !emailOn
+    ? { key: 'messaging', name: 'הודעות · WhatsApp / SMS / אימייל', state: process.env.NODE_ENV === 'production' ? 'down' : 'unknown', ms: null, note: 'אין ספק SMS או אימייל פעיל (/ops/messages)' }
+    : { key: 'messaging', name: 'הודעות · WhatsApp / SMS / אימייל', state: smsOn && emailOn ? 'ok' : 'degraded', ms: null, note: `פעיל: ${parts.join(', ')}${missing.length ? ` · לא מחובר: ${missing.join(', ')}` : ''}${emailNote}` };
   const codes: ServiceCheck = providers
     ? { key: 'verification', name: 'קודי אימות', state: failed && !sent ? 'down' : 'ok', ms: null, note: `${providers} · ${sent} נשלחו ב־24 שעות${failed ? ` · ${failed} נכשלו` : ''}` }
     : { key: 'verification', name: 'קודי אימות', state: process.env.NODE_ENV === 'production' ? 'down' : 'unknown', ms: null, note: 'אין ספק פעיל: קודי האימות נרשמים ללוג בלבד (Twilio / Messaggio ב־/ops/messages)' };
