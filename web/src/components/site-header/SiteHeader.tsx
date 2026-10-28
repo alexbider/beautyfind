@@ -126,6 +126,7 @@ export function SiteHeader({
               <>
                 <Link href="/treatments" className={styles.navLink} aria-current={cur('/treatments')}>תחומי טיפול</Link>
                 <Link href="/magazine" className={styles.navLink} aria-current={cur('/magazine')}>מדריכים</Link>
+                <Link href={ROUTES.marketing} className={styles.navLink} aria-current={cur(ROUTES.marketing)}>שירותי שיווק</Link>
                 <Link href="/about" className={styles.navLink} aria-current={cur('/about')}>אודות</Link>
               </>
             ) : (
@@ -206,7 +207,7 @@ export function SiteHeader({
           )}
           <div className={styles.sheetFoot}>
             {pub && <Link href="/treatments" className={styles.sheetPlain} onClick={close}>תחומי טיפול</Link>}
-            {!pub && <Link href="/for-business/marketing" className={styles.sheetPlain} onClick={close}>שירותי שיווק</Link>}
+            <Link href={ROUTES.marketing} className={styles.sheetPlain} onClick={close}>שירותי שיווק</Link>
             <Link href="/about" className={styles.sheetPlain} onClick={close}>אודות</Link>
             <Link href="/magazine" className={styles.sheetPlain} onClick={close}>מדריכים</Link>
             {pub ? (

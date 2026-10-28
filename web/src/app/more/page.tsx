@@ -26,9 +26,13 @@ export default async function MorePage() {
       ];
   const business: MoreRow[] =
     user?.kind === 'business'
-      ? [{ kind: 'link', label: 'מעבר ללוח הבקרה', href: ROUTES.dashboard }]
+      ? [
+          { kind: 'link', label: 'מעבר ללוח הבקרה', href: ROUTES.dashboard },
+          { kind: 'link', label: 'שירותי שיווק', href: ROUTES.marketing },
+        ]
       : [
           { kind: 'link', label: 'רישום העסק', href: ROUTES.forBusiness },
+          { kind: 'link', label: 'שירותי שיווק', href: ROUTES.marketing },
           { kind: 'link', label: 'כניסת בעלי עסקים', href: ROUTES.bizLogin },
         ];
 

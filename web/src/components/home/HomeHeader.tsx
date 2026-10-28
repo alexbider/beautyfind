@@ -162,6 +162,7 @@ export function HomeHeader({ regions, total }: { regions: HeaderRegion[]; total:
               תחומי טיפול<ChevronDown />
             </button>
             <Link href="/magazine" className={styles.navLink}>מדריכים</Link>
+            <Link href={ROUTES.marketing} className={styles.navLink}>שירותי שיווק</Link>
             <Link href="/about" className={styles.navLink}>אודות</Link>
           </nav>
 
@@ -326,6 +327,7 @@ export function HomeHeader({ regions, total }: { regions: HeaderRegion[]; total:
               );
             })}
             <Link href="/magazine" className={styles.sheetPlain} onClick={closeAll}>מדריכים</Link>
+            <Link href={ROUTES.marketing} className={styles.sheetPlain} onClick={closeAll}>שירותי שיווק</Link>
             <Link href="/about" className={styles.sheetPlain} onClick={closeAll}>אודות</Link>
           </div>
           <div className={styles.sheetRegions}>
