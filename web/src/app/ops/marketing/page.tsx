@@ -11,7 +11,8 @@ import { marketingService } from '@/lib/routes';
 import { db } from '@/lib/server/db';
 import { resolvedServices, STATUS_LABEL } from '@/lib/server/marketing';
 import { STATUS_TONE } from './data';
-import { ServiceConfigForm } from './MarketingForms';
+import { ServiceConfigForm, StripeSyncButton } from './MarketingForms';
+import { packageLookupKey, productIdOf } from '@/lib/server/marketing/stripeCatalog';
 
 export const metadata: Metadata = { title: 'שירותי שיווק · ניהול', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
@@ -61,8 +62,11 @@ export default async function MarketingAdminPage({ searchParams }: { searchParam
         <PageHead eyebrow="כספים" title="שירותי שיווק" lead="מחירים, אופן ההזמנה וזמינות של כל שירות. השינוי מתפרסם באתר מיד. המחירים ללא מע״מ ישראלי, כמו מנויי הפלטפורמה." />
         {tabs}
         <div className={ui.stack}>
+          <Card title="Stripe" sub="כל שירות הוא מוצר ב־Stripe וכל חבילה מחיר, עם מפתח קבוע (lookup key). שמירת מחיר כאן מעדכנת את Stripe מיד; הזמנה חדשה תמיד נבנית מהמחיר העדכני.">
+            <StripeSyncButton canEdit={atLeast(level, 'full')} />
+          </Card>
           {services.map(s => (
-            <Card key={s.slug} title={<Link href={marketingService(s.slug)} className={ui.rowLink}>{s.name}</Link>} sub={s.primaryKeyword} aside={<Chip tone={s.enabled ? 'ok' : 'neutral'}>{s.enabled ? 'פעיל' : 'מוסתר'}</Chip>}>
+            <Card key={s.slug} title={<Link href={marketingService(s.slug)} className={ui.rowLink}>{s.name}</Link>} sub={<>{s.primaryKeyword} · Stripe: <span className="ltr">{productIdOf(s.slug)}</span> ({s.resolvedPackages.map(p => packageLookupKey(s.slug, p.key).replace(`${productIdOf(s.slug)}_`, '')).join(', ')})</>} aside={<Chip tone={s.enabled ? 'ok' : 'neutral'}>{s.enabled ? 'פעיל' : 'מוסתר'}</Chip>}>
               <ServiceConfigForm
                 slug={s.slug}
                 enabled={s.enabled}

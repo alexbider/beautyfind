@@ -1,4 +1,5 @@
 import 'server-only';
+import { ensurePackagePrices } from './stripeCatalog';
 import type Stripe from 'stripe';
 import type { MarketingOrder, MarketingOrderStatus, Prisma } from '@prisma/client';
 import { getService, SERVICES } from '@/content/marketing';
@@ -209,19 +210,28 @@ export async function startCheckout(slug: ServiceSlug, packageKey: string, conta
     customer = sub?.stripeCustomerId ?? undefined;
   }
   const name = `${service.name}: ${pkg.name}`;
-  const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
-    {
-      quantity: 1,
-      price_data: {
-        currency: 'ils',
-        unit_amount: priceAgorot,
-        product_data: { name, metadata: { site: SITE, purpose: PURPOSE, service: slug, package: pkg.key } },
-        ...(pkg.cycle === 'monthly' ? { recurring: { interval: 'month' as const } } : {}),
+  // Catalog prices (src/lib/server/marketing/stripeCatalog.ts), created or replaced here when the site's price changed.
+  // If the catalog cannot be read or written (a key without product access, a Stripe hiccup), the order still goes
+  // through with inline prices, as before, and the error is logged.
+  let lineItems: Stripe.Checkout.SessionCreateParams.LineItem[];
+  try {
+    const prices = await ensurePackagePrices(service, pkg.key);
+    lineItems = [{ quantity: 1, price: prices.priceId }];
+    if (setupAgorot > 0 && prices.setupPriceId) lineItems.push({ quantity: 1, price: prices.setupPriceId });
+  } catch (e) {
+    console.error('[marketing] stripe catalog unavailable, using inline prices', e instanceof Error ? e.message : e);
+    lineItems = [
+      {
+        quantity: 1,
+        price_data: {
+          currency: 'ils',
+          unit_amount: priceAgorot,
+          product_data: { name, metadata: { site: SITE, purpose: PURPOSE, service: slug, package: pkg.key } },
+          ...(pkg.cycle === 'monthly' ? { recurring: { interval: 'month' as const } } : {}),
+        },
       },
-    },
-  ];
-  if (setupAgorot > 0) {
-    lineItems.push({ quantity: 1, price_data: { currency: 'ils', unit_amount: setupAgorot, product_data: { name: `${name} (הקמה)`, metadata: { site: SITE, purpose: PURPOSE } } } });
+    ];
+    if (setupAgorot > 0) lineItems.push({ quantity: 1, price_data: { currency: 'ils', unit_amount: setupAgorot, product_data: { name: `${name} (הקמה)`, metadata: { site: SITE, purpose: PURPOSE } } } });
   }
   const back = `${siteUrl()}${orderPagePath(order.accessToken)}`;
   try {

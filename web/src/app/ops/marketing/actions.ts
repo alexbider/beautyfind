@@ -14,6 +14,34 @@ import { setOrderStatus } from '@/lib/server/marketing';
 // prices, order mode and availability. Every change is audited.
 
 type Result = { ok: true } | { ok: false; error: string };
+const NIL_UUID = '00000000-0000-0000-0000-000000000000';
+
+async function syncServiceToStripe(slug: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { stripeConfigured } = await import('@/lib/server/billing/stripe');
+  if (!stripeConfigured()) return { ok: true };
+  const { resolvedService } = await import('@/lib/server/marketing');
+  const { syncMarketingCatalog } = await import('@/lib/server/marketing/stripeCatalog');
+  const s = await resolvedService(slug);
+  if (!s) return { ok: true };
+  const r = await syncMarketingCatalog([s]);
+  return r.ok ? { ok: true } : { ok: false, error: r.errors[0] ?? 'unknown' };
+}
+
+/** Creates or updates every service and package in Stripe (products and prices by lookup key). */
+export async function syncStripeCatalogAction(): Promise<{ ok: true; text: string } | { ok: false; error: string }> {
+  const user = await areaUserOrNull('marketing', 'full');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const { stripeConfigured } = await import('@/lib/server/billing/stripe');
+  if (!stripeConfigured()) return { ok: false, error: 'STRIPE_SECRET_KEY לא מוגדר' };
+  const { resolvedServices } = await import('@/lib/server/marketing');
+  const { syncMarketingCatalog } = await import('@/lib/server/marketing/stripeCatalog');
+  const r = await syncMarketingCatalog(await resolvedServices());
+  console.info(`[marketing-stripe] ${JSON.stringify(r)}`);
+  await db.auditLog.create({ data: { actorId: user.id, action: 'marketing_stripe_sync', subjectType: 'marketing_service', subjectId: NIL_UUID, meta: { products: r.products, prices: r.prices, created: r.created, errors: r.errors.length } } }).catch(() => undefined);
+  revalidatePath('/ops/marketing');
+  const text = `${r.products} שירותים, ${r.prices} מחירים ב־Stripe. נוצרו או עודכנו ${r.created}.`;
+  return r.ok ? { ok: true, text } : { ok: false, error: `${text} שגיאות: ${r.errors.slice(0, 3).join(' · ')}` };
+}
 
 const STATUSES = ['quote_requested', 'quoted', 'awaiting_payment', 'paid', 'onboarding', 'in_progress', 'active', 'completed', 'past_due', 'cancelled'] as const;
 
@@ -73,9 +101,12 @@ export async function saveServiceConfigAction(input: z.input<typeof ConfigInput>
   const packages = Object.fromEntries(Object.entries(p.data.packages).filter(([k]) => keys.has(k)));
   const data = { enabled: p.data.enabled, mode: p.data.mode, packages: packages as Prisma.InputJsonValue, updatedById: user.id };
   await db.marketingServiceConfig.upsert({ where: { slug: p.data.slug }, create: { slug: p.data.slug, ...data }, update: data });
-  await db.auditLog.create({ data: { actorId: user.id, action: 'marketing_service_config', subjectType: 'marketing_service', subjectId: p.data.slug, meta: { enabled: p.data.enabled, mode: p.data.mode, packages } as Prisma.InputJsonValue } });
+  // audit_logs.subject_id is a uuid: the service slug goes in meta.
+  await db.auditLog.create({ data: { actorId: user.id, action: 'marketing_service_config', subjectType: 'marketing_service', subjectId: NIL_UUID, meta: { ref: p.data.slug, enabled: p.data.enabled, mode: p.data.mode, packages } as Prisma.InputJsonValue } }).catch(e => console.error('[marketing] audit', e));
   revalidatePath('/ops/marketing');
   revalidatePath('/for-business/marketing');
   revalidatePath(`/for-business/marketing/${p.data.slug}`);
-  return { ok: true };
+  // Keep the Stripe catalog in step with the new prices (checkout would also fix it on the next order).
+  const sync = await syncServiceToStripe(p.data.slug);
+  return sync.ok ? { ok: true } : { ok: false, error: `נשמר באתר, אבל העדכון ב־Stripe נכשל: ${sync.error}. הוא יתוקן בהזמנה הבאה או בכפתור הסנכרון.` };
 }

@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { ui } from '@/components/ops/ui';
-import { saveServiceConfigAction, updateMarketingOrderAction } from './actions';
+import { saveServiceConfigAction, syncStripeCatalogAction, updateMarketingOrderAction } from './actions';
 
 type StatusOption = { key: string; name: string };
 
@@ -168,5 +168,22 @@ export function ServiceConfigForm({ slug, enabled, mode, packages, canEdit }: { 
         <p className={ui.note}>שינוי מחירים דורש הרשאה מלאה בשירותי שיווק.</p>
       )}
     </form>
+  );
+}
+
+export function StripeSyncButton({ canEdit }: { canEdit: boolean }) {
+  const router = useRouter();
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [pending, start] = useTransition();
+  if (!canEdit) return null;
+  return (
+    <div className={ui.actions}>
+      <button type="button" className={ui.btn} disabled={pending} onClick={() => start(async () => {
+        const r = await syncStripeCatalogAction();
+        setMsg(r.ok ? { ok: true, text: r.text } : { ok: false, text: r.error });
+        router.refresh();
+      })}>{pending ? 'מסנכרן…' : 'סנכרון השירותים והמחירים ל־Stripe'}</button>
+      {msg && <span className={msg.ok ? ui.ok : ui.error} role="status">{msg.text}</span>}
+    </div>
   );
 }

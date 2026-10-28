@@ -47,7 +47,15 @@ onboarding, admin status changes, notifications). Public actions: `src/app/for-b
 
 ## Stripe
 
-Checkout Sessions with inline `price_data` in ILS: `payment` mode for one-off packages (with `invoice_creation` so
+Catalog (`src/lib/server/marketing/stripeCatalog.ts`): each service is a Stripe Product `beautyfind_mk_{slug}` (dashes
+as underscores) and each package a Price with lookup key `beautyfind_mk_{slug}_{package}`, plus
+`beautyfind_mk_{slug}_{package}_setup` for a setup fee; all ILS, tax exclusive, metadata `site`, `purpose`, `service`,
+`package`, `kind`. Saving prices on /ops/marketing updates Stripe at once (a new Price takes over the lookup key and the
+old one is archived; running subscriptions stay on their price). The services tab has a full sync button, and checkout
+checks the package's prices first, so the catalog heals itself. If the catalog cannot be used, checkout falls back to
+inline prices and logs it.
+
+Checkout Sessions in ILS, built from the catalog prices: `payment` mode for one-off packages (with `invoice_creation` so
 a Stripe invoice and PDF exist) and `subscription` mode for monthly packages, with the setup fee as a one-time line
 on the first invoice. Everything carries metadata `{ site: 'beautyfind', purpose: 'marketing', orderId }`, on the
 session, the subscription and the invoice. `handleMarketingEvent` runs first in `handleStripeEvent`
