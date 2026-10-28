@@ -157,7 +157,8 @@ export default async function EmailsAdminPage({ searchParams }: { searchParams: 
     const template = one(sp.template);
     const business = /^[0-9a-f-]{36}$/i.test(one(sp.business)) ? one(sp.business) : '';
     const where: Prisma.MessageSendWhereInput = {
-      provider: 'resend', test: false, createdAt: { gte: new Date(Date.now() - days * 86_400_000) },
+      // Test sends from /ops/messages are listed (marked) so the team can check tracking; the rates leave them out.
+      provider: 'resend', createdAt: { gte: new Date(Date.now() - days * 86_400_000) }, ...(one(sp.tests) === '0' ? { test: false } : {}),
       ...(audience ? { audience } : {}), ...(template ? { template } : {}), ...(business ? { businessId: business } : {}),
       ...STATE_FILTERS[state].where,
     };
@@ -188,7 +189,7 @@ export default async function EmailsAdminPage({ searchParams }: { searchParams: 
                         {m.businessId ? <Link href={qs(curSent, { business: m.businessId })} className={ui.rowLink}>{names.get(m.businessId) ?? 'עסק'}</Link> : AUDIENCE_LABEL[(m.audience ?? 'other') as Audience]}
                         <div className={`${ui.note} ltr`}>{m.toMasked}</div>
                       </td>
-                      <td><Chip tone={st.tone}>{st.label}</Chip></td>
+                      <td><Chip tone={st.tone}>{st.label}</Chip>{m.test ? <> <Chip tone="info">בדיקה</Chip></> : null}</td>
                       <td>{m.openCount ? <>{int(m.openCount)}<div className={ui.note}>{relIL(m.lastOpenedAt)}</div></> : '—'}</td>
                       <td>{m.clickCount ? <>{int(m.clickCount)}<div className={`${ui.note} ltr`}>{m.lastClickUrl?.replace(/^https?:\/\//, '').slice(0, 40)}</div></> : '—'}</td>
                       <td>{m.replyCount ? int(m.replyCount) : '—'}</td>

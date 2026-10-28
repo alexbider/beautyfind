@@ -35,7 +35,7 @@ export default async function EmailDetailPage({ params }: { params: Promise<{ id
         eyebrow={<Link href="/ops/emails?tab=sent" className={ui.rowLink}>מעקב מיילים</Link>}
         title={templateName(m.template)}
         lead={<>נשלח {dateTimeIL(m.createdAt)} אל <span className="ltr">{m.toMasked}</span>{person?.fullName ? ` (${person.fullName})` : ''}</>}
-        actions={<Chip tone={st.tone}>{st.label}</Chip>}
+        actions={<>{m.test ? <Chip tone="info">מייל בדיקה</Chip> : null}<Chip tone={st.tone}>{st.label}</Chip></>}
       />
       <div className={ui.stack}>
         <Band
