@@ -27,8 +27,8 @@ export const COMPANY = {
   jurisdiction: 'מדינת דלאוור, ארצות הברית',
   companyNo: null as string | null, // Israeli ח.פ.: not applicable to a Delaware company
   address: null as string | null, // correspondence by email (MAIL) until a postal address is set
-  privacyOfficer: 'ממונה הגנת הפרטיות, בכתובת privacy@beautyfind.co.il' as string | null,
-  accessibilityCoordinator: 'רכז/ת הנגישות, בכתובת access@beautyfind.co.il' as string | null,
+  privacyOfficer: 'ממונה הגנת הפרטיות, בכתובת hello@beautyfind.co.il' as string | null,
+  accessibilityCoordinator: 'רכז/ת הנגישות, בכתובת hello@beautyfind.co.il' as string | null,
   accessibilityPhone: null as string | null, // E.164 when a phone line is set up
   /** Date of the last accessibility review (ISO). */
   accessibilityReviewedAt: '2026-09-23' as string | null,
@@ -38,9 +38,9 @@ export const orPending = (v: string | null) => v ?? PENDING;
 
 /** Role mailboxes. They must exist and be monitored before launch. */
 export const MAIL = {
-  privacy: 'privacy@beautyfind.co.il',
-  legal: 'legal@beautyfind.co.il',
-  access: 'access@beautyfind.co.il',
+  privacy: 'hello@beautyfind.co.il',
+  legal: 'hello@beautyfind.co.il',
+  access: 'hello@beautyfind.co.il',
 };
 
 /** ISO date → DD/MM/YYYY (07-rules-and-tokens: dates are DD/MM/YYYY). */

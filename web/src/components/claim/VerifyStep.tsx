@@ -137,8 +137,8 @@ export function VerifyStep(p: Props) {
         <InfoIcon />
         <p>
           <strong>אין לכם גישה לטלפון או לדוא״ל הרשומים?</strong> אפשר לאמת במסמך: תעודת עוסק, אישור ניהול ספרים או רישיון עסק על שם העסק. שלחו אותו לכתובת{' '}
-          <a href="mailto:business@beautyfind.co.il">
-            <span className="ltr">business@beautyfind.co.il</span>
+          <a href="mailto:hello@beautyfind.co.il">
+            <span className="ltr">hello@beautyfind.co.il</span>
           </a>{' '}
           ונטפל בתוך שני ימי עסקים.
         </p>

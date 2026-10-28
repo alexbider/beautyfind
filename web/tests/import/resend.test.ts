@@ -155,14 +155,14 @@ describe('email and notices through the providers', { skip }, () => {
 
   it('a password reset email goes to Resend in Hebrew, RTL, with the link; logged masked', async () => {
     const cur = (await settings.platformSettings()).email;
-    await settings.savePlatformSettings(userId, { email: { ...cur, enabled: true, from: 'BeautyFind <noreply@beautyfind.co.il>', replyTo: 'support@beautyfind.co.il' } });
+    await settings.savePlatformSettings(userId, { email: { ...cur, enabled: true, from: 'BeautyFind <noreply@beautyfind.co.il>', replyTo: 'hello@beautyfind.co.il' } });
     const to = `dana${stamp}@example.test`;
     const r = await messaging().send({ channel: 'email', to, template: 'M17_reset', vars: { name: 'דנה', link: 'https://beautyfind.co.il/login?view=reset&token=t', minutes: '30' }, kind: 'service' });
     assert.equal(r.channel, 'email');
     const e = mock.emails.at(-1)!.body as { from: string; to: string[]; subject: string; html: string; text: string; reply_to: string };
     assert.equal(e.from, 'BeautyFind <noreply@beautyfind.co.il>');
     assert.deepEqual(e.to, [to]);
-    assert.equal(e.reply_to, 'support@beautyfind.co.il');
+    assert.equal(e.reply_to, 'hello@beautyfind.co.il');
     assert.match(e.subject, /איפוס הסיסמה/);
     assert.match(e.html, /dir="rtl"/);
     assert.match(e.html, /view=reset&amp;token=t/);

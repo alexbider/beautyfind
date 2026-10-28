@@ -180,8 +180,8 @@ export function HelpCenter({ initialAudience, initialQuery = '' }: { initialAudi
               <h2 className={styles.cardH}>לא מצאתם?</h2>
               <div className={styles.cardLinks}>
                 <Link href={contactHref(contactReason)} className={styles.contactBtn}>טופס פנייה · {slaLine(contactReason)}</Link>
-                <a href="mailto:help@beautyfind.co.il" className={styles.sideLink}>
-                  <span className="ltr">help@beautyfind.co.il</span>
+                <a href="mailto:hello@beautyfind.co.il" className={styles.sideLink}>
+                  <span className="ltr">hello@beautyfind.co.il</span>
                 </a>
               </div>
               <p className={styles.cardNote}>

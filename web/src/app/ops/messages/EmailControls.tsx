@@ -68,7 +68,7 @@ export function EmailSenderForm({ from, replyTo, canEdit }: { from: string; repl
       </div>
       <div className={ui.field}>
         <label className={ui.label} htmlFor="rs-reply">כתובת לתשובות (לא חובה)</label>
-        <input id="rs-reply" className={ui.input} dir="ltr" placeholder="support@beautyfind.co.il" value={v.replyTo} disabled={!canEdit} onChange={e => setV({ ...v, replyTo: e.target.value })} />
+        <input id="rs-reply" className={ui.input} dir="ltr" placeholder="hello@beautyfind.co.il" value={v.replyTo} disabled={!canEdit} onChange={e => setV({ ...v, replyTo: e.target.value })} />
         <span className={ui.hint}>לשם יגיעו תשובות של לקוחות למיילים</span>
       </div>
       {canEdit ? <div className={ui.actions}><button type="submit" className={`${ui.btn} ${ui.small}`} disabled={pending}>שמירה</button><Msg m={msg} /></div> : null}

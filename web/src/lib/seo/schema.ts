@@ -29,10 +29,6 @@ export const graph = (nodes: unknown[]) => ({ '@context': 'https://schema.org', 
 /** The contact channels of /contact, as ContactPoints. */
 export const ORG_CONTACTS: Array<{ contactType: string; email: string }> = [
   { contactType: 'customer support', email: 'hello@beautyfind.co.il' },
-  { contactType: 'sales', email: 'business@beautyfind.co.il' },
-  { contactType: 'corrections', email: 'corrections@beautyfind.co.il' },
-  { contactType: 'accessibility', email: 'access@beautyfind.co.il' },
-  { contactType: 'privacy', email: 'privacy@beautyfind.co.il' },
 ];
 
 export function organizationNode(description?: string) {

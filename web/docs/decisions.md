@@ -4,7 +4,7 @@ Decisions made after the design handoff. The handoff's `08-open-decisions.md` st
 
 ## 2026-09-23
 
-**Operating company.** BeautyFind is operated by **Israfind Group**, a Delaware company. There is no Israeli ח.פ. Legal pages use generic wording under Israeli law, approved by the company. Contacts are role mailboxes (`privacy@`, `access@`, `legal@beautyfind.co.il`), never personal names. Values live in `src/components/content/meta.ts`.
+**Operating company.** BeautyFind is operated by **Israfind Group**, a Delaware company. There is no Israeli ח.פ. Legal pages use generic wording under Israeli law, approved by the company. All company contact goes to one mailbox, `hello@beautyfind.co.il` (changed 2026-10-28 from separate role mailboxes), never personal names. Values live in `src/components/content/meta.ts`.
 - Because the company and its hosting are outside Israel, the privacy policy states that data may be processed abroad under the Privacy Protection (Transfer of Data to Databases Abroad) Regulations, 2001.
 - Terms: Israeli law applies, the competent courts in Israel have jurisdiction, and consumer rights under the Consumer Protection Law are preserved (no exclusive venue clause).
 - **Platform billing (decided):** Israfind Group does not issue Israeli tax invoices. Plans and sponsored weeks are billed from the Delaware company with a regular invoice and no Israeli VAT; Israeli businesses report VAT on services from abroad as the law requires of them. Wording lives in `src/lib/pricing.ts` (`PLATFORM_PRICE_NOTE`, `PLATFORM_BILLING_LINE`, `PLATFORM_VAT_RATE = 0`) and is used by Get Listed, Onboarding, Claim, Billing, Standards, Terms, About, Contact and Help.
