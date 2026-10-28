@@ -115,8 +115,8 @@ export default async function OverviewPage() {
           {services.map(s => (
             <div key={s.key} className={ui.service}>
               <span className={ui.dot} data-tone={s.state === 'ok' ? 'ok' : s.state === 'degraded' ? undefined : s.state === 'down' ? 'bad' : 'info'} aria-hidden="true" />
-              <span className={ui.serviceName}>{s.name}</span>
-              <Chip tone={STATE_TONE[s.state]}>{STATE_NAME[s.state]}</Chip>
+              <span className={ui.serviceName}>{s.name}{s.label && s.note ? <span className={ui.note}> · {s.note}</span> : null}</span>
+              <Chip tone={STATE_TONE[s.state]}>{s.label ?? STATE_NAME[s.state]}</Chip>
               <span className={ui.serviceMs} dir="ltr">{s.ms != null ? `${s.ms}ms` : ''}</span>
             </div>
           ))}

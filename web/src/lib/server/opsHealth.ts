@@ -10,6 +10,8 @@ export interface ServiceCheck {
   key: string;
   name: string;
   state: ServiceState;
+  /** Overrides the state word on the chip ("מחובר" / "לא מחובר" for the message channels). */
+  label?: string;
   ms: number | null;
   note: string;
 }
@@ -78,14 +80,20 @@ export async function serviceChecks(): Promise<ServiceCheck[]> {
   const smsOn = !!tw?.ready || !!(mgOn && mg?.settings.sms);
   const waOn = !!(mgOn && mg?.settings.whatsapp);
   const emailOn = !!em?.ready;
-  const parts = [smsOn ? 'SMS' : null, emailOn ? 'אימייל' : null, waOn ? 'WhatsApp' : null].filter(Boolean);
-  const missing = [smsOn ? null : 'SMS', emailOn ? null : 'אימייל', waOn ? null : 'WhatsApp (נשלח ב־SMS)'].filter(Boolean);
-  const emailNote = em ? ` · אימייל: ${em.sent24h} נשלחו ב־24 שעות${em.failed24h ? `, ${em.failed24h} נכשלו` : ''}` : '';
-  const msg: ServiceCheck = !smsOn && !emailOn
-    ? { key: 'messaging', name: 'הודעות · WhatsApp / SMS / אימייל', state: process.env.NODE_ENV === 'production' ? 'down' : 'unknown', ms: null, note: 'אין ספק SMS או אימייל פעיל (/ops/messages)' }
-    : { key: 'messaging', name: 'הודעות · WhatsApp / SMS / אימייל', state: smsOn && emailOn ? 'ok' : 'degraded', ms: null, note: `פעיל: ${parts.join(', ')}${missing.length ? ` · לא מחובר: ${missing.join(', ')}` : ''}${emailNote}` };
+  const prod = process.env.NODE_ENV === 'production';
+  const count = (sent24: number, failed24: number) => `${sent24} נשלחו ב־24 שעות${failed24 ? ` · ${failed24} נכשלו` : ''}`;
+  // One row per channel, so it is clear which ones are connected and through which provider.
+  const sms: ServiceCheck = smsOn
+    ? { key: 'sms', name: `SMS · ${tw?.ready ? 'Twilio' : 'Messaggio'}`, state: failed && !sent ? 'down' : 'ok', ms: null, note: count(sent, failed), label: failed && !sent ? 'שגיאות' : 'מחובר' }
+    : { key: 'sms', name: 'SMS', state: prod ? 'down' : 'unknown', ms: null, note: 'להגדרה: /ops/messages', label: 'לא מחובר' };
+  const email: ServiceCheck = emailOn
+    ? { key: 'email', name: 'אימייל · Resend', state: em!.failed24h && !em!.sent24h ? 'down' : 'ok', ms: null, note: `${count(em!.sent24h, em!.failed24h)}${em!.settings.replyDomain ? ' · מעקב פתיחות ותשובות פעיל' : ''}`, label: em!.failed24h && !em!.sent24h ? 'שגיאות' : 'מחובר' }
+    : { key: 'email', name: 'אימייל', state: prod ? 'down' : 'unknown', ms: null, note: em?.configured ? 'מפתח קיים, השליחה כבויה' : 'להגדרה: /ops/messages', label: 'לא מחובר' };
+  const whatsapp: ServiceCheck = waOn
+    ? { key: 'whatsapp', name: 'WhatsApp · Messaggio', state: 'ok', ms: null, note: 'מחובר', label: 'מחובר' }
+    : { key: 'whatsapp', name: 'WhatsApp', state: 'unknown', ms: null, note: smsOn ? 'הודעות WhatsApp נשלחות ב־SMS' : 'להגדרה: /ops/messages', label: 'לא מחובר' };
   const codes: ServiceCheck = providers
     ? { key: 'verification', name: 'קודי אימות', state: failed && !sent ? 'down' : 'ok', ms: null, note: `${providers} · ${sent} נשלחו ב־24 שעות${failed ? ` · ${failed} נכשלו` : ''}` }
     : { key: 'verification', name: 'קודי אימות', state: process.env.NODE_ENV === 'production' ? 'down' : 'unknown', ms: null, note: 'אין ספק פעיל: קודי האימות נרשמים ללוג בלבד (Twilio / Messaggio ב־/ops/messages)' };
-  return [site, dbc, worker, codes, msg, storage];
+  return [site, dbc, worker, codes, sms, email, whatsapp, storage];
 }

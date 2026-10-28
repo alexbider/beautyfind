@@ -43,7 +43,7 @@ export default async function HealthPage() {
         {services.map(s => (
           <div key={s.key} className={styles.service}>
             <div className={styles.serviceTop}><span className={ui.dot} data-tone={STATE[s.state].tone === 'neutral' ? undefined : STATE[s.state].tone} /><span className={styles.serviceName}>{s.name}</span></div>
-            <div className={styles.serviceState} data-tone={STATE[s.state].tone}>{STATE[s.state].name}</div>
+            <div className={styles.serviceState} data-tone={STATE[s.state].tone}>{s.label ?? STATE[s.state].name}</div>
             <div className={styles.serviceNote}>{s.ms !== null ? `${s.ms}ms · ` : ''}{s.note}</div>
           </div>
         ))}
