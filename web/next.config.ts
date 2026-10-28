@@ -42,7 +42,6 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return {
       beforeFiles: [
-        { source: '/favicon.ico', destination: '/icon' },
         {
           source: `/:region(${REGIONS.map(r => r.slug).join('|')})/:category(${CATEGORIES.map(c => c.slug).join('|')})/:slug`,
           destination: '/:region/biz/:slug?via=:category',
