@@ -31,6 +31,8 @@ export async function runTrackingSetupAction(): Promise<SetupResult> {
   const user = await areaUserOrNull('emails', 'full');
   if (!user) return { ok: false, error: 'אין הרשאה', steps: [], dns: [] };
   const r = await setupEmailTracking(user.id);
+  // DNS records are public values (no secrets); logged so the team can add them from the deployment logs too.
+  console.info(`[email-setup] ${JSON.stringify({ ok: r.ok, error: r.error ?? null, steps: r.steps, dns: r.dns })}`);
   await db.auditLog.create({ data: { actorId: user.id, action: 'email_tracking_setup', subjectType: 'platform', subjectId: 'email', meta: { ok: r.ok, steps: r.steps.map(s => `${s.key}:${s.ok}`) } } });
   revalidatePath('/ops/emails');
   return r;
