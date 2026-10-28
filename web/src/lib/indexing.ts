@@ -1,4 +1,4 @@
-import { isServiceSlug } from '@/content/marketing/types';
+import { isServiceSlug } from '../content/marketing/types'; // relative, like the line below
 import { CATEGORIES, REGIONS } from './catalog'; // relative: next.config.ts loads this file without the "@/" alias
 
 // What search engines may index, decided in one place. Two layers:
