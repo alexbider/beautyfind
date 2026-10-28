@@ -341,6 +341,40 @@ export function renderMessage(template: string, vars: Record<string, string>, si
       return { subject: `קיבלנו את הפנייה שלך (${v(vars, 'ref')})`, kicker: 'support', title: 'קיבלנו את הפנייה', lines: ['שלום,', sent, 'אפשר להשיב למייל הזה כדי להוסיף פרטים.'], details: [['מספר פנייה', v(vars, 'ref')]], sms: `${BRAND}: ${sent} מספר פנייה ${v(vars, 'ref')}.` };
     }
 
+    // Marketing services (BeautyFind for Business): order paid, quote received, intake received, status change.
+    case 'M_mk_order_paid':
+      return {
+        subject: `ההזמנה ${v(vars, 'ref')} התקבלה: ${v(vars, 'service')}`, preheader: 'השלב הבא: שאלון קצר כדי שנתחיל לעבוד', kicker: 'business', title: 'התשלום התקבל, מתחילים',
+        lines: [hi(name), `תודה שבחרתם ב-${BRAND}. קיבלנו את ההזמנה של ${business || 'העסק'} לשירות ${v(vars, 'service')}.`, 'כדי שנוכל להתחיל, מלאו שאלון קצר על העסק, הקהל והחומרים שכבר יש לכם. זה לוקח כעשר דקות, ומשם נחזור אליכם עם תוכנית עבודה ולוח זמנים.'],
+        details: [['שירות', v(vars, 'service')], ['חבילה', v(vars, 'package')], ['סכום', v(vars, 'amount')], ['מספר הזמנה', v(vars, 'ref')]],
+        cta: { label: 'למילוי השאלון', url: link },
+        note: { tone: 'info', text: 'הקבלה מ-Stripe נשלחת במייל נפרד. שאלות? אפשר להשיב למייל הזה.' },
+        sms: `${BRAND}: ההזמנה ${v(vars, 'ref')} (${v(vars, 'service')}) התקבלה. לשאלון הפתיחה: ${link}`,
+      };
+    case 'M_mk_quote_received':
+      return {
+        subject: `קיבלנו את הבקשה להצעת מחיר (${v(vars, 'ref')})`, kicker: 'business', title: 'הבקשה התקבלה',
+        lines: [hi(name), `קיבלנו את הבקשה של ${business || 'העסק'} להצעת מחיר לשירות ${v(vars, 'service')}.`, 'נעבור על הפרטים ונחזור אליכם תוך יום עסקים אחד עם הצעה מסודרת, או עם שאלה קצרה אם חסר משהו.'],
+        details: [['שירות', v(vars, 'service')], ['מספר בקשה', v(vars, 'ref')]],
+        sms: `${BRAND}: קיבלנו את הבקשה להצעת מחיר (${v(vars, 'ref')}) לשירות ${v(vars, 'service')}. נחזור אליכם תוך יום עסקים.`,
+      };
+    case 'M_mk_onboarding_received':
+      return {
+        subject: `השאלון התקבל (${v(vars, 'ref')})`, kicker: 'business', title: 'קיבלנו את כל הפרטים',
+        lines: [hi(name), `השאלון של ${business || 'העסק'} לשירות ${v(vars, 'service')} התקבל. מנהל/ת הלקוח שלכם יעבור עליו ויחזור אליכם עם תוכנית עבודה.`, 'אם ביקשנו גישה לחשבונות (מטא, גוגל, האתר), אפשר להעניק אותה כבר עכשיו לפי ההוראות בעמוד ההזמנה.'],
+        details: [['שירות', v(vars, 'service')], ['מספר הזמנה', v(vars, 'ref')]],
+        cta: { label: 'לעמוד ההזמנה', url: link },
+        sms: `${BRAND}: השאלון להזמנה ${v(vars, 'ref')} התקבל. נחזור אליכם עם תוכנית עבודה. ${link}`,
+      };
+    case 'M_mk_status':
+      return {
+        subject: `עדכון בהזמנה ${v(vars, 'ref')}: ${v(vars, 'status')}`, kicker: 'business', title: v(vars, 'status') || 'עדכון בהזמנה',
+        lines: [hi(name), `יש עדכון בהזמנה של ${business || 'העסק'} לשירות ${v(vars, 'service')}.`, v(vars, 'note')].filter(Boolean),
+        details: [['שירות', v(vars, 'service')], ['סטטוס', v(vars, 'status')], ['מספר הזמנה', v(vars, 'ref')]],
+        cta: { label: 'לעמוד ההזמנה', url: link },
+        sms: `${BRAND}: עדכון בהזמנה ${v(vars, 'ref')}: ${v(vars, 'status')}. ${link}`,
+      };
+
     case 'messaggio_test':
     case 'twilio_test':
     case 'email_test':

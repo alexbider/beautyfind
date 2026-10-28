@@ -20,6 +20,7 @@ const ICONS: Record<Area, ReactNode> = {
   bookings: <path d="M4 5h16v15H4zM4 10h16M8 3v4M16 3v4" />,
   disputes: <path d="M12 3 2 20h20zM12 10v4M12 17h.01" />,
   sponsored: <path d="M4 10v4h3l6 4V6L7 10zM16 9a4 4 0 0 1 0 6" />,
+  marketing: <path d="M4 19V9M10 19V5M16 19v-7M3 19h18M14 7l3-3 3 3" />,
   moderation: <path d="m12 3 2.7 5.6 6.3.9-4.5 4.4 1 6.1L12 17l-5.5 3 1-6.1L3 9.5l6.3-.9z" />,
   verification: <path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6zM9 12l2 2 4-4" />,
   import: <path d="M12 3v12M7 10l5 5 5-5M4 19h16" />,

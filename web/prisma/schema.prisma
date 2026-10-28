@@ -1165,6 +1165,7 @@ enum PaymentPurpose {
   consult
   subscription
   sponsored
+  marketing
 }
 
 enum PaymentStatus {
@@ -2039,4 +2040,92 @@ model ScheduledMessage {
   @@index([automation, createdAt])
   @@index([businessId])
   @@map("scheduled_messages")
+}
+
+
+// ---------- Marketing services (BeautyFind for Business) ----------
+// Digital marketing services sold to businesses from /for-business/marketing (docs/marketing-services.md).
+// The service catalog and copy live in code (src/content/marketing); prices, the order mode and whether a
+// service is on sale are admin overrides in marketing_service_configs. An order is either a purchase
+// (Stripe Checkout, one-off or monthly) or a quote request. Guests can order: the business is linked
+// later by email, by the admin, or automatically when a signed-in owner orders.
+
+enum MarketingOrderKind {
+  purchase
+  quote
+}
+
+enum MarketingOrderStatus {
+  quote_requested // a quote request, waiting for the team
+  quoted // a price was sent
+  awaiting_payment // checkout started, not paid yet
+  paid // paid, onboarding not submitted yet
+  onboarding // intake submitted, team reviewing access and assets
+  in_progress // work started
+  active // a monthly service running
+  completed // a one-off delivered
+  past_due // a monthly charge failed
+  cancelled
+}
+
+model MarketingOrder {
+  id                   String               @id @default(uuid()) @db.Uuid
+  ref                  String               @unique // MK-0042
+  kind                 MarketingOrderKind
+  status               MarketingOrderStatus
+  serviceSlug          String               @map("service_slug")
+  packageKey           String?              @map("package_key")
+  packageName          String?              @map("package_name")
+  cycle                String? // one_time | monthly
+  priceAgorot          Int?                 @map("price_agorot") // per cycle, as charged
+  setupAgorot          Int                  @default(0) @map("setup_agorot")
+  businessId           String?              @map("business_id") @db.Uuid
+  branchId             String?              @map("branch_id") @db.Uuid
+  userId               String?              @map("user_id") @db.Uuid
+  contactName          String               @map("contact_name")
+  contactEmail         String               @map("contact_email")
+  contactPhone         String               @map("contact_phone")
+  businessName         String               @map("business_name")
+  businessType         String?              @map("business_type")
+  city                 String?
+  website              String?
+  message              String?
+  // Secret for the onboarding link sent to guests (the page also opens for the signed-in owner).
+  accessToken          String               @unique @map("access_token")
+  // Intake answers: { [fieldKey]: string | string[] }, and when they were submitted.
+  onboarding           Json?
+  onboardedAt          DateTime?            @map("onboarded_at")
+  stripeSessionId      String?              @unique @map("stripe_session_id")
+  stripeCustomerId     String?              @map("stripe_customer_id")
+  stripeSubscriptionId String?              @unique @map("stripe_subscription_id")
+  paidAt               DateTime?            @map("paid_at")
+  cancelAtPeriodEnd    Boolean              @default(false) @map("cancel_at_period_end")
+  currentPeriodEnd     DateTime?            @map("current_period_end")
+  // Team side: owner of the account, internal notes, the client-facing status line and timeline.
+  assigneeId           String?              @map("assignee_id") @db.Uuid
+  internalNote         String?              @map("internal_note")
+  statusNote           String?              @map("status_note")
+  // [{ at, status, note?, by? }]
+  timeline             Json                 @default("[]")
+  utm                  Json?
+  createdAt            DateTime             @default(now()) @map("created_at")
+  updatedAt            DateTime             @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@index([businessId])
+  @@index([contactEmail])
+  @@index([serviceSlug])
+  @@map("marketing_orders")
+}
+
+model MarketingServiceConfig {
+  slug        String   @id
+  enabled     Boolean  @default(true)
+  mode        String   @default("both") // buy | quote | both
+  // { [packageKey]: { priceNis?: number, setupNis?: number, hidden?: boolean } }
+  packages    Json     @default("{}")
+  updatedById String?  @map("updated_by_id") @db.Uuid
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("marketing_service_configs")
 }

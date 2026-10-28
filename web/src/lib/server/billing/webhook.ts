@@ -3,6 +3,7 @@ import type Stripe from 'stripe';
 import { db } from '../db';
 import { applyStripeSubscription, recordFailedInvoice, recordPaidInvoice, refreshCard, syncBilling } from './index';
 import { customerIdOf, invoiceSubscriptionId, SITE, stripe } from './stripe';
+import { handleMarketingEvent } from '../marketing';
 
 // Stripe events for BeautyFind. The Stripe account also bills other sites, so every handler first
 // finds our subscription row by the Stripe customer and ignores anything it does not know.
@@ -13,6 +14,10 @@ async function knownCustomer(customerId: string | null): Promise<boolean> {
 }
 
 export async function handleStripeEvent(event: Stripe.Event): Promise<'handled' | 'ignored'> {
+  // Marketing service orders (metadata purpose=marketing) are claimed first, so a marketing subscription or
+  // invoice of a customer who also has a listing plan never reaches the plan handlers below.
+  const marketing = await handleMarketingEvent(event);
+  if (marketing) return marketing;
   switch (event.type) {
     case 'checkout.session.completed': {
       const s = event.data.object as Stripe.Checkout.Session;

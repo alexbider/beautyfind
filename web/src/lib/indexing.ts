@@ -39,6 +39,7 @@ export const PRIVATE_AREAS: Array<{ prefix: string; name: string }> = [
   { prefix: '/invite', name: 'הזמנות צוות' },
   { prefix: '/for-business/join', name: 'רישום עסק' },
   { prefix: '/for-business/claim', name: 'תביעת בעלות' },
+  { prefix: '/for-business/marketing/order', name: 'הזמנות שירותי שיווק' },
   { prefix: '/pay', name: 'תשלום' },
   { prefix: '/receipt', name: 'קבלות ומסמכים' },
   { prefix: '/unsubscribe', name: 'הסרה מדיוור' },
@@ -68,6 +69,8 @@ export function sectionOfPath(rawPath: string): IndexSectionKey | null {
   if (path === '/regions') return 'regions';
   if (path === '/treatments' || path.startsWith('/treatments/')) return 'categories';
   if (CONTENT_PATHS.has(path)) return 'content';
+  // Marketing services hub and service pages; the /order steps under a service stay out of the index.
+  if (path === '/for-business/marketing' || /^\/for-business\/marketing\/[a-z-]+$/.test(path)) return path.endsWith('/order') ? null : 'content';
   if (/^\/magazine\/[^/]+$/.test(path) || /^\/magazine\/category\/[^/]+$/.test(path)) return 'content'; // articles and category pages follow the content switch
   if (LEGAL_PATHS.has(path)) return 'legal';
   const seg = path.slice(1).split('/');

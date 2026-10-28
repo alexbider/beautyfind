@@ -1,4 +1,5 @@
 import 'server-only';
+import { SERVICES } from '@/content/marketing';
 import type { Metadata } from 'next';
 import { CATEGORIES, REGIONS } from '@/lib/catalog';
 import { pathIndexable } from '@/lib/indexing';
@@ -62,6 +63,8 @@ export function sitePages(): SitePage[] {
     { path: '/listing-standards', name: 'סטנדרטים ואימות', kind: 'page', defaultTitle: 'סטנדרטים לרישום', defaultDescription: null, keywordHint: 'אימות רופאים' },
     { path: '/listing-standards/sponsorship', name: 'מדיניות מקומות ממומנים', kind: 'page', defaultTitle: 'מקומות ממומנים', defaultDescription: null, keywordHint: '' },
     { path: '/for-business', name: 'הצטרפות לעסקים', kind: 'page', defaultTitle: 'BeautyFind לעסקים', defaultDescription: null, keywordHint: 'פרסום קליניקה' },
+    { path: '/for-business/marketing', name: 'שירותי שיווק', kind: 'page', defaultTitle: 'שיווק דיגיטלי לעסקים בתחום היופי', defaultDescription: null, keywordHint: 'שיווק דיגיטלי לעסקים' },
+    ...SERVICES.map(s => ({ path: `/for-business/marketing/${s.slug}`, name: s.name, kind: 'page' as const, defaultTitle: s.title, defaultDescription: s.description, keywordHint: s.primaryKeyword })),
     { path: '/magazine', name: 'מגזין', kind: 'page', defaultTitle: 'המגזין', defaultDescription: null, keywordHint: '' },
     { path: '/help', name: 'עזרה', kind: 'page', defaultTitle: 'עזרה', defaultDescription: null, keywordHint: '' },
     { path: '/contact', name: 'יצירת קשר', kind: 'page', defaultTitle: 'יצירת קשר', defaultDescription: null, keywordHint: '' },

@@ -1,0 +1,25 @@
+/* /biz/marketing: marketing services the business ordered, and the catalog. Dashboard language (charts/ui). */
+.list { display: flex; flex-direction: column; gap: 12px; }
+.order { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 18px 20px; border: 1px solid var(--line); border-radius: 16px; background: #ffffff; }
+.orderTop { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.orderName { font-family: var(--font-display); font-size: 19px; font-weight: 500; }
+.ref { font-size: 13px; color: var(--subtle); }
+.pill { display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 12.5px; font-weight: 700; background: var(--tint); color: var(--teal-deep); }
+.pill[data-tone='ok'] { background: var(--ok-bg); color: var(--ok-text); }
+.pill[data-tone='warn'] { background: var(--warn-bg); color: var(--warn-text); }
+.pill[data-tone='bad'] { background: var(--bad-bg); color: var(--bad-text); }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; color: var(--muted); }
+.hint { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--text); }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 16px; border-radius: 11px; background: var(--navy); color: #ffffff; font-size: 14.5px; font-weight: 700; }
+.btnGhost { display: inline-flex; align-items: center; min-height: 42px; padding: 0 16px; border-radius: 11px; border: 1px solid var(--line-strong); color: var(--navy); font-size: 14.5px; font-weight: 700; }
+@media (hover: hover) and (pointer: fine) { .btn:hover { background: var(--teal); color: var(--navy); } .btnGhost:hover { border-color: var(--teal); color: var(--teal-deep); } }
+.catalog { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.svc { display: flex; flex-direction: column; gap: 8px; height: 100%; padding: 18px; border: 1px solid var(--line); border-radius: 16px; background: #ffffff; transition: border-color .2s, transform .2s, box-shadow .2s; }
+@media (hover: hover) and (pointer: fine) { .svc:hover { border-color: var(--teal-border); transform: translateY(-2px); box-shadow: 0 14px 30px rgba(12, 36, 62, .08); color: var(--navy); } }
+.svcIcon { width: 40px; height: 40px; border-radius: 11px; background: var(--tint); display: flex; align-items: center; justify-content: center; }
+.svcName { font-weight: 700; font-size: 16px; }
+.svcLine { font-size: 14px; line-height: 1.55; color: var(--muted); }
+.svcFrom { margin-top: auto; font-size: 13px; color: var(--subtle); }
+@media (min-width: 768px) { .catalog { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1180px) { .catalog { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

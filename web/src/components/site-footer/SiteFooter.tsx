@@ -14,6 +14,7 @@ const GROUPS: Array<{ name: string; links: Array<{ name: string; href: string }>
       { name: 'רישום עסק', href: '/for-business' },
       { name: 'אישור בעלות', href: '/for-business/claim' },
       { name: 'מחירים', href: '/for-business#pricing' },
+      { name: 'שירותי שיווק', href: '/for-business/marketing' },
       { name: 'תקן הרישום', href: '/listing-standards' },
     ],
   },

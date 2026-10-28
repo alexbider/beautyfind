@@ -24,7 +24,12 @@ export const ROUTES = {
   giftCheck: '/gift/check',
   branches: '/biz/branches',
   sponsoredBuy: '/biz/sponsored',
+  marketing: '/for-business/marketing',
+  bizMarketing: '/biz/marketing',
 } as const;
+
+export const marketingService = (slug: string) => `/for-business/marketing/${slug}`;
+export const marketingOrder = (slug: string, pkg: string) => `/for-business/marketing/${slug}/order?package=${encodeURIComponent(pkg)}`;
 
 export const joinWithPlan = (plan: 'basic' | 'advanced') => `${ROUTES.join}?plan=${plan}`;
 

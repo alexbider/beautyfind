@@ -1,4 +1,5 @@
 import 'server-only';
+import { SERVICE_SLUGS } from '@/content/marketing/types';
 import { CATEGORIES, CITIES, REGIONS, cityHref, cityPageHref, regionBySlug } from '@/lib/catalog';
 import { articlePath } from '@/lib/articleHtml';
 import { pathIndexable } from '@/lib/indexing';
@@ -62,6 +63,8 @@ export async function sitemapEntries(): Promise<SitemapEntry[]> {
     ...CITIES.flatMap(c => CATEGORIES.filter(cat => cityCats.has(`${c.slug}|${cat.slug}`)).map(cat => u(`${cityHref(c)}/${cat.slug}`, 'cityCategory', `${cat.name} ב${c.name}`, 0.6))),
     ...branches.map(b => u(profileHref(b), 'profile', `${b.name}${regionBySlug(b.regionSlug) ? `, ${regionBySlug(b.regionSlug)!.name}` : ''}`, 0.6, 'weekly', b.updatedAt)),
     fixed('/for-business', 0.6, 'monthly'),
+    fixed('/for-business/marketing', 0.7, 'weekly'),
+    ...SERVICE_SLUGS.map(slug => fixed(`/for-business/marketing/${slug}`, 0.7, 'weekly')),
     fixed('/about', 0.4, 'monthly'),
     fixed('/about/editorial', 0.3, 'monthly'),
     fixed('/about/methodology', 0.3, 'monthly'),

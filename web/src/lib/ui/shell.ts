@@ -39,7 +39,7 @@ export const TABS: Record<Exclude<ShellVariant, 'staff'>, ShellTab[]> = {
     { key: 'leads', label: 'פניות', href: '/biz/leads', icon: 'inbox', match: ['/biz/leads'], badge: 'leads' },
     { key: 'reviews', label: 'ביקורות', href: '/biz/reviews', icon: 'star', match: ['/biz/reviews'] },
     { key: 'profile', label: 'פרופיל', href: '/biz/profile', icon: 'store', match: ['/biz/profile', '/biz/menu'] },
-    { key: 'more', label: 'עוד', href: '/biz/more', icon: 'more', match: ['/biz/more', '/biz/team', '/biz/analytics', '/biz/billing', '/biz/payments'] },
+    { key: 'more', label: 'עוד', href: '/biz/more', icon: 'more', match: ['/biz/more', '/biz/team', '/biz/analytics', '/biz/billing', '/biz/payments', '/biz/marketing'] },
   ],
   // Interim set until the Noa Clinic back office (calendar, customers, messages) exists.
   clinic: [
@@ -59,6 +59,7 @@ const FOCUSED: RegExp[] = [
   /^\/pay\//,
   /^\/gift\/[^/]+$/, // buying a gift card (not /gift/check)
   /^\/for-business\/(join|claim)/,
+  /^\/for-business\/marketing\/(order\/|[a-z-]+\/order)/,
   /^\/invite\//,
   /^\/login/,
   /^\/ops\/(login|setup)/,

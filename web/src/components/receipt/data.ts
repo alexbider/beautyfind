@@ -57,6 +57,7 @@ const PURPOSE: Record<PaymentPurpose, string> = {
   consult: 'פגישת ייעוץ',
   subscription: 'מנוי',
   sponsored: 'מקום ממומן',
+  marketing: 'שירות שיווק',
 };
 
 /** ₪1,234.50 from agorot (documents show agorot). */

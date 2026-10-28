@@ -133,6 +133,7 @@ export function SiteHeader({
                 <button type="button" className={styles.navBtn} data-on={menu === 'svc' || undefined} aria-expanded={menu === 'svc'} onClick={() => toggle('svc')}>
                   תחומי טיפול<ChevronDown />
                 </button>
+                <Link href="/for-business/marketing" className={styles.navLink} aria-current={cur('/for-business/marketing')}>שירותי שיווק</Link>
                 <Link href="/about" className={styles.navLink}>אודות</Link>
                 <Link href="/magazine" className={styles.navLink}>מדריכים</Link>
               </>
@@ -205,6 +206,7 @@ export function SiteHeader({
           )}
           <div className={styles.sheetFoot}>
             {pub && <Link href="/treatments" className={styles.sheetPlain} onClick={close}>תחומי טיפול</Link>}
+            {!pub && <Link href="/for-business/marketing" className={styles.sheetPlain} onClick={close}>שירותי שיווק</Link>}
             <Link href="/about" className={styles.sheetPlain} onClick={close}>אודות</Link>
             <Link href="/magazine" className={styles.sheetPlain} onClick={close}>מדריכים</Link>
             {pub ? (

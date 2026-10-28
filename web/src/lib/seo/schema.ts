@@ -236,3 +236,45 @@ export function duplicateIds(nodes: unknown[]): string[] {
 }
 
 export const categoryOf = (slug: string): Category | undefined => categoryBySlug(slug) ?? CATEGORIES.find(c => c.slug === slug);
+
+export const serviceId = (path: string) => `${absoluteUrl(path)}#service`;
+
+export type ServiceOfferInput = { name: string; priceNis: number; monthly: boolean; description?: string };
+
+/** A service BeautyFind sells to businesses (marketing services), with its packages as an OfferCatalog. */
+export function serviceNode(p: { path: string; name: string; serviceType: string; description: string; image?: string; offers: ServiceOfferInput[] }) {
+  const url = absoluteUrl(p.path);
+  return {
+    '@type': 'Service',
+    '@id': serviceId(p.path),
+    url,
+    name: p.name,
+    serviceType: p.serviceType,
+    description: p.description,
+    ...(p.image ? { image: absoluteUrl(p.image) } : {}),
+    provider: { '@id': ORG_ID },
+    areaServed: { '@type': 'Country', name: 'Israel' },
+    audience: { '@type': 'BusinessAudience', audienceType: 'מכוני יופי, קליניקות לאסתטיקה, קוסמטיקאיות, סלונים ומספרות' },
+    inLanguage: 'he-IL',
+    ...(p.offers.length
+      ? {
+          hasOfferCatalog: {
+            '@type': 'OfferCatalog',
+            name: `חבילות ${p.name}`,
+            itemListElement: p.offers.map(o => ({
+              '@type': 'Offer',
+              name: o.name,
+              ...(o.description ? { description: o.description } : {}),
+              url: `${url}#packages`,
+              priceCurrency: 'ILS',
+              price: o.priceNis,
+              availability: 'https://schema.org/InStock',
+              ...(o.monthly
+                ? { priceSpecification: { '@type': 'UnitPriceSpecification', price: o.priceNis, priceCurrency: 'ILS', unitCode: 'MON', referenceQuantity: { '@type': 'QuantitativeValue', value: 1, unitCode: 'MON' } } }
+                : {}),
+            })),
+          },
+        }
+      : {}),
+  };
+}

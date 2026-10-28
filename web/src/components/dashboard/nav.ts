@@ -13,5 +13,7 @@ export const DASH_VIEWS: Array<{ key: DashView; name: string; href: string }> = 
   // No area of its own: it follows `billing` (edit only), see the views filter in app/biz/layout.tsx.
   // Typed as DashView so pages that index Perms by key keep compiling; `payments` is never a Perms key.
   { key: 'payments' as DashView, name: 'תשלומים וחשבוניות', href: '/biz/payments' },
+  // Marketing services the business ordered (follows billing, view level).
+  { key: 'marketing' as DashView, name: 'שירותי שיווק', href: '/biz/marketing' },
   { key: 'team', name: 'צוות והרשאות', href: '/biz/team' },
 ];

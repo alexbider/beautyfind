@@ -174,6 +174,7 @@ const PURPOSE_LINE: Record<PaymentPurpose, string> = {
   consult: 'פגישת ייעוץ',
   subscription: 'מנוי BeautyFind',
   sponsored: 'מקום ממומן',
+  marketing: 'שירות שיווק',
 };
 
 export type RefundOutcome = { ok: true; refundId: string } | { ok: false; error: 'not_refundable' | 'provider_error' };

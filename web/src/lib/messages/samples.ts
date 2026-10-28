@@ -44,5 +44,9 @@ export const SAMPLES: Sample[] = [
   { id: 'staff_invite_accepted', group: 'חשבון וצוות', label: 'הזמנה התקבלה', vars: { name: 'מיכל', business: 'סטודיו אורה', role: 'מטפלת' } },
   { id: 'staff_invite_declined', group: 'חשבון וצוות', label: 'הזמנה נדחתה', vars: { business: 'סטודיו אורה', email: 'michal@example.com' } },
   { id: 'staff_invite_renewal_request', group: 'חשבון וצוות', label: 'בקשה להזמנה חדשה', vars: { business: 'סטודיו אורה', email: 'michal@example.com' } },
+  { id: 'M_mk_order_paid', group: 'שירותי שיווק', label: 'הזמנה שולמה', vars: { name: 'אורה', business: 'סטודיו אורה', service: 'קידום אתרים אורגני', package: 'צמיחה', amount: '2,900 ₪ לחודש', ref: 'MK-0042', link: `${S}/for-business/marketing/order/sample` } },
+  { id: 'M_mk_quote_received', group: 'שירותי שיווק', label: 'בקשה להצעת מחיר', vars: { name: 'אורה', business: 'סטודיו אורה', service: 'בניית אתרים', ref: 'MK-0043' } },
+  { id: 'M_mk_onboarding_received', group: 'שירותי שיווק', label: 'שאלון פתיחה התקבל', vars: { name: 'אורה', business: 'סטודיו אורה', service: 'קידום אתרים אורגני', ref: 'MK-0042', link: `${S}/for-business/marketing/order/sample` } },
+  { id: 'M_mk_status', group: 'שירותי שיווק', label: 'עדכון סטטוס הזמנה', vars: { name: 'אורה', business: 'סטודיו אורה', service: 'קידום אתרים אורגני', status: 'העבודה התחילה', note: 'סיימנו את בדיקת האתר והתחלנו בתיקונים הטכניים.', ref: 'MK-0042', link: `${S}/for-business/marketing/order/sample` } },
   { id: 'M_contact_receipt', group: 'חשבון וצוות', label: 'קבלת פנייה', vars: { ref: 'CT-3051', reason: '' } },
 ];
