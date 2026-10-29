@@ -33,7 +33,7 @@ const has = (k: string) => Boolean(process.env[k]);
 const rel = (d: Date | null) => (d ? `דיווח אחרון ${Math.max(0, Math.round((Date.now() - d.getTime()) / 60_000))} דק׳` : 'העובד עוד לא דיווח');
 
 export async function integrationGroups(): Promise<IntegrationGroup[]> {
-  const [conns, s, gKey, mg, tw, gOn, em] = await Promise.all([
+  const [conns, s, gKey, mg, tw, gOn, em, gaId] = await Promise.all([
     db.providerConnection.groupBy({ by: ['provider', 'kind', 'status'], _count: true }).catch(() => []),
     importSettings().catch(() => null),
     resolveServiceAccount().catch(() => null),
@@ -41,6 +41,7 @@ export async function integrationGroups(): Promise<IntegrationGroup[]> {
     twilioStatus().catch(() => null),
     platformSettings().then(p => p.googleIndexing.enabled).catch(() => false),
     emailStatus().catch(() => null),
+    platformSettings().then(p => p.analyticsMeasurementId).catch(() => ''),
   ]);
   const w = s?.workerStatus ?? null;
   const wAt = w?.at ? new Date(w.at) : null;
@@ -104,7 +105,9 @@ export async function integrationGroups(): Promise<IntegrationGroup[]> {
   const analytics: IntegrationGroup = {
     name: 'אנליטיקס ונתונים',
     items: [
-      notBuilt('analytics:ga4', 'Google Analytics 4', 'תנועה, משפכי הזמנה, המרות'),
+      gaId
+        ? { key: 'analytics:ga4', name: 'Google Analytics 4', desc: 'תג המדידה באתר הציבורי', state: 'connected', note: `מזהה ${gaId} · נטען למבקרים שאישרו מדידה`, where: '/ops/settings · מדידה', checkable: false, href: '/ops/settings' }
+        : { key: 'analytics:ga4', name: 'Google Analytics 4', desc: 'תג המדידה באתר הציבורי', state: 'not_connected', note: 'לא הוגדר מזהה מדידה', where: '/ops/settings · מדידה', checkable: false, href: '/ops/settings' },
       notBuilt('analytics:gsc', 'Google Search Console', 'אינדקס, ביטויים, Core Web Vitals'),
       { key: 'google:indexing', name: 'Google Indexing API', desc: 'שליחת עמודים חדשים ועמודים שלא באינדקס לגוגל, ובדיקת מצב האינדקס', state: gKey && gOn ? 'connected' : 'not_connected', note: !gKey ? 'לא הועלה מפתח של חשבון שירות' : gOn ? `פעיל · ${gKey.sa.clientEmail}` : `מפתח קיים (${gKey.sa.clientEmail}); האינדוקס כבוי`, where: '/ops/content?tab=google', checkable: false, href: '/ops/content?tab=google' },
       { key: 'google:places', name: 'Google Places (New)', desc: 'דירוגי גוגל ושעות לפרופילים, בפעולה מפורשת של צוות', state: googleAvailable() ? 'connected' : 'not_connected', note: googleAvailable() ? 'מופעל' : has('GOOGLE_MAPS_API_KEY') ? 'מפתח קיים; GOOGLE_ENRICHMENT_ENABLED כבוי' : 'חסר GOOGLE_MAPS_API_KEY', where: 'GOOGLE_MAPS_API_KEY, GOOGLE_ENRICHMENT_ENABLED', checkable: true },
