@@ -12,6 +12,7 @@ import styles from './CookieConsent.module.css';
 // Real consent storage (kept per 02-data-model.md): localStorage['bf-cookie-consent'].
 export const CONSENT_KEY = 'bf-cookie-consent';
 export const OPEN_PREFS_EVENT = 'bf-open-cookie-prefs';
+export const CONSENT_CHANGED_EVENT = 'bf-cookie-consent-changed';
 
 export interface Consent {
   essential: true;
@@ -80,6 +81,7 @@ export function CookieConsent() {
     setSaved(v);
     setDraft(v);
     setPrefs(false);
+    window.dispatchEvent(new Event(CONSENT_CHANGED_EVENT));
   };
 
   const catList = (

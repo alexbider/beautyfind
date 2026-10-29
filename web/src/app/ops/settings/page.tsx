@@ -8,6 +8,7 @@ import { CATEGORIES } from '@/lib/catalog';
 import { marketPriceUnits } from '@/lib/marketPrices';
 import { marketPrices } from '@/lib/server/marketPrices';
 import { platformSettings } from '@/lib/server/platformSettings';
+import { AnalyticsForm } from './AnalyticsForm';
 import { MarketPricesForm } from './MarketPricesForm';
 import { FlagToggle, MaintenanceMessage, MedicalDisclaimerText, NumbersForm, type NumberGroup } from './SettingsForms';
 
@@ -59,6 +60,9 @@ export default async function SettingsPage() {
         <FlagToggle name="clientAssistant" checked={s.clientAssistant} title="עוזר AI ללקוחות · ניסיוני" sub="טרם מומש באתר; ההגדרה נשמרת לקראת ההפעלה ולא משנה דבר עכשיו" />
         <FlagToggle name="maintenanceMode" checked={s.maintenanceMode} title="מצב תחזוקה" sub="דף הבית ומסכי ההזמנה, רשימת ההמתנה והשוברים מציגים הודעת תחזוקה; הזמנות קיימות לא נפגעות" />
         <MaintenanceMessage message={s.maintenanceMessage} canEdit={canEdit} />
+      </Card>
+      <Card title="מדידה" sub="תג Google Analytics באתר הציבורי. מופעל לאחר אישור קובצי מדידה מצטברת.">
+        <AnalyticsForm value={s.analyticsMeasurementId} canEdit={canEdit} />
       </Card>
       <Card title="טיפולים רפואיים" flush>
         <MedicalDisclaimerText text={s.medicalDisclaimer} canEdit={canEdit} />
