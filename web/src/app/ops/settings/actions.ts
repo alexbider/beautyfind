@@ -80,12 +80,14 @@ export async function saveMarketPricesAction(category: string, rows: unknown): P
   return { ok: true, updated };
 }
 
-export async function saveAnalyticsIdAction(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
+export async function saveAnalyticsIdAction(input: { measurementId: string; propertyId: string }): Promise<{ ok: true } | { ok: false; error: string }> {
   const user = await areaUserOrNull('settings', 'edit');
   if (!user) return { ok: false, error: 'אין הרשאה' };
-  const p = PlatformSettingsSchema.shape.analyticsMeasurementId.safeParse(id.trim().toUpperCase());
-  if (!p.success) return { ok: false, error: 'בפורמט G-XXXXXXX, או ריק לכיבוי' };
-  await savePlatformSettings(user.id, { analyticsMeasurementId: p.data });
+  const m = PlatformSettingsSchema.shape.analyticsMeasurementId.safeParse(input.measurementId.trim().toUpperCase());
+  if (!m.success) return { ok: false, error: 'מזהה מדידה בפורמט G-XXXXXXX, או ריק לכיבוי' };
+  const n = PlatformSettingsSchema.shape.analyticsPropertyId.safeParse(input.propertyId.trim());
+  if (!n.success) return { ok: false, error: 'מזהה נכס: מספר בלבד' };
+  await savePlatformSettings(user.id, { analyticsMeasurementId: m.data, analyticsPropertyId: n.data });
   refresh();
   return { ok: true };
 }
