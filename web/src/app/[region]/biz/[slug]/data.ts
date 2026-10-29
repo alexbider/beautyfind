@@ -1,5 +1,5 @@
 import 'server-only';
-import { categoryBySlug, regionBySlug } from '@/lib/catalog';
+import { categoryBySlug, regionBySlug, regionCrumbName } from '@/lib/catalog';
 import { orderCategories } from '@/lib/category';
 import { nisFromAgorot } from '@/lib/format';
 import { BOOKING_LIVE } from '@/lib/features';
@@ -364,11 +364,11 @@ export function jsonLd(p: PublicProfile, v: ProfileView) {
   const path = p.href;
   const url = absoluteUrl(path);
   const cat = v.cats[0];
-  const cityPath = v.citySlug && v.citySlug !== p.regionSlug ? `/${p.regionSlug}/${v.citySlug}` : null;
+  const cityPath = v.citySlug ? `/${p.regionSlug}/${v.citySlug}` : null;
   const name = seoName(p.name);
   const crumbs: Crumb[] = [
     { name: 'ראשי', path: '/' },
-    { name: v.region?.name ?? p.regionSlug, path: `/${p.regionSlug}` },
+    { name: v.region ? regionCrumbName(v.region.name, p.regionSlug, v.citySlug) : p.regionSlug, path: `/${p.regionSlug}` },
     ...(cityPath ? [{ name: seoCityName(p.cityName), path: cityPath }] : []),
     ...(cat ? [{ name: cat.name, path: v.citySlug ? `/${p.regionSlug}/${v.citySlug}/${cat.slug}` : `/treatments/${cat.slug}` }] : []),
     { name, path },

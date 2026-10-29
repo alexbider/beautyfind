@@ -59,7 +59,7 @@ export async function sitemapEntries(): Promise<SitemapEntry[]> {
     u('/regions', 'regions', 'אזורים', 0.7),
     ...CATEGORIES.map(c => u(`/treatments/${c.slug}`, 'category', c.name, 0.8)),
     ...REGIONS.map(r => u(`/${r.slug}`, 'region', r.name, 0.8, 'daily')),
-    ...CITIES.filter(c => citiesWithListings.has(c.slug) && c.slug !== c.region).map(c => u(cityPageHref(c), 'city', c.name, 0.7, 'daily')),
+    ...CITIES.filter(c => citiesWithListings.has(c.slug)).map(c => u(cityPageHref(c), 'city', c.name, 0.7, 'daily')),
     ...CITIES.flatMap(c => CATEGORIES.filter(cat => cityCats.has(`${c.slug}|${cat.slug}`)).map(cat => u(`${cityHref(c)}/${cat.slug}`, 'cityCategory', `${cat.name} ב${c.name}`, 0.6))),
     ...branches.map(b => u(profileHref(b), 'profile', `${b.name}${regionBySlug(b.regionSlug) ? `, ${regionBySlug(b.regionSlug)!.name}` : ''}`, 0.6, 'weekly', b.updatedAt)),
     fixed('/for-business', 0.6, 'monthly'),

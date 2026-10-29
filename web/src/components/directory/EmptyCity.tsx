@@ -19,11 +19,11 @@ interface Props {
  * Point to what exists nearby and invite a listing.
  */
 export function EmptyCity({ region, city, category, siblings, regionTotal, cityTotal }: Props) {
-  const scoped = (c: City) => (category ? `/${c.region}/${c.slug}/${category.slug}` : c.slug === c.region ? `/${c.region}` : `/${c.region}/${c.slug}`);
+  const scoped = (c: City) => (category ? `/${c.region}/${c.slug}/${category.slug}` : `/${c.region}/${c.slug}`);
   const cards: Array<{ key: string; name: string; note: string; n: number; href: string }> = [];
 
   if (category && cityTotal > 0) {
-    cards.push({ key: 'city', name: `כל העסקים ב${city.name}`, note: 'בתחומי טיפול אחרים', n: cityTotal, href: city.slug === region.slug ? `/${region.slug}` : `/${region.slug}/${city.slug}` });
+    cards.push({ key: 'city', name: `כל העסקים ב${city.name}`, note: 'בתחומי טיפול אחרים', n: cityTotal, href: `/${region.slug}/${city.slug}` });
   }
   for (const s of siblings.slice(0, cards.length ? 1 : 2)) {
     cards.push({ key: s.city.slug, name: s.city.name, note: category ? `${category.name}, באותו אזור` : 'עיר סמוכה באותו אזור', n: s.count, href: scoped(s.city) });

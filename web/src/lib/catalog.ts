@@ -101,6 +101,8 @@ export const categoryBySlug = (slug: string) => CATEGORIES.find(ct => ct.slug ==
 export const categoriesInGroup = (group: string) => CATEGORIES.filter(ct => ct.group === group);
 
 export const cityHref = (ct: City) => `/${ct.region}/${ct.slug}`;
-/** The page for a city: the region page when the city carries the region's name (חיפה, ירושלים), so the two are not duplicates. City and category pages keep their own address. */
-export const cityPageHref = (ct: City) => (ct.slug === ct.region ? `/${ct.region}` : cityHref(ct));
+/** The page for a city. Every city has its own page, including the cities named like their region (/haifa/haifa, /jerusalem/jerusalem); /haifa and /jerusalem are the region hubs. */
+export const cityPageHref = (ct: City) => cityHref(ct);
+/** The region crumb's name: "אזור חיפה" when the city carries the region's name, so a breadcrumb never reads חיפה > חיפה. */
+export const regionCrumbName = (regionName: string, regionSlug: string, citySlug?: string | null) => (citySlug === regionSlug ? `אזור ${regionName}` : regionName);
 export const categoryHref = (ct: Category) => `/treatments/${ct.slug}`;

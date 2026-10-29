@@ -29,7 +29,7 @@ import { medicalDoctor, medicalState, statedDoctorName } from '@/lib/medical';
 import { PRICES_INCLUDE_VAT } from '@/lib/features';
 import { applySeo } from '@/lib/server/seo';
 import { buildView, jsonLd, ldJson, metaDescription, metaTitle, nearbyBusinesses, reviewsLabel, similarBusinesses, type ProfileView as View } from './data';
-import { cityPageHref, CITIES } from '@/lib/catalog';
+import { cityPageHref, CITIES, regionCrumbName } from '@/lib/catalog';
 import { publicMetadata } from '@/lib/seo/meta';
 import { seoCityName, seoName } from '@/lib/seo/seoName';
 import btn from '@/components/profile/buttons.module.css';
@@ -84,14 +84,14 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
   if (canonicalCat !== 'biz' && via !== canonicalCat) permanentRedirect(encodeURI(p.href)); // a Hebrew slug must be percent-encoded in the Location header
   const v = buildView(p, new Date(), await vatRatePct());
 
-  const parentHref = v.citySlug && v.citySlug !== p.regionSlug ? `/${p.regionSlug}/${v.citySlug}` : `/${p.regionSlug}`;
+  const parentHref = v.citySlug ? `/${p.regionSlug}/${v.citySlug}` : `/${p.regionSlug}`;
   const crumbs = (
     <nav aria-label="נתיב ניווט" className={styles.crumbs}>
       <ol>
         <li><Link href="/">ראשי</Link></li>
         <li aria-hidden="true">/</li>
-        <li><Link href={`/${p.regionSlug}`}>{p.region.name}</Link></li>
-        {v.citySlug && v.citySlug !== p.regionSlug && (
+        <li><Link href={`/${p.regionSlug}`}>{regionCrumbName(p.region.name, p.regionSlug, v.citySlug)}</Link></li>
+        {v.citySlug && (
           <>
             <li aria-hidden="true">/</li>
             <li><Link href={`/${p.regionSlug}/${v.citySlug}`}>{p.cityName}</Link></li>

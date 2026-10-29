@@ -7,7 +7,7 @@ import { Fragment, type ReactNode } from 'react';
 import { ArrowForward } from '@/components/icons';
 import { SiteFooter } from '@/components/site-footer/SiteFooter';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
-import { CITIES, categoryBySlug, regionBySlug, type Category, type City, type Region } from '@/lib/catalog';
+import { CITIES, categoryBySlug, regionBySlug, regionCrumbName, type Category, type City, type Region } from '@/lib/catalog';
 import { ROUTES } from '@/lib/routes';
 import { BIZ, CITIES_N, FIELDS_N, SEO_TERM, TRUST, directoryFaqs, fmtNum, heDate, isoDate } from './copy';
 import { Count } from './Count';
@@ -57,7 +57,7 @@ async function resolveScope(params: DirParams): Promise<Scope> {
     category = categoryBySlug(p.category);
     if (!category) notFound();
   }
-  const cityPath = `/${region.slug}/${city.slug}`; // city and category pages live under it; the bare city page of a region-named city is the region page
+  const cityPath = `/${region.slug}/${city.slug}`; // the city page; category pages live under it. Every city has one, including /haifa/haifa and /jerusalem/jerusalem
   return { region, city, category, cityPath, path: category ? `${cityPath}/${category.slug}` : cityPath };
 }
 
@@ -119,12 +119,12 @@ function JsonLd({ data }: { data: object }) {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(data) }} />;
 }
 
-/** ראשי > region > city > category: the city crumb links to the region page when the city carries the region's name. */
+/** ראשי > region > city > category. The region crumb reads "אזור חיפה" when the city carries the region's name. */
 function crumbsOf(s: Scope) {
   return [
     { name: 'ראשי', path: '/' },
-    { name: s.region.name, path: `/${s.region.slug}` },
-    ...(s.city.slug !== s.region.slug ? [{ name: seoCityName(s.city.name), path: s.cityPath }] : []),
+    { name: regionCrumbName(s.region.name, s.region.slug, s.city.slug), path: `/${s.region.slug}` },
+    { name: seoCityName(s.city.name), path: s.cityPath },
     ...(s.category ? [{ name: s.category.name, path: s.path }] : []),
   ];
 }
@@ -156,8 +156,8 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
   const faqs = directoryFaqs(s.city.name);
   const crumbs = [
     { name: 'ראשי', href: '/' },
-    { name: s.region.name, href: `/${s.region.slug}` },
-    ...(s.category && s.city.slug !== s.region.slug ? [{ name: s.city.name, href: s.cityPath }] : []),
+    { name: regionCrumbName(s.region.name, s.region.slug, s.city.slug), href: `/${s.region.slug}` },
+    ...(s.category ? [{ name: s.city.name, href: s.cityPath }] : []),
   ];
   const current = s.category ? s.category.name : s.city.name;
 
@@ -290,8 +290,7 @@ export async function DirectoryPage({ params, searchParams }: { params: DirParam
   const clearHref = dirHref(s.path, { ...q, filters: [], page: 1 } satisfies DirQuery);
   const anyPrice = list.items.some(c => c.priceFromShekels != null);
   const few = o.total <= 3 && o.siblings.length > 0;
-  // The bare page of a region-named city (Haifa, Jerusalem) is the region page, so link there directly.
-  const siblingHref = (c: City) => (s.category ? `/${c.region}/${c.slug}/${s.category.slug}` : c.slug === c.region ? `/${c.region}` : `/${c.region}/${c.slug}`);
+  const siblingHref = (c: City) => (s.category ? `/${c.region}/${c.slug}/${s.category.slug}` : `/${c.region}/${c.slug}`);
 
   return (
     <div className={styles.root}>

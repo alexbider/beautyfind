@@ -66,7 +66,7 @@ export async function sitemapFacts() {
     db.branch.findMany({ where: { ...PUBLIC_WHERE, cityId: { not: null } }, select: { city: { select: { slug: true } } }, distinct: ['cityId'] }),
   ]);
   const cityCats = new Set(pairs.map(p => `${p.branch.city!.slug}|${p.categorySlug}`)).size;
-  const cityPages = citiesWithListings.filter(b => b.city && CITIES.some(c => c.slug === b.city!.slug && c.slug !== c.region)).length;
+  const cityPages = citiesWithListings.filter(b => b.city && CITIES.some(c => c.slug === b.city!.slug)).length;
   const fixed = 3 + CATEGORIES.length + REGIONS.length + 12; // home, treatments, regions, categories, regions, the content and legal pages
   return { branches, cityCats, cityPages, fixed, total: fixed + branches + cityCats + cityPages };
 }
