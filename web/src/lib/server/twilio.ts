@@ -157,6 +157,40 @@ export async function twilioTestSend(to: string): Promise<{ ok: true; id: string
   }
 }
 
+/** Phones allowed to receive a custom test SMS: SMS_TEST_NUMBERS on Vercel, comma separated, E.164. */
+export const smsTestNumbers = (): string[] => (process.env.SMS_TEST_NUMBERS ?? '').split(',').map(s => s.trim()).filter(isPhone);
+
+/**
+ * Admin test: one real SMS with custom text (to preview a campaign message on a real phone), whatever the on
+ * switch says. Only to a phone on SMS_TEST_NUMBERS. Israeli numbers get the normal sender; other countries
+ * (which reject alphanumeric senders, e.g. Canada and the US) get the account's phone number.
+ */
+export async function twilioCustomTestSend(to: string, text: string): Promise<{ ok: true; id: string; from: string; segments: number } | { ok: false; error: string }> {
+  const allowed = smsTestNumbers();
+  if (!allowed.length) return { ok: false, error: 'SMS_TEST_NUMBERS is not set on the server' };
+  if (!allowed.includes(to)) return { ok: false, error: 'this number is not on SMS_TEST_NUMBERS' };
+  const body = text.trim();
+  if (!body) return { ok: false, error: 'empty message' };
+  const cfg = await twilioReady(true);
+  if (!cfg) return { ok: false, error: 'חסרים פרטי חשבון או שולח (From / Messaging Service SID)' };
+  const s = await platformSettings();
+  let send = cfg;
+  if (!to.startsWith('+972')) {
+    const phone = voiceFromOf(s.twilio);
+    if (!phone) return { ok: false, error: 'no Twilio phone number to send from outside Israel' };
+    send = { ...cfg, from: phone, messagingServiceSid: '' };
+  }
+  // eslint-disable-next-line no-control-regex
+  const unicode = /[^\x00-\x7F]/.test(body);
+  const segments = body.length <= (unicode ? 70 : 160) ? 1 : Math.ceil(body.length / (unicode ? 67 : 153));
+  try {
+    const r = await twilioAttempt(send, { to, template: 'campaign_test' }, body, { test: true });
+    return { ok: true, id: r.id, from: send.messagingServiceSid || send.from, segments };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
 /** Applies one status callback (an SMS or a call) to its send. Unknown SIDs are ignored. */
 export async function applyTwilioStatus(p: Record<string, string>): Promise<boolean> {
   const sid = p.MessageSid || p.SmsSid || p.CallSid;

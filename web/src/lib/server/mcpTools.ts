@@ -326,6 +326,18 @@ export const MCP_TOOLS: McpTool[] = [
     return runTrackingSetupAction();
   } },
 
+  // ---------- SMS testing (/ops/messages) ----------
+  { name: 'send_test_sms', area: 'messages', level: 'edit', write: true, schema: z.object({
+    to: z.string().regex(/^\+[1-9]\d{6,14}$/).describe('E.164, חייב להופיע ב־SMS_TEST_NUMBERS בשרת'),
+    text: z.string().min(1).max(1000).describe('הטקסט המדויק, כולל שורות חדשות'),
+  }), description: 'שליחת SMS בדיקה אמיתי דרך Twilio עם טקסט חופשי, כדי לראות הודעת קמפיין בטלפון. רק למספרים שברשימת SMS_TEST_NUMBERS; מספר ישראלי מקבל את השולח הרגיל, מספר מחו״ל את מספר הטלפון של החשבון. נרשם ביומן השליחות כבדיקה.', run: async (a, c) => {
+    const { twilioCustomTestSend } = await import('./twilio');
+    const r = await twilioCustomTestSend(String(a.to), String(a.text));
+    await db.auditLog.create({ data: { actorId: c.actor.id, action: 'twilio_test', subjectType: 'platform_settings', subjectId: c.actor.id, meta: { ref: 'campaign_sms', ok: r.ok } } }).catch(() => undefined);
+    revalidatePath('/ops/messages');
+    return r;
+  } },
+
   // ---------- clients and privacy ----------
   { name: 'list_clients', area: 'clients', level: 'view', write: false, schema: z.object({ filter: z.enum(['all', 'consented', 'blocked']).optional(), q: z.string().max(120).optional(), limit }), description: 'חשבונות לקוחות: שם, טלפון, דוא״ל, עיר, הזמנות, ביקור אחרון, הסכמה, חסימה. בלי פרטי בריאות.', run: a => listClients({ filter: (a.filter as 'all') ?? 'all', q: String(a.q ?? ''), take: Number(a.limit ?? 50) }) },
   { name: 'block_client', area: 'clients', level: 'edit', write: true, schema: z.object({ client_id: uuid, block: z.boolean(), reason: z.string().max(300).optional() }), description: 'חסימה או שחרור של חשבון לקוח (כניסה נדחית בזמן חסימה; הרשומות נשארות).', run: async a => result(await blockClientAction({ id: String(a.client_id), block: Boolean(a.block), reason: a.reason as string | undefined })) },
