@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Assistant, Frank_Ruhl_Libre, Jost, Open_Sans } from 'next/font/google';
 import { CookieConsent } from '@/components/cookie-consent/CookieConsent';
 import { AppShell } from '@/components/shell/AppShell';
-import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
+import { GoogleAnalytics, GoogleTagScripts } from '@/components/analytics/GoogleAnalytics';
 import { platformSettings } from '@/lib/server/platformSettings';
 import './globals.css';
 
@@ -36,6 +36,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="he" dir="rtl" className={`${openSans.variable} ${frank.variable} ${assistant.variable} ${jost.variable}`}>
       <body>
+        {process.env.STAGING !== '1' && <GoogleTagScripts id={analyticsMeasurementId} />}
         {process.env.STAGING === '1' && (
           <div role="note" style={{ padding: '6px 16px', background: 'var(--navy)', color: '#fff', fontSize: 13, fontWeight: 700, textAlign: 'center' }}>
             סביבת בדיקה · הנתונים והעסקים באתר הזה לדוגמה בלבד
