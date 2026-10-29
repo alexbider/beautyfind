@@ -62,7 +62,7 @@ export default async function SettingsPage() {
         <MaintenanceMessage message={s.maintenanceMessage} canEdit={canEdit} />
       </Card>
       <Card title="מדידה" sub="תג Google Analytics באתר הציבורי. מופעל לאחר אישור קובצי מדידה מצטברת.">
-        <AnalyticsForm value={s.analyticsMeasurementId} canEdit={canEdit} />
+        <AnalyticsForm value={s.analyticsMeasurementId} property={s.analyticsPropertyId} canEdit={canEdit} />
       </Card>
       <Card title="טיפולים רפואיים" flush>
         <MedicalDisclaimerText text={s.medicalDisclaimer} canEdit={canEdit} />

@@ -39,6 +39,8 @@ export const PlatformSettingsSchema = z.object({
   // Google Analytics 4 measurement ID (G-XXXXXXX). Empty means no analytics tag. The tag loads only after
   // the visitor allows measurement cookies (src/components/analytics/GoogleAnalytics.tsx).
   analyticsMeasurementId: z.string().trim().toUpperCase().regex(/^(G-[A-Z0-9]{4,20})?$/, 'מזהה בפורמט G-XXXXXXX').max(24).default(''),
+  // GA4 property ID (numbers only, from GA Admin > Property settings). Used by the Data API on the admin performance tab.
+  analyticsPropertyId: z.string().trim().regex(/^(\d{5,15})?$/, 'מספר נכס בלבד').default(''),
   // Features
   onlineBooking: z.boolean().default(true),
   giftCards: z.boolean().default(true),

@@ -12,6 +12,7 @@ import { analytics30, articles, categoryRows, indexingFacts, JSON_LD_TYPES, page
 import { IndexingToggle } from './IndexingControls';
 import { GoogleKeyForm, GoogleLimitsForm, GoogleRunButtons, GoogleToggle } from './GoogleIndexingControls';
 import { googleIndexingStatus, propertyOf } from '@/lib/server/googleIndexing';
+import { gaProfileViews } from '@/lib/server/gaReport';
 import { db } from '@/lib/server/db';
 import { SeoForm } from './SeoForm';
 
@@ -283,7 +284,10 @@ async function SitemapTab() {
 }
 
 async function PerformanceTab() {
-  const a = await analytics30();
+  const [a, ga] = await Promise.all([analytics30(), gaProfileViews()]);
+  const gaNames = ga.ok && ga.rows.length
+    ? await db.branch.findMany({ where: { id: { in: ga.rows.map(r => r.profileId) } }, select: { id: true, name: true, cityName: true } })
+    : [];
   const delta = a.prevViews ? ((a.views - a.prevViews) / a.prevViews) * 100 : null;
   return (
     <div className={ui.stack}>
@@ -293,6 +297,15 @@ async function PerformanceTab() {
         { label: 'התחלות הזמנה', value: int(a.bookingStarts) },
         { label: 'ניווט Waze', value: int(a.waze) },
       ]} />
+      <Card title="Google Analytics · צפיות לפי פרופיל · 30 יום" sub="מאירוע profile_view באתר, לפי מזהה הפרופיל. מספרים של GA4, בנוסף למעקב הפנימי." flush>
+        {!ga.ok ? (
+          <Empty title="דוח GA4 לא זמין" text={ga.message} />
+        ) : ga.rows.length ? (
+          <Table head={['עסק', 'צפיות ב־GA']}>{ga.rows.map(r => { const b = gaNames.find(x => x.id === r.profileId); return <tr key={r.profileId}><td className={ui.strong}>{b ? `${b.name} · ${b.cityName}` : r.profileId}</td><td className={ui.num}>{int(r.views)}</td></tr>; })}</Table>
+        ) : (
+          <Empty title="עוד אין אירועים מ־GA4" text="האירועים נרשמים רק למבקרים שאישרו מדידה, ומופיעים כאן אחרי שהנתונים מתעדכנים ב־GA4." />
+        )}
+      </Card>
       <div className={ui.grid2}>
         <Card title="העמודים הנצפים ביותר · 30 יום" flush>
           {a.top.length ? <Table head={['עסק', 'צפיות']}>{a.top.map((t, i) => <tr key={i}><td className={ui.strong}>{t.branch ? `${t.branch.name} · ${t.branch.cityName}` : 'עסק שהוסר'}</td><td className={ui.num}>{int(t.count)}</td></tr>)}</Table> : <Empty title="עוד אין צפיות" text="נספרות רק צפיות של מבקרים שאישרו עוגיות אנליטיקס." />}
@@ -300,7 +313,7 @@ async function PerformanceTab() {
         <Card title="מעקב חיצוני">
           <ul className={ui.list}>
             <li className={ui.listItem} style={{ paddingInline: 0 }}><div className={ui.listText}><div className={ui.listTitle}>Google Search Console</div><div className={ui.listSub}>אינדקס, ביטויים, Core Web Vitals</div></div><Chip tone="neutral">לא מחובר</Chip></li>
-            <li className={ui.listItem} style={{ paddingInline: 0 }}><div className={ui.listText}><div className={ui.listTitle}>Google Analytics 4</div><div className={ui.listSub}>תנועה ומשפכים</div></div><Chip tone="neutral">לא מחובר</Chip></li>
+            <li className={ui.listItem} style={{ paddingInline: 0 }}><div className={ui.listText}><div className={ui.listTitle}>Google Analytics 4</div><div className={ui.listSub}>תנועה ומשפכים</div></div><Chip tone={ga.ok ? 'ok' : 'neutral'}>{ga.ok ? 'מחובר' : 'לא מחובר'}</Chip></li>
             <li className={ui.listItem} style={{ paddingInline: 0 }}><div className={ui.listText}><div className={ui.listTitle}>אנליטיקס פנימי</div><div className={ui.listSub}>אירועי פרופיל, בהסכמת המבקר בלבד</div></div><Chip tone="ok">פעיל</Chip></li>
           </ul>
           <p className={ui.hint} style={{ marginTop: 8 }}>חיבור Search Console ו־GA4 דורש אימות דומיין בחשבון Google של החברה; עד אז המספרים כאן הם מהמעקב הפנימי בלבד.</p>
