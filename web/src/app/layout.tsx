@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import { Assistant, Frank_Ruhl_Libre, Jost, Open_Sans } from 'next/font/google';
 import { CookieConsent } from '@/components/cookie-consent/CookieConsent';
 import { AppShell } from '@/components/shell/AppShell';
+import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
+import { platformSettings } from '@/lib/server/platformSettings';
 import './globals.css';
 
 // Titles use Open Sans (variable weight). Frank Ruhl Libre stays only for the drawn signature in SignaturePad, so it is not preloaded.
@@ -29,7 +31,8 @@ export const viewport: Viewport = {
   themeColor: '#FFFFFF',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { analyticsMeasurementId } = await platformSettings();
   return (
     <html lang="he" dir="rtl" className={`${openSans.variable} ${frank.variable} ${assistant.variable} ${jost.variable}`}>
       <body>
@@ -41,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <AppShell />
         <CookieConsent />
+        {process.env.STAGING !== '1' && <GoogleAnalytics id={analyticsMeasurementId} />}
       </body>
     </html>
   );

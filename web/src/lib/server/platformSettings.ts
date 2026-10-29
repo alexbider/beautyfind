@@ -36,6 +36,9 @@ export const PlatformSettingsSchema = z.object({
   retrySecondDays: z.number().int().min(1).max(60).default(7),
   hideInDebtDays: z.number().int().min(1).max(180).default(14),
   giftCardMinYears: z.number().int().min(5).max(20).default(5), // the law requires at least five years
+  // Google Analytics 4 measurement ID (G-XXXXXXX). Empty means no analytics tag. The tag loads only after
+  // the visitor allows measurement cookies (src/components/analytics/GoogleAnalytics.tsx).
+  analyticsMeasurementId: z.string().trim().toUpperCase().regex(/^(G-[A-Z0-9]{4,20})?$/, 'מזהה בפורמט G-XXXXXXX').max(24).default(''),
   // Features
   onlineBooking: z.boolean().default(true),
   giftCards: z.boolean().default(true),

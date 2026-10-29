@@ -80,6 +80,16 @@ export async function saveMarketPricesAction(category: string, rows: unknown): P
   return { ok: true, updated };
 }
 
+export async function saveAnalyticsIdAction(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const user = await areaUserOrNull('settings', 'edit');
+  if (!user) return { ok: false, error: 'אין הרשאה' };
+  const p = PlatformSettingsSchema.shape.analyticsMeasurementId.safeParse(id.trim().toUpperCase());
+  if (!p.success) return { ok: false, error: 'בפורמט G-XXXXXXX, או ריק לכיבוי' };
+  await savePlatformSettings(user.id, { analyticsMeasurementId: p.data });
+  refresh();
+  return { ok: true };
+}
+
 export async function saveMaintenanceMessageAction(message: string): Promise<{ ok: true } | { ok: false; error: string }> {
   const user = await areaUserOrNull('settings', 'edit');
   if (!user) return { ok: false, error: 'אין הרשאה' };
