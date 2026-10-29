@@ -331,6 +331,22 @@ export function renderMessage(template: string, vars: Record<string, string>, si
     case 'M_onboard_card':
       return { subject: 'נשאר צעד אחד: אמצעי תשלום', kicker: 'business', title: 'נשאר צעד אחד', lines: [hi(name), `הפרופיל של ${business} באוויר, אבל עדיין לא שמור אמצעי תשלום למנוי.`], cta: { label: 'להוספת כרטיס', url: link }, note: { tone: 'warn', text: 'בלי כרטיס המנוי לא מתחדש, והפרופיל עלול לרדת מהחיפוש.' }, sms: `${BRAND}: להשארת ${business} בחיפוש צריך להוסיף אמצעי תשלום: ${link}` };
 
+    case 'M_claim_welcome': {
+      // SMS first (src/lib/server/welcomeSms.ts). Line-per-part layout so Hebrew and Latin never share a line
+      // edge with punctuation: the link and the email each stand alone. Opt-out by link (the sender cannot get replies).
+      const unsub = v(vars, 'unsubscribe');
+      const cat = v(vars, 'category');
+      const city = v(vars, 'city');
+      const where = cat ? `בעמוד ${cat}${city ? ` ב${city}` : ''}` : `במדריך היופי${city ? ` ב${city}` : ''}`;
+      return {
+        subject: `ברוכים הבאים ל-${BRAND}`, kicker: 'invite', title: `${business} נבחרו להופיע ב-${BRAND}`,
+        lines: ['שלום,', `העסק שלכם נבחר להופיע ${where}.`, 'קחו שליטה על הדף, עדכנו פרטים והוסיפו תמונות ומחירים כדי למשוך יותר לקוחות.'],
+        cta: { label: 'לדף העסק', url: link },
+        sms: ['פרסומת | ברוכים הבאים ל-BeautyFind', `העסק שלכם נבחר להופיע ${where}:`, link, 'קחו שליטה על הדף, עדכנו פרטים והוסיפו תמונות ומחירים כדי למשוך יותר לקוחות.', ...(unsub ? [`להסרה: ${unsub}`] : []), 'hello@beautyfind.co.il'].join('\n'),
+        ...(unsub ? { unsubscribe: unsub } : {}),
+      };
+    }
+
     case 'M_claim_invite': {
       const unsub = v(vars, 'unsubscribe');
       return {

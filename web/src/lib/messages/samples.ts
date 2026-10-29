@@ -40,6 +40,7 @@ export const SAMPLES: Sample[] = [
   { id: 'M22_sponsored_card', group: 'עסקים', label: 'ממומן · תזכורת לשמירת כרטיס', vars: { name: 'אורה', business: 'סטודיו אורה', ref: 'AD-12', where: 'טיפולי פנים · תל אביב-יפו', price: '499 ₪', until: '05/11/2026', free: 'yes', link: `${S}/biz/sponsored` } },
   { id: 'M22_sponsored_payment_failed', group: 'עסקים', label: 'ממומן · החיוב נכשל', vars: { name: 'אורה', business: 'סטודיו אורה', ref: 'AD-12', where: 'טיפולי פנים · תל אביב-יפו', price: '499 ₪', end: '28/11/2026', link: `${S}/biz/sponsored` } },
   { id: 'M22_sponsored_report', group: 'עסקים', label: 'ממומן · דוח שבועי', vars: { name: 'אורה', business: 'סטודיו אורה', where: 'טיפולי פנים · תל אביב-יפו', impressions: '1,240', clicks: '86', contacts: '12', link: `${S}/biz/sponsored` } },
+  { id: 'M_claim_welcome', group: 'עסקים', label: 'ברוכים הבאים (SMS לעסק לא רשום)', vars: { business: 'סטודיו אורה', category: 'המספרות', city: 'תל אביב-יפו', link: `${S}/c/1a2b3c4d`, unsubscribe: 'beautyfind.co.il/u/1a2b3c4d' } },
   { id: 'M_claim_invite', group: 'עסקים', label: 'הזמנה לאישור בעלות', vars: { business: 'סטודיו אורה', link: `${S}/for-business/claim?branch=sample`, unsubscribe: `${S}/unsubscribe/sample` } },
   { id: 'M16_otp', group: 'חשבון וצוות', label: 'קוד אימות', vars: { code: '482913', minutes: '10' } },
   { id: 'M17_reset', group: 'חשבון וצוות', label: 'איפוס סיסמה', vars: { name: 'אורה', minutes: '30', link: `${S}/login/reset/sample` } },

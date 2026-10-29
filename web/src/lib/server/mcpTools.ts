@@ -338,6 +338,32 @@ export const MCP_TOOLS: McpTool[] = [
     return r;
   } },
 
+  { name: 'queue_welcome_sms', area: 'messages', level: 'full', write: true, schema: z.object({
+    count: z.number().int().min(1).max(1000).describe('כמה עסקים להכניס לתור בפעם הזו'),
+    dry_run: z.boolean().optional().describe('true: רק סופר ומחזיר דוגמאות, בלי להכניס לתור'),
+    enable_automation: z.boolean().optional().describe('true: מדליק את המתג claimInvites כדי שהתור יישלח'),
+    run_now: z.boolean().optional().describe('true: מריץ את תור ההודעות מיד (עד 150, בכפוף לשעות השליחה לשיווק)'),
+  }), description: 'הודעת SMS "ברוכים הבאים" לעסקים לא רשומים עם נייד: אחת לכל עסק, עם קישור קצר לפרופיל (/c/) וקישור הסרה קצר (/u/). נכנסת לאוטומציית claim_invite: לא נשלחת פעמיים, נעצרת אם העסק נתבע, מכבדת הסרות ושעות שליחה לשיווק (לא בלילה, בשבת ובחגים).', run: async (a, c) => {
+    const { queueWelcomeSms } = await import('./welcomeSms');
+    const r = await queueWelcomeSms(Number(a.count), c.actor.id, a.dry_run === true);
+    const out: Record<string, unknown> = { ...r };
+    const s = 'sample' in r && r.sample ? r.sample[0] : undefined;
+    if (s) {
+      const { renderMessage } = await import('@/lib/messages/render');
+      out.sampleText = renderMessage('M_claim_welcome', { business: s.name, ...s.vars, unsubscribe: s.vars.unsub_sms }, siteUrl())?.sms;
+    }
+    if (!r.dryRun && a.enable_automation === true) {
+      const { setAutomationAction } = await import('@/app/ops/messages/automations/actions');
+      out.automation = await setAutomationAction('claimInvites', true);
+    }
+    if (!r.dryRun && a.run_now === true) {
+      const { runQueue } = await import('./scheduler');
+      out.run = await runQueue(new Date(), 50_000);
+    }
+    revalidatePath('/ops/messages/automations');
+    return out;
+  } },
+
   // ---------- clients and privacy ----------
   { name: 'list_clients', area: 'clients', level: 'view', write: false, schema: z.object({ filter: z.enum(['all', 'consented', 'blocked']).optional(), q: z.string().max(120).optional(), limit }), description: 'חשבונות לקוחות: שם, טלפון, דוא״ל, עיר, הזמנות, ביקור אחרון, הסכמה, חסימה. בלי פרטי בריאות.', run: a => listClients({ filter: (a.filter as 'all') ?? 'all', q: String(a.q ?? ''), take: Number(a.limit ?? 50) }) },
   { name: 'block_client', area: 'clients', level: 'edit', write: true, schema: z.object({ client_id: uuid, block: z.boolean(), reason: z.string().max(300).optional() }), description: 'חסימה או שחרור של חשבון לקוח (כניסה נדחית בזמן חסימה; הרשומות נשארות).', run: async a => result(await blockClientAction({ id: String(a.client_id), block: Boolean(a.block), reason: a.reason as string | undefined })) },
