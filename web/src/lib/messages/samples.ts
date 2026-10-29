@@ -37,6 +37,8 @@ export const SAMPLES: Sample[] = [
   { id: 'M22_sponsored_rejected', group: 'עסקים', label: 'ממומן נדחה', vars: { name: 'אורה', business: 'סטודיו אורה', ref: 'AD-85', where: 'טיפולי פנים · תל אביב-יפו', reason: 'השורה מבטיחה תוצאה רפואית', link: `${S}/biz/sponsored` } },
   { id: 'M22_sponsored_started', group: 'עסקים', label: 'ממומן עלה', vars: { name: 'אורה', business: 'סטודיו אורה', where: 'טיפולי פנים · תל אביב-יפו', end: '08/12/2026', link: `${S}/biz/sponsored` } },
   { id: 'M22_sponsored_ended', group: 'עסקים', label: 'ממומן הסתיים', vars: { name: 'אורה', business: 'סטודיו אורה', where: 'טיפולי פנים · תל אביב-יפו', link: `${S}/biz/sponsored` } },
+  { id: 'M22_sponsored_card', group: 'עסקים', label: 'ממומן · תזכורת לשמירת כרטיס', vars: { name: 'אורה', business: 'סטודיו אורה', ref: 'AD-12', where: 'טיפולי פנים · תל אביב-יפו', price: '499 ₪', until: '05/11/2026', free: 'yes', link: `${S}/biz/sponsored` } },
+  { id: 'M22_sponsored_payment_failed', group: 'עסקים', label: 'ממומן · החיוב נכשל', vars: { name: 'אורה', business: 'סטודיו אורה', ref: 'AD-12', where: 'טיפולי פנים · תל אביב-יפו', price: '499 ₪', end: '28/11/2026', link: `${S}/biz/sponsored` } },
   { id: 'M22_sponsored_report', group: 'עסקים', label: 'ממומן · דוח שבועי', vars: { name: 'אורה', business: 'סטודיו אורה', where: 'טיפולי פנים · תל אביב-יפו', impressions: '1,240', clicks: '86', contacts: '12', link: `${S}/biz/sponsored` } },
   { id: 'M_claim_invite', group: 'עסקים', label: 'הזמנה לאישור בעלות', vars: { business: 'סטודיו אורה', link: `${S}/for-business/claim?branch=sample`, unsubscribe: `${S}/unsubscribe/sample` } },
   { id: 'M16_otp', group: 'חשבון וצוות', label: 'קוד אימות', vars: { code: '482913', minutes: '10' } },

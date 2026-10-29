@@ -26,7 +26,7 @@ export function SponsoredBuilder({ options, previews, categoryNames, suggestions
   slots: number;
 }) {
   const router = useRouter();
-  const firstOpen = options.find(o => o.free > 0) ?? options[0];
+  const firstOpen = options.find(o => o.free > 0 && !o.blocked) ?? options[0];
   const [key, setKey] = useState(firstOpen?.pageKey ?? '');
   const [line, setLine] = useState('');
   const [featured, setFeatured] = useState<string | null>(null);
@@ -113,12 +113,16 @@ export function SponsoredBuilder({ options, previews, categoryNames, suggestions
                     const on = o.pageKey === key;
                     const full = o.free <= 0;
                     return (
-                      <button key={o.pageKey} type="button" className={s.tile} aria-pressed={on} disabled={full} onClick={() => setKey(o.pageKey)}>
+                      <button key={o.pageKey} type="button" className={s.tile} aria-pressed={on} disabled={full || !!o.blocked} title={o.blocked ?? undefined} onClick={() => setKey(o.pageKey)}>
                         <span className={s.tileTitle}>{o.title}</span>
-                        <span className={s.tileMeta} data-tone={full ? 'full' : o.free <= 2 ? 'low' : 'ok'}>
-                          <span className={s.slotsBar} aria-hidden="true"><span style={{ width: `${Math.round(((slots - o.free) / Math.max(1, slots)) * 100)}%` }} /></span>
-                          {full ? 'תפוס' : freeSlotsHe(o.free)}
-                        </span>
+                        {o.blocked ? (
+                          <span className={s.tileMeta} data-tone="full">נדרש רופא/ה אחראי/ת מאומת/ת</span>
+                        ) : (
+                          <span className={s.tileMeta} data-tone={full ? 'full' : o.free <= 2 ? 'low' : 'ok'}>
+                            <span className={s.slotsBar} aria-hidden="true"><span style={{ width: `${Math.round(((slots - o.free) / Math.max(1, slots)) * 100)}%` }} /></span>
+                            {full ? 'תפוס' : freeSlotsHe(o.free)}
+                          </span>
+                        )}
                         {options.length > 1 && new Set(options.map(x => x.branchId)).size > 1 ? <span className={s.tileBranch}>{o.branchName}</span> : null}
                       </button>
                     );
@@ -127,6 +131,9 @@ export function SponsoredBuilder({ options, previews, categoryNames, suggestions
               </div>
             );
           })}
+          {options.some(o => o.blocked) && (
+            <p className={s.tips}>עמודים בתחום רפואי פתוחים לסניף עם רופא/ה אחראי/ת שהרישיון שלו/ה אומת. אפשר להוסיף בפרופיל, ובדיקת הרישיון לוקחת עד יום עסקים.</p>
+          )}
         </section>
 
         <section className={s.step} aria-labelledby="sp-what">
@@ -180,7 +187,8 @@ export function SponsoredBuilder({ options, previews, categoryNames, suggestions
             {free ? `אחרי החודש החינמי ${opt ? nis(opt.monthlyNis) : ''} לחודש` : `${opt ? nis(opt.monthlyNis) : ''} לחודש מרגע האישור`}, ללא מע״מ ישראלי. בלי התחייבות: ביטול בלחיצה, והכרטיס ממשיך עד סוף החודש ששולם.
           </p>
           {err && <p role="alert" className={s.err}>{err}</p>}
-          <button type="button" className={s.primary} onClick={submit} disabled={pending}>
+          {opt?.blocked && <p className={s.err}>{opt.blocked}</p>}
+          <button type="button" className={s.primary} onClick={submit} disabled={pending || !!opt?.blocked || (opt?.free ?? 0) <= 0}>
             {pending ? 'שולחים…' : hasCard ? 'שליחה לבדיקה' : 'שליחה לבדיקה ושמירת כרטיס'}
           </button>
           <p className={s.sumNote}>{hasCard ? 'החיוב על הכרטיס שכבר שמור אצלנו, רק אחרי האישור.' : 'בשלב הבא שומרים כרטיס בדף מאובטח של Stripe. לא יבוצע חיוב עד האישור.'}</p>
@@ -206,9 +214,10 @@ export function CampaignActions({ id, phase }: { id: string; phase: string }) {
   return (
     <div className={s.rowActions}>
       {phase === 'needs_card' && <button type="button" className={s.primarySm} disabled={pending} onClick={() => run(() => saveCardAction(id))}>שמירת כרטיס והפעלה</button>}
+      {phase === 'charge_failed' && <button type="button" className={s.primarySm} disabled={pending} onClick={() => run(() => saveCardAction(id))}>עדכון כרטיס</button>}
       {phase === 'ending' && <button type="button" className={s.ghostBtn} disabled={pending} onClick={() => run(() => resumePlacementAction(id))}>המשך החידוש</button>}
       {phase === 'review' && <button type="button" className={s.ghostBtn} disabled={pending} onClick={() => run(() => cancelPlacementAction(id), 'לבטל את הבקשה? לא בוצע חיוב.')}>ביטול הבקשה</button>}
-      {(phase === 'live' || phase === 'free_month' || phase === 'scheduled' || phase === 'needs_card') && (
+      {(phase === 'live' || phase === 'free_month' || phase === 'scheduled' || phase === 'needs_card' || phase === 'charge_failed') && (
         <button type="button" className={s.linkBtn} disabled={pending} onClick={() => run(() => cancelPlacementAction(id), 'לבטל את המקום הממומן? אם הוא כבר באוויר, הוא ימשיך עד סוף החודש ששולם ולא יתחדש.')}>ביטול</button>
       )}
       {msg && <span className={msg.ok ? s.ok : s.err}>{msg.text}</span>}

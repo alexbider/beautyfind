@@ -16,6 +16,7 @@ A business pays a fixed monthly price for a card in the "ממומן" slider at t
 - Auto-renews monthly. Cancel anytime: before the start, or 48 hours or more before it, cancels and refunds in full; later, the slot stays until the end of the paid month.
 - One line of up to 60 characters plus an optional featured treatment. Content is checked automatically (`src/lib/sponsoredChecks.ts`) and reviewed by staff before any charge. A medical category (catalog `isMedical`), or the homepage for a branch with medical categories, needs a verified responsible doctor on the branch.
 - Every Sunday the owner gets `M22_sponsored_report` with the last 7 days.
+- A medical page is not offered to a branch without a verified doctor: the builder shows it as unavailable and the order is refused, before any review.
 
 Prices, slots, quota and the make-good threshold live in `/ops/settings` → "מקומות ממומנים". Existing campaigns keep the price they were ordered at (`monthlyPriceAgorot`).
 
@@ -23,9 +24,10 @@ Prices, slots, quota and the make-good threshold live in `/ops/settings` → "מ
 
 1. **Order.** The owner picks a page in `/biz/sponsored` (or staff in `/ops/sponsored`, or the MCP tool `create_campaign`). The page must match the branch's city and categories and have a free slot. The slot is held for 24 hours (`holdUntil`) while it waits for review. If Stripe is on and the business has no card, the owner saves one through a Checkout session in setup mode; nothing is charged.
 2. **Review.** `/ops/sponsored` recomputes the checks (content, medical doctor, branch live, capacity, open debt). Approve is blocked while a check is "bad". Reject needs a note, ends the campaign and charges nothing.
-3. **Activate** (`activateCampaign`). Without Stripe, the campaign runs in manual mode until `startsAt + 1 + freeMonths` months. With Stripe it creates a subscription on the sponsored price, with a trial for the free month or a future start; no card means the phase is "needs card" until one is saved.
-4. **Live.** Status approved, `startsAt <= now`, `endedAt` null and `activeUntil > now`. The webhook keeps `activeUntil` on the subscription's period end.
-5. **End.** Cancelled, or not renewed: the cron ends campaigns 3 days after `activeUntil` and revalidates the page.
+3. **Activate** (`activateCampaign`). Without Stripe, the campaign runs in manual mode until `startsAt + 1 + freeMonths` months. With Stripe it creates a subscription on the sponsored price, with a trial for the free month or a future start; no card means the phase is "needs card" until one is saved. The owner is reminded on days 2 and 5 (`M22_sponsored_card`), and the slot is released 7 days after approval if no card arrives (`CARD_WAIT_DAYS`).
+4. **Failed charge.** `invoice.payment_failed` marks the campaign (`stats.chargeFailedAt`), the phase becomes "charge failed" and the owner gets `M22_sponsored_payment_failed`. Saving a new card moves every running sponsored subscription of that customer to it and pays the open invoice at once; `invoice.paid` clears the mark. The card keeps showing until the end of the paid month.
+5. **Live.** Status approved, `startsAt <= now`, `endedAt` null and `activeUntil > now`. The webhook keeps `activeUntil` on the subscription's period end.
+6. **End.** Cancelled, or not renewed: the daily run ends campaigns 3 days after `activeUntil`, after checking Stripe first (a renewal whose webhook was missed is picked up, not ended), cancels the Stripe subscription so nothing is charged later, and revalidates the page.
 
 ## Billing (Stripe)
 
@@ -36,6 +38,10 @@ Everything carries metadata `{ site: 'beautyfind', purpose: 'sponsored', campaig
 - the coupon `beautyfind_sponsored_makegood` (50%, once).
 
 The sponsored subscription uses the plan's Stripe customer when there is one, otherwise its own customer, and is never written to the plan subscription row. `handleSponsoredEvent` in the webhook claims sponsored events before the plan handlers; paid invoices become a `Payment` with purpose `sponsored` and a platform invoice document.
+
+## Signing in
+
+A signed-out owner who opens any `/biz` address is sent to login and comes back to that same address: the proxy passes the requested path to the business guard (`x-bf-path`).
 
 ## Measurement
 

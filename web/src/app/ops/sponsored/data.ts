@@ -1,7 +1,7 @@
 import 'server-only';
 import type { Campaign, CampaignStatus, Prisma } from '@prisma/client';
 import { db } from '@/lib/server/db';
-import { pageTitle, reviewChecks, statTotals, type StatTotals } from '@/lib/server/sponsored';
+import { chargeFailedAt, pageTitle, reviewChecks, statTotals, type StatTotals } from '@/lib/server/sponsored';
 import { pathOfPageKey, PLACEMENT_NAME } from '@/lib/sponsored';
 import type { CheckResult } from '@/lib/sponsoredChecks';
 
@@ -11,11 +11,12 @@ import type { CheckResult } from '@/lib/sponsoredChecks';
 
 export const STATUS_NAME: Record<CampaignStatus, string> = { pending_review: 'לבדיקה', approved: 'אושר', rejected: 'נדחה', cancelled: 'הסתיים' };
 
-export type Phase = 'review' | 'needs_card' | 'scheduled' | 'free_month' | 'live' | 'ending' | 'ended' | 'rejected';
+export type Phase = 'review' | 'needs_card' | 'charge_failed' | 'scheduled' | 'free_month' | 'live' | 'ending' | 'ended' | 'rejected';
 
 export const PHASE: Record<Phase, { name: string; tone: 'warn' | 'ok' | 'bad' | 'neutral' }> = {
   review: { name: 'לבדיקה', tone: 'warn' },
   needs_card: { name: 'אושר · ממתין לכרטיס', tone: 'warn' },
+  charge_failed: { name: 'החיוב נכשל · צריך לעדכן כרטיס', tone: 'bad' },
   scheduled: { name: 'אושר · יעלה בקרוב', tone: 'ok' },
   free_month: { name: 'פעיל · חודש חינם', tone: 'ok' },
   live: { name: 'פעיל', tone: 'ok' },
@@ -24,10 +25,11 @@ export const PHASE: Record<Phase, { name: string; tone: 'warn' | 'ok' | 'bad' | 
   rejected: { name: 'נדחה', tone: 'bad' },
 };
 
-export function phaseOf(c: Pick<Campaign, 'status' | 'endedAt' | 'activeUntil' | 'startsAt' | 'cancelAtPeriodEnd' | 'freeMonths' | 'stripeSubscriptionId' | 'paymentId'>, now = new Date()): Phase {
+export function phaseOf(c: Pick<Campaign, 'status' | 'endedAt' | 'activeUntil' | 'startsAt' | 'cancelAtPeriodEnd' | 'freeMonths' | 'stripeSubscriptionId' | 'paymentId' | 'stats'>, now = new Date()): Phase {
   if (c.status === 'pending_review') return 'review';
   if (c.status === 'rejected') return 'rejected';
   if (c.status === 'cancelled' || c.endedAt) return 'ended';
+  if (chargeFailedAt(c) && !c.cancelAtPeriodEnd) return 'charge_failed';
   if (!c.activeUntil) return c.stripeSubscriptionId ? 'scheduled' : 'needs_card';
   if (c.activeUntil <= now) return 'ended';
   if (c.startsAt > now) return 'scheduled';

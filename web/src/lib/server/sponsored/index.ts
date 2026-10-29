@@ -120,6 +120,7 @@ export interface PageOption {
   monthlyNis: number;
   free: number; // free slots now
   slots: number;
+  blocked: string | null; // why this branch cannot take the page (a medical page without a verified doctor)
 }
 
 /** Every page the business's live branches can be sponsored on, with the price and the free slots. */
@@ -127,12 +128,14 @@ export async function pageOptionsFor(businessId: string): Promise<PageOption[]> 
   const cfg = await sponsoredConfig();
   const branches = await db.branch.findMany({
     where: { businessId, status: 'live' },
-    select: { id: true, name: true, regionSlug: true, city: { select: { slug: true } }, cityName: true, categories: { select: { categorySlug: true, isPrimary: true } } },
+    select: { id: true, name: true, regionSlug: true, city: { select: { slug: true } }, cityName: true, categories: { select: { categorySlug: true, isPrimary: true } }, medicalResponsible: { select: { profession: true, license: { select: { status: true } } } } },
     orderBy: { createdAt: 'asc' },
   });
-  const opts: Omit<PageOption, 'free' | 'slots'>[] = [];
+  const doctor = new Map(branches.map(b => [b.id, hasVerifiedDoctor(b.medicalResponsible)]));
+  const catsOf = new Map(branches.map(b => [b.id, b.categories.map(c => c.categorySlug)]));
+  const opts: Omit<PageOption, 'free' | 'slots' | 'blocked'>[] = [];
   const seen = new Set<string>();
-  const push = (o: Omit<PageOption, 'free' | 'slots'>) => {
+  const push = (o: Omit<PageOption, 'free' | 'slots' | 'blocked'>) => {
     if (seen.has(o.pageKey)) return;
     seen.add(o.pageKey);
     opts.push(o);
@@ -152,7 +155,10 @@ export async function pageOptionsFor(businessId: string): Promise<PageOption[]> 
   }
   if (branches[0]) push({ pageKey: 'home', placement: 'homepage', branchId: branches[0].id, branchName: branches[0].name, categorySlug: null, title: 'עמוד הבית', path: '/', monthlyNis: cfg.homeMonthlyNis });
   const taken = await slotsTaken(opts.map(o => o.pageKey));
-  return opts.map(o => ({ ...o, slots: cfg.slots, free: Math.max(0, cfg.slots - (taken.get(o.pageKey) ?? 0)) }));
+  return opts.map(o => ({
+    ...o, slots: cfg.slots, free: Math.max(0, cfg.slots - (taken.get(o.pageKey) ?? 0)),
+    blocked: needsDoctor(o.categorySlug, catsOf.get(o.branchId) ?? []) && !doctor.get(o.branchId) ? DOCTOR_REQUIRED : null,
+  }));
 }
 
 /** Human name of a campaign's page: "ציפורניים · תל אביב-יפו", "ציפורניים · כל הארץ", "עמוד הבית". */
@@ -170,17 +176,31 @@ export function pageTitle(c: Pick<Campaign, 'pageKey' | 'placement' | 'categoryS
 /** A medical category (the catalog's own flag): a placement there needs a verified doctor on the branch. */
 export const isMedicalCategory = (slug: string | null | undefined) => !!(slug && categoryBySlug(slug)?.isMedical);
 
-/** Whether this business would get the free first month: under the quota and no earlier free month. */
+type DoctorInfo = { profession: string | null; license: { status: string } | null } | null;
+const hasVerifiedDoctor = (doc: DoctorInfo | undefined) => doc?.profession === 'doctor' && doc.license?.status === 'verified';
+
+/** Whether a page needs a verified doctor: its category is medical, or it is the homepage for a branch with a medical category. */
+const needsDoctor = (categorySlug: string | null, branchCats: string[]) => (categorySlug ? isMedicalCategory(categorySlug) : branchCats.some(isMedicalCategory));
+
+export const DOCTOR_REQUIRED = 'בתחום רפואי צריך רופא/ה אחראי/ת עם רישיון מאומת בסניף. אפשר להוסיף בפרופיל, ובדיקת הרישיון לוקחת עד יום עסקים.';
+
+/** Campaigns that used a free month: waiting for review, approved, or approved and later cancelled (not rejected, not withdrawn). */
+const freeUsedWhere: Prisma.CampaignWhereInput = {
+  freeMonths: { gt: 0 },
+  OR: [{ status: { in: ['pending_review', 'approved'] } }, { status: 'cancelled', reviewedAt: { not: null } }],
+};
+
+/** Whether this business would get the free first month: one per business, for the first N businesses. */
 export async function freeMonthAvailable(businessId: string): Promise<boolean> {
   const cfg = await sponsoredConfig();
   if (cfg.freeMonthQuota <= 0) return false;
-  const [mine, used] = await Promise.all([
-    db.campaign.count({ where: { businessId, freeMonths: { gt: 0 }, status: { in: ['pending_review', 'approved'] } } }),
-    db.campaign.groupBy({ by: ['businessId'], where: { freeMonths: { gt: 0 }, status: { in: ['pending_review', 'approved'] } } }),
+  const [mine, before, used] = await Promise.all([
+    db.campaign.count({ where: { AND: [freeUsedWhere, { businessId }] } }),
+    // A business that already ran a paid placement is not new to sponsored.
+    db.campaign.count({ where: { businessId, paymentId: { not: null } } }),
+    db.campaign.groupBy({ by: ['businessId'], where: freeUsedWhere }),
   ]);
-  if (mine > 0) return false;
-  const alreadyPaidBefore = await db.campaign.count({ where: { businessId, status: { in: ['approved', 'cancelled'] }, reviewedAt: { not: null } } });
-  return alreadyPaidBefore === 0 && used.length < cfg.freeMonthQuota;
+  return mine === 0 && before === 0 && used.length < cfg.freeMonthQuota;
 }
 
 export interface CampaignRequest {
@@ -201,13 +221,14 @@ export async function requestCampaign(input: CampaignRequest, actor: { userId: s
   if ([...line].length > SPONSORED_LINE_MAX) return { ok: false, error: `שורת ההדגשה ארוכה מ־${SPONSORED_LINE_MAX} תווים` };
   const target = parsePageKey(input.pageKey);
   if (!target) return { ok: false, error: 'עמוד לא מוכר' };
-  const branch = await db.branch.findUnique({ where: { id: input.branchId }, select: { id: true, businessId: true, status: true, regionSlug: true, city: { select: { slug: true } }, categories: { select: { categorySlug: true } } } });
+  const branch = await db.branch.findUnique({ where: { id: input.branchId }, select: { id: true, businessId: true, status: true, regionSlug: true, city: { select: { slug: true } }, categories: { select: { categorySlug: true } }, medicalResponsible: { select: { profession: true, license: { select: { status: true } } } } } });
   if (!branch || branch.businessId !== input.businessId) return { ok: false, error: 'הסניף לא נמצא' };
   if (branch.status !== 'live') return { ok: false, error: 'אפשר לפרסם רק סניף שמופיע באתר' };
   const cats = new Set(branch.categories.map(c => c.categorySlug));
   // A business can only be sponsored where it is really listed: its own city and categories.
   if (target.placement === 'city_list' && (target.region !== branch.regionSlug || target.city !== branch.city?.slug || !cats.has(target.category))) return { ok: false, error: 'אפשר לפרסם רק ברשימה של העיר והתחום שבהם העסק רשום' };
   if (target.placement === 'treatment_page' && !cats.has(target.category)) return { ok: false, error: 'אפשר לפרסם רק בתחום שבו העסק רשום' };
+  if (needsDoctor(target.placement === 'homepage' ? null : target.category, [...cats]) && !hasVerifiedDoctor(branch.medicalResponsible)) return { ok: false, error: DOCTOR_REQUIRED };
 
   const cfg = await sponsoredConfig();
   const taken = (await slotsTaken([input.pageKey])).get(input.pageKey) ?? 0;
@@ -249,10 +270,8 @@ export async function reviewChecks(c: Campaign): Promise<{ checks: CheckResult[]
     slotsTaken([c.pageKey], c.id).then(m => m.get(c.pageKey) ?? 0),
   ]);
   // A medical page: the category itself, or the homepage for a branch with medical categories.
-  const medical = c.categorySlug ? isMedicalCategory(c.categorySlug) : !!branch?.categories.some(x => isMedicalCategory(x.categorySlug));
-  if (medical) {
-    const doc = branch?.medicalResponsible;
-    if (doc?.profession === 'doctor' && doc.license?.status === 'verified') checks.push({ result: 'ok', text: 'הרופא/ה האחראי/ת מאומת/ת' });
+  if (needsDoctor(c.categorySlug, branch?.categories.map(x => x.categorySlug) ?? [])) {
+    if (hasVerifiedDoctor(branch?.medicalResponsible)) checks.push({ result: 'ok', text: 'הרופא/ה האחראי/ת מאומת/ת' });
     else checks.push({ result: 'bad', text: 'תחום רפואי ללא רופא/ה אחראי/ת מאומת/ת בסניף' });
   }
   if (!branch || branch.status !== 'live') checks.push({ result: 'bad', text: 'הסניף אינו מפורסם' });
@@ -309,6 +328,39 @@ async function sponsoredPrice(placement: CampaignPlacement, agorot: number): Pro
     { idempotencyKey: `bf-sp-price-${lookup}` },
   );
   return price.id;
+}
+
+/** Merges flags into a campaign's stats JSON (charge failures, make-good marks). */
+async function setStats(id: string, patch: Record<string, unknown>): Promise<void> {
+  const c = await db.campaign.findUnique({ where: { id }, select: { stats: true } });
+  const next: Record<string, unknown> = { ...((c?.stats ?? {}) as Record<string, unknown>) };
+  for (const [k, v] of Object.entries(patch)) if (v === null) delete next[k]; else next[k] = v;
+  await db.campaign.update({ where: { id }, data: { stats: next as Prisma.InputJsonValue } });
+}
+
+/** When the last charge of a placement failed and is still unpaid (ISO date), or null. */
+export const chargeFailedAt = (c: Pick<Campaign, 'stats'>): string | null => {
+  const v = (c.stats as { chargeFailedAt?: unknown } | null)?.chargeFailedAt;
+  return typeof v === 'string' ? v : null;
+};
+
+/**
+ * A card was saved for a placement that already has a subscription: make it the subscription's card and,
+ * when a charge is waiting (first payment failed, or a renewal is past due), pay it now with the new card.
+ */
+async function retryWithCard(c: Campaign, pm: string): Promise<void> {
+  if (!c.stripeSubscriptionId) return;
+  const sub = await stripe().subscriptions.update(c.stripeSubscriptionId, { default_payment_method: pm });
+  if (sub.status !== 'incomplete' && sub.status !== 'past_due' && sub.status !== 'unpaid') return;
+  const invId = typeof sub.latest_invoice === 'string' ? sub.latest_invoice : sub.latest_invoice?.id;
+  if (!invId) return;
+  const inv = await stripe().invoices.retrieve(invId);
+  if (inv.status !== 'open') return;
+  try {
+    await stripe().invoices.pay(invId, { payment_method: pm });
+  } catch (e) {
+    console.warn('[sponsored] retry with the new card failed', c.ref, (e as Error).message);
+  }
 }
 
 const metaOf = (c: Pick<Campaign, 'id' | 'ref' | 'businessId'>) => ({ site: SITE, purpose: PURPOSE, campaignId: c.id, ref: c.ref, businessId: c.businessId });
@@ -553,16 +605,22 @@ export async function handleSponsoredEvent(ev: Stripe.Event): Promise<'handled' 
       if (!isSponsored(s.metadata)) return null;
       const customer = customerIdOf(s.customer);
       const id = s.metadata?.campaignId ?? s.client_reference_id;
+      let pm: string | null = null;
       if (customer && s.mode === 'setup' && s.setup_intent) {
         const si = await stripe().setupIntents.retrieve(typeof s.setup_intent === 'string' ? s.setup_intent : s.setup_intent.id);
-        const pm = typeof si.payment_method === 'string' ? si.payment_method : si.payment_method?.id;
+        pm = typeof si.payment_method === 'string' ? si.payment_method : si.payment_method?.id ?? null;
         if (pm) await stripe().customers.update(customer, { invoice_settings: { default_payment_method: pm } });
       }
       if (id) {
         if (customer) await db.campaign.updateMany({ where: { id, stripeCustomerId: null }, data: { stripeCustomerId: customer } });
-        const c = await db.campaign.findUnique({ where: { id }, select: { status: true, stripeSubscriptionId: true } });
+        const c = await db.campaign.findUnique({ where: { id } });
         // Approved while waiting for a card: billing starts now.
-        if (c?.status === 'approved' && !c.stripeSubscriptionId) await activateCampaignSafe(id);
+        if (c?.status === 'approved' && !c.endedAt && !c.stripeSubscriptionId) await activateCampaignSafe(id);
+      }
+      // Every running placement of this customer moves to the new card; a waiting charge is paid with it.
+      if (customer && pm) {
+        const running = await db.campaign.findMany({ where: { stripeCustomerId: customer, status: 'approved', endedAt: null, stripeSubscriptionId: { not: null } } });
+        for (const c of running) await retryWithCard(c, pm).catch(e => console.warn('[sponsored] card update', c.ref, e));
       }
       return 'handled';
     }
@@ -581,9 +639,12 @@ export async function handleSponsoredEvent(ev: Stripe.Event): Promise<'handled' 
       if (!c) return null;
       if (ev.type === 'invoice.paid') {
         await recordSponsoredPayment(c, inv);
+        if (chargeFailedAt(c)) await setStats(c.id, { chargeFailedAt: null, chargeFailedInvoice: null });
         const subId = invoiceSubscriptionId(inv);
         if (subId) await applySponsoredSubscription(await stripe().subscriptions.retrieve(subId));
       } else {
+        // The owner is told by the daily messages (M22_sponsored_payment_failed) and sees it in /biz/sponsored.
+        if (!chargeFailedAt(c)) await setStats(c.id, { chargeFailedAt: new Date().toISOString(), chargeFailedInvoice: inv.id ?? null });
         const { alertOps } = await import('../alerts');
         await alertOps(`campaign-charge-failed:${inv.id}`, `חיוב מקום ממומן ${c.ref} נכשל: ${(inv.amount_due / 100).toFixed(2)} ₪. Stripe ינסה שוב; הכרטיס ייעלם מהאתר בסוף החודש ששולם אם החיוב לא יעבור.`).catch(() => undefined);
       }
@@ -646,6 +707,9 @@ export async function statSeries(id: string, days = 30): Promise<Array<{ day: st
 
 const MAKE_GOOD_COUPON = 'beautyfind_sponsored_makegood';
 
+/** Days an approved placement waits for a card before its slot is released. */
+export const CARD_WAIT_DAYS = 7;
+
 async function ensureMakeGoodCoupon(): Promise<string> {
   try {
     await stripe().coupons.retrieve(MAKE_GOOD_COUPON);
@@ -660,17 +724,43 @@ async function ensureMakeGoodCoupon(): Promise<string> {
  * Daily (billing cron): ends placements whose last paid month is over, starts billing for approved ones whose
  * card arrived, and gives the make-good discount to a month that brought too few profile visits.
  */
-export async function runSponsoredCron(): Promise<{ ended: number; started: number; madeGood: number; errors: number }> {
-  const out = { ended: 0, started: 0, madeGood: 0, errors: 0 };
+export async function runSponsoredCron(): Promise<{ ended: number; started: number; expired: number; madeGood: number; errors: number }> {
+  const out = { ended: 0, started: 0, expired: 0, madeGood: 0, errors: 0 };
   const now = new Date();
-  // Ended: the paid month passed and nothing renews it (cancelled, or a charge that never went through). Three days of grace for retries.
-  const over = await db.campaign.findMany({ where: { status: 'approved', endedAt: null, activeUntil: { lt: new Date(now.getTime() - 3 * DAY) } }, select: { id: true, pageKey: true } });
+  const live = stripeConfigured();
+  // Ended: the paid month passed and nothing renewed it (cancelled, or a charge that never went through). Three days of
+  // grace for retries. Stripe has the last word: a renewal whose webhook was missed is picked up here, not ended.
+  const over = await db.campaign.findMany({ where: { status: 'approved', endedAt: null, activeUntil: { lt: new Date(now.getTime() - 3 * DAY) } } });
   for (const c of over) {
-    await db.campaign.update({ where: { id: c.id }, data: { status: 'cancelled', endedAt: now } });
-    refreshPage(c.pageKey);
-    out.ended++;
+    try {
+      if (c.stripeSubscriptionId && live) {
+        const sub = await stripe().subscriptions.retrieve(c.stripeSubscriptionId);
+        const end = periodEndOf(sub);
+        if ((sub.status === 'active' || sub.status === 'trialing') && end && end > now) {
+          await applySponsoredSubscription(sub);
+          continue;
+        }
+        if (sub.status !== 'canceled' && sub.status !== 'incomplete_expired') await stripe().subscriptions.cancel(sub.id, { prorate: false, invoice_now: false });
+      }
+      await db.campaign.update({ where: { id: c.id }, data: { status: 'cancelled', endedAt: now, cancelAtPeriodEnd: false } });
+      refreshPage(c.pageKey);
+      out.ended++;
+    } catch (e) {
+      console.error('[sponsored] end failed', c.ref, e);
+      out.errors++;
+    }
   }
-  if (!stripeConfigured()) return out;
+  // Approved but never got a card: the slot is released a week after approval (the owner was reminded twice).
+  if (live) {
+    const stale = await db.campaign.findMany({ where: { status: 'approved', endedAt: null, stripeSubscriptionId: null, activeUntil: null, reviewedAt: { lt: new Date(now.getTime() - CARD_WAIT_DAYS * DAY) } }, select: { id: true, ref: true, businessId: true, pageKey: true } });
+    for (const c of stale) {
+      await db.campaign.update({ where: { id: c.id }, data: { status: 'cancelled', endedAt: now } });
+      await setStats(c.id, { endReason: 'no_card' });
+      await db.auditLog.create({ data: { action: 'campaign_cancel', subjectType: 'campaign', subjectId: c.id, businessId: c.businessId, meta: { ref: c.ref, mode: 'no_card' } } });
+      out.expired++;
+    }
+  }
+  if (!live) return out;
   const waiting = await db.campaign.findMany({ where: { status: 'approved', endedAt: null, stripeSubscriptionId: null, activeUntil: null }, select: { id: true } });
   for (const c of waiting) {
     const r = await activateCampaignSafe(c.id);

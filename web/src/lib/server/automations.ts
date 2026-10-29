@@ -1,5 +1,6 @@
 import 'server-only';
-import { israelDay, pageTitle, statTotals } from './sponsored';
+import { CARD_WAIT_DAYS, chargeFailedAt, israelDay, pageTitle, statTotals } from './sponsored';
+import { stripeConfigured } from './billing/stripe';
 import { CATEGORIES, REGIONS } from '../catalog';
 import { nisFromAgorot } from '../format';
 import { ilDate } from '../time';
@@ -143,7 +144,7 @@ export async function planAutomations(now = new Date()): Promise<PlanRun> {
   if (s.sponsored) step('sponsored', async () => {
     const rows = await db.campaign.findMany({
       where: { OR: [{ reviewedAt: { gte: at(now.getTime() - 3 * DAY) } }, { status: 'approved', endedAt: null }, { endedAt: { gte: at(now.getTime() - 3 * DAY) } }] },
-      select: { id: true, ref: true, businessId: true, status: true, reviewNote: true, reviewedAt: true, startsAt: true, activeUntil: true, endedAt: true, pageKey: true, placement: true, categorySlug: true, citySlug: true, regionSlug: true, freeMonths: true, monthlyPriceAgorot: true },
+      select: { id: true, ref: true, businessId: true, status: true, reviewNote: true, reviewedAt: true, startsAt: true, activeUntil: true, endedAt: true, pageKey: true, placement: true, categorySlug: true, citySlug: true, regionSlug: true, freeMonths: true, monthlyPriceAgorot: true, stripeSubscriptionId: true, cancelAtPeriodEnd: true, stats: true },
       take: 2000,
     });
     const live = rows.filter(c => c.status === 'approved' && !c.endedAt && c.activeUntil && c.activeUntil > now && c.startsAt <= now);
@@ -158,11 +159,25 @@ export async function planAutomations(now = new Date()): Promise<PlanRun> {
       const q = (suffix: string, template: string, dueAt: Date, staleAt: Date, extra: Record<string, string> = {}) =>
         enqueue({ key: `M22:${c.id}:${suffix}`, automation: 'sponsored', template, ...o.route!, vars: { ...base, ...extra }, businessId: c.businessId, refId: c.id, dueAt, staleAt });
       const recent = c.reviewedAt && c.reviewedAt.getTime() >= now.getTime() - 3 * DAY;
-      if (recent && c.status === 'approved') add('sponsored', await q('approved', 'M22_sponsored_approved', now, at(now.getTime() + 3 * DAY)));
+      // Approved with Stripe on but no subscription yet: the owner still has to save a card.
+      const waitingForCard = stripeConfigured() && c.status === 'approved' && !c.endedAt && !c.stripeSubscriptionId && !c.activeUntil;
+      if (recent && c.status === 'approved') add('sponsored', await q('approved', 'M22_sponsored_approved', now, at(now.getTime() + 3 * DAY), {
+        card: waitingForCard ? 'needed' : '', later: c.startsAt.getTime() > now.getTime() + DAY ? 'yes' : '',
+      }));
+      if (waitingForCard && c.reviewedAt) {
+        const until = ilDate(at(c.reviewedAt.getTime() + CARD_WAIT_DAYS * DAY));
+        for (const d of [2, 5]) {
+          const due = c.reviewedAt.getTime() + d * DAY;
+          if (due > now.getTime() + DAY || due < now.getTime() - 2 * DAY) continue;
+          add('sponsored', await q(`card:${d}`, 'M22_sponsored_card', at(due), at(due + 2 * DAY), { until }));
+        }
+      }
+      const failed = c.status === 'approved' && !c.endedAt && !c.cancelAtPeriodEnd ? chargeFailedAt(c) : null;
+      if (failed) add('sponsored', await q(`charge:${failed.slice(0, 10)}`, 'M22_sponsored_payment_failed', now, at(new Date(failed).getTime() + 5 * DAY)));
       if (recent && c.status === 'rejected') add('sponsored', await q('rejected', 'M22_sponsored_rejected', now, at(now.getTime() + 3 * DAY), { reason: c.reviewNote ?? '' }));
       const isLive = live.includes(c);
       if (isLive && c.startsAt.getTime() >= now.getTime() - 2 * DAY) add('sponsored', await q('started', 'M22_sponsored_started', now, at(c.startsAt.getTime() + 3 * DAY)));
-      if (c.endedAt && c.status === 'cancelled' && c.reviewedAt && c.endedAt.getTime() >= now.getTime() - 3 * DAY) add('sponsored', await q('ended', 'M22_sponsored_ended', now, at(c.endedAt.getTime() + 4 * DAY)));
+      if (c.endedAt && c.status === 'cancelled' && c.reviewedAt && c.endedAt.getTime() >= now.getTime() - 3 * DAY) add('sponsored', await q('ended', 'M22_sponsored_ended', now, at(c.endedAt.getTime() + 4 * DAY), { why: ((c.stats ?? {}) as { endReason?: string }).endReason ?? '' }));
       // The weekly report, on Sundays, for placements that ran the whole week.
       if (isLive && sunday && c.startsAt.getTime() <= now.getTime() - 6 * DAY) {
         const t = week.get(c.id) ?? { impressions: 0, clicks: 0, contacts: 0 };
@@ -297,8 +312,10 @@ registerGuard('payment_failed', async (row, vars) => {
 });
 
 registerGuard('sponsored', async row => {
-  const c = await db.campaign.findUnique({ where: { id: row.refId! }, select: { status: true } });
+  const c = await db.campaign.findUnique({ where: { id: row.refId! }, select: { status: true, endedAt: true, stripeSubscriptionId: true, activeUntil: true, stats: true } });
   if (!c) return { send: false, reason: 'המקום נמחק' };
+  if (row.template === 'M22_sponsored_card' && (c.status !== 'approved' || c.endedAt || c.stripeSubscriptionId || c.activeUntil)) return { send: false, reason: 'הכרטיס כבר נשמר או שהמקום הסתיים' };
+  if (row.template === 'M22_sponsored_payment_failed' && (!chargeFailedAt(c) || c.endedAt)) return { send: false, reason: 'החיוב כבר הוסדר' };
   const wantsApproved = !row.template.endsWith('_rejected') && !row.template.endsWith('_ended');
   if (wantsApproved && c.status !== 'approved') return { send: false, reason: 'המקום כבר לא מאושר' };
   return { send: true };

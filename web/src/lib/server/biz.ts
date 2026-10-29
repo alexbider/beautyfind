@@ -1,5 +1,5 @@
 import 'server-only';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
 import { effectivePerms, isPreset, type Area, type Perms, type Preset, DEFAULT_PERMS } from '../permissions';
@@ -10,13 +10,19 @@ import { currentUser } from './session';
 const BIZ_COOKIE = 'bf_biz';
 const PREVIEW_COOKIE = 'bf_preview_role';
 
+/** The /biz address that was asked for (set by the proxy), so login returns there; the dashboard otherwise. */
+async function requestedBizPath(): Promise<string> {
+  const raw = (await headers()).get('x-bf-path');
+  return raw && /^\/biz(\/|\?|$)/.test(raw) && !raw.startsWith('//') && raw.length <= 300 ? raw : ROUTES.dashboard;
+}
+
 /**
  * The signed-in user's business context for /biz. Redirects to login if needed.
  * Owners may preview another role's view (design: "מחובר/ת כ־"), which only narrows permissions.
  */
 export const bizContext = cache(async () => {
   const user = await currentUser();
-  if (!user || user.kind !== 'business') redirect(`${ROUTES.bizLogin}&next=${encodeURIComponent(ROUTES.dashboard)}`);
+  if (!user || user.kind !== 'business') redirect(`${ROUTES.bizLogin}&next=${encodeURIComponent(await requestedBizPath())}`);
 
   const memberships = await db.staffMember.findMany({
     where: { userId: user.id, status: 'active' },

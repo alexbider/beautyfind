@@ -6,7 +6,7 @@ import { ReadOnlyBanner } from '@/components/dashboard/ReadOnlyBanner';
 import { PHASE, phaseOf } from '@/app/ops/sponsored/data';
 import { db } from '@/lib/server/db';
 import { cardsByIds } from '@/lib/server/public';
-import { freeMonthAvailable, hasSponsoredCard, pageOptionsFor, pageTitle, sponsoredConfig, statTotals } from '@/lib/server/sponsored';
+import { CARD_WAIT_DAYS, freeMonthAvailable, hasSponsoredCard, pageOptionsFor, pageTitle, sponsoredConfig, statTotals } from '@/lib/server/sponsored';
 import { pathOfPageKey, type SponsoredCardData } from '@/lib/sponsored';
 import { ROUTES } from '@/lib/routes';
 import { CampaignActions, SponsoredBuilder } from './SponsoredBuilder';
@@ -60,9 +60,9 @@ export default async function BizSponsoredPage({ searchParams }: { searchParams:
   const k30 = [...totals30.values()].reduce((a, t) => ({ impressions: a.impressions + t.impressions, clicks: a.clicks + t.clicks, contacts: a.contacts + t.contacts }), { impressions: 0, clicks: 0, contacts: 0 });
   const now = new Date();
   const rows = campaigns.map(c => ({ c, phase: phaseOf(c, now), title: pageTitle(c), path: pathOfPageKey(c.pageKey), t: totalsAll.get(c.id) ?? { impressions: 0, clicks: 0, contacts: 0 } }));
-  const running = rows.filter(r => ['live', 'free_month', 'ending', 'scheduled', 'needs_card', 'review'].includes(r.phase));
+  const running = rows.filter(r => ['live', 'free_month', 'ending', 'scheduled', 'needs_card', 'charge_failed', 'review'].includes(r.phase));
   const past = rows.filter(r => !running.includes(r));
-  const monthly = running.filter(r => r.phase === 'live' || r.phase === 'ending').reduce((a, r) => a + r.c.monthlyPriceAgorot, 0);
+  const monthly = running.filter(r => r.phase === 'live' || r.phase === 'ending' || r.phase === 'charge_failed').reduce((a, r) => a + r.c.monthlyPriceAgorot, 0);
 
   return (
     <section aria-labelledby="h-sp" className={ui.section}>
@@ -101,8 +101,9 @@ export default async function BizSponsoredPage({ searchParams }: { searchParams:
                   <p className={s.rowMeta}>
                     <span>₪{int(c.monthlyPriceAgorot / 100)} לחודש{c.freeMonths ? ' · החודש הראשון חינם' : ''}</span>
                     {phase === 'review' && <span>נבדק בדרך כלל תוך יום עסקים</span>}
-                    {phase === 'needs_card' && <span>אושר! נשאר לשמור כרטיס כדי שהמקום יעלה</span>}
-                    {c.activeUntil && phase !== 'review' && <span>{phase === 'ending' ? 'מוצג עד ' : c.freeMonths && !c.paymentId ? 'חינם עד ' : 'מתחדש ב־'}<span className="ltr">{dateIL(c.activeUntil)}</span></span>}
+                    {phase === 'needs_card' && <span>אושר! נשאר לשמור כרטיס כדי שהמקום יעלה. בלי כרטיס המקום משתחרר {CARD_WAIT_DAYS} ימים אחרי האישור</span>}
+                    {phase === 'charge_failed' && <span>החיוב החודשי לא עבר. עדכנו כרטיס והחיוב יבוצע מיד; בלי עדכון הכרטיס יירד מהסליידר בסוף החודש ששולם</span>}
+                    {c.activeUntil && phase !== 'review' && phase !== 'charge_failed' && <span>{phase === 'ending' ? 'מוצג עד ' : c.freeMonths && !c.paymentId ? 'חינם עד ' : 'מתחדש ב־'}<span className="ltr">{dateIL(c.activeUntil)}</span></span>}
                     {phase !== 'review' && phase !== 'needs_card' && <span><span className="ltr">{int(t.impressions)}</span> הצגות · <span className="ltr">{int(t.clicks)}</span> כניסות · <span className="ltr">{int(t.contacts)}</span> פניות</span>}
                   </p>
                 </div>
