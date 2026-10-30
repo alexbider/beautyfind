@@ -28,6 +28,8 @@ jobs:
     env:
       DATABASE_URL: postgresql://beautyfind:beautyfind@localhost:5432/beautyfind
       DATABASE_URL_UNPOOLED: postgresql://beautyfind:beautyfind@localhost:5432/beautyfind
+      # Test-only value for signing codes and links in the tests; not a production secret.
+      SESSION_SECRET: ci-test-session-secret-0123456789abcdef
     defaults:
       run:
         working-directory: web

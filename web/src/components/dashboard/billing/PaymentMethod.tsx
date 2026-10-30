@@ -6,7 +6,7 @@ import s from './billing.module.css';
 
 /** Card on file (or the button to add one) and the way into Stripe's portal for card changes and invoices. */
 export function PaymentMethod({
-  card, canEdit, hasCustomer, liveBranches, label,
+  card, canEdit, hasCustomer, label,
 }: {
   /** "Visa ·4242 · 08/28", or null when no card is saved. */
   card: string | null;
@@ -34,9 +34,7 @@ export function PaymentMethod({
         <p style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700 }} className="ltr">{card}</p>
       ) : (
         <p style={{ margin: '0 0 12px', fontSize: 13.5, color: 'var(--muted)', textWrap: 'pretty' }}>
-          {liveBranches > 0
-            ? 'עדיין לא נשמר כרטיס אשראי. התשלום מתבצע בעמוד מאובטח של Stripe, והחיוב הראשון יבוצע מיד עם השמירה.'
-            : 'עדיין לא נשמר כרטיס אשראי. אפשר לשמור אותו כבר עכשיו בעמוד מאובטח של Stripe: לא יבוצע חיוב עד שהסניף הראשון יתפרסם.'}
+          {'עדיין לא נשמר כרטיס אשראי. התשלום מתבצע בעמוד מאובטח של Stripe: החודש הראשון מחויב מיד, ולוח הבקרה נפתח לעריכה ברגע שהתשלום עובר.'}
         </p>
       )}
       {canEdit ? (

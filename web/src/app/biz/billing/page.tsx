@@ -79,8 +79,10 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
   }
   const card = sub?.cardLast4 ? `${(sub.cardBrand ?? 'card').replace(/^./, c => c.toUpperCase())} ·${sub.cardLast4}${sub.cardExp ? ` · ${sub.cardExp}` : ''}` : null;
 
-  // Only live branches are billed. Drafts and unpublished branches are not.
-  const billed = business.branches.filter(x => x.status === 'live').length;
+  // Live branches are billed. While none is live yet (a new listing in verification), checkout charges for the
+  // branches being set up, at least one (billing/index.ts checkoutUrl), so the page shows the same count.
+  const live = business.branches.filter(x => x.status === 'live').length;
+  const billed = live > 0 ? live : sub ? Math.max(1, business.branches.filter(x => x.status === 'draft').length) : 0;
   const notBilled = business.branches.length - billed;
 
   const cycle = sub?.cycle ?? 'monthly';
@@ -121,16 +123,18 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
 
         {checkout === 'done' ? (
           <p className={`${b.callout} ${b.calloutInfo}`} role="status" style={{ marginBottom: 14 }}>
-            {billed > 0 ? 'הכרטיס נשמר והמנוי פעיל. החשבונית תגיע לדוא״ל ותופיע כאן תוך דקה.' : 'הכרטיס נשמר. החיוב יתחיל כשהסניף הראשון יתפרסם.'}
+            {sub?.status === 'active'
+              ? 'התשלום עבר והמנוי פעיל. החשבונית תגיע לדוא״ל ותופיע כאן תוך דקה.'
+              : 'התשלום התקבל ומתעדכן אצלנו תוך כמה שניות. אם העריכה עדיין נעולה, רעננו את העמוד בעוד רגע.'}
           </p>
         ) : checkout === 'cancelled' ? (
           <p className={`${b.callout} ${b.calloutWarn}`} role="status" style={{ marginBottom: 14 }}>התשלום לא הושלם. אפשר לנסות שוב בכל רגע.</p>
         ) : null}
         {sub && !card && checkout !== 'done' ? (
           <p className={`${b.callout} ${b.calloutWarn}`} style={{ marginBottom: 14 }}>
-            {billed > 0
+            {sub.status === 'active' || sub.status === 'past_due'
               ? 'כדי שהמנוי יישאר פעיל, הוסיפו כרטיס אשראי בתיבת ״אמצעי תשלום״ למטה.'
-              : 'כדאי להוסיף כבר עכשיו כרטיס אשראי בתיבת ״אמצעי תשלום״ למטה, כדי שהפרופיל יעבור לחיוב בלי עיכוב כשהוא מתפרסם.'}
+              : 'המנוי עדיין לא פעיל. כדי לפתוח את לוח הבקרה לעריכה, השלימו את התשלום בתיבת ״אמצעי תשלום״ למטה.'}
           </p>
         ) : null}
 
@@ -189,7 +193,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
               </div>
               {billed === 0 ? (
                 <p className={`${b.callout} ${b.calloutInfo}`}>
-                  אין עדיין סניפים פעילים לחיוב. סניפים בטיוטה אינם מחויבים, והחיוב מתחיל כשהסניף הראשון מתפרסם.
+                  אין עדיין סניפים לחיוב. בחרו מסלול כדי להמשיך לתשלום.
                 </p>
               ) : notBilled > 0 ? (
                 <p className={`${b.callout} ${b.calloutInfo}`}>
