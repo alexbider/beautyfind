@@ -19,7 +19,7 @@ const DEFAULT_HOURS: HoursRow[] = [
 
 export default async function ProfilePage() {
   const ctx = await tabGuard('profile');
-  const banner = !ctx.canEdit && <ReadOnlyBanner roleName={ctx.roleName} />;
+  const banner = !ctx.canEdit && <ReadOnlyBanner roleName={ctx.roleName} blocked={ctx.blocked} />;
   if (!ctx.branch) return <>{banner}<p>לא נמצא סניף לעריכה.</p></>;
 
   const b = await db.branch.findUniqueOrThrow({

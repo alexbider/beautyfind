@@ -14,7 +14,7 @@ import { currentUser } from '@/lib/server/session';
 import { DAY_NAMES, STEPS, matchCity, parseMinutes, parseShekels, validate, type JoinPayload, type StepKey } from './shared';
 
 export type SubmitResult =
-  | { ok: true; ref: string }
+  | { ok: true; ref: string; checkoutUrl: string | null; checkoutError?: string }
   | { ok: false; reason: 'auth' }
   | { ok: false; reason: 'invalid'; step: number; error: string }
   | { ok: false; reason: 'server'; error: string };
@@ -134,6 +134,7 @@ export async function submitJoin(input: JoinPayload & { media?: z.input<typeof M
     declarations: { accepted: p.decl, acceptedAt: now.toISOString() },
   };
 
+  let businessId = '';
   try {
     await db.$transaction(async tx => {
       const business = await tx.business.create({
@@ -145,6 +146,7 @@ export async function submitJoin(input: JoinPayload & { media?: z.input<typeof M
           status: 'pending',
         },
       });
+      businessId = business.id;
       if (owned.length) await tx.mediaFile.updateMany({ where: { id: { in: owned.map(m => m.id) } }, data: { businessId: business.id } });
 
       const branch = await tx.branch.create({
@@ -272,5 +274,12 @@ export async function submitJoin(input: JoinPayload & { media?: z.input<typeof M
 
   const { alertOps } = await import('@/lib/server/alerts');
   await alertOps(`join:${bizRef}`, `עסק חדש נרשם ומחכה לאימות: ${f.name.trim()} (${bizRef}).`);
-  return { ok: true, ref: bizRef };
+  // Registration ends at Stripe Checkout: the subscription stays incomplete, and the backend read only,
+  // until the webhook confirms the first payment.
+  const { checkoutUrl } = await import('@/lib/server/billing');
+  const co = await checkoutUrl(businessId).catch(e => {
+    console.error('[join] checkout failed', bizRef, e);
+    return { ok: false as const, error: 'לא הצלחנו לפתוח את עמוד התשלום. נסו שוב.' };
+  });
+  return co.ok && co.url ? { ok: true, ref: bizRef, checkoutUrl: co.url } : { ok: true, ref: bizRef, checkoutUrl: null, checkoutError: co.ok ? undefined : co.error };
 }

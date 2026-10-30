@@ -2,6 +2,7 @@ import 'server-only';
 import type { Profession } from '@prisma/client';
 import { notFound } from 'next/navigation';
 import { PRESET_NAMES, isPreset, type Preset } from '../permissions';
+import { hasAdvanced } from './access';
 import { bizContext } from './biz';
 import { db } from './db';
 
@@ -19,9 +20,9 @@ const DEFAULTS: Record<Preset, Record<ClinicArea, ClinicLevel>> = {
   practitioner: { bookings: 'own', consults: 'view', waitlist: 'view', giftcards: 'none' },
 };
 
+/** The advanced plan and paid (active, or past_due while Stripe retries). Unpaid or hidden for debt is not advanced. */
 export async function isAdvanced(businessId: string) {
-  const sub = await db.subscription.findUnique({ where: { businessId }, select: { plan: true, status: true } });
-  return sub?.plan === 'advanced' && sub.status !== 'cancelled';
+  return hasAdvanced(await db.subscription.findUnique({ where: { businessId }, select: { plan: true, status: true } }));
 }
 
 /** The viewer's level for a clinic area. Never throws; the /clinic nav uses it to hide `none` areas. */

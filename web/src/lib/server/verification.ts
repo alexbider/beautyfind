@@ -1,6 +1,7 @@
 import 'server-only';
 import type { OpsRole, Prisma, VerificationStatus } from '@prisma/client';
 import { withPrimary } from '../category';
+import { PLAN_MONTHLY_NIS } from '../pricing';
 import { syncBillingSafe } from './billing';
 import { db } from './db';
 import { messaging } from '../vendors/messaging';
@@ -198,6 +199,16 @@ async function onApprove(tx: Tx, req: Req): Promise<'license_pending' | 'already
             : {}),
         },
       });
+      // The plan the claimant picked becomes the business's subscription. It stays incomplete, and the backend read
+      // only (src/lib/server/access.ts), until Stripe's webhook reports the first payment.
+      const plan = sub.plan === 'advanced' ? 'advanced' : 'basic';
+      const existing = await tx.subscription.findUnique({ where: { businessId: branch.businessId }, select: { id: true, status: true, stripeSubscriptionId: true } });
+      if (!existing) {
+        await tx.subscription.create({ data: { businessId: branch.businessId, plan, cycle: 'monthly', pricePerBranchAgorot: PLAN_MONTHLY_NIS[plan] * 100, status: 'incomplete' } });
+      } else if (!existing.stripeSubscriptionId && existing.status !== 'active' && existing.status !== 'past_due') {
+        await tx.subscription.update({ where: { id: existing.id }, data: { plan, cycle: 'monthly', pricePerBranchAgorot: PLAN_MONTHLY_NIS[plan] * 100, status: 'incomplete' } });
+      }
+
       // Other open claims on the same listing can no longer succeed; each gets its own system decision.
       const rivals = await tx.verificationRequest.findMany({
         where: { kind: 'claim', branchId: branch.id, id: { not: req.id }, status: { in: ['open', 'awaiting_document'] } },

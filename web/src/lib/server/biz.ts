@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { cache } from 'react';
 import { effectivePerms, isPreset, type Area, type Perms, type Preset, DEFAULT_PERMS } from '../permissions';
 import { ROUTES } from '../routes';
+import { WriteBlockedError, areaWriteBlock, writeBlockReason } from './access';
 import { db } from './db';
 import { currentUser } from './session';
 
@@ -49,18 +50,29 @@ export const bizContext = cache(async () => {
 
 export type BizContext = Awaited<ReturnType<typeof bizContext>>;
 
-/** For server actions: re-checks the session and the area level. Never trust the client. */
+/**
+ * For server actions: re-checks the session and the area level. Never trust the client.
+ * An edit also needs a paid subscription, and the advanced plan for advanced areas (areaWriteBlock in
+ * src/lib/server/access.ts); billing is exempt because it is how an owner pays. Throws WriteBlockedError otherwise.
+ */
 export async function requireArea(area: Area, level: 'view' | 'edit') {
   const ctx = await bizContext();
   const have = ctx.perms[area];
   const ok = level === 'view' ? have !== 'none' : have === 'edit';
   if (!ok) throw new Error(`forbidden: ${area}:${level}`);
+  if (level === 'edit') {
+    const reason = areaWriteBlock(area, ctx.business.subscription);
+    if (reason) throw new WriteBlockedError(reason);
+  }
   return ctx;
 }
 
+/** Owner-only actions (staff management). Also need a paid subscription. */
 export async function requireOwner() {
   const ctx = await bizContext();
   if (!ctx.member.isOwner || ctx.preview) throw new Error('forbidden: owner only');
+  const reason = writeBlockReason(ctx.business.subscription);
+  if (reason) throw new WriteBlockedError(reason);
   return ctx;
 }
 

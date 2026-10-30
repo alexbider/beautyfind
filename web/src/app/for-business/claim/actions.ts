@@ -125,6 +125,7 @@ const detailsInput = z
     whatsapp: z.string().trim().max(20),
     cats: z.array(z.string().refine(s => CATEGORY_SLUGS.has(s))).max(CATEGORY_SLUGS.size),
     doctor: z.string().trim().max(160),
+    plan: z.enum(['basic', 'advanced']).default('basic'),
     days: z.array(z.object({ open: z.boolean(), from: z.string().regex(TIME_RE), to: z.string().regex(TIME_RE) })).length(7),
   })
   .superRefine((d, ctx) => {
@@ -184,6 +185,7 @@ export async function submitClaim(input: ClaimDetails): Promise<SubmitClaimResul
         hours: d.days.map(x => (x.open ? { open: x.from, close: x.to, closed: false } : { open: '', close: '', closed: true })),
       },
       verification: { method: proof.method, target: proof.target, verifiedAt: proof.verifiedAt },
+      plan: d.plan,
     };
     const checks = [
       { result: 'ok', text: CHECK_TEXT[proof.method] },

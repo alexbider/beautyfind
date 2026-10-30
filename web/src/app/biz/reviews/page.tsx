@@ -16,7 +16,7 @@ const fill = (n: number) => (n >= 4 ? '#14B3C6' : n === 3 ? '#7ED7E1' : '#D98A74
 
 export default async function ReviewsPage() {
   const ctx = await tabGuard('reviews');
-  const banner = !ctx.canEdit && <ReadOnlyBanner roleName={ctx.roleName} />;
+  const banner = !ctx.canEdit && <ReadOnlyBanner roleName={ctx.roleName} blocked={ctx.blocked} />;
   const branch = ctx.branch;
   if (!branch) return <>{banner}<p>לא נמצא סניף.</p></>;
 

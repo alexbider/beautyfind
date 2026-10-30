@@ -1,6 +1,7 @@
 import 'server-only';
 import { notFound } from 'next/navigation';
 import { PRESET_NAMES, type Area } from '@/lib/permissions';
+import { areaWriteBlock } from '@/lib/server/access';
 import { bizContext } from '@/lib/server/biz';
 
 /**
@@ -10,7 +11,9 @@ import { bizContext } from '@/lib/server/biz';
 export async function tabGuard(area: Area) {
   const ctx = await bizContext();
   if (ctx.perms[area] === 'none') notFound();
-  return { ...ctx, canEdit: ctx.perms[area] === 'edit', roleName: PRESET_NAMES[ctx.role].name };
+  // Unpaid (or on basic, for advanced areas): the tab is shown but read only. The server actions refuse as well.
+  const blocked = areaWriteBlock(area, ctx.business.subscription);
+  return { ...ctx, canEdit: ctx.perms[area] === 'edit' && !blocked, blocked, roleName: PRESET_NAMES[ctx.role].name };
 }
 
 export async function ownerGuard() {

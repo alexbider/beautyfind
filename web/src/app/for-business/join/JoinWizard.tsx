@@ -110,6 +110,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
   const [plan, setPlan] = useState<PlanKey>(initialPlan);
   const [tried, setTried] = useState(false);
   const [done, setDone] = useState(false);
+  const [checkoutError, setCheckoutError] = useState('');
   const [ref, setRef] = useState('');
   const [toast, setToast] = useState('');
   const [serverError, setServerError] = useState('');
@@ -247,6 +248,13 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
       if (res.ok) {
         writeDraft(draftKey, null);
         haptic('success');
+        // Registration ends at Stripe Checkout. Only if it cannot open does the confirmation below show,
+        // and it offers payment, not the dashboard.
+        if (res.checkoutUrl) {
+          window.location.assign(res.checkoutUrl);
+          return;
+        }
+        setCheckoutError(res.checkoutError ?? 'לא הצלחנו לפתוח את עמוד התשלום.');
         setRef(res.ref);
         setDone(true);
         window.scrollTo({ top: 0 });
@@ -370,7 +378,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
         progress={done ? undefined : { step: step + 1, total: TOTAL }}
         noBack={done || step === 0}
         onBack={() => goTo(step - 1)}
-        onClose={done ? () => router.push(ROUTES.dashboard) : saveExit}
+        onClose={done ? () => router.push('/biz/billing') : saveExit}
       />
       <header className={`${styles.header} bf-desk-only`}>
         <div className={styles.headerInner}>
@@ -880,6 +888,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
               </svg>
             </span>
             <h1 className={styles.doneH1}>הבקשה נשלחה לבדיקה</h1>
+            {checkoutError ? <p className={styles.doneBody} role="alert">{checkoutError} הכרטיס יתפרסם ולוח הבקרה ייפתח לעריכה רק אחרי התשלום.</p> : null}
             <p className={styles.doneBody}>
               {hasMedical
                 ? 'הבקשה בתור לבדיקה. נאמת את הח״פ ואת הכתובת, ואת רישיון הרופא/ה מול משרד הבריאות. הכרטיס יתפרסם רק אחרי האימות.'
@@ -905,7 +914,7 @@ export function JoinWizard({ initialPlan, draftKey, initialName = '' }: { initia
               </dd>
             </dl>
             <div className={styles.doneActions}>
-              <Link href={ROUTES.dashboard} className={styles.donePrimary}>ללוח הבקרה</Link>
+              <Link href="/biz/billing" className={styles.donePrimary}>להשלמת התשלום</Link>
               <Link href={ROUTES.listingStandards} className={styles.doneSecondary}>תקן הרישום</Link>
             </div>
           </div>

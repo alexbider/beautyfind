@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: 'תפריט מחירים' };
 
 export default async function MenuPage() {
   const ctx = await tabGuard('menu');
-  const banner = !ctx.canEdit && <ReadOnlyBanner roleName={ctx.roleName} />;
+  const banner = !ctx.canEdit && <ReadOnlyBanner roleName={ctx.roleName} blocked={ctx.blocked} />;
   if (!ctx.branch) return <>{banner}<p>לא נמצא סניף לעריכה.</p></>;
 
   const [menu, cats] = await Promise.all([

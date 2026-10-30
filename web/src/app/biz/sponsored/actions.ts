@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { writeBlockReason } from '@/lib/server/access';
 import { bizContext } from '@/lib/server/biz';
 import { cancelCampaign, cardCheckoutUrl, hasSponsoredCard, requestCampaign, resumeCampaign } from '@/lib/server/sponsored';
 import { stripeConfigured } from '@/lib/server/billing/stripe';
@@ -12,9 +13,12 @@ import { SPONSORED_LINE_MAX } from '@/lib/sponsoredChecks';
 
 type Result = { ok: true; message?: string; url?: string; ref?: string } | { ok: false; error: string };
 
-async function editor() {
+async function editor(needPaid = true) {
   const ctx = await bizContext();
   if (ctx.perms.billing !== 'edit' || ctx.preview) return null;
+  // Placements are billed on their own, but only a business with a paid subscription may buy or resume one.
+  // Cancelling stays open: like the rest of billing, stopping a charge is never blocked.
+  if (needPaid && writeBlockReason(ctx.business.subscription)) return null;
   return ctx;
 }
 
@@ -51,7 +55,7 @@ export async function saveCardAction(campaignId: string): Promise<Result> {
 }
 
 export async function cancelPlacementAction(campaignId: string): Promise<Result> {
-  const ctx = await editor();
+  const ctx = await editor(false);
   if (!ctx) return { ok: false, error: 'אין הרשאה' };
   if (!z.string().uuid().safeParse(campaignId).success) return { ok: false, error: 'קלט לא תקין' };
   const r = await cancelCampaign(campaignId, { userId: ctx.user.id, businessId: ctx.business.id });

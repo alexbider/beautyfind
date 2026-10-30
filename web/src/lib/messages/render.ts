@@ -281,9 +281,10 @@ export function renderMessage(template: string, vars: Record<string, string>, si
         subject: `${what} ${v(vars, 'ref')}: ${verdict}`, kicker: 'business', title: `${what} ${verdict}`,
         lines: ['שלום,', STATUS_TEXT[st] ?? 'הבקשה עודכנה.'],
         details: [['מספר בקשה', v(vars, 'ref')], ['פירוט', v(vars, 'reason')]],
-        cta: { label: 'ללוח הניהול', url: `${root}/biz` },
+        cta: claim && st === 'approved' ? { label: 'להשלמת התשלום', url: `${root}/biz/billing` } : { label: 'ללוח הניהול', url: `${root}/biz` },
+        ...(claim && st === 'approved' ? { note: { tone: 'warn' as const, text: 'נשאר צעד אחד: להשלים את התשלום על המסלול שבחרתם. לוח הבקרה נפתח לעריכה ברגע שהתשלום עובר.' } } : {}),
         ...(st === 'awaiting_document' ? { note: { tone: 'warn' as const, text: 'אפשר להעלות את המסמך מלוח הניהול. הבדיקה ממשיכה ברגע שהוא מגיע.' } } : {}),
-        sms: `${BRAND}: ${what} ${v(vars, 'ref')}: ${STATUS_TEXT[st] ?? 'עודכנה.'}`,
+        sms: `${BRAND}: ${what} ${v(vars, 'ref')}: ${STATUS_TEXT[st] ?? 'עודכנה.'}${claim && st === 'approved' ? ` להשלמת התשלום והפעלת לוח הבקרה: ${root}/biz/billing` : ''}`,
       };
     }
 

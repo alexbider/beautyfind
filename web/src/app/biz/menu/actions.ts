@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { categoryBySlug } from '@/lib/catalog';
+import { WriteBlockedError } from '@/lib/server/access';
 import { requireArea } from '@/lib/server/biz';
 import { db } from '@/lib/server/db';
 import { loadMenu } from './data';
@@ -25,7 +26,13 @@ const Row = z.object({
 const Payload = z.object({ rows: z.array(Row).max(MAX_ROWS), deleted: z.array(z.string().uuid()).max(500) });
 
 export async function saveMenu(input: { rows: MenuRow[]; deleted: string[] }): Promise<SaveMenuResult> {
-  const ctx = await requireArea('menu', 'edit');
+  let ctx;
+  try {
+    ctx = await requireArea('menu', 'edit');
+  } catch (e) {
+    if (e instanceof WriteBlockedError) return { ok: false, error: e.reason };
+    throw e;
+  }
   const branch = ctx.branch;
   if (!branch) return { ok: false, error: 'לא נמצא סניף לעריכה.' };
 

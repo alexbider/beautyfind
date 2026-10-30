@@ -1,6 +1,6 @@
 import type { InputHTMLAttributes, RefObject } from 'react';
 import { DAY_NAMES, detailsErrors, hasMedical, hoursLabel, type ClaimDetails, type SiblingBranch } from '@/app/for-business/claim/shared';
-import { CHAIN_DISCOUNT, CHAIN_FULL_PRICE_BRANCHES } from '@/lib/pricing';
+import { CHAIN_DISCOUNT, CHAIN_FULL_PRICE_BRANCHES, PLAN_MONTHLY_NIS } from '@/lib/pricing';
 import { categoryBySlug } from '@/lib/catalog';
 import styles from './Claim.module.css';
 
@@ -114,6 +114,23 @@ export function DetailsStep({ headingRef, form, touched, siblings = [], onChange
         </div>
         <p className={styles.catsLine} data-bad={bad('cats') || undefined} aria-live="polite">
           {n === 0 ? 'בחרו לפחות תחום אחד' : n === 1 ? 'נבחר תחום אחד' : <>נבחרו <span className="ltr">{n}</span> תחומים</>}
+        </p>
+      </fieldset>
+
+      <fieldset className={styles.fieldset}>
+        <legend>מסלול <Req /></legend>
+        <div className={styles.chips}>
+          {(['basic', 'advanced'] as const).map(p => (
+            <button key={p} type="button" className={styles.chip} aria-pressed={form.plan === p} onClick={() => onChange({ plan: p })}>
+              {p === 'basic' ? 'בסיסי' : 'מתקדם'} · <span className="ltr">{PLAN_MONTHLY_NIS[p]}</span> ₪ לסניף בחודש
+            </button>
+          ))}
+        </div>
+        <p className={styles.catsLine}>
+          {form.plan === 'basic'
+            ? 'ניהול הכרטיס: פרטים, תפריט מחירים, תמונות, תגובות לביקורות וצוות.'
+            : 'הכול במסלול הבסיסי, ובנוסף CRM, יומן תורים, ייעוצים, רשימת המתנה, שוברי מתנה ותשלומים.'}{' '}
+          החיוב מתחיל רק אחרי שהבעלות מאושרת, והמסלול נפתח עם התשלום.
         </p>
       </fieldset>
 

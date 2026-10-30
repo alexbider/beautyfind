@@ -46,6 +46,8 @@ export interface ClaimDetails {
   cats: string[];
   doctor: string;
   days: DayHours[];
+  /** The plan the claimant picks: it becomes the business's subscription on approval, active once paid. */
+  plan: 'basic' | 'advanced';
 }
 
 export const DAY_NAMES = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];

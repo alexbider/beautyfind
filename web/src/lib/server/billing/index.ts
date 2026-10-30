@@ -9,9 +9,9 @@ import { customerIdOf, periodEndOf, planOfPrice, planPriceId, portalConfiguratio
 
 // Platform billing: BeautyFind's own subscriptions, charged through Stripe. Sponsored placements are
 // monthly subscriptions of their own (src/lib/server/sponsored), handled before these.
-// - A business saves a card through Stripe Checkout. If it already has live branches the subscription
-//   starts right there; if not, the card is only saved (setup mode) and the subscription starts when the
-//   first branch goes live (syncBilling, called on approval and by the daily billing cron).
+// - A business pays through Stripe Checkout, which starts the subscription and charges the first month
+//   right away, at signup too (before verification). syncBilling still starts a subscription for a card saved
+//   earlier without one, once a branch is live (called on approval and by the daily billing cron).
 // - One subscription item: the plan's price for the cycle, quantity = live branches. The price is
 //   graduated, so the chain discount from the fourth branch is Stripe's own arithmetic.
 // - Upgrades and monthly → yearly apply now (prorated). Downgrades and yearly → monthly wait for the end
@@ -104,8 +104,10 @@ async function priceForBusiness(businessId: string, plan: PlanKey, cycle: Cycle)
 const effectivePlan = (s: SubRow): { plan: PlanKey; cycle: Cycle } => ({ plan: s.plan, cycle: s.cycle });
 
 /**
- * Stripe Checkout for this business: subscription mode when it has live branches (first charge now),
- * setup mode otherwise (the card is saved, the charge starts at go-live).
+ * Stripe Checkout for this business. The first month is charged right away (subscription mode), also at
+ * signup while the listing still waits for verification: the subscription only turns active when Stripe's
+ * webhook reports the payment, and until then the backend is read only (src/lib/server/access.ts).
+ * Quantity: the live branches, or while none is live yet, the branches being set up (at least one).
  */
 export async function checkoutUrl(businessId: string): Promise<BillingResult> {
   if (!stripeConfigured()) return { ok: false, error: NOT_CONFIGURED };
@@ -124,21 +126,14 @@ export async function checkoutUrl(businessId: string): Promise<BillingResult> {
     metadata: { site: SITE, businessId },
   };
   const { plan, cycle } = effectivePlan(sub);
-  const session =
-    b.liveBranches > 0
-      ? await stripe().checkout.sessions.create({
-          ...common,
-          mode: 'subscription',
-          line_items: [{ price: await priceForBusiness(businessId, plan, cycle), quantity: b.liveBranches }],
-          subscription_data: { metadata: { site: SITE, businessId }, description: `BeautyFind · ${b.name}` },
-          payment_method_collection: 'always',
-        })
-      : await stripe().checkout.sessions.create({
-          ...common,
-          mode: 'setup',
-          currency: 'ils',
-          setup_intent_data: { metadata: { site: SITE, businessId }, description: `BeautyFind · ${b.name}` },
-        });
+  const quantity = b.liveBranches > 0 ? b.liveBranches : Math.max(1, b.branches.filter(x => x.status === 'draft' || x.status === 'live').length);
+  const session = await stripe().checkout.sessions.create({
+    ...common,
+    mode: 'subscription',
+    line_items: [{ price: await priceForBusiness(businessId, plan, cycle), quantity }],
+    subscription_data: { metadata: { site: SITE, businessId }, description: `BeautyFind · ${b.name}` },
+    payment_method_collection: 'always',
+  });
   if (!session.url) return { ok: false, error: 'לא הצלחנו לפתוח את עמוד התשלום. נסו שוב.' };
   return { ok: true, url: session.url };
 }

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { WriteBlockedError } from '@/lib/server/access';
 import { requireArea } from '@/lib/server/biz';
 import { db } from '@/lib/server/db';
 import { REPLY_MAX, REPLY_MIN } from '@/components/dashboard/reviews/stats';
@@ -13,13 +14,19 @@ const Id = z.string().uuid();
 
 /** Only published reviews of the dashboard's branch can be answered or reported. */
 async function ownReview(reviewId: string) {
-  const ctx = await requireArea('reviews', 'edit');
-  if (!ctx.branch || !Id.safeParse(reviewId).success) return { ctx, review: null };
+  let ctx;
+  try {
+    ctx = await requireArea('reviews', 'edit');
+  } catch (e) {
+    if (e instanceof WriteBlockedError) return { ctx: null, review: null, blocked: e.reason };
+    throw e;
+  }
+  if (!ctx.branch || !Id.safeParse(reviewId).success) return { ctx, review: null, blocked: null };
   const review = await db.review.findFirst({
     where: { id: reviewId, branchId: ctx.branch.id, status: 'published', branch: { businessId: ctx.business.id } },
     select: { id: true },
   });
-  return { ctx, review };
+  return { ctx, review, blocked: null };
 }
 
 /** Writes or replaces the one public business reply. */
@@ -29,7 +36,8 @@ export async function saveReply(reviewId: string, text: string): Promise<ReplyRe
   if (reply.length < REPLY_MIN) return { ok: false, error: `התגובה קצרה מדי. כתבו לפחות ${REPLY_MIN} תווים.` };
   if (reply.length > REPLY_MAX) return { ok: false, error: `עד ${REPLY_MAX} תווים.` };
 
-  const { ctx, review } = await ownReview(reviewId);
+  const { ctx, review, blocked } = await ownReview(reviewId);
+  if (blocked || !ctx) return { ok: false, error: blocked ?? 'אין הרשאה.' };
   if (!review) return { ok: false, error: 'הביקורת לא נמצאה. רעננו את הדף.' };
 
   try {
@@ -47,7 +55,8 @@ export async function saveReply(reviewId: string, text: string): Promise<ReplyRe
 
 /** Reports a review for a rules breach. Recorded as an append-only Decision for moderation. */
 export async function reportReview(reviewId: string): Promise<ReportResult> {
-  const { ctx, review } = await ownReview(reviewId);
+  const { ctx, review, blocked } = await ownReview(reviewId);
+  if (blocked || !ctx) return { ok: false, error: blocked ?? 'אין הרשאה.' };
   if (!review) return { ok: false, error: 'הביקורת לא נמצאה. רעננו את הדף.' };
 
   const where = { subjectType: 'review', subjectId: review.id, action: 'report', actorRole: 'business' };

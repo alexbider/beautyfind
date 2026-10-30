@@ -31,7 +31,7 @@ const STEPS: Array<{ key: Step; name: string; note: string }> = [
 const SEARCH_DEBOUNCE_MS = 250;
 const PRICE = nis(PLAN_MONTHLY_NIS.basic);
 
-const EMPTY_FORM: DetailsForm = { bizName: '', address: '', phone: '', whatsapp: '', doctor: '', cats: [], days: DEFAULT_DAYS, extraBranchIds: [] };
+const EMPTY_FORM: DetailsForm = { bizName: '', address: '', phone: '', whatsapp: '', doctor: '', cats: [], days: DEFAULT_DAYS, extraBranchIds: [], plan: 'basic' };
 
 const COMMON_ERRORS: Record<string, ReactNode> = {
   claimed: 'לעסק הזה כבר יש בעלים מאומתים. אפשר לבקש מהבעלים הזמנה לצוות.',

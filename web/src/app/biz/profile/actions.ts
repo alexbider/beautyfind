@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { CATEGORIES } from '@/lib/catalog';
 import { withPrimary } from '@/lib/category';
 import { toE164 } from '@/lib/format';
+import { WriteBlockedError } from '@/lib/server/access';
 import { requireArea } from '@/lib/server/biz';
 import { db } from '@/lib/server/db';
 import { GAL_TAGS, MAX_GALLERY, normalizeInstagram, validateProfile, type FieldKey, type ProfileForm } from '@/components/dashboard/profile/shared';
@@ -26,7 +27,13 @@ const Payload = z.object({
 });
 
 export async function saveProfile(input: ProfileForm): Promise<SaveProfileResult> {
-  const ctx = await requireArea('profile', 'edit');
+  let ctx;
+  try {
+    ctx = await requireArea('profile', 'edit');
+  } catch (e) {
+    if (e instanceof WriteBlockedError) return { ok: false, error: e.reason };
+    throw e;
+  }
   const branch = ctx.branch;
   if (!branch) return { ok: false, error: 'לא נמצא סניף לעריכה.' };
 

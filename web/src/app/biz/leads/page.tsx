@@ -43,7 +43,7 @@ export default async function LeadsPage() {
 
   return (
     <>
-      {!ctx.canEdit && <ReadOnlyBanner roleName={ctx.roleName} />}
+      {!ctx.canEdit && <ReadOnlyBanner roleName={ctx.roleName} blocked={ctx.blocked} />}
       <LeadsBoard leads={leads} canEdit={ctx.canEdit} />
     </>
   );

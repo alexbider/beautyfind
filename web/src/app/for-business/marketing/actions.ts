@@ -7,6 +7,7 @@ import { getService } from '@/content/marketing';
 import { COMMON_ONBOARDING } from '@/content/marketing/common';
 import { canOnboard, canQuote, createQuoteRequest, orderByToken, resolvedService, saveOnboarding, startCheckout, type OrderContact } from '@/lib/server/marketing';
 import { LIMITS as RATE, clientIp, hit } from '@/lib/server/rateLimit';
+import { userWriteBlock } from '@/lib/server/access';
 import { currentUser } from '@/lib/server/session';
 import { LIMITS, validateContact, type ActionResult, type ContactInput } from './shared';
 
@@ -63,6 +64,9 @@ export async function requestQuote(input: { service: string; packageKey?: string
   const blocked = await guard(c);
   if (blocked) return blocked;
   const user = await currentUser();
+  // A signed-in owner whose subscription is not paid cannot order; visitors with no business can.
+  const unpaid = user ? await userWriteBlock(user.id) : null;
+  if (unpaid) return { ok: false, message: unpaid };
   try {
     const order = await createQuoteRequest(service.slug, toContact(c, Utm.safeParse(input.utm).data), user?.id ?? null, input.packageKey ?? null);
     return { ok: true, ref: order.ref };
@@ -83,6 +87,9 @@ export async function beginCheckout(input: { service: string; packageKey: string
   const blocked = await guard(c);
   if (blocked) return blocked;
   const user = await currentUser();
+  // A signed-in owner whose subscription is not paid cannot order; visitors with no business can.
+  const unpaid = user ? await userWriteBlock(user.id) : null;
+  if (unpaid) return { ok: false, message: unpaid };
   const r = await startCheckout(input.service, input.packageKey, toContact(c, Utm.safeParse(input.utm).data), user?.id ?? null);
   if (!r.ok) return { ok: false, message: r.message };
   return { ok: true, ref: r.ref, url: r.url };

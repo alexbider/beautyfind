@@ -32,7 +32,7 @@ export function DoneStep({ headingRef, bizName, refCode, onRestart }: Props) {
         הבקשה התקבלה<span aria-hidden="true" className={styles.dot}>.</span>
       </h2>
       <p className={`${styles.lede} ${styles.doneLede}`}>
-        הבקשה לאישור בעלות על <strong>{bizName}</strong> ממתינה לבדיקה, מספר הבקשה <span className={`${styles.strong} ltr`}>{refCode}</span>. בדרך כלל אנחנו בודקים בתוך יום עסקים ומעדכנים בדוא״ל. בינתיים אפשר להכין את מה שנשאר: תפריט המחירים הוא הדבר הראשון שלקוחות מחפשים.
+        הבקשה לאישור בעלות על <strong>{bizName}</strong> ממתינה לבדיקה, מספר הבקשה <span className={`${styles.strong} ltr`}>{refCode}</span>. בדרך כלל אנחנו בודקים בתוך יום עסקים ומעדכנים בדוא״ל. אחרי האישור משלימים את התשלום על המסלול שבחרתם, ולוח הבקרה נפתח לעריכה. בינתיים אפשר להכין את מה שנשאר: תפריט המחירים הוא הדבר הראשון שלקוחות מחפשים.
       </p>
       <ol className={styles.nextSteps}>
         {NEXT_STEPS.map((n, i) => (

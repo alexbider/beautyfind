@@ -123,7 +123,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      {!ctx.canEdit ? <ReadOnlyBanner roleName={ctx.roleName} /> : null}
+      {!ctx.canEdit ? <ReadOnlyBanner roleName={ctx.roleName} blocked={ctx.blocked} /> : null}
       <section aria-labelledby="h-kpi" className={ui.section}>
         <div className={ui.headRow}>
           <h1 id="h-kpi" className={ui.h1}>{RANGE_TITLE[range]}<span>.</span></h1>
