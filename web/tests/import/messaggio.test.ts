@@ -105,7 +105,7 @@ describe('messaggio: verification codes through sendOtp', { skip }, () => {
     assert.equal((await svc.saveMessaggioLogin('short', userId)).ok, false);
     assert.equal((await svc.saveMessaggioLogin('has space inside', userId)).ok, false);
     const row = await db.platformSecret.findUnique({ where: { key: 'messaggio_login' } });
-    assert.ok(row?.valueEnc.startsWith('v1.'));
+    assert.ok(row?.valueEnc.startsWith('v2.'));
     assert.ok(!row?.valueEnc.includes('test-login-123'));
     assert.equal((await svc.messaggioLogin())?.login, 'test-login-123');
   });

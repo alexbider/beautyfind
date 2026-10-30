@@ -181,8 +181,11 @@ describe('replies, reminders and delivery tracking', { skip }, () => {
     assert.match(mine[0].subject, /תזכורת: התור שלך בקליניקה בתשלום מחר/);
     assert.match(mine[0].text, /בשעה 11:00/);
     assert.match(mine[0].text, /כתובת: רחוב 1, חיפה/);
+    // A client with no email gets the reminder by SMS (automations.reminderSms, on by default).
+    assert.ok(mock.sms.some(s => s.To === noEmail.clientPhone && /תזכורת/.test(s.Body)), 'the client without an email got an SMS');
+    assert.equal(run.sentSms, 1);
     const rows = await db.booking.findMany({ where: { id: { in: [due.id, noEmail.id, freeBk.id, notTomorrow.id, cancelled.id] } }, select: { id: true, remindedAt: true } });
-    assert.deepEqual(rows.filter(r => r.remindedAt).map(r => r.id), [due.id]);
+    assert.deepEqual(rows.filter(r => r.remindedAt).map(r => r.id).sort(), [due.id, noEmail.id].sort());
     await runReminders(now);
     assert.equal(mock.emails.slice(emails).filter(e => e.to[0].includes(tag)).length, 1, 'never twice');
   });

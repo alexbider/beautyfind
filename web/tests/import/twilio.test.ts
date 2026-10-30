@@ -156,7 +156,7 @@ describe('twilio: verification codes through sendOtp', { skip }, () => {
     assert.equal((await tw.twilioCheck()).ok, false, 'nothing stored yet');
     assert.deepEqual(await tw.saveTwilioCreds(SID, TOKEN, userId), { ok: true, label: SID });
     const row = await db.platformSecret.findUnique({ where: { key: 'twilio_credentials' } });
-    assert.ok(row?.valueEnc.startsWith('v1.') && !row.valueEnc.includes(TOKEN));
+    assert.ok(row?.valueEnc.startsWith('v2.') && !row.valueEnc.includes(TOKEN));
     const check = await tw.twilioCheck();
     assert.equal(check.ok, true);
     assert.match(check.ok ? check.text : '', /החיבור תקין: BeautyFind · active/);

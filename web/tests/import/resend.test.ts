@@ -32,7 +32,8 @@ function templatesInCode(): string[] {
 describe('messages: every template has an email and an SMS text', () => {
   it('renders each template the code sends', async () => {
     const { renderMessage, emailBody } = await import('../../src/lib/messages/render');
-    const ids = templatesInCode();
+    // campaign_test is the admin's own campaign text, sent as is (src/lib/server/twilio.ts), never rendered here.
+    const ids = templatesInCode().filter(id => id !== 'campaign_test');
     assert.ok(ids.length >= 20, `found ${ids.length}`);
     const vars = { name: 'דנה', business: 'סלון דוגמה', treatment: 'טיפול פנים', date: '12.11', time: '10:30', ref: 'BK-1', link: 'https://x.test/l', code: '123456', minutes: '10', amount: '300 ₪', buyer: 'רון', recipient: 'מאיה', email: 'a@b.co', reason: 'general', text: 'שלום', status: 'approved', refunded: '50', late: '0', inviter: 'אבי', role: 'מנהלת', expires: '1.12', practitioner: 'נועה', message: 'מזל טוב' };
     for (const id of ids) {
@@ -179,7 +180,7 @@ describe('email and notices through the providers', { skip }, () => {
     const { sendOtp } = await import('../../src/lib/server/otp');
     const r = await sendOtp({ target: `owner${stamp}@example.test`, channel: 'email', purpose: 'claim' });
     assert.equal(r.ok && r.channel, 'email');
-    assert.match(String((mock.emails.at(-1)!.body as { text: string }).text), /קוד האימות שלך: \d{6}/);
+    assert.match(String((mock.emails.at(-1)!.body as { text: string }).text), /קוד: \d{6}/);
   });
 
   it('a failed notice email is logged and does not throw; a failed code email throws', async () => {

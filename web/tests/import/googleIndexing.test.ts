@@ -236,7 +236,7 @@ describe('google indexing: a run against a mock Google', { skip }, () => {
       const r = await g.saveServiceAccountKey(KEY_JSON, userId);
       assert.deepEqual(r, { ok: true, clientEmail: 'indexer@beautyfind-test.iam.gserviceaccount.com' });
       const row = await db.platformSecret.findUnique({ where: { key: 'google_indexing_credentials' } });
-      assert.ok(row?.valueEnc.startsWith('v1.'), 'sealed with DATA_KEY');
+      assert.ok(row?.valueEnc.startsWith('v2.'), 'sealed with DATA_KEY');
       assert.ok(!row?.valueEnc.includes('PRIVATE KEY') && !row?.valueEnc.includes('indexer@'), 'nothing readable in the column');
       assert.equal(row?.label, 'indexer@beautyfind-test.iam.gserviceaccount.com');
       const st = await g.googleIndexingStatus();
