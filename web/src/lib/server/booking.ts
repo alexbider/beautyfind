@@ -75,7 +75,7 @@ export async function createBooking(opts: {
   returnPath?: string; // override where the client returns after paying
 }): Promise<CreateBookingResult> {
   const treatment = await db.treatment.findFirst({
-    where: { id: opts.treatmentId, branchId: opts.branchId, isPublished: true, branch: { status: 'live', business: { status: 'live', deletedAt: null } } },
+    where: { id: opts.treatmentId, branchId: opts.branchId, isPublished: true, branch: { status: 'live', business: { status: 'live' } } },
     include: { branch: { include: { business: { include: { depositPolicy: true } } } } },
   });
   if (!treatment) return { ok: false, error: 'not_found' };

@@ -80,7 +80,7 @@ export async function listCampaigns(filter: Filter): Promise<CampaignView[]> {
 /** Live branches, for the manual order form. */
 export async function orderableBranches() {
   const rows = await db.branch.findMany({
-    where: { status: 'live', business: { status: { in: ['live', 'past_due'] }, deletedAt: null } },
+    where: { status: 'live', business: { status: { in: ['live', 'past_due'] } } },
     select: { id: true, name: true, cityName: true, regionSlug: true, businessId: true, city: { select: { slug: true } }, categories: { select: { categorySlug: true, isPrimary: true } } },
     orderBy: { name: 'asc' },
     take: 3000,

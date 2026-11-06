@@ -13,7 +13,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 export const getPractitioner = cache(async (id: string) => {
   if (!UUID_RE.test(id)) return null;
   const s = await db.staffMember.findFirst({
-    where: { id, status: 'active', profession: { in: [...PRACTITIONER_PROFESSIONS] }, business: { status: 'live', deletedAt: null } },
+    where: { id, status: 'active', profession: { in: [...PRACTITIONER_PROFESSIONS] }, business: { status: 'live' } },
     select: {
       id: true, displayName: true, profession: true, branchIds: true, businessId: true,
       license: { select: { kind: true, number: true, status: true, specialty: true, verifiedAt: true, source: true } },

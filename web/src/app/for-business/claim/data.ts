@@ -87,7 +87,6 @@ export async function searchLiveBranches(q: string): Promise<ListingHit[]> {
   const rows = await db.branch.findMany({
     where: {
       status: 'live',
-      business: { deletedAt: null },
       AND: words.map(w => ({
         OR: [
           { name: { contains: w, mode: 'insensitive' as const } },
@@ -107,18 +106,18 @@ export async function searchLiveBranches(q: string): Promise<ListingHit[]> {
 /** The listing the visitor arrived from (profile page claim link), as a search hit, or null. */
 export async function loadListingHit(id: string): Promise<ListingHit | null> {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
-  const b = await db.branch.findFirst({ where: { id, status: 'live', business: { deletedAt: null } }, include: branchInclude });
+  const b = await db.branch.findFirst({ where: { id, status: 'live' }, include: branchInclude });
   return b ? toHit(b, await codeChannels()) : null;
 }
 
 /** A live branch by id, with what the claim checks need. */
 export function loadLiveBranch(id: string) {
-  return db.branch.findFirst({ where: { id, status: 'live', business: { deletedAt: null } }, include: branchInclude });
+  return db.branch.findFirst({ where: { id, status: 'live' }, include: branchInclude });
 }
 
 /** The other live, unclaimed branches of the business a listing belongs to (a chain): claimable in the same request. */
 export async function siblingBranches(branchId: string): Promise<SiblingBranch[]> {
-  const b = await db.branch.findFirst({ where: { id: branchId, status: 'live', business: { deletedAt: null } }, select: { businessId: true, business: { select: { ownerUserId: true } } } });
+  const b = await db.branch.findFirst({ where: { id: branchId, status: 'live' }, select: { businessId: true, business: { select: { ownerUserId: true } } } });
   if (!b || b.business.ownerUserId) return [];
   const rows = await db.branch.findMany({ where: { businessId: b.businessId, status: 'live', isClaimed: false, id: { not: branchId } }, orderBy: { cityName: 'asc' }, select: { id: true, name: true, cityName: true, address: true } });
   return rows.map(r => ({ id: r.id, name: r.name, city: r.cityName, address: r.address }));

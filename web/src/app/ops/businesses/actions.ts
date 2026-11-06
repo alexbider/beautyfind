@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { areaUserOrNull } from '@/components/ops/access';
 import { syncBillingSafe } from '@/lib/server/billing';
-import { deleteBusiness, restoreBusiness } from '@/lib/server/businessDelete';
+import { deleteBusiness } from '@/lib/server/businessDelete';
 import { db } from '@/lib/server/db';
 import { currentUser } from '@/lib/server/session';
 import { ensureImportRecords, estimateCompletion, startCompletion, type EnhanceResult } from '@/lib/server/enhanceRuns';
@@ -16,17 +16,15 @@ import { ensureImportRecords, estimateCompletion, startCompletion, type EnhanceR
 
 const Input = z.object({ id: z.string().uuid(), status: z.enum(['pending', 'live', 'past_due', 'hidden', 'hold_payment']), reason: z.string().trim().max(300).optional() });
 
-export type BizActionResult = { ok: true } | { ok: false; error: 'forbidden' | 'invalid' | 'not_found' | 'deleted' };
+export type BizActionResult = { ok: true } | { ok: false; error: 'forbidden' | 'invalid' | 'not_found' };
 
 export async function setBusinessStatusAction(input: z.input<typeof Input>): Promise<BizActionResult> {
   const user = await areaUserOrNull('businesses', 'edit');
   if (!user) return { ok: false, error: 'forbidden' };
   const p = Input.safeParse(input);
   if (!p.success) return { ok: false, error: 'invalid' };
-  const b = await db.business.findUnique({ where: { id: p.data.id }, select: { id: true, status: true, settings: true, deletedAt: true, subscription: { select: { id: true, status: true, stripeSubscriptionId: true } }, branches: { select: { regionSlug: true, slug: true } } } });
+  const b = await db.business.findUnique({ where: { id: p.data.id }, select: { id: true, status: true, settings: true, subscription: { select: { id: true, status: true, stripeSubscriptionId: true } }, branches: { select: { regionSlug: true, slug: true } } } });
   if (!b) return { ok: false, error: 'not_found' };
-  // A deleted business changes state only through restore (master admin).
-  if (b.deletedAt) return { ok: false, error: 'deleted' };
   if (p.data.status === 'hold_payment') {
     // Hidden until the first payment: the same state a new approval without a card gets (verification.ts). The
     // owner gets the activation email from the automations, and the first successful charge puts it live.
@@ -138,33 +136,23 @@ export async function estimateCompletionAction(branchIds: string[]): Promise<{ o
   return { ok: true, listings: est.listings, unseeded: list.data.length - places, plan: est.plan, usd: est.usd };
 }
 
-// ---------- delete and restore (master admin only) ----------
+// ---------- permanent delete (master admin only) ----------
 
-// The role check is inside deleteBusiness/restoreBusiness (src/lib/server/businessDelete.ts), so a direct
-// POST to these actions by anyone else gets status 403 and changes nothing.
+// The role check is inside deleteBusiness (src/lib/server/businessDelete.ts), so a direct POST to this
+// action by anyone else gets status 403 and changes nothing.
 
 export type DeleteActionResult = Awaited<ReturnType<typeof deleteBusiness>>;
 
-function refreshPublic(r: DeleteActionResult, id: string) {
+export async function deleteBusinessAction(input: { id: string; reason: string; confirmName: string }): Promise<DeleteActionResult> {
+  const id = String(input?.id ?? '');
+  const r = await deleteBusiness(await currentUser(), { id, reason: String(input?.reason ?? ''), confirmName: String(input?.confirmName ?? '') });
   if (r.ok) {
     revalidatePath('/');
     revalidatePath('/search');
     revalidatePath('/sitemap.xml');
     for (const region of r.regions) revalidatePath(`/${region}`, 'layout');
     for (const path of r.paths) revalidatePath(path);
+    revalidatePath('/ops/businesses');
   }
-  revalidatePath(`/ops/businesses/${id}`);
-  revalidatePath('/ops/businesses');
-}
-
-export async function deleteBusinessAction(input: { id: string; reason: string; confirmName: string }): Promise<DeleteActionResult> {
-  const r = await deleteBusiness(await currentUser(), { id: String(input?.id ?? ''), reason: String(input?.reason ?? ''), confirmName: String(input?.confirmName ?? '') });
-  if (r.status !== 403) refreshPublic(r, String(input?.id ?? ''));
-  return r;
-}
-
-export async function restoreBusinessAction(input: { id: string; reason: string }): Promise<DeleteActionResult> {
-  const r = await restoreBusiness(await currentUser(), { id: String(input?.id ?? ''), reason: String(input?.reason ?? '') });
-  if (r.status !== 403) refreshPublic(r, String(input?.id ?? ''));
   return r;
 }

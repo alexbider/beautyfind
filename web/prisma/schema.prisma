@@ -257,8 +257,8 @@ model Business {
   // under it (src/lib/import/chain.ts). Branches of one chain sit under one business, so an owner
   // claims and manages all locations from one account and is billed per branch.
   chainKey        String?        @map("chain_key")
-  // Soft delete by the master admin (ops role): the business leaves every public page, the sitemap and
-  // search, and nothing under it is removed. Restoring clears these and puts back deletedFromStatus.
+  // Not used: added for a soft delete that was replaced by a permanent delete (src/lib/server/businessDelete.ts)
+  // before it shipped. The migration already ran, so the columns stay until a drop migration is approved.
   deletedAt         DateTime?       @map("deleted_at")
   deletedById       String?         @map("deleted_by_id") @db.Uuid
   deletedFromStatus BusinessStatus? @map("deleted_from_status")

@@ -8,9 +8,9 @@ import { platformSettings } from '@/lib/server/platformSettings';
 // The businesses screen: every business with its live branches, plan, monthly charge and who carries
 // the professional responsibility. One query, then plain rows for the table and the CSV export.
 
-export type BizFilter = 'all' | 'live' | 'past_due' | 'pending' | 'hidden' | 'no_subscription' | 'deleted';
+export type BizFilter = 'all' | 'live' | 'past_due' | 'pending' | 'hidden' | 'no_subscription';
 export const BIZ_FILTERS: Array<{ key: BizFilter; name: string }> = [
-  { key: 'all', name: 'הכול' }, { key: 'live', name: 'פעילים' }, { key: 'past_due', name: 'בחוב' }, { key: 'pending', name: 'ממתינים' }, { key: 'hidden', name: 'מוסתרים' }, { key: 'no_subscription', name: 'ללא מנוי' }, { key: 'deleted', name: 'נמחקו' },
+  { key: 'all', name: 'הכול' }, { key: 'live', name: 'פעילים' }, { key: 'past_due', name: 'בחוב' }, { key: 'pending', name: 'ממתינים' }, { key: 'hidden', name: 'מוסתרים' }, { key: 'no_subscription', name: 'ללא מנוי' },
 ];
 
 export const STATUS_NAME: Record<BusinessStatus, string> = { pending: 'ממתין לאימות', live: 'פעיל', past_due: 'חוב פתוח', hidden: 'מוסתר' };
@@ -49,9 +49,7 @@ export async function listBusinesses(opts: BizListOptions): Promise<{ rows: BizR
     ...(opts.claimed === 'claimed' ? { isClaimed: true } : {}),
   };
   const where: Prisma.BusinessWhereInput = {
-    // Deleted businesses show only under their own filter.
-    ...(opts.filter === 'deleted' ? { deletedAt: { not: null } } : { deletedAt: null }),
-    ...(opts.filter === 'all' || opts.filter === 'no_subscription' || opts.filter === 'deleted' ? {} : { status: opts.filter }),
+    ...(opts.filter === 'all' || opts.filter === 'no_subscription' ? {} : { status: opts.filter }),
     ...(opts.filter === 'no_subscription' ? { subscription: null } : {}),
     ...(Object.keys(branchFilter).length ? { branches: { some: branchFilter } } : {}),
     ...(opts.claimed === 'unclaimed' ? { branches: { none: { isClaimed: true } } } : {}),
@@ -117,12 +115,11 @@ export async function listBusinesses(opts: BizListOptions): Promise<{ rows: BizR
 }
 
 export async function businessCounts() {
-  const n = (where: Prisma.BusinessWhereInput) => db.business.count({ where: { deletedAt: null, ...where } });
-  const [all, live, past_due, pending, hidden, no_subscription, deleted] = await Promise.all([
-    n({}), n({ status: 'live' }), n({ status: 'past_due' }), n({ status: 'pending' }), n({ status: 'hidden' }), n({ subscription: null }),
-    db.business.count({ where: { deletedAt: { not: null } } }),
+  const [all, live, past_due, pending, hidden, no_subscription] = await Promise.all([
+    db.business.count(), db.business.count({ where: { status: 'live' } }), db.business.count({ where: { status: 'past_due' } }),
+    db.business.count({ where: { status: 'pending' } }), db.business.count({ where: { status: 'hidden' } }), db.business.count({ where: { subscription: null } }),
   ]);
-  return { all, live, past_due, pending, hidden, no_subscription, deleted } as Record<BizFilter, number>;
+  return { all, live, past_due, pending, hidden, no_subscription } as Record<BizFilter, number>;
 }
 
 /** One business with everything the card shows. */
