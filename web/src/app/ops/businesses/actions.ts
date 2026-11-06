@@ -5,7 +5,9 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { areaUserOrNull } from '@/components/ops/access';
 import { syncBillingSafe } from '@/lib/server/billing';
+import { deleteBusiness } from '@/lib/server/businessDelete';
 import { db } from '@/lib/server/db';
+import { currentUser } from '@/lib/server/session';
 import { ensureImportRecords, estimateCompletion, startCompletion, type EnhanceResult } from '@/lib/server/enhanceRuns';
 
 // Staff actions on a business: its status (live, hidden, past due, pending) with a reason. Every
@@ -132,4 +134,25 @@ export async function estimateCompletionAction(branchIds: string[]): Promise<{ o
   const places = await db.importPlace.count({ where: { branchId: { in: list.data }, status: { in: ['approved', 'merged'] } } });
   const est = await estimateCompletion(list.data);
   return { ok: true, listings: est.listings, unseeded: list.data.length - places, plan: est.plan, usd: est.usd };
+}
+
+// ---------- permanent delete (master admin only) ----------
+
+// The role check is inside deleteBusiness (src/lib/server/businessDelete.ts), so a direct POST to this
+// action by anyone else gets status 403 and changes nothing.
+
+export type DeleteActionResult = Awaited<ReturnType<typeof deleteBusiness>>;
+
+export async function deleteBusinessAction(input: { id: string; reason: string; confirmName: string }): Promise<DeleteActionResult> {
+  const id = String(input?.id ?? '');
+  const r = await deleteBusiness(await currentUser(), { id, reason: String(input?.reason ?? ''), confirmName: String(input?.confirmName ?? '') });
+  if (r.ok) {
+    revalidatePath('/');
+    revalidatePath('/search');
+    revalidatePath('/sitemap.xml');
+    for (const region of r.regions) revalidatePath(`/${region}`, 'layout');
+    for (const path of r.paths) revalidatePath(path);
+    revalidatePath('/ops/businesses');
+  }
+  return r;
 }

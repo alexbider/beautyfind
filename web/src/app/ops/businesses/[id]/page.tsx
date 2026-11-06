@@ -19,6 +19,8 @@ import { templateName } from '../../emails/data';
 import { loadBusiness, PLAN_NAME, STATUS_NAME, STATUS_TONE } from '../data';
 import { BusinessDetailsForm } from '../BusinessDetailsForm';
 import { StatusActions } from '../StatusActions';
+import { DeleteBusiness } from '../DeleteBusiness';
+import { deleteCheck, isMasterAdmin } from '@/lib/server/businessDelete';
 import { AiPanel } from './branches/[branchId]/BranchEditor';
 
 export const metadata: Metadata = { title: 'כרטיס עסק · ניהול', robots: { index: false, follow: false } };
@@ -35,6 +37,9 @@ export default async function BusinessCardPage({ params }: { params: Promise<{ i
   const [b, s, level] = await Promise.all([loadBusiness(id), platformSettings(), areaLevel(user, 'businesses')]);
   if (!b) notFound();
   const canEdit = atLeast(level, 'edit');
+  // Permanent delete is for the master admin only; the server action checks the role again.
+  const master = isMasterAdmin(user);
+  const delCheck = master ? await deleteCheck(b.id) : null;
   const gaps = await listGaps({ branchIds: b.branches.map(x => x.id), live: 'all', claimed: 'all' });
   const live = b.branches.filter(x => x.status === 'live').length;
   const unit = b.subscription ? (b.subscription.plan === 'advanced' ? s.advancedMonthlyNis : s.basicMonthlyNis) : null;
@@ -202,6 +207,12 @@ export default async function BusinessCardPage({ params }: { params: Promise<{ i
           <Card title="מצב העסק">
             <StatusActions id={b.id} current={b.status} canEdit={canEdit} awaitingPayment={(b.settings as Record<string, unknown> | null)?.awaitingPayment === true} />
           </Card>
+
+          {master ? (
+            <Card title="מחיקת העסק">
+              <DeleteBusiness id={b.id} name={name} blockers={delCheck?.blockers ?? []} />
+            </Card>
+          ) : null}
         </div>
       </div>
     </AdminShell>

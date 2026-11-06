@@ -257,6 +257,12 @@ model Business {
   // under it (src/lib/import/chain.ts). Branches of one chain sit under one business, so an owner
   // claims and manages all locations from one account and is billed per branch.
   chainKey        String?        @map("chain_key")
+  // Not used: added for a soft delete that was replaced by a permanent delete (src/lib/server/businessDelete.ts)
+  // before it shipped. The migration already ran, so the columns stay until a drop migration is approved.
+  deletedAt         DateTime?       @map("deleted_at")
+  deletedById       String?         @map("deleted_by_id") @db.Uuid
+  deletedFromStatus BusinessStatus? @map("deleted_from_status")
+  deletedReason     String?         @map("deleted_reason")
   createdAt       DateTime       @default(now()) @map("created_at")
   updatedAt       DateTime       @updatedAt @map("updated_at")
 
@@ -270,6 +276,7 @@ model Business {
   giftCards            GiftCard[]
 
   @@index([chainKey])
+  @@index([deletedAt])
   @@map("businesses")
 }
 
