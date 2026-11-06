@@ -34,7 +34,7 @@ export function StatusActions({ id, current, canEdit, awaitingPayment = false }:
               if (o.status === 'hold_payment' && !window.confirm('להסתיר את העסק עד התשלום הראשון ולשלוח לבעלים בקשת תשלום באימייל וב־SMS?')) return;
               start(async () => {
                 const r = await setBusinessStatusAction({ id, status: o.status, reason });
-                setMsg(r.ok ? 'נשמר' : r.error === 'forbidden' ? 'אין הרשאה' : 'הפעולה נכשלה');
+                setMsg(r.ok ? 'נשמר' : r.error === 'forbidden' ? 'אין הרשאה' : r.error === 'deleted' ? 'העסק מחוק. צריך לשחזר אותו קודם' : 'הפעולה נכשלה');
                 if (r.ok) router.refresh();
               });
             }}

@@ -13,7 +13,8 @@ import { closestName, queryTokens } from '@/lib/search/understand';
 // Read-only queries for public pages. Only live branches of live businesses are ever returned.
 // Ratings: Google and BeautyFind are separate fields and are never averaged together (decision A4).
 
-export const PUBLIC_WHERE: Prisma.BranchWhereInput = { status: 'live', business: { status: 'live' } };
+// deletedAt: a business the master admin deleted stays off the site even if its status is changed later.
+export const PUBLIC_WHERE: Prisma.BranchWhereInput = { status: 'live', business: { status: 'live', deletedAt: null } };
 
 export type Sort = 'recommended' | 'rating' | 'reviews' | 'price';
 

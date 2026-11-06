@@ -19,6 +19,8 @@ import { templateName } from '../../emails/data';
 import { loadBusiness, PLAN_NAME, STATUS_NAME, STATUS_TONE } from '../data';
 import { BusinessDetailsForm } from '../BusinessDetailsForm';
 import { StatusActions } from '../StatusActions';
+import { DeleteBusiness, RestoreBusiness } from '../DeleteBusiness';
+import { deleteCheck, isMasterAdmin } from '@/lib/server/businessDelete';
 import { AiPanel } from './branches/[branchId]/BranchEditor';
 
 export const metadata: Metadata = { title: 'כרטיס עסק · ניהול', robots: { index: false, follow: false } };
@@ -35,6 +37,10 @@ export default async function BusinessCardPage({ params }: { params: Promise<{ i
   const [b, s, level] = await Promise.all([loadBusiness(id), platformSettings(), areaLevel(user, 'businesses')]);
   if (!b) notFound();
   const canEdit = atLeast(level, 'edit');
+  // Delete and restore are for the master admin only; the server actions check the role again.
+  const master = isMasterAdmin(user);
+  const deleted = !!b.deletedAt;
+  const delCheck = master && !deleted ? await deleteCheck(b.id) : null;
   const gaps = await listGaps({ branchIds: b.branches.map(x => x.id), live: 'all', claimed: 'all' });
   const live = b.branches.filter(x => x.status === 'live').length;
   const unit = b.subscription ? (b.subscription.plan === 'advanced' ? s.advancedMonthlyNis : s.basicMonthlyNis) : null;
@@ -53,8 +59,9 @@ export default async function BusinessCardPage({ params }: { params: Promise<{ i
         eyebrow={<Link href="/ops/businesses" className={ui.rowLink}>תפעול · עסקים</Link>}
         title={name}
         lead={<>{b.legalName ? `${b.legalName} · ` : ''}{b.companyNo ? <>ע.מ. <span dir="ltr">{b.companyNo}</span> · </> : ''}נוצר {dateIL(b.createdAt)}{b.chainKey ? <> · רשת: <span dir="ltr">{b.chainKey}</span></> : ''}</>}
-        actions={<Chip tone={STATUS_TONE[b.status]}>{STATUS_NAME[b.status]}</Chip>}
+        actions={deleted ? <Chip tone="bad">נמחק</Chip> : <Chip tone={STATUS_TONE[b.status]}>{STATUS_NAME[b.status]}</Chip>}
       />
+      {deleted ? <p className={`${ui.msg} ${ui.error}`} role="status">העסק נמחק ב־{dateIL(b.deletedAt!)} ואינו מופיע באתר.{b.deletedReason ? ` סיבה: ${b.deletedReason}` : ''}</p> : null}
 
       <div className={ui.split}>
         <div className={ui.stack}>
@@ -200,8 +207,18 @@ export default async function BusinessCardPage({ params }: { params: Promise<{ i
           </Card>
 
           <Card title="מצב העסק">
-            <StatusActions id={b.id} current={b.status} canEdit={canEdit} awaitingPayment={(b.settings as Record<string, unknown> | null)?.awaitingPayment === true} />
+            {deleted
+              ? <p className={ui.note}>העסק מחוק. שינוי מצב אפשרי רק אחרי שחזור.</p>
+              : <StatusActions id={b.id} current={b.status} canEdit={canEdit} awaitingPayment={(b.settings as Record<string, unknown> | null)?.awaitingPayment === true} />}
           </Card>
+
+          {master ? (
+            <Card title={deleted ? 'שחזור העסק' : 'מחיקת העסק'}>
+              {deleted
+                ? <RestoreBusiness id={b.id} deletedAt={dateIL(b.deletedAt!)} reason={b.deletedReason} fromStatus={STATUS_NAME[b.deletedFromStatus ?? 'hidden']} />
+                : <DeleteBusiness id={b.id} name={name} blockers={delCheck?.blockers ?? []} />}
+            </Card>
+          ) : null}
         </div>
       </div>
     </AdminShell>
